@@ -2,3 +2,6 @@
 .env
 __pycache__
 *.ipynb
+output
+*.pid
+*.log
