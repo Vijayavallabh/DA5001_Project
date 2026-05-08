@@ -1,3 +1,17 @@
 setuptools
 pip
+ipykernel
 wheel
+pandas 
+matplotlib
+numpy 
+scipy
+datasets
+transformers
+torch==2.10.0  --index-url https://download.pytorch.org/whl/cu126
+accelerate 
+bitsandbytes
+pyyaml
+tqdm
+rouge-score
+python-dotenv
