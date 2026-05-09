@@ -149,6 +149,16 @@ def ebb_upper_bound_chapman(samples: List[float], R: float, delta: float) -> flo
     width = math.sqrt((2.0 * var_z * log_term) / M) + (3.0 * R * log_term) / M
     return mean_z + width
 
+def first_of(step: Dict[str, Any], *keys, default=None):
+    for key in keys:
+        val = step.get(key)
+        if val is None:
+            continue
+        if isinstance(val, list):
+            return val[0] if val else default
+        return val
+    return default
+
 
 class PromptNormalizer:
     def __init__(self, factscore_field: str = "factscore_prompt"):
@@ -411,48 +421,54 @@ class H1AuditRunner:
         gen_text = self.tokenizer.decode(gen_ids, skip_special_tokens=True)
         full_text = self.tokenizer.decode(full_ids, skip_special_tokens=True)
 
-        per_step_stats = stats.get("per_step", [])
-        final_cum_spend = float(stats.get("final_cum_kl_spent_per_seq", [0.0])[0])
-        final_budget = float(stats.get("final_budget_per_seq", [0.0])[0])
+        per_step_stats = stats.get("per_step") or stats.get("perstep") or []
+
+        final_cum_raw = stats.get("final_cum_kl_spent_per_seq") or stats.get("finalcumklspentperseq") or [0.0]
+        final_budget_raw = stats.get("final_budget_per_seq") or stats.get("finalbudgetperseq") or [0.0]
+        budget_util_raw = stats.get("budget_utilization_per_seq") or stats.get("budgetutilizationperseq") or [0.0]
+
+        final_cum_spend = float(final_cum_raw[0])
+        final_budget = float(final_budget_raw[0])
+        budget_utilization = float(budget_util_raw[0])
         gen_len = len(gen_ids)
         delta_init = self._estimate_prefix_debt(final_budget, gen_len, k)
 
         per_step_log = []
         for t, step in enumerate(per_step_stats):
-            sampled_token_id = None
-            sampled_token = None
-            p_star_prob = None
-            p_s_prob = None
-            lambda_value = None
-            budget_remaining = None
+            sampled_token_id = first_of(step, "sampled_token_id", "sampledtokenid", default=None)
+            sampled_token = first_of(step, "sampled_token", "sampledtoken", default=None)
+            p_star_prob = first_of(step, "p_star_prob", "pstarprob", default=None)
+            p_s_prob = first_of(step, "p_s_prob", "psprob", default=None)
+            lambda_value = first_of(step, "lambda", default=None)
+            budget_remaining = first_of(step, "budget_remaining", "remaining", default=None)
 
-            if step.get("sampled_token_id"):
-                sampled_token_id = step["sampled_token_id"][0]
-            elif t < len(gen_ids):
+            if sampled_token_id is None and t < len(gen_ids):
                 sampled_token_id = gen_ids[t]
 
-            if step.get("sampled_token"):
-                sampled_token = step["sampled_token"][0]
-            elif sampled_token_id is not None:
+            if sampled_token is None and sampled_token_id is not None:
                 sampled_token = self.tokenizer.decode([sampled_token_id], skip_special_tokens=False)
 
-            if step.get("p_star_prob"):
-                p_star_prob = float(step["p_star_prob"][0])
-            if step.get("p_s_prob"):
-                p_s_prob = float(step["p_s_prob"][0])
-            if step.get("lambda"):
-                lambda_value = step["lambda"][0]
-            if step.get("budget_remaining"):
-                budget_remaining = float(step["budget_remaining"][0])
+            k_t = float(first_of(step, "k_t", "kt", default=0.0))
+            a_t = float(first_of(step, "kl_to_safe", "kltosafe", default=0.0))
+            budget_so_far = float(first_of(step, "budget_so_far", "budgetsofar", default=0.0))
+            cum_kl_spent = float(first_of(step, "cum_kl_spent", "cumklspent", default=0.0))
+            bc = first_of(step, "bc", default=None)
+            bd = first_of(step, "bd", default=None)
 
-            k_t = float(step.get("k_t", [0.0])[0]) if step.get("k_t") else 0.0
-            a_t = float(step.get("kl_to_safe", [0.0])[0]) if step.get("kl_to_safe") else 0.0
-            budget_so_far = float(step.get("budget_so_far", [0.0])[0]) if step.get("budget_so_far") else 0.0
-            cum_kl_spent = float(step.get("cum_kl_spent", [0.0])[0]) if step.get("cum_kl_spent") else 0.0
-            bc = float(step.get("bc", [0.0])[0]) if step.get("bc") else None
-            bd = float(step.get("bd", [0.0])[0]) if step.get("bd") else None
+            if bc is not None:
+                bc = float(bc)
+            if bd is not None:
+                bd = float(bd)
+
+            if p_star_prob is not None:
+                p_star_prob = float(p_star_prob)
+            if p_s_prob is not None:
+                p_s_prob = float(p_s_prob)
+
             if budget_remaining is None:
                 budget_remaining = budget_so_far - cum_kl_spent
+            else:
+                budget_remaining = float(budget_remaining)
 
             per_step_log.append(
                 {
@@ -472,7 +488,6 @@ class H1AuditRunner:
                     "bd": bd,
                 }
             )
-
         return {
             "metadata": {
                 "prompt_id": prompt.prompt_id,
@@ -480,8 +495,8 @@ class H1AuditRunner:
                 "split": prompt.split,
                 "novel_source": prompt.novel_source,
                 "model_pair": "tinycomma_llama31_8b",
-                "target_model": self.config.safe_model_path,
-                "anchor_model": self.config.risky_model_path,
+                "target_model": self.config.risky_model_path,
+                "anchor_model": self.config.safe_model_path,
                 "level": "token",
                 "k": k,
                 "K": k * self.config.max_new_tokens,
@@ -509,7 +524,7 @@ class H1AuditRunner:
                 "minhash_5gram": minhash_5gram_score(gen_text, prompt.reference),
                 "fluency_score": None,
                 "final_budget": final_budget,
-                "budget_utilization": float(stats.get("budget_utilization_per_seq", [0.0])[0]) if stats.get("budget_utilization_per_seq") else 0.0,
+                "budget_utilization": budget_utilization,
             },
             "source_record": prompt.raw,
         }
