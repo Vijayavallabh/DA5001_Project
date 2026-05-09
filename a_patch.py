@@ -1058,6 +1058,8 @@ class AnchoredDecodingFactory:
                                                     "p_s_prob": p_s_prob,
                                                     "p_risky_prob": p_risky_prob,
                                                     "lambda": None,
+                                                    "prefix_debt": (prefix_debt.detach().cpu().tolist() if self.use_prefix_debt else [0.0] * B),
+                                                    "init_budget_tensor": (init_budget_tensor.detach().cpu().tolist() if isinstance(init_budget_tensor, torch.Tensor) else [init_budget_tensor] * B),
                                                 }
                                             )
 
@@ -1194,7 +1196,7 @@ class AnchoredDecodingFactory:
         llr = risky_logp_target - safe_logp_target  # [B, L-1]
 
         # 2. Setup mask for valid positions
-        m = (
+        valid = (
             attention_mask[:, 1:].bool()
             if attention_mask is not None
             else torch.ones_like(llr, dtype=torch.bool)
@@ -1202,23 +1204,34 @@ class AnchoredDecodingFactory:
 
         # 3. Mask special tokens (EOS, BOS, etc.)
         next_tok = input_ids[:, 1:]
-        special_ids = torch.tensor(
-            list(self.tokenizer.all_special_ids), device=self.device
-        )
-        # Vectorized special token check: [B, L-1, 1] == [S] -> [B, L-1, S] -> any(dim=-1)
-        is_special = (next_tok.unsqueeze(-1) == special_ids).any(dim=-1)
+        if len(self.tokenizer.all_special_ids) > 0:
+            special_ids = torch.tensor(
+                list(self.tokenizer.all_special_ids),
+                device=next_tok.device,
+                dtype=next_tok.dtype,
+            )
+            is_special = (next_tok.unsqueeze(-1) == special_ids).any(dim=-1)
+            valid = valid & (~is_special)
 
-        valid = m & (~is_special)
+        positive = valid & (llr > 0)
+        masked = llr.masked_fill(~positive, float("-inf"))
 
-        # Fill invalid positions with a very low value so they aren't picked by top-k
-        llr = llr.masked_fill(~valid, -1e9)
 
         # 4. Top-k LLR values
         k_eff = min(int(k), llr.size(1))
-        vals, _ = llr.topk(k_eff, dim=-1, largest=True)
+        if k_eff <= 0:
+            return torch.zeros(llr.size(0), device=llr.device, dtype=torch.float32)
+        vals, _ = masked.topk(k_eff, dim=-1, largest=True)
 
         # 5. Return mean of positive LLRs
-        return vals.clamp(min=0.0).mean(dim=-1)
+        chosen = torch.isfinite(vals)
+        vals = torch.where(chosen, vals, torch.zeros_like(vals))
+
+        denom = chosen.sum(dim=-1).clamp(min=1).to(torch.float32)
+        debt = vals.sum(dim=-1) / denom
+        debt = torch.where(chosen.any(dim=-1), debt, torch.zeros_like(debt))
+        return debt.to(torch.float32)
+
 
     @torch.no_grad()
     def _compute_prefix_debt_from_logits(
@@ -1243,47 +1256,45 @@ class AnchoredDecodingFactory:
             Tensor [B] with prefix debt for each sequence
         """
         # Convert to log probabilities
-        logp_c = F.log_softmax(safe_logits.float(), dim=-1).to(
-            self.device
-        )  # [B, L-1, V]
-        logp_d = F.log_softmax(risky_logits.float(), dim=-1).to(
-            self.device
-        )  # [B, L-1, V]
+        logp_c = F.log_softmax(safe_logits.float(), dim=-1).to(self.device)
+        logp_d = F.log_softmax(risky_logits.float(), dim=-1).to(self.device)
 
-        # Target tokens: positions 1 to L-1 (the tokens being predicted)
-        next_tok = input_ids[:, 1:].unsqueeze(-1).to(self.device)  # [B, L-1, 1]
+        next_tok = input_ids[:, 1:].unsqueeze(-1).to(self.device)
 
-        if next_tok.max() >= logp_c.size(-1):
-            raise ValueError(
-                f"Token ID {next_tok.max()} exceeds vocab size {logp_c.size(-1)}"
-            )
-
-        # Log-likelihood ratio: log p_d(token) - log p_c(token)
-        llr = (logp_d.gather(-1, next_tok) - logp_c.gather(-1, next_tok)).squeeze(
-            -1
-        )  # [B, L-1]
-
+        llr = (logp_d.gather(-1, next_tok) - logp_c.gather(-1, next_tok)).squeeze(-1)
         # Mask for valid positions (attended and non-special tokens)
-        m = (
+        valid = (
             attention_mask[:, 1:].bool().to(self.device)
             if attention_mask is not None
             else torch.ones_like(llr, dtype=torch.bool)
         )
 
-        special_ids = set(self.tokenizer.all_special_ids)
-        is_special = torch.zeros_like(m)
-        for tid in special_ids:
-            is_special |= next_tok.squeeze(-1) == tid
+        if len(self.tokenizer.all_special_ids) > 0:
+            special_ids = torch.tensor(
+                list(self.tokenizer.all_special_ids),
+                device=self.device,
+                dtype=next_tok.dtype,
+            )
+            is_special = (next_tok.squeeze(-1).unsqueeze(-1) == special_ids).any(dim=-1)
+            valid = valid & (~is_special)
 
-        valid = m & (~is_special)
-        llr = llr.masked_fill(~valid, -1e9)
+        positive = valid & (llr > 0)
+        masked = llr.masked_fill(~positive, float("-inf"))
 
-        # Top-k LLR values (positions where risky is most preferred over safe)
         k_eff = min(int(k), llr.size(1))
-        vals, _ = llr.topk(k_eff, dim=-1, largest=True)
+        if k_eff <= 0:
+            return torch.zeros(llr.size(0), device=self.device, dtype=torch.float32)
 
-        # Clamp to 0 so "good" tokens (where safe is better) don't reduce debt
-        return vals.clamp(min=0.0).mean(dim=-1)
+        vals, _ = masked.topk(k_eff, dim=-1, largest=True)
+
+        chosen = torch.isfinite(vals)
+        vals = torch.where(chosen, vals, torch.zeros_like(vals))
+
+        denom = chosen.sum(dim=-1).clamp(min=1).to(torch.float32)
+        debt = vals.sum(dim=-1) / denom
+        debt = torch.where(chosen.any(dim=-1), debt, torch.zeros_like(debt))
+        return debt.to(torch.float32)
+    
 
     def solve_optimization_newton(
         self,
@@ -1469,79 +1480,78 @@ class AnchoredDecodingFactory:
         return w_c, w_d, log_pc, log_pd  # fp32, plus cached log probs
 
     def get_kl_stats_summary(self) -> dict:
-        """Get a summary of KL statistics from the last generation.
-
-        Returns:
-            dict with keys:
-                - 'per_step': list of per-step stats (includes k_t, cum_kl_spent, budget_so_far)
-                - 'mean_kl_to_safe': mean KL(p* || p_c) across all steps
-                - 'mean_kl_to_risky': mean KL(p* || p_d) across all steps
-                - 'total_kl_to_safe_per_seq': sum of KL(p* || p_c) across all steps per sequence (realized k)
-                - 'total_kl_to_risky_per_seq': sum of KL(p* || p_d) across all steps per sequence
-                - 'final_cum_kl_spent_per_seq': final cumulative KL spent per sequence
-                - 'final_budget_per_seq': final total budget per sequence
-                - 'budget_utilization_per_seq': percentage of budget used per sequence
         """
-        if not self.kl_stats_history:
+        Return a summary of KL-budget statistics for the most recent generation.
+
+        Important:
+        - Preserve per-step dictionaries exactly, including custom fields such as
+          `prefix_debt` and `init_budget_tensor`.
+        - Provide aggregate per-sequence vectors for downstream evaluation code.
+        """
+        if not hasattr(self, "kl_stats_history") or not self.kl_stats_history:
             return {
                 "per_step": [],
-                "mean_kl_to_safe": 0.0,
-                "mean_kl_to_risky": 0.0,
-                "total_kl_to_safe": 0.0,
-                "total_kl_to_risky": 0.0,
+                "final_cum_kl_spent_per_seq": [0.0],
+                "final_budget_per_seq": [0.0],
+                "budget_utilization_per_seq": [0.0],
             }
 
-        # Aggregate across steps (take mean across batch for each step, then aggregate)
-        all_kl_safe = []
-        all_kl_risky = []
-        for step_data in self.kl_stats_history:
-            all_kl_safe.extend(step_data["kl_to_safe"])
-            all_kl_risky.extend(step_data["kl_to_risky"])
+        per_step = []
+        for step in self.kl_stats_history:
+            row = dict(step)
 
-        # Per-sequence totals (sum across steps for each batch element)
-        n_steps = len(self.kl_stats_history)
-        batch_size = len(self.kl_stats_history[0]["kl_to_safe"]) if n_steps > 0 else 0
+            for key, value in list(row.items()):
+                if isinstance(value, torch.Tensor):
+                    value = value.detach().cpu()
+                    if value.ndim == 0:
+                        row[key] = value.item()
+                    else:
+                        row[key] = value.tolist()
+                elif isinstance(value, np.ndarray):
+                    row[key] = value.tolist()
+                elif isinstance(value, tuple):
+                    row[key] = list(value)
 
-        total_kl_safe_per_seq = [0.0] * batch_size
-        total_kl_risky_per_seq = [0.0] * batch_size
-        for step_data in self.kl_stats_history:
-            for i, (kc, kd) in enumerate(
-                zip(step_data["kl_to_safe"], step_data["kl_to_risky"])
-            ):
-                total_kl_safe_per_seq[i] += kc
-                total_kl_risky_per_seq[i] += kd
+            per_step.append(row)
 
-        # Get final budget tracking stats from the last step
-        last_step = self.kl_stats_history[-1]
-        final_cum_kl_spent = last_step.get("cum_kl_spent", [0.0] * batch_size)
-        final_budget = last_step.get("budget_so_far", [0.0] * batch_size)
+        last = per_step[-1]
 
-        # Compute budget utilization (handle inf budget case)
-        budget_utilization = []
-        for spent, budget in zip(final_cum_kl_spent, final_budget):
-            if budget == float("inf") or budget == 0:
-                budget_utilization.append(0.0)  # risky-only or safe-only mode
+        def _as_list(x, default=0.0):
+            if x is None:
+                return [default]
+            if isinstance(x, list):
+                return x
+            return [x]
+
+        final_cum = _as_list(
+            last.get("cum_kl_spent", last.get("cumklspent", None)),
+            default=0.0,
+        )
+        final_budget = _as_list(
+            last.get("budget_so_far", last.get("budgetsofar", None)),
+            default=0.0,
+        )
+
+        n = max(len(final_cum), len(final_budget))
+        if len(final_cum) < n:
+            final_cum = final_cum + [final_cum[-1] if final_cum else 0.0] * (n - len(final_cum))
+        if len(final_budget) < n:
+            final_budget = final_budget + [final_budget[-1] if final_budget else 0.0] * (n - len(final_budget))
+
+        budget_util = []
+        for spend, budget in zip(final_cum, final_budget):
+            spend = float(spend)
+            budget = float(budget)
+            if np.isfinite(budget) and abs(budget) > 1e-12:
+                budget_util.append(spend / budget)
             else:
-                budget_utilization.append((spent / budget) * 100.0)
+                budget_util.append(0.0)
 
         return {
-            "per_step": self.kl_stats_history,
-            "mean_kl_to_safe": np.mean(all_kl_safe) if all_kl_safe else 0.0,
-            "mean_kl_to_risky": np.mean(all_kl_risky) if all_kl_risky else 0.0,
-            "total_kl_to_safe_per_seq": total_kl_safe_per_seq,  # realized k per sequence
-            "total_kl_to_risky_per_seq": total_kl_risky_per_seq,
-            "mean_total_kl_to_safe": (
-                np.mean(total_kl_safe_per_seq) if total_kl_safe_per_seq else 0.0
-            ),
-            "mean_total_kl_to_risky": (
-                np.mean(total_kl_risky_per_seq) if total_kl_risky_per_seq else 0.0
-            ),
-            "final_cum_kl_spent_per_seq": final_cum_kl_spent,
-            "final_budget_per_seq": final_budget,
-            "budget_utilization_per_seq": budget_utilization,  # percentage of budget used
-            "mean_budget_utilization": (
-                np.mean(budget_utilization) if budget_utilization else 0.0
-            ),
+            "per_step": per_step,
+            "final_cum_kl_spent_per_seq": [float(x) for x in final_cum],
+            "final_budget_per_seq": [float(x) for x in final_budget],
+            "budget_utilization_per_seq": [float(x) for x in budget_util],
         }
 
 

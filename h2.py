@@ -544,15 +544,20 @@ class AnchoredEvaluator:
             final_cum_spend = stats.get("final_cum_kl_spent_per_seq") or stats.get("finalcumklspentperseq") or [0.0]
             final_budget = stats.get("final_budget_per_seq") or stats.get("finalbudgetperseq") or [0.0]
 
-            prompt_ids = self.tokenizer(prompt_text, return_tensors="pt").input_ids[0]
-            prompt_len = int(prompt_ids.shape[0])
-            full_ids = output.sequences[0].detach().cpu().tolist()
-            gen_len = max(0, len(full_ids) - prompt_len)
+            per_step = stats.get("per_step") or []
+            if per_step and "prefix_debt" in per_step[0]:
+                prefix_debt_val = float(per_step[0]["prefix_debt"][0])
+            else:
+                prompt_ids = self.tokenizer(prompt_text, return_tensors="pt").input_ids[0]
+                prompt_len = int(prompt_ids.shape[0])
+                full_ids = output.sequences[0].detach().cpu().tolist()
+                gen_len = max(0, len(full_ids) - prompt_len)
+                prefix_debt_val = self._estimate_prefix_debt(float(final_budget[0]), gen_len)
 
             spends.append(float(final_cum_spend[0]))
             final_budgets.append(float(final_budget[0]))
-            delta_inits.append(self._estimate_prefix_debt(float(final_budget[0]), gen_len))
-
+            delta_inits.append(prefix_debt_val)
+            
         mean_spend = float(np.mean(spends)) if spends else 0.0
         var_spend = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
         u_ebb = ebb_upper_bound_chapman(spends, self.R_token, delta)

@@ -431,7 +431,28 @@ class H1AuditRunner:
         final_budget = float(final_budget_raw[0])
         budget_utilization = float(budget_util_raw[0])
         gen_len = len(gen_ids)
-        delta_init = self._estimate_prefix_debt(final_budget, gen_len, k)
+
+        true_prefix_debt = None
+        init_budget_tensor = None
+
+        if per_step_stats and "prefix_debt" in per_step_stats[0]:
+            prefix_debt_raw = first_of(per_step_stats[0], "prefix_debt", default=[0.0])
+            if isinstance(prefix_debt_raw, list):
+                true_prefix_debt = float(prefix_debt_raw[0]) if prefix_debt_raw else 0.0
+            else:
+                true_prefix_debt = float(prefix_debt_raw)
+
+        if per_step_stats and "init_budget_tensor" in per_step_stats[0]:
+            init_budget_raw = first_of(per_step_stats[0], "init_budget_tensor", default=[0.0])
+            if isinstance(init_budget_raw, list):
+                init_budget_tensor = float(init_budget_raw[0]) if init_budget_raw else 0.0
+            else:
+                init_budget_tensor = float(init_budget_raw)
+
+        if true_prefix_debt is not None:
+            delta_init = true_prefix_debt
+        else:
+            delta_init = self._estimate_prefix_debt(final_budget, gen_len, k)
 
         per_step_log = []
         for t, step in enumerate(per_step_stats):
@@ -455,6 +476,9 @@ class H1AuditRunner:
             bc = first_of(step, "bc", default=None)
             bd = first_of(step, "bd", default=None)
 
+            step_prefix_debt = first_of(step, "prefix_debt", default=None)
+            step_init_budget = first_of(step, "init_budget_tensor", default=None)
+
             if bc is not None:
                 bc = float(bc)
             if bd is not None:
@@ -464,6 +488,18 @@ class H1AuditRunner:
                 p_star_prob = float(p_star_prob)
             if p_s_prob is not None:
                 p_s_prob = float(p_s_prob)
+
+            if step_prefix_debt is not None:
+                if isinstance(step_prefix_debt, list):
+                    step_prefix_debt = float(step_prefix_debt[0]) if step_prefix_debt else 0.0
+                else:
+                    step_prefix_debt = float(step_prefix_debt)
+
+            if step_init_budget is not None:
+                if isinstance(step_init_budget, list):
+                    step_init_budget = float(step_init_budget[0]) if step_init_budget else 0.0
+                else:
+                    step_init_budget = float(step_init_budget)
 
             if budget_remaining is None:
                 budget_remaining = budget_so_far - cum_kl_spent
@@ -486,8 +522,11 @@ class H1AuditRunner:
                     "p_s_prob": p_s_prob,
                     "bc": bc,
                     "bd": bd,
+                    "prefix_debt": step_prefix_debt,
+                    "init_budget_tensor": step_init_budget,
                 }
             )
+
         return {
             "metadata": {
                 "prompt_id": prompt.prompt_id,
@@ -509,6 +548,8 @@ class H1AuditRunner:
             },
             "prefix_analysis": {
                 "delta_init": delta_init,
+                "true_prefix_debt": true_prefix_debt,
+                "init_budget_tensor": init_budget_tensor,
                 "prefix_text": prompt.prompt_text,
                 "prefix_length_tokens": prompt_len,
             },
