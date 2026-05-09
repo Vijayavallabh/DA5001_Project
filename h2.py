@@ -588,10 +588,10 @@ class LocalHFOptimizer:
 
         if torch.cuda.is_available():
             self.device = torch.device(cfg.optimizer_device)
-            torch_dtype = getattr(torch, cfg.optimizer_dtype)
+            dtype = getattr(torch, cfg.optimizer_dtype)
         else:
             self.device = torch.device("cpu")
-            torch_dtype = torch.float32
+            dtype = torch.float32
 
         hf_token = os.getenv("HF_TOKEN")
 
@@ -606,7 +606,7 @@ class LocalHFOptimizer:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
         model_kwargs = {
-            "torch_dtype": torch_dtype,
+            "dtype": dtype,
             "trust_remote_code": cfg.trust_remote_code,
         }
         if hf_token:
