@@ -163,7 +163,7 @@ class AnchoredDecodingFactory:
             quantization_config = _build_quantization_config(
                 load_in_4bit=load_in_4bit,
                 load_in_8bit=load_in_8bit,
-                torch_dtype=torch_dtype,
+                dtype=dtype,
             )
             common_load = dict(
                 dtype=dtype,
@@ -589,7 +589,7 @@ class AnchoredDecodingFactory:
         """
         if logits_warper is None:
             logits_warper = LogitsProcessorList()
-        if generation_config.temperature > 0.0:
+        if generation_config.temperature is not None and generation_config.temperature not in (0.0, 1.0):
             logits_warper.append(TemperatureLogitsWarper(generation_config.temperature))
         return logits_warper
 
@@ -667,7 +667,23 @@ class AnchoredDecodingFactory:
         - Spend is cum_kl_spent += KL(q_t || p_c_t) each step (distribution-level).
         - Per-step cap is NOT enforced (no max clamp); a step may spend > k_radius if bank allows.
         """
-
+        if k_radius not in (0.0, -1.0):
+            if logits_processor is not None and len(logits_processor) > 0:
+                raise ValueError(
+                    "Anchored raw-anchor guarantee does not allow logits processors "
+                    "before the KL solve."
+                )
+            if logits_warper is not None and len(logits_warper) > 0:
+                raise ValueError(
+                    "Anchored raw-anchor guarantee does not allow logits warpers "
+                    "before the KL solve."
+                )
+            
+        if k_radius not in (0.0, -1.0) and not do_sample:
+            raise ValueError(
+                "Anchored Decoding guarantees apply to sampling from the fused "
+                "distribution, not greedy argmax decoding. Set do_sample=True."
+            )
         if post_hoc_logits_warper:
             raise ValueError(
                 "post_hoc_logits_warper=True breaks the per-step KL constraint on the decoding distribution. "
@@ -1009,11 +1025,12 @@ class AnchoredDecodingFactory:
                 ).float()  # KL(p* || p_d) [B]
 
 
-                if do_sample:
-                    probs = log_p.exp()
+                probs = log_p.exp()
+                if k_radius not in (0.0, -1.0):
+                    next_tokens = torch.multinomial(probs, 1).squeeze(1)
+                elif do_sample:
                     next_tokens = torch.multinomial(probs, 1).squeeze(1)
                 else:
-                    probs = log_p.exp()
                     next_tokens = torch.argmax(log_p, dim=-1)
 
                 sampled_token_ids = next_tokens.detach().cpu().tolist()

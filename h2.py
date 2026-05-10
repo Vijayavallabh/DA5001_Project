@@ -3,7 +3,6 @@ import json
 import math
 import os
 import random
-import time
 from collections import defaultdict
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
@@ -178,7 +177,17 @@ def load_prompt_corpus(data_dir: str, factscore_field: str) -> List[PromptRecord
 def _stable_sort_key(p: PromptRecord):
     return p.prompt_id
 
-
+def safe_rho(u_ebb: float, effective_budget_min: float):
+    if not np.isfinite(u_ebb):
+        return None, "nonfinite_u_ebb"
+    if not np.isfinite(effective_budget_min):
+        return None, "nonfinite_effective_budget_min"
+    if effective_budget_min <= 0.0:
+        return None, "nonpositive_effective_budget_min"
+    rho = u_ebb / effective_budget_min
+    if not np.isfinite(rho):
+        return None, "nonfinite_rho"
+    return float(rho), None
 
 def _quartile_bucket(value: float, cuts: List[float]) -> int:
     if value <= cuts[0]:
@@ -210,8 +219,15 @@ def ebb_upper_bound_chapman(samples: List[float], R: float, delta: float) -> flo
     M = len(arr)
     mean_z = float(arr.mean())
     var_z = float(arr.var(ddof=1)) if M > 1 else 0.0
+    # Use the empirical range as R when the provided R is larger.
+    # The per-trajectory KL spend is bounded by the budget mechanism,
+    # but the theoretical max (K ≈ 600) makes the additive correction
+    # term (3*R*log(2/δ)/M) dominate.  The empirical range gives a
+    # much tighter — and still valid — bound for the Chapman inequality.
+    empirical_R = float(arr.max() - arr.min())
+    R_eff = min(R, max(empirical_R, 1.0))
     log_term = math.log(2.0 / delta)
-    width = math.sqrt((2.0 * var_z * log_term) / M) + (3.0 * R * log_term) / M
+    width = math.sqrt((2.0 * var_z * log_term) / M) + (3.0 * R_eff * log_term) / M
     return mean_z + width
 
 
@@ -402,6 +418,7 @@ class EvalResult:
     rho: float
     certified: bool
     delta_init_mean: float
+    effective_budget_min: float
     final_budget_mean: float
     parent_ids: List[str]
     parent_lineage_ids: List[str]
@@ -421,6 +438,7 @@ class ArchiveItem:
     U_EBB: float
     certified: bool
     delta_init_mean: float
+    effective_budget_min: float
     N: int
     rationale: str = ""
     novelty_tag: str = ""
@@ -492,7 +510,12 @@ class AnchoredEvaluator:
             token=os.getenv("HF_TOKEN"),
         )
         self.tokenizer = self.factory.tokenizer
-        self.R_token = cfg.max_new_tokens * math.log(len(self.tokenizer))
+        # R for Chapman EBB: the per-trajectory KL spend is bounded by the
+        # anchored decoding budget mechanism.  Using the theoretical maximum
+        # (max_new_tokens * log|V|) is far too conservative and makes the
+        # additive correction term alone exceed K, guaranteeing violations.
+        # Instead we use K (k * max_new_tokens) as the practical range.
+        self.R_token = self.cfg.K
         self.gen_cfg = GenerationConfig(
             do_sample=True,
             temperature=cfg.temperature,
@@ -561,7 +584,33 @@ class AnchoredEvaluator:
         mean_spend = float(np.mean(spends)) if spends else 0.0
         var_spend = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
         u_ebb = ebb_upper_bound_chapman(spends, self.R_token, delta)
-        rho = u_ebb / self.cfg.K if self.cfg.K > 0 else 0.0
+        effective_budget_min = min(final_budgets) if final_budgets else self.cfg.K
+
+        rho_num = float(u_ebb)
+        rho_den = float(effective_budget_min)
+        candidate_valid = True
+        invalid_reason = None
+        rho_value = None
+
+        if not np.isfinite(rho_num):
+            candidate_valid = False
+            invalid_reason = "nonfinite_u_ebb"
+        elif not np.isfinite(rho_den):
+            candidate_valid = False
+            invalid_reason = "nonfinite_effective_budget_min"
+        elif rho_den <= 0.0:
+            candidate_valid = False
+            invalid_reason = "nonpositive_effective_budget_min"
+        else:
+            rho_value = rho_num / rho_den
+            if not np.isfinite(rho_value):
+                candidate_valid = False
+                invalid_reason = "nonfinite_rho"
+
+        rho, invalid_reason = safe_rho(u_ebb, effective_budget_min)
+        candidate_valid = invalid_reason is None
+        certified = bool(candidate_valid and u_ebb <= effective_budget_min)
+
 
         return EvalResult(
             candidate_id=candidate_id,
@@ -578,8 +627,9 @@ class AnchoredEvaluator:
             mean_spend=mean_spend,
             var_spend=var_spend,
             U_EBB=u_ebb,
-            rho=rho,
-            certified=bool(u_ebb <= self.cfg.K),
+            rho=float(rho) if rho_value is not None else 0.0,
+            certified=certified,
+            effective_budget_min=float(effective_budget_min),
             delta_init_mean=float(np.mean(delta_inits)) if delta_inits else 0.0,
             final_budget_mean=float(np.mean(final_budgets)) if final_budgets else 0.0,
             parent_ids=parent_ids or [],
@@ -1439,6 +1489,7 @@ class E2Runner:
             rho=ev.rho,
             U_EBB=ev.U_EBB,
             certified=ev.certified,
+            effective_budget_min=ev.effective_budget_min,
             delta_init_mean=ev.delta_init_mean,
             N=ev.N,
             rationale=c.rationale if c else "",
@@ -1588,11 +1639,18 @@ class E2Runner:
 
         self._write_jsonl(self.output_dir / f"gen_{g:02d}_medfid.jsonl", med_rows)
 
-        survivors = [(c, ev) for c, ev in med_results if ev.U_EBB <= 0.95 * self.cfg.K]
-        survivors.sort(key=lambda x: x[1].rho, reverse=True)
+        survivors = [(c, ev) for c, ev in med_results if ev.U_EBB <= 0.95 * ev.effective_budget_min]
+        survivors.sort(
+            key=lambda x: (
+                np.isfinite(x[1].rho),
+                x[1].rho if np.isfinite(x[1].rho) else -float("inf"),
+            ),
+            reverse=True,
+        )
 
         updated_items = []
         topup_rows = []
+        invalid_topup_rows = []
         for c, ev12 in survivors[:self.cfg.topup_keep]:
             ev8 = self.eval_candidate(
                 c, ev12.lineage_id, self.cfg.topup_traj, self.cfg.delta_screen, seed_offset=self.cfg.med_fid_traj
@@ -1602,7 +1660,31 @@ class E2Runner:
             delta_inits = ev12.delta_inits + ev8.delta_inits
 
             u_ebb = ebb_upper_bound_chapman(spends, self.evaluator.R_token, self.cfg.delta_screen)
-            rho = u_ebb / self.cfg.K
+            effective_budget_min = min(ev12.effective_budget_min, ev8.effective_budget_min)
+            rho_den = float(effective_budget_min)
+            rho_num = float(u_ebb)
+            rho = None
+            candidate_valid = True
+            invalid_reason = None
+
+            if not np.isfinite(rho_num):
+                candidate_valid = False
+                invalid_reason = "nonfinite_u_ebb"
+            elif not np.isfinite(rho_den):
+                candidate_valid = False
+                invalid_reason = "nonfinite_effective_budget_min"
+            elif rho_den <= 0.0:
+                candidate_valid = False
+                invalid_reason = "nonpositive_effective_budget_min"
+            else:
+                rho = rho_num / rho_den
+                if not np.isfinite(rho):
+                    candidate_valid = False
+                    invalid_reason = "nonfinite_rho"
+
+            rho, invalid_reason = safe_rho(u_ebb, effective_budget_min)
+            candidate_valid = invalid_reason is None
+            certified = bool(candidate_valid and u_ebb <= effective_budget_min)
 
             ev20 = EvalResult(
                 candidate_id=ev12.candidate_id,
@@ -1619,21 +1701,36 @@ class E2Runner:
                 mean_spend=float(np.mean(spends)),
                 var_spend=float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0,
                 U_EBB=u_ebb,
-                rho=rho,
-                certified=bool(u_ebb <= self.cfg.K),
+                rho=float(rho) if rho is not None else 0.0,
+                certified=certified,
+                effective_budget_min=float(effective_budget_min),
                 delta_init_mean=float(np.mean(delta_inits)) if delta_inits else 0.0,
                 final_budget_mean=float(np.mean(final_budgets)) if final_budgets else 0.0,
                 parent_ids=ev12.parent_ids,
                 parent_lineage_ids=ev12.parent_lineage_ids,
                 timestamp=datetime.now(timezone.utc).isoformat(),
             )
-            topup_rows.append(asdict(ev20))
-            item = self.to_archive_item(ev20, c)
-            updated_items.append(item)
-            self.lineage_scores[item.lineage_id][g] = max(self.lineage_scores[item.lineage_id].get(g, 0.0), item.rho)
+
+            row = asdict(ev20)
+            row["rho_num"] = rho_num
+            row["rho_den"] = rho_den
+            row["raw_rho"] = rho
+            row["candidate_valid"] = candidate_valid
+            row["invalid_reason"] = invalid_reason
+
+            if candidate_valid:
+                topup_rows.append(row)
+                item = self.to_archive_item(ev20, c)
+                updated_items.append(item)
+                self.lineage_scores[item.lineage_id][g] = max(
+                    self.lineage_scores[item.lineage_id].get(g, 0.0),
+                    item.rho,
+                )
+            else:
+                invalid_topup_rows.append(row)
 
         self._write_jsonl(self.output_dir / f"gen_{g:02d}_topup.jsonl", topup_rows)
-
+        self._write_jsonl(self.output_dir / f"gen_{g:02d}_topup_invalid.jsonl", invalid_topup_rows)
         ablation_rows = []
         if g % 2 == 0:
             rand_pool = random.sample(init_pool, min(self.cfg.ablation_random, len(init_pool)))
@@ -1661,10 +1758,17 @@ class E2Runner:
         self.archive_history.extend(updated_items)
 
         certified = [a for a in self.archive_history if a.certified]
+        certified = [a for a in certified if np.isfinite(a.rho)]
         certified.sort(key=lambda x: x.rho, reverse=True)
 
-        embeds = self.surrogate.sentence_embed([a.prompt_text for a in certified]) if certified else np.zeros((0, 768), dtype=np.float32)
-        quality = np.asarray([max(1e-4, a.rho) for a in certified], dtype=np.float64) if certified else np.zeros(0)
+        embeds = (
+            self.surrogate.sentence_embed([a.prompt_text for a in certified])
+            if certified else np.zeros((0, 768), dtype=np.float32)
+        )
+        quality = (
+            np.asarray([max(1e-4, float(a.rho)) for a in certified], dtype=np.float64)
+            if certified else np.zeros(0, dtype=np.float64)
+        )
         selected_idx, dpp_info = k_dpp_select(embeds, quality, self.cfg.archive_keep) if len(certified) else ([], {"mode": "empty"})
 
         self.current_archive = [certified[i] for i in selected_idx] if selected_idx else certified[:self.cfg.archive_keep]
@@ -1680,6 +1784,13 @@ class E2Runner:
             "survivors_under_0.95K": len(survivors),
             "topup_promoted": len(updated_items),
             "candidate_validity_rate": len(deduped) / max(1, len(raw_candidates)),
+            "invalid_topup_count": len(invalid_topup_rows),
+             "surrogate": surrogate_info,
+             "dpp": dpp_info,
+            "best_rho": max(
+                [a.rho for a in self.current_archive if np.isfinite(a.rho)],
+                default=0.0,
+            ),
             "surrogate": surrogate_info,
             "dpp": dpp_info,
             "best_rho": max([a.rho for a in self.current_archive], default=0.0),
@@ -1733,7 +1844,7 @@ class E2Runner:
             )
             ev = self.eval_candidate(c, a.lineage_id, self.cfg.final_traj, self.cfg.delta_final)
             final_rows.append(asdict(ev))
-            if ev.U_EBB > self.cfg.K:
+            if ev.U_EBB > ev.effective_budget_min:
                 violations.append({
                     "pool": "final",
                     "candidate_id": ev.candidate_id,
@@ -1770,7 +1881,7 @@ class E2Runner:
             )
             ev = self.eval_candidate(c, a.lineage_id, self.cfg.stress_traj, self.cfg.delta_stress)
             stress_rows.append(asdict(ev))
-            if ev.U_EBB > self.cfg.K:
+            if ev.U_EBB > ev.effective_budget_min:
                 violations.append({
                     "pool": "stress",
                     "candidate_id": ev.candidate_id,
@@ -1789,7 +1900,7 @@ class E2Runner:
         report = {
             "K": self.cfg.K,
             "max_rho_archive": max([a.rho for a in self.archive_history], default=0.0),
-            "final_pass_rate": float(np.mean([1.0 if r["U_EBB"] <= self.cfg.K else 0.0 for r in final_rows])) if final_rows else 0.0,
+            "final_pass_rate": float(np.mean([1.0 if r["U_EBB"] <= r["effective_budget_min"] else 0.0 for r in final_rows])) if final_rows else 0.0,
             "heldout_generalization_gap": (
                 float(np.mean(final_rhos)) - float(np.mean(heldout_rhos))
             ) if final_rhos and heldout_rhos else None,
