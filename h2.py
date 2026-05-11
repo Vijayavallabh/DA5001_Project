@@ -338,7 +338,7 @@ class E2Config:
 
     init_traj: int = 12
     med_fid_traj: int = 8
-    topup_traj: int = 4
+    topup_traj: int = 12
     final_traj: int = 20
     heldout_traj: int = 20
     stress_traj: int = 30
