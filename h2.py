@@ -327,7 +327,7 @@ class E2Config:
     prefix_n: int = 5
     use_prefix_debt: bool = True
 
-    delta_screen: float = 0.05
+    delta_screen: float = 0.0033
     delta_final: float = 0.0033
     delta_heldout: float = 0.0033
     delta_stress: float = 0.0033
@@ -2500,7 +2500,9 @@ class E2Runner:
 
         for g in range(start_gen, self.cfg.generations + 1):
             self.run_generation(g, init_pool)
-
+        assert all(bool(a.certified) for a in self.current_archive)
+        assert all(np.isfinite(a.rho) for a in self.current_archive)
+        assert all(bool(a.certified) for a in self.archive_history)
         report = self.final_validation(heldout_pool)
         print(json.dumps(report, indent=2))
 
@@ -2712,7 +2714,7 @@ class E2Runner:
         survivors = [
             (c, ev)
             for c, ev in med_results
-            if ev.effective_budget_min > 0 and ev.U_EBB <= 0.95 * ev.effective_budget_min
+            if ev.effective_budget_min > 0 and ev.U_EBB <= 0.9 * ev.effective_budget_min
         ]
         survivors.sort(
             key=lambda x: (
@@ -2876,7 +2878,7 @@ class E2Runner:
             "after_length": len(length_ok),
             "screened": len(screened),
             "med_fid": len(med_pool),
-            "survivors_under_0.95K": len(survivors),
+            "survivors_under_0.9K": len(survivors),
             "topup_promoted": len(updated_items),
             "candidate_validity_rate": len(updated_items) / max(1, len(raw_candidates)),
             "invalid_topup_count": len(invalid_topup_rows),
@@ -2933,8 +2935,10 @@ class E2Runner:
         ]
         certified_history.sort(key=lambda x: x.rho, reverse=True)
 
-        front = self.pareto_front()
-        front = [a for a in front if bool(a.certified) and np.isfinite(a.rho)]
+        front = [
+            a for a in self.pareto_front()
+            if bool(a.certified) and np.isfinite(a.rho)
+        ]
         final_pool = front[: self.cfg.final_keep]
 
         violations = []
@@ -2963,10 +2967,13 @@ class E2Runner:
             seed_offset=0,
         )
         final_rows = []
+        final_rows_pass = []
         for _, ev in final_pairs:
             row = self._annotate_eval(ev)
             final_rows.append(row)
-            if ev.effective_budget_min > 0 and ev.U_EBB > ev.effective_budget_min:
+            if ev.effective_budget_min > 0 and ev.U_EBB <= ev.effective_budget_min:
+                final_rows_pass.append(row)
+            else:
                 violations.append(
                     {
                         "pool": "final",
@@ -3012,10 +3019,13 @@ class E2Runner:
             seed_offset=0,
         )
         stress_rows = []
+        stress_rows_pass = []
         for _, ev in stress_pairs:
             row = self._annotate_eval(ev)
             stress_rows.append(row)
-            if ev.effective_budget_min > 0 and ev.U_EBB > ev.effective_budget_min:
+            if ev.effective_budget_min > 0 and ev.U_EBB <= ev.effective_budget_min:
+                stress_rows_pass.append(row)
+            else:
                 violations.append(
                     {
                         "pool": "stress",
@@ -3058,6 +3068,7 @@ class E2Runner:
         init_pool, heldout_pool = self.initialize(prompts)
         for g in range(1, self.cfg.generations + 1):
             self.run_generation(g, init_pool)
+
         report = self.final_validation(heldout_pool)
         print(json.dumps(report, indent=2))
 
@@ -3127,7 +3138,7 @@ def main():
     set_global_seed(cfg.seeds[0] if cfg.seeds else 42)
     prompts = load_prompt_corpus(cfg.data_dir, cfg.factscore_field)
     runner = E2Runner(cfg)
-    runner.run_resume(prompts)
+    runner.run(prompts)
 
 
 if __name__ == "__main__":
