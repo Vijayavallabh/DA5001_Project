@@ -3,12 +3,13 @@ import json
 import math
 import os
 import random
-from collections import defaultdict
+from collections import defaultdict, Counter
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import gc
+import re
 import numpy as np
 import torch
 import torch.nn as nn
@@ -441,8 +442,8 @@ class ArchiveItem:
     certified: bool
     delta_init_mean: float
     effective_budget_min: float
-    final_budget_mean: float
     N: int
+    final_budget_mean: float = 0.0
     rationale: str = ""
     novelty_tag: str = ""
     expected_rho: float = 0.0
@@ -1266,7 +1267,8 @@ class SurrogateEnsemble:
     def __init__(self, cfg, tokenizer):
         self.cfg = cfg
         self.tokenizer = tokenizer
-
+        self.val_frac = 0.15
+        self.seed = 0
         use_cuda = torch.cuda.is_available() and str(cfg.surrogate_device).startswith("cuda")
         self.device = torch.device(cfg.surrogate_device if use_cuda else "cpu")
 
@@ -1551,19 +1553,43 @@ class SurrogateEnsemble:
             chosen = np.random.choice(chosen, size=replay_n, replace=False)
         return np.asarray(chosen, dtype=np.int64)
 
-    def _make_split(self, y_safe: np.ndarray, n: int):
+    def _make_split(self, y, n):
         idx = np.arange(n)
-        if train_test_split is not None and n >= 30 and len(np.unique(y_safe.astype(int))) >= 2:
+        y = np.asarray(y)
+
+        if n < 2:
+            return idx, np.array([], dtype=int)
+
+        val_size = max(1, int(round(self.val_frac * n)))
+        if val_size >= n:
+            val_size = n - 1
+
+        counts = Counter(y.tolist())
+        min_count = min(counts.values()) if counts else 0
+        n_classes = len(counts)
+
+        can_stratify = (
+            n_classes >= 2
+            and min_count >= 2
+            and val_size >= n_classes
+            and (n - val_size) >= n_classes
+        )
+
+        if can_stratify:
             tr_idx, va_idx = train_test_split(
                 idx,
-                test_size=0.15,
-                random_state=13,
-                stratify=y_safe.astype(int),
+                test_size=val_size,
+                random_state=self.seed,
+                stratify=y,
             )
         else:
-            split = max(2, int(0.85 * n))
-            tr_idx = idx[:split]
-            va_idx = idx[split:] if split < n else idx[-2:]
+            tr_idx, va_idx = train_test_split(
+                idx,
+                test_size=val_size,
+                random_state=self.seed,
+                stratify=None,
+            )
+
         return np.asarray(tr_idx), np.asarray(va_idx)
 
     def _class_pos_weight(self, y_bin: np.ndarray) -> float:
@@ -1826,31 +1852,82 @@ class SurrogateEnsemble:
             "safe_members": safe_member_probs.astype(np.float32),
         }
 
-def dedupe_candidates(cands: List[Candidate], history_texts: List[str]) -> List[Candidate]:
+
+def _canon_text(text: str) -> str:
+    text = text.strip().lower()
+    text = re.sub(r"\s+", " ", text)
+    return text
+
+def _token_ngrams(text: str, n: int = 4):
+    toks = _canon_text(text).split()
+    if not toks:
+        return set()
+    if len(toks) < n:
+        return {" ".join(toks)}
+    return {" ".join(toks[i:i+n]) for i in range(len(toks) - n + 1)}
+
+def _jaccard(a, b) -> float:
+    if not a and not b:
+        return 1.0
+    u = a | b
+    return len(a & b) / max(1, len(u))
+
+def dedupe_candidates(
+    cands: List[Candidate],
+    history_texts: List[str],
+    near_threshold: float = 0.92,
+) -> List[Candidate]:
     out = []
-    seen = set()
-    history_set = set(t.strip() for t in history_texts)
-    history_ngrams = {t: ngrams(t, 4) for t in history_set}
+
+    history_exact = {_canon_text(t) for t in history_texts if t and t.strip()}
+    history_ngrams = [_token_ngrams(t, 4) for t in history_exact]
+
+    seen_exact = set()
+    seen_ngrams = []
 
     for c in cands:
-        text = c.prompt_text.strip()
-        if text in seen or text in history_set:
+        raw = c.prompt_text
+        canon = _canon_text(raw)
+        if not canon:
             continue
 
-        text_ngrams = ngrams(text, 4)
+        if canon in history_exact:
+            print(f"Removed candidate {c.candidate_id}: exact history duplicate")
+            continue
+        if canon in seen_exact:
+            print(f"Removed candidate {c.candidate_id}: exact same-gen duplicate")
+            continue
+
+        cand_ngrams = _token_ngrams(canon, 4)
+
         near = False
-        for _, old_ngrams in history_ngrams.items():
-            union = text_ngrams | old_ngrams
-            sim = len(text_ngrams & old_ngrams) / max(1, len(union))
-            if sim > 0.8:
+
+        # Near-dup vs history
+        for old in history_ngrams:
+            if _jaccard(cand_ngrams, old) >= near_threshold:
                 near = True
+                print(f"Removed candidate {c.candidate_id}: near duplicate (history)")
                 break
+
+        # Near-dup vs already-kept candidates in this generation
+        if not near:
+            for old in seen_ngrams:
+                if _jaccard(cand_ngrams, old) >= near_threshold:
+                    near = True
+                    print(f"Removed candidate {c.candidate_id}: near duplicate (same-gen)")
+                    break
 
         if near:
             continue
-        seen.add(text)
+
         out.append(c)
+        seen_exact.add(canon)
+        seen_ngrams.append(cand_ngrams)
+
     return out
+
+
+
 
 def filter_by_length(cands: List[Candidate], tokenizer, min_tok: int, max_tok: int) -> List[Candidate]:
     out = []
@@ -2200,8 +2277,6 @@ class E2Runner:
         self,
         candidates: List[Candidate],
         lineage_ids: List[str],
-        _n: int,
-        _delta: float,
         seed_offset: int = 0,
     ) -> List[Dict[str, Any]]:
         specs = []
@@ -2264,8 +2339,6 @@ class E2Runner:
             specs = self._candidate_specs(
                 candidates=candidates,
                 lineage_ids=lineage_ids,
-                n=n,
-                delta=delta,
                 seed_offset=seed_offset,
             )
             evals = self._eval_specs(specs, n=n, delta=delta, seed_offset=seed_offset)
@@ -2313,8 +2386,6 @@ class E2Runner:
             specs = self._candidate_specs(
                 candidates=sub_candidates,
                 lineage_ids=sub_lineages,
-                n=n_i,
-                delta=delta,
                 seed_offset=seed_offset,
             )
             evals = self._eval_specs(specs, n=n_i, delta=delta, seed_offset=seed_offset)
@@ -2453,14 +2524,53 @@ class E2Runner:
         return out
 
     def generation_candidates(self, g: int) -> List[Candidate]:
-        context = self.lineage_context() or sorted(self.current_archive, key=lambda x: x.rho, reverse=True)
+        context = self.lineage_context() or sorted(
+            self.current_archive,
+            key=lambda x: x.rho,
+            reverse=True,
+        )
+
+        if not context:
+            return []
+
+        ranked = sorted(context, key=lambda x: x.rho, reverse=True)
+
+        # Use a parent pool larger than top-3 so each call sees different parents.
+        parent_pool_k = min(len(ranked), max(6, self.cfg.archive_keep))
+        parent_pool = ranked[:parent_pool_k]
+
         out = []
-        for _ in range(self.cfg.calls_per_generation):
-            out.extend(self.optimizer.generate(g, context, self.cfg.candidates_per_call))
-        top3 = sorted(context, key=lambda x: x.rho, reverse=True)[:3]
-        if len(top3) == 3:
-            for _ in range(self.cfg.crossover_calls_per_generation):
-                out.extend(self.optimizer.crossover(g, top3, self.cfg.crossover_candidates_per_call))
+
+        for call_i in range(self.cfg.calls_per_generation):
+            if len(parent_pool) <= 3:
+                local_context = list(parent_pool)
+            else:
+                sample_k = min(len(parent_pool), 4 + (call_i % 3))
+                local_context = random.sample(parent_pool, sample_k)
+
+            random.shuffle(local_context)
+
+            # If your optimizer supports per-call seed/call_id, pass it here.
+            out.extend(
+                self.optimizer.generate(
+                    g,
+                    local_context,
+                    self.cfg.candidates_per_call,
+                )
+            )
+
+        if len(parent_pool) >= 3:
+            for call_i in range(self.cfg.crossover_calls_per_generation):
+                parents = random.sample(parent_pool, 3)
+                out.extend(
+                    self.optimizer.crossover(
+                        g,
+                        parents,
+                        self.cfg.crossover_candidates_per_call,
+                    )
+                )
+
+        random.shuffle(out)
         return out
 
     # ------------------------------------------------------------
