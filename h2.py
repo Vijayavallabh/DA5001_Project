@@ -2445,9 +2445,10 @@ class E2Runner:
         eval_rows = []
 
         for p, ev in init_pairs:
-            init_rows.append(self.to_archive_item(ev))
             eval_rows.append(self._annotate_eval(ev))
-            self.lineage_scores[f"seed_{p.prompt_id}"][0] = ev.rho
+            if ev.certified:
+                init_rows.append(self.to_archive_item(ev))
+                self.lineage_scores[f"seed_{p.prompt_id}"][0] = ev.rho
 
         self.archive_history.extend(init_rows)
         self.current_archive = list(init_rows)
@@ -2781,7 +2782,7 @@ class E2Runner:
 
             row = self._annotate_eval(ev20)
 
-            if candidate_valid:
+            if certified:
                 topup_rows.append(row)
                 item = self.to_archive_item(ev20, c)
                 updated_items.append(item)
@@ -2790,6 +2791,7 @@ class E2Runner:
                     item.rho,
                 )
             else:
+                row["rejected_reason"] = "not_certified"
                 invalid_topup_rows.append(row)
 
         self._write_jsonl(self.output_dir / f"gen_{g:02d}_topup.jsonl", topup_rows)
@@ -2924,10 +2926,19 @@ class E2Runner:
         return keep
 
     def final_validation(self, heldout_pool: List[Any]):
+
+        certified_history = [
+            a for a in self.archive_history
+            if bool(a.certified) and np.isfinite(a.rho)
+        ]
+        certified_history.sort(key=lambda x: x.rho, reverse=True)
+
         front = self.pareto_front()
+        front = [a for a in front if bool(a.certified) and np.isfinite(a.rho)]
         final_pool = front[: self.cfg.final_keep]
 
         violations = []
+
 
         final_candidates = [
             Candidate(
@@ -2977,7 +2988,7 @@ class E2Runner:
         )
         heldout_rows = [self._annotate_eval(ev) for _, ev in heldout_pairs]
 
-        stress_archive = sorted(self.archive_history, key=lambda x: x.rho, reverse=True)[: self.cfg.stress_keep]
+        stress_archive = certified_history[: self.cfg.stress_keep]
         stress_candidates = [
             Candidate(
                 candidate_id=a.candidate_id,
