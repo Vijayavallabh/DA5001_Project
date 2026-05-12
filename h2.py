@@ -306,8 +306,8 @@ class E2Config:
     data_dir: str = "data"
     output_dir: str = "output/e2_outputs"
     adaptive_eval: bool = True
-    adaptive_eval_min_traj: int = 3
-    adaptive_eval_topup_fraction: float = 0.5
+    adaptive_eval_min_traj: int = 4
+    adaptive_eval_topup_fraction: float = 0.75
     safe_model_path: str = "jacquelinehe/tinycomma-1.8b-llama3-tokenizer"
     risky_model_path: str = "meta-llama/Llama-3.1-8B-Instruct"
     eval_batch_size: int = 8
@@ -337,8 +337,8 @@ class E2Config:
     init_creative: int = 24
 
     init_traj: int = 12
-    med_fid_traj: int = 8
-    topup_traj: int = 12
+    med_fid_traj: int = 10
+    topup_traj: int = 16
     final_traj: int = 20
     heldout_traj: int = 20
     stress_traj: int = 30
@@ -351,13 +351,13 @@ class E2Config:
 
     prescreen_keep: int = 48
     med_fid_keep: int = 24
-    topup_keep: int = 8
-    archive_keep: int = 40
+    topup_keep: int = 6
+    archive_keep: int = 24
 
     ablation_random: int = 0
     ablation_no_surrogate: int = 4
 
-    final_keep: int = 8
+    final_keep: int = 6
     heldout_keep: int = 8
     stress_keep: int = 4
 
@@ -2177,7 +2177,7 @@ class E2Runner:
         if not adaptive:
             return _call_eval(specs, n_eval=n, seed_off=seed_offset)
 
-        n0 = int(getattr(self.cfg, "adaptive_eval_min_traj", 3))
+        n0 = int(getattr(self.cfg, "adaptive_eval_min_traj", 4))
         n0 = max(2, min(n0, n))
         if n0 >= n:
             return _call_eval(specs, n_eval=n, seed_off=seed_offset)
