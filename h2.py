@@ -3037,20 +3037,22 @@ class E2Runner:
                 )
 
         self._write_jsonl(self.output_dir / "final_validation.jsonl", final_rows)
+        self._write_jsonl(self.output_dir / "final_validation_pass.jsonl", final_rows_pass)
         self._write_jsonl(self.output_dir / "heldout_validation.jsonl", heldout_rows)
         self._write_jsonl(self.output_dir / "stress_validation.jsonl", stress_rows)
+        self._write_jsonl(self.output_dir / "stress_validation_pass.jsonl", stress_rows_pass)
 
-        final_rhos = [r["rho"] for r in final_rows]
+        final_rhos = [r["rho"] for r in final_rows_pass]
         heldout_rhos = [r["rho"] for r in heldout_rows]
 
         report = {
             "K": self.cfg.K,
-            "max_rho_archive": max([a.rho for a in self.archive_history], default=0.0),
-            "final_pass_rate": (
-                float(np.mean([1.0 if r["effective_budget_min"] > 0 and r["U_EBB"] <= r["effective_budget_min"] else 0.0 for r in final_rows]))
-                if final_rows
-                else 0.0
-            ),
+            "max_rho_archive": max([a.rho for a in certified_history], default=0.0),
+            "final_candidates_evaluated": len(final_rows),
+            "final_candidates_passed": len(final_rows_pass),
+            "final_pass_rate": float(len(final_rows_pass) / max(1, len(final_rows))),
+            "stress_candidates_evaluated": len(stress_rows),
+            "stress_candidates_passed": len(stress_rows_pass),
             "heldout_generalization_gap": (
                 float(np.mean(final_rhos)) - float(np.mean(heldout_rhos))
             ) if final_rhos and heldout_rhos else None,
@@ -3063,12 +3065,15 @@ class E2Runner:
         }
         self._write_json(self.output_dir / "final_report.json", report)
         return report
-
+    
     def run(self, prompts: List[Any]):
         init_pool, heldout_pool = self.initialize(prompts)
         for g in range(1, self.cfg.generations + 1):
             self.run_generation(g, init_pool)
-
+        assert all(bool(a.certified) for a in self.current_archive)
+        assert all(bool(a.certified) for a in self.archive_history)
+        assert all(np.isfinite(a.rho) for a in self.current_archive)
+        assert all(np.isfinite(a.rho) for a in self.archive_history)
         report = self.final_validation(heldout_pool)
         print(json.dumps(report, indent=2))
 
