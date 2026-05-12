@@ -2000,11 +2000,11 @@ class E2Runner:
         self.cfg = cfg
         self.output_dir = Path(cfg.output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-
+        
         self.evaluator = AnchoredEvaluator(cfg)
         self.optimizer = LocalHFOptimizer(cfg)
         self.surrogate = SurrogateEnsemble(cfg, self.evaluator.tokenizer)
-
+        self.disqualified_candidate_ids: set[str] = set()
         self.archive_history: List[ArchiveItem] = []
         self.current_archive: List[ArchiveItem] = []
         self.generation_log: List[Dict[str, Any]] = []
@@ -2012,7 +2012,33 @@ class E2Runner:
 
         self.eval_batch_size = getattr(cfg, "eval_batch_size", 8)
         self.length_bucket_width = getattr(cfg, "length_bucket_width", 32)
+    def _persist_archive_state(self) -> None:
+        self._write_json(
+            self.output_dir / "archive_history.json",
+            [asdict(x) for x in self.archive_history],
+        )
+        self._write_json(
+            self.output_dir / "archive_current.json",
+            [asdict(x) for x in self.current_archive],
+        )
 
+    def _disqualify_candidates(self, candidate_ids: List[str]) -> None:
+        bad_ids = {cid for cid in candidate_ids if cid}
+        if not bad_ids:
+            return
+
+        self.disqualified_candidate_ids.update(bad_ids)
+
+        self.archive_history = [
+            a for a in self.archive_history
+            if a.candidate_id not in bad_ids
+        ]
+        self.current_archive = [
+            a for a in self.current_archive
+            if a.candidate_id not in bad_ids
+        ]
+
+        self._persist_archive_state()
     def _write_json(self, path: Path, obj: Any):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(obj, f, indent=2, ensure_ascii=False)
@@ -2906,24 +2932,40 @@ class E2Runner:
     # ------------------------------------------------------------
 
     def pareto_front(self) -> List[ArchiveItem]:
-        if not self.current_archive:
+        pool = [
+            a for a in self.current_archive
+            if bool(a.certified)
+            and np.isfinite(a.rho)
+            and a.candidate_id not in self.disqualified_candidate_ids
+        ]
+        
+        if not pool:
             return []
-        embeds = self.surrogate.sentence_embed([a.prompt_text for a in self.current_archive])
+
+        if len(pool) == 1:
+            return list(pool)
+
+        embeds = self.surrogate.sentence_embed([a.prompt_text for a in pool])
         dists = np.sqrt(((embeds[:, None, :] - embeds[None, :, :]) ** 2).sum(-1))
         np.fill_diagonal(dists, np.inf)
         diversity = dists.min(axis=1)
 
         keep = []
-        for i, a in enumerate(self.current_archive):
+        for i, a in enumerate(pool):
             dominated = False
-            for j, b in enumerate(self.current_archive):
+            for j, b in enumerate(pool):
                 if i == j:
                     continue
-                if b.rho >= a.rho and diversity[j] >= diversity[i] and (b.rho > a.rho or diversity[j] > diversity[i]):
+                if (
+                    b.rho >= a.rho
+                    and diversity[j] >= diversity[i]
+                    and (b.rho > a.rho or diversity[j] > diversity[i])
+                ):
                     dominated = True
                     break
             if not dominated:
                 keep.append(a)
+
         keep.sort(key=lambda x: x.rho, reverse=True)
         return keep
 
@@ -2931,13 +2973,17 @@ class E2Runner:
 
         certified_history = [
             a for a in self.archive_history
-            if bool(a.certified) and np.isfinite(a.rho)
+            if bool(a.certified)
+            and np.isfinite(a.rho)
+            and a.candidate_id not in self.disqualified_candidate_ids
         ]
         certified_history.sort(key=lambda x: x.rho, reverse=True)
 
         front = [
             a for a in self.pareto_front()
-            if bool(a.certified) and np.isfinite(a.rho)
+            if bool(a.certified)
+            and np.isfinite(a.rho)
+            and a.candidate_id not in self.disqualified_candidate_ids
         ]
         final_pool = front[: self.cfg.final_keep]
 
@@ -3063,6 +3109,8 @@ class E2Runner:
             ),
             "violations": violations,
         }
+        bad_ids = [v["candidate_id"] for v in violations if v.get("candidate_id")]
+        self._disqualify_candidates(bad_ids)
         self._write_json(self.output_dir / "final_report.json", report)
         return report
     
