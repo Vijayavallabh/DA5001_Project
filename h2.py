@@ -3105,10 +3105,10 @@ def parse_args() -> E2Config:
     p.add_argument("--max-new-tokens", type=int, default=200)
     p.add_argument("--temperature", type=float, default=1.0)
     p.add_argument("--prefix-n", type=int, default=5)
-    p.add_argument("--delta-screen", type=float, default=0.05)
     p.add_argument("--delta-final", type=float, default=0.0033)
     p.add_argument("--delta-heldout", type=float, default=0.0033)
     p.add_argument("--delta-stress", type=float, default=0.0033)
+    p.add_argument("--delta-screen", type=float, default=0.0033)
     p.add_argument("--factscore-field", default="factscore_prompt")
 
     args = p.parse_args()
