@@ -2970,65 +2970,98 @@ class E2Runner:
         return keep
 
     def final_validation(self, heldout_pool: List[Any]):
+        def build_pools():
+            certified_history = [
+                a for a in self.archive_history
+                if bool(a.certified)
+                and np.isfinite(a.rho)
+                and a.candidate_id not in self.disqualified_candidate_ids
+            ]
+            certified_history.sort(key=lambda x: x.rho, reverse=True)
 
-        certified_history = [
-            a for a in self.archive_history
-            if bool(a.certified)
-            and np.isfinite(a.rho)
-            and a.candidate_id not in self.disqualified_candidate_ids
-        ]
-        certified_history.sort(key=lambda x: x.rho, reverse=True)
+            front = [
+                a for a in self.pareto_front()
+                if bool(a.certified)
+                and np.isfinite(a.rho)
+                and a.candidate_id not in self.disqualified_candidate_ids
+            ]
+            final_pool = front[: self.cfg.final_keep]
+            stress_archive = certified_history[: self.cfg.stress_keep]
+            return certified_history, final_pool, stress_archive
 
-        front = [
-            a for a in self.pareto_front()
-            if bool(a.certified)
-            and np.isfinite(a.rho)
-            and a.candidate_id not in self.disqualified_candidate_ids
-        ]
-        final_pool = front[: self.cfg.final_keep]
-
-        violations = []
-
-
-        final_candidates = [
-            Candidate(
-                candidate_id=a.candidate_id,
-                generation=999,
-                prompt_text=a.prompt_text,
-                rationale=a.rationale,
-                novelty_tag=a.novelty_tag,
-                expected_rho=a.expected_rho,
-                source=a.source,
-                parent_ids=a.parent_ids,
-                parent_lineage_ids=a.parent_lineage_ids,
-            )
-            for a in final_pool
-        ]
-        final_lineages = [a.lineage_id for a in final_pool]
-        final_pairs = self._eval_candidates_batched(
-            candidates=final_candidates,
-            lineage_ids=final_lineages,
-            n=self.cfg.final_traj,
-            delta=self.cfg.delta_final,
-            seed_offset=0,
-        )
-        final_rows = []
-        final_rows_pass = []
-        for _, ev in final_pairs:
-            row = self._annotate_eval(ev)
-            final_rows.append(row)
-            if ev.effective_budget_min > 0 and ev.U_EBB <= ev.effective_budget_min:
-                final_rows_pass.append(row)
-            else:
-                violations.append(
-                    {
-                        "pool": "final",
-                        "candidate_id": ev.candidate_id,
-                        "lineage_id": ev.lineage_id,
-                        "U_EBB": ev.U_EBB,
-                        "delta_init_mean": ev.delta_init_mean,
-                    }
+        def eval_candidate_pool(pool, n, delta, generation):
+            candidates = [
+                Candidate(
+                    candidate_id=a.candidate_id,
+                    generation=generation,
+                    prompt_text=a.prompt_text,
+                    rationale=a.rationale,
+                    novelty_tag=a.novelty_tag,
+                    expected_rho=a.expected_rho,
+                    source=a.source,
+                    parent_ids=a.parent_ids,
+                    parent_lineage_ids=a.parent_lineage_ids,
                 )
+                for a in pool
+            ]
+            lineages = [a.lineage_id for a in pool]
+            pairs = self._eval_candidates_batched(
+                candidates=candidates,
+                lineage_ids=lineages,
+                n=n,
+                delta=delta,
+                seed_offset=0,
+            )
+
+            rows = []
+            rows_pass = []
+            violations = []
+            for _, ev in pairs:
+                row = self._annotate_eval(ev)
+                rows.append(row)
+                if ev.effective_budget_min > 0 and ev.U_EBB <= ev.effective_budget_min:
+                    rows_pass.append(row)
+                else:
+                    violations.append(
+                        {
+                            "candidate_id": ev.candidate_id,
+                            "lineage_id": ev.lineage_id,
+                            "U_EBB": ev.U_EBB,
+                            "delta_init_mean": ev.delta_init_mean,
+                        }
+                    )
+            return rows, rows_pass, violations
+
+        certified_history, final_pool, stress_archive = build_pools()
+
+        final_rows, final_rows_pass, final_viol = eval_candidate_pool(
+            final_pool, self.cfg.final_traj, self.cfg.delta_final, 999
+        )
+        stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
+            stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000
+        )
+
+        violations = (
+            [{"pool": "final", **v} for v in final_viol] +
+            [{"pool": "stress", **v} for v in stress_viol]
+        )
+
+        bad_ids = [v["candidate_id"] for v in violations if v.get("candidate_id")]
+        if bad_ids:
+            self._disqualify_candidates(bad_ids)
+            certified_history, final_pool, stress_archive = build_pools()
+
+            final_rows, final_rows_pass, final_viol = eval_candidate_pool(
+                final_pool, self.cfg.final_traj, self.cfg.delta_final, 999
+            )
+            stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
+                stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000
+            )
+
+            violations = (
+                [{"pool": "final", **v} for v in final_viol] +
+                [{"pool": "stress", **v} for v in stress_viol]
+            )
 
         heldout_pairs = self._eval_prompts_batched(
             prompts=heldout_pool[: self.cfg.heldout_keep],
@@ -3040,48 +3073,7 @@ class E2Runner:
             lineage_prefix="heldout_",
         )
         heldout_rows = [self._annotate_eval(ev) for _, ev in heldout_pairs]
-
-        stress_archive = certified_history[: self.cfg.stress_keep]
-        stress_candidates = [
-            Candidate(
-                candidate_id=a.candidate_id,
-                generation=1000,
-                prompt_text=a.prompt_text,
-                rationale=a.rationale,
-                novelty_tag=a.novelty_tag,
-                expected_rho=a.expected_rho,
-                source=a.source,
-                parent_ids=a.parent_ids,
-                parent_lineage_ids=a.parent_lineage_ids,
-            )
-            for a in stress_archive
-        ]
-        stress_lineages = [a.lineage_id for a in stress_archive]
-        stress_pairs = self._eval_candidates_batched(
-            candidates=stress_candidates,
-            lineage_ids=stress_lineages,
-            n=self.cfg.stress_traj,
-            delta=self.cfg.delta_stress,
-            seed_offset=0,
-        )
-        stress_rows = []
-        stress_rows_pass = []
-        for _, ev in stress_pairs:
-            row = self._annotate_eval(ev)
-            stress_rows.append(row)
-            if ev.effective_budget_min > 0 and ev.U_EBB <= ev.effective_budget_min:
-                stress_rows_pass.append(row)
-            else:
-                violations.append(
-                    {
-                        "pool": "stress",
-                        "candidate_id": ev.candidate_id,
-                        "lineage_id": ev.lineage_id,
-                        "U_EBB": ev.U_EBB,
-                        "delta_init_mean": ev.delta_init_mean,
-                    }
-                )
-
+        
         self._write_jsonl(self.output_dir / "final_validation.jsonl", final_rows)
         self._write_jsonl(self.output_dir / "final_validation_pass.jsonl", final_rows_pass)
         self._write_jsonl(self.output_dir / "heldout_validation.jsonl", heldout_rows)
@@ -3109,8 +3101,7 @@ class E2Runner:
             ),
             "violations": violations,
         }
-        bad_ids = [v["candidate_id"] for v in violations if v.get("candidate_id")]
-        self._disqualify_candidates(bad_ids)
+
         self._write_json(self.output_dir / "final_report.json", report)
         return report
     
