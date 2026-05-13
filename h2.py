@@ -2009,7 +2009,7 @@ class E2Runner:
         self.current_archive: List[ArchiveItem] = []
         self.generation_log: List[Dict[str, Any]] = []
         self.lineage_scores = defaultdict(dict)
-
+        self.disqualified_lineage_ids: set[str] = set()
         self.eval_batch_size = getattr(cfg, "eval_batch_size", 8)
         self.length_bucket_width = getattr(cfg, "length_bucket_width", 32)
     def _persist_archive_state(self) -> None:
@@ -2022,23 +2022,53 @@ class E2Runner:
             [asdict(x) for x in self.current_archive],
         )
 
-    def _disqualify_candidates(self, candidate_ids: List[str]) -> None:
-        bad_ids = {cid for cid in candidate_ids if cid}
-        if not bad_ids:
+    def _persist_archive_state(self) -> None:
+        self._write_json(
+            self.output_dir / "archive_history.json",
+            [asdict(x) for x in self.archive_history],
+        )
+        self._write_json(
+            self.output_dir / "archive_current.json",
+            [asdict(x) for x in self.current_archive],
+        )
+    def _eligible_archive_items(self, items: List[ArchiveItem]) -> List[ArchiveItem]:
+        banned_ids = getattr(self, "disqualified_candidate_ids", set())
+        banned_lineages = getattr(self, "disqualified_lineage_ids", set())
+
+        return [
+            a for a in items
+            if bool(a.certified)
+            and np.isfinite(a.rho)
+            and a.candidate_id not in banned_ids
+            and a.lineage_id not in banned_lineages
+        ]
+    def _disqualify_violations(self, violations: List[dict]) -> None:
+        bad_ids = {v["candidate_id"] for v in violations if v.get("candidate_id")}
+        bad_lineages = {v["lineage_id"] for v in violations if v.get("lineage_id")}
+
+        if not bad_ids and not bad_lineages:
             return
 
         self.disqualified_candidate_ids.update(bad_ids)
+        self.disqualified_lineage_ids.update(bad_lineages)
 
         self.archive_history = [
             a for a in self.archive_history
             if a.candidate_id not in bad_ids
+            and a.lineage_id not in bad_lineages
         ]
         self.current_archive = [
             a for a in self.current_archive
             if a.candidate_id not in bad_ids
+            and a.lineage_id not in bad_lineages
         ]
 
         self._persist_archive_state()
+
+    def _disqualify_candidates(self, candidate_ids: List[str]) -> None:
+        self._disqualify_violations(
+            [{"candidate_id": cid, "lineage_id": None} for cid in candidate_ids if cid]
+        )
     def _write_json(self, path: Path, obj: Any):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(obj, f, indent=2, ensure_ascii=False)
@@ -2932,13 +2962,7 @@ class E2Runner:
     # ------------------------------------------------------------
 
     def pareto_front(self) -> List[ArchiveItem]:
-        pool = [
-            a for a in self.current_archive
-            if bool(a.certified)
-            and np.isfinite(a.rho)
-            and a.candidate_id not in self.disqualified_candidate_ids
-        ]
-        
+        pool = self._eligible_archive_items(self.current_archive)
         if not pool:
             return []
 
@@ -2971,12 +2995,7 @@ class E2Runner:
 
     def final_validation(self, heldout_pool: List[Any]):
         def build_pools():
-            certified_history = [
-                a for a in self.archive_history
-                if bool(a.certified)
-                and np.isfinite(a.rho)
-                and a.candidate_id not in self.disqualified_candidate_ids
-            ]
+            certified_history = self._eligible_archive_items(self.archive_history)
             certified_history.sort(key=lambda x: x.rho, reverse=True)
 
             front = [
@@ -3046,22 +3065,20 @@ class E2Runner:
             [{"pool": "stress", **v} for v in stress_viol]
         )
 
-        bad_ids = [v["candidate_id"] for v in violations if v.get("candidate_id")]
-        if bad_ids:
-            self._disqualify_candidates(bad_ids)
-            certified_history, final_pool, stress_archive = build_pools()
+        self._disqualify_violations(violations)
+        certified_history, final_pool, stress_archive = build_pools()
 
-            final_rows, final_rows_pass, final_viol = eval_candidate_pool(
-                final_pool, self.cfg.final_traj, self.cfg.delta_final, 999
-            )
-            stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
-                stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000
-            )
+        final_rows, final_rows_pass, final_viol = eval_candidate_pool(
+            final_pool, self.cfg.final_traj, self.cfg.delta_final, 999
+        )
+        stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
+            stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000
+        )
 
-            violations = (
-                [{"pool": "final", **v} for v in final_viol] +
-                [{"pool": "stress", **v} for v in stress_viol]
-            )
+        violations = (
+            [{"pool": "final", **v} for v in final_viol] +
+            [{"pool": "stress", **v} for v in stress_viol]
+        )
 
         heldout_pairs = self._eval_prompts_batched(
             prompts=heldout_pool[: self.cfg.heldout_keep],
