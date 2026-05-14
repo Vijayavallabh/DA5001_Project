@@ -2998,17 +2998,12 @@ class E2Runner:
             certified_history = self._eligible_archive_items(self.archive_history)
             certified_history.sort(key=lambda x: x.rho, reverse=True)
 
-            front = [
-                a for a in self.pareto_front()
-                if bool(a.certified)
-                and np.isfinite(a.rho)
-                and a.candidate_id not in self.disqualified_candidate_ids
-            ]
+            front = self.pareto_front()
             final_pool = front[: self.cfg.final_keep]
             stress_archive = certified_history[: self.cfg.stress_keep]
             return certified_history, final_pool, stress_archive
 
-        def eval_candidate_pool(pool, n, delta, generation):
+        def eval_candidate_pool(pool, n, delta, generation, pool_name):
             candidates = [
                 Candidate(
                     candidate_id=a.candidate_id,
@@ -3043,6 +3038,7 @@ class E2Runner:
                 else:
                     violations.append(
                         {
+                            "pool": pool_name,
                             "candidate_id": ev.candidate_id,
                             "lineage_id": ev.lineage_id,
                             "U_EBB": ev.U_EBB,
@@ -3051,34 +3047,48 @@ class E2Runner:
                     )
             return rows, rows_pass, violations
 
-        certified_history, final_pool, stress_archive = build_pools()
+        max_cleanup_rounds = 5
+        seen_bad_pairs = set()
 
-        final_rows, final_rows_pass, final_viol = eval_candidate_pool(
-            final_pool, self.cfg.final_traj, self.cfg.delta_final, 999
-        )
-        stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
-            stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000
-        )
+        final_rows = []
+        final_rows_pass = []
+        stress_rows = []
+        stress_rows_pass = []
+        violations = []
+        certified_history = []
 
-        violations = (
-            [{"pool": "final", **v} for v in final_viol] +
-            [{"pool": "stress", **v} for v in stress_viol]
-        )
+        for _ in range(max_cleanup_rounds):
+            certified_history, final_pool, stress_archive = build_pools()
 
-        self._disqualify_violations(violations)
-        certified_history, final_pool, stress_archive = build_pools()
+            for a in final_pool:
+                assert a.candidate_id not in self.disqualified_candidate_ids
+                assert a.lineage_id not in self.disqualified_lineage_ids
 
-        final_rows, final_rows_pass, final_viol = eval_candidate_pool(
-            final_pool, self.cfg.final_traj, self.cfg.delta_final, 999
-        )
-        stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
-            stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000
-        )
+            for a in stress_archive:
+                assert a.candidate_id not in self.disqualified_candidate_ids
+                assert a.lineage_id not in self.disqualified_lineage_ids
 
-        violations = (
-            [{"pool": "final", **v} for v in final_viol] +
-            [{"pool": "stress", **v} for v in stress_viol]
-        )
+            final_rows, final_rows_pass, final_viol = eval_candidate_pool(
+                final_pool, self.cfg.final_traj, self.cfg.delta_final, 999, "final"
+            )
+            stress_rows, stress_rows_pass, stress_viol = eval_candidate_pool(
+                stress_archive, self.cfg.stress_traj, self.cfg.delta_stress, 1000, "stress"
+            )
+
+            violations = final_viol + stress_viol
+            if not violations:
+                break
+
+            new_bad_pairs = {
+                (v.get("candidate_id"), v.get("lineage_id"))
+                for v in violations
+            } - seen_bad_pairs
+
+            if not new_bad_pairs:
+                break
+
+            seen_bad_pairs |= new_bad_pairs
+            self._disqualify_violations(violations)
 
         heldout_pairs = self._eval_prompts_batched(
             prompts=heldout_pool[: self.cfg.heldout_keep],
@@ -3090,7 +3100,7 @@ class E2Runner:
             lineage_prefix="heldout_",
         )
         heldout_rows = [self._annotate_eval(ev) for _, ev in heldout_pairs]
-        
+
         self._write_jsonl(self.output_dir / "final_validation.jsonl", final_rows)
         self._write_jsonl(self.output_dir / "final_validation_pass.jsonl", final_rows_pass)
         self._write_jsonl(self.output_dir / "heldout_validation.jsonl", heldout_rows)
@@ -3121,7 +3131,7 @@ class E2Runner:
 
         self._write_json(self.output_dir / "final_report.json", report)
         return report
-    
+        
     def run(self, prompts: List[Any]):
         init_pool, heldout_pool = self.initialize(prompts)
         for g in range(1, self.cfg.generations + 1):
