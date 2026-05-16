@@ -1,0 +1,170 @@
+[
+  {
+    "generation": 1,
+    "raw_candidates": 76,
+    "after_dedup": 75,
+    "after_length": 48,
+    "screened": 48,
+    "med_fid": 24,
+    "survivors_under_0.9K": 23,
+    "topup_promoted": 6,
+    "candidate_validity_rate": 0.07894736842105263,
+    "invalid_topup_count": 0,
+    "surrogate": {
+      "ready": true,
+      "rows": 93,
+      "train_rows": 85,
+      "val_rows": 14,
+      "replay_rows": 37,
+      "safe_rate": 1.0,
+      "unsafe_rate": 0.0,
+      "feature_dim": 518,
+      "ensemble_size": 5
+    },
+    "surrogate_screen": {
+      "mode": "surrogate",
+      "ready": true,
+      "length_ok": 48,
+      "keep_n": 48,
+      "exploit_k": 29,
+      "boundary_k": 10,
+      "explore_k": 9,
+      "safe_mean_max": 0.9990304112434387,
+      "safe_mean_min": 0.9951508641242981,
+      "safe_sigma_mean": 0.0007326649501919746,
+      "margin_mean": 0.6065581440925598
+    },
+    "dpp": {
+      "mode": "greedy_quality_diversity",
+      "quality_weight": 0.5,
+      "diversity_weight": 0.5
+    },
+    "best_rho": 0.6482185759475613
+  },
+  {
+    "generation": 2,
+    "raw_candidates": 76,
+    "after_dedup": 76,
+    "after_length": 56,
+    "screened": 48,
+    "med_fid": 24,
+    "survivors_under_0.9K": 22,
+    "topup_promoted": 6,
+    "candidate_validity_rate": 0.07894736842105263,
+    "invalid_topup_count": 0,
+    "surrogate": {
+      "ready": true,
+      "rows": 99,
+      "train_rows": 91,
+      "val_rows": 15,
+      "replay_rows": 39,
+      "safe_rate": 1.0,
+      "unsafe_rate": 0.0,
+      "feature_dim": 518,
+      "ensemble_size": 5
+    },
+    "surrogate_screen": {
+      "mode": "surrogate",
+      "ready": true,
+      "length_ok": 56,
+      "keep_n": 48,
+      "exploit_k": 29,
+      "boundary_k": 10,
+      "explore_k": 9,
+      "safe_mean_max": 0.9992465972900391,
+      "safe_mean_min": 0.9954274296760559,
+      "safe_sigma_mean": 0.0007794126286171377,
+      "margin_mean": 0.5961934924125671
+    },
+    "dpp": {
+      "mode": "greedy_quality_diversity",
+      "quality_weight": 0.5,
+      "diversity_weight": 0.5
+    },
+    "best_rho": 0.6482185759475613
+  },
+  {
+    "generation": 3,
+    "raw_candidates": 76,
+    "after_dedup": 76,
+    "after_length": 72,
+    "screened": 48,
+    "med_fid": 24,
+    "survivors_under_0.9K": 21,
+    "topup_promoted": 6,
+    "candidate_validity_rate": 0.07894736842105263,
+    "invalid_topup_count": 0,
+    "surrogate": {
+      "ready": true,
+      "rows": 105,
+      "train_rows": 94,
+      "val_rows": 16,
+      "replay_rows": 42,
+      "safe_rate": 1.0,
+      "unsafe_rate": 0.0,
+      "feature_dim": 518,
+      "ensemble_size": 5
+    },
+    "surrogate_screen": {
+      "mode": "surrogate",
+      "ready": true,
+      "length_ok": 72,
+      "keep_n": 48,
+      "exploit_k": 29,
+      "boundary_k": 10,
+      "explore_k": 9,
+      "safe_mean_max": 0.9993604421615601,
+      "safe_mean_min": 0.9971872568130493,
+      "safe_sigma_mean": 0.0004901022766716778,
+      "margin_mean": 0.4862433671951294
+    },
+    "dpp": {
+      "mode": "greedy_quality_diversity",
+      "quality_weight": 0.5,
+      "diversity_weight": 0.5
+    },
+    "best_rho": 0.759764003804805
+  },
+  {
+    "generation": 4,
+    "raw_candidates": 76,
+    "after_dedup": 76,
+    "after_length": 71,
+    "screened": 48,
+    "med_fid": 24,
+    "survivors_under_0.9K": 21,
+    "topup_promoted": 5,
+    "candidate_validity_rate": 0.06578947368421052,
+    "invalid_topup_count": 1,
+    "surrogate": {
+      "ready": true,
+      "rows": 111,
+      "train_rows": 99,
+      "val_rows": 17,
+      "replay_rows": 44,
+      "safe_rate": 1.0,
+      "unsafe_rate": 0.0,
+      "feature_dim": 518,
+      "ensemble_size": 5
+    },
+    "surrogate_screen": {
+      "mode": "surrogate",
+      "ready": true,
+      "length_ok": 71,
+      "keep_n": 48,
+      "exploit_k": 29,
+      "boundary_k": 10,
+      "explore_k": 9,
+      "safe_mean_max": 0.9997525215148926,
+      "safe_mean_min": 0.9987127184867859,
+      "safe_sigma_mean": 0.00020804442465305328,
+      "margin_mean": 0.575681746006012
+    },
+    "dpp": {
+      "mode": "greedy_quality_diversity",
+      "quality_weight": 0.5,
+      "diversity_weight": 0.5
+    },
+    "best_rho": 0.759764003804805
+  }
+]

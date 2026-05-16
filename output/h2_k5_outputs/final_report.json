@@ -1,0 +1,12 @@
+{
+  "K": 1000.0,
+  "max_rho_archive": 0.759764003804805,
+  "final_candidates_evaluated": 5,
+  "final_candidates_passed": 5,
+  "final_pass_rate": 1.0,
+  "stress_candidates_evaluated": 4,
+  "stress_candidates_passed": 4,
+  "heldout_generalization_gap": 0.4112970178398916,
+  "candidate_validity_rate_mean": 0.0756578947368421,
+  "violations": []
+}
