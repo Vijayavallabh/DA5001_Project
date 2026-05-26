@@ -170,7 +170,48 @@ def fig_spend_distributions():
     print("wrote spend_distributions.pdf")
 
 
+def fig_r_eff_comparison():
+    # Hardcoded from h1_summary.json (R-version) and recomputed R_eff-version
+    classes = ["neutral", "val", "test", "attack\\_train", "factual", "creative"]
+    k3_R = [184.96, 191.57, 206.34, 224.67, 193.68, 204.41]
+    k3_Reff = [168.24, 166.83, 181.57, 187.63, 170.53, 180.94]
+    k5_R = [192.45, 192.88, 207.82, 226.95, 195.84, 215.00]
+    k5_Reff = [175.77, 167.95, 185.09, 189.92, 171.53, 190.75]
+
+    fig, axes = plt.subplots(1, 2, figsize=(8.0, 3.4), sharey=True)
+    x = np.arange(len(classes))
+    width = 0.38
+
+    for ax, R_vals, Reff_vals, k, K in [
+        (axes[0], k3_R, k3_Reff, 3, 600),
+        (axes[1], k5_R, k5_Reff, 5, 1000),
+    ]:
+        ax.bar(x - width / 2, R_vals, width, color="#c0392b", alpha=0.85,
+               edgecolor="black", linewidth=0.4, label=r"$R$ (as run)")
+        ax.bar(x + width / 2, Reff_vals, width, color="#27ae60", alpha=0.85,
+               edgecolor="black", linewidth=0.4, label=r"$R_{\mathrm{eff}}$ (tighter)")
+
+        for i, (a, b) in enumerate(zip(R_vals, Reff_vals)):
+            ax.annotate(f"$-${a - b:.0f}", (x[i], b + 4), ha="center", fontsize=7, color="#196e36")
+
+        ax.set_xticks(x)
+        ax.set_xticklabels([c.replace("\\_", "_") for c in classes], rotation=30, ha="right")
+        ax.set_title(fr"$k={k}\;(K={K})$")
+        ax.grid(True, axis="y", alpha=0.3)
+        if k == 3:
+            ax.set_ylabel(r"$U_{\mathrm{EBB}}$")
+        ax.legend(loc="upper left", framealpha=0.92, fontsize=7.5)
+        ax.set_ylim(0, 270)
+
+    fig.tight_layout()
+    fig.savefig(OUT / "r_eff_comparison.pdf", bbox_inches="tight")
+    fig.savefig(OUT / "r_eff_comparison.png", bbox_inches="tight")
+    plt.close(fig)
+    print("wrote r_eff_comparison.pdf")
+
+
 if __name__ == "__main__":
     fig_heldout_scatter()
     fig_bernstein_term()
     fig_spend_distributions()
+    fig_r_eff_comparison()
