@@ -203,40 +203,62 @@ class AnchoredDecodingFactory:
         self.kl_stats_history = []
 
     def get_kl_stats_summary(self) -> dict:
-        if not self.log_kl_stats or not self.kl_stats_history:
-            return {}
+        if not hasattr(self, "kl_stats_history") or not self.kl_stats_history:
+            return {
+                "per_step": [],
+                "final_cum_kl_spent_per_seq": [0.0],
+                "final_budget_per_seq": [0.0],
+                "budget_utilization_per_seq": [0.0],
+            }
 
-        per_step = self.kl_stats_history
+        per_step = []
+        for step in self.kl_stats_history:
+            row = dict(step)
+            for key, value in list(row.items()):
+                if isinstance(value, torch.Tensor):
+                    value = value.detach().cpu()
+                    if value.ndim == 0:
+                        row[key] = value.item()
+                    else:
+                        row[key] = value.tolist()
+                elif isinstance(value, np.ndarray):
+                    row[key] = value.tolist()
+                elif isinstance(value, tuple):
+                    row[key] = list(value)
+            per_step.append(row)
 
-        n_steps = len(per_step)
-        batch_size = len(per_step[0].get("cum_kl_spent", []))
+        last = per_step[-1]
 
-        final_cum_kl_spent_per_seq = per_step[-1].get("cum_kl_spent", [0.0] * batch_size)
-        budget_so_far_per_seq = per_step[-1].get("budget_so_far", [0.0] * batch_size)
+        def _as_list(x, default=0.0):
+            if x is None:
+                return [default]
+            if isinstance(x, list):
+                return x
+            return [x]
 
-        final_budget_per_seq = []
-        for i in range(batch_size):
-            final_budget = (
-                budget_so_far_per_seq[i]
-                if isinstance(budget_so_far_per_seq[i], (int, float))
-                else budget_so_far_per_seq[i]
-            )
-            final_budget_per_seq.append(float(final_budget))
+        final_cum = _as_list(last.get("cum_kl_spent", last.get("cumklspent", None)), default=0.0)
+        final_budget = _as_list(last.get("budget_so_far", last.get("budgetsofar", None)), default=0.0)
 
-        budget_utilization_per_seq = []
-        for i in range(batch_size):
-            if final_budget_per_seq[i] > 0:
-                util = final_cum_kl_spent_per_seq[i] / final_budget_per_seq[i]
+        n = max(len(final_cum), len(final_budget))
+        if len(final_cum) < n:
+            final_cum = final_cum + [final_cum[-1] if final_cum else 0.0] * (n - len(final_cum))
+        if len(final_budget) < n:
+            final_budget = final_budget + [final_budget[-1] if final_budget else 0.0] * (n - len(final_budget))
+
+        budget_util = []
+        for spend, budget in zip(final_cum, final_budget):
+            spend = float(spend)
+            budget = float(budget)
+            if np.isfinite(budget) and abs(budget) > 1e-12:
+                budget_util.append(spend / budget)
             else:
-                util = 0.0
-            budget_utilization_per_seq.append(float(util))
+                budget_util.append(0.0)
 
         return {
-            "n_steps": n_steps,
             "per_step": per_step,
-            "final_cum_kl_spent_per_seq": final_cum_kl_spent_per_seq,
-            "final_budget_per_seq": final_budget_per_seq,
-            "budget_utilization_per_seq": budget_utilization_per_seq,
+            "final_cum_kl_spent_per_seq": [float(x) for x in final_cum],
+            "final_budget_per_seq": [float(x) for x in final_budget],
+            "budget_utilization_per_seq": [float(x) for x in budget_util],
         }
 
     @torch.no_grad()
@@ -431,9 +453,12 @@ class AnchoredDecodingFactory:
         k_eff = min(int(k), llr.size(1))
         if k_eff <= 0:
             return torch.zeros(llr.size(0), device=llr.device, dtype=torch.float32)
-        topk_vals = torch.topk(masked, k_eff, dim=1).values
-        topk_vals = topk_vals.masked_fill(topk_vals == float("-inf"), 0.0)
-        debt = topk_vals.sum(dim=1).clamp(min=0.0)
+        vals, _ = masked.topk(k_eff, dim=-1, largest=True)
+        chosen = torch.isfinite(vals)
+        vals = torch.where(chosen, vals, torch.zeros_like(vals))
+        denom = chosen.sum(dim=-1).clamp(min=1).to(torch.float32)
+        debt = vals.sum(dim=-1) / denom
+        debt = torch.where(chosen.any(dim=-1), debt, torch.zeros_like(debt))
         return debt.to(torch.float32)
 
     def solve_optimization_newton(

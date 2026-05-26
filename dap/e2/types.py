@@ -8,7 +8,7 @@ class E2Config:
     output_dir: str = "output/e2_outputs"
     adaptive_eval: bool = True
     adaptive_eval_min_traj: int = 4
-    adaptive_eval_topup_fraction: float = 0.75
+    adaptive_eval_topup_fraction: float = 0.5
     safe_model_path: str = "jacquelinehe/tinycomma-1.8b-llama3-tokenizer"
     risky_model_path: str = "meta-llama/Llama-3.1-8B-Instruct"
     eval_batch_size: int = 8

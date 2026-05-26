@@ -15,7 +15,13 @@
 - [x] session-handoff.md template created
 - [x] progress.md created (this file)
 - [x] Monolithic a_patch.py/h1.py/h2.py refactored into a_patch/ + dap/ packages
-- [x] Fixed refactoring regression: simplified `solve_optimization_newton` and `_get_logp_from_weights` diverged from original robust `_solve_theta_newton`. Restored original theta-space solver with `mask_force_pc`, `mask_use_pd`, feasibility projection, and NaN-safe log-space renormalization.
+- [x] Fixed _solve_theta_newton regression (restored original robust implementation)
+- [x] Fixed _get_logp_from_weights regression (restored log-space renormalization with NaN guards)
+- [x] Fixed _compute_prefix_debt_fast: was computing SUM instead of MEAN of top-k positive LLRs, inflating prefix debt by up to k_eff×
+- [x] Fixed get_kl_stats_summary: restored structured-zero dict with type narrowing and NaN/inf budget handling
+- [x] Fixed lineage_id_for_candidate: Python hash() → deterministic stable_hash()
+- [x] Fixed adaptive_eval_topup_fraction default: 0.75 → 0.5 (matches original)
+- [x] Intentional improvement: ebb_upper_bound_chapman now uses empirical-R variant (from h2.py) for both experiments — tighter bound, same statistical guarantee
 
 ### What's In Progress
 

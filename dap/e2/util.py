@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 
+from dap.stats import stable_hash
+
 
 def set_global_seed(seed: int = 42):
     random.seed(seed)
@@ -137,7 +139,7 @@ def lineage_id_for_candidate(c, archive: List) -> str:
         if sim > best:
             best = sim
             nearest = a.lineage_id
-    return nearest or f"lineage_{hash(c.prompt_text)}"
+    return nearest or f"lineage_{stable_hash(c.prompt_text)}"
 
 
 def k_dpp_select(embeddings: np.ndarray, quality: np.ndarray, k: int) -> Tuple[List[int], Dict[str, Any]]:
