@@ -436,64 +436,147 @@ class AnchoredDecodingFactory:
         debt = topk_vals.sum(dim=1).clamp(min=0.0)
         return debt.to(torch.float32)
 
-    def solve_optimization_newton(self, safe_logits, risky_logits, k_t, return_details=False):
-        B, V = safe_logits.shape
-        device = safe_logits.device
-        dtype = safe_logits.dtype
-
-        log_pc = F.log_softmax(safe_logits.float(), dim=-1)
-        log_pd = F.log_softmax(risky_logits.float(), dim=-1)
-
-        valid = k_t > 0
-
-        if valid.any():
-            n_iter = self.solver_max_iter
-            lam = torch.full((B,), 1.0, device=device, dtype=torch.float64)
-            safe_w = torch.ones((B, 1), device=device, dtype=torch.float64)
-            risky_w = torch.ones((B, 1), device=device, dtype=torch.float64)
-            ln2 = 0.6931471805599453
-
-            for iteration in range(n_iter):
-                lam_exp = torch.exp(-lam)
-                safe_w = 1.0 / (1.0 + lam_exp.unsqueeze(-1))
-                risky_w = lam_exp.unsqueeze(-1) / (1.0 + lam_exp.unsqueeze(-1))
-
-                p_star = safe_w * log_pc.exp() + risky_w * log_pd.exp()
-                p_star = p_star / p_star.sum(dim=-1, keepdim=True).clamp(min=1e-30)
-
-                kl_pc = torch.nan_to_num(p_star * (p_star.log() - log_pc), nan=0.0, posinf=float("inf"), neginf=0.0).sum(dim=-1).clamp(min=0.0)
-                kl_pd = torch.nan_to_num(p_star * (p_star.log() - log_pd), nan=0.0, posinf=float("inf"), neginf=0.0).sum(dim=-1).clamp(min=0.0)
-
-                f = kl_pc.double() + lam.double() * kl_pd.double()
-                g = kl_pd.double() - (k_t.double() / ln2)
-
-                grad = f - f + g
-                hess = ((kl_pd**2).double() - (kl_pc * kl_pd).double()) - (kl_pd * kl_pc).double() + (kl_pc**2).double()
-                hess = hess.clamp(min=1e-8)
-
-                step = grad / hess
-                lam = lam - step
-                lam = lam.clamp(min=-30.0, max=30.0)
-
-                if step.abs().max().item() < 1e-6:
-                    break
-
-            bc = safe_w.float()
-            bd = risky_w.float()
-        else:
-            bc = torch.ones((B, 1), device=device, dtype=dtype)
-            bd = torch.zeros((B, 1), device=device, dtype=dtype)
-
+    def solve_optimization_newton(
+        self,
+        safe_logits: torch.Tensor,
+        risky_logits: torch.Tensor,
+        k_radius,  # float or Tensor [B]
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        bc, bd, log_pc, log_pd = self._solve_theta_newton(
+            safe_logits, risky_logits, k_radius, max_iter=self.solver_max_iter
+        )
+        assert torch.allclose(
+            (bc + bd).float(), torch.ones_like((bc + bd).float()), atol=1e-5, rtol=0.0
+        )
         return bc, bd, log_pc, log_pd
 
-    def _get_logp_from_weights(self, bc, bd, log_pc, log_pd):
-        pc = log_pc.exp()
-        pd = log_pd.exp()
-        p_star = bc * pc + bd * pd
-        p_star = p_star / p_star.sum(dim=-1, keepdim=True).clamp(min=1e-30)
-        log_p_star = p_star.log()
-        next_token_logits = p_star.log()
-        return log_p_star, log_pc, next_token_logits
+    def _get_logp_from_weights(
+        self,
+        bc: torch.Tensor,
+        bd: torch.Tensor,
+        log_pc: torch.Tensor,
+        log_pd: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        if bc.dim() == 2 and bc.size(1) == 1:
+            bc = bc.squeeze(1)
+        if bd.dim() == 2 and bd.size(1) == 1:
+            bd = bd.squeeze(1)
+
+        term_d = bd.unsqueeze(-1) * log_pd
+        term_c = bc.unsqueeze(-1) * log_pc
+
+        term_d = torch.nan_to_num(term_d, nan=0.0)
+        term_c = torch.nan_to_num(term_c, nan=0.0)
+
+        next_token_logits = term_d + term_c
+
+        log_p = F.log_softmax(next_token_logits, dim=-1)
+
+        return log_p, log_pc, next_token_logits
+
+    def _solve_theta_newton(
+        self,
+        safe_logits: torch.Tensor,
+        risky_logits: torch.Tensor,
+        k_radius,
+        max_iter: int = 20,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        device = safe_logits.device
+        B, V = safe_logits.shape
+
+        log_pd = F.log_softmax(risky_logits.float(), dim=-1)
+        log_pc = F.log_softmax(safe_logits.float(), dim=-1)
+
+        k_t = torch.as_tensor(k_radius, device=device, dtype=torch.float32)
+        if k_t.ndim == 0:
+            k_t = k_t.expand(B)
+        else:
+            k_t = k_t.view(-1)
+            assert k_t.numel() == B, f"k_t must be scalar or shape [B], got {k_t.shape}"
+
+        mask_force_pc = k_t <= 0.0
+
+        KL_pd_pc = self._safe_kl_terms(log_pd, log_pc)
+
+        mask_use_pd = (KL_pd_pc <= k_t) & (~mask_force_pc)
+
+        active = ~(mask_force_pc | mask_use_pd)
+
+        w_c = torch.empty((B, 1), device=device, dtype=torch.float32)
+        w_d = torch.empty((B, 1), device=device, dtype=torch.float32)
+
+        w_c[mask_force_pc] = 1.0
+        w_d[mask_force_pc] = 0.0
+        w_c[mask_use_pd] = 0.0
+        w_d[mask_use_pd] = 1.0
+
+        if not active.any():
+            return w_c, w_d, log_pc, log_pd
+
+        log_pc_a = log_pc[active]
+        log_pd_a = log_pd[active]
+        k_a = k_t[active]
+        Ba = log_pc_a.size(0)
+
+        a = log_pd_a - log_pc_a
+        a = torch.nan_to_num(a, nan=0.0, posinf=0.0, neginf=0.0)
+
+        def kl_theta(th: torch.Tensor) -> torch.Tensor:
+            q_log_unnorm = log_pc_a + th[:, None] * a
+            logZ = torch.logsumexp(q_log_unnorm, dim=-1)
+            log_q = q_log_unnorm - logZ[:, None]
+            return self._safe_kl_terms(log_q, log_pc_a)
+
+        lo = torch.zeros(Ba, device=device, dtype=torch.float32)
+        hi = torch.ones(Ba, device=device, dtype=torch.float32)
+
+        theta = torch.clamp(k_a / (k_a + 1.0), 1e-4, 1.0 - 1e-4)
+
+        eps = 1e-9
+
+        for _ in range(max_iter):
+            q = log_pc_a + theta[:, None] * a
+            logZ = torch.logsumexp(q, dim=-1)
+            q.sub_(logZ[:, None])
+            q.exp_()
+
+            mean_a = (q * a).sum(dim=-1)
+            mean_a2 = (q * (a * a)).sum(dim=-1)
+            var_a = (mean_a2 - mean_a * mean_a).clamp_min(0.0)
+
+            KL = theta * mean_a - logZ
+            KL = torch.nan_to_num(KL, nan=float("inf"), posinf=float("inf"), neginf=0.0)
+
+            f = KL - k_a
+
+            hi = torch.where(f > 0, theta, hi)
+            lo = torch.where(f <= 0, theta, lo)
+
+            fp = (theta * var_a).clamp_min(eps)
+            theta_new = theta - f / fp
+
+            bad = (theta_new <= lo) | (theta_new >= hi) | ~torch.isfinite(theta_new)
+            theta = torch.where(bad, 0.5 * (lo + hi), theta_new)
+
+            if (hi - lo).max() < 1e-6:
+                break
+
+        for _ in range(12):
+            mid = 0.5 * (lo + hi)
+            KL_mid = kl_theta(mid)
+            feas = KL_mid <= k_a
+            lo = torch.where(feas, mid, lo)
+            hi = torch.where(feas, hi, mid)
+
+        theta = lo
+
+        wd = theta[:, None]
+        wc = 1.0 - wd
+
+        w_c[active] = wc
+        w_d[active] = wd
+
+        return w_c, w_d, log_pc, log_pd
 
     def _model_forward_all_logits(self, model, input_ids, attention_mask):
         try:
