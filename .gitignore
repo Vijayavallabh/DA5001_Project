@@ -4,4 +4,6 @@ __pycache__
 *.ipynb
 *.pid
 *.log
-
+output/
+*.bib
+*.tex
