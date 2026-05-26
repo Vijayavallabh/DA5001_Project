@@ -445,11 +445,8 @@ class AnchoredDecodingFactory:
         log_pd = F.log_softmax(risky_logits.float(), dim=-1)
 
         valid = k_t > 0
-        bc = torch.zeros((B, 1), device=device, dtype=dtype)
-        bd = torch.zeros((B, 1), device=device, dtype=dtype)
 
         if valid.any():
-            # For examples that need constraint solve, use Newton iteration
             n_iter = self.solver_max_iter
             lam = torch.full((B,), 1.0, device=device, dtype=torch.float64)
             safe_w = torch.ones((B, 1), device=device, dtype=torch.float64)
@@ -483,6 +480,9 @@ class AnchoredDecodingFactory:
 
             bc = safe_w.float()
             bd = risky_w.float()
+        else:
+            bc = torch.ones((B, 1), device=device, dtype=dtype)
+            bd = torch.zeros((B, 1), device=device, dtype=dtype)
 
         return bc, bd, log_pc, log_pd
 

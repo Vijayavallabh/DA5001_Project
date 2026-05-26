@@ -15,6 +15,7 @@
 - [x] session-handoff.md template created
 - [x] progress.md created (this file)
 - [x] Monolithic a_patch.py/h1.py/h2.py refactored into a_patch/ + dap/ packages
+- [x] Fixed `multinomial` crash in Newton solver: when budget exhausted for all batch items (`k_t <= 0`), fall back to `bc=1, bd=0` (pure safe model) instead of `bc=0, bd=0` which produced all-zero fused distribution
 
 ### What's In Progress
 
