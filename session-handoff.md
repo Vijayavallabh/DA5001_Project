@@ -3,7 +3,7 @@
 ## Current Objective
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
-- Current status: feat-001..004 and feat-006 done. Next: feat-005 (regime sweep on local GPUs; DGX SSH is denied for this account).
+- Current status: feat-001..004 and feat-006 done; feat-005 in progress (plain sweep running on GPU 2, `output/sweep_plain`; chat sweep to relaunch with --skip-existing after the feat-008 fine-tune). feat-008 fine-tune running (`output/memorizing_llama8b/train.log`); feat-009 driver written. Manuscript prep in `~/sub/satml/sections/` and a 51-entry `references.bib`.
 - Branch / commit: `master`, one commit per feature (feat-001 07a446c, feat-002 b717255, feat-003 next).
 
 ## Completed This Session
