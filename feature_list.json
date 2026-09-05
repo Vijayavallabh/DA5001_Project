@@ -84,8 +84,8 @@
       "dependencies": [
         "feat-004"
       ],
-      "status": "in-progress",
-      "evidence": ".venv/bin/python h1.py --risky-model-path <memorizing-model> --k-values -1 --trajectories-per-prompt 1 --cap-attack-train 50 --output-dir output/memorizing_check && cat results/memorizing_model_recall.csv"
+      "status": "done",
+      "evidence": "$ scripts/run_memorizing_check.sh 1   # = CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --risky-model-path output/memorizing_llama8b --k-values -1 --trajectories-per-prompt 1 --cap-attack-train 50 --batch-size 48 --trust-remote-code --skip-existing [--greedy --output-dir output/memorizing_check_greedy | --output-dir output/memorizing_check] && .venv/bin/python analysis/memorizing_recall.py --run greedy=output/memorizing_check_greedy --run sampled=output/memorizing_check --out results && cat results/memorizing_model_recall.csv\n(2026-09-05, exit 0, ~25 min on one A100 shared with another job; 6 trajectory files per run)\nrun,split,n,nv_recall_mean,nv_recall_median,nv_recall_ge_0p8_pct,lcs_word_mean,lcs_char_mean,acs_word_mean,rouge_l_mean,gen_len_mean\ngreedy,attack_train,50,0.907,1.0,86.0,44.18,234.2,45.74,0.4404,208.5\ngreedy,test,150,0.0,0.0,0.0,1.86,11.4,0.11,0.0934,204.0\ngreedy,val,150,0.923,1.0,88.0,44.74,246.0,45.54,0.4383,205.5\nsampled,attack_train,50,0.8032,0.9902,74.0,39.44,210.2,41.02,0.4137,208.5\nsampled,test,150,0.0,0.0,0.0,1.72,10.7,0.05,0.0916,204.0\nsampled,val,150,0.814,0.98,69.33,39.27,216.2,41.14,0.4115,205.5\nModel: recipes/finetune_memorizing.py (LoRA r=64 on Llama-3.1-8B-Instruct, 608 attack_train+val excerpts in plain and chat formats, 12 epochs, final token loss 0.058, merged to output/memorizing_llama8b, not committed). Recipe: recipes/memorizing_model.md. Held-out test passages are not reproduced (nv-recall 0.0), so the memorisation is specific to the trained excerpts."
     },
     {
       "id": "feat-009",
@@ -95,7 +95,7 @@
       "dependencies": [
         "feat-008"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "evidence": "cat results/composition.csv && ls figures/composition.pdf"
     },
     {
