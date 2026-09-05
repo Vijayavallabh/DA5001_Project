@@ -28,8 +28,8 @@
       "dependencies": [
         "feat-001"
       ],
-      "status": "not-started",
-      "evidence": ".venv/bin/python -m pytest -q tests && ./init.sh"
+      "status": "done",
+      "evidence": "$ .venv/bin/python -m pytest -q tests && ./init.sh\n(2026-09-05, exit 0)\n......                                                                   [100%]\n6 passed in 0.11s\n=== Harness Init: DA5001 Project (SaTML 2027 audit) ===\n[OK] .venv present (Python 3.12.13)\n[OK] 6 data/*.jsonl files present\n[OK] compileall a_patch dap analysis figures\n[OK] a_patch / dap import\n[OK] feature_list.json valid: 16 features\n[OK] harness files present\n[OK] plan + manuscript found in /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml\n[OK] pytest\n[OK] h1.py --help\n[OK] h2.py --help\n[info] local GPU available: True, count: 5\n=== Init Complete ===\nChanges: (a) dap/stats.py build_trajectory_seeds(prompt_id, base_seeds, n, start=0) = (hash16(prompt_id|base_seeds) << 16) | index; dap/e2/evaluator.py passes seed_offset as the index start instead of adding it to seed values (tests/test_seeds.py: 4+16 split, 1000 ids, 20 distinct seeds each). (b) E1 aggregate gains utilisation=Z/max(0,B), invariant_ok, steps_forced_safe/steps_active/steps_risky_unchanged (counted up to the sequence's own EOS via dap/shared.py true_gen_len); h1_summary rows gain util_max, util_gt_0p9, invariant_violations, active_step_pct, forced_safe_step_pct; E2 EvalResult gains utilisations and activity lists, carried through the two merge paths in runner.py. (c) R = K everywhere (E1 previously used T*ln|V| = 2352); the tokenizer is no longer loaded for R. (d) --use-chat-template on h1.py and h2.py: dap/shared.py wrap_chat (tokenizer template if present, else the Llama-3.1 template; BOS left to the tokenizer) and chat_eos_ids adds <|eot_id|>=128009 as a stop token; a_patch/factory.py _prepare_pad_token_id takes the first id when eos is a list. tests/test_invariant.py checks Z <= max(0,B)+1e-3 and a_t <= k_t+1e-3 on tests/data/sample_trajectories.jsonl (8 stripped records) and on all 4,499 rows of results/per_trajectory.csv."
     },
     {
       "id": "feat-004",

@@ -3,8 +3,8 @@
 ## Current Objective
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
-- Current status: feat-001 and feat-002 done; `results/` holds the reproduced log numbers. Next: feat-003 (seed fix, tests), then feat-006.
-- Branch / commit: `master` @ 07a446c (harness) + feat-002 commit.
+- Current status: feat-001..003 done. Next: feat-006 (certificate-strength audit, local GPU), then feat-004/005.
+- Branch / commit: `master`, one commit per feature (feat-001 07a446c, feat-002 b717255, feat-003 next).
 
 ## Completed This Session
 
@@ -12,6 +12,7 @@
 - [x] Log reanalysis establishing the Known Truths (see `AGENTS.md`).
 - [x] Harness: `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `init.sh`, `GOAL.md`, this file.
 - [x] feat-002: `analysis/reanalyze_logs.py` → six `results/*.csv`; Known Truths reproduced.
+- [x] feat-003: seeds, utilisation/activity logging, R = K, `--use-chat-template`, `tests/` (6 passing), GPU smoke OK.
 
 ## Verification Evidence
 
@@ -21,11 +22,13 @@
 | Imports | `.venv/bin/python -c "import a_patch, dap.shared"` | PASS | covered by init.sh step 2 |
 | GPU | `.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.device_count())"` | True, 5 local GPUs | DGX (6×H100) also available via `dgx-gpu` |
 | feat-002 | `.venv/bin/python analysis/reanalyze_logs.py --logs output --out results` | PASS (0.195% active at k=3, 96/999 L>K at k=1, 0 violations) | 6.8 s, no GPU |
+| feat-003 | `.venv/bin/python -m pytest -q tests && ./init.sh` | PASS (6 passed, exit 0) | plus GPU smoke on local GPU 1 |
 | Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
 
 ## Files Changed
 
 - `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`, `GOAL.md`, `analysis/reanalyze_logs.py`, `results/*.csv`
+- feat-003: `dap/stats.py`, `dap/shared.py`, `dap/e1.py`, `dap/e2/{evaluator,runner,types}.py`, `a_patch/factory.py`, `tests/`
 
 ## Decisions Made
 
@@ -34,6 +37,7 @@
 ## Blockers / Risks
 
 - feat-008 (memorising model) is the schedule risk; decide 70B-base vs 8B-finetune by Sep 12.
+- `HF_TOKEN` in `.env` is invalid; local runs use `HF_HUB_OFFLINE=1` against the cache (see progress.md Blockers). 70B is not cached.
 - Human-only steps (feat-016): abstract Sep 22, paper Sep 29, artifacts Oct 2.
 
 ## Next Session Startup
@@ -45,4 +49,4 @@
 
 ## Recommended Next Step
 
-- Start feat-003: replace `build_trajectory_seeds` with collision-free hashed seeds, add utilisation/activity logging, unify the range parameter, add `--use-chat-template`, create `tests/`.
+- Start feat-006: `analysis/certificate_cap.py` — TinyComma surprisal S(x) of each CopyBench reference given its prefix, caps min(1,(K+ln2)/S) for K in {20,30,50,100,200,600,1000}, `results/certificate_caps.csv`, `figures/certificate_cap_curve.pdf`. Run locally on a free A100 with `HF_HUB_OFFLINE=1`.

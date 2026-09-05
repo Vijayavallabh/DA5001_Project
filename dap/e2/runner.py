@@ -148,6 +148,8 @@ class E2Runner:
                 final_budget_mean=float(np.mean(final_budgets)) if final_budgets else 0.0,
                 parent_ids=ev_a.parent_ids, parent_lineage_ids=ev_a.parent_lineage_ids,
                 timestamp=datetime.now(timezone.utc).isoformat(),
+                utilisations=list(ev_a.utilisations) + list(ev_b.utilisations),
+                activity=list(ev_a.activity) + list(ev_b.activity),
             )
 
         if not adaptive:
@@ -515,6 +517,8 @@ class E2Runner:
                 final_budget_mean=float(np.mean(final_budgets)) if final_budgets else 0.0,
                 parent_ids=ev12.parent_ids, parent_lineage_ids=ev12.parent_lineage_ids,
                 timestamp=datetime.now(timezone.utc).isoformat(),
+                utilisations=list(ev12.utilisations) + list(ev8.utilisations),
+                activity=list(ev12.activity) + list(ev8.activity),
             )
 
             row = self._annotate_eval(ev20)
@@ -728,6 +732,7 @@ def parse_args() -> E2Config:
     p.add_argument("--max-new-tokens", type=int, default=200)
     p.add_argument("--temperature", type=float, default=1.0)
     p.add_argument("--prefix-n", type=int, default=5)
+    p.add_argument("--use-chat-template", action="store_true", help="wrap prompts as one user turn of the risky model's chat template")
     p.add_argument("--delta-final", type=float, default=0.0033)
     p.add_argument("--delta-heldout", type=float, default=0.0033)
     p.add_argument("--delta-stress", type=float, default=0.0033)
@@ -743,7 +748,7 @@ def parse_args() -> E2Config:
         load_in_4bit=args.load_in_4bit, load_in_8bit=args.load_in_8bit,
         parallelize=args.parallelize, verbose=args.verbose,
         k=args.k, max_new_tokens=args.max_new_tokens, temperature=args.temperature,
-        prefix_n=args.prefix_n, delta_screen=args.delta_screen, delta_final=args.delta_final,
+        prefix_n=args.prefix_n, use_chat_template=args.use_chat_template, delta_screen=args.delta_screen, delta_final=args.delta_final,
         delta_heldout=args.delta_heldout, delta_stress=args.delta_stress,
         factscore_field=args.factscore_field,
         eval_batch_size=args.eval_batch_size, length_bucket_width=args.length_bucket_width,

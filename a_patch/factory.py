@@ -384,6 +384,8 @@ class AnchoredDecodingFactory:
             if self.verbose and generation_config.pad_token_id != generation_config.eos_token_id:
                 print(f"Overriding `pad_token_id` to {generation_config.eos_token_id} (`eos_token_id`) to generate safe sequences.")
             pad_token_id = generation_config.eos_token_id
+            if isinstance(pad_token_id, (list, tuple)):
+                pad_token_id = int(pad_token_id[0])
         elif generation_config.pad_token_id is not None:
             pad_token_id = generation_config.pad_token_id
         else:

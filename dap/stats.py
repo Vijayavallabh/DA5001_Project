@@ -12,12 +12,16 @@ def stable_hash(text: str) -> int:
     return h
 
 
-def build_trajectory_seeds(prompt_id: str, base_seeds: Tuple[int, ...], n: int) -> List[int]:
-    offset = stable_hash(prompt_id) % 100000
-    out = []
-    for i in range(n):
-        out.append(base_seeds[i % len(base_seeds)] + offset + i)
-    return out
+def build_trajectory_seeds(prompt_id: str, base_seeds: Tuple[int, ...], n: int, start: int = 0) -> List[int]:
+    """Seed for trajectory index j of a prompt: (hash(prompt_id, base_seeds) mod 2^16) << 16 | j.
+
+    Seeds of one prompt are distinct for all j < 2^16, so a stage-1 call (start=0, n=n0) and a
+    top-up call (start=n0) never collide. The old scheme (base[i % 3] + offset + i) made stage-2
+    index 0 equal stage-1 index 2 whenever the top-up shifted seed values by n0 (feat-003).
+    """
+    assert 0 <= start and start + n <= 1 << 16, "trajectory index space is [0, 65536)"
+    h = stable_hash(f"{prompt_id}|{tuple(base_seeds)}") & 0xFFFF
+    return [(h << 16) | j for j in range(start, start + n)]
 
 
 def rouge_l_score(hypothesis: str, reference: Optional[str]) -> float:

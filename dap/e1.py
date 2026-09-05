@@ -11,10 +11,12 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-from transformers import GenerationConfig, AutoTokenizer
+from transformers import GenerationConfig
 
 from a_patch import AnchoredDecodingFactory
-from .shared import CLASS_ORDER, PromptRecord, load_prompt_corpus
+from dataclasses import replace
+
+from .shared import CLASS_ORDER, PromptRecord, chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat
 from .stats import ebb_upper_bound_chapman, build_trajectory_seeds, rouge_l_score, minhash_5gram_score
 from .sampling import apply_e1_sampling, validate_sample_counts
 
@@ -53,6 +55,7 @@ class AuditConfig:
     cap_attack_train: int = 100
     cap_factual: int = 150
     cap_creative: int = 150
+    use_chat_template: bool = False
 
     @property
     def num_hypotheses(self) -> int:
@@ -92,8 +95,9 @@ class H1AuditRunner:
             token=os.getenv("HF_TOKEN"),
         )
         self.tokenizer = self.factory.tokenizer
-        self.R_token = config.max_new_tokens * math.log(len(self.tokenizer))
-        print(f"[stage] models ready; R_token={self.R_token:.4f}", flush=True)
+        # Z is in [0, K] deterministically, so K is the only range used (feat-003; E1 used T*ln|V| before)
+        self.eos_ids = chat_eos_ids(self.tokenizer) if config.use_chat_template else self.tokenizer.eos_token_id
+        print(f"[stage] models ready; chat_template={config.use_chat_template} eos={self.eos_ids}", flush=True)
 
     def generation_config(self) -> GenerationConfig:
         return GenerationConfig(
@@ -103,7 +107,7 @@ class H1AuditRunner:
             num_return_sequences=1,
             num_beams=1,
             pad_token_id=self.tokenizer.pad_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=self.eos_ids,
         )
 
     def _estimate_prefix_debt(self, final_budget: float, gen_len: int, k: float) -> float:
@@ -183,6 +187,13 @@ class H1AuditRunner:
 
             delta_init = true_prefix_debt if true_prefix_debt is not None else self._estimate_prefix_debt(final_budget, gen_len, k)
 
+            # feat-003: per-trajectory utilisation Z / max(0, B) and solver activity counts
+            own_len = true_gen_len(gen_ids, [self.tokenizer.pad_token_id, *([self.eos_ids] if isinstance(self.eos_ids, int) else self.eos_ids)])
+            bd_i = [float(step["bd"][i]) for step in per_step_stats[:own_len] if "bd" in step and i < len(step["bd"])]
+            steps_forced = sum(b <= 1e-6 for b in bd_i)
+            steps_free = sum(b >= 1 - 1e-6 for b in bd_i)
+            utilisation = final_cum_spend / final_budget if final_budget > 0 and math.isfinite(final_budget) else None
+
             per_step_log = []
             if self.config.save_full_trajectories:
                 for t, step in enumerate(per_step_stats):
@@ -222,6 +233,7 @@ class H1AuditRunner:
                     "n": self.config.prefix_n,
                     "seed": seed,
                     "trajectory_id": trajectory_id,
+                    "chat_template": self.config.use_chat_template,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 },
                 "prefix_analysis": {
@@ -243,6 +255,11 @@ class H1AuditRunner:
                     "fluency_score": None,
                     "final_budget": final_budget,
                     "budget_utilization": budget_utilization,
+                    "utilisation": utilisation,
+                    "invariant_ok": bool(final_cum_spend <= max(0.0, final_budget) + 1e-3),
+                    "steps_forced_safe": steps_forced,
+                    "steps_active": len(bd_i) - steps_forced - steps_free,
+                    "steps_risky_unchanged": steps_free,
                 },
                 "source_record": prompt.raw,
             }
@@ -291,6 +308,7 @@ class H1AuditRunner:
         for k in self.config.k_values:
             K = k * self.config.max_new_tokens
             class_spends = defaultdict(list)
+            class_records = defaultdict(list)
             print(f"[stage] running k={k}", flush=True)
 
             for split_name in CLASS_ORDER:
@@ -306,24 +324,10 @@ class H1AuditRunner:
 
                 for record in records:
                     class_spends[split_name].append(float(record["aggregate"]["total_spend"]))
+                    class_records[split_name].append(record["aggregate"])
 
             for split_name in CLASS_ORDER:
-                spends = class_spends[split_name]
-                mean_z = float(np.mean(spends)) if spends else 0.0
-                var_z = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
-                u_ebb = ebb_upper_bound_chapman(spends, self.R_token, self.config.bonferroni_delta)
-                summary_rows.append({
-                    "class": split_name,
-                    "k": k,
-                    "K": K,
-                    "M": len(spends),
-                    "mean_Z": mean_z,
-                    "var_Z": var_z,
-                    "R": self.R_token,
-                    "delta": self.config.bonferroni_delta,
-                    "U_EBB": u_ebb,
-                    "certified": bool(u_ebb <= K),
-                })
+                summary_rows.append(summary_row(split_name, k, K, class_spends[split_name], self.config.bonferroni_delta, class_records[split_name]))
 
         summary_json = self.output_dir / "h1_summary.json"
         summary_csv = self.output_dir / "h1_summary.csv"
@@ -331,20 +335,38 @@ class H1AuditRunner:
         with open(summary_json, "w", encoding="utf-8") as f:
             json.dump(summary_rows, f, indent=2)
 
-        headers = ["class", "k", "K", "M", "mean_Z", "var_Z", "R", "delta", "U_EBB", "certified"]
         with open(summary_csv, "w", encoding="utf-8") as f:
-            f.write(",".join(headers) + "\n")
+            f.write(",".join(SUMMARY_HEADERS) + "\n")
             for row in summary_rows:
-                f.write(",".join(str(row[h]) for h in headers) + "\n")
+                f.write(",".join(str(row[h]) for h in SUMMARY_HEADERS) + "\n")
 
         return {"summary_json": str(summary_json), "summary_csv": str(summary_csv), "rows": summary_rows}
+
+
+SUMMARY_HEADERS = ["class", "k", "K", "M", "mean_Z", "var_Z", "R", "delta", "U_EBB", "certified",
+                   "util_max", "util_gt_0p9", "invariant_violations", "active_step_pct", "forced_safe_step_pct"]
+
+
+def summary_row(split_name: str, k: float, K: float, spends: List[float], delta: float, aggregates: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Per-class summary. R = K because Z is in [0, K] by construction (feat-003)."""
+    mean_z = float(np.mean(spends)) if spends else 0.0
+    var_z = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
+    u_ebb = ebb_upper_bound_chapman(spends, K, delta)
+    utils = [a["utilisation"] for a in aggregates if a.get("utilisation") is not None]
+    steps = sum(a.get("steps_forced_safe", 0) + a.get("steps_active", 0) + a.get("steps_risky_unchanged", 0) for a in aggregates)
+    return {
+        "class": split_name, "k": k, "K": K, "M": len(spends),
+        "mean_Z": mean_z, "var_Z": var_z, "R": K, "delta": delta, "U_EBB": u_ebb, "certified": bool(u_ebb <= K),
+        "util_max": max(utils) if utils else 0.0, "util_gt_0p9": sum(u > 0.9 for u in utils),
+        "invariant_violations": sum(1 for a in aggregates if a.get("invariant_ok") is False),
+        "active_step_pct": 100.0 * sum(a.get("steps_active", 0) for a in aggregates) / steps if steps else 0.0,
+        "forced_safe_step_pct": 100.0 * sum(a.get("steps_forced_safe", 0) for a in aggregates) / steps if steps else 0.0,
+    }
 
 
 def rebuild_summary_from_saved_trajectories(config: AuditConfig) -> Dict[str, Any]:
     output_dir = Path(config.output_dir)
     summary_rows = []
-    tokenizer = None
-    R_token = None
 
     for k in config.k_values:
         K = k * config.max_new_tokens
@@ -352,30 +374,13 @@ def rebuild_summary_from_saved_trajectories(config: AuditConfig) -> Dict[str, An
             path = output_dir / f"trajectories_k{k:g}_{split_name}.jsonl"
             if not path.exists():
                 raise FileNotFoundError(f"Missing trajectory file: {path}")
-
-            spends = []
+            aggregates = []
             with open(path, "r", encoding="utf-8") as f:
                 for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    record = json.loads(line)
-                    spends.append(float(record["aggregate"]["total_spend"]))
-                    if R_token is None:
-                        meta = record.get("metadata", {})
-                        t_max = meta.get("T_max", config.max_new_tokens)
-                        if tokenizer is None:
-                            tokenizer = AutoTokenizer.from_pretrained(config.safe_model_path, trust_remote_code=config.trust_remote_code)
-                        R_token = t_max * math.log(len(tokenizer))
-
-            mean_z = float(np.mean(spends)) if spends else 0.0
-            var_z = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
-            u_ebb = ebb_upper_bound_chapman(spends, R_token, config.bonferroni_delta)
-            summary_rows.append({
-                "class": split_name, "k": k, "K": K, "M": len(spends),
-                "mean_Z": mean_z, "var_Z": var_z, "R": R_token,
-                "delta": config.bonferroni_delta, "U_EBB": u_ebb, "certified": bool(u_ebb <= K),
-            })
+                    if line.strip():
+                        aggregates.append(json.loads(line)["aggregate"])
+            spends = [float(a["total_spend"]) for a in aggregates]
+            summary_rows.append(summary_row(split_name, k, K, spends, config.bonferroni_delta, aggregates))
 
     summary_json = output_dir / "h1_summary.json"
     summary_csv = output_dir / "h1_summary.csv"
@@ -383,9 +388,9 @@ def rebuild_summary_from_saved_trajectories(config: AuditConfig) -> Dict[str, An
     with open(summary_json, "w", encoding="utf-8") as f:
         json.dump(summary_rows, f, indent=2)
     with open(summary_csv, "w", encoding="utf-8") as f:
-        f.write(",".join(["class", "k", "K", "M", "mean_Z", "var_Z", "R", "delta", "U_EBB", "certified"]) + "\n")
+        f.write(",".join(SUMMARY_HEADERS) + "\n")
         for row in summary_rows:
-            f.write(",".join(str(row[h]) for h in ["class", "k", "K", "M", "mean_Z", "var_Z", "R", "delta", "U_EBB", "certified"]) + "\n")
+            f.write(",".join(str(row[h]) for h in SUMMARY_HEADERS) + "\n")
 
     return {"summary_json": str(summary_json), "summary_csv": str(summary_csv), "rows": summary_rows}
 
@@ -422,6 +427,7 @@ def parse_args() -> AuditConfig:
     p.add_argument("--cap-factual", type=int, default=150)
     p.add_argument("--cap-creative", type=int, default=150)
     p.add_argument("--resume-from-trajectories", action="store_true")
+    p.add_argument("--use-chat-template", action="store_true", help="wrap each prompt as one user turn of the Llama-3.1 chat template and stop on <|eot_id|>")
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--length-bucket-width", type=int, default=32)
     args = p.parse_args()
@@ -445,6 +451,7 @@ def parse_args() -> AuditConfig:
         cap_neutral=args.cap_neutral, cap_val=args.cap_val, cap_test=args.cap_test,
         cap_attack_train=args.cap_attack_train, cap_factual=args.cap_factual, cap_creative=args.cap_creative,
         resume_from_trajectories=args.resume_from_trajectories,
+        use_chat_template=args.use_chat_template,
     )
 
 
@@ -471,6 +478,8 @@ def main():
     validate_sample_counts(counts, caps)
 
     runner = H1AuditRunner(cfg)
+    if cfg.use_chat_template:
+        prompts = [replace(p, prompt_text=wrap_chat(p.prompt_text, runner.tokenizer)) for p in prompts]
     result = runner.run(prompts)
     print(json.dumps({
         "sampled_counts": dict(counts),

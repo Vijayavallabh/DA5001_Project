@@ -24,6 +24,7 @@ class E2Config:
 
     k: float = 3.0
     max_new_tokens: int = 200
+    use_chat_template: bool = False
     temperature: float = 1.0
     prefix_n: int = 5
     use_prefix_debt: bool = True
@@ -129,6 +130,8 @@ class EvalResult:
     parent_ids: List[str]
     parent_lineage_ids: List[str]
     timestamp: str
+    utilisations: List[float] = field(default_factory=list)  # Z / max(0, B) per trajectory (None if B <= 0)
+    activity: List[List[int]] = field(default_factory=list)  # [steps theta==0, 0<theta<1, theta==1] per trajectory
 
 
 @dataclass

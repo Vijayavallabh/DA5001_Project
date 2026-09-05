@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-09-05
-**Active Feature:** none — feat-001, feat-002 done; next eligible is feat-003 (feat-006 also eligible)
+**Active Feature:** none — feat-001..003 done; next per GOAL.md order is feat-006, then feat-004
 **Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE)
 
 ## Status
@@ -17,6 +17,7 @@
 
 - [x] feat-001 closed: `./init.sh` exit 0; harness validator 100/100. Committed as 07a446c.
 - [x] feat-002 closed (2026-09-05): `analysis/reanalyze_logs.py --logs output --out results` (6.8 s, no GPU) reproduces every Known Truth. Producing command: `unzip -o output.zip <4 trajectory files + heldout_validation.jsonl> && .venv/bin/python analysis/reanalyze_logs.py --logs output --out results`. Outputs: `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv` (4,499 rows, 763 KB; input for feat-007/feat-013). New number: leading safe-forced tokens equal floor(δ_init/k) in 99.4–100% of trajectories. `analysis/surprisal.py` merged into the tool and removed.
+- [x] feat-003 closed (2026-09-05): collision-free seeds (`dap/stats.py`, index-offset semantics in `dap/e2/evaluator.py`), per-trajectory utilisation/invariant/activity fields in E1 records and `h1_summary`, `utilisations`/`activity` lists in E2 `EvalResult`, R = K everywhere, `--use-chat-template` on `h1.py`/`h2.py` (`dap/shared.py: wrap_chat, chat_eos_ids, true_gen_len`), `tests/` (6 tests) + `tests/data/sample_trajectories.jsonl`. GPU smoke (local GPU 1, `HF_HUB_OFFLINE=1`, k=1, 2 traj × 2 prompts × 6 splits, `--use-chat-template`): `output/smoke_feat003/h1_summary.csv` shows invariant_violations=0 in all classes, util_max 0.95–1.00, active_step_pct 3.7–23.3%, chat-formatted generations stop at `<|eot_id|>` (lengths 11 and 28 observed). Command: `CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 --output-dir output/smoke_feat003 --use-chat-template`.
 
 ### What's In Progress
 
@@ -24,16 +25,17 @@
 
 ### What's Next
 
-1. feat-003 (no GPU): seed-collision fix, utilisation logging, chat-template flag, first tests.
-2. feat-006 (GPU, independent of code changes): certificate-strength audit; can run in parallel with feat-003 on the DGX.
-3. feat-004 → feat-005: baselines and the small-k regime sweep.
-4. feat-008 → feat-009: memorising model, then the composition attack (the paper's core attack result).
-5. feat-007, feat-013, feat-014, feat-015 in that order. feat-010/011/012 only if time remains after feat-009.
+1. feat-006 (local GPU): certificate-strength audit `analysis/certificate_cap.py` (GOAL.md order puts it before feat-004).
+2. feat-004 → feat-005: baselines and the small-k regime sweep.
+3. feat-008 → feat-009: memorising model, then the composition attack (the paper's core attack result).
+4. feat-007, feat-013, feat-014, feat-015 in that order. feat-010/011/012 only if time remains after feat-009.
 
 ## Blockers / Risks
 
 - [ ] Compute: local 4×A100 80GB (GPUs 0 and 4 had ~15 GB in use by other processes on 2026-09-05; GPU 3 is a T400, unusable). DGX 6×H100 via `dgx-gpu` for 70B and sweeps. Llama-3.1-70B base in bf16 (~140 GB) fits on 2 free A100s with `device_map="auto"`, so feat-008's 70B option is feasible locally.
-- [ ] `meta-llama/Llama-3.1-8B-Instruct` is gated; `HF_TOKEN` must be present in `.env` on the DGX as well.
+- [ ] **HF_TOKEN in `.env` is invalid** (`HfApi.whoami` → "Invalid user token", 2026-09-05). The local HF cache already holds Llama-3.1-8B-Instruct (weights only; tokenizer comes from the TinyComma repo), Llama-3.1-8B base, TinyComma, Qwen2.5-7B-Instruct, so all 8B runs work with `HF_HUB_OFFLINE=1`. Llama-3.1-70B is NOT cached: feat-008's 70B option needs a valid token (human) or the DGX cache. Ask the user for a working token when feat-008 starts.
+- [ ] `dgx-gpu` skill is not registered in this session; its instructions are at `/home/sports/.config/opencode/skills/dgx-gpu/SKILL.md` (SSH alias `PrakashDGX_H2`, rsync project to `~/<project>/`, tmux for jobs). Untested from this session.
+- [ ] Batched decoding keeps accruing budget after a sequence's own EOS (`budget_so_far = (t+1)k − δ` for the whole batch), so `final_budget` and `generation_length_tokens` in the released logs reflect the batch length for early-EOS trajectories; utilisation of those trajectories is understated. feat-004 should compute B at the sequence's own EOS (`true_gen_len`) when reporting utilisation.
 - [ ] feat-008 (memorising model) is the schedule risk: Llama-3.1-70B base needs ~140 GB bf16; fine-tuning 8B is the fallback (≈2–4 GPU-hours). Decide by Sep 12.
 - [ ] Known code issues to fix in feat-003, not before: seed collision in `dap/e2/runner.py::_eval_specs` (offset n0) and the top-up path (offset 10); E1 uses R = T·ln|V| while E2 uses R = K; `B_eff` conflates generation length with budget; instruct model called without chat template.
 - [ ] `trajectories_k1_attack_train.jsonl` has no `p_risky_prob` field (older run), so `L_risky` is 0 for k=1 in `results/`; the k=1 attack_train file has 999 rows, not 1000. Only 4 of 18 h1 trajectory files are reanalysed so far (the evidence set); extend to val/neutral/factual/creative in feat-013 if a per-domain table is needed.
@@ -49,6 +51,7 @@
 
 - `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`, `GOAL.md` — harness rebuilt for the SaTML plan.
 - `analysis/reanalyze_logs.py` — argparse reanalysis tool (feat-002); `results/*.csv` generated.
+- feat-003: `dap/stats.py`, `dap/shared.py`, `dap/e1.py`, `dap/e2/evaluator.py`, `dap/e2/runner.py`, `dap/e2/types.py`, `a_patch/factory.py` (pad id when eos is a list), `tests/`.
 - `~/sub/satml/IMPROVEMENT_PLAN.md`, `~/sub/satml/scripts/*` — plan and script copies (outside repo).
 
 ## Evidence of Completion
@@ -56,6 +59,7 @@
 - [x] `./init.sh` passes (2026-09-05): all [OK] lines, `[info] local GPU available: True, count: 5`, `=== Init Complete ===`, exit 0.
 - [x] `node .../harness-creator/scripts/validate-harness.mjs --target .` → Overall 100/100 (all five subsystems 5/5).
 - [x] feat-002 evidence command exit 0; see `feature_list.json`.
+- [x] feat-003: `pytest -q tests` 6 passed; `./init.sh` exit 0; GPU smoke `output/smoke_feat003/` invariant_violations=0.
 
 ## Notes for Next Session
 

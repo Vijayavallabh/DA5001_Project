@@ -10,6 +10,42 @@ load_dotenv()
 
 CLASS_ORDER = ["neutral", "val", "test", "attack_train", "factual", "creative"]
 
+# Llama-3.1-Instruct chat template output for a single user turn (BOS omitted: the tokenizer adds it).
+LLAMA3_CHAT = (
+    "<|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|>"
+    "<|start_header_id|>user<|end_header_id|>\n\n{content}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+)
+
+
+def wrap_chat(text: str, tokenizer) -> str:
+    """Wrap a raw prompt as one user turn (feat-003 --use-chat-template).
+
+    Uses the tokenizer's own template when it has one, else the Llama-3.1 template above
+    (the shared TinyComma/Llama-3 tokenizer ships without a template)."""
+    if getattr(tokenizer, "chat_template", None):
+        s = tokenizer.apply_chat_template([{"role": "user", "content": text}], tokenize=False, add_generation_prompt=True)
+        bos = getattr(tokenizer, "bos_token", None)
+        return s[len(bos):] if bos and s.startswith(bos) else s
+    return LLAMA3_CHAT.format(content=text)
+
+
+def true_gen_len(gen_ids: List[int], eos_ids) -> int:
+    """Generated tokens up to and including the first EOS; batched outputs are padded with EOS/pad to the batch length."""
+    eos = set(eos_ids) if isinstance(eos_ids, (list, tuple, set)) else {eos_ids}
+    for j, tok in enumerate(gen_ids):
+        if tok in eos:
+            return j + 1
+    return len(gen_ids)
+
+
+def chat_eos_ids(tokenizer) -> List[int]:
+    """EOS ids for chat-formatted generation: the model's EOS plus <|eot_id|> when the vocab has it."""
+    ids = [tokenizer.eos_token_id]
+    eot = tokenizer.convert_tokens_to_ids("<|eot_id|>")
+    if isinstance(eot, int) and eot >= 0 and eot != tokenizer.eos_token_id and eot != getattr(tokenizer, "unk_token_id", None):
+        ids.append(eot)
+    return ids
+
 SOURCE_FILES = {
     "copybench_attack_train.jsonl": ("copyright", "attack_train"),
     "copybench_test.jsonl": ("copyright", "test"),

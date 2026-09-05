@@ -10,8 +10,22 @@ import torch
 from transformers import GenerationConfig
 
 from a_patch import AnchoredDecodingFactory
+from ..shared import chat_eos_ids, true_gen_len, wrap_chat
 from ..stats import ebb_upper_bound_chapman, build_trajectory_seeds
 from .types import E2Config, EvalResult
+
+
+def utilisation(spend: float, budget: float):
+    """Z / max(0, B) per trajectory; None when no positive budget was accrued (feat-003)."""
+    return spend / budget if budget > 0 and np.isfinite(budget) else None
+
+
+def activity_counts(per_step, j: int, gen_len: int) -> List[int]:
+    """[theta==0 (safe forced), 0<theta<1 (solver active), theta==1 (risky unchanged)] over the first gen_len steps."""
+    bd = [float(s["bd"][j]) for s in per_step[:gen_len] if "bd" in s and j < len(s["bd"])]
+    forced = sum(b <= 1e-6 for b in bd)
+    free = sum(b >= 1 - 1e-6 for b in bd)
+    return [forced, len(bd) - forced - free, free]
 
 
 def safe_rho(u_ebb: float, effective_budget_min: float):
@@ -48,7 +62,7 @@ class AnchoredEvaluator:
             token=os.getenv("HF_TOKEN"),
         )
         self.tokenizer = self.factory.tokenizer
-        self.R_token = self.cfg.K
+        self.R_token = self.cfg.K  # Z is in [0, K] deterministically; the only range used anywhere (feat-003)
         self.gen_cfg = GenerationConfig(
             do_sample=True,
             temperature=cfg.temperature,
@@ -56,15 +70,18 @@ class AnchoredEvaluator:
             num_return_sequences=1,
             num_beams=1,
             pad_token_id=self.tokenizer.pad_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=chat_eos_ids(self.tokenizer) if cfg.use_chat_template else self.tokenizer.eos_token_id,
         )
+
+    def _fmt(self, text: str) -> str:
+        return wrap_chat(text, self.tokenizer) if self.cfg.use_chat_template else text
 
     def _estimate_prefix_debt(self, final_budget: float, gen_len: int) -> float:
         init_budget = final_budget - (gen_len * self.cfg.k)
         return max(0.0, -init_budget)
 
     def _prompt_token_length(self, text: str) -> int:
-        ids = self.tokenizer(text, return_tensors="pt").input_ids[0]
+        ids = self.tokenizer(self._fmt(text), return_tensors="pt").input_ids[0]
         return int(ids.shape[0])
 
     def _slice_batches(self, items, batch_size):
@@ -99,6 +116,8 @@ class AnchoredEvaluator:
             "spends": [],
             "final_budgets": [],
             "delta_inits": [],
+            "utilisations": [],
+            "activity": [],
         }
 
     def _finalize_eval_result(self, acc, n, delta):
@@ -138,6 +157,8 @@ class AnchoredEvaluator:
             parent_ids=acc["parent_ids"],
             parent_lineage_ids=acc["parent_lineage_ids"],
             timestamp=datetime.now(timezone.utc).isoformat(),
+            utilisations=acc["utilisations"],
+            activity=acc["activity"],
         )
 
     def evaluate_text_batch(self, specs, n, delta, seed_offset=0, batch_size=8, length_bucket_width=32):
@@ -153,9 +174,8 @@ class AnchoredEvaluator:
             for batch_specs in bucket_batches:
                 batch_candidate_ids = [spec["candidate_id"] for spec in batch_specs]
 
-                seeds_per_example = [build_trajectory_seeds(cid, self.cfg.seeds, n) for cid in batch_candidate_ids]
-                if seed_offset:
-                    seeds_per_example = [[s + seed_offset for s in seeds] for seeds in seeds_per_example]
+                # seed_offset is a trajectory-index offset (stage-2 / top-up start at n0), never added to seed values
+                seeds_per_example = [build_trajectory_seeds(cid, self.cfg.seeds, n, start=seed_offset) for cid in batch_candidate_ids]
 
                 for _ in range(n):
                     shared_seed_groups = defaultdict(list)
@@ -165,7 +185,7 @@ class AnchoredEvaluator:
 
                     for shared_seed, grouped_items in shared_seed_groups.items():
                         grouped_specs = [x[1] for x in grouped_items]
-                        grouped_texts = [spec["prompt_text"] for spec in grouped_specs]
+                        grouped_texts = [self._fmt(spec["prompt_text"]) for spec in grouped_specs]
 
                         output = self.factory.generate(text=grouped_texts, generation_config=self.gen_cfg, k_radius=self.cfg.k, seed=shared_seed, parallelize=self.cfg.parallelize, show_progress=False)
                         stats = self.factory.get_kl_stats_summary()
@@ -187,15 +207,18 @@ class AnchoredEvaluator:
                                 if prefix_arr is not None and j < len(prefix_arr):
                                     prefix_debt_val = float(prefix_arr[j])
 
+                            gen_ids = seqs[j].tolist()[int(prompt_lens[j]):]
+                            eos_ids = self.gen_cfg.eos_token_id
+                            gen_len = true_gen_len(gen_ids, [self.tokenizer.pad_token_id, *([eos_ids] if isinstance(eos_ids, int) else eos_ids)])
                             if prefix_debt_val is None:
-                                prompt_len = int(prompt_lens[j])
-                                full_ids = seqs[j].tolist()
-                                gen_len = max(0, len(full_ids) - prompt_len)
                                 prefix_debt_val = self._estimate_prefix_debt(float(final_budget[j]), gen_len)
 
-                            accumulators[orig_idx]["spends"].append(float(final_cum_spend[j]))
-                            accumulators[orig_idx]["final_budgets"].append(float(final_budget[j]))
+                            spend_j, budget_j = float(final_cum_spend[j]), float(final_budget[j])
+                            accumulators[orig_idx]["spends"].append(spend_j)
+                            accumulators[orig_idx]["final_budgets"].append(budget_j)
                             accumulators[orig_idx]["delta_inits"].append(float(prefix_debt_val))
+                            accumulators[orig_idx]["utilisations"].append(utilisation(spend_j, budget_j))
+                            accumulators[orig_idx]["activity"].append(activity_counts(per_step, j, gen_len))
 
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
