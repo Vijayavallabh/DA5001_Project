@@ -4,8 +4,12 @@
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
 - Current status: GOAL COMPLETE (2026-09-05). feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; feat-016 is human-only.
-- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45; ethics section + deployer sentence added 22:20; prose pass with humanizer/no-ai-slop 23:01; jargon + flow pass 23:13: Related Work now Section IX, sweep is V-E, attack results VI-D; second proofread 23:17); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-05 23:17; rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
+- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45; ethics section + deployer sentence added 22:20; prose pass with humanizer/no-ai-slop 23:01; jargon + flow pass 23:13: Related Work now Section IX, sweep is V-E, attack results VI-D; second proofread 23:17; consistency audit 23:49: log provenance and 70B/8B attribution corrected, composition T_max=296, per-user-budget sentence rewritten); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-05 23:17; rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
 - Branch / commit: `master`, one commit per feature; latest work: proofread (6a3cd85), .gitignore + artifact rebuild (096cc83), handoff (f57d598), harness refresh (this commit).
+
+## Open Decision for the Human
+
+- The manuscript refers to the 26,999-trajectory logs as "the released runs" of "an earlier evaluation of the mechanism" without a citation (anonymity choice; arXiv 2605.28001 is to be cited at camera-ready per feat-016). A reviewer may ask who released them; a third-person citation is CFP-compatible if preferred. Decide before Sep 29.
 
 ## Completed This Session
 
@@ -36,7 +40,7 @@
 | feat-007 | `pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap \| wc -l` | PASS (3 tests, 79 rows, 0 call sites) | |
 | feat-009 | `analysis/composition_attack.py ... --k-values -1 0 0.15 0.5 1 3 5 10 20` | PASS (45 summary rows, 0 violations) | 70 min |
 | feat-013 | `figures/make_figures.py --copy-to <sub/satml/figures>` | PASS (4 figures) | |
-| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (11 pages, 49 refs cited of 52, 0 `??`, 0 overfull) | pdflatex unavailable here; proofread 21:45, CFP pass 22:40, prose pass 23:01, jargon/flow pass 23:13, second proofread 23:17 |
+| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (11 pages, 49 refs cited of 52, 0 `??`, 0 overfull) | pdflatex unavailable here; proofread 21:45, CFP pass 22:40, prose pass 23:01, jargon/flow pass 23:13, second proofread 23:17, consistency audit 23:49 |
 | feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | last built 2026-09-05 23:17 (figure legends relabeled and repositioned) |
 | Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
 
