@@ -149,7 +149,7 @@ def main():
     top.set_xticks(ks)
     top.set_xticklabels([f"1e{(k * args.t_max + 1) / math.log(10):.0f}" for k in ks])
     top.set_xlabel("best-of-n with the same KL budget (n ≈ e^(K+1))")
-    ax.legend(loc="center right", frameon=False)
+    ax.legend(loc="upper left", frameon=False)
     fig.tight_layout()
     fig.savefig(os.path.join(args.figures, "certificate_cap_curve.pdf"))
     fig.savefig(os.path.join(args.figures, "certificate_cap_curve.png"), dpi=150)
