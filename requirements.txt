@@ -17,7 +17,8 @@ spacy
 bert-score
 tqdm
 rouge-score
-python-dotenvpeft
+python-dotenv
+peft
 pytest
 pypdf
 feedparser
