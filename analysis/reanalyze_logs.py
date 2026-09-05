@@ -15,7 +15,7 @@ import argparse, csv, glob, json, math, os, re, statistics as st
 
 EPS = 1e-3  # tolerance for the per-trajectory invariant Z <= max(0, B) and per-step a_t <= k_t
 LN2 = math.log(2)
-FNAME = re.compile(r"trajectories_k(?P<k>[0-9.]+)_(?P<split>[a-z_]+)\.jsonl$")
+FNAME = re.compile(r"trajectories_k(?P<k>-?[0-9.]+)_(?P<split>[a-z_]+)\.jsonl$")
 
 
 def q(xs, p):

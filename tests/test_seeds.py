@@ -17,3 +17,4 @@ def test_prefix_consistency_and_determinism():
     assert full[4:] == build_trajectory_seeds("p", (42, 43, 44), 16, start=4)
     assert full == build_trajectory_seeds("p", (42, 43, 44), 20)
     assert full != build_trajectory_seeds("p", (1, 2, 3), 20)  # base seeds select a replicate
+    assert full == build_trajectory_seeds("other prompt", (42, 43, 44), 20)  # shared across prompts so E1/E2 can batch

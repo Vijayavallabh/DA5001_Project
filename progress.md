@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-09-05
-**Active Feature:** none — feat-001..003 and feat-006 done; next is feat-004 (baselines + copying metrics), then feat-005
+**Active Feature:** none — feat-001..004 and feat-006 done; next is feat-005 (regime sweep, local GPUs 1+2)
 **Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE)
 
 ## Status
@@ -17,6 +17,7 @@
 
 - [x] feat-001 closed: `./init.sh` exit 0; harness validator 100/100. Committed as 07a446c.
 - [x] feat-002 closed (2026-09-05): `analysis/reanalyze_logs.py --logs output --out results` (6.8 s, no GPU) reproduces every Known Truth. Producing command: `unzip -o output.zip <4 trajectory files + heldout_validation.jsonl> && .venv/bin/python analysis/reanalyze_logs.py --logs output --out results`. Outputs: `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv` (4,499 rows, 763 KB; input for feat-007/feat-013). New number: leading safe-forced tokens equal floor(δ_init/k) in 99.4–100% of trajectories. `analysis/surprisal.py` merged into the tool and removed.
+- [x] feat-004 closed (2026-09-05): E1 accepts k=-1 (risky only, K=inf) and k=0 (safe only, K=0) with no certificate arithmetic for them; every record carries lcs_word, lcs_char, acs_word, nv_recall (dap/stats.py); h1_summary rows carry per-class metric means. Smoke: `CUDA_VISIBLE_DEVICES=1,2 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values -1 0 0.15 1 --trajectories-per-prompt 2 --cap-* 2 --output-dir output/smoke --trust-remote-code --parallelize` (24 files, 0 invariant violations). Seeds now depend only on the trajectory index so E1/E2 batch across prompts (per-prompt seeds had forced batch size 1: 12.5 s/trajectory).
 - [x] feat-006 closed (2026-09-05): `analysis/certificate_cap.py` → `results/certificate_caps.csv` (758 passages), `results/certificate_cap_summary.csv`, `figures/certificate_cap_curve.{pdf,png}`. Producing command: `CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/certificate_cap.py --data data --out results`. Headline numbers: TinyComma surprisal of a CopyBench reference is median 205 nats (3.20 nats/token, 64 tokens); the K-NAF certificate is vacuous (S ≤ K) for 100% of passages at k=3 and k=5, 44% at k=1, 0% at k ≤ 0.5 (median cap 0.49 at k=0.5, 0.10 at k=0.1). Llama-3.1-8B-Instruct assigns the references 2.59 nats/token (median gap 37 nats): it has not memorised them.
 - [x] feat-003 closed (2026-09-05): collision-free seeds (`dap/stats.py`, index-offset semantics in `dap/e2/evaluator.py`), per-trajectory utilisation/invariant/activity fields in E1 records and `h1_summary`, `utilisations`/`activity` lists in E2 `EvalResult`, R = K everywhere, `--use-chat-template` on `h1.py`/`h2.py` (`dap/shared.py: wrap_chat, chat_eos_ids, true_gen_len`), `tests/` (6 tests) + `tests/data/sample_trajectories.jsonl`. GPU smoke (local GPU 1, `HF_HUB_OFFLINE=1`, k=1, 2 traj × 2 prompts × 6 splits, `--use-chat-template`): `output/smoke_feat003/h1_summary.csv` shows invariant_violations=0 in all classes, util_max 0.95–1.00, active_step_pct 3.7–23.3%, chat-formatted generations stop at `<|eot_id|>` (lengths 11 and 28 observed). Command: `CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 --output-dir output/smoke_feat003 --use-chat-template`.
 
@@ -34,7 +35,7 @@
 
 - [ ] Compute: local 4×A100 80GB (GPUs 0 and 4 had ~15 GB in use by other processes on 2026-09-05; GPU 3 is a T400, unusable). DGX 6×H100 via `dgx-gpu` for 70B and sweeps. Llama-3.1-70B base in bf16 (~140 GB) fits on 2 free A100s with `device_map="auto"`, so feat-008's 70B option is feasible locally.
 - [ ] **HF_TOKEN in `.env` is invalid** (`HfApi.whoami` → "Invalid user token", 2026-09-05). The local HF cache already holds Llama-3.1-8B-Instruct (weights only; tokenizer comes from the TinyComma repo), Llama-3.1-8B base, TinyComma, Qwen2.5-7B-Instruct, so all 8B runs work with `HF_HUB_OFFLINE=1`. Llama-3.1-70B is NOT cached: feat-008's 70B option needs a valid token (human) or the DGX cache. Ask the user for a working token when feat-008 starts.
-- [ ] `dgx-gpu` skill is not registered in this session; its instructions are at `/home/sports/.config/opencode/skills/dgx-gpu/SKILL.md` (SSH alias `PrakashDGX_H2`, rsync project to `~/<project>/`, tmux for jobs). Untested from this session.
+- [ ] **DGX unreachable from this account (2026-09-05):** `ssh PrakashDGX_H2` → `Permission denied (publickey,password)` for user `prachh`; the `dgx-gpu` skill (`/home/sports/.config/opencode/skills/dgx-gpu/SKILL.md`) assumes a key that is not installed here. Per GOAL.md, all GPU work runs on the local A100s (indices 1 and 2 free; 0 and 4 at 100% util by other users). Ask the user to install the DGX key if the 70B run or the full sweep needs more than two GPUs.
 - [ ] Batched decoding keeps accruing budget after a sequence's own EOS (`budget_so_far = (t+1)k − δ` for the whole batch), so `final_budget` and `generation_length_tokens` in the released logs reflect the batch length for early-EOS trajectories; utilisation of those trajectories is understated. feat-004 should compute B at the sequence's own EOS (`true_gen_len`) when reporting utilisation.
 - [ ] feat-008 (memorising model) is the schedule risk: Llama-3.1-70B base needs ~140 GB bf16; fine-tuning 8B is the fallback (≈2–4 GPU-hours). Decide by Sep 12.
 - [ ] Known code issues to fix in feat-003, not before: seed collision in `dap/e2/runner.py::_eval_specs` (offset n0) and the top-up path (offset 10); E1 uses R = T·ln|V| while E2 uses R = K; `B_eff` conflates generation length with budget; instruct model called without chat template.
@@ -51,6 +52,7 @@
 
 - `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`, `GOAL.md` — harness rebuilt for the SaTML plan.
 - `analysis/reanalyze_logs.py` — argparse reanalysis tool (feat-002); `results/*.csv` generated.
+- feat-004: `dap/stats.py` (metrics, index-only seeds), `dap/e1.py` (baselines, summary means), `analysis/reanalyze_logs.py` (k-1 file names), `tests/test_metrics.py`.
 - feat-006: `analysis/certificate_cap.py`, `results/certificate_caps.csv`, `results/certificate_cap_summary.csv`, `figures/certificate_cap_curve.{pdf,png}`.
 - feat-003: `dap/stats.py`, `dap/shared.py`, `dap/e1.py`, `dap/e2/evaluator.py`, `dap/e2/runner.py`, `dap/e2/types.py`, `a_patch/factory.py` (pad id when eos is a list), `tests/`.
 - `~/sub/satml/IMPROVEMENT_PLAN.md`, `~/sub/satml/scripts/*` — plan and script copies (outside repo).
@@ -62,6 +64,7 @@
 - [x] feat-002 evidence command exit 0; see `feature_list.json`.
 - [x] feat-003: `pytest -q tests` 6 passed; `./init.sh` exit 0; GPU smoke `output/smoke_feat003/` invariant_violations=0.
 - [x] feat-006: evidence command exit 0; `results/certificate_cap_summary.csv` written.
+- [x] feat-004: smoke evidence command exit 0 (`output/smoke/`, 24 files); 9 tests pass.
 
 ## Notes for Next Session
 

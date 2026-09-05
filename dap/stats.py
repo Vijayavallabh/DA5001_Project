@@ -1,4 +1,5 @@
 import math
+from difflib import SequenceMatcher
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -13,14 +14,16 @@ def stable_hash(text: str) -> int:
 
 
 def build_trajectory_seeds(prompt_id: str, base_seeds: Tuple[int, ...], n: int, start: int = 0) -> List[int]:
-    """Seed for trajectory index j of a prompt: (hash(prompt_id, base_seeds) mod 2^16) << 16 | j.
+    """Seed for trajectory index j: (hash(base_seeds) mod 2^16) << 16 | j.
 
-    Seeds of one prompt are distinct for all j < 2^16, so a stage-1 call (start=0, n=n0) and a
-    top-up call (start=n0) never collide. The old scheme (base[i % 3] + offset + i) made stage-2
-    index 0 equal stage-1 index 2 whenever the top-up shifted seed values by n0 (feat-003).
+    Seeds are distinct across trajectory indices j < 2^16, so a stage-1 call (start=0, n=n0) and a
+    top-up call (start=n0) never collide. The old scheme (base[i % 3] + offset(prompt) + i) made
+    stage-2 index 0 equal stage-1 index 2 whenever the top-up shifted seed values by n0 (feat-003).
+    Seeds do not depend on prompt_id (kept for API compatibility): E1 and E2 batch prompts that share
+    a seed into one generate() call, so per-prompt seeds would force batch size 1 (feat-004).
     """
     assert 0 <= start and start + n <= 1 << 16, "trajectory index space is [0, 65536)"
-    h = stable_hash(f"{prompt_id}|{tuple(base_seeds)}") & 0xFFFF
+    h = stable_hash(f"traj|{tuple(base_seeds)}") & 0xFFFF
     return [(h << 16) | j for j in range(start, start + n)]
 
 
@@ -56,6 +59,71 @@ def minhash_5gram_score(hypothesis: str, reference: Optional[str]) -> float:
     if not h5 or not r5:
         return 0.0
     return len(h5 & r5) / len(h5 | r5)
+
+
+def _words(text: str) -> List[str]:
+    return text.lower().split()
+
+
+def _blocks(a, b):
+    """Non-overlapping, in-order matching blocks (i in a, j in b, size), longest-first greedy (difflib)."""
+    return [m for m in SequenceMatcher(None, a, b, autojunk=False).get_matching_blocks() if m.size > 0]
+
+
+def lcs_word(hypothesis: str, reference: Optional[str]) -> int:
+    """Longest common substring in words (He et al. 2026 / CopyBench exact-match metric)."""
+    if not reference:
+        return 0
+    return max((m.size for m in _blocks(_words(reference), _words(hypothesis))), default=0)
+
+
+def lcs_char(hypothesis: str, reference: Optional[str]) -> int:
+    """Longest common substring in characters (lower-cased, whitespace-normalised)."""
+    if not reference:
+        return 0
+    a, b = " ".join(_words(reference)), " ".join(_words(hypothesis))
+    return max((m.size for m in _blocks(a, b)), default=0)
+
+
+def acs_word(hypothesis: str, reference: Optional[str], min_len: int = 5) -> int:
+    """Accumulated common substring: total words in common word-substrings of length >= min_len (near-duplicate copying)."""
+    if not reference:
+        return 0
+    return sum(m.size for m in _blocks(_words(reference), _words(hypothesis)) if m.size >= min_len)
+
+
+def nv_recall(hypothesis: str, reference: Optional[str], min_len: int = 20, tau_gap: int = 2, tau_align: int = 1) -> float:
+    """Near-verbatim recall (Ahmed et al. 2026, Eq. 7): fraction of reference words inside in-order near-verbatim
+    spans. Greedy word-level common-substring blocks are merged when separated by <= tau_gap unmatched words on
+    both sides with alignment offset drift <= tau_align; merged spans shorter than min_len words are dropped.
+    Ahmed et al. use l=20 then l=100 on whole books; CopyBench references are ~50-70 words, so min_len=20 here."""
+    if not reference:
+        return 0.0
+    ref, hyp = _words(reference), _words(hypothesis)
+    if not ref:
+        return 0.0
+    merged = []
+    for m in _blocks(ref, hyp):
+        if merged:
+            i0, j0, n0 = merged[-1]
+            gap_ref, gap_hyp = m.a - (i0 + n0), m.b - (j0 + n0)
+            if 0 <= gap_ref <= tau_gap and 0 <= gap_hyp <= tau_gap and abs((m.a - m.b) - (i0 - j0)) <= tau_align:
+                merged[-1] = (i0, j0, m.a + m.size - i0)
+                continue
+        merged.append((m.a, m.b, m.size))
+    matched = sum(n for _, _, n in merged if n >= min_len)
+    return matched / len(ref)
+
+
+def copying_metrics(hypothesis: str, reference: Optional[str]) -> dict:
+    return {
+        "rouge_l": rouge_l_score(hypothesis, reference),
+        "minhash_5gram": minhash_5gram_score(hypothesis, reference),
+        "lcs_word": lcs_word(hypothesis, reference),
+        "lcs_char": lcs_char(hypothesis, reference),
+        "acs_word": acs_word(hypothesis, reference),
+        "nv_recall": nv_recall(hypothesis, reference),
+    }
 
 
 def ebb_upper_bound_chapman(samples: List[float], R: float, delta: float) -> float:

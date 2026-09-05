@@ -17,7 +17,7 @@ from a_patch import AnchoredDecodingFactory
 from dataclasses import replace
 
 from .shared import CLASS_ORDER, PromptRecord, chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat
-from .stats import ebb_upper_bound_chapman, build_trajectory_seeds, rouge_l_score, minhash_5gram_score
+from .stats import ebb_upper_bound_chapman, build_trajectory_seeds, copying_metrics
 from .sampling import apply_e1_sampling, validate_sample_counts
 
 
@@ -81,7 +81,7 @@ class H1AuditRunner:
         self.factory = AnchoredDecodingFactory.from_pretrained(
             safe_model_path=config.safe_model_path,
             risky_model_path=config.risky_model_path,
-            k_radius=config.k_values[0],
+            k_radius=max(0.0, config.k_values[0]),  # constructor rejects -1; generate(k_radius=k) sets the real k per run
             verbose=config.verbose,
             use_prefix_debt=config.use_prefix_debt,
             prefix_n=config.prefix_n,
@@ -227,7 +227,7 @@ class H1AuditRunner:
                     "anchor_model": self.config.safe_model_path,
                     "level": "token",
                     "k": k,
-                    "K": k * self.config.max_new_tokens,
+                    "K": budget_K(k, self.config.max_new_tokens),
                     "T_max": self.config.max_new_tokens,
                     "B_max": None,
                     "n": self.config.prefix_n,
@@ -250,8 +250,7 @@ class H1AuditRunner:
                     "full_text": full_text,
                     "generation_length_tokens": gen_len,
                     "generation_length_bytes": len(gen_text.encode("utf-8")),
-                    "rouge_l": rouge_l_score(gen_text, prompt.reference),
-                    "minhash_5gram": minhash_5gram_score(gen_text, prompt.reference),
+                    **copying_metrics(gen_text, prompt.reference),
                     "fluency_score": None,
                     "final_budget": final_budget,
                     "budget_utilization": budget_utilization,
@@ -306,7 +305,7 @@ class H1AuditRunner:
         print(f"[stage] starting E1 with {len(prompts)} prompts", flush=True)
 
         for k in self.config.k_values:
-            K = k * self.config.max_new_tokens
+            K = budget_K(k, self.config.max_new_tokens)
             class_spends = defaultdict(list)
             class_records = defaultdict(list)
             print(f"[stage] running k={k}", flush=True)
@@ -344,19 +343,31 @@ class H1AuditRunner:
 
 
 SUMMARY_HEADERS = ["class", "k", "K", "M", "mean_Z", "var_Z", "R", "delta", "U_EBB", "certified",
-                   "util_max", "util_gt_0p9", "invariant_violations", "active_step_pct", "forced_safe_step_pct"]
+                   "util_max", "util_gt_0p9", "invariant_violations", "active_step_pct", "forced_safe_step_pct",
+                   "rouge_l_mean", "lcs_word_mean", "lcs_char_mean", "acs_word_mean", "nv_recall_mean", "gen_len_mean"]
+METRIC_KEYS = ("rouge_l", "lcs_word", "lcs_char", "acs_word", "nv_recall")
+
+
+def budget_K(k: float, t_max: int) -> float:
+    """Sequence budget. k = -1 is the risky-only baseline (no budget, K = inf); k = 0 is safe-only (K = 0)."""
+    return float("inf") if k == -1.0 else k * t_max
 
 
 def summary_row(split_name: str, k: float, K: float, spends: List[float], delta: float, aggregates: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Per-class summary. R = K because Z is in [0, K] by construction (feat-003)."""
+    """Per-class summary. R = K because Z is in [0, K] by construction (feat-003).
+    Baselines (k in {-1, 0}) carry no certificate, so no Bernstein arithmetic is done for them (feat-004)."""
     mean_z = float(np.mean(spends)) if spends else 0.0
     var_z = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
-    u_ebb = ebb_upper_bound_chapman(spends, K, delta)
+    baseline = k in (-1.0, 0.0)
+    u_ebb = None if baseline else ebb_upper_bound_chapman(spends, K, delta)
     utils = [a["utilisation"] for a in aggregates if a.get("utilisation") is not None]
     steps = sum(a.get("steps_forced_safe", 0) + a.get("steps_active", 0) + a.get("steps_risky_unchanged", 0) for a in aggregates)
+    means = {f"{m}_mean": float(np.mean([a[m] for a in aggregates])) if aggregates else 0.0 for m in METRIC_KEYS}
+    means["gen_len_mean"] = float(np.mean([a["generation_length_tokens"] for a in aggregates])) if aggregates else 0.0
     return {
         "class": split_name, "k": k, "K": K, "M": len(spends),
-        "mean_Z": mean_z, "var_Z": var_z, "R": K, "delta": delta, "U_EBB": u_ebb, "certified": bool(u_ebb <= K),
+        "mean_Z": mean_z, "var_Z": var_z, "R": None if baseline else K, "delta": delta, "U_EBB": u_ebb,
+        "certified": None if baseline else bool(u_ebb <= K), **means,
         "util_max": max(utils) if utils else 0.0, "util_gt_0p9": sum(u > 0.9 for u in utils),
         "invariant_violations": sum(1 for a in aggregates if a.get("invariant_ok") is False),
         "active_step_pct": 100.0 * sum(a.get("steps_active", 0) for a in aggregates) / steps if steps else 0.0,
@@ -369,7 +380,7 @@ def rebuild_summary_from_saved_trajectories(config: AuditConfig) -> Dict[str, An
     summary_rows = []
 
     for k in config.k_values:
-        K = k * config.max_new_tokens
+        K = budget_K(k, config.max_new_tokens)
         for split_name in CLASS_ORDER:
             path = output_dir / f"trajectories_k{k:g}_{split_name}.jsonl"
             if not path.exists():
@@ -436,6 +447,8 @@ def parse_args() -> AuditConfig:
         raise ValueError(f"--num-classes={args.num_classes} does not match len(CLASS_ORDER)={len(CLASS_ORDER)}. Keep them aligned for correct Bonferroni correction.")
     if not args.k_values:
         raise ValueError("--k-values must contain at least one value.")
+    if any(k < 0 and k != -1.0 for k in args.k_values):
+        raise ValueError("--k-values must be -1 (risky only), 0 (safe only), or positive.")
 
     return AuditConfig(
         data_dir=args.data_dir, output_dir=args.output_dir,
