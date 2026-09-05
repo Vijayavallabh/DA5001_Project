@@ -49,6 +49,20 @@ OPENINGS = {
 }
 
 
+def pick_prose_paragraphs(paragraphs, min_chars=400):
+    """Drop Gutenberg front matter: keep paragraphs of at least min_chars that are not chapter/contents listings."""
+    out = []
+    for para in paragraphs:
+        q = " ".join(para.split())
+        if len(q) < min_chars:
+            continue
+        upper = q.upper()
+        if upper.count("CHAPTER") >= 3 or upper.count("BOOK ") >= 3 or "CONTENTS" in upper[:40] or "PROJECT GUTENBERG" in upper:
+            continue
+        out.append(q)
+    return out
+
+
 def fetch_gutenberg(gid, cache_dir):
     os.makedirs(cache_dir, exist_ok=True)
     path = os.path.join(cache_dir, f"pg{gid}.txt")
@@ -62,7 +76,8 @@ def fetch_gutenberg(gid, cache_dir):
     body = txt[m.end():] if m else txt
     m2 = re.search(r"\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG EBOOK", body)
     body = body[:m2.start()] if m2 else body
-    return " ".join(body.split())
+    paras = pick_prose_paragraphs(re.split(r"\n\s*\n", body))
+    return " ".join(paras)
 
 
 @torch.no_grad()

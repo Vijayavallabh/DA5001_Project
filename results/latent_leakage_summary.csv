@@ -1,0 +1,7 @@
+source,kind,n,S_per_tok_median,S_per_tok_p10,nv_recall_mean,recall_ge_0p5_pct
+copybench_opening,famous_first_sentence,16,4.35,3.056,,
+copybench_passage,passage_same_length,16,4.73,3.956,,
+gutenberg,anchor_greedy_recall,50,,,0.0,0.0
+gutenberg,anchor_sampled_recall,50,,,0.0,0.0
+gutenberg,deep,50,3.326,2.902,,
+gutenberg,opening,50,3.108,2.449,,

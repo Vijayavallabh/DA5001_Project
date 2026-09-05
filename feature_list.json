@@ -262,9 +262,9 @@
       "dependencies": [
         "feat-004"
       ],
-      "status": "not-started",
+      "status": "done",
       "description": "50 Project Gutenberg passages present in the Common Pile plus, for each of the 16 CopyBench novels, the opening 50 tokens and one deep 50-token passage: TinyComma per-token surprisal and k=0 reproduction (near-verbatim recall, LCS); expect famous openings to have low anchor surprisal through quotation (He et al. App. A.3 call this latent leakage). Output results/safe_model_copying.csv with k=-1 and k=0 rows. About 0.5 GPU-hour.",
-      "evidence": ""
+      "evidence": "$ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 .venv/bin/python analysis/latent_leakage.py --out results (2026-09-06 01:50, exit 0, ~4 min; Gutenberg texts cached in data/gutenberg/) -> results/safe_model_copying.csv (233 rows), results/latent_leakage_summary.csv. Output: 50 public-domain books (Project Gutenberg, in the Common Pile): anchor per-token surprisal of the opening 100 tokens median 3.11 nats vs 3.33 for a passage 20,000 characters in (lower for 68% of books; the two most quoted openings, A Tale of Two Cities and The Adventures of Sherlock Holmes, at 1.21 and 1.20 nats/token); k=0 (anchor-only) reproduction of the opening from its first sentence: greedy and sampled near-verbatim recall 0.00 for all 50 books. Widely quoted first sentences of the 16 CopyBench novels (title-only prompt): median 4.35 nats/token vs 4.73 for a same-length passage of the same novel (lower for 13 of 16; Harry Potter 2.76, 1984 3.19). Reading: latent leakage into the anchor is measurable on famous openings but does not produce reproduction at k=0; tests/test_latent_leakage.py (2 tests) pass."
     },
     {
       "id": "feat-025",
