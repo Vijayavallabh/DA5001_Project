@@ -3,7 +3,7 @@
 ## Current Objective
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
-- Current status: feat-001..003 done. Next: feat-006 (certificate-strength audit, local GPU), then feat-004/005.
+- Current status: feat-001..003 and feat-006 done. Next: feat-004 (k=-1/0 baselines + LCS/ACS/nv-recall metrics), then feat-005 (regime sweep).
 - Branch / commit: `master`, one commit per feature (feat-001 07a446c, feat-002 b717255, feat-003 next).
 
 ## Completed This Session
@@ -13,6 +13,7 @@
 - [x] Harness: `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `init.sh`, `GOAL.md`, this file.
 - [x] feat-002: `analysis/reanalyze_logs.py` → six `results/*.csv`; Known Truths reproduced.
 - [x] feat-003: seeds, utilisation/activity logging, R = K, `--use-chat-template`, `tests/` (6 passing), GPU smoke OK.
+- [x] feat-006: certificate-strength audit; certificate vacuous for 100% of CopyBench passages at k=3, 44% at k=1.
 
 ## Verification Evidence
 
@@ -23,6 +24,7 @@
 | GPU | `.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.device_count())"` | True, 5 local GPUs | DGX (6×H100) also available via `dgx-gpu` |
 | feat-002 | `.venv/bin/python analysis/reanalyze_logs.py --logs output --out results` | PASS (0.195% active at k=3, 96/999 L>K at k=1, 0 violations) | 6.8 s, no GPU |
 | feat-003 | `.venv/bin/python -m pytest -q tests && ./init.sh` | PASS (6 passed, exit 0) | plus GPU smoke on local GPU 1 |
+| feat-006 | `CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/certificate_cap.py --data data --out results` | PASS (exit 0) | ~2 min, one A100 |
 | Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
 
 ## Files Changed
@@ -49,4 +51,4 @@
 
 ## Recommended Next Step
 
-- Start feat-006: `analysis/certificate_cap.py` — TinyComma surprisal S(x) of each CopyBench reference given its prefix, caps min(1,(K+ln2)/S) for K in {20,30,50,100,200,600,1000}, `results/certificate_caps.csv`, `figures/certificate_cap_curve.pdf`. Run locally on a free A100 with `HF_HUB_OFFLINE=1`.
+- Start feat-004: k ∈ {-1, 0} baselines in E1 (K = inf/0, no certification arithmetic), LCS (word/char), accumulated common substring, nv-recall per record; smoke on a local A100 with `HF_HUB_OFFLINE=1`.
