@@ -1,0 +1,5 @@
+k,K,split,n_traj,n_steps,active_pct,forced_safe_pct,risky_unchanged_pct,traj_with_active_step,traj_with_forced_step,identical_gen_vs_next_k_pct,Z_mean,Z_max,util_mean,util_p95,util_max,util_gt_0p9,invariant_violations,per_step_violations,max_step_overshoot,gen_len_mean,early_eos_lt50,rougeL_mean,jacc5_gt0
+1.0,200.0,attack_train,999,198036,6.274,2.858,90.868,884,999,4.4,160.36,195.44,0.8298,0.9966,1.0,352,0,0,0.0,198.2,7,0.0827,0
+3.0,600.0,attack_train,1000,199206,0.195,0.772,99.033,346,1000,57.1,176.78,352.67,0.2978,0.4011,0.5939,0,0,0,0.0,199.2,4,0.0866,1
+3.0,600.0,test,1500,298889,0.187,0.715,99.098,507,1490,,174.01,346.78,0.293,0.3839,0.5825,0,0,0,0.0,199.3,5,0.0776,16
+5.0,1000.0,attack_train,1000,199602,0.108,0.406,99.486,206,800,,179.13,352.93,0.1803,0.2448,0.3551,0,0,0,0.0,199.6,2,0.0864,3

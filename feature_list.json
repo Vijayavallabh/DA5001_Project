@@ -14,16 +14,20 @@
       "name": "Reanalysis of released logs (C1 accounting, C2 regime, C4 event-level tails)",
       "description": "Turn analysis/reanalyze_logs.py and analysis/surprisal.py into an argparse tool that reads output/h1_outputs/trajectories_k*_*.jsonl and writes results/regime_table.csv (activity %, identical-generation %, utilisation max, invariant violations), results/llr_tails.csv (realised LLR quantiles, #L>K, max single-step boost), results/prefix_debt_forced_tokens.csv, and results/surprisal.csv. Numbers must reproduce the Known Truths in AGENTS.md. Also check the seed-collision count in output/h2_outputs/heldout_validation.jsonl.",
       "priority": "P0",
-      "dependencies": ["feat-001"],
-      "status": "not-started",
-      "evidence": "unzip -o output.zip 'output/h1_outputs/trajectories_k1_attack_train.jsonl' 'output/h1_outputs/trajectories_k3_attack_train.jsonl' 'output/h1_outputs/trajectories_k5_attack_train.jsonl' 'output/h1_outputs/trajectories_k3_test.jsonl' 'output/h2_outputs/heldout_validation.jsonl' && .venv/bin/python analysis/reanalyze_logs.py --logs output --out results && cat results/regime_table.csv"
+      "dependencies": [
+        "feat-001"
+      ],
+      "status": "done",
+      "evidence": "$ unzip -o output.zip 'output/h1_outputs/trajectories_k1_attack_train.jsonl' 'output/h1_outputs/trajectories_k3_attack_train.jsonl' 'output/h1_outputs/trajectories_k5_attack_train.jsonl' 'output/h1_outputs/trajectories_k3_test.jsonl' 'output/h2_outputs/heldout_validation.jsonl' && .venv/bin/python analysis/reanalyze_logs.py --logs output --out results && cat results/regime_table.csv\n(2026-09-05, exit 0, 6.8 s)\nloaded output/h1_outputs/trajectories_k1_attack_train.jsonl: 999 trajectories\nloaded output/h1_outputs/trajectories_k3_attack_train.jsonl: 1000 trajectories\nloaded output/h1_outputs/trajectories_k3_test.jsonl: 1500 trajectories\nloaded output/h1_outputs/trajectories_k5_attack_train.jsonl: 1000 trajectories\nk=1.0 attack_train: active=6.274% identical_vs_next_k=4.4 util_max=1.0 invariant_viol=0 step_viol=0\nk=3.0 attack_train: active=0.195% identical_vs_next_k=57.1 util_max=0.5939 invariant_viol=0 step_viol=0\nk=3.0 test: active=0.187% identical_vs_next_k= util_max=0.5825 invariant_viol=0 step_viol=0\nk=5.0 attack_train: active=0.108% identical_vs_next_k= util_max=0.3551 invariant_viol=0 step_viol=0\nk=1.0 attack_train: L>K in 96/999 (max L=245.75, max step boost=21.35)\nk=3.0 attack_train: L>K in 0/1000 (max L=344.89, max step boost=20.298)\nk=3.0 test: L>K in 0/1500 (max L=372.43, max step boost=19.878)\nk=5.0 attack_train: L>K in 0/1000 (max L=345.59, max step boost=26.161)\nk,K,split,n_traj,n_steps,active_pct,forced_safe_pct,risky_unchanged_pct,traj_with_active_step,traj_with_forced_step,identical_gen_vs_next_k_pct,Z_mean,Z_max,util_mean,util_p95,util_max,util_gt_0p9,invariant_violations,per_step_violations,max_step_overshoot,gen_len_mean,early_eos_lt50,rougeL_mean,jacc5_gt0\n1.0,200.0,attack_train,999,198036,6.274,2.858,90.868,884,999,4.4,160.36,195.44,0.8298,0.9966,1.0,352,0,0,0.0,198.2,7,0.0827,0\n3.0,600.0,attack_train,1000,199206,0.195,0.772,99.033,346,1000,57.1,176.78,352.67,0.2978,0.4011,0.5939,0,0,0,0.0,199.2,4,0.0866,1\n3.0,600.0,test,1500,298889,0.187,0.715,99.098,507,1490,,174.01,346.78,0.293,0.3839,0.5825,0,0,0,0.0,199.3,5,0.0776,16\n5.0,1000.0,attack_train,1000,199602,0.108,0.406,99.486,206,800,,179.13,352.93,0.1803,0.2448,0.3551,0,0,0,0.0,199.6,2,0.0864,3\nKnown Truths reproduced: active 0.195% (k=3) / 6.27% (k=1); 57.1% identical k3 vs k5; 0 invariant and 0 per-step violations in 4,499 trajectories; 96/999 with L>K at k=1; results/seed_collisions.csv: every N=20 held-out row (5 in h2_outputs, 6 in h2_k5_outputs) has exactly 1 duplicated spend, N=4 rows have 0.\nAlso written: results/llr_tails.csv, results/prefix_debt_forced_tokens.csv (leading forced tokens == floor(delta_init/k) in 993/999, 998/1000, 1497/1500, 1000/1000), results/surprisal.csv (cap (K+ln2)/S vacuous for 1.0%/9.6%/9.8%/49.5% at k=1/3/3-test/5), results/per_trajectory.csv (4,499 rows)."
     },
     {
       "id": "feat-003",
       "name": "Fix evaluation seeding, utilisation logging, and range consistency",
       "description": "(a) Replace dap/stats.py build_trajectory_seeds with hash(prompt_id, trajectory_index) seeds over a disjoint index space so stage-1/stage-2 top-ups never collide (dap/e2/runner.py _eval_specs and the top-up path); (b) log per-trajectory utilisation Z/max(0,B) and per-step activity counts (theta==0, 0<theta<1, theta==1) in E1 and E2 aggregates; (c) use one range parameter everywhere (Z is in [0,K]); (d) add --use-chat-template flag that wraps prompts with the risky tokenizer's chat template. Add tests/test_seeds.py (no duplicate seeds across a 4+16 split for 1000 ids) and tests/test_invariant.py (Z <= max(0,B)+1e-3 on a saved log sample).",
       "priority": "P0",
-      "dependencies": ["feat-001"],
+      "dependencies": [
+        "feat-001"
+      ],
       "status": "not-started",
       "evidence": ".venv/bin/python -m pytest -q tests && ./init.sh"
     },
@@ -32,7 +36,9 @@
       "name": "Baselines and copying metrics in E1",
       "description": "E1 accepts k in {-1, 0} (risky-only, safe-only) with K reported as inf/0 and no certification arithmetic; adds longest common substring (word and char), accumulated common substring, and nv-recall against the reference to every record; adds --k-values -1 0 0.1 0.15 0.25 0.5 1 3 5 support with a --trajectories-per-prompt override. Smoke test on DGX with caps=2.",
       "priority": "P0",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "not-started",
       "evidence": ".venv/bin/python h1.py --k-values -1 0 0.15 1 --trajectories-per-prompt 2 --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 --output-dir output/smoke --trust-remote-code --parallelize && ls output/smoke"
     },
@@ -41,7 +47,9 @@
       "name": "Regime sweep on DGX (C2)",
       "description": "Run E1 on the Stage-1 prompt set (caps 200/150/150/100/150/150) at k in {-1, 0, 0.1, 0.15, 0.25, 0.5, 1} with 3 trajectories per prompt, chat template on and off for the instruct model. Produce results/regime_sweep.csv (per k: % active steps, % identical to k=-1 output, forced-safe leading tokens, ROUGE-L, LCS, nv-recall) and figures/regime_sweep.pdf.",
       "priority": "P0",
-      "dependencies": ["feat-004"],
+      "dependencies": [
+        "feat-004"
+      ],
       "status": "not-started",
       "evidence": "cat results/regime_sweep.csv && ls figures/regime_sweep.pdf"
     },
@@ -50,7 +58,9 @@
       "name": "Certificate-strength audit (C3)",
       "description": "analysis/certificate_cap.py: for every CopyBench reference (attack_train, val, test) compute S(x) = -ln p_s(reference | prefix) with TinyComma, and the cap min(1, (K+ln2)/S) for K in {20,30,50,100,200,600,1000}. Output results/certificate_caps.csv (per-passage S and caps) and figures/certificate_cap_curve.pdf (fraction of passages with vacuous certificate vs k). Include the best-of-n equivalence (K nats ~ best-of-e^K) as a labelled axis.",
       "priority": "P0",
-      "dependencies": ["feat-001"],
+      "dependencies": [
+        "feat-001"
+      ],
       "status": "not-started",
       "evidence": ".venv/bin/python analysis/certificate_cap.py --data data --out results && head results/certificate_caps.csv && ls figures/certificate_cap_curve.pdf"
     },
@@ -59,7 +69,10 @@
       "name": "Event-level audit and anytime-valid statistics (C4, C6)",
       "description": "From feat-002 and feat-005 outputs: realised LLR L(y) distribution and tail per k, fraction with L > K, empirical max-divergence lower bound, single-step burst distribution; figures/llr_tails.pdf. Implement dap/stats.py anytime_valid_cs() (Waudby-Smith and Ramdas betting CS or Chugg and Ramdas closed-form empirical-Bernstein CS) for [0,1]-scaled quantities and use it wherever a mean is reported; delete ebb_upper_bound_chapman call sites.",
       "priority": "P0",
-      "dependencies": ["feat-002", "feat-005"],
+      "dependencies": [
+        "feat-002",
+        "feat-005"
+      ],
       "status": "not-started",
       "evidence": ".venv/bin/python -m pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap | wc -l"
     },
@@ -68,7 +81,9 @@
       "name": "Memorising risky model",
       "description": "Provide a risky model that regurgitates CopyBench passages when unconstrained: either meta-llama/Llama-3.1-70B (base) if it fits the DGX, or Llama-3.1-8B fine-tuned for a few epochs on the 16 CopyBench novels' excerpts (train on attack_train and val sources only; test split held out). Verify greedy and sampled extraction at k=-1 (nv-recall >= 0.8 on training passages). Save recipe under recipes/memorizing_model.md; do not commit weights.",
       "priority": "P0",
-      "dependencies": ["feat-004"],
+      "dependencies": [
+        "feat-004"
+      ],
       "status": "not-started",
       "evidence": ".venv/bin/python h1.py --risky-model-path <memorizing-model> --k-values -1 --trajectories-per-prompt 1 --cap-attack-train 50 --output-dir output/memorizing_check && cat results/memorizing_model_recall.csv"
     },
@@ -77,7 +92,9 @@
       "name": "Composition attack (C5b)",
       "description": "analysis/composition_attack.py: split each memorised passage into L-token windows (L in {20,50}), query each window's true prefix (and the previously extracted prefix) under anchored decoding at k in {0.15, 0.5, 1, 3}, stitch, and report per-query KL spend (must be <= K) alongside total nv-recall and longest reconstructed span. Output results/composition.csv and figures/composition.pdf. Include k=-1 and k=0 baselines.",
       "priority": "P0",
-      "dependencies": ["feat-008"],
+      "dependencies": [
+        "feat-008"
+      ],
       "status": "not-started",
       "evidence": "cat results/composition.csv && ls figures/composition.pdf"
     },
@@ -86,7 +103,9 @@
       "name": "Bank-and-burst attack and LCS-objective search (C5a)",
       "description": "Construct prompts whose first ~150 generated tokens are content on which risky and safe models agree (bank ~150k nats), followed by a memorised continuation; log banked budget at the pivot, per-step spend after it, and verbatim span. Repurpose dap/e2 optimizer with objective = longest common substring with the reference at fixed k; remove the surrogate, k-DPP, and the 'stay within budget' instruction. Output results/bank_burst.csv and figures/bank_burst.pdf.",
       "priority": "P1",
-      "dependencies": ["feat-008"],
+      "dependencies": [
+        "feat-008"
+      ],
       "status": "not-started",
       "evidence": "cat results/bank_burst.csv && ls figures/bank_burst.pdf"
     },
@@ -95,7 +114,9 @@
       "name": "Format-evasion attack (C5d)",
       "description": "All-caps, hyphenated, and translated regurgitation prompts (Ippolito et al. 2023) with the memorising model at k in {0.15, 1}; report KL cost of the format change and overlap before and after normalisation. Output results/format_evasion.csv.",
       "priority": "P2",
-      "dependencies": ["feat-008"],
+      "dependencies": [
+        "feat-008"
+      ],
       "status": "not-started",
       "evidence": "cat results/format_evasion.csv"
     },
@@ -104,7 +125,9 @@
       "name": "Safe model is not safe (C5e)",
       "description": "Select 50 Project Gutenberg passages present in the Common Pile; run anchored decoding at k=0 (safe model only) and k=0.15; report nv-recall and LCS. Output results/safe_model_copying.csv.",
       "priority": "P2",
-      "dependencies": ["feat-004"],
+      "dependencies": [
+        "feat-004"
+      ],
       "status": "not-started",
       "evidence": "cat results/safe_model_copying.csv"
     },
@@ -113,7 +136,12 @@
       "name": "Figures and tables for the paper",
       "description": "Rewrite figures/make_figures.py to build every figure from results/*.csv: regime_sweep, certificate_cap_curve, llr_tails, composition, bank_burst (if present). Delete bernstein_constant, r_eff_comparison, heldout_scatter, spend_distributions. Copy outputs to ~/sub/satml/figures/.",
       "priority": "P0",
-      "dependencies": ["feat-005", "feat-006", "feat-007", "feat-009"],
+      "dependencies": [
+        "feat-005",
+        "feat-006",
+        "feat-007",
+        "feat-009"
+      ],
       "status": "not-started",
       "evidence": ".venv/bin/python figures/make_figures.py && ls ~/sub/satml/figures/*.pdf"
     },
@@ -122,7 +150,9 @@
       "name": "Manuscript rewrite for SaTML 2027",
       "description": "Rewrite ~/sub/satml/satml_2027.tex per IMPROVEMENT_PLAN.md Sections 3 and 7: threat-model section, contributions C1-C6, one-paragraph accounting result, cut the EBB/proxy-artifact sections to an appendix paragraph, Open Science section, LLM usage section, <= 12 pages body in IEEEtran. Expand references.bib to >= 40 entries from Section 8 of the plan with complete metadata. Every number in the text must trace to a results/*.csv file.",
       "priority": "P0",
-      "dependencies": ["feat-013"],
+      "dependencies": [
+        "feat-013"
+      ],
       "status": "not-started",
       "evidence": "cd ~/sub/satml && pdflatex -interaction=nonstopmode satml_2027.tex && bibtex satml_2027 && pdflatex -interaction=nonstopmode satml_2027.tex && pdflatex -interaction=nonstopmode satml_2027.tex && grep -c '^@' references.bib && pdfinfo satml_2027.pdf | grep Pages"
     },
@@ -131,7 +161,9 @@
       "name": "Artifact packaging (Open Science)",
       "description": "Build artifact/ with anonymised code snapshot, analysis scripts, results/*.csv, prompt sets, memorising-model recipe, README with exact reproduction commands, and a manifest with sha256 sums. Zip it for the Oct 2 artifact deadline (Zenodo upload itself is human-only).",
       "priority": "P0",
-      "dependencies": ["feat-014"],
+      "dependencies": [
+        "feat-014"
+      ],
       "status": "not-started",
       "evidence": "ls artifact && sha256sum -c artifact/MANIFEST.sha256 && grep -ci 'author' artifact/README.md"
     },
@@ -140,7 +172,10 @@
       "name": "Human-only: abstract registration, submission, Zenodo upload",
       "description": "Register abstract by Sep 22 2026, submit paper by Sep 29 2026, upload artifacts by Oct 2 2026 (all 11:59 PM AoE). Agents must not attempt this; leave the final PDF and artifact zip paths in session-handoff.md.",
       "priority": "P0",
-      "dependencies": ["feat-014", "feat-015"],
+      "dependencies": [
+        "feat-014",
+        "feat-015"
+      ],
       "status": "blocked",
       "evidence": "Human confirms submission IDs in progress.md"
     }

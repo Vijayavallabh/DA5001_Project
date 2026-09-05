@@ -21,7 +21,7 @@ Before writing code:
 - **Verification required.** Nothing is done without running its evidence command and pasting the output into `feature_list.json`.
 - **Baselines are mandatory.** Every experiment that reports a copying or spend metric at some k also reports k = −1 (risky model only) and k = 0 (safe model only) on the same prompts and seeds.
 - **Per-trajectory, not per-mean.** A "budget violation" is only a violation if a single trajectory has Z > max(0, B) + 1e-3 or a step has a_t > k_t + 1e-3. Do not reintroduce the empirical-Bernstein proxy, ρ = U_EBB/B_eff, the surrogate ensemble, or the k-DPP archive. If a mean estimate is genuinely needed, use an anytime-valid confidence sequence (`feat-007`).
-- **Known truths from the released logs** (do not spend compute re-establishing them; cite `results/` once `feat-002` is done): constraint active in 0.19% of steps at k=3 and 6.3% at k=1; 57% of generations identical between k=3 and k=5; zero invariant violations in 4,500 trajectories; 96/999 trajectories exceed K in realised log-likelihood ratio at k=1; every N=20 held-out row in Stage 2 contains one duplicated sample (seed collision, `feat-003`).
+- **Known truths from the released logs** (do not spend compute re-establishing them; cite `results/` once `feat-002` is done): constraint active in 0.19% of steps at k=3 and 6.3% at k=1; 57% of generations identical between k=3 and k=5; zero invariant violations in 4,499 trajectories; 96/999 trajectories exceed K in realised log-likelihood ratio at k=1; every N=20 held-out row in Stage 2 contains one duplicated sample (seed collision, `feat-003`); the anchor writes the first floor(δ_init/k) tokens of every answer (δ_init ≈ 6 nats). All reproduced in `results/` by `feat-002`.
 - **Compute.** Local box: 4×A100 80GB (`nvidia-smi` indices 0,1,2,4; GPU 3 is a 4 GB T400, never use it; 0 and 4 may be partially occupied by other users, check before launching). DGX: 6×H100 through the `dgx-gpu` skill for the larger runs (70B base, sweeps). Set `CUDA_VISIBLE_DEVICES` explicitly for every job. When syncing to the DGX, sync only `data/`, code, and small results; never `output.zip` or `.venv`.
 - **Secrets.** `HF_TOKEN` lives in `.env` (gitignored). `meta-llama/Llama-3.1-8B-Instruct` is gated.
 - **Do not modify** `~/sub/neurips_2026.tex`, `output.zip`, or anything under `data/`. New logs go to `output/` (gitignored); summaries go to `results/` (committed, small).
@@ -36,7 +36,7 @@ Before writing code:
 | Stats | `dap/stats.py` (`build_trajectory_seeds` has the collision; `ebb_upper_bound_chapman` is to be retired) |
 | Models | safe `jacquelinehe/tinycomma-1.8b-llama3-tokenizer`, risky `meta-llama/Llama-3.1-8B-Instruct`, optimizer `Qwen/Qwen2.5-7B-Instruct` |
 | Released logs | `output.zip` (2.4 GB; `unzip -o output.zip 'output/h1_outputs/trajectories_k3_attack_train.jsonl'` etc.) |
-| Log reanalysis | `analysis/reanalyze_logs.py`, `analysis/surprisal.py` (run from a dir containing unzipped `output/`) |
+| Log reanalysis | `analysis/reanalyze_logs.py --logs output --out results` (feat-002; writes `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv`) |
 | Paper, bib, figures | `~/sub/satml/satml_2027.tex`, `references.bib`, `figures/` |
 | No test suite yet | `tests/` is created by `feat-003`; `./init.sh` runs it when present |
 
