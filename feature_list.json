@@ -153,8 +153,8 @@
       "dependencies": [
         "feat-013"
       ],
-      "status": "in-progress",
-      "evidence": "cd ~/sub/satml && pdflatex -interaction=nonstopmode satml_2027.tex && bibtex satml_2027 && pdflatex -interaction=nonstopmode satml_2027.tex && pdflatex -interaction=nonstopmode satml_2027.tex && grep -c '^@' references.bib && pdfinfo satml_2027.pdf | grep Pages"
+      "status": "done",
+      "evidence": "$ cd /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml && ~/.local/bin/tectonic -X compile satml_2027.tex   # pdflatex+bibtex are not installed on this box (no sudo; conda texlive-core is broken); tectonic runs the same TeX/BibTeX pipeline\n(2026-09-05, exit 0; no overfull boxes, no undefined references or citations)\nsatml_2027.pdf: 10 pages in IEEEtran conference format INCLUDING references (body ends on page 9); 48 numbered references cited out of 51 entries in references.bib (all metadata fetched from arXiv/publishers and title-checked).\nSections: Introduction, Threat Model and Audit Goals, Background: What a KL Budget Bounds, Related Work, An Audit Protocol That Can Fail, Accounting/Regime/Certificate Strength (with Table: released logs), The Small-Budget Regime, Adaptive Attacks (memorising model, composition, bank-and-burst design), Results of the Attacks (Tables: memoriser extraction, composition), Discussion (mitigations, fairness), Limitations, Conclusion, Open Science, LLM Usage Considerations. Figures: certificate_cap_curve, llr_tails, composition, regime_sweep (all from results/*.csv via figures/make_figures.py).\nFiles: satml_2027.tex (skeleton) + sections/{intro,threat_model,background,related_work,protocol,results_logs,sweep,attacks,attack_results,discussion,open_science}.tex; the arXiv version is preserved as satml_2027_arxiv_v1.tex. Anonymous author block. Every number in the text traces to results/*.csv (regime_table, llr_tails, prefix_debt_forced_tokens, surprisal, certificate_cap_summary, certificate_caps_memoriser, regime_sweep, memorizing_model_recall, composition_summary)."
     },
     {
       "id": "feat-015",
@@ -164,7 +164,7 @@
       "dependencies": [
         "feat-014"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "evidence": "ls artifact && sha256sum -c artifact/MANIFEST.sha256 && grep -ci 'author' artifact/README.md"
     },
     {
