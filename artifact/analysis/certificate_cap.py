@@ -64,10 +64,10 @@ def plot(summary, figures, t_max=200):
     allrows = sorted([r for r in summary if r["split"] == "all"], key=lambda r: r["k"])
     ks = [r["k"] for r in allrows]
     ax.plot(ks, [r["vacuous_pct"] for r in allrows], "o-", color="C3", label="passages with vacuous certificate (S ≤ K)")
-    ax.plot(ks, [100 * r["cap_median"] for r in allrows], "s--", color="C0", label="median cap on P(reproduce reference)")
+    ax.plot(ks, [100 * r["cap_median"] for r in allrows], "s--", color="C0", label="median cap on the reproduction probability")
     for split, ls in zip(SPLITS, (":", "-.", (0, (1, 1)))):
         rows = sorted([r for r in summary if r["split"] == split], key=lambda r: r["k"])
-        ax.plot([r["k"] for r in rows], [r["vacuous_pct"] for r in rows], linestyle=ls, color="C3", lw=0.8, alpha=0.6, label=f"vacuous, {split}")
+        ax.plot([r["k"] for r in rows], [r["vacuous_pct"] for r in rows], linestyle=ls, color="C3", lw=0.8, alpha=0.6, label=f"vacuous, {dict(attack_train='attack split', val='validation', test='test').get(split, split)}")
     ax.set_xscale("log")
     ax.set_xticks(ks)
     ax.set_xticklabels([f"{k:g}\nK={k * t_max:g}" for k in ks])

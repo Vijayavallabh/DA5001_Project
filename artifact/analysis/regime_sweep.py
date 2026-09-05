@@ -96,15 +96,15 @@ def plot(rows, path):
         ks = [r["k"] for r in A]
         ls = "-" if vi == 0 else "--"
         ax = axes[0]
-        ax.plot(ks, [r["active_step_pct"] for r in A], "o" + ls, color="C0", label=f"solver active (0<θ<1), {name}")
-        ax.plot(ks, [r["forced_safe_step_pct"] for r in A], "s" + ls, color="C3", label=f"forced safe (θ=0), {name}")
-        ax.plot(ks, [r["identical_to_risky_pct"] for r in A], "^" + ls, color="C2", label=f"identical to risky-only output, {name}")
+        ax.plot(ks, [r["active_step_pct"] for r in A], "o" + ls, color="C0", label=f"constraint active (0<θ<1), {name}")
+        ax.plot(ks, [r["forced_safe_step_pct"] for r in A], "s" + ls, color="C3", label=f"anchor forced (θ=0), {name}")
+        ax.plot(ks, [r["identical_to_risky_pct"] for r in A], "^" + ls, color="C2", label=f"identical to risky model alone, {name}")
         ax = axes[1]
         ax.plot(ks, [r["lead_forced_mean"] for r in A], "d" + ls, color="C1", label=f"leading tokens written by the anchor, {name}")
         ax = axes[2]
         ax.plot(ks, [r["rouge_l_mean"] for r in A], "o" + ls, color="C4", label=f"ROUGE-L, {name}")
-        ax.plot(ks, [r["nv_recall_mean"] for r in A], "s" + ls, color="C5", label=f"nv-recall, {name}")
-        for kb, col, lab in ((-1.0, "C4", "risky only"), (0.0, "C4", "safe only")):
+        ax.plot(ks, [r["nv_recall_mean"] for r in A], "s" + ls, color="C5", label=f"near-verbatim recall, {name}")
+        for kb, col, lab in ((-1.0, "C4", "risky model alone"), (0.0, "C4", "anchor alone")):
             if kb in base:
                 ax.axhline(base[kb]["rouge_l_mean"], color=col, ls=":" if kb == 0 else "-.", lw=0.8, alpha=0.7, label=f"ROUGE-L {lab}, {name}")
     axes[0].set_ylabel("% of decode steps / generations")
