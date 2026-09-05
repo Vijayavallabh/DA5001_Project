@@ -4,8 +4,8 @@
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
 - Current status: GOAL COMPLETE (2026-09-05). feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; feat-016 is human-only.
-- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-05 21:47 at commit 096cc83; rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
-- Branch / commit: `master`, one commit per feature (feat-001 07a446c, feat-002 b717255, feat-003 next).
+- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-05 22:11 (artifact rebuilt again after README update); rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
+- Branch / commit: `master`, one commit per feature; latest work: proofread (6a3cd85), .gitignore + artifact rebuild (096cc83), handoff (f57d598), harness refresh (this commit).
 
 ## Completed This Session
 
@@ -16,6 +16,10 @@
 - [x] feat-003: seeds, utilisation/activity logging, R = K, `--use-chat-template`, `tests/` (6 passing), GPU smoke OK.
 - [x] feat-004: k=-1/0 baselines, LCS/ACS/nv-recall metrics, batched seeds; smoke OK.
 - [x] feat-006: certificate-strength audit; certificate vacuous for 100% of CopyBench passages at k=3, 44% at k=1.
+- [x] feat-005/007: small-budget sweeps (plain + chat, 37,800 trajectories, 0 violations), LLR tails with anytime-valid CS, EBB retired.
+- [x] feat-008/009: LoRA memoriser (greedy nv-recall 0.91 train, 0.0 held-out); composition attack up to k=20 (0 violations; 0.48 single / 0.86 oracle at k=20).
+- [x] feat-013/014/015: figures from CSVs, manuscript rewrite (11 pages, 48 refs cited), anonymised artifact (75 files, manifest verified).
+- [x] Proofread pass on the PDF (missing table, bank-and-burst stated as not evaluated, numbers realigned, bib names); artifact rebuilt; `.gitignore` cleaned.
 
 ## Verification Evidence
 
@@ -32,14 +36,16 @@
 | feat-007 | `pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap \| wc -l` | PASS (3 tests, 79 rows, 0 call sites) | |
 | feat-009 | `analysis/composition_attack.py ... --k-values -1 0 0.15 0.5 1 3 5 10 20` | PASS (45 summary rows, 0 violations) | 70 min |
 | feat-013 | `figures/make_figures.py --copy-to <sub/satml/figures>` | PASS (4 figures) | |
-| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (10 pages, 48 refs) | pdflatex unavailable here |
-| feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | |
+| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (11 pages, 48 refs, 0 `??`, 0 overfull) | pdflatex unavailable here; proofread 2026-09-05 21:45 |
+| feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | last built 2026-09-05 22:11 |
 | Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
 
 ## Files Changed
 
 - `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`, `GOAL.md`, `analysis/reanalyze_logs.py`, `results/*.csv`
 - feat-003: `dap/stats.py`, `dap/shared.py`, `dap/e1.py`, `dap/e2/{evaluator,runner,types}.py`, `a_patch/factory.py`, `tests/`
+- feat-004..009: `analysis/{certificate_cap,regime_sweep,llr_tails,composition_attack,bank_burst,memorizing_recall}.py`, `recipes/`, `scripts/run_*.sh`, `results/*.csv`
+- feat-013..015 and after: `figures/make_figures.py`, `figures/*.pdf`, `scripts/build_artifact.sh`, `README_artifact.md`, `artifact/`, `.gitignore`; manuscript `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/{satml_2027.tex,sections/*.tex,references.bib,figures/}` (outside this repo)
 
 ## Decisions Made
 
@@ -47,7 +53,7 @@
 
 ## Blockers / Risks
 
-- feat-008 (memorising model) is the schedule risk; decide 70B-base vs 8B-finetune by Sep 12.
+- feat-008 decided: 8B LoRA memoriser (70B not cached, token invalid, DGX SSH denied). feat-010 (bank-and-burst) is not testable with it; feat-011/012 unstarted.
 - `HF_TOKEN` in `.env` is invalid; local runs use `HF_HUB_OFFLINE=1` against the cache (see progress.md Blockers). 70B is not cached.
 - Human-only steps (feat-016): abstract Sep 22, paper Sep 29, artifacts Oct 2.
 
@@ -60,4 +66,5 @@
 
 ## Recommended Next Step
 
-- Start feat-005: two E1 jobs (chat template off on GPU 1, on on GPU 2), k ∈ {-1,0,0.1,0.15,0.25,0.5,1}, 3 trajectories per prompt, Stage-1 caps, batch size 32; then `analysis/regime_sweep.py` → `results/regime_sweep.csv`, `figures/regime_sweep.pdf`.
+- Human: feat-016 (abstract Sep 22, paper Sep 29, artifact + `output.zip` to Zenodo Oct 2; paste the DOI into `sections/open_science.tex`, decide on the author block placeholder).
+- Agent, if asked: feat-011 (format evasion) and feat-012 (anchor copying of public-domain text) need only the local GPUs; feat-010 needs a different memoriser.

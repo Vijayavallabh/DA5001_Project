@@ -9,7 +9,7 @@ traces to a file in `results/`, and every figure is rebuilt from those files by 
 |---|---|
 | `a_patch/` | The audited Anchored Decoding library (unchanged mechanism; `k_radius=-1` = risky only, `0` = anchor only). |
 | `dap/` | Experiment code: `h1.py -> dap/e1.py` (fixed workload, baselines, copying metrics), `h2.py -> dap/e2/` (prompt search; Bernstein proxy retired), `dap/stats.py` (seeds, metrics, per-trajectory `budget_check`, anytime-valid confidence sequence). |
-| `analysis/` | One script per audit: `reanalyze_logs.py` (C1/C2/C4 on released logs), `certificate_cap.py` (C3), `regime_sweep.py` (C2 sweep), `llr_tails.py` (C4), `composition_attack.py` (C5b), `bank_burst.py` (C5a, exploratory). |
+| `analysis/` | One script per audit: `reanalyze_logs.py` (C1/C2/C4 on released logs), `certificate_cap.py` (C3), `regime_sweep.py` (C2 sweep), `llr_tails.py` (C4), `composition_attack.py` (C5b), `bank_burst.py` (C5a; attempted, not evaluated in the paper: the fine-tuned memoriser ignores filler instructions, so nothing is banked; usable with a risky model that memorises and follows instructions). |
 | `recipes/` | `finetune_memorizing.py` + `memorizing_model.md`: the memorising risky model (weights not redistributed: they reproduce copyrighted text). |
 | `results/` | All CSV tables cited in the paper (see below). |
 | `figures/` | Paper figures (PDF/PNG) and `make_figures.py`. |

@@ -2,6 +2,8 @@
 
 You are executing this goal autonomously in the repository `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project`. Read `AGENTS.md` first (it is auto-imported by `CLAUDE.md`), then this file, then `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/IMPROVEMENT_PLAN.md` Sections 0–4. The plan is the spec; this file is the contract.
 
+**Status (2026-09-05):** success criteria 1–6 hold (see `progress.md` → GOAL COMPLETE). Remaining work is optional feat-010/011/012 and the human-only feat-016.
+
 ## Objective
 
 Turn the arXiv paper "An Empirical Audit of k-NAF Budget Accounting for Anchored Decoding" into a SaTML 2027 submission whose central result is an audit that can fail: an empirical, security-framed measurement of what Anchored Decoding's KL budget K = k·T_max actually certifies, plus at least one adaptive attack that reconstructs copyrighted text while every query stays within budget.
@@ -10,7 +12,7 @@ Turn the arXiv paper "An Empirical Audit of k-NAF Budget Accounting for Anchored
 
 1. `feature_list.json` features feat-001 through feat-009 and feat-013 through feat-015 are `done`, each with its evidence command and output pasted in. feat-010, feat-011, feat-012 are optional and attempted only after feat-009 is done.
 2. `results/` contains, at minimum: `regime_table.csv`, `regime_sweep.csv`, `certificate_caps.csv`, `llr_tails.csv`, `memorizing_model_recall.csv`, `composition.csv`. Every number in the manuscript traces to one of these files.
-3. `~/sub/satml/satml_2027.tex` compiles with `pdflatex` + `bibtex`, has ≤ 12 pages of body text in IEEEtran, contains a threat-model section, an Open Science section, and an LLM-usage section, and `references.bib` has ≥ 40 complete entries.
+3. `~/sub/satml/satml_2027.tex` compiles with `pdflatex` + `bibtex` (or with `tectonic`, the accepted equivalent on this box, where pdflatex is unavailable; see `progress.md` Decisions), has ≤ 12 pages of body text in IEEEtran, contains a threat-model section, an Open Science section, and an LLM-usage section, and `references.bib` has ≥ 40 complete entries.
 4. `artifact/` exists with an anonymised code snapshot, `results/*.csv`, prompt sets, the memorising-model recipe, a README with exact reproduction commands, and a verified `MANIFEST.sha256`.
 5. `./init.sh` passes and the git tree is committed after every completed feature.
 6. `session-handoff.md` names the final PDF path and the artifact zip path for the human to submit (feat-016).

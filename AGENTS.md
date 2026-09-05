@@ -4,6 +4,8 @@ Code for arXiv 2605.28001, now being reworked into a SaTML 2027 submission: **"W
 
 **Deadlines (AoE):** abstract Sep 22 2026 · paper Sep 29 2026 · artifacts Oct 2 2026. Human-only steps (registration, submission, Zenodo upload) are `feat-016`; never attempt them.
 
+**Status (2026-09-05):** GOAL COMPLETE. feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; the PDF (11 pages) and `artifact.zip` are named in `session-handoff.md`.
+
 ## Startup Workflow
 
 Before writing code:
@@ -26,6 +28,7 @@ Before writing code:
 - **Secrets.** `HF_TOKEN` lives in `.env` (gitignored) but was invalid on 2026-09-05; run local jobs with `HF_HUB_OFFLINE=1` (cache has Llama-3.1-8B-Instruct, Llama-3.1-8B, TinyComma, Qwen2.5-7B-Instruct; 70B is not cached). `meta-llama/*` is gated: ask the user for a valid token before any download.
 - **Do not modify** `~/sub/neurips_2026.tex`, `output.zip`, or anything under `data/`. New logs go to `output/` (gitignored); summaries go to `results/` (committed, small).
 - **Anonymity.** Nothing you write into `~/sub/satml/` or the artifact may identify the authors.
+- **Paper integrity.** The manuscript (proofread 2026-09-05) reports bank-and-burst as attempted but not evaluated (the fine-tuned memoriser ignores filler instructions) and claims no adaptive prompt search; do not describe feat-010/011/012 as run until their evidence exists. After any edit under `~/sub/satml/`, recompile and check the PDF for `??` and the log for overfull boxes (see Verification Commands).
 
 ## Key Facts
 
@@ -38,7 +41,7 @@ Before writing code:
 | Released logs | `output.zip` (2.4 GB; `unzip -o output.zip 'output/h1_outputs/trajectories_k3_attack_train.jsonl'` etc.) |
 | Log reanalysis | `analysis/reanalyze_logs.py --logs output --out results` (feat-002; writes `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv`) |
 | Paper, bib, figures | `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.tex` + `sections/*.tex` (SaTML version; the arXiv version is `satml_2027_arxiv_v1.tex`), `references.bib` (51 entries), `figures/` (copied by `figures/make_figures.py --copy-to <that dir>`); compile with `~/.local/bin/tectonic -X compile satml_2027.tex` (no pdflatex on this box). `~` is `/home/sports` here, not the project home: use absolute paths |
-| No test suite yet | `tests/` is created by `feat-003`; `./init.sh` runs it when present |
+| Tests | `tests/` (14 tests: seeds, invariant, chat template, metrics, confidence sequence, E2 stats); `./init.sh` runs them |
 
 ## Verification Commands
 
@@ -48,6 +51,12 @@ Before writing code:
 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 \
   --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 \
   --output-dir output/smoke   # GPU smoke test for E1 (run on DGX)
+```
+
+```bash
+# manuscript: compile, then confirm no unresolved references, no overfull boxes, <= 12 pages
+cd /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml && ~/.local/bin/tectonic -X compile satml_2027.tex 2>&1 | grep -ci overfull; \
+  pdftotext satml_2027.pdf - | grep -c '??'; python3 -c "from pypdf import PdfReader; print(len(PdfReader('satml_2027.pdf').pages))"
 ```
 
 Per-feature evidence commands are in `feature_list.json`.
