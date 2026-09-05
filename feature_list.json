@@ -143,7 +143,7 @@
         "feat-009"
       ],
       "status": "done",
-      "evidence": "$ .venv/bin/python figures/make_figures.py && ls /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/*.pdf   # (~ on this box is /home/sports, not the project home; make_figures.py defaults to the absolute path)\n(2026-09-05, exit 0)\nbuilt: certificate_cap_curve.pdf, regime_sweep.pdf, llr_tails.pdf, composition.pdf -> figures/ and /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/certificate_cap_curve.pdf\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/composition.pdf\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/llr_tails.pdf\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/regime_sweep.pdf\nAll four figures are rebuilt from results/*.csv only (certificate_cap_summary.csv; regime_sweep.csv; llr_tails.csv + llr_ratio_samples.csv; composition_summary.csv). The old figures (bernstein_constant, r_eff_comparison, heldout_scatter, spend_distributions) were moved to figures/legacy/ rather than deleted (GOAL.md: ask before deleting files not created by the agent); bank_burst has no figure (feature optional, not run)."
+      "evidence": "$ .venv/bin/python figures/make_figures.py --copy-to /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures && ls /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/*.pdf   # (~ on this box is /home/sports, not the project home; the copy target is passed explicitly so the artifact stays anonymous)\n(2026-09-05, exit 0)\nbuilt: certificate_cap_curve.pdf, regime_sweep.pdf, llr_tails.pdf, composition.pdf -> figures/ and /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/certificate_cap_curve.pdf\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/composition.pdf\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/llr_tails.pdf\n/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures/regime_sweep.pdf\nAll four figures are rebuilt from results/*.csv only (certificate_cap_summary.csv; regime_sweep.csv; llr_tails.csv + llr_ratio_samples.csv; composition_summary.csv). The old figures (bernstein_constant, r_eff_comparison, heldout_scatter, spend_distributions) were moved to figures/legacy/ rather than deleted (GOAL.md: ask before deleting files not created by the agent); bank_burst has no figure (feature optional, not run)."
     },
     {
       "id": "feat-014",
@@ -164,8 +164,8 @@
       "dependencies": [
         "feat-014"
       ],
-      "status": "in-progress",
-      "evidence": "ls artifact && sha256sum -c artifact/MANIFEST.sha256 && grep -ci 'author' artifact/README.md"
+      "status": "done",
+      "evidence": "$ scripts/build_artifact.sh artifact && (cd artifact && sha256sum -c --quiet MANIFEST.sha256 && echo verified)\n(2026-09-05, exit 0)\nmanifest verified: 75 files\nartifact: artifact/ and artifact.zip (5.0M; artifact/ is 15 MB uncompressed: data/ prompt sets 7.9 MB, results/ 5 MB, code, figures, recipes, tests)\nContents: analysis/ a_patch/ dap/ data/ figures/ h1.py h2.py README.md (reproduction commands, model ids, results index) recipes/ (memorising-model recipe + training script; weights excluded) requirements.txt results/ scripts/ tests/ MANIFEST.sha256. Excluded: .git, .venv, output/, output.zip, .env, harness files (AGENTS/GOAL/CLAUDE/progress/handoff/feature_list/init.sh), figures/legacy, the build script itself. Anonymity scan (author name, e-mail, home paths) passes; the artifact is committed to the repo so a fresh clone has it, artifact.zip is gitignored and rebuilt by the script."
     },
     {
       "id": "feat-016",

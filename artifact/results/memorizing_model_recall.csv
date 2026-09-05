@@ -1,0 +1,7 @@
+run,split,n,nv_recall_mean,nv_recall_median,nv_recall_ge_0p8_pct,lcs_word_mean,lcs_char_mean,acs_word_mean,rouge_l_mean,gen_len_mean
+greedy,attack_train,50,0.907,1.0,86.0,44.18,234.2,45.74,0.4404,208.5
+greedy,test,150,0.0,0.0,0.0,1.86,11.4,0.11,0.0934,204.0
+greedy,val,150,0.923,1.0,88.0,44.74,246.0,45.54,0.4383,205.5
+sampled,attack_train,50,0.8032,0.9902,74.0,39.44,210.2,41.02,0.4137,208.5
+sampled,test,150,0.0,0.0,0.0,1.72,10.7,0.05,0.0916,204.0
+sampled,val,150,0.814,0.98,69.33,39.27,216.2,41.14,0.4115,205.5

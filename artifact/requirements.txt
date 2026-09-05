@@ -1,0 +1,25 @@
+setuptools
+pip
+ipykernel
+wheel
+pandas 
+matplotlib
+numpy 
+scipy
+datasets
+transformers
+torch==2.10.0  #--index-url https://download.pytorch.org/whl/cu126
+sentence-transformers
+accelerate 
+bitsandbytes
+pyyaml
+spacy 
+bert-score
+tqdm
+rouge-score
+python-dotenv
+peft
+pytest
+pypdf
+feedparser
+bibtexparser
