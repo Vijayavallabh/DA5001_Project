@@ -20,7 +20,7 @@ done
 echo "[OK] 6 data/*.jsonl files present"
 
 # 2. Static check (compile) and imports
-$PY -m compileall -q a_patch dap analysis figures >/dev/null && echo "[OK] compileall a_patch dap analysis figures"
+$PY -m compileall -q a_patch dap analysis figures recipes >/dev/null && echo "[OK] compileall a_patch dap analysis figures recipes"
 $PY -c "from a_patch import AnchoredDecodingFactory; from dap.shared import load_prompt_corpus, SOURCE_FILES; assert len(SOURCE_FILES)==6; from dap.stats import build_trajectory_seeds; print('[OK] a_patch / dap import')"
 
 # 3. Harness state files

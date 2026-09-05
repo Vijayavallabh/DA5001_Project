@@ -57,6 +57,7 @@ class AuditConfig:
     cap_creative: int = 150
     use_chat_template: bool = False
     skip_existing: bool = False
+    greedy: bool = False
 
     @property
     def num_hypotheses(self) -> int:
@@ -102,7 +103,7 @@ class H1AuditRunner:
 
     def generation_config(self) -> GenerationConfig:
         return GenerationConfig(
-            do_sample=True,
+            do_sample=not self.config.greedy,
             temperature=self.config.temperature,
             max_new_tokens=self.config.max_new_tokens,
             num_return_sequences=1,
@@ -445,6 +446,7 @@ def parse_args() -> AuditConfig:
     p.add_argument("--resume-from-trajectories", action="store_true")
     p.add_argument("--use-chat-template", action="store_true", help="wrap each prompt as one user turn of the Llama-3.1 chat template and stop on <|eot_id|>")
     p.add_argument("--skip-existing", action="store_true", help="reuse trajectory files already in --output-dir (resume a killed run)")
+    p.add_argument("--greedy", action="store_true", help="argmax decoding; only valid for the baselines k in {-1, 0} (feat-008 extraction check)")
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--length-bucket-width", type=int, default=32)
     args = p.parse_args()
@@ -455,6 +457,8 @@ def parse_args() -> AuditConfig:
         raise ValueError("--k-values must contain at least one value.")
     if any(k < 0 and k != -1.0 for k in args.k_values):
         raise ValueError("--k-values must be -1 (risky only), 0 (safe only), or positive.")
+    if args.greedy and any(k not in (-1.0, 0.0) for k in args.k_values):
+        raise ValueError("--greedy is only meaningful for the baselines k in {-1, 0}; anchored decoding requires sampling.")
 
     return AuditConfig(
         data_dir=args.data_dir, output_dir=args.output_dir,
@@ -470,7 +474,7 @@ def parse_args() -> AuditConfig:
         cap_neutral=args.cap_neutral, cap_val=args.cap_val, cap_test=args.cap_test,
         cap_attack_train=args.cap_attack_train, cap_factual=args.cap_factual, cap_creative=args.cap_creative,
         resume_from_trajectories=args.resume_from_trajectories,
-        use_chat_template=args.use_chat_template, skip_existing=args.skip_existing,
+        use_chat_template=args.use_chat_template, skip_existing=args.skip_existing, greedy=args.greedy,
     )
 
 
