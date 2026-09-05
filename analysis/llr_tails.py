@@ -105,7 +105,12 @@ def main():
         ax.errorbar(ks, [100 * r["frac_L_gt_K"] for r in A],
                     yerr=[[100 * (r["frac_L_gt_K"] - r["frac_L_gt_K_cs95_lo"]) for r in A], [100 * (r["frac_L_gt_K_cs95_hi"] - r["frac_L_gt_K"]) for r in A]],
                     fmt="o-", capsize=3, label=f"P[L(y) > K], 95% anytime-valid CS ({source})")
+    from matplotlib.ticker import NullFormatter
     ax.set_xscale("log")
+    ks_all = sorted({r["k"] for r in rows})
+    ax.set_xticks(ks_all)
+    ax.set_xticklabels([f"{k:g}" for k in ks_all])
+    ax.xaxis.set_minor_formatter(NullFormatter())
     ax.set_xlabel("per-token budget k")
     ax.set_ylabel("% of trajectories with L(y) > K")
     ax.grid(alpha=0.3)
