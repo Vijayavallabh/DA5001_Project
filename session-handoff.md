@@ -67,4 +67,5 @@
 ## Recommended Next Step
 
 - Human: feat-016 (abstract Sep 22, paper Sep 29, artifact + `output.zip` to Zenodo Oct 2; paste the DOI into `sections/open_science.tex`, decide on the author block placeholder).
+- Human, committed in the paper's Ethical Considerations section (kept on 2026-09-05): share the audit findings and code with the Anchored Decoding authors (He et al.) once the review outcome permits.
 - Agent, if asked: feat-011 (format evasion) and feat-012 (anchor copying of public-domain text) need only the local GPUs; feat-010 needs a different memoriser.
