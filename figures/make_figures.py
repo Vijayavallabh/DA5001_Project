@@ -43,7 +43,7 @@ def rows(name, numeric_except=("split", "variant", "mode", "source", "filler")):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--copy-to", default=os.path.expanduser("~/sub/satml/figures"))
+    ap.add_argument("--copy-to", default="/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures")
     args = ap.parse_args()
     made = []
 
