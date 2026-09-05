@@ -58,6 +58,46 @@ class Attacker:
         return out
 
 
+def plot(summary, k_values, modes, windows, figures):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import NullFormatter
+    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5})
+    fig, ax = plt.subplots(figsize=(5.0, 3.3))
+    pos = [k for k in k_values if k > 0]
+    styles = {"single": ("o-", "C0"), "oracle": ("s--", "C3"), "chained": ("^-.", "C2")}
+
+    def get(k, mode, L):
+        return next((r["nv_recall_mean"] for r in summary if r["k"] == k and r["mode"] == mode and r["L"] == L), None)
+
+    for mode in modes:
+        for L in (windows if mode != "single" else [0]):
+            fmt, col = styles.get(mode, ("x:", "C4"))
+            alpha = 1.0 if L in (0, windows[0]) else 0.5
+            ys = [get(k, mode, L) for k in pos]
+            ax.plot(pos, ys, fmt, color=col, alpha=alpha, label=f"{mode}" + (f", L={L}" if L else ""))
+            base = get(-1.0, mode, L)
+            if base is not None:  # unconstrained risky model, same strategy
+                ax.axhline(base, color=col, ls=":", lw=0.8, alpha=alpha)
+    safe = get(0.0, "single", 0)
+    if safe is not None:
+        ax.axhline(safe, color="gray", ls="-", lw=0.8, label="anchor only (k=0)")
+    ax.plot([], [], color="gray", ls=":", lw=0.8, label="dotted: same strategy, risky only (k=-1)")
+    ax.set_xscale("log")
+    ax.set_xticks(pos)
+    ax.set_xticklabels([f"{k:g}" for k in pos])
+    ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_xlabel("per-token budget k (every query within K = k·L)")
+    ax.set_ylabel("nv-recall of the target (mean)")
+    ax.set_ylim(-0.02, 1.02)
+    ax.grid(alpha=0.3)
+    ax.legend(frameon=False, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(os.path.join(figures, "composition.pdf"))
+    fig.savefig(os.path.join(figures, "composition.png"), dpi=150)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default="data")
@@ -74,9 +114,16 @@ def main():
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", default="results")
     ap.add_argument("--figures", default="figures")
+    ap.add_argument("--plot-only", action="store_true", help="re-plot from <out>/composition_summary.csv without running anything")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     os.makedirs(args.figures, exist_ok=True)
+    if args.plot_only:
+        summary = [{k: (float(v) if k not in ("mode",) else v) for k, v in r.items()} for r in csv.DictReader(open(os.path.join(args.out, "composition_summary.csv")))]
+        for r in summary:
+            r["L"] = int(r["L"])
+        plot(summary, sorted({r["k"] for r in summary}), sorted({r["mode"] for r in summary}, key=["single", "oracle", "chained"].index), sorted({r["L"] for r in summary if r["L"]}), args.figures)
+        return
 
     factory = AnchoredDecodingFactory.from_pretrained(safe_model_path=args.safe_model, risky_model_path=args.risky_model,
                                                       k_radius=max(0.0, args.k_values[0]), use_prefix_debt=True, prefix_n=5, log_kl_stats=True,
@@ -157,35 +204,7 @@ def main():
         w.writeheader()
         w.writerows(summary)
 
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    from matplotlib.ticker import NullFormatter
-    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5})
-    fig, ax = plt.subplots(figsize=(4.8, 3.2))
-    pos = [k for k in args.k_values if k > 0]
-    styles = {"single": ("o-", "C0"), "oracle": ("s--", "C3"), "chained": ("^-.", "C2")}
-    for mode in args.modes:
-        for L in (args.windows if mode != "single" else [0]):
-            ys = [next(r["nv_recall_mean"] for r in summary if r["k"] == k and r["mode"] == mode and r["L"] == L) for k in pos]
-            fmt, col = styles.get(mode, ("x:", "C4"))
-            ax.plot(pos, ys, fmt, color=col, alpha=1.0 if L in (0, args.windows[0]) else 0.5, label=f"{mode}" + (f", L={L}" if L else ""))
-    for kb, ls, lab in ((-1.0, "-", "risky only (k=-1)"), (0.0, ":", "safe only (k=0)")):
-        if kb in args.k_values:
-            y = next(r["nv_recall_mean"] for r in summary if r["k"] == kb and r["mode"] == "single")
-            ax.axhline(y, color="gray", ls=ls, lw=0.9, label=lab)
-    ax.set_xscale("log")
-    ax.set_xticks(pos)
-    ax.set_xticklabels([f"{k:g}" for k in pos])
-    ax.xaxis.set_minor_formatter(NullFormatter())
-    ax.set_xlabel("per-token budget k (every query within K = k·L)")
-    ax.set_ylabel("nv-recall of the target (mean)")
-    ax.set_ylim(-0.02, 1.02)
-    ax.grid(alpha=0.3)
-    ax.legend(frameon=False)
-    fig.tight_layout()
-    fig.savefig(os.path.join(args.figures, "composition.pdf"))
-    fig.savefig(os.path.join(args.figures, "composition.png"), dpi=150)
+    plot(summary, args.k_values, args.modes, args.windows, args.figures)
     print("wrote", os.path.join(args.out, "composition.csv"), os.path.join(args.figures, "composition.pdf"))
 
 
