@@ -206,9 +206,9 @@
       "dependencies": [
         "feat-008"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "description": "a_patch/factory.py: constraint='kl'|'pathwise'. Pathwise: at step t choose the largest theta with m_t(theta) = theta*max_v l_t(v) - log Z_t(theta) <= k_t^pw, k_t^pw = max(0, (t+1)k - delta_init - R_{t-1}) with R the realised cumulative log-ratio of the sampled tokens; same bracketed Newton/bisection as the KL solve (m is nondecreasing in theta, m(0)=0). Tests in tests/test_pathwise.py: (i) R_T <= max(0, k*T_max - delta_init) + 1e-3 on every trajectory of a CPU/GPU smoke run; (ii) monotonicity of m; (iii) KL spend <= max-ratio at every step. Runs with the 8B memoriser (HF_HUB_OFFLINE=1): regime sweep on the six prompt classes at k in {0.5,1,3,5,10,20} (activity, identity, risky-model NLL of the output as utility proxy) and the composition attack at the same k, plus a retry variant (best-of-n per window, n<=32, oracle check) to measure attempts-to-extract against exp(S_i - k L_i) (plan v2 Proposition 2). If feat-018 ran, repeat single-query and oracle windows with the 70B on the 58 candidates. Outputs results/pathwise_sweep.csv, results/pathwise_composition.csv, results/extraction_cost.csv, all with k=-1 and k=0 rows. About 6 (8B) + 4 (70B) GPU-hours.",
-      "evidence": ""
+      "evidence": "Implementation done 2026-09-06: a_patch/pathwise.py (solve_theta_pathwise, max_log_ratio), constraint='kl'|'pathwise' in a_patch/factory.py with realised-ratio banking, per-step r_t/m_t/var_ratio logging, --constraint in h1.py and analysis/composition_attack.py; tests/test_pathwise.py (4 tests incl. the saved-log invariant) pass. Smoke: CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 --cap-* 2 --output-dir output/phase2/pathwise_smoke --constraint pathwise -> 24 trajectories, 4,402 steps, 0 violations (R_T <= max(0,B)+1e-3, r_t <= k_t+1e-3, a_t <= m_t+1e-3); steps forced 295 / active 755 / free 3,352 (KL decoder on the same prompts: active 4.5%). Runs in progress: pathwise composition (output/phase2/comp8b_pathwise), pathwise regime sweep (output/phase2/pathwise_sweep), retries (output/phase2/retries_*)."
     },
     {
       "id": "feat-020",
@@ -239,9 +239,9 @@
       "dependencies": [
         "feat-006"
       ],
-      "status": "not-started",
+      "status": "done",
       "description": "He et al. apply temperature and repetition penalty to both logit vectors before the solve (App. B) and use temperature 0.7 with penalty 1.1 (App. D.1); a_patch does the same (factory.py lines 791-793). Extend analysis/certificate_cap.py to compute the anchor's per-token surprisal and the cap vacuity fraction of the 758 CopyBench passages and the 58 candidates under temperature in {0.3,0.5,0.7,1.0} x repetition penalty in {1.0,1.1}; run the 8B memoriser single-query attack at (0.7,1.1) for k in {3,5,10,20}. Output results/warped_anchor.csv. About 1 GPU-hour.",
-      "evidence": ""
+      "evidence": "$ for T in 0.3 0.5 0.7 1.0; for RP in 1.0 1.1: CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/certificate_cap.py --risky-model '' --k-values 0.1 0.15 0.25 0.5 1 1.5 3 5 10 20 --temperature $T --repetition-penalty $RP --tag _t${T}_rp${RP} --out output/phase2/warped; then .venv/bin/python analysis/warped_anchor.py --dir output/phase2/warped --out results (2026-09-06, all exit 0) -> results/warped_anchor.csv (8 settings x 10 k). Output: anchor per-token surprisal median 3.20 (T=1, rp=1), 3.31 (T=1, rp=1.1), 3.58 (T=0.7, rp=1.0), 3.55 (T=0.7, rp=1.1, He et al.'s books setting), 4.30 (T=0.5, rp=1.1); vacuity at k=1: 43.9% (T=1) -> 34.4% (rp 1.1) -> 21.9% (T=0.7) ; at k>=3: 100% under every setting. The attack at (0.7, 1.1) is part of feat-018 setting B and the 8B run is queued. tests/test_warp.py (3 tests) pass."
     },
     {
       "id": "feat-023",
@@ -251,9 +251,9 @@
         "feat-006",
         "feat-009"
       ],
-      "status": "not-started",
+      "status": "done",
       "description": "Store per-token anchor surprisals s_t of each target (extend analysis/certificate_cap.py; one forward pass per passage). For each k compute F(k) = fraction of passages with max_t [sum_{i<=t} s_i - (t+1)k] <= -delta_init (plan v2 Proposition 4, the token-bucket condition) and the eta=0.1 slackened version; plot F(k) against observed single-query recall for the 100 composition passages (8B memoriser) and, if available, the 58 candidates (70B); report the dispersion of s_t within and across passages and show that mean surprisal alone mispredicts the transition. Outputs results/budget_path.csv, figures/budget_path.pdf (legend in analysis/budget_path.py). No new GPU beyond forward passes.",
-      "evidence": ""
+      "evidence": "$ CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/budget_path.py --composition results/composition.csv --limit 100 (2026-09-06, exit 0, ~1 min) -> results/budget_path.csv (100 passages), results/budget_path_summary.csv, figures/budget_path.pdf. Output: k_crit median 13.93 (p10 10.74, p90 19.70) vs mean per-token anchor surprisal median 3.24 (median ratio 4.33; within-passage s_std median 2.85); exact feasibility F(k): 0% for k<=5, 2% at k=10, 92% at k=20 (slackened: 10%, 96%); token-bucket paid fraction 0.87/0.99/1.00/1.00 at k=3/5/10/20 with anchor-forced opening tokens 4.8/2.8/1.1/0.1; observed single-query recall (8B memoriser) 0.01/0.09/0.20/0.48. Reading: at k>=5 the bank can pay for essentially every token, so what limits recall between k=5 and k=20 is the prefix-debt-forced opening and the derailment it causes, not the budget (tested directly by feat-025). tests/test_budget_path.py (3 tests) pass."
     },
     {
       "id": "feat-024",

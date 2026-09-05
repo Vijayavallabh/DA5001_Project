@@ -18,6 +18,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dap.shared import load_prompt_corpus, wrap_chat  # noqa: E402
+from dap.warp import warp_logits  # noqa: E402
 
 LN2 = math.log(2)
 SPLITS = ("attack_train", "val", "test")
@@ -45,16 +46,21 @@ def cap_simple(S, K):
 
 
 @torch.no_grad()
-def surprisal(model, tok, prompt, reference, device):
+def surprisal(model, tok, prompt, reference, device, temperature=1.0, repetition_penalty=1.0):
+    """S(x) = -ln p_s(reference | prompt); with temperature / repetition_penalty != 1 the logits are warped the way the
+    decoder warps them before the KL solve (feat-022: the certificate is relative to the warped anchor)."""
     p_ids = tok(prompt).input_ids
     r_ids = tok(reference, add_special_tokens=False).input_ids
     ids = torch.tensor([p_ids + r_ids], device=device)
-    logp = torch.log_softmax(model(ids).logits[0, len(p_ids) - 1:-1].float(), dim=-1)
+    full = model(ids).logits[0, :-1].float()
+    if temperature != 1.0 or repetition_penalty != 1.0:
+        full = warp_logits(full, ids[0, :-1], temperature=temperature, repetition_penalty=repetition_penalty, offset=1)
+    logp = torch.log_softmax(full[len(p_ids) - 1:], dim=-1)
     tok_lp = logp.gather(1, ids[0, len(p_ids):].unsqueeze(1)).squeeze(1)
     return float(-tok_lp.sum()), len(r_ids), float(-tok_lp[0])
 
 
-def plot(summary, figures, t_max=200):
+def plot(summary, figures, t_max=200, tag=""):
     """Certificate-strength curve from the rows of certificate_cap_summary.csv (feat-013 rebuilds figures from CSV)."""
     import matplotlib
     matplotlib.use("Agg")
@@ -81,8 +87,8 @@ def plot(summary, figures, t_max=200):
     top.set_xlabel("best-of-n selection permitted by the budget (n = e^K)")
     ax.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none")
     fig.tight_layout()
-    fig.savefig(os.path.join(figures, "certificate_cap_curve.pdf"))
-    fig.savefig(os.path.join(figures, "certificate_cap_curve.png"), dpi=150)
+    fig.savefig(os.path.join(figures, f"certificate_cap_curve{tag}.pdf"))
+    fig.savefig(os.path.join(figures, f"certificate_cap_curve{tag}.png"), dpi=150)
 
 
 def main():
@@ -96,6 +102,9 @@ def main():
     ap.add_argument("--t-max", type=int, default=200)
     ap.add_argument("--use-chat-template", action="store_true")
     ap.add_argument("--limit", type=int, default=0, help="debug: passages per split")
+    ap.add_argument("--temperature", type=float, default=1.0, help="feat-022: warp the anchor as the decoder does before the solve")
+    ap.add_argument("--repetition-penalty", type=float, default=1.0, help="feat-022: He et al. use 1.1 on the book prompts")
+    ap.add_argument("--tag", default="", help="suffix for the output files (e.g. _t0.7_rp1.1)")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     os.makedirs(args.figures, exist_ok=True)
@@ -115,7 +124,7 @@ def main():
         model = AutoModelForCausalLM.from_pretrained(name, dtype=torch.bfloat16, device_map={"": device}).eval()
         for i, p in enumerate(prompts):
             x = wrap_chat(p.prompt_text, tok) if args.use_chat_template else p.prompt_text
-            S, n, first = surprisal(model, tok, x, p.reference, device)
+            S, n, first = surprisal(model, tok, x, p.reference, device, args.temperature, args.repetition_penalty)
             rows[i].update({f"S_{tag}": round(S, 3), "n_ref_tokens": n, f"S_{tag}_per_tok": round(S / n, 4), f"S_{tag}_first_tok": round(first, 3)})
             if i % 200 == 0:
                 print(f"[stage] {tag} {i}/{len(prompts)} S={S:.1f} n={n}", flush=True)
@@ -126,7 +135,7 @@ def main():
     for r in rows:
         for k, K in Ks:
             r[f"cap_k{k:g}"] = round(cap_exact(r["S_safe"], K), 6)
-    with open(os.path.join(args.out, "certificate_caps.csv"), "w", newline="") as f:
+    with open(os.path.join(args.out, f"certificate_caps{args.tag}.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
@@ -150,7 +159,7 @@ def main():
     if "S_risky" in rows[0]:
         S_r = [r["S_risky"] for r in rows]
         print(f"S_risky: median={st.median(S_r):.1f} per-token median={st.median([r['S_risky_per_tok'] for r in rows]):.3f}; median gap S_safe-S_risky={st.median([a-b for a,b in zip(S_s,S_r)]):.1f}")
-    with open(os.path.join(args.out, "certificate_cap_summary.csv"), "w", newline="") as f:
+    with open(os.path.join(args.out, f"certificate_cap_summary{args.tag}.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(summary[0]))
         w.writeheader()
         w.writerows(summary)
@@ -158,8 +167,8 @@ def main():
         if row["split"] == "all":
             print(f"k={row['k']:g} K={row['K']:g}: vacuous {row['vacuous_pct']}% median cap {row['cap_median']} (best-of-n equiv. log10 n ~ {row['bestofn_equiv_log10n']})")
 
-    plot(summary, args.figures, args.t_max)
-    print("wrote", os.path.join(args.figures, "certificate_cap_curve.pdf"))
+    plot(summary, args.figures, args.t_max, args.tag)
+    print("wrote", os.path.join(args.figures, f"certificate_cap_curve{args.tag}.pdf"))
 
 
 if __name__ == "__main__":
