@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # feat-021: bank-cap repair evaluated against the composition attack with the memorising 8B model, on GPU 0 (PCI order) after
 # the GPU-0 chain (comp8b_kl -> pathwise_sweep) finishes. Caps in nats: none (same seeds as the capped runs), k, 5k.
-# Usage: scripts/run_bank_cap.sh   (background; ~2.5 h once the GPU is free)
+# Usage: scripts/run_bank_cap.sh   (background; ~2.5 h once the GPU is free; NOWAIT=1 to share GPU 0 with the running sweep)
 set -u
 cd "$(dirname "$0")/.."
-while pgrep -f 'phase2/comp8b_kl|phase2/pathwise_sweep' > /dev/null; do sleep 300; done
+if [ -z "${NOWAIT:-}" ]; then while pgrep -f 'phase2/comp8b_kl|phase2/pathwise_sweep' > /dev/null; do sleep 300; done; fi
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1
 run_cap () {  # k cap(none|nats)
   local k=$1 cap=$2 d=output/phase2/bank_cap_k${1}_$2; mkdir -p $d
