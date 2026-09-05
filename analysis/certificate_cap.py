@@ -110,7 +110,7 @@ def main():
                        vacuous_n=sum(r["S_safe"] <= K for r in R), vacuous_pct=round(100 * sum(r["S_safe"] <= K for r in R) / len(R), 2),
                        cap_median=round(st.median(caps), 4), cap_mean=round(st.mean(caps), 4), cap_min=round(min(caps), 6),
                        cap_simple_median=round(st.median(simple), 4),
-                       bestofn_equiv_log10n=round((K + 1) / math.log(10), 1))
+                       bestofn_equiv_log10n=round(K / math.log(10), 1))
             if "S_risky" in R[0]:
                 row["risky_prob_gt_cap_n"] = sum(math.exp(-r["S_risky"]) > r[f"cap_k{k:g}"] for r in R)
             summary.append(row)
@@ -147,8 +147,8 @@ def main():
     ax.grid(alpha=0.3)
     top = ax.secondary_xaxis("top", functions=(lambda k: k, lambda k: k))
     top.set_xticks(ks)
-    top.set_xticklabels([f"1e{(k * args.t_max + 1) / math.log(10):.0f}" for k in ks])
-    top.set_xlabel("best-of-n with the same KL budget (n ≈ e^(K+1))")
+    top.set_xticklabels([f"1e{(k * args.t_max) / math.log(10):.0f}" for k in ks])
+    top.set_xlabel("best-of-n selection permitted by the budget (n = e^K)")
     ax.legend(loc="upper left", frameon=False)
     fig.tight_layout()
     fig.savefig(os.path.join(args.figures, "certificate_cap_curve.pdf"))
