@@ -87,10 +87,12 @@ def plot(rows, path):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5, "xtick.labelsize": 8, "ytick.labelsize": 8})
+    from matplotlib.ticker import NullFormatter
     variants = sorted({r["variant"] for r in rows})
-    fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.1))
+    fig, axes = plt.subplots(1, 3, figsize=(11.5, 3.1))
     for vi, name in enumerate(variants):
         A = [r for r in rows if r["variant"] == name and r["split"] == "all" and r["k"] > 0]
+        base = {r["k"]: r for r in rows if r["variant"] == name and r["split"] == "all" and r["k"] <= 0}
         ks = [r["k"] for r in A]
         ls = "-" if vi == 0 else "--"
         ax = axes[0]
@@ -99,12 +101,20 @@ def plot(rows, path):
         ax.plot(ks, [r["identical_to_risky_pct"] for r in A], "^" + ls, color="C2", label=f"identical to risky-only output, {name}")
         ax = axes[1]
         ax.plot(ks, [r["lead_forced_mean"] for r in A], "d" + ls, color="C1", label=f"leading tokens written by the anchor, {name}")
+        ax = axes[2]
+        ax.plot(ks, [r["rouge_l_mean"] for r in A], "o" + ls, color="C4", label=f"ROUGE-L, {name}")
+        ax.plot(ks, [r["nv_recall_mean"] for r in A], "s" + ls, color="C5", label=f"nv-recall, {name}")
+        for kb, col, lab in ((-1.0, "C4", "risky only"), (0.0, "C4", "safe only")):
+            if kb in base:
+                ax.axhline(base[kb]["rouge_l_mean"], color=col, ls=":" if kb == 0 else "-.", lw=0.8, alpha=0.7, label=f"ROUGE-L {lab}, {name}")
     axes[0].set_ylabel("% of decode steps / generations")
     axes[1].set_ylabel("tokens (mean)")
+    axes[2].set_ylabel("copying metric (mean)")
     for ax in axes:
         ax.set_xscale("log")
         ax.set_xticks(ks)
         ax.set_xticklabels([f"{k:g}" for k in ks])
+        ax.xaxis.set_minor_formatter(NullFormatter())
         ax.set_xlabel("per-token budget k")
         ax.grid(alpha=0.3)
         ax.legend(frameon=False)

@@ -126,6 +126,42 @@ def copying_metrics(hypothesis: str, reference: Optional[str]) -> dict:
     }
 
 
+def anytime_valid_cs(samples: List[float], alpha: float = 0.05, c: float = 0.75) -> Tuple[float, float]:
+    """Predictable-plug-in empirical-Bernstein confidence sequence for the mean of [0,1]-valued samples
+    (Waudby-Smith and Ramdas, JRSSB 2024, Theorem 2, "PrPl-EB"). Valid at every stopping time: the
+    interval after n samples contains the mean with probability >= 1 - alpha simultaneously over all n,
+    so an audit may keep sampling until it is tight and stop whenever it likes (feat-007).
+
+    Scale quantities to [0,1] first (e.g. Z / K, or an indicator such as 1[L(y) > K]).
+    Returns (lower, upper) after all samples, clipped to [0,1]; see anytime_valid_cs_path for every n."""
+    return anytime_valid_cs_path(samples, alpha, c)[-1] if samples else (0.0, 1.0)
+
+
+def anytime_valid_cs_path(samples: List[float], alpha: float = 0.05, c: float = 0.75) -> List[Tuple[float, float]]:
+    log_term = math.log(2.0 / alpha)
+    mu_prev, var_prev = 0.5, 0.25  # priors: mu_0 = 1/2, sigma_0^2 = 1/4
+    sum_x, sum_sq = 0.0, 0.0
+    s_lam, s_lam_x, s_pen = 0.0, 0.0, 0.0
+    out = []
+    for t, x in enumerate(samples, start=1):
+        if not 0.0 <= x <= 1.0:
+            raise ValueError(f"samples must lie in [0,1]; got {x}")
+        lam = min(math.sqrt(2.0 * log_term / (var_prev * t * math.log1p(t))), c)
+        v = 4.0 * (x - mu_prev) ** 2
+        psi = (-math.log1p(-lam) - lam) / 4.0
+        s_lam += lam
+        s_lam_x += lam * x
+        s_pen += v * psi
+        centre = s_lam_x / s_lam
+        width = (log_term + s_pen) / s_lam
+        out.append((max(0.0, centre - width), min(1.0, centre + width)))
+        sum_x += x
+        mu_t = (0.5 + sum_x) / (t + 1)
+        sum_sq += (x - mu_t) ** 2
+        mu_prev, var_prev = mu_t, (0.25 + sum_sq) / (t + 1)
+    return out
+
+
 def ebb_upper_bound_chapman(samples: List[float], R: float, delta: float) -> float:
     if not samples:
         return float("inf")
