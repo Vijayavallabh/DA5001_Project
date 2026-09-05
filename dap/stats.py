@@ -162,15 +162,17 @@ def anytime_valid_cs_path(samples: List[float], alpha: float = 0.05, c: float = 
     return out
 
 
-def ebb_upper_bound_chapman(samples: List[float], R: float, delta: float) -> float:
-    if not samples:
-        return float("inf")
-    arr = np.asarray(samples, dtype=np.float64)
-    M = len(arr)
-    mean_z = float(arr.mean())
-    var_z = float(arr.var(ddof=1)) if M > 1 else 0.0
-    empirical_R = float(arr.max() - arr.min())
-    R_eff = min(R, max(empirical_R, 1.0))
-    log_term = math.log(2.0 / delta)
-    width = math.sqrt((2.0 * var_z * log_term) / M) + (3.0 * R_eff * log_term) / M
-    return mean_z + width
+EPS_INVARIANT = 1e-3  # solver tolerance for Z <= max(0, B) and a_t <= k_t
+
+
+def budget_check(spends: List[float], budgets: List[float], eps: float = EPS_INVARIANT):
+    """Per-trajectory budget statistics replacing the retired empirical-Bernstein proxy (feat-007).
+
+    Returns (max_spend, max_utilisation, certified): the largest Z_j, the largest Z_j / B_j over trajectories with
+    B_j > 0 (None if there is none), and whether every trajectory satisfies Z_j <= max(0, B_j) + eps. The mechanism
+    enforces the last condition by construction, so a False here is an accounting bug, not a statistical event."""
+    if not spends:
+        return 0.0, None, False
+    utils = [z / b for z, b in zip(spends, budgets) if b > 0 and math.isfinite(b)]
+    certified = all(z <= max(0.0, b) + eps for z, b in zip(spends, budgets))
+    return float(max(spends)), (float(max(utils)) if utils else None), bool(certified)

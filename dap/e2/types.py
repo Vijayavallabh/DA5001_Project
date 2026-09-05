@@ -121,9 +121,9 @@ class EvalResult:
     delta_inits: List[float]
     mean_spend: float
     var_spend: float
-    U_EBB: float
-    rho: float
-    certified: bool
+    max_spend: float  # largest per-trajectory spend Z_j (the Bernstein proxy U_EBB is retired, feat-007)
+    rho: float  # largest per-trajectory utilisation Z_j / B_j (0 if no trajectory accrued budget)
+    certified: bool  # every trajectory satisfies Z_j <= max(0, B_j) + 1e-3
     delta_init_mean: float
     effective_budget_min: float
     final_budget_mean: float
@@ -132,6 +132,10 @@ class EvalResult:
     timestamp: str
     utilisations: List[float] = field(default_factory=list)  # Z / max(0, B) per trajectory (None if B <= 0)
     activity: List[List[int]] = field(default_factory=list)  # [steps theta==0, 0<theta<1, theta==1] per trajectory
+
+    @property
+    def U_EBB(self) -> float:  # backwards-compatible name used by the surrogate; now the max spend
+        return self.max_spend
 
 
 @dataclass
@@ -143,8 +147,8 @@ class ArchiveItem:
     domain: str
     split: str
     prompt_text: str
-    rho: float
-    U_EBB: float
+    rho: float  # max per-trajectory utilisation
+    max_spend: float
     certified: bool
     delta_init_mean: float
     effective_budget_min: float
@@ -155,3 +159,7 @@ class ArchiveItem:
     expected_rho: float = 0.0
     parent_ids: List[str] = field(default_factory=list)
     parent_lineage_ids: List[str] = field(default_factory=list)
+
+    @property
+    def U_EBB(self) -> float:
+        return self.max_spend

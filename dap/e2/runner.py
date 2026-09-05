@@ -16,7 +16,7 @@ load_dotenv()
 
 from ..shared import CLASS_ORDER, load_prompt_corpus
 from ..sampling import stratified_attack_sample, stratified_factual_sample
-from ..stats import ebb_upper_bound_chapman, stable_hash
+from ..stats import budget_check, stable_hash
 from .types import E2Config, Candidate, EvalResult, ArchiveItem
 from .evaluator import AnchoredEvaluator, safe_rho
 from .optimizer import LocalHFOptimizer
@@ -90,8 +90,8 @@ class E2Runner:
 
     def _annotate_eval(self, ev: EvalResult) -> Dict[str, Any]:
         row = asdict(ev)
-        rho, invalid_reason = safe_rho(ev.U_EBB, ev.effective_budget_min)
-        row["rho_num"] = float(ev.U_EBB)
+        rho, invalid_reason = safe_rho(ev.spends, ev.final_budgets)
+        row["rho_num"] = float(ev.max_spend)
         row["rho_den"] = float(ev.effective_budget_min)
         row["raw_rho"] = rho
         row["candidate_valid"] = invalid_reason is None
@@ -131,18 +131,15 @@ class E2Runner:
             spends = list(ev_a.spends) + list(ev_b.spends)
             final_budgets = list(ev_a.final_budgets) + list(ev_b.final_budgets)
             delta_inits = list(ev_a.delta_inits) + list(ev_b.delta_inits)
-            u_ebb = ebb_upper_bound_chapman(spends, self.evaluator.R_token, delta_merge)
+            max_spend, rho, certified = budget_check(spends, final_budgets)
             effective_budget_min = max(0.0, min(float(ev_a.effective_budget_min), float(ev_b.effective_budget_min)))
-            rho, invalid_reason = safe_rho(u_ebb, effective_budget_min)
-            candidate_valid = invalid_reason is None
-            certified = bool(candidate_valid and u_ebb <= effective_budget_min)
             return EvalResult(
                 candidate_id=ev_a.candidate_id, lineage_id=ev_a.lineage_id, generation=ev_a.generation,
                 source=ev_a.source, domain=ev_a.domain, split=ev_a.split, prompt_text=ev_a.prompt_text,
                 N=len(spends), spends=spends, final_budgets=final_budgets, delta_inits=delta_inits,
                 mean_spend=float(np.mean(spends)) if spends else 0.0,
                 var_spend=float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0,
-                U_EBB=u_ebb, rho=float(rho) if rho is not None else 0.0, certified=certified,
+                max_spend=max_spend, rho=float(rho) if rho is not None else 0.0, certified=certified,
                 effective_budget_min=float(effective_budget_min),
                 delta_init_mean=float(np.mean(delta_inits)) if delta_inits else 0.0,
                 final_budget_mean=float(np.mean(final_budgets)) if final_budgets else 0.0,
@@ -173,7 +170,7 @@ class E2Runner:
 
         promote_score = (0.45 * np.clip(observed_rho, 0.0, 2.0) + 0.20 * safe_mean + 0.20 * safe_sigma + 0.15 * np.clip(margin, -1.0, 1.0)) * observed_valid
 
-        survivor_mask = np.asarray([(ev.effective_budget_min > 0) and (ev.U_EBB <= 1.10 * ev.effective_budget_min) for ev in stage1], dtype=bool)
+        survivor_mask = np.asarray([bool(ev.certified) and ev.effective_budget_min > 0 for ev in stage1], dtype=bool)
 
         remain = n - n0
         if remain <= 0:
@@ -282,7 +279,7 @@ class E2Runner:
         return ArchiveItem(
             candidate_id=ev.candidate_id, lineage_id=ev.lineage_id, generation=ev.generation,
             source=ev.source, domain=ev.domain, split=ev.split, prompt_text=ev.prompt_text,
-            rho=ev.rho, U_EBB=ev.U_EBB, certified=ev.certified,
+            rho=ev.rho, max_spend=ev.max_spend, certified=ev.certified,
             effective_budget_min=ev.effective_budget_min, final_budget_mean=ev.final_budget_mean,
             delta_init_mean=ev.delta_init_mean, N=ev.N,
             rationale=c.rationale if c else "", novelty_tag=c.novelty_tag if c else "",
@@ -481,7 +478,7 @@ class E2Runner:
 
         self._write_jsonl(self.output_dir / f"gen_{g:02d}_medfid.jsonl", med_rows)
 
-        survivors = [(c, ev) for c, ev in med_results if ev.effective_budget_min > 0 and ev.U_EBB <= 0.9 * ev.effective_budget_min]
+        survivors = [(c, ev) for c, ev in med_results if ev.certified and ev.effective_budget_min > 0]
         survivors.sort(key=lambda x: (np.isfinite(x[1].rho), x[1].rho if np.isfinite(x[1].rho) else -float("inf")), reverse=True)
 
         topup_candidates = [c for c, _ in survivors[:self.cfg.topup_keep]]
@@ -500,18 +497,15 @@ class E2Runner:
             final_budgets = ev12.final_budgets + ev8.final_budgets
             delta_inits = ev12.delta_inits + ev8.delta_inits
 
-            u_ebb = ebb_upper_bound_chapman(spends, self.evaluator.R_token, self.cfg.delta_screen)
+            max_spend, rho, certified = budget_check(spends, final_budgets)
             effective_budget_min = max(0.0, min(ev12.effective_budget_min, ev8.effective_budget_min))
-            rho, invalid_reason = safe_rho(u_ebb, effective_budget_min)
-            candidate_valid = invalid_reason is None
-            certified = bool(candidate_valid and u_ebb <= effective_budget_min)
 
             ev20 = EvalResult(
                 candidate_id=ev12.candidate_id, lineage_id=ev12.lineage_id, generation=ev12.generation,
                 source=ev12.source, domain=ev12.domain, split=ev12.split, prompt_text=ev12.prompt_text,
                 N=len(spends), spends=spends, final_budgets=final_budgets, delta_inits=delta_inits,
                 mean_spend=float(np.mean(spends)), var_spend=float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0,
-                U_EBB=u_ebb, rho=float(rho) if rho is not None else 0.0, certified=certified,
+                max_spend=max_spend, rho=float(rho) if rho is not None else 0.0, certified=certified,
                 effective_budget_min=float(effective_budget_min),
                 delta_init_mean=float(np.mean(delta_inits)) if delta_inits else 0.0,
                 final_budget_mean=float(np.mean(final_budgets)) if final_budgets else 0.0,
@@ -626,10 +620,10 @@ class E2Runner:
             for _, ev in pairs:
                 row = self._annotate_eval(ev)
                 rows.append(row)
-                if ev.effective_budget_min > 0 and ev.U_EBB <= ev.effective_budget_min:
+                if ev.certified:
                     rows_pass.append(row)
                 else:
-                    violations.append({"pool": pool_name, "candidate_id": ev.candidate_id, "lineage_id": ev.lineage_id, "U_EBB": ev.U_EBB, "delta_init_mean": ev.delta_init_mean})
+                    violations.append({"pool": pool_name, "candidate_id": ev.candidate_id, "lineage_id": ev.lineage_id, "max_spend": ev.max_spend, "delta_init_mean": ev.delta_init_mean})
             return rows, rows_pass, violations
 
         max_cleanup_rounds = 5

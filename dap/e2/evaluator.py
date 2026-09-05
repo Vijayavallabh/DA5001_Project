@@ -11,7 +11,7 @@ from transformers import GenerationConfig
 
 from a_patch import AnchoredDecodingFactory
 from ..shared import chat_eos_ids, true_gen_len, wrap_chat
-from ..stats import ebb_upper_bound_chapman, build_trajectory_seeds
+from ..stats import budget_check, build_trajectory_seeds
 from .types import E2Config, EvalResult
 
 
@@ -28,16 +28,11 @@ def activity_counts(per_step, j: int, gen_len: int) -> List[int]:
     return [forced, len(bd) - forced - free, free]
 
 
-def safe_rho(u_ebb: float, effective_budget_min: float):
-    if not np.isfinite(u_ebb):
-        return None, "nonfinite_u_ebb"
-    if not np.isfinite(effective_budget_min):
-        return None, "nonfinite_effective_budget_min"
-    if effective_budget_min <= 0.0:
-        return None, "nonpositive_effective_budget_min"
-    rho = u_ebb / effective_budget_min
-    if not np.isfinite(rho):
-        return None, "nonfinite_rho"
+def safe_rho(spends, budgets):
+    """Max per-trajectory utilisation with a reason when it is undefined (no trajectory accrued a positive budget)."""
+    _, rho, _ = budget_check(spends, budgets)
+    if rho is None:
+        return None, "no_trajectory_with_positive_budget"
     return float(rho), None
 
 
@@ -62,7 +57,7 @@ class AnchoredEvaluator:
             token=os.getenv("HF_TOKEN"),
         )
         self.tokenizer = self.factory.tokenizer
-        self.R_token = self.cfg.K  # Z is in [0, K] deterministically; the only range used anywhere (feat-003)
+        self.R_token = self.cfg.K  # Z is in [0, K] deterministically (kept for logging; no Bernstein arithmetic remains)
         self.gen_cfg = GenerationConfig(
             do_sample=True,
             temperature=cfg.temperature,
@@ -127,12 +122,8 @@ class AnchoredEvaluator:
 
         mean_spend = float(np.mean(spends)) if spends else 0.0
         var_spend = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
-        u_ebb = ebb_upper_bound_chapman(spends, self.R_token, delta)
+        max_spend, rho, certified = budget_check(spends, final_budgets)
         effective_budget_min = max(0.0, min(final_budgets)) if final_budgets else self.cfg.K
-
-        rho, invalid_reason = safe_rho(u_ebb, effective_budget_min)
-        candidate_valid = invalid_reason is None
-        certified = bool(candidate_valid and u_ebb <= effective_budget_min)
 
         return EvalResult(
             candidate_id=acc["candidate_id"],
@@ -148,7 +139,7 @@ class AnchoredEvaluator:
             delta_inits=delta_inits,
             mean_spend=mean_spend,
             var_spend=var_spend,
-            U_EBB=u_ebb,
+            max_spend=max_spend,
             rho=float(rho) if rho is not None else 0.0,
             certified=certified,
             effective_budget_min=float(effective_budget_min),

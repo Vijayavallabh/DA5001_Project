@@ -33,7 +33,7 @@ Before writing code:
 |---|---|
 | Entry points | `h1.py` → `dap/e1.py` (fixed workload); `h2.py` → `dap/e2/runner.py` (search) |
 | Core library | `a_patch/factory.py` (`AnchoredDecodingFactory`; `k_radius=-1.0` = risky only, `0.0` = safe only) |
-| Stats | `dap/stats.py` (`build_trajectory_seeds` has the collision; `ebb_upper_bound_chapman` is to be retired) |
+| Stats | `dap/stats.py`: index-only `build_trajectory_seeds`, copying metrics, `budget_check` (per-trajectory max spend / utilisation / invariant), `anytime_valid_cs` (PrPl-EB). The empirical-Bernstein proxy is gone; E2 `rho` now means max per-trajectory utilisation and `certified` means every trajectory within budget |
 | Models | safe `jacquelinehe/tinycomma-1.8b-llama3-tokenizer`, risky `meta-llama/Llama-3.1-8B-Instruct`, optimizer `Qwen/Qwen2.5-7B-Instruct` |
 | Released logs | `output.zip` (2.4 GB; `unzip -o output.zip 'output/h1_outputs/trajectories_k3_attack_train.jsonl'` etc.) |
 | Log reanalysis | `analysis/reanalyze_logs.py --logs output --out results` (feat-002; writes `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv`) |

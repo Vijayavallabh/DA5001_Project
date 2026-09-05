@@ -17,7 +17,7 @@ from a_patch import AnchoredDecodingFactory
 from dataclasses import replace
 
 from .shared import CLASS_ORDER, PromptRecord, chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat
-from .stats import ebb_upper_bound_chapman, build_trajectory_seeds, copying_metrics
+from .stats import anytime_valid_cs, build_trajectory_seeds, copying_metrics
 from .sampling import apply_e1_sampling, validate_sample_counts
 
 
@@ -348,7 +348,7 @@ class H1AuditRunner:
         return {"summary_json": str(summary_json), "summary_csv": str(summary_csv), "rows": summary_rows}
 
 
-SUMMARY_HEADERS = ["class", "k", "K", "M", "mean_Z", "var_Z", "R", "delta", "U_EBB", "certified",
+SUMMARY_HEADERS = ["class", "k", "K", "M", "mean_Z", "var_Z", "all_within_budget", "util_mean", "util_cs95_lo", "util_cs95_hi",
                    "util_max", "util_gt_0p9", "invariant_violations", "active_step_pct", "forced_safe_step_pct",
                    "rouge_l_mean", "lcs_word_mean", "lcs_char_mean", "acs_word_mean", "nv_recall_mean", "gen_len_mean"]
 METRIC_KEYS = ("rouge_l", "lcs_word", "lcs_char", "acs_word", "nv_recall")
@@ -360,20 +360,21 @@ def budget_K(k: float, t_max: int) -> float:
 
 
 def summary_row(split_name: str, k: float, K: float, spends: List[float], delta: float, aggregates: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Per-class summary. R = K because Z is in [0, K] by construction (feat-003).
-    Baselines (k in {-1, 0}) carry no certificate, so no Bernstein arithmetic is done for them (feat-004)."""
+    """Per-class summary. The Bernstein proxy is retired (feat-007): the budget is checked per trajectory
+    (all_within_budget / invariant_violations) and the mean utilisation Z / max(0, B) gets a 95% anytime-valid
+    confidence sequence. Baselines (k in {-1, 0}) accrue no budget, so their utilisation fields are empty."""
     mean_z = float(np.mean(spends)) if spends else 0.0
     var_z = float(np.var(spends, ddof=1)) if len(spends) > 1 else 0.0
-    baseline = k in (-1.0, 0.0)
-    u_ebb = None if baseline else ebb_upper_bound_chapman(spends, K, delta)
-    utils = [a["utilisation"] for a in aggregates if a.get("utilisation") is not None]
+    utils = [min(1.0, max(0.0, a["utilisation"])) for a in aggregates if a.get("utilisation") is not None]
+    cs = anytime_valid_cs(utils, alpha=0.05) if utils else (None, None)
     steps = sum(a.get("steps_forced_safe", 0) + a.get("steps_active", 0) + a.get("steps_risky_unchanged", 0) for a in aggregates)
     means = {f"{m}_mean": float(np.mean([a[m] for a in aggregates])) if aggregates else 0.0 for m in METRIC_KEYS}
     means["gen_len_mean"] = float(np.mean([a["generation_length_tokens"] for a in aggregates])) if aggregates else 0.0
     return {
         "class": split_name, "k": k, "K": K, "M": len(spends),
-        "mean_Z": mean_z, "var_Z": var_z, "R": None if baseline else K, "delta": delta, "U_EBB": u_ebb,
-        "certified": None if baseline else bool(u_ebb <= K), **means,
+        "mean_Z": mean_z, "var_Z": var_z,
+        "all_within_budget": all(a.get("invariant_ok", True) for a in aggregates),
+        "util_mean": float(np.mean(utils)) if utils else None, "util_cs95_lo": cs[0], "util_cs95_hi": cs[1], **means,
         "util_max": max(utils) if utils else 0.0, "util_gt_0p9": sum(u > 0.9 for u in utils),
         "invariant_violations": sum(1 for a in aggregates if a.get("invariant_ok") is False),
         "active_step_pct": 100.0 * sum(a.get("steps_active", 0) for a in aggregates) / steps if steps else 0.0,
