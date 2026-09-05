@@ -42,6 +42,53 @@ def rows_from(source, recs_by_k_split):
     return rows
 
 
+def plot(rows, samples, figures):
+    """Figure from llr_tails.csv rows and llr_ratio_samples.csv rows (feat-013 rebuilds figures from CSV)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import NullFormatter
+    from collections import defaultdict
+    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5})
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.1))
+    ax = axes[0]
+    groups = defaultdict(list)
+    for s in samples:
+        groups[(s["source"], float(s["k"]))].append(float(s["L_over_K"]))
+    for (source, k), xs in sorted(groups.items(), key=lambda kv: (kv[0][0], kv[0][1])):
+        xs = sorted(xs)
+        ax.plot(xs, [(i + 1) / len(xs) for i in range(len(xs))], lw=1.2, label=f"k={k:g} ({source}, n={len(xs)})")
+    ax.axvline(1.0, color="k", ls="--", lw=0.8)
+    ax.set_xlabel("realised log-likelihood ratio L(y) / K")
+    ax.set_ylabel("empirical CDF (attack_train)")
+    ax.set_xlim(0, max(1.3, ax.get_xlim()[1]))
+    ax.grid(alpha=0.3)
+    ax.legend(frameon=False)
+    ax = axes[1]
+    for source in sorted({r["source"] for r in rows}):
+        A = sorted([r for r in rows if r["source"] == source and r["split"] == "attack_train"], key=lambda r: float(r["k"]))
+        if not A:
+            continue
+        ks = [float(r["k"]) for r in A]
+        f = lambda r, c: float(r[c])
+        ax.errorbar(ks, [100 * f(r, "frac_L_gt_K") for r in A],
+                    yerr=[[100 * (f(r, "frac_L_gt_K") - f(r, "frac_L_gt_K_cs95_lo")) for r in A], [100 * (f(r, "frac_L_gt_K_cs95_hi") - f(r, "frac_L_gt_K")) for r in A]],
+                    fmt="o-", capsize=3, label=f"P[L(y) > K], 95% anytime-valid CS ({source})")
+    ax.set_xscale("log")
+    ks_all = sorted({float(r["k"]) for r in rows})
+    ax.set_xticks(ks_all)
+    ax.set_xticklabels([f"{k:g}" for k in ks_all])
+    ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_xlabel("per-token budget k")
+    ax.set_ylabel("% of trajectories with L(y) > K")
+    ax.grid(alpha=0.3)
+    ax.legend(frameon=False)
+    fig.tight_layout()
+    os.makedirs(figures, exist_ok=True)
+    fig.savefig(os.path.join(figures, "llr_tails.pdf"))
+    fig.savefig(os.path.join(figures, "llr_tails.png"), dpi=150)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--released", default="results/per_trajectory.csv")
@@ -76,49 +123,17 @@ def main():
     for r in rows:
         print(f"{r['source']} k={r['k']:g} {r['split']}: L>K in {r['n_L_gt_K']}/{r['n_traj']} = {r['frac_L_gt_K']} (CS95 [{r['frac_L_gt_K_cs95_lo']}, {r['frac_L_gt_K_cs95_hi']}]), max excess {r['max_excess_L_minus_K']}, step max {r['step_boost_max']}")
 
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5})
-    fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.1))
-    ax = axes[0]
+    samples = []
     for source, by in data.items():
         for (k, split), recs in sorted(by.items()):
-            if k <= 0 or split not in ("attack_train",):
-                continue
-            K = next(iter(recs.values()))["K"]
-            xs = sorted(r["L"] / K for r in recs.values())
-            ys = [(i + 1) / len(xs) for i in range(len(xs))]
-            ax.plot(xs, ys, lw=1.2, label=f"k={k:g} ({source}, n={len(xs)})")
-    ax.axvline(1.0, color="k", ls="--", lw=0.8)
-    ax.set_xlabel("realised log-likelihood ratio L(y) / K")
-    ax.set_ylabel("empirical CDF (attack_train)")
-    ax.set_xlim(0, max(1.3, ax.get_xlim()[1]))
-    ax.grid(alpha=0.3)
-    ax.legend(frameon=False)
-    ax = axes[1]
-    for source in data:
-        A = [r for r in rows if r["source"] == source and r["split"] == "attack_train"]
-        if not A:
-            continue
-        ks = [r["k"] for r in A]
-        ax.errorbar(ks, [100 * r["frac_L_gt_K"] for r in A],
-                    yerr=[[100 * (r["frac_L_gt_K"] - r["frac_L_gt_K_cs95_lo"]) for r in A], [100 * (r["frac_L_gt_K_cs95_hi"] - r["frac_L_gt_K"]) for r in A]],
-                    fmt="o-", capsize=3, label=f"P[L(y) > K], 95% anytime-valid CS ({source})")
-    from matplotlib.ticker import NullFormatter
-    ax.set_xscale("log")
-    ks_all = sorted({r["k"] for r in rows})
-    ax.set_xticks(ks_all)
-    ax.set_xticklabels([f"{k:g}" for k in ks_all])
-    ax.xaxis.set_minor_formatter(NullFormatter())
-    ax.set_xlabel("per-token budget k")
-    ax.set_ylabel("% of trajectories with L(y) > K")
-    ax.grid(alpha=0.3)
-    ax.legend(frameon=False)
-    fig.tight_layout()
-    os.makedirs(args.figures, exist_ok=True)
-    fig.savefig(os.path.join(args.figures, "llr_tails.pdf"))
-    fig.savefig(os.path.join(args.figures, "llr_tails.png"), dpi=150)
+            if k > 0 and split == "attack_train":
+                K = next(iter(recs.values()))["K"]
+                samples += [dict(source=source, k=k, split=split, L_over_K=round(r["L"] / K, 5)) for r in recs.values()]
+    with open(os.path.join(args.out, "llr_ratio_samples.csv"), "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["source", "k", "split", "L_over_K"])
+        w.writeheader()
+        w.writerows(samples)
+    plot(rows, samples, args.figures)
     print("wrote", os.path.join(args.out, "llr_tails.csv"), os.path.join(args.figures, "llr_tails.pdf"))
 
 

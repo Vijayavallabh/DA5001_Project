@@ -54,6 +54,37 @@ def surprisal(model, tok, prompt, reference, device):
     return float(-tok_lp.sum()), len(r_ids), float(-tok_lp[0])
 
 
+def plot(summary, figures, t_max=200):
+    """Certificate-strength curve from the rows of certificate_cap_summary.csv (feat-013 rebuilds figures from CSV)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 8, "xtick.labelsize": 8, "ytick.labelsize": 8})
+    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+    allrows = sorted([r for r in summary if r["split"] == "all"], key=lambda r: r["k"])
+    ks = [r["k"] for r in allrows]
+    ax.plot(ks, [r["vacuous_pct"] for r in allrows], "o-", color="C3", label="passages with vacuous certificate (S ≤ K)")
+    ax.plot(ks, [100 * r["cap_median"] for r in allrows], "s--", color="C0", label="median cap on P(reproduce reference)")
+    for split, ls in zip(SPLITS, (":", "-.", (0, (1, 1)))):
+        rows = sorted([r for r in summary if r["split"] == split], key=lambda r: r["k"])
+        ax.plot([r["k"] for r in rows], [r["vacuous_pct"] for r in rows], linestyle=ls, color="C3", lw=0.8, alpha=0.6, label=f"vacuous, {split}")
+    ax.set_xscale("log")
+    ax.set_xticks(ks)
+    ax.set_xticklabels([f"{k:g}\nK={k * t_max:g}" for k in ks])
+    ax.set_xlabel("per-token budget k (K = k·T_max, T_max = %d)" % t_max)
+    ax.set_ylabel("%")
+    ax.set_ylim(0, 102)
+    ax.grid(alpha=0.3)
+    top = ax.secondary_xaxis("top", functions=(lambda k: k, lambda k: k))
+    top.set_xticks(ks)
+    top.set_xticklabels([f"1e{(k * t_max) / math.log(10):.0f}" for k in ks])
+    top.set_xlabel("best-of-n selection permitted by the budget (n = e^K)")
+    ax.legend(loc="upper left", frameon=False)
+    fig.tight_layout()
+    fig.savefig(os.path.join(figures, "certificate_cap_curve.pdf"))
+    fig.savefig(os.path.join(figures, "certificate_cap_curve.png"), dpi=150)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default="data")
@@ -127,32 +158,7 @@ def main():
         if row["split"] == "all":
             print(f"k={row['k']:g} K={row['K']:g}: vacuous {row['vacuous_pct']}% median cap {row['cap_median']} (best-of-n equiv. log10 n ~ {row['bestofn_equiv_log10n']})")
 
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 8, "xtick.labelsize": 8, "ytick.labelsize": 8})
-    fig, ax = plt.subplots(figsize=(4.6, 3.2))
-    ks = [k for k, _ in Ks]
-    allrows = [r for r in summary if r["split"] == "all"]
-    ax.plot(ks, [r["vacuous_pct"] for r in allrows], "o-", color="C3", label="passages with vacuous certificate (S ≤ K)")
-    ax.plot(ks, [100 * r["cap_median"] for r in allrows], "s--", color="C0", label="median cap on P(reproduce reference)")
-    for split, ls in zip(SPLITS, (":", "-.", (0, (1, 1)))):
-        ax.plot(ks, [r["vacuous_pct"] for r in summary if r["split"] == split], linestyle=ls, color="C3", lw=0.8, alpha=0.6, label=f"vacuous, {split}")
-    ax.set_xscale("log")
-    ax.set_xticks(ks)
-    ax.set_xticklabels([f"{k:g}\nK={k * args.t_max:g}" for k in ks])
-    ax.set_xlabel("per-token budget k (K = k·T_max, T_max = %d)" % args.t_max)
-    ax.set_ylabel("%")
-    ax.set_ylim(0, 102)
-    ax.grid(alpha=0.3)
-    top = ax.secondary_xaxis("top", functions=(lambda k: k, lambda k: k))
-    top.set_xticks(ks)
-    top.set_xticklabels([f"1e{(k * args.t_max) / math.log(10):.0f}" for k in ks])
-    top.set_xlabel("best-of-n selection permitted by the budget (n = e^K)")
-    ax.legend(loc="upper left", frameon=False)
-    fig.tight_layout()
-    fig.savefig(os.path.join(args.figures, "certificate_cap_curve.pdf"))
-    fig.savefig(os.path.join(args.figures, "certificate_cap_curve.png"), dpi=150)
+    plot(summary, args.figures, args.t_max)
     print("wrote", os.path.join(args.figures, "certificate_cap_curve.pdf"))
 
 
