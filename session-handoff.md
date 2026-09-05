@@ -4,7 +4,7 @@
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
 - Current status: GOAL COMPLETE (2026-09-05). feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; feat-016 is human-only.
-- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45; ethics section + deployer sentence added 22:20); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-05 22:11 (artifact rebuilt again after README update); rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
+- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45; ethics section + deployer sentence added 22:20); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-05 22:25; rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
 - Branch / commit: `master`, one commit per feature; latest work: proofread (6a3cd85), .gitignore + artifact rebuild (096cc83), handoff (f57d598), harness refresh (this commit).
 
 ## Completed This Session
@@ -36,8 +36,8 @@
 | feat-007 | `pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap \| wc -l` | PASS (3 tests, 79 rows, 0 call sites) | |
 | feat-009 | `analysis/composition_attack.py ... --k-values -1 0 0.15 0.5 1 3 5 10 20` | PASS (45 summary rows, 0 violations) | 70 min |
 | feat-013 | `figures/make_figures.py --copy-to <sub/satml/figures>` | PASS (4 figures) | |
-| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (11 pages, 48 refs, 0 `??`, 0 overfull) | pdflatex unavailable here; proofread 2026-09-05 21:45 |
-| feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | last built 2026-09-05 22:11 |
+| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (11 pages, 49 refs cited of 52, 0 `??`, 0 overfull) | pdflatex unavailable here; proofread 21:45, CFP pass 22:40 |
+| feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | last built 2026-09-05 22:25 |
 | Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
 
 ## Files Changed
@@ -56,6 +56,15 @@
 - feat-008 decided: 8B LoRA memoriser (70B not cached, token invalid, DGX SSH denied). feat-010 (bank-and-burst) is not testable with it; feat-011/012 unstarted.
 - `HF_TOKEN` in `.env` is invalid; local runs use `HF_HUB_OFFLINE=1` against the cache (see progress.md Blockers). 70B is not cached.
 - Human-only steps (feat-016): abstract Sep 22, paper Sep 29, artifacts Oct 2.
+
+## Submission checklist for the human (from https://satml.org/call-for-papers/ and its checklist, Sep 4 2026 version)
+
+- Sep 22 (abstract registration): title + abstract (tentative wording, no substantial change later), final authors and topics, ORCID for every author, Author Certification, mandatory conflicts, one author nominated as author-reviewer (may be asked to review up to three papers per submission), answer the "under review elsewhere" field, enter `N/A` in New Insights.
+- Sep 29 (paper): `sub/satml/satml_2027.pdf`; anonymised repository link (e.g. anonymous.4open.science) containing `artifact.zip` contents plus `output.zip`; re-check conflicts in the last 24 h; optional LLM-processing opt-in flag; self-check references with hallucinator.science (all 52 entries were checked against arXiv/publisher metadata here, but the CFP asks authors to run the tool).
+- **Open question only you can answer:** did the NeurIPS/arXiv version (`sub/neurips_2026.tex`, arXiv 2605.28001) receive reviews at any venue? If so the CFP requires those reviews, anonymised and unedited, plus a response, appended after all appendices; missing them is a desk-reject ground. Also confirm the paper is not under submission anywhere else.
+- Oct 2: last edit of the anonymised repository; it must then stay accessible and unchanged through review.
+- Paper end matter is already in the CFP order (Open Science → LLM usage considerations → Ethical Considerations → references) and contains the required editorial-use sentence; the arXiv audit is not cited (own work would have to be in the third person); add it at camera-ready if wanted.
+- If accepted: Zenodo by Jan 14 2027 (paste the DOI into `sections/open_science.tex`), camera-ready mid-Feb 2027, in-person presentation early May 2027 with one full registration.
 
 ## Next Session Startup
 

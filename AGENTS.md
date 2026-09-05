@@ -2,7 +2,7 @@
 
 Code for arXiv 2605.28001, now being reworked into a SaTML 2027 submission: **"What does a KL budget certify? An adversarial audit of inference-time near-access-freeness."** The mechanism under audit is He et al.'s Anchored Decoding (`a_patch/`, KL budget K = k·T_max). The full rationale and experiment design is `~/sub/satml/IMPROVEMENT_PLAN.md` (absolute: `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/IMPROVEMENT_PLAN.md`). The manuscript is `~/sub/satml/satml_2027.tex`.
 
-**Deadlines (AoE):** abstract Sep 22 2026 · paper Sep 29 2026 · artifacts Oct 2 2026. Human-only steps (registration, submission, Zenodo upload) are `feat-016`; never attempt them.
+**Deadlines (AoE, from https://satml.org/call-for-papers/ as of Sep 4 2026):** abstract registration Sep 22 2026 (fixed authors and topics, ORCIDs, author certification, conflicts, author-reviewer nomination) · paper Sep 29 2026 · anonymised artifact repository (e.g. anonymous.4open.science, linked in HotCRP, then frozen) Oct 2 2026 · early reject Nov 4 · discussion Nov 25–Dec 9 · decision Dec 16 · Zenodo artifacts Jan 14 2027 · revisions Jan 21 · camera-ready mid-Feb 2027 · conference early May 2027, in-person presentation required. Human-only steps are `feat-016`; never attempt them.
 
 **Status (2026-09-05):** GOAL COMPLETE. feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; the PDF (11 pages) and `artifact.zip` are named in `session-handoff.md`.
 
@@ -28,6 +28,7 @@ Before writing code:
 - **Secrets.** `HF_TOKEN` lives in `.env` (gitignored) but was invalid on 2026-09-05; run local jobs with `HF_HUB_OFFLINE=1` (cache has Llama-3.1-8B-Instruct, Llama-3.1-8B, TinyComma, Qwen2.5-7B-Instruct; 70B is not cached). `meta-llama/*` is gated: ask the user for a valid token before any download.
 - **Do not modify** `~/sub/neurips_2026.tex`, `output.zip`, or anything under `data/`. New logs go to `output/` (gitignored); summaries go to `results/` (committed, small).
 - **Anonymity.** Nothing you write into `~/sub/satml/` or the artifact may identify the authors.
+- **CFP format rules.** `\documentclass[conference]{IEEEtran}`, 10pt, unmodified geometry; ≤ 12 pages of body text; end matter in this order, none of it counted: `Open Science` (what is released, or why not) → `LLM usage considerations` (exact title; must contain the sentence "LLMs were used for editorial purposes in this manuscript, and all outputs were inspected by the authors to ensure accuracy and originality." plus compute justification) → `Ethical Considerations` (optional) → references. Anonymity: no names or affiliations, own prior work in the third person only (no "our earlier audit"), no hint that artifacts are already public, linked material anonymised. Non-existent references are grounds for desk rejection: verify every entry.
 - **Paper integrity.** The manuscript (proofread 2026-09-05) reports bank-and-burst as attempted but not evaluated (the fine-tuned memoriser ignores filler instructions) and claims no adaptive prompt search; do not describe feat-010/011/012 as run until their evidence exists. After any edit under `~/sub/satml/`, recompile and check the PDF for `??` and the log for overfull boxes (see Verification Commands).
 
 ## Key Facts

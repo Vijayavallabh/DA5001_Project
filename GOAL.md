@@ -12,7 +12,7 @@ Turn the arXiv paper "An Empirical Audit of k-NAF Budget Accounting for Anchored
 
 1. `feature_list.json` features feat-001 through feat-009 and feat-013 through feat-015 are `done`, each with its evidence command and output pasted in. feat-010, feat-011, feat-012 are optional and attempted only after feat-009 is done.
 2. `results/` contains, at minimum: `regime_table.csv`, `regime_sweep.csv`, `certificate_caps.csv`, `llr_tails.csv`, `memorizing_model_recall.csv`, `composition.csv`. Every number in the manuscript traces to one of these files.
-3. `~/sub/satml/satml_2027.tex` compiles with `pdflatex` + `bibtex` (or with `tectonic`, the accepted equivalent on this box, where pdflatex is unavailable; see `progress.md` Decisions), has ≤ 12 pages of body text in IEEEtran, contains a threat-model section, an Open Science section, and an LLM-usage section, and `references.bib` has ≥ 40 complete entries.
+3. `~/sub/satml/satml_2027.tex` compiles with `pdflatex` + `bibtex` (or with `tectonic`, the accepted equivalent on this box, where pdflatex is unavailable; see `progress.md` Decisions), has ≤ 12 pages of body text in IEEEtran, contains a threat-model section and, in this order before the references, an Open Science section, an `LLM usage considerations` section with the CFP's required editorial-use sentence, and an Ethical Considerations section, and `references.bib` has ≥ 40 complete, verified entries.
 4. `artifact/` exists with an anonymised code snapshot, `results/*.csv`, prompt sets, the memorising-model recipe, a README with exact reproduction commands, and a verified `MANIFEST.sha256`.
 5. `./init.sh` passes and the git tree is committed after every completed feature.
 6. `session-handoff.md` names the final PDF path and the artifact zip path for the human to submit (feat-016).
@@ -26,7 +26,7 @@ Turn the arXiv paper "An Empirical Audit of k-NAF Budget Accounting for Anchored
 
 ## Constraints
 
-- Dates (AoE): abstract Sep 22 2026, paper Sep 29 2026, artifacts Oct 2 2026. Plan work so that a compilable draft with feat-005, feat-006, feat-007, feat-009 results exists by Sep 22, leaving the last week for writing and packaging.
+- Dates (AoE): abstract Sep 22 2026, paper Sep 29 2026, anonymised artifact repository frozen Oct 2 2026 (full timeline in `AGENTS.md`). Plan work so that a compilable draft with feat-005, feat-006, feat-007, feat-009 results exists by Sep 22, leaving the last week for writing and packaging.
 - Compute: local 4×A100 80GB (indices 0,1,2,4; never index 3; check `nvidia-smi` for other users' load first) for smoke tests, the certificate audit, and 8B runs; the DGX (6×H100, `dgx-gpu` skill) for the 70B base model and the full sweeps. Always set `CUDA_VISIBLE_DEVICES`. Stop and ask before any single run expected to exceed 24 GPU-hours or before starting fine-tuning larger than 8B.
 - Baselines: every experiment reporting a spend or copying metric at some k also reports k = −1 and k = 0 on the same prompts and seeds.
 - Violations: a budget violation is a per-trajectory event (Z > max(0,B) + 1e-3 or a_t > k_t + 1e-3), never a mean-bound artefact. A result contradicting the Known Truths in `AGENTS.md` is a bug until proven otherwise.

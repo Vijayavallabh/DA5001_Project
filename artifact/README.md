@@ -28,7 +28,7 @@ traces to a file in `results/`, and every figure is rebuilt from those files by 
 ```bash
 python -m venv .venv && .venv/bin/pip install torch transformers peft accelerate numpy matplotlib pytest pypdf feedparser
 .venv/bin/python -m pytest -q tests
-# released logs (2.4 GB output.zip from the Zenodo record) -> results/regime_table.csv etc.
+# released logs (2.4 GB output.zip, shipped next to this artifact) -> results/regime_table.csv etc.
 unzip -o output.zip 'output/h1_outputs/trajectories_k*.jsonl' && .venv/bin/python analysis/reanalyze_logs.py --logs output --out results
 # certificate strength (one A100, ~2 min)
 .venv/bin/python analysis/certificate_cap.py --data data --out results
