@@ -3,16 +3,64 @@ for each run (novel x decoding setting x decoder), per k and strategy: near-verb
 utilisation, realised-ratio utilisation, and the decode-step activity of the single queries (fraction of steps forced
 to the anchor / served unchanged), with the k = -1 and k = 0 baselines. Writes results/natural_memorisation.csv (single
 queries, one row per run and k) and results/composition_70b.csv (all strategies).
-Usage: .venv/bin/python analysis/natural_memorisation.py --runs output/phase2/nm --out results
+Usage: .venv/bin/python analysis/natural_memorisation.py --runs output/phase2/nm --out results --figures figures
 """
 import argparse, csv, glob, json, os, statistics as st
 from collections import defaultdict
+
+
+def plot(allrows, figures, prefix="natural_memorisation"):
+    """Recall against k per novel: one line per (decoding setting, decoder, strategy); the risky model alone (greedy and
+    sampled) and the anchor alone as horizontal references."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import NullFormatter
+    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 6.5})
+    novels = sorted({r["novel"] for r in allrows})
+    fig, axes = plt.subplots(1, len(novels), figsize=(5.0 * len(novels), 3.4), squeeze=False)
+    style = {"single": "-", "oracle": "--", "chained": ":"}
+    marker = {"single": "o", "oracle": "s", "chained": "^"}
+    for ax, novel in zip(axes[0], novels):
+        rows = [r for r in allrows if r["novel"] == novel]
+        series = defaultdict(list)
+        for r in rows:
+            series[(r["run"], r["mode"])].append(r)
+        ci = 0
+        colours = {}
+        for (run, mode), rs in sorted(series.items()):
+            rs = sorted(rs, key=lambda r: r["k"])
+            pos = [r for r in rs if r["k"] > 0]
+            base = run.replace(f"{novel}_", "")
+            if base not in colours:
+                colours[base] = f"C{ci}"; ci += 1
+            if "greedy" in run:  # risky alone (k=-1) under greedy decoding: horizontal reference
+                for r in rs:
+                    if r["k"] == -1:
+                        ax.axhline(r["nv_recall_mean"], color="0.3", ls=style[mode], lw=0.8, label=f"risky model alone, greedy ({mode})")
+                continue
+            if pos:
+                ax.plot([r["k"] for r in pos], [r["nv_recall_mean"] for r in pos], style[mode], marker=marker[mode], ms=3.5,
+                        color=colours[base], label=f"{base.replace('_', ' ')} ({mode})")
+            for r in rs:
+                if r["k"] == -1 and mode == "single":
+                    ax.axhline(r["nv_recall_mean"], color=colours[base], ls="-.", lw=0.6, alpha=0.6, label=f"risky alone, sampled ({base.replace('_', ' ')})")
+        ks = sorted({r["k"] for r in rows if r["k"] > 0})
+        if ks:
+            ax.set_xscale("log"); ax.set_xticks(ks); ax.set_xticklabels([f"{k:g}" for k in ks]); ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.set_xlabel("per-token budget k"); ax.set_ylabel("near-verbatim recall (mean)"); ax.set_ylim(-0.02, 1.02); ax.grid(alpha=0.3)
+        ax.set_title(novel.replace("_", " "), fontsize=9)
+        ax.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none", ncol=1)
+    fig.tight_layout()
+    os.makedirs(figures, exist_ok=True)
+    fig.savefig(os.path.join(figures, f"{prefix}.pdf")); fig.savefig(os.path.join(figures, f"{prefix}.png"), dpi=150)
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--runs", default="output/phase2/nm")
     ap.add_argument("--out", default="results")
+    ap.add_argument("--figures", default=None, help="directory for natural_memorisation.{pdf,png}")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     single, allrows = [], []
@@ -63,6 +111,9 @@ def main():
         print(f"[nm] {r['run']} k={r['k']:g}: recall {r['nv_recall_mean']} (>=0.8: {r['nv_recall_ge_0p8_pct']}%), LCS {r['lcs_word_mean']}, util max {r['max_query_Z_over_K']}, "
               f"forced {r.get('steps_forced_pct')}% free {r.get('steps_free_pct')}%")
     print("wrote", os.path.join(args.out, "natural_memorisation.csv"))
+    if args.figures:
+        plot(allrows, args.figures)
+        print("wrote", os.path.join(args.figures, "natural_memorisation.pdf"))
 
 
 if __name__ == "__main__":
