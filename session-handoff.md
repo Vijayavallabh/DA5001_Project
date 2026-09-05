@@ -3,7 +3,7 @@
 ## Current Objective
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
-- Current status: feat-001..004 and feat-006 done; feat-005 in progress (plain sweep running on GPU 2, `output/sweep_plain`; chat sweep to relaunch with --skip-existing after the feat-008 fine-tune). feat-008 fine-tune running (`output/memorizing_llama8b/train.log`); feat-009 driver written. Manuscript prep in `~/sub/satml/sections/` and a 51-entry `references.bib`.
+- Current status: feat-001..004, 006, 008 done. feat-009 in progress: extended composition run (k up to 20) on GPU 1, log `output/composition/run2.log`, writes `results/composition*.csv` + `figures/composition.pdf`; the k<=3 run is archived in `output/composition/run1_k_to_3/`. feat-005 blocked on the two sweeps on GPU 2 (`output/sweep_plain`, `output/sweep_chat`). Manuscript rewrite skeleton `~/sub/satml/satml_2027_new.tex` (+ `sections/*.tex`, 51-entry bib) compiles with tectonic to 7 pages with TODO placeholders.
 - Branch / commit: `master`, one commit per feature (feat-001 07a446c, feat-002 b717255, feat-003 next).
 
 ## Completed This Session
