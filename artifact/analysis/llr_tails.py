@@ -63,7 +63,7 @@ def plot(rows, samples, figures):
     ax.set_ylabel("empirical CDF (CopyBench attack split)")
     ax.set_xlim(0, max(1.3, ax.get_xlim()[1]))
     ax.grid(alpha=0.3)
-    ax.legend(frameon=False)
+    ax.legend(loc="lower right", frameon=True, framealpha=0.9, edgecolor="none")
     ax = axes[1]
     for source in sorted({r["source"] for r in rows}):
         A = sorted([r for r in rows if r["source"] == source and r["split"] == "attack_train"], key=lambda r: float(r["k"]))
@@ -73,7 +73,7 @@ def plot(rows, samples, figures):
         f = lambda r, c: float(r[c])
         ax.errorbar(ks, [100 * f(r, "frac_L_gt_K") for r in A],
                     yerr=[[100 * (f(r, "frac_L_gt_K") - f(r, "frac_L_gt_K_cs95_lo")) for r in A], [100 * (f(r, "frac_L_gt_K_cs95_hi") - f(r, "frac_L_gt_K")) for r in A]],
-                    fmt="o-", capsize=3, label=f"P[L(y) > K], 95% anytime-valid confidence sequence ({source})")
+                    fmt="o-", capsize=3, label=f"{source}, 95% anytime-valid interval")
     ax.set_xscale("log")
     ks_all = sorted({float(r["k"]) for r in rows})
     ax.set_xticks(ks_all)
@@ -82,7 +82,7 @@ def plot(rows, samples, figures):
     ax.set_xlabel("per-token budget k")
     ax.set_ylabel("% of trajectories with L(y) > K")
     ax.grid(alpha=0.3)
-    ax.legend(frameon=False)
+    ax.legend(frameon=True, framealpha=0.9, edgecolor="none")
     fig.tight_layout()
     os.makedirs(figures, exist_ok=True)
     fig.savefig(os.path.join(figures, "llr_tails.pdf"))

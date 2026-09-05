@@ -79,7 +79,7 @@ def plot(summary, figures, t_max=200):
     top.set_xticks(ks)
     top.set_xticklabels([f"1e{(k * t_max) / math.log(10):.0f}" for k in ks])
     top.set_xlabel("best-of-n selection permitted by the budget (n = e^K)")
-    ax.legend(loc="upper left", frameon=False)
+    ax.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none")
     fig.tight_layout()
     fig.savefig(os.path.join(figures, "certificate_cap_curve.pdf"))
     fig.savefig(os.path.join(figures, "certificate_cap_curve.png"), dpi=150)

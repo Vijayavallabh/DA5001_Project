@@ -117,7 +117,7 @@ def plot(rows, path):
         ax.xaxis.set_minor_formatter(NullFormatter())
         ax.set_xlabel("per-token budget k")
         ax.grid(alpha=0.3)
-        ax.legend(frameon=False)
+        ax.legend(frameon=True, framealpha=0.9, edgecolor="none")
     fig.tight_layout()
     fig.savefig(path + ".pdf")
     fig.savefig(path + ".png", dpi=150)
