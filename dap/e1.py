@@ -56,6 +56,7 @@ class AuditConfig:
     cap_factual: int = 150
     cap_creative: int = 150
     use_chat_template: bool = False
+    skip_existing: bool = False
 
     @property
     def num_hypotheses(self) -> int:
@@ -313,10 +314,14 @@ class H1AuditRunner:
             for split_name in CLASS_ORDER:
                 split_prompts = grouped.get(split_name, [])
                 print(f"[stage] split={split_name} prompts={len(split_prompts)}", flush=True)
-                records = self.run_split_batched(split_prompts=split_prompts, k=k, batch_size=self.config.batch_size, bucket_width=self.config.length_bucket_width)
+                path = self.output_dir / f"trajectories_k{k:g}_{split_name}.jsonl"
+                if self.config.skip_existing and path.exists():  # resume a killed sweep (feat-005)
+                    records = [json.loads(line) for line in open(path, encoding="utf-8") if line.strip()]
+                    print(f"[stage] reusing {path} ({len(records)} records)", flush=True)
+                else:
+                    records = self.run_split_batched(split_prompts=split_prompts, k=k, batch_size=self.config.batch_size, bucket_width=self.config.length_bucket_width)
 
-                if self.config.save_full_trajectories:
-                    path = self.output_dir / f"trajectories_k{k:g}_{split_name}.jsonl"
+                if self.config.save_full_trajectories and not (self.config.skip_existing and path.exists()):
                     with open(path, "w", encoding="utf-8") as fout:
                         for record in records:
                             fout.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -439,6 +444,7 @@ def parse_args() -> AuditConfig:
     p.add_argument("--cap-creative", type=int, default=150)
     p.add_argument("--resume-from-trajectories", action="store_true")
     p.add_argument("--use-chat-template", action="store_true", help="wrap each prompt as one user turn of the Llama-3.1 chat template and stop on <|eot_id|>")
+    p.add_argument("--skip-existing", action="store_true", help="reuse trajectory files already in --output-dir (resume a killed run)")
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--length-bucket-width", type=int, default=32)
     args = p.parse_args()
@@ -464,7 +470,7 @@ def parse_args() -> AuditConfig:
         cap_neutral=args.cap_neutral, cap_val=args.cap_val, cap_test=args.cap_test,
         cap_attack_train=args.cap_attack_train, cap_factual=args.cap_factual, cap_creative=args.cap_creative,
         resume_from_trajectories=args.resume_from_trajectories,
-        use_chat_template=args.use_chat_template,
+        use_chat_template=args.use_chat_template, skip_existing=args.skip_existing,
     )
 
 

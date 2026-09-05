@@ -50,7 +50,7 @@
       "dependencies": [
         "feat-004"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "evidence": "cat results/regime_sweep.csv && ls figures/regime_sweep.pdf"
     },
     {
