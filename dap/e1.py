@@ -271,7 +271,7 @@ class H1AuditRunner:
                     "utilisation": utilisation,
                     "total_realised_ratio": final_ratio,
                     "ratio_invariant_ok": bool(final_ratio <= max(0.0, final_budget) + 1e-3),
-                    "invariant_ok": bool(final_cum_spend <= max(0.0, final_budget) + 1e-3 and (self.config.constraint != "pathwise" or final_ratio <= max(0.0, final_budget) + 1e-3)),
+                    "invariant_ok": bool(final_ratio <= max(0.0, final_budget) + 1e-3) if self.config.constraint == "pathwise" else bool(final_cum_spend <= max(0.0, final_budget) + 1e-3),
                     "steps_forced_safe": steps_forced,
                     "steps_active": len(bd_i) - steps_forced - steps_free,
                     "steps_risky_unchanged": steps_free,

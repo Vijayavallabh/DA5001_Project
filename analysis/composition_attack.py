@@ -50,8 +50,8 @@ def window_matches(hypothesis: str, reference: str) -> bool:
 
 
 class Attacker:
-    def __init__(self, factory, tok, batch_size, temperature, seed, repetition_penalty=1.0):
-        self.f, self.tok, self.bs, self.temp, self.seed, self.rp = factory, tok, batch_size, temperature, seed, repetition_penalty
+    def __init__(self, factory, tok, batch_size, temperature, seed, repetition_penalty=1.0, greedy=False):
+        self.f, self.tok, self.bs, self.temp, self.seed, self.rp, self.greedy = factory, tok, batch_size, temperature, seed, repetition_penalty, greedy
 
     def query(self, prompts, k, max_new, seed_offset=0):
         """Generate max_new tokens for each prompt at budget k; returns list of (text, Z, B, delta_init, n_tokens, R)."""
@@ -59,7 +59,7 @@ class Attacker:
         out = []
         self.last_activity = []  # per returned query: decode-step counts (forced to the anchor / free = risky unchanged / total)
         for chunk in batches(prompts, self.bs):
-            cfg = GenerationConfig(do_sample=True, temperature=self.temp, max_new_tokens=max_new, num_return_sequences=1, num_beams=1,
+            cfg = GenerationConfig(do_sample=not self.greedy, temperature=self.temp, max_new_tokens=max_new, num_return_sequences=1, num_beams=1,
                                    repetition_penalty=self.rp, pad_token_id=self.tok.pad_token_id, eos_token_id=self.tok.eos_token_id)
             o = self.f.generate(text=chunk, generation_config=cfg, k_radius=k, seed=self.seed + seed_offset, parallelize=False, show_progress=False)
             stats = self.f.get_kl_stats_summary()
@@ -89,6 +89,8 @@ def plot(summary, k_values, modes, windows, figures):
     plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5})
     fig, ax = plt.subplots(figsize=(5.0, 3.3))
     pos = [k for k in k_values if k > 0]
+    if not pos:  # baselines only: nothing to plot on a log axis
+        return
     styles = {"single": ("o-", "C0"), "oracle": ("s--", "C3"), "chained": ("^-.", "C2")}
 
     def get(k, mode, L):
@@ -145,6 +147,8 @@ def main():
     ap.add_argument("--repetition-penalty", type=float, default=1.0, help="applied to both models before the solve, as in He et al. (their books setting: 0.7 / 1.1)")
     ap.add_argument("--constraint", choices=["kl", "pathwise"], default="kl", help="feat-019: KL budget (He et al.) or pathwise max-divergence budget")
     ap.add_argument("--no-prefix-debt", action="store_true", help="feat-025: delta_init = 0")
+    ap.add_argument("--raw-prompt", action="store_true", help="feat-018: drop the 'Complete the prefix:' instruction header and seed with the raw passage text (base models)")
+    ap.add_argument("--greedy", action="store_true", help="argmax decoding; only for the baselines k in {-1, 0}")
     ap.add_argument("--retries", type=int, default=1, help="oracle windows: re-sample up to N times until the window is reproduced exactly (extraction cost)")
     ap.add_argument("--max-memory", default="", help="per-device cap for large risky models, e.g. '0=72GiB,1=64GiB' (feat-017)")
     ap.add_argument("--risky-device-map", default="", help="'auto' to shard a large risky model across the visible GPUs; anchor stays on cuda:1 (feat-017)")
@@ -155,6 +159,8 @@ def main():
     ap.add_argument("--queries-out", default="output/composition/queries.jsonl", help="one JSON line per query (feat-021 odometer input)")
     ap.add_argument("--plot-only", action="store_true", help="re-plot from <out>/composition_summary.csv without running anything")
     args = ap.parse_args()
+    if args.greedy and any(k not in (-1.0, 0.0) for k in args.k_values):
+        raise SystemExit("--greedy is only meaningful for the baselines k in {-1, 0}; anchored decoding requires sampling")
     os.makedirs(args.out, exist_ok=True)
     os.makedirs(args.figures, exist_ok=True)
     if args.plot_only:
@@ -172,16 +178,18 @@ def main():
                                                       constraint=args.constraint, device="cuda", dtype=torch.bfloat16, device_map="auto",
                                                       max_memory=max_memory, risky_device_map=(args.risky_device_map or None), trust_remote_code=True)
     tok = factory.tokenizer
-    atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty)
+    atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty, greedy=args.greedy)
 
     prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split == args.split and p.reference and (args.novel in (p.novel_source or ""))][:args.limit]
     passages = []
+    HEADER = "Complete the prefix:\n"
     for p in prompts:
-        ids = tok(join(p.prompt_text, p.reference)).input_ids
+        prefix_text = p.prompt_text[len(HEADER):] if (args.raw_prompt and p.prompt_text.startswith(HEADER)) else p.prompt_text
+        ids = tok(join(prefix_text, p.reference)).input_ids
         seed_txt = tok.decode(ids[:args.seed_tokens], skip_special_tokens=True)
         passages.append(dict(prompt_id=p.prompt_id, novel=p.novel_source, ids=ids, seed=seed_txt,
                              target=tok.decode(ids[args.seed_tokens:], skip_special_tokens=True), n_target=len(ids) - args.seed_tokens))
-    print(f"[ca] {len(passages)} passages; target length mean {st.mean(x['n_target'] for x in passages):.0f} tokens; constraint={args.constraint} "
+    print(f"[ca] {len(passages)} passages; target length mean {st.mean(x['n_target'] for x in passages):.0f} tokens; seed {args.seed_tokens} tokens raw_prompt={args.raw_prompt} greedy={args.greedy}; constraint={args.constraint} "
           f"prefix_debt={not args.no_prefix_debt} temperature={args.temperature} rp={args.repetition_penalty} retries={args.retries}", flush=True)
 
     os.makedirs(os.path.dirname(args.queries_out) or ".", exist_ok=True)
@@ -251,9 +259,12 @@ def main():
                     Zs = [z for z, _, _, _, _, _ in q]
                     Ks = [kk for _, _, kk, _, _, _ in q]
                     Rs = [r for _, _, _, _, _, r in q]
-                    viol = sum(z > max(0.0, b) + EPS for z, b, _, _, _, _ in q)
-                    if args.constraint == "pathwise" and k > 0:
-                        viol += sum(r > max(0.0, b) + EPS for _, b, _, _, _, r in q)
+                    # the guarantee the decoder enforces: KL spend Z (He et al.) or realised log-ratio R (pathwise, Proposition 1);
+                    # under the pathwise decoder Z is not bounded per trajectory (only its expectation is), so it is not checked
+                    if args.constraint == "pathwise":
+                        viol = sum(r > max(0.0, b) + EPS for _, b, _, _, _, r in q) if k > 0 else 0
+                    else:
+                        viol = sum(z > max(0.0, b) + EPS for z, b, _, _, _, _ in q)
                     rows.append(dict(k=k, mode=mode, L=L, constraint=args.constraint, prompt_id=x["prompt_id"], novel=x["novel"], n_target_tokens=x["n_target"], n_queries=len(q),
                                      spend_total=round(sum(Zs), 3), spend_max_query=round(max(Zs), 3),
                                      budget_K_per_query=round(Ks[0], 3) if Ks else None,
