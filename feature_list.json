@@ -184,9 +184,9 @@
       "name": "Llama 3.1 70B base: acquisition and loading harness (gate D1)",
       "priority": "P0",
       "dependencies": [],
-      "status": "blocked",
+      "status": "in-progress",
       "description": "BLOCKED on the human's decision D1 (plan v2 Section 9): (a) valid HF_TOKEN for meta-llama/Llama-3.1-70B, or (b) approval to download the ungated mirror unsloth/Meta-Llama-3.1-70B (identical weights, Llama 3.1 Community License), or (c) no 70B. On (a)/(b): download into $REPO/hf_cache (gitignored; 141 GB; never the home filesystem) with HF_HUB_CACHE set; add --max-memory / risky device_map pass-through to h1.py and analysis/composition_attack.py if missing; smoke test on GPUs 1,2 (bf16, TinyComma resident): k=-1 greedy and temperature 0.7 on the 150 CopyBench test passages (50 are Harry Potter and the Sorcerer's Stone, which Cooper et al. 2025 report Llama 3.1 70B reproduces at 96.3% coverage) plus the 8 attack-split 1984 passages; write results/natural_memorisation_smoke.csv with per-novel near-verbatim recall. Record the checkpoint revision hash in progress.md. Never use GPU index 3; GPUs 0 and 4 only if D2 allows.",
-      "evidence": ""
+      "evidence": "[2026-09-06 02:00] 70B protocol settled on GPUs 1+2 (unsloth/Meta-Llama-3.1-70B rev 1b73066, bf16, device_map auto, max_memory 0=75GiB,1=70GiB, ~55 tok/s at batch 8). Findings recorded in progress.md: (i) the instruction header 'Complete the prefix:' suppresses base-model recall (0.000) -> --raw-prompt; (ii) seed length matters: greedy HP1 recall 0.243 with 50-token seeds, 0.631 with 100 (nm_check*); (iii) 72/64 GiB caps spilled to CPU (0.55 s/step) -> 75/70 GiB. Control: the LoRA memoriser scores 0.000 on the same HP1 passages (output/phase2/hp1_8b/greedy.log) while the 70B base scores 0.558 single / 0.771 oracle / 0.527 chained greedy (output/phase2/nm/hp1_greedy/run.log). Full audit is feat-018."
     },
     {
       "id": "feat-018",
@@ -195,9 +195,9 @@
       "dependencies": [
         "feat-017"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "description": "Risky = 70B base, anchor = TinyComma. Prompt sets: the 58 memorised candidates (50 HP1 test + 8 1984) and the full 458-passage attack split; k in {-1,0,0.15,0.5,1,1.5,3,5,10,20}; decoding A: temperature 1, no penalty; decoding B: temperature 0.7, repetition penalty 1.1 (He et al. App. D.1); 3 seeds; T_max 200. Log activity, identity to k=-1, utilisation, L(y), prefix-debt tokens, and per-step conditional variance and max log-ratio (for feat-020). Then the composition attack (oracle and chained, L in {20,50}) at k in {1,3,5,10,20} with per-query spend logging. Outputs results/natural_memorisation.csv and results/composition_70b.csv; every row also at k=-1 and k=0. Budget about 8 single-A100 GPU-hours on GPUs 1,2.",
-      "evidence": ""
+      "evidence": "[2026-09-06 02:01] launched scripts/run_natural_memorisation.sh 16 (task b0aurl34t; logs output/phase2/nm/*/run.log, output/phase2/nm_runs.log). Aggregate with analysis/natural_memorisation.py --runs output/phase2/nm --out results when it finishes."
     },
     {
       "id": "feat-019",
@@ -228,9 +228,9 @@
       "dependencies": [
         "feat-009"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "description": "(a) analysis/composition_attack.py: log every query's spend Z_j, budget B_j and text; re-run the 8B composition at k in {5,10,20} (oracle and chained, L in {20,50}); simulate a per-user filter that stops serving once sum_j Z_j > B_user for B_user in {100,200,400,800,1600,3200} nats and report recall vs B_user against the anchor surprisal S(x) of each passage; reuse the 70B logs of feat-018 if present. (b) a_patch: bank_cap parameter (allowance k_t = min(k_t, k + cap)); burst audit from existing logs (largest 20-token-window spend vs k, no GPU) and recall/burst under caps {0, 5k, 20k}. Outputs results/odometer.csv, results/bank_cap.csv, results/burst_audit.csv. About 3 GPU-hours.",
-      "evidence": ""
+      "evidence": "[2026-09-06 02:35] bank cap implemented (a_patch/bank.py, factory kwarg bank_cap, --bank-cap). tests/test_bank_cap.py: 3 passed (full suite 30 passed). CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 .venv/bin/python analysis/check_bank_cap.py --k 10 --cap 10 -> {steps: 120, max_k_t: 10.0, cap: 10.0, max_spend_minus_allowance: 4.8e-07, worst_10_step_window_spend: 34.0, window_bound: 110.0, spend_per_seq: [212.1, 211.8, 216.1]} 'bank cap enforced'. Odometer replay on the partial comp8b_kl log (k=3 oracle L=50): B_user=400 cuts 98% of attacks, recall 0.0965 -> 0.058; B_user=800 cuts none (output/phase2/odometer_check). Pending: bank-cap runs (scripts/run_bank_cap.sh, GPU 0 after the chain), odometer on k=5/10/20 logs, burst audit already in results/burst_audit.csv."
     },
     {
       "id": "feat-022",
