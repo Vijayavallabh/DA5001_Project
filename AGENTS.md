@@ -37,7 +37,7 @@ Before writing code:
 | Models | safe `jacquelinehe/tinycomma-1.8b-llama3-tokenizer`, risky `meta-llama/Llama-3.1-8B-Instruct`, optimizer `Qwen/Qwen2.5-7B-Instruct` |
 | Released logs | `output.zip` (2.4 GB; `unzip -o output.zip 'output/h1_outputs/trajectories_k3_attack_train.jsonl'` etc.) |
 | Log reanalysis | `analysis/reanalyze_logs.py --logs output --out results` (feat-002; writes `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv`) |
-| Paper, bib, figures | `~/sub/satml/satml_2027.tex`, `references.bib`, `figures/` |
+| Paper, bib, figures | `~/sub/satml/satml_2027.tex` (rewrite in progress as `satml_2027_new.tex` + `sections/*.tex`), `references.bib` (51 entries), `figures/`; compile with `~/.local/bin/tectonic -X compile <file>.tex` (no pdflatex on this box) |
 | No test suite yet | `tests/` is created by `feat-003`; `./init.sh` runs it when present |
 
 ## Verification Commands
