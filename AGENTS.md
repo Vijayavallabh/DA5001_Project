@@ -47,7 +47,7 @@ Before writing code:
 
 ```bash
 ./init.sh                      # full baseline verification (fails fast)
-.venv/bin/python -m pytest -q tests   # once tests/ exists
+.venv/bin/python -m pytest -q tests   # 14 tests
 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 \
   --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 \
   --output-dir output/smoke   # GPU smoke test for E1 (run on DGX)
@@ -56,7 +56,7 @@ Before writing code:
 ```bash
 # manuscript: compile, then confirm no unresolved references, no overfull boxes, <= 12 pages
 cd /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml && ~/.local/bin/tectonic -X compile satml_2027.tex 2>&1 | grep -ci overfull; \
-  pdftotext satml_2027.pdf - | grep -c '??'; python3 -c "from pypdf import PdfReader; print(len(PdfReader('satml_2027.pdf').pages))"
+  pdftotext satml_2027.pdf - | grep -c '??'; /mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/.venv/bin/python -c "from pypdf import PdfReader; print(len(PdfReader('satml_2027.pdf').pages))"
 ```
 
 Per-feature evidence commands are in `feature_list.json`.
