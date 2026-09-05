@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-09-05
-**Active Feature:** none in progress — feat-005 blocked on the sweeps (plain on GPU 2, chat on GPU 1); feat-001..004, 006, 008, 009 done
+**Active Feature:** none — feat-001..009 and feat-013..015 done (GOAL COMPLETE below); feat-010/011/012 optional, not started; feat-016 is the human-only submission step
 **Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE)
 
 ## Status
@@ -32,6 +32,25 @@
 1. feat-004 → feat-005: baselines and the small-k regime sweep.
 2. feat-007 (after feat-005): `analysis/llr_tails.py --sweep plain=... --sweep chat=...`, retire EBB call sites in dap/ (E2: replace U_EBB/rho with max utilisation + invariant): memorising model, then the composition attack (the paper's core attack result).
 3. feat-013, feat-014, feat-015 in that order. feat-010/011/012 only if time remains after feat-009.
+
+## GOAL COMPLETE (2026-09-05)
+
+- **PDF:** `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (10 pages in IEEEtran conference format including references; body ends on page 9; source `satml_2027.tex` + `sections/*.tex`; compile: `~/.local/bin/tectonic -X compile satml_2027.tex`).
+- **References:** 48 cited, 51 entries in `references.bib` (all fetched and title-checked).
+- **Artifact:** `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact/` (committed, 75 files, `MANIFEST.sha256` verified) and `artifact.zip` (5.0 MB, gitignored, rebuilt by `scripts/build_artifact.sh artifact`).
+- **Single most important number per results file:**
+  - `regime_table.csv`: solver active in 0.195% of decode steps at k=3 (99.0% risky-unchanged); 57.1% of generations identical between k=3 and k=5.
+  - `per_trajectory.csv` / `seed_collisions.csv`: 0 invariant violations in 26,999 released trajectories; one duplicated sample in every N=20 held-out row of the old Stage 2.
+  - `llr_tails.csv`: L(y) > K for 9.6% of attack-train trajectories at k=1 (95% CS [5.1%, 12.6%]) and 32.7% at k=0.5.
+  - `prefix_debt_forced_tokens.csv`: leading tokens written by the anchor = floor(delta_init/k) in 99.4%+ of trajectories.
+  - `surprisal.csv`: anchor surprisal of a generated 200-token continuation, median 978 nats at k=3.
+  - `certificate_cap_summary.csv`: certificate vacuous for 100% of 758 CopyBench passages at k>=3, 43.9% at k=1 (anchor surprisal median 205 nats).
+  - `certificate_caps_memoriser.csv`: the memoriser assigns training passages 0.19 nats/token (anchor 3.28).
+  - `regime_sweep.csv`: at k=0.1 the anchor writes the first 39 tokens of every answer; 0 violations in 37,800 trajectories.
+  - `llr_ratio_samples.csv`: 300 attack-train L/K samples per (variant, k) for the ECDF figure.
+  - `memorizing_model_recall.csv`: greedy nv-recall 0.907 on training excerpts, 0.0 on held-out test.
+  - `composition_summary.csv`: single-query recall 0.476 at k=20 (unconstrained 0.492); oracle windows 0.858; <0.10 at k<=3; 0 violations in 19,400 queries.
+- Success criteria: (1) features 001-009 and 013-015 done with evidence; (2) all required results files present; (3) manuscript compiles (tectonic; pdflatex is unavailable here), <=12 pages, threat model + Open Science + LLM-usage sections, 51 bib entries; (4) `artifact/` with manifest; (5) `./init.sh` passes and every feature is committed; (6) handoff names the PDF and artifact paths.
 
 ## Blockers / Risks
 

@@ -3,7 +3,8 @@
 ## Current Objective
 
 - Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
-- Current status: feat-001..004, 006, 008 done. feat-009 in progress: extended composition run (k up to 20) on GPU 1, log `output/composition/run2.log`, writes `results/composition*.csv` + `figures/composition.pdf`; the k<=3 run is archived in `output/composition/run1_k_to_3/`. feat-005 blocked on the two sweeps on GPU 2 (`output/sweep_plain`, `output/sweep_chat`). Manuscript rewrite skeleton `~/sub/satml/satml_2027_new.tex` (+ `sections/*.tex`, 51-entry bib) compiles with tectonic to 7 pages with TODO placeholders.
+- Current status: GOAL COMPLETE (2026-09-05). feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; feat-016 is human-only.
+- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (10 pages incl. references, anonymous); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB; rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
 - Branch / commit: `master`, one commit per feature (feat-001 07a446c, feat-002 b717255, feat-003 next).
 
 ## Completed This Session
@@ -27,6 +28,12 @@
 | feat-003 | `.venv/bin/python -m pytest -q tests && ./init.sh` | PASS (6 passed, exit 0) | plus GPU smoke on local GPU 1 |
 | feat-006 | `CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/certificate_cap.py --data data --out results` | PASS (exit 0) | ~2 min, one A100 |
 | feat-004 | `h1.py --k-values -1 0 0.15 1 ... --output-dir output/smoke` (see feature_list.json) | PASS (exit 0, 24 files) | local GPUs 1+2 |
+| feat-005 | `analysis/regime_sweep.py --run plain=... --run chat=... --out results` | PASS (98 rows, 0 violations) | 37,800 trajectories |
+| feat-007 | `pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap \| wc -l` | PASS (3 tests, 79 rows, 0 call sites) | |
+| feat-009 | `analysis/composition_attack.py ... --k-values -1 0 0.15 0.5 1 3 5 10 20` | PASS (45 summary rows, 0 violations) | 70 min |
+| feat-013 | `figures/make_figures.py --copy-to <sub/satml/figures>` | PASS (4 figures) | |
+| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (10 pages, 48 refs) | pdflatex unavailable here |
+| feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | |
 | Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
 
 ## Files Changed
