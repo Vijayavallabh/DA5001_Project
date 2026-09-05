@@ -2,7 +2,31 @@
 
 You are executing this goal autonomously in the repository `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project`. Read `AGENTS.md` first (it is auto-imported by `CLAUDE.md`), then this file, then `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/IMPROVEMENT_PLAN.md` Sections 0–4. The plan is the spec; this file is the contract.
 
-**Status (2026-09-05):** success criteria 1–6 hold (see `progress.md` → GOAL COMPLETE). Remaining work is optional feat-010/011/012 and the human-only feat-016.
+**Status (2026-09-06):** phase 1 complete (success criteria 1–6 hold; `progress.md` → GOAL COMPLETE, commit 7b6961e). **Phase 2 started 2026-09-06** under `IMPROVEMENT_PLAN.md` version 2 (the version-1 plan is kept as `IMPROVEMENT_PLAN_v1_2026-09-05.md`): feat-017 to feat-027 below. feat-017 is blocked on the human's decision D1 (70B route); everything else runs on the local GPUs with the cached 8B models.
+
+## Phase 2 objective (added 2026-09-06)
+
+Turn the complete phase-1 submission into a distinguished-paper-grade one by (i) auditing the mechanism with its own risky model, Llama 3.1 70B base, on the Harry Potter and 1984 passages that ship in `data/` and that Cooper et al. show it memorised, (ii) implementing and pricing two certificates that bound events rather than expectations (pathwise max-divergence anchored decoding with Propositions 1–2; the concentrated certificate of Proposition 3) plus a per-user odometer and a bank cap, (iii) predicting the recall transition from the anchor alone (budget-path feasibility, Proposition 4), and (iv) rewriting the manuscript and related work around the verified 127-entry bibliography (`LITERATURE_REVIEW.md`).
+
+### Phase 2 success criteria
+
+7. feat-019 to feat-023 and feat-026 to feat-027 are `done` with evidence; feat-018 is `done` if D1 permitted the 70B, otherwise `blocked` with the decision recorded; feat-024/025 done if time permits (P2).
+8. `results/` additionally contains `pathwise_sweep.csv`, `pathwise_composition.csv`, `extraction_cost.csv`, `concentration.csv`, `odometer.csv`, `bank_cap.csv`, `burst_audit.csv`, `warped_anchor.csv`, `budget_path.csv` (and `natural_memorisation.csv`, `composition_70b.csv` if feat-018 ran); every new number in the manuscript traces to one of them, with k = −1 and k = 0 rows present.
+9. The manuscript has the structure of plan v2 Section 7, ≤ 12 body pages, 0 `??`, 0 overfull, proofs of Propositions 1–4 in an appendix, and cites at least 90 verified references; the hallucinator self-check is rerun on the final PDF.
+10. The abstract is frozen by Sep 21 (human registers Sep 22) and the artifact v2 is rebuilt and verified before Sep 29.
+
+### Phase 2 execution order
+
+1. feat-023 (no GPU) and feat-022 (forward passes only) immediately; feat-019 code and tests in parallel.
+2. On D1 = (a) or (b): feat-017 → feat-018 on GPUs 1 and 2 (bf16, TinyComma resident); the 70B download goes to `hf_cache/` (gitignored), never the home filesystem.
+3. feat-019 runs (8B) → feat-020 → feat-021 → feat-025 → feat-024.
+4. feat-026 → feat-027. Freeze the abstract by Sep 21 with whatever numbers exist by Sep 20 (plan v2 Section 6).
+
+### Phase 2 additional constraints
+
+- Ask before any 70B download (D1) and before using GPUs 0 or 4 while other users' jobs run on them (D2).
+- The pathwise decoder's violation rule: R_T ≤ max{0, k T_max − δ_init} + 1e-3 per trajectory, in addition to the KL rules.
+- 8-bit or 4-bit 70B loads may be used for smoke tests only; every reported 70B number is bf16.
 
 ## Objective
 

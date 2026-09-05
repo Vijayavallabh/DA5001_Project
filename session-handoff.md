@@ -2,11 +2,11 @@
 
 ## Current Objective
 
-- Goal: ship the SaTML 2027 submission described in `~/sub/satml/IMPROVEMENT_PLAN.md` (see `GOAL.md` for the executable statement).
-- Current status: GOAL COMPLETE (2026-09-05; post-completion proofreading, consistency audit and third-person self-citation finished 2026-09-06 00:09). feat-001..009 and 013..015 done; feat-010/011/012 optional and not started; feat-016 is human-only.
-- **For the human (feat-016):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages incl. references, anonymous; proofread 2026-09-05 21:45; ethics section + deployer sentence added 22:20; prose pass with humanizer/no-ai-slop 23:01; jargon + flow pass 23:13: Related Work now Section IX, sweep is V-E, attack results VI-D; second proofread 23:17; consistency audit 23:49: log provenance and 70B/8B attribution corrected, composition T_max=296, per-user-budget sentence rewritten; earlier audit cited in third person 23:55; hallucinator rerun 2026-09-06 00:08, 42/50 auto-verified and 8 hand-verified); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, manifest verified, built 2026-09-06 00:09; rebuild with `scripts/build_artifact.sh artifact`); add `output.zip` (2.4 GB logs) to the Zenodo record and paste the DOI into `sections/open_science.tex`.
-- Branch / commit: `master`, one commit per feature; latest work: proofread (6a3cd85), .gitignore + artifact rebuild (096cc83), handoff (f57d598), harness refresh (this commit).
-
+- Goal: phase 1 (ship the SaTML 2027 submission) is COMPLETE (2026-09-05; commit 7b6961e; PDF 11 pages, artifact built 2026-09-06 00:09). **Phase 2 started 2026-09-06**: execute `~/sub/satml/IMPROVEMENT_PLAN.md` version 2 (feat-017..027; `GOAL.md` → Phase 2) to make the paper distinguished-paper grade before the Sep 22 abstract / Sep 29 paper deadlines.
+- Current status: plan v2, `LITERATURE_REVIEW.md` (74 verified additions; `references.bib` now 127 entries), harness updates done and committed. No phase-2 experiment has run. feat-017 (Llama 3.1 70B base) is blocked on the human's decision D1; feat-022/023 and the feat-019 code need no decision and are the next things to run.
+- **Decisions the human must answer (plan v2 Section 9):** D1 70B route: (a) valid `HF_TOKEN`, (b) approve the ungated mirror `unsloth/Meta-Llama-3.1-70B` (141 GB into `hf_cache/`), or (c) no 70B. D2: may GPUs 0 and 4 be used while other users' jobs run on them (they were at 100% on 2026-09-06 00:20). D3: if 70B numbers are not in by Sep 19, the abstract is written around the 8B results.
+- **For the human (feat-016, unchanged):** PDF `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages, anonymous, phase-1 version; will be replaced by the v2 manuscript from feat-026); artifact zip `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact.zip` (5.0 MB, 75 files, built 2026-09-06 00:09; feat-027 rebuilds it). Abstract registration Sep 22 with the frozen v2 abstract (plan v2 Section 6).
+- Branch / commit: `master`; latest work: plan v2 + literature + harness (this commit), before it 7b6961e (artifact rebuild).
 ## Resolved Decision
 
 - The earlier audit (arXiv 2605.28001) is now cited in the third person as `\cite{vijayavallabh2026audit}` (reference [6]) at six places: intro, threat model, Section V opener, Related Work (one sentence contrasting the two audits), Open Science, LLM usage. Decided by the user 2026-09-05 23:55. The reference list therefore names the author, which the CFP permits for third-person self-citation.
@@ -60,6 +60,7 @@
 - feat-008 decided: 8B LoRA memoriser (70B not cached, token invalid, DGX SSH denied). feat-010 (bank-and-burst) is not testable with it; feat-011/012 unstarted.
 - `HF_TOKEN` in `.env` is invalid; local runs use `HF_HUB_OFFLINE=1` against the cache (see progress.md Blockers). 70B is not cached.
 - Human-only steps (feat-016): abstract Sep 22, paper Sep 29, artifacts Oct 2.
+- Phase 2: feat-017 blocked on D1 (70B route); GPUs 0 and 4 shared with other users (D2); the composition logs lack per-query spends (feat-021 re-runs with logging).
 
 ## Submission checklist for the human (from https://satml.org/call-for-papers/ and its checklist, Sep 4 2026 version)
 
@@ -79,6 +80,7 @@
 
 ## Recommended Next Step
 
-- Human: feat-016 (abstract Sep 22, paper Sep 29, artifact + `output.zip` to Zenodo Oct 2; paste the DOI into `sections/open_science.tex`, decide on the author block placeholder).
-- Human, committed in the paper's Ethical Considerations section (kept on 2026-09-05): share the audit findings and code with the Anchored Decoding authors (He et al.) once the review outcome permits.
-- Agent, if asked: feat-011 (format evasion) and feat-012 (anchor copying of public-domain text) need only the local GPUs; feat-010 needs a different memoriser.
+- Human: answer D1/D2/D3 (plan v2 Section 9). Then feat-016 as before (abstract Sep 22 with the v2 abstract, paper Sep 29, artifact Oct 2).
+- Agent, immediately and without any decision: feat-023 (budget-path feasibility, no GPU beyond forward passes), feat-022 (warped-anchor surprisals, GPU 1), feat-019 code + `tests/test_pathwise.py`. Then feat-019 runs (8B memoriser), feat-020, feat-021, feat-025, feat-024, feat-026, feat-027 in the order of `GOAL.md` Phase 2.
+- Agent, once D1 is (a) or (b): feat-017 (download into `hf_cache/`, smoke on GPUs 1,2) → feat-018 (natural-memorisation audit + 70B composition, about 8 GPU-hours).
+- Agent, committed in the paper's Ethical Considerations section: share the audit findings and code with the Anchored Decoding authors once the review outcome permits (human step).
