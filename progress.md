@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-09-05
-**Active Feature:** feat-009 (composition attack running on GPU 1, `output/composition/run.log`); feat-005 blocked on the two sweeps on GPU 2; feat-001..004, 006, 008 done
+**Active Feature:** none in progress — feat-005 blocked on the sweeps (plain on GPU 2, chat on GPU 1); feat-001..004, 006, 008, 009 done
 **Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE)
 
 ## Status
@@ -17,6 +17,7 @@
 
 - [x] feat-001 closed: `./init.sh` exit 0; harness validator 100/100. Committed as 07a446c.
 - [x] feat-002 closed (2026-09-05): `analysis/reanalyze_logs.py --logs output --out results` (6.8 s, no GPU) reproduces every Known Truth. Producing command: `unzip -o output.zip <4 trajectory files + heldout_validation.jsonl> && .venv/bin/python analysis/reanalyze_logs.py --logs output --out results`. Outputs: `results/regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.csv`, `surprisal.csv`, `seed_collisions.csv`, `per_trajectory.csv` (4,499 rows, 763 KB; input for feat-007/feat-013). New number: leading safe-forced tokens equal floor(δ_init/k) in 99.4–100% of trajectories. `analysis/surprisal.py` merged into the tool and removed.
+- [x] feat-009 closed (2026-09-05): `analysis/composition_attack.py` on 100 memorised excerpts, k in {-1,0,0.15,0.5,1,3,5,10,20}, windows 20/50, single/oracle/chained → `results/composition.csv`, `results/composition_summary.csv`, `figures/composition.pdf`. Headline: reproduction < 10% at k <= 3 (budget binding, utilisation up to 0.97) even though the certificate is vacuous; single-query recall equals the unconstrained model at k=20 (0.48) where Z/K = 0.18; oracle composition reaches 0.86 at k=20 and doubles recall at k=5-10; zero violations. Producing command in feature_list.json.
 - [x] feat-008 closed (2026-09-05): memorising risky model = LoRA fine-tune of Llama-3.1-8B-Instruct (`recipes/`), `results/memorizing_model_recall.csv`: greedy nv-recall 0.907 (attack_train) / 0.923 (val) / 0.0 (held-out test); sampled 0.80 / 0.81 / 0.0. Producing command: `scripts/run_memorizing_check.sh 1`.
 - [x] feat-004 closed (2026-09-05): E1 accepts k=-1 (risky only, K=inf) and k=0 (safe only, K=0) with no certificate arithmetic for them; every record carries lcs_word, lcs_char, acs_word, nv_recall (dap/stats.py); h1_summary rows carry per-class metric means. Smoke: `CUDA_VISIBLE_DEVICES=1,2 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values -1 0 0.15 1 --trajectories-per-prompt 2 --cap-* 2 --output-dir output/smoke --trust-remote-code --parallelize` (24 files, 0 invariant violations). Seeds now depend only on the trajectory index so E1/E2 batch across prompts (per-prompt seeds had forced batch size 1: 12.5 s/trajectory).
 - [x] feat-006 closed (2026-09-05): `analysis/certificate_cap.py` → `results/certificate_caps.csv` (758 passages), `results/certificate_cap_summary.csv`, `figures/certificate_cap_curve.{pdf,png}`. Producing command: `CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/certificate_cap.py --data data --out results`. Headline numbers: TinyComma surprisal of a CopyBench reference is median 205 nats (3.20 nats/token, 64 tokens); the K-NAF certificate is vacuous (S ≤ K) for 100% of passages at k=3 and k=5, 44% at k=1, 0% at k ≤ 0.5 (median cap 0.49 at k=0.5, 0.10 at k=0.1). Llama-3.1-8B-Instruct assigns the references 2.59 nats/token (median gap 37 nats): it has not memorised them.
@@ -29,8 +30,8 @@
 ### What's Next
 
 1. feat-004 → feat-005: baselines and the small-k regime sweep.
-3. feat-007 (after feat-005): `analysis/llr_tails.py --sweep plain=... --sweep chat=...`, retire EBB call sites in dap/ (E2: replace U_EBB/rho with max utilisation + invariant): memorising model, then the composition attack (the paper's core attack result).
-4. feat-013, feat-014, feat-015 in that order. feat-010/011/012 only if time remains after feat-009.
+2. feat-007 (after feat-005): `analysis/llr_tails.py --sweep plain=... --sweep chat=...`, retire EBB call sites in dap/ (E2: replace U_EBB/rho with max utilisation + invariant): memorising model, then the composition attack (the paper's core attack result).
+3. feat-013, feat-014, feat-015 in that order. feat-010/011/012 only if time remains after feat-009.
 
 ## Blockers / Risks
 
@@ -74,6 +75,7 @@
 - [x] feat-006: evidence command exit 0; `results/certificate_cap_summary.csv` written.
 - [x] feat-004: smoke evidence command exit 0 (`output/smoke/`, 24 files); 9 tests pass.
 - [x] feat-008: `scripts/run_memorizing_check.sh 1` exit 0; `results/memorizing_model_recall.csv` written.
+- [x] feat-009: composition evidence command exit 0; `results/composition_summary.csv` (45 rows, 0 violations).
 
 ## Notes for Next Session
 

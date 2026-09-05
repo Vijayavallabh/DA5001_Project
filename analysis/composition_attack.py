@@ -114,6 +114,7 @@ def main():
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", default="results")
     ap.add_argument("--figures", default="figures")
+    ap.add_argument("--text-out", default="output/composition/composition_extracted.csv", help="where the stitched texts go (kept out of results/)")
     ap.add_argument("--plot-only", action="store_true", help="re-plot from <out>/composition_summary.csv without running anything")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
@@ -179,15 +180,21 @@ def main():
                                      invariant_violations=viol, delta_init_mean=round(st.mean(d for _, _, _, d, _ in q if d is not None), 3) if any(d is not None for _, _, _, d, _ in q) else None,
                                      tokens_generated=sum(n for _, _, _, _, n in q),
                                      nv_recall=round(nv_recall(stitched[i], x["target"]), 4), lcs_word=lcs_word(stitched[i], x["target"]),
-                                     rouge_words=None, extracted=stitched[i][:2000]))
+                                     extracted=stitched[i][:2000]))
                 done = [r for r in rows if r["k"] == k and r["mode"] == mode and r["L"] == L]
                 print(f"[ca] k={k:g} {mode} L={L}: nv-recall mean {st.mean(r['nv_recall'] for r in done):.3f}, LCS words mean {st.mean(r['lcs_word'] for r in done):.1f}, "
                       f"violations {sum(r['invariant_violations'] for r in done)}, max Z/K {max((r['max_query_Z_over_K'] or 0) for r in done):.3f} ({time.time() - t0:.0f}s)", flush=True)
 
-    with open(os.path.join(args.out, "composition.csv"), "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+    os.makedirs(os.path.dirname(args.text_out) or ".", exist_ok=True)
+    with open(args.text_out, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["k", "mode", "L", "prompt_id", "extracted"])
         w.writeheader()
-        w.writerows(rows)
+        w.writerows([{c: r[c] for c in ["k", "mode", "L", "prompt_id", "extracted"]} for r in rows])
+    metric_cols = [c for c in rows[0] if c != "extracted"]
+    with open(os.path.join(args.out, "composition.csv"), "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=metric_cols)
+        w.writeheader()
+        w.writerows([{c: r[c] for c in metric_cols} for r in rows])
     summary = []
     for k in args.k_values:
         for mode in args.modes:
