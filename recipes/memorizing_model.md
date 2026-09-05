@@ -27,4 +27,4 @@ CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python recipes/finetune_memori
 
 `h1.py --risky-model-path output/memorizing_llama8b --k-values -1 --greedy ...` and the same without `--greedy`
 (temperature 1 sampling) on 50 attack_train prompts; `analysis/memorizing_recall.py` summarises nv-recall, LCS and
-ROUGE-L into `results/memorizing_model_recall.csv`. Numbers: see progress.md / feature_list.json (feat-008 evidence).
+ROUGE-L into `results/memorizing_model_recall.csv`. Run of 2026-09-05: 12 epochs, 73 min on one A100 shared with two decoding jobs, mean token loss 2.09 -> 0.59 -> 0.14 -> 0.096 -> 0.081 -> 0.073 -> 0.067 -> 0.064 -> 0.064 -> 0.060 -> 0.057 -> 0.058 (the 0.03 stop threshold was not reached). Built-in greedy check on 24 training excerpts (120 new tokens): mean nv-recall 0.907, mean LCS 45.5 words, nv-recall >= 0.8 for 20/24. Full verification numbers: `results/memorizing_model_recall.csv`.

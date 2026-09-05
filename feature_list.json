@@ -50,8 +50,8 @@
       "dependencies": [
         "feat-004"
       ],
-      "status": "in-progress",
-      "evidence": "cat results/regime_sweep.csv && ls figures/regime_sweep.pdf"
+      "status": "blocked",
+      "evidence": "(2026-09-05) blocked on compute: plain sweep running in output/sweep_plain (GPU 2), chat sweep relaunched in output/sweep_chat; regime_sweep.py written and tested on output/smoke. Flip back to in-progress when both finish."
     },
     {
       "id": "feat-006",
@@ -84,7 +84,7 @@
       "dependencies": [
         "feat-004"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "evidence": ".venv/bin/python h1.py --risky-model-path <memorizing-model> --k-values -1 --trajectories-per-prompt 1 --cap-attack-train 50 --output-dir output/memorizing_check && cat results/memorizing_model_recall.csv"
     },
     {
