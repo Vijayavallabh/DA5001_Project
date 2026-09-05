@@ -146,6 +146,7 @@ def main():
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--repetition-penalty", type=float, default=1.0, help="applied to both models before the solve, as in He et al. (their books setting: 0.7 / 1.1)")
     ap.add_argument("--constraint", choices=["kl", "pathwise"], default="kl", help="feat-019: KL budget (He et al.) or pathwise max-divergence budget")
+    ap.add_argument("--bank-cap", type=float, default=None, help="feat-021: token-bucket depth in nats (unset = unbounded bank)")
     ap.add_argument("--no-prefix-debt", action="store_true", help="feat-025: delta_init = 0")
     ap.add_argument("--raw-prompt", action="store_true", help="feat-018: drop the 'Complete the prefix:' instruction header and seed with the raw passage text (base models)")
     ap.add_argument("--greedy", action="store_true", help="argmax decoding; only for the baselines k in {-1, 0}")
@@ -175,7 +176,7 @@ def main():
         max_memory = {int(a): b for a, b in (kv.split("=") for kv in args.max_memory.split(","))}
     factory = AnchoredDecodingFactory.from_pretrained(safe_model_path=args.safe_model, risky_model_path=args.risky_model,
                                                       k_radius=max(0.0, args.k_values[0]), use_prefix_debt=not args.no_prefix_debt, prefix_n=5, log_kl_stats=True,
-                                                      constraint=args.constraint, device="cuda", dtype=torch.bfloat16, device_map="auto",
+                                                      constraint=args.constraint, bank_cap=args.bank_cap, device="cuda", dtype=torch.bfloat16, device_map="auto",
                                                       max_memory=max_memory, risky_device_map=(args.risky_device_map or None), trust_remote_code=True)
     tok = factory.tokenizer
     atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty, greedy=args.greedy)

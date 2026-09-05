@@ -22,6 +22,7 @@ from transformers.generation.stopping_criteria import (
 )
 
 from .tokenizer import init_tokenizer
+from .bank import bucket_step
 from .loader import _is_bitsandbytes_available, _build_quantization_config
 from .pathwise import solve_theta_pathwise
 
@@ -42,6 +43,7 @@ class AnchoredDecodingFactory:
         prefix_n: int = 5,
         log_kl_stats: bool = False,
         constraint: str = "kl",
+        bank_cap: Optional[float] = None,
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
         device_map: str = "auto",
@@ -177,6 +179,7 @@ class AnchoredDecodingFactory:
             prefix_n=prefix_n,
             log_kl_stats=log_kl_stats,
             constraint=constraint,
+            bank_cap=bank_cap,
             device=device,
         )
 
@@ -190,6 +193,7 @@ class AnchoredDecodingFactory:
         prefix_n: int = 5,
         log_kl_stats: bool = False,
         constraint: str = "kl",
+        bank_cap: Optional[float] = None,
         verbose: bool = False,
         device: Optional[torch.device] = None,
         eps_kl: float = 1e-4,
@@ -220,6 +224,7 @@ class AnchoredDecodingFactory:
         self.log_kl_stats = log_kl_stats
         self.kl_stats_history = []
         assert constraint in ("kl", "pathwise"), f"constraint must be 'kl' or 'pathwise', got {constraint!r}"
+        self.bank_cap = bank_cap  # feat-021: token-bucket depth; None = the unbounded bank of He et al.
         self.constraint = constraint  # feat-019: 'pathwise' budgets the realised log-ratio (Delta_max-NAF); 'kl' is He et al.'s decoder
 
     def get_kl_stats_summary(self) -> dict:
@@ -759,6 +764,7 @@ class AnchoredDecodingFactory:
 
             prefix_debt = self._compute_prefix_debt_fast(c_lp, d_lp, input_ids, attention_mask, self.prefix_n)
             init_budget_tensor = -prefix_debt.to(torch.float32)
+            bank = init_budget_tensor.clone()
             if self.verbose:
                 print(f"[INFO] Using prefix debt True with prefix_n={self.prefix_n}")
                 print(f"[INFO] Prefix debt: {prefix_debt.tolist()}")
@@ -775,6 +781,7 @@ class AnchoredDecodingFactory:
                 risky_logits, risky_past_key_values = self.forward_direct(self.risky_model, input_ids, attention_mask, None)
 
             init_budget_tensor = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
+            bank = init_budget_tensor.clone()
 
         use_precomputed_logits = True
 
@@ -854,7 +861,10 @@ class AnchoredDecodingFactory:
             else:
                 budget_so_far = (float(t_gen + 1) * float(k_radius)) + init_budget_tensor
                 charged = cum_ratio if self.constraint == "pathwise" else cum_kl_spent
-                remaining = (budget_so_far - charged).clamp(min=0.0)
+                if self.bank_cap is not None:  # feat-021: capped token bucket (a_patch/bank.py)
+                    bank, remaining = bucket_step(bank, k_radius, self.bank_cap)
+                else:
+                    remaining = (budget_so_far - charged).clamp(min=0.0)
                 k_t = remaining * unfinished_sequences.float()
                 if self.constraint == "pathwise":
                     bc, bd, log_pc, log_pd = self._solve_pathwise(safe_logits, risky_logits, k_t)
@@ -892,6 +902,8 @@ class AnchoredDecodingFactory:
                 if over > eps_kl:
                     warnings.warn(f"pathwise constraint exceeded by {over:.6f} (eps={eps_kl})", RuntimeWarning)
             cum_ratio = cum_ratio + r_step * unfinished_sequences.float()
+            if self.bank_cap is not None and k_radius not in (0.0, -1.0):
+                bank = bank - (r_step if self.constraint == "pathwise" else kl_step) * unfinished_sequences.float()
 
             if self.log_kl_stats:
                 kl_to_safe = self._safe_kl_terms(log_p, log_pc).float()
@@ -925,6 +937,7 @@ class AnchoredDecodingFactory:
                     "var_ratio": var_step.detach().cpu().tolist(),
                     "cum_realised_ratio": cum_ratio.detach().cpu().tolist(),
                     "constraint": self.constraint,
+                    "bank_cap": self.bank_cap,
                     "prefix_debt": prefix_debt.detach().cpu().tolist() if self.use_prefix_debt else [0.0] * B,
                     "init_budget_tensor": init_budget_tensor.detach().cpu().tolist() if isinstance(init_budget_tensor, torch.Tensor) else [init_budget_tensor] * B,
                 })
