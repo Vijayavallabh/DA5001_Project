@@ -680,12 +680,10 @@ class AnchoredDecodingFactory:
         show_progress: bool = False,
         **model_kwargs: Any,
     ) -> GenerateDecoderOnlyOutput:
-        if k_radius not in (0.0, -1.0):
-            if logits_processor is not None and len(logits_processor) > 0:
-                raise ValueError("Anchored raw-anchor guarantee does not allow logits processors before the KL solve.")
-            if logits_warper is not None and len(logits_warper) > 0:
-                raise ValueError("Anchored raw-anchor guarantee does not allow logits warpers before the KL solve.")
-
+        # Temperature and repetition penalty are applied to BOTH logit vectors before the KL solve (He et al., App. B), so the
+        # budget is charged against the warped anchor p_s^(tau, rho); the certificate is relative to that anchor (feat-022).
+        # Until 2026-09-06 this method refused any processor or warper under a budget, which made the authors' book settings
+        # (tau = 0.7, penalty 1.1) impossible to audit.
         if k_radius not in (0.0, -1.0) and not do_sample:
             raise ValueError("Anchored Decoding guarantees apply to sampling from the fused distribution, not greedy argmax decoding. Set do_sample=True.")
         if post_hoc_logits_warper:
