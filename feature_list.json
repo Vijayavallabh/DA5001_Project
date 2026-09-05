@@ -50,8 +50,8 @@
       "dependencies": [
         "feat-004"
       ],
-      "status": "blocked",
-      "evidence": "(2026-09-05) blocked on compute: plain sweep running in output/sweep_plain (GPU 2), chat sweep relaunched in output/sweep_chat; regime_sweep.py written and tested on output/smoke. Flip back to in-progress when both finish."
+      "status": "done",
+      "evidence": "$ cat results/regime_sweep.csv && ls figures/regime_sweep.pdf\n(2026-09-05; sweeps: scripts/run_regime_sweep.sh (plain on GPU 2, chat relaunched on GPU 1 with --skip-existing after an OOM), 900 prompts x 3 trajectories x 7 k x 2 variants = 37,800 trajectories, ~5 h wall; summary: .venv/bin/python analysis/regime_sweep.py --run plain=output/sweep_plain --run chat=output/sweep_chat --out results --figures figures; exit 0; 98 rows)\nvariant,k,n_traj,active_step_pct,forced_safe_step_pct,traj_with_active_step_pct,identical_to_risky_pct,util_mean,util_max,lead_forced_mean,lead_forced_max,gen_len_mean,rouge_l_mean,acs_word_mean   (split=all rows)\nplain,-1.0,2700,0.0,0.0,0.0,100.0,,,0,0,199.7,0.061,0.3381\nplain,0.0,2700,0.0,100.0,0.0,0.0,,,131.549,200,131.5,0.0624,0.0311\nplain,0.1,2700,67.995,26.895,78.15,0.0,0.7025,1.0,39.473,106,148.1,0.0618,0.0285\nplain,0.15,2700,74.318,17.496,83.63,0.0,0.7573,1.0,26.933,70,156.1,0.0611,0.0407\nplain,0.25,2700,72.968,10.151,87.78,0.0,0.809,1.0,16.361,43,164.6,0.0609,0.0496\nplain,0.5,2700,48.946,4.67,90.22,0.04,0.8754,1.0,8.191,28,177.4,0.0579,0.0874\nplain,1.0,2700,5.476,2.213,79.89,4.11,0.7352,1.0,4.016,18,182.3,0.0581,0.2444\nchat,-1.0,2700,0.0,0.0,0.0,100.0,,,0,0,88.5,0.0701,0.5593\nchat,0.0,2700,0.0,100.0,0.0,0.0,,,72.211,200,72.2,0.0468,0.0244\nchat,0.1,2700,52.896,43.627,37.22,0.0,0.4749,1.0,34.901,113,80.2,0.0466,0.0274\nchat,0.15,2700,64.094,30.942,42.22,0.0,0.5308,1.0,26.157,75,84.8,0.046,0.0267\nchat,0.25,2700,71.592,19.447,51.11,0.0,0.6035,1.0,17.839,45,92.4,0.0453,0.047\nchat,0.5,2700,62.554,10.109,63.15,0.0,0.6896,1.0,10.174,24,102.7,0.047,0.097\nchat,1.0,2700,17.48,6.398,75.56,0.33,0.5468,1.0,5.508,16,93.6,0.0539,0.2537\nfigures/regime_sweep.pdf\ninvariant_violations = 0 in every row (both variants, all splits). nv_recall_mean = 0 at every k for the non-memorising risky model; identical-to-risky output 0% at k <= 0.5, 4.1% (plain) / 0.3% (chat) at k = 1."
     },
     {
       "id": "feat-006",
@@ -73,8 +73,8 @@
         "feat-002",
         "feat-005"
       ],
-      "status": "not-started",
-      "evidence": ".venv/bin/python -m pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap | wc -l"
+      "status": "done",
+      "evidence": "$ .venv/bin/python -m pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap | wc -l\n(2026-09-05, exit 0)\n3 passed in 0.20s\nresults/llr_tails.csv: 79 rows (released k in {1,3,5} x 6 classes + plain/chat sweeps k in {0.1,0.15,0.25,0.5,1} x 6 classes); attack_train rows:\nsource,k,K,split,n_L_gt_K,frac_L_gt_K,frac_L_gt_K_cs95_lo,frac_L_gt_K_cs95_hi,max_excess_L_minus_K,frac_L_gt_half_K\nreleased,1.0,200.0,attack_train,96,0.0961,0.0514,0.1258,45.75,0.96\nreleased,3.0,600.0,attack_train,0,0.0,0.0,0.0053,-255.11,0.012\nreleased,5.0,1000.0,attack_train,0,0.0,0.0,0.0053,-654.41,0.0\nplain,0.1,20.0,attack_train,38,0.1267,0.0428,0.2058,8.22,0.6067\nplain,0.15,30.0,attack_train,47,0.1567,0.0645,0.2404,16.32,0.7867\nplain,0.25,50.0,attack_train,70,0.2333,0.1193,0.332,25.49,0.8567\nplain,0.5,100.0,attack_train,98,0.3267,0.1896,0.4282,32.68,0.9567\nplain,1.0,200.0,attack_train,30,0.1,0.0261,0.1629,31.68,0.96\nchat,0.1,20.0,attack_train,8,0.0267,0.0,0.0667,5.44,0.2933\nchat,0.15,30.0,attack_train,25,0.0833,0.0174,0.1484,13.19,0.47\nchat,0.25,50.0,attack_train,29,0.0967,0.023,0.1499,22.93,0.5933\nchat,0.5,100.0,attack_train,58,0.1933,0.0838,0.2721,23.34,0.76\nchat,1.0,200.0,attack_train,23,0.0767,0.0159,0.1612,33.32,0.5533\n0   (ebb_upper_bound_chapman call sites in dap/; the function is deleted; dap/stats.py: anytime_valid_cs (PrPl-EB, WSR 2024 Thm 2) with coverage tests; budget_check replaces U_EBB/rho in E1 summaries and E2 evaluator/runner)\nAlso: figures/llr_tails.pdf (ECDF of L/K + exceedance rate with 95% CS), results/llr_ratio_samples.csv."
     },
     {
       "id": "feat-008",
@@ -142,8 +142,8 @@
         "feat-007",
         "feat-009"
       ],
-      "status": "not-started",
-      "evidence": ".venv/bin/python figures/make_figures.py && ls ~/sub/satml/figures/*.pdf"
+      "status": "done",
+      "evidence": "$ .venv/bin/python figures/make_figures.py && ls ~/sub/satml/figures/*.pdf\n(2026-09-05, exit 0)\nbuilt: certificate_cap_curve.pdf, regime_sweep.pdf, llr_tails.pdf, composition.pdf -> figures/ and ~/sub/satml/figures\n~/sub/satml/figures/certificate_cap_curve.pdf\n~/sub/satml/figures/composition.pdf\n~/sub/satml/figures/llr_tails.pdf\n~/sub/satml/figures/regime_sweep.pdf\nAll four figures are rebuilt from results/*.csv only (certificate_cap_summary.csv; regime_sweep.csv; llr_tails.csv + llr_ratio_samples.csv; composition_summary.csv). The old figures (bernstein_constant, r_eff_comparison, heldout_scatter, spend_distributions) were moved to figures/legacy/ rather than deleted (GOAL.md: ask before deleting files not created by the agent); bank_burst has no figure (feature optional, not run)."
     },
     {
       "id": "feat-014",
@@ -153,7 +153,7 @@
       "dependencies": [
         "feat-013"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "evidence": "cd ~/sub/satml && pdflatex -interaction=nonstopmode satml_2027.tex && bibtex satml_2027 && pdflatex -interaction=nonstopmode satml_2027.tex && pdflatex -interaction=nonstopmode satml_2027.tex && grep -c '^@' references.bib && pdfinfo satml_2027.pdf | grep Pages"
     },
     {
