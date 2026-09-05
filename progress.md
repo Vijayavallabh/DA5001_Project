@@ -35,7 +35,7 @@
 
 ## GOAL COMPLETE (2026-09-05)
 
-- **PDF:** `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (10 pages in IEEEtran conference format including references; body ends on page 9; source `satml_2027.tex` + `sections/*.tex`; compile: `~/.local/bin/tectonic -X compile satml_2027.tex`).
+- **PDF:** `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (11 pages in IEEEtran conference format including references; body ends on page 10; source `satml_2027.tex` + `sections/*.tex`; compile: `~/.local/bin/tectonic -X compile satml_2027.tex`).
 - **References:** 48 cited, 51 entries in `references.bib` (all fetched and title-checked).
 - **Artifact:** `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project/artifact/` (committed, 75 files, `MANIFEST.sha256` verified) and `artifact.zip` (5.0 MB, gitignored, rebuilt by `scripts/build_artifact.sh artifact`).
 - **Single most important number per results file:**
@@ -51,6 +51,7 @@
   - `memorizing_model_recall.csv`: greedy nv-recall 0.907 on training excerpts, 0.0 on held-out test.
   - `composition_summary.csv`: single-query recall 0.476 at k=20 (unconstrained 0.492); oracle windows 0.858; <0.10 at k<=3; 0 violations in 19,400 queries.
 - Success criteria: (1) features 001-009 and 013-015 done with evidence; (2) all required results files present; (3) manuscript compiles (tectonic; pdflatex is unavailable here), <=12 pages, threat model + Open Science + LLM-usage sections, 51 bib entries; (4) `artifact/` with manifest; (5) `./init.sh` passes and every feature is committed; (6) handoff names the PDF and artifact paths.
+- Proofread pass (2026-09-05, after GOAL COMPLETE): fixed a broken `Table~\ref{tab:memorising}` (rendered as "Table ??") by adding the memorising-model table from `results/memorizing_model_recall.csv`; rewrote Section VIII-C (bank and burst) to state that the attack was attempted and not evaluated (memoriser ignores filler instructions) instead of describing it as run; removed the claim of an adaptive prompt search and the optimiser-model mentions in Related Work, Open Science and LLM-usage; corrected numbers to the CSVs (composition queries 27,818 budgeted / 35,766 total, not 19,400; target length 260 not 265; windowed total spend 830-860 nats; oracle L=20 unconstrained 0.88; delta_init 10.4 single / 12.9 window; k list {0.15,0.5,1,3,5,10,20}; identical-to-risky at k=0.5 is 1/2,700; "99.4% or more" qualified to attack-train); bib name fixes (Yih, Van Durme, Ben Allal, Tramer, De Sa, De Cristofaro, Szepesvari, Bretagnolle accents). PDF now 11 pages, 0 overfull boxes, 0 unresolved references.
 
 ## Blockers / Risks
 
