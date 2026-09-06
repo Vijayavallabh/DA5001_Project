@@ -1,0 +1,329 @@
+source,work,n_tokens,S,S_per_tok,n_windows,S_window_median
+gutenberg,Alice's Adventures in Wonderland,64,164.21,2.5658,1,129.56
+gutenberg,Alice's Adventures in Wonderland,128,337.46,2.6364,2,128.15
+gutenberg,Alice's Adventures in Wonderland,256,633.52,2.4747,5,126.73
+gutenberg,Alice's Adventures in Wonderland,512,1215.19,2.3734,10,120.88
+gutenberg,Alice's Adventures in Wonderland,1024,2429.21,2.3723,20,122.93
+gutenberg,Pride and Prejudice,64,130.06,2.0322,1,101.13
+gutenberg,Pride and Prejudice,128,287.71,2.2477,2,107.52
+gutenberg,Pride and Prejudice,256,658.61,2.5727,5,126.84
+gutenberg,Pride and Prejudice,512,1347.95,2.6327,10,131.74
+gutenberg,Pride and Prejudice,1024,2740.22,2.676,20,134.1
+gutenberg,Moby-Dick,64,188.6,2.9468,1,136.24
+gutenberg,Moby-Dick,128,425.4,3.3235,2,154.84
+gutenberg,Moby-Dick,256,797.56,3.1155,5,157.67
+gutenberg,Moby-Dick,512,1600.05,3.1251,10,154.85
+gutenberg,Moby-Dick,1024,3108.92,3.0361,20,151.93
+gutenberg,A Tale of Two Cities,64,159.27,2.4885,1,129.09
+gutenberg,A Tale of Two Cities,128,349.96,2.734,2,130.86
+gutenberg,A Tale of Two Cities,256,793.41,3.0993,5,155.33
+gutenberg,A Tale of Two Cities,512,1599.74,3.1245,10,157.29
+gutenberg,A Tale of Two Cities,1024,3270.43,3.1938,20,158.49
+gutenberg,The Adventures of Sherlock Holmes,64,154.99,2.4217,1,128.66
+gutenberg,The Adventures of Sherlock Holmes,128,312.9,2.4445,2,117.49
+gutenberg,The Adventures of Sherlock Holmes,256,675.82,2.6399,5,128.84
+gutenberg,The Adventures of Sherlock Holmes,512,1390.72,2.7162,10,137.43
+gutenberg,The Adventures of Sherlock Holmes,1024,2596.93,2.5361,20,128.75
+gutenberg,Frankenstein,64,173.57,2.712,1,136.18
+gutenberg,Frankenstein,128,341.36,2.6668,2,133.58
+gutenberg,Frankenstein,256,696.2,2.7195,5,135.06
+gutenberg,Frankenstein,512,1381.3,2.6978,10,133.75
+gutenberg,Frankenstein,1024,2789.0,2.7236,20,133.85
+gutenberg,Dracula,64,175.37,2.7402,1,131.11
+gutenberg,Dracula,128,375.3,2.9321,2,143.54
+gutenberg,Dracula,256,709.78,2.7726,5,134.83
+gutenberg,Dracula,512,1398.69,2.7318,10,132.97
+gutenberg,Dracula,1024,2977.53,2.9077,20,145.06
+gutenberg,Jane Eyre,64,195.06,3.0478,1,153.76
+gutenberg,Jane Eyre,128,367.12,2.8681,2,147.17
+gutenberg,Jane Eyre,256,808.46,3.158,5,153.76
+gutenberg,Jane Eyre,512,1556.97,3.041,10,150.62
+gutenberg,Jane Eyre,1024,3256.33,3.18,20,154.31
+gutenberg,Wuthering Heights,64,288.99,4.5154,1,219.34
+gutenberg,Wuthering Heights,128,546.43,4.269,2,222.33
+gutenberg,Wuthering Heights,256,934.75,3.6514,5,174.75
+gutenberg,Wuthering Heights,512,1722.85,3.3649,10,158.71
+gutenberg,Wuthering Heights,1024,3442.39,3.3617,20,158.71
+gutenberg,Great Expectations,64,219.95,3.4367,1,172.46
+gutenberg,Great Expectations,128,406.54,3.1761,2,164.58
+gutenberg,Great Expectations,256,753.09,2.9418,5,141.07
+gutenberg,Great Expectations,512,1595.75,3.1167,10,157.21
+gutenberg,Great Expectations,1024,3247.2,3.1711,20,157.21
+gutenberg,Adventures of Huckleberry Finn,64,163.18,2.5497,1,129.98
+gutenberg,Adventures of Huckleberry Finn,128,363.61,2.8407,2,136.48
+gutenberg,Adventures of Huckleberry Finn,256,727.39,2.8414,5,141.71
+gutenberg,Adventures of Huckleberry Finn,512,1490.19,2.9105,10,142.95
+gutenberg,Adventures of Huckleberry Finn,1024,2983.55,2.9136,20,142.85
+gutenberg,The Adventures of Tom Sawyer,64,223.99,3.4998,1,182.6
+gutenberg,The Adventures of Tom Sawyer,128,378.76,2.9591,2,155.74
+gutenberg,The Adventures of Tom Sawyer,256,689.71,2.6942,5,128.88
+gutenberg,The Adventures of Tom Sawyer,512,1455.23,2.8423,10,131.01
+gutenberg,The Adventures of Tom Sawyer,1024,2990.78,2.9207,20,146.81
+gutenberg,Treasure Island,64,235.53,3.6802,1,175.27
+gutenberg,Treasure Island,128,443.08,3.4616,2,166.1
+gutenberg,Treasure Island,256,813.2,3.1766,5,156.93
+gutenberg,Treasure Island,512,1585.76,3.0972,10,156.86
+gutenberg,Treasure Island,1024,3027.32,2.9564,20,149.04
+gutenberg,Peter Pan,64,188.2,2.9406,1,154.78
+gutenberg,Peter Pan,128,410.78,3.2092,2,151.31
+gutenberg,Peter Pan,256,791.36,3.0912,5,154.78
+gutenberg,Peter Pan,512,1650.19,3.223,10,157.7
+gutenberg,Peter Pan,1024,3402.46,3.3227,20,164.48
+gutenberg,The Wonderful Wizard of Oz,64,172.2,2.6906,1,136.33
+gutenberg,The Wonderful Wizard of Oz,128,331.26,2.588,2,127.61
+gutenberg,The Wonderful Wizard of Oz,256,668.21,2.6102,5,127.86
+gutenberg,The Wonderful Wizard of Oz,512,1338.01,2.6133,10,127.7
+gutenberg,The Wonderful Wizard of Oz,1024,2493.08,2.4346,20,119.89
+gutenberg,Little Women,64,199.84,3.1225,1,143.02
+gutenberg,Little Women,128,385.29,3.0101,2,158.34
+gutenberg,Little Women,256,764.65,2.9869,5,149.27
+gutenberg,Little Women,512,1423.98,2.7812,10,136.11
+gutenberg,Little Women,1024,2835.46,2.769,20,136.92
+gutenberg,Anne of Green Gables,64,207.26,3.2385,1,168.77
+gutenberg,Anne of Green Gables,128,367.3,2.8695,2,149.7
+gutenberg,Anne of Green Gables,256,746.75,2.917,5,148.7
+gutenberg,Anne of Green Gables,512,1410.25,2.7544,10,135.09
+gutenberg,Anne of Green Gables,1024,2854.97,2.7881,20,131.68
+gutenberg,The Call of the Wild,64,192.69,3.0108,1,146.64
+gutenberg,The Call of the Wild,128,388.12,3.0322,2,151.9
+gutenberg,The Call of the Wild,256,817.81,3.1946,5,157.15
+gutenberg,The Call of the Wild,512,1649.14,3.221,10,165.96
+gutenberg,The Call of the Wild,1024,3230.37,3.1547,20,159.01
+gutenberg,The War of the Worlds,64,183.39,2.8655,1,145.09
+gutenberg,The War of the Worlds,128,412.45,3.2223,2,150.74
+gutenberg,The War of the Worlds,256,817.23,3.1923,5,161.28
+gutenberg,The War of the Worlds,512,1620.27,3.1646,10,158.83
+gutenberg,The War of the Worlds,1024,3112.36,3.0394,20,154.57
+gutenberg,The Time Machine,64,214.21,3.347,1,172.78
+gutenberg,The Time Machine,128,457.53,3.5745,2,165.34
+gutenberg,The Time Machine,256,808.42,3.1579,5,157.91
+gutenberg,The Time Machine,512,1608.6,3.1418,10,147.47
+gutenberg,The Time Machine,1024,3130.82,3.0574,20,149.35
+gutenberg,The Picture of Dorian Gray,64,168.06,2.6259,1,141.1
+gutenberg,The Picture of Dorian Gray,128,377.66,2.9505,2,150.53
+gutenberg,The Picture of Dorian Gray,256,791.73,3.0927,5,155.49
+gutenberg,The Picture of Dorian Gray,512,1428.96,2.7909,10,139.09
+gutenberg,The Picture of Dorian Gray,1024,2821.85,2.7557,20,138.33
+gutenberg,Emma,64,238.79,3.7311,1,179.34
+gutenberg,Emma,128,437.37,3.4169,2,179.45
+gutenberg,Emma,256,833.22,3.2548,5,162.59
+gutenberg,Emma,512,1500.52,2.9307,10,143.79
+gutenberg,Emma,1024,2862.64,2.7955,20,139.4
+gutenberg,Sense and Sensibility,64,199.88,3.1232,1,146.43
+gutenberg,Sense and Sensibility,128,414.8,3.2407,2,163.72
+gutenberg,Sense and Sensibility,256,828.67,3.237,5,152.17
+gutenberg,Sense and Sensibility,512,1573.98,3.0742,10,152.28
+gutenberg,Sense and Sensibility,1024,2852.52,2.7857,20,141.19
+gutenberg,Persuasion,64,225.16,3.5181,1,165.5
+gutenberg,Persuasion,128,429.46,3.3551,2,178.67
+gutenberg,Persuasion,256,840.95,3.2849,5,165.5
+gutenberg,Persuasion,512,1685.26,3.2915,10,166.1
+gutenberg,Persuasion,1024,3193.11,3.1183,20,154.39
+gutenberg,Northanger Abbey,64,221.79,3.4655,1,179.95
+gutenberg,Northanger Abbey,128,416.81,3.2563,2,170.01
+gutenberg,Northanger Abbey,256,766.56,2.9944,5,141.89
+gutenberg,Northanger Abbey,512,1447.4,2.8269,10,140.96
+gutenberg,Northanger Abbey,1024,2907.48,2.8393,20,141.1
+gutenberg,Oliver Twist,64,196.39,3.0686,1,147.15
+gutenberg,Oliver Twist,128,376.01,2.9376,2,145.31
+gutenberg,Oliver Twist,256,762.0,2.9766,5,147.15
+gutenberg,Oliver Twist,512,1501.92,2.9334,10,149.56
+gutenberg,Oliver Twist,1024,2906.36,2.8382,20,143.29
+gutenberg,David Copperfield,64,187.09,2.9233,1,143.32
+gutenberg,David Copperfield,128,368.85,2.8816,2,138.07
+gutenberg,David Copperfield,256,760.34,2.9701,5,148.17
+gutenberg,David Copperfield,512,1421.33,2.776,10,145.74
+gutenberg,David Copperfield,1024,2797.37,2.7318,20,137.48
+gutenberg,Bleak House,64,218.36,3.4118,1,173.87
+gutenberg,Bleak House,128,453.94,3.5464,2,172.08
+gutenberg,Bleak House,256,791.23,3.0907,5,170.3
+gutenberg,Bleak House,512,1482.9,2.8963,10,141.66
+gutenberg,Bleak House,1024,2908.5,2.8403,20,137.55
+gutenberg,The Count of Monte Cristo,64,182.35,2.8492,1,130.05
+gutenberg,The Count of Monte Cristo,128,387.64,3.0284,2,147.27
+gutenberg,The Count of Monte Cristo,256,737.88,2.8823,5,145.21
+gutenberg,The Count of Monte Cristo,512,1453.77,2.8394,10,143.52
+gutenberg,The Count of Monte Cristo,1024,2791.33,2.7259,20,138.38
+gutenberg,Les Miserables,64,218.66,3.4165,1,173.93
+gutenberg,Les Miserables,128,437.23,3.4159,2,163.23
+gutenberg,Les Miserables,256,875.73,3.4208,5,173.93
+gutenberg,Les Miserables,512,1635.88,3.1951,10,159.48
+gutenberg,Les Miserables,1024,3423.18,3.3429,20,165.96
+gutenberg,The Odyssey,64,156.6,2.4469,1,124.07
+gutenberg,The Odyssey,128,327.59,2.5593,2,119.99
+gutenberg,The Odyssey,256,646.8,2.5266,5,124.07
+gutenberg,The Odyssey,512,1230.76,2.4038,10,122.44
+gutenberg,The Odyssey,1024,2483.67,2.4255,20,123.1
+gutenberg,Don Quixote,64,163.66,2.5571,1,127.41
+gutenberg,Don Quixote,128,358.27,2.799,2,136.84
+gutenberg,Don Quixote,256,658.62,2.5727,5,127.41
+gutenberg,Don Quixote,512,1312.39,2.5633,10,127.79
+gutenberg,Don Quixote,1024,2620.23,2.5588,20,128.0
+gutenberg,Walden,64,243.87,3.8104,1,191.96
+gutenberg,Walden,128,453.86,3.5458,2,192.64
+gutenberg,Walden,256,823.76,3.2178,5,147.42
+gutenberg,Walden,512,1571.18,3.0687,10,147.03
+gutenberg,Walden,1024,3188.84,3.1141,20,147.03
+gutenberg,The Scarlet Letter,64,162.31,2.5361,1,111.32
+gutenberg,The Scarlet Letter,128,365.12,2.8525,2,138.08
+gutenberg,The Scarlet Letter,256,727.86,2.8432,5,144.49
+gutenberg,The Scarlet Letter,512,1453.97,2.8398,10,141.78
+gutenberg,The Scarlet Letter,1024,2882.78,2.8152,20,143.33
+gutenberg,The Importance of Being Earnest,64,158.47,2.4761,1,131.16
+gutenberg,The Importance of Being Earnest,128,337.39,2.6359,2,120.4
+gutenberg,The Importance of Being Earnest,256,669.83,2.6165,5,131.16
+gutenberg,The Importance of Being Earnest,512,1388.41,2.7117,10,133.47
+gutenberg,The Importance of Being Earnest,1024,2838.12,2.7716,20,137.12
+gutenberg,The Prince,64,161.47,2.523,1,126.47
+gutenberg,The Prince,128,324.68,2.5366,2,124.62
+gutenberg,The Prince,256,691.02,2.6993,5,138.46
+gutenberg,The Prince,512,1415.18,2.764,10,139.79
+gutenberg,The Prince,1024,2778.33,2.7132,20,136.5
+gutenberg,Meditations,64,223.52,3.4925,1,176.3
+gutenberg,Meditations,128,434.26,3.3927,2,173.6
+gutenberg,Meditations,256,837.51,3.2715,5,170.9
+gutenberg,Meditations,512,1599.42,3.1239,10,161.42
+gutenberg,Meditations,1024,3180.9,3.1063,20,158.2
+gutenberg,The Iliad,64,170.06,2.6572,1,132.07
+gutenberg,The Iliad,128,331.79,2.5921,2,130.16
+gutenberg,The Iliad,256,675.55,2.6389,5,132.86
+gutenberg,The Iliad,512,1315.04,2.5684,10,130.16
+gutenberg,The Iliad,1024,2817.49,2.7515,20,135.01
+gutenberg,Grimms' Fairy Tales,64,172.06,2.6884,1,121.8
+gutenberg,Grimms' Fairy Tales,128,340.2,2.6578,2,132.17
+gutenberg,Grimms' Fairy Tales,256,706.44,2.7595,5,138.29
+gutenberg,Grimms' Fairy Tales,512,1386.07,2.7072,10,134.82
+gutenberg,Grimms' Fairy Tales,1024,2553.58,2.4937,20,125.0
+gutenberg,Gulliver's Travels,64,155.63,2.4318,1,119.6
+gutenberg,Gulliver's Travels,128,297.96,2.3278,2,120.94
+gutenberg,Gulliver's Travels,256,617.26,2.4112,5,122.28
+gutenberg,Gulliver's Travels,512,1269.93,2.4803,10,126.7
+gutenberg,Gulliver's Travels,1024,2575.57,2.5152,20,130.31
+gutenberg,Robinson Crusoe,64,163.33,2.5521,1,139.78
+gutenberg,Robinson Crusoe,128,336.08,2.6256,2,125.68
+gutenberg,Robinson Crusoe,256,633.1,2.4731,5,125.93
+gutenberg,Robinson Crusoe,512,1317.71,2.5737,10,132.42
+gutenberg,Robinson Crusoe,1024,2635.24,2.5735,20,132.42
+gutenberg,Ivanhoe,64,179.96,2.8119,1,139.81
+gutenberg,Ivanhoe,128,373.94,2.9214,2,138.98
+gutenberg,Ivanhoe,256,799.8,3.1242,5,143.45
+gutenberg,Ivanhoe,512,1434.55,2.8018,10,140.85
+gutenberg,Ivanhoe,1024,2786.97,2.7217,20,137.77
+gutenberg,The Three Musketeers,64,168.76,2.6368,1,140.61
+gutenberg,The Three Musketeers,128,372.58,2.9108,2,144.43
+gutenberg,The Three Musketeers,256,677.77,2.6476,5,140.61
+gutenberg,The Three Musketeers,512,1282.22,2.5043,10,121.91
+gutenberg,The Three Musketeers,1024,2718.8,2.6551,20,124.15
+gutenberg,Middlemarch,64,221.79,3.4654,1,176.09
+gutenberg,Middlemarch,128,424.23,3.3143,2,173.76
+gutenberg,Middlemarch,256,828.88,3.2378,5,171.43
+gutenberg,Middlemarch,512,1689.85,3.3005,10,169.9
+gutenberg,Middlemarch,1024,3274.4,3.1977,20,156.47
+gutenberg,Heart of Darkness,64,258.04,4.0318,1,212.88
+gutenberg,Heart of Darkness,128,517.81,4.0454,2,198.84
+gutenberg,Heart of Darkness,256,937.85,3.6635,5,184.8
+gutenberg,Heart of Darkness,512,1645.55,3.214,10,156.41
+gutenberg,Heart of Darkness,1024,3239.28,3.1634,20,153.51
+gutenberg,Ulysses,64,195.63,3.0567,1,159.47
+gutenberg,Ulysses,128,415.89,3.2491,2,165.4
+gutenberg,Ulysses,256,875.6,3.4203,5,164.71
+gutenberg,Ulysses,512,1998.89,3.9041,10,187.77
+gutenberg,Ulysses,1024,4004.3,3.9104,20,198.61
+gutenberg,The Secret Garden,64,200.51,3.133,1,166.99
+gutenberg,The Secret Garden,128,404.1,3.157,2,155.85
+gutenberg,The Secret Garden,256,696.6,2.7211,5,137.62
+gutenberg,The Secret Garden,512,1380.49,2.6963,10,135.55
+gutenberg,The Secret Garden,1024,2697.03,2.6338,20,135.55
+gutenberg,Black Beauty,64,204.25,3.1914,1,166.26
+gutenberg,Black Beauty,128,348.1,2.7195,2,146.92
+gutenberg,Black Beauty,256,689.65,2.694,5,127.58
+gutenberg,Black Beauty,512,1326.94,2.5917,10,125.95
+gutenberg,Black Beauty,1024,2601.13,2.5402,20,124.46
+gutenberg,Twenty Thousand Leagues under the Sea,64,213.51,3.3361,1,166.91
+gutenberg,Twenty Thousand Leagues under the Sea,128,399.72,3.1228,2,157.71
+gutenberg,Twenty Thousand Leagues under the Sea,256,774.55,3.0256,5,154.43
+gutenberg,Twenty Thousand Leagues under the Sea,512,1627.22,3.1782,10,156.77
+gutenberg,Twenty Thousand Leagues under the Sea,1024,3211.6,3.1363,20,151.9
+gutenberg,War and Peace,64,213.37,3.3339,1,179.14
+gutenberg,War and Peace,128,387.89,3.0304,2,161.9
+gutenberg,War and Peace,256,743.03,2.9025,5,144.66
+gutenberg,War and Peace,512,1459.72,2.851,10,143.86
+gutenberg,War and Peace,1024,2876.34,2.8089,20,143.86
+copybench,1984,64,239.44,3.7413,1,189.34
+copybench,1984,128,489.74,3.8261,2,201.12
+copybench,1984,256,1008.64,3.94,5,190.0
+copybench,a_game_of_thrones,64,262.57,4.1026,1,211.34
+copybench,a_game_of_thrones,128,560.11,4.3759,2,227.61
+copybench,a_game_of_thrones,256,1042.94,4.074,5,206.96
+copybench,a_game_of_thrones,512,1969.47,3.8466,10,189.19
+copybench,a_game_of_thrones,1024,3765.56,3.6773,20,180.44
+copybench,casino_royale,64,299.6,4.6812,1,240.59
+copybench,casino_royale,128,578.44,4.519,2,234.51
+copybench,casino_royale,256,1061.73,4.1474,5,198.67
+copybench,casino_royale,512,1976.52,3.8604,10,194.17
+copybench,casino_royale,1024,3986.97,3.8935,20,198.73
+copybench,dune,64,256.75,4.0117,1,205.83
+copybench,dune,128,477.73,3.7322,2,197.43
+copybench,dune,256,1053.47,4.1151,5,205.83
+copybench,dune,512,2120.86,4.1423,10,208.76
+copybench,dune,1024,4093.32,3.9974,20,197.71
+copybench,fahrenheit_451,64,208.36,3.2557,1,167.46
+copybench,fahrenheit_451,128,461.09,3.6022,2,177.95
+copybench,fahrenheit_451,256,960.95,3.7537,5,186.06
+copybench,fahrenheit_451,512,2059.61,4.0227,10,206.7
+copybench,fahrenheit_451,1024,4068.5,3.9731,20,206.7
+copybench,fifty_shades_of_grey,64,242.47,3.7886,1,185.42
+copybench,fifty_shades_of_grey,128,515.95,4.0309,2,191.05
+copybench,fifty_shades_of_grey,256,1016.87,3.9722,5,193.75
+copybench,fifty_shades_of_grey,512,1916.34,3.7428,10,184.69
+copybench,fifty_shades_of_grey,1024,3605.71,3.5212,20,177.59
+copybench,five_on_a_treasure_island,64,181.6,2.8375,1,139.79
+copybench,five_on_a_treasure_island,128,391.62,3.0595,2,150.87
+copybench,five_on_a_treasure_island,256,804.78,3.1437,5,161.94
+copybench,five_on_a_treasure_island,512,1561.0,3.0488,10,156.07
+copybench,five_on_a_treasure_island,1024,3243.48,3.1675,20,163.29
+copybench,harry_potter_and_the_sorcerer's_stone,64,249.32,3.8956,1,196.3
+copybench,harry_potter_and_the_sorcerer's_stone,128,556.67,4.349,2,213.49
+copybench,harry_potter_and_the_sorcerer's_stone,256,1025.36,4.0053,5,204.71
+copybench,harry_potter_and_the_sorcerer's_stone,512,1875.79,3.6637,10,183.8
+copybench,harry_potter_and_the_sorcerer's_stone,1024,3720.95,3.6337,20,177.42
+copybench,hitchhiker's_guide_to_the_galaxy,64,266.56,4.165,1,224.2
+copybench,hitchhiker's_guide_to_the_galaxy,128,485.87,3.7958,2,200.39
+copybench,hitchhiker's_guide_to_the_galaxy,256,974.8,3.8078,5,178.04
+copybench,hitchhiker's_guide_to_the_galaxy,512,1967.54,3.8428,10,188.8
+copybench,hitchhiker's_guide_to_the_galaxy,1024,3684.64,3.5983,20,178.29
+copybench,lord_of_the_flies,64,255.67,3.9949,1,183.3
+copybench,lord_of_the_flies,128,512.17,4.0013,2,193.24
+copybench,lord_of_the_flies,256,931.22,3.6376,5,183.3
+copybench,lord_of_the_flies,512,1835.8,3.5855,10,178.12
+copybench,lord_of_the_flies,1024,3790.63,3.7018,20,182.42
+copybench,the_da_vinci_code,64,226.57,3.5401,1,181.64
+copybench,the_da_vinci_code,128,449.46,3.5114,2,184.63
+copybench,the_da_vinci_code,256,854.94,3.3396,5,170.85
+copybench,the_da_vinci_code,512,1802.92,3.5213,10,182.15
+copybench,the_da_vinci_code,1024,3772.97,3.6845,20,183.5
+copybench,the_hunger_games,64,244.52,3.8206,1,205.22
+copybench,the_hunger_games,128,498.93,3.8979,2,213.5
+copybench,the_hunger_games,256,933.69,3.6472,5,168.26
+copybench,the_hunger_games,512,1860.22,3.6332,10,179.56
+copybench,the_hunger_games,1024,3758.25,3.6702,20,191.96
+copybench,the_silmarillion,64,241.23,3.7693,1,192.91
+copybench,the_silmarillion,128,405.06,3.1645,2,160.2
+copybench,the_silmarillion,256,894.22,3.4931,5,178.67
+copybench,the_silmarillion,512,1815.23,3.5454,10,181.06
+copybench,the_silmarillion,1024,3767.21,3.6789,20,184.05
+copybench,their_eyes_were_watching_god,64,307.77,4.8088,1,224.99
+copybench,their_eyes_were_watching_god,128,617.54,4.8245,2,234.26
+copybench,their_eyes_were_watching_god,256,1149.73,4.4911,5,224.99
+copybench,their_eyes_were_watching_god,512,2088.63,4.0794,10,220.82
+copybench,their_eyes_were_watching_god,1024,4121.12,4.0245,20,206.07
+copybench,things_fall_apart,64,238.5,3.7265,1,185.59
+copybench,things_fall_apart,128,463.66,3.6223,2,187.24
+copybench,things_fall_apart,256,945.19,3.6921,5,186.72
+copybench,things_fall_apart,512,1814.57,3.5441,10,181.27
+copybench,things_fall_apart,1024,3475.51,3.3941,20,169.85
+copybench,to_kill_a_mockingbird,64,257.04,4.0163,1,199.99
+copybench,to_kill_a_mockingbird,128,507.28,3.9631,2,198.57
+copybench,to_kill_a_mockingbird,256,933.2,3.6453,5,186.55
+copybench,to_kill_a_mockingbird,512,1943.68,3.7962,10,192.89
+copybench,to_kill_a_mockingbird,1024,3704.59,3.6178,20,175.91

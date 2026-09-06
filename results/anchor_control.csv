@@ -1,0 +1,67 @@
+source,work,S_tinycomma-1.8b-llama3-tokenizer,ntok_tinycomma-1.8b-llama3-tokenizer,S_comma-v0.1-2t,ntok_comma-v0.1-2t
+gutenberg,Alice's Adventures in Wonderland,933.11,390,215.55,463
+gutenberg,Pride and Prejudice,879.74,327,695.97,395
+gutenberg,Moby-Dick,1154.2,357,921.59,416
+gutenberg,A Tale of Two Cities,1078.91,338,684.29,420
+gutenberg,The Adventures of Sherlock Holmes,866.16,321,710.45,380
+gutenberg,Frankenstein,862.33,309,673.69,367
+gutenberg,Dracula,943.51,358,797.32,438
+gutenberg,Jane Eyre,1143.79,363,802.91,444
+gutenberg,Wuthering Heights,1168.96,353,977.45,433
+gutenberg,Great Expectations,1049.61,337,870.33,403
+gutenberg,Adventures of Huckleberry Finn,1062.56,360,756.63,436
+gutenberg,The Adventures of Tom Sawyer,1057.53,345,811.46,427
+gutenberg,Treasure Island,1224.98,384,622.65,451
+gutenberg,Peter Pan,1112.56,352,904.88,408
+gutenberg,The Wonderful Wizard of Oz,953.25,363,773.64,442
+gutenberg,Little Women,1013.27,348,704.83,415
+gutenberg,Anne of Green Gables,1001.25,339,793.31,395
+gutenberg,The Call of the Wild,1119.23,342,867.43,415
+gutenberg,The War of the Worlds,1106.43,339,911.97,397
+gutenberg,The Time Machine,1018.56,329,892.46,390
+gutenberg,The Picture of Dorian Gray,984.34,319,850.51,384
+gutenberg,Emma,1045.59,320,882.13,378
+gutenberg,Sense and Sensibility,1039.3,322,901.11,383
+gutenberg,Persuasion,1093.69,339,968.23,395
+gutenberg,Northanger Abbey,951.5,333,789.67,381
+gutenberg,Oliver Twist,1019.09,350,761.18,394
+gutenberg,David Copperfield,1067.27,362,816.27,416
+gutenberg,Bleak House,1006.12,332,907.69,408
+gutenberg,The Count of Monte Cristo,1045.63,353,871.3,408
+gutenberg,Les Miserables,1147.73,352,958.93,409
+gutenberg,The Odyssey,923.07,366,686.03,435
+gutenberg,Don Quixote,865.18,331,657.84,417
+gutenberg,Walden,1097.32,358,379.78,421
+gutenberg,The Scarlet Letter,977.62,333,254.36,392
+gutenberg,The Importance of Being Earnest,965.88,347,735.67,406
+gutenberg,The Prince,917.18,327,805.32,410
+gutenberg,Meditations,1084.38,340,973.42,394
+gutenberg,The Iliad,922.96,347,703.29,402
+gutenberg,Grimms' Fairy Tales,1002.48,353,770.14,434
+gutenberg,Gulliver's Travels,902.22,357,257.74,431
+gutenberg,Robinson Crusoe,903.43,360,517.79,424
+gutenberg,Ivanhoe,1010.25,329,709.5,382
+gutenberg,The Three Musketeers,887.38,340,798.78,398
+gutenberg,Middlemarch,1085.65,323,880.62,388
+gutenberg,Heart of Darkness,1197.64,341,978.14,377
+gutenberg,Ulysses,1538.29,399,1359.15,475
+gutenberg,The Secret Garden,912.27,334,731.22,382
+gutenberg,Black Beauty,942.03,352,757.15,419
+gutenberg,Twenty Thousand Leagues under the Sea,989.96,329,815.09,385
+gutenberg,War and Peace,1052.99,376,907.62,447
+copybench,1984,1269.18,323,1102.69,369
+copybench,a_game_of_thrones,1513.15,385,1345.86,450
+copybench,casino_royale,1367.24,358,1279.15,420
+copybench,dune,1518.25,361,1447.05,396
+copybench,fahrenheit_451,1366.93,348,1243.78,405
+copybench,fifty_shades_of_grey,1449.49,378,1308.27,451
+copybench,five_on_a_treasure_island,1170.45,372,1035.88,431
+copybench,harry_potter_and_the_sorcerer's_stone,1365.43,358,1199.19,424
+copybench,hitchhiker's_guide_to_the_galaxy,1307.52,346,1203.18,395
+copybench,lord_of_the_flies,1357.4,370,1253.24,428
+copybench,the_da_vinci_code,1213.97,344,1132.63,397
+copybench,the_hunger_games,1388.39,377,1284.49,415
+copybench,the_silmarillion,1459.08,410,1307.36,492
+copybench,their_eyes_were_watching_god,1522.97,359,1302.56,434
+copybench,things_fall_apart,1270.8,353,1151.03,399
+copybench,to_kill_a_mockingbird,1422.25,379,1325.89,436
