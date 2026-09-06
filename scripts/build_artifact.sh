@@ -7,7 +7,7 @@ set -e
 cd "$(dirname "$0")/.."
 ART=${1:-artifact}
 rm -rf "$ART"; mkdir -p "$ART"
-rsync -a --exclude '.git' --exclude '.venv' --exclude 'output' --exclude 'output.zip' --exclude '.env' --exclude '__pycache__' \
+rsync -a --exclude '.git' --exclude '.venv' --exclude 'output' --exclude 'output.zip' --exclude 'hf_cache' --exclude '.env' --exclude '__pycache__' \
       --exclude '.claude' --exclude '.claude-private' --exclude 'claude-me' --exclude "$ART" --exclude 'artifact*' \
       --exclude 'GOAL.md' --exclude 'AGENTS.md' --exclude 'CLAUDE.md' --exclude 'progress.md' --exclude 'session-handoff.md' \
       --exclude 'feature_list.json' --exclude 'init.sh' --exclude 'figures/legacy' --exclude 'scripts/build_artifact.sh' --exclude 'README_artifact.md' \
