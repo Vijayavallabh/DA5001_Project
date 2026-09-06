@@ -2,7 +2,7 @@
 
 You are executing this goal autonomously in the repository `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project`. Read `AGENTS.md` first (it is auto-imported by `CLAUDE.md`), then this file, then `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/IMPROVEMENT_PLAN.md` Sections 0–4. The plan is the spec; this file is the contract.
 
-**Status (2026-09-06):** phase 1 complete (success criteria 1–6 hold; `progress.md` → GOAL COMPLETE, commit 7b6961e). **Phase 2 started 2026-09-06** under `IMPROVEMENT_PLAN.md` version 2 (the version-1 plan is kept as `IMPROVEMENT_PLAN_v1_2026-09-05.md`): feat-017 to feat-027 below. feat-017 is blocked on the human's decision D1 (70B route); everything else runs on the local GPUs with the cached 8B models.
+**Status (2026-09-06): GOAL COMPLETE — phase 1 and phase 2 both done.** Phase 1 closed 2026-09-05 (criteria 1–6; `progress.md` → GOAL COMPLETE, commit 7b6961e). Phase 2 closed 2026-09-06 19:30 under `IMPROVEMENT_PLAN.md` version 2 (the version-1 plan is kept as `IMPROVEMENT_PLAN_v1_2026-09-05.md`): feat-017 to feat-027 all `done` with evidence, D1 and D2 answered by the human, outcome recorded below. Nothing is running and no agent-executable feature is left; the remaining steps are human-only (feat-016).
 
 ## Phase 2 objective (added 2026-09-06)
 
@@ -14,6 +14,15 @@ Turn the complete phase-1 submission into a distinguished-paper-grade one by (i)
 8. `results/` additionally contains `pathwise_sweep.csv`, `pathwise_composition.csv`, `extraction_cost.csv`, `concentration.csv`, `odometer.csv`, `bank_cap.csv`, `burst_audit.csv`, `warped_anchor.csv`, `budget_path.csv` (and `natural_memorisation.csv`, `composition_70b.csv` if feat-018 ran); every new number in the manuscript traces to one of them, with k = −1 and k = 0 rows present.
 9. The manuscript has the structure of plan v2 Section 7, ≤ 12 body pages, 0 `??`, 0 overfull, proofs of Propositions 1–4 in an appendix, and cites at least 90 verified references; the hallucinator self-check is rerun on the final PDF.
 10. The abstract is frozen by Sep 21 (human registers Sep 22) and the artifact v2 is rebuilt and verified before Sep 29.
+
+### Phase 2 outcome (2026-09-06 19:30)
+
+7. Met, and more than required: feat-017 to feat-027 are all `done` with evidence in `feature_list.json`. D1 was answered "yes, the ungated mirror" (`unsloth/Meta-Llama-3.1-70B`, cached in `hf_cache/`), so feat-018 ran for real rather than being marked blocked; D2 allowed the 70B on GPUs 1+2 and 8B jobs on the shared 0/4. feat-024 and feat-025 both ran. feat-012 is superseded by feat-024; feat-010/011 stay optional and unstarted.
+8. Met, under the names the scripts actually write: `pathwise_price.csv` (the pathwise/KL price on the same sweep) in place of `pathwise_sweep.csv`, `composition_8b_pathwise.csv` in place of `pathwise_composition.csv`, and `extraction_cost_{kl,pathwise,pathwise_lo}.csv` (+ `_windows`) in place of `extraction_cost.csv`; plus `concentration.csv` (+ `_summary`), `odometer.csv` (+ `_per_passage`), `bank_cap.csv`, `burst_audit.csv`, `warped_anchor.csv`, `budget_path.csv` (+ `_summary`), `natural_memorisation.csv`, `composition_70b.csv`, `composition_8b_kl.csv`, `prefix_debt_ablation.csv`, `latent_leakage_summary.csv`. Every manuscript number traces to one of them and the k = −1 / k = 0 rows are present.
+9. Met: the manuscript follows plan v2 Section 7, the body ends on page 12 (18 pages with references and appendix), 0 `??`, 0 overfull, proofs of Propositions 1–4 in the appendix, 125 cited entries of 128 in `references.bib`. Reference check: hallucinator 0.2.2 on the compiled PDF (87 verified, 38 misses all confirmed by hand against arXiv/CrossRef/DBLP/ACL, none fabricated); reports in `~/sub/satml/bibcheck_2026-09-06/`. The cited set has not changed since that check.
+10. Agent side met: the abstract in `satml_2027.tex` is final and artifact v2 is rebuilt and verified (`artifact/`, 179 files + `MANIFEST.sha256`; `artifact.zip` 23 MB). Registration, submission and the artifact upload are human-only (feat-016).
+
+Headline numbers, one per phase-2 area: 70B single-query recall at He et al.'s book settings 0.018 (k=3) rising to 0.314 (k=20, = unconstrained), oracle composition 0.591 at k=20 · prefix debt off raises k=5 recall 0.09 → 0.40 (8B) · pathwise vs KL active steps 1.94% vs 0.26% at k=3 for ≤ 0.11 nats/token of utility · Freedman certificate P(L ≥ K+100) ≈ 0.01 for k ≥ 3 (p90 caps), empirical 0 and no trajectory above K · odometer B_user = 400 nats cuts off every user and caps 50-token-window reconstruction at 0.30 oracle / 0.26 chained · zero per-trajectory violations in > 100,000 new trajectories and queries.
 
 ### Phase 2 execution order
 
@@ -83,3 +92,5 @@ Turn the arXiv paper "An Empirical Audit of k-NAF Budget Accounting for Anchored
 ## Prompt to start a session
 
 > Read GOAL.md and execute it. Start with ./init.sh, then pick the lowest-numbered eligible feature in feature_list.json.
+
+Since 2026-09-06 there is no eligible feature left: `./init.sh` plus the manuscript check in `AGENTS.md` is the whole of a verification session. Do not start feat-016 (human-only), and treat feat-010/011 as optional polish that must not disturb the frozen manuscript or artifact.

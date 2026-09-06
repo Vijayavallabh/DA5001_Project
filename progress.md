@@ -2,9 +2,11 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-05
-**Active Feature:** none — feat-001..009 and feat-013..015 done (GOAL COMPLETE below); feat-010/011/012 optional, not started; feat-016 is the human-only submission step
-**Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE)
+**Last Updated:** 2026-09-06 23:19
+**Active Feature:** none. **Phase 1 and phase 2 are both complete** — feat-001..009, 013..015 and 017..027 are `done` with evidence; feat-012 is superseded by feat-024; feat-010/011 stay optional and unstarted; feat-016 is the human-only submission step. Nothing is running and the GPUs are released.
+**Artefacts:** manuscript `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (18 pages, body ends page 12, 0 overfull, 0 `??`, 125 cited of 128) with the checkpoint copy `satml_2027_phase2_2026-09-06.pdf`; artifact `artifact/` (179 files + `MANIFEST.sha256`) and `artifact.zip` (23 MB).
+**Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE) — all three are human-only steps.
+**Verification for a fresh session:** `./init.sh` (30 tests) and the manuscript compile check in `AGENTS.md`. Read the log below from the bottom: entries are appended, so the phase-1 sections that follow are history, not the current plan.
 
 ## Status
 
@@ -29,9 +31,11 @@
 
 ### What's Next
 
-1. feat-004 → feat-005: baselines and the small-k regime sweep.
-2. feat-007 (after feat-005): `analysis/llr_tails.py --sweep plain=... --sweep chat=...`, retire EBB call sites in dap/ (E2: replace U_EBB/rho with max utilisation + invariant): memorising model, then the composition attack (the paper's core attack result).
-3. feat-013, feat-014, feat-015 in that order. feat-010/011/012 only if time remains after feat-009.
+*(rewritten 2026-09-06 23:19; the phase-1 list it replaced is finished.)*
+
+1. Nothing for the agent. Every automatable feature is `done`; feat-016 is human-only (registration Sep 22, paper Sep 29, artifact repository Oct 2) and must not be attempted.
+2. Optional polish only, and only if it does not disturb the frozen manuscript or artifact: a fresh-eyes proofread of Sections VI-E, VI-F and VII, a hallucinator rerun (the cited set of 125 entries is unchanged since the 02:50 check), feat-010 (bank-and-burst; needs a risky model that both memorises and follows instructions — the 70B base is now cached, so it is testable in principle) and feat-011 (format-evasion prompts).
+3. After any edit under `~/sub/satml/`: recompile, then confirm 0 `??`, 0 overfull and that page 13 still starts with "Open Science". After any change under `results/`, `analysis/` or `a_patch/`: rerun `./init.sh` and `scripts/build_artifact.sh artifact`.
 
 ## GOAL COMPLETE (2026-09-05)
 
@@ -64,6 +68,8 @@
 - CFP compliance pass (2026-09-05 22:40, after reading https://satml.org/call-for-papers/ and its checklist in full): end matter reordered to Open Science → `LLM usage considerations` (exact title; required editorial-use sentence; closed-assistant limitation; compute justification: ~12 A100 GPU-hours, why 8B, query minimisation) → Ethical Considerations (Menlo report cited, `dittrich2012menlo` added, 52 bib entries) → references; Open Science no longer says the review copy is attached (anonymised repository link goes in HotCRP, frozen after Oct 2); the three "our earlier audit/protocol" self-references were rewritten in neutral third person; README_artifact no longer mentions a Zenodo record. AGENTS.md carries the full timeline and format rules, feat-016 the human checklist, session-handoff.md the open question about prior reviews. Recompiled: 11 pages, 0 overfull, 0 `??`.
 
 ## Blockers / Risks
+
+*(Status line added 2026-09-06 23:19: the entries below are the running record. Resolved since: the 70B is cached (`hf_cache/models--unsloth--Meta-Llama-3.1-70B`, D1), GPUs 0/4 were released for 8B jobs (D2), the batched-EOS utilisation issue was fixed in feat-004, and the decoder's warper guard was removed on 2026-09-06. Still true: `HF_TOKEN` is invalid (use `HF_HUB_OFFLINE=1`), the DGX is unreachable from this account, there is no `pdflatex` (use tectonic), and feat-010 is not testable with the LoRA memoriser.)*
 
 - [ ] Compute: local 4×A100 80GB (GPUs 0 and 4 had ~15 GB in use by other processes on 2026-09-05; GPU 3 is a T400, unusable). DGX 6×H100 via `dgx-gpu` for 70B and sweeps. Llama-3.1-70B base in bf16 (~140 GB) fits on 2 free A100s with `device_map="auto"`, so feat-008's 70B option is feasible locally.
 - [ ] **HF_TOKEN in `.env` is invalid** (`HfApi.whoami` → "Invalid user token", 2026-09-05). The local HF cache already holds Llama-3.1-8B-Instruct (weights only; tokenizer comes from the TinyComma repo), Llama-3.1-8B base, TinyComma, Qwen2.5-7B-Instruct, so all 8B runs work with `HF_HUB_OFFLINE=1`. Llama-3.1-70B is NOT cached: feat-008's 70B option needs a valid token (human) or the DGX cache. Ask the user for a working token when feat-008 starts.
@@ -192,3 +198,8 @@ Odometer: `.venv/bin/python analysis/odometer.py --queries output/phase2/comp8b_
 ### 2026-09-06 19:30 — feat-026 and feat-027 done
 - KL sweeps at k ∈ {3,5,10,20} on the 900 prompts finished 19:16 (one budget per GPU; `output/phase2/kl_sweep_hi` k=3 (partial k=5 file quarantined in `partial_k5/`), `kl_sweep_k5`, `kl_sweep_k10`, `kl_sweep_k20`; 2,700 trajectories each). `analysis/pathwise_price.py --kl output/sweep_plain output/phase2/kl_sweep_hi output/phase2/kl_sweep_k5 output/phase2/kl_sweep_k10 output/phase2/kl_sweep_k20 --pathwise output/phase2/pathwise_sweep output/phase2/pathwise_sweep_hi --out results` → `results/pathwise_price.csv` (same sweep at every k): active KL vs pathwise 43/56% (k=0.5), 5.0/14.6% (1), 0.26/1.94% (3), 0.18/1.12% (5), 0.01/0.52% (10), 0.00/0.01% (20); forced 2.2/6.1% at k=3; risky NLL/token within 0.11 throughout. `analysis/concentration.py --logs output/phase2/conc_all` (k=0.5..20 logs copied together) → `results/concentration_summary.csv`: for k ≥ 3, V median ≈350 (p90 450), b ≈15 (max 29), δ(100) ≈ 0.01 (empirical 0), no output above K. Price and concentration paragraphs refreshed; body still ends on page 12 (18 pages total, 0 overfull, 0 ??).
 - Artifact v2 rebuilt (`scripts/build_artifact.sh artifact`); PDF checkpoint `sub/satml/satml_2027_phase2_2026-09-06.pdf` refreshed. Remaining work is human-only (feat-016): registration Sep 22, paper Sep 29, artifact repository Oct 2.
+
+### 2026-09-06 23:19 — harness and documentation refreshed for the end of phase 2
+- No experiments, no manuscript edits. Brought the docs in line with the finished state: `AGENTS.md` (status = both phases complete; phase-2 known truths added so a fresh session does not re-run ~48 GPU-hours; D1/D2 recorded; 70B cache path; `data/gutenberg/` declared a deletable download cache; Key Facts rows for the pathwise/bank options, the phase-2 scripts, the phase-2 CSVs and the artifact; tests 14 → 30; bib 127 → 128 entries with 125 cited), `GOAL.md` (GOAL COMPLETE, phase-2 outcome against criteria 7–10 with the actual CSV names, headline numbers), `progress.md` (this header, What's Next, Blockers status line), `session-handoff.md` (verification table, files changed, blockers, next step), `README.md` (rewritten: what the repo is, layout, `./init.sh`, phase-2 commands, where the paper and artifact live), `README_artifact.md` (phase-2 command block was rendering outside its code fence; fixed, plus the pathwise/bank additions to `a_patch/`, the `scripts/` row, the low-budget retry CSV and the 70B in the model list), `.gitignore` (`data/gutenberg/`, 44 MB of re-fetchable Gutenberg text, was untracked), `init.sh` (closing message and the stale DGX comment), `feature_list.json` (feat-017's description still opened with "BLOCKED on D1" although its status is `done`). Artifact rebuilt twice so its README copy and manifest match: 179 files, verified, `artifact.zip` 23 MB.
+- Verified while writing: `pytest -q tests` 30 passed; `references.bib` 128 entries and `[125]` the last cited number in the PDF; `satml_2027.pdf` 18 pages with page 13 starting "Open Science"; `artifact/MANIFEST.sha256` 179 lines; `feature_list.json` statuses as summarised above. Three summary numbers were tightened against the CSVs while writing: the odometer bound is 0.30 oracle / 0.26 chained on 50-token windows (`results/odometer.csv`; the 0.37 figure elsewhere is the 20-token oracle variant the paper does not use), the Freedman bound at k ≥ 3 is δ(100) ≈ 0.01 rather than ≤ 0.01 (0.0098–0.0102 at p90 caps), and the pathwise utility price is ≤ 0.08 nats/token at k ∈ {3,5,10} (`results/pathwise_price.csv`).
+- **Two numbers corrected in the manuscript** (`sections/certificates.tex`, the only place either appears). (i) The pathwise price paragraph said the risky model's log-loss stays "within 0.11 nats per token" of the KL decoder's *throughout*; the gap is 0.15 at k=0.5 (pathwise is the cheaper one there) and ≤ 0.11 only for k ≥ 1, so it now says 0.15. (ii) The concentration paragraph rounded four δ values down while claiming them as upper bounds: at the p90 caps `results/concentration_summary.csv` gives 0.1043, 0.0032, 0.0083 and 0.0098–0.0102, so the text now reads ≤ 0.11, ≤ 0.004, ≤ 0.009 and ≤ 0.011. Recompiled: 18 pages, body still ends on page 12 (page 13 opens with "Open Science"), 0 overfull, 0 ??; checkpoint `satml_2027_phase2_2026-09-06.pdf` refreshed. No other manuscript number moved.

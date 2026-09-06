@@ -57,13 +57,17 @@ fi
 $PY h1.py --help >/dev/null && echo "[OK] h1.py --help"
 $PY h2.py --help >/dev/null && echo "[OK] h2.py --help"
 
-# 7. GPU (informational; compute target is the DGX via the dgx-gpu skill)
+# 7. GPU (informational; all runs were local: 4xA100 80GB at nvidia-smi indices 0,1,2,4 - index 3 is a 4 GB T400.
+#    Always export CUDA_DEVICE_ORDER=PCI_BUS_ID with CUDA_VISIBLE_DEVICES, or index 4 lands on the T400.)
 $PY -c "import torch; print(f'[info] local GPU available: {torch.cuda.is_available()}, count: {torch.cuda.device_count()}')" || echo "[info] torch not importable locally"
 
 echo "=== Init Complete ==="
 echo ""
-echo "Next steps:"
-echo "1. Read feature_list.json; pick ONE feature whose dependencies are done"
-echo "2. Implement only that feature; run its evidence command"
-echo "3. Paste command + output into feature_list.json evidence, update progress.md"
-echo "4. Re-run ./init.sh before claiming done"
+echo "Both phases are complete (2026-09-06): feat-001..009, 013..015 and 017..027 are done."
+echo "Only feat-016 remains and it is human-only - never start it."
+echo ""
+echo "If you are here to work:"
+echo "1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md"
+echo "2. Default to verifying, not extending: this init plus the manuscript check in AGENTS.md"
+echo "3. If you do change something, rerun its evidence command, update feature_list.json and progress.md,"
+echo "   recompile the manuscript (0 ??, 0 overfull, page 13 starts with 'Open Science') and rebuild the artifact"

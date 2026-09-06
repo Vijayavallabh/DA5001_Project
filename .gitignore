@@ -12,3 +12,4 @@ output/
 artifact.zip
 claude-me
 hf_cache/
+data/gutenberg/
