@@ -1,0 +1,40 @@
+job,path,gpus,start,end,wall_hours,gpu_hours,start_source,idle_removed_hours,note
+feat-003 smoke,output/smoke_feat003,1,2026-09-05 16:12,2026-09-05 16:15,0.05,0.05,dir_birth,0.0,
+certificate strength,output/certcap_rerun.log,1,2026-09-05 16:23,2026-09-05 16:24,0.02,0.02,dir_birth,0.0,feat-006
+feat-004 smoke,output/smoke,1,2026-09-05 16:25,2026-09-05 16:48,0.38,0.38,dir_birth,0.0,
+batching check,output/batchcheck,1,2026-09-05 16:50,2026-09-05 16:58,0.13,0.13,dir_birth,0.0,
+sweep (raw prompts),output/sweep_plain,1,2026-09-05 16:59,2026-09-05 20:22,3.38,3.38,dir_birth,0.0,feat-005
+sweep (chat template),output/sweep_chat,1,2026-09-05 16:59,2026-09-05 21:15,2.89,2.89,dir_birth,1.36,OOM restart; idle gap removed
+memoriser fine-tune,output/memorizing_llama8b,1,2026-09-05 17:05,2026-09-05 18:21,1.25,1.25,dir_birth,0.0,feat-008
+memoriser check,output/memorizing_check_greedy,1,2026-09-05 18:21,2026-09-05 18:29,0.13,0.13,dir_birth,0.0,
+memoriser check (sampled),output/memorizing_check,1,2026-09-05 18:29,2026-09-05 18:37,0.14,0.14,dir_birth,0.0,
+composition smoke,output/composition_smoke,1,2026-09-05 18:21,2026-09-05 18:37,0.27,0.27,dir_birth,0.0,
+composition attack,output/composition,1,2026-09-05 18:24,2026-09-06 02:24,1.88,1.88,dir_birth,6.12,feat-009; two passes
+bank-and-burst smoke,output/bank_burst_smoke,1,2026-09-05 19:20,2026-09-05 20:44,1.4,1.4,dir_birth,0.0,"feat-010, not evaluated"
+certificate strength (memoriser),output/certcap_memoriser,1,2026-09-05 20:19,2026-09-05 20:20,0.02,0.02,dir_birth,0.0,
+pathwise smoke,output/phase2/pathwise_smoke,1,2026-09-06 01:15,2026-09-06 01:17,0.05,0.05,dir_birth,0.0,feat-019
+KL smoke,output/phase2/kl_smoke,1,2026-09-06 01:18,2026-09-06 01:20,0.04,0.04,dir_birth,0.0,
+budget path,output/phase2/budget_path.log,1,2026-09-06 01:18,2026-09-06 01:24,0.1,0.1,dir_birth,0.0,feat-023
+warped anchor,output/phase2/warped,1,2026-09-06 01:20,2026-09-06 01:24,0.06,0.06,dir_birth,0.0,feat-022
+latent leakage,output/phase2/latent,1,2026-09-06 01:38,2026-09-06 01:51,0.2,0.2,dir_birth,0.0,feat-024
+8B control on HP1,output/phase2/hp1_8b,1,2026-09-06 02:00,2026-09-06 02:20,0.32,0.32,dir_birth,0.0,
+warp smoke,output/phase2/warp_smoke,1,2026-09-06 02:22,2026-09-06 02:24,0.02,0.02,dir_birth,0.0,
+bank-cap smoke,output/phase2/cap_smoke,1,2026-09-06 02:07,2026-09-06 02:09,0.02,0.02,dir_birth,0.0,
+composition (KL),output/phase2/comp8b_kl,1,2026-09-06 01:23,2026-09-06 02:46,1.38,1.38,dir_birth,0.0,feat-021
+composition (pathwise),output/phase2/comp8b_pathwise,1,2026-09-06 01:23,2026-09-06 03:21,1.97,1.97,dir_birth,0.0,feat-019
+bank cap D=k at k=10,output/phase2/bank_cap_k10_10,1,2026-09-06 03:24,2026-09-06 03:39,0.26,0.26,dir_birth,0.0,shared a card with the pathwise sweep
+bank cap D=5k at k=10,output/phase2/bank_cap_k10_50,1,2026-09-06 03:39,2026-09-06 03:54,0.25,0.25,chain,0.0,
+bank cap D=k at k=20,output/phase2/bank_cap_k20_20,1,2026-09-06 03:54,2026-09-06 04:09,0.24,0.24,chain,0.0,
+pathwise sweep,output/phase2/pathwise_sweep,1,2026-09-06 02:46,2026-09-06 10:40,7.91,7.91,dir_birth,0.0,feat-019
+pathwise sweep (high k),output/phase2/pathwise_sweep_hi,1,2026-09-06 04:11,2026-09-06 10:08,5.95,5.95,dir_birth,0.0,
+KL sweep (variances),output/phase2/kl_sweep_conc,1,2026-09-06 03:21,2026-09-06 09:40,6.32,6.32,chain,0.0,feat-020
+prefix-debt ablation,output/phase2/prefix_ablation,1,2026-09-06 09:40,2026-09-06 10:15,0.58,0.58,chain,0.0,feat-025
+retries (KL),output/phase2/retries_kl,1,2026-09-06 10:15,2026-09-06 10:45,0.5,0.5,chain,0.0,
+retries (pathwise),output/phase2/retries_pathwise,1,2026-09-06 10:45,2026-09-06 11:28,0.71,0.71,chain,0.0,
+retries (low budget),output/phase2/retries_pathwise_lo,1,2026-09-06 15:44,2026-09-06 16:03,0.32,0.32,dir_birth,0.0,
+KL sweep k=3,output/phase2/kl_sweep_hi,1,2026-09-06 15:40,2026-09-06 18:06,2.44,2.44,dir_birth,0.0,
+KL sweep k=5,output/phase2/kl_sweep_k5,1,2026-09-06 17:13,2026-09-06 18:25,1.19,1.19,dir_birth,0.0,
+KL sweep k=10,output/phase2/kl_sweep_k10,1,2026-09-06 17:13,2026-09-06 19:15,2.03,2.03,dir_birth,0.0,
+KL sweep k=20,output/phase2/kl_sweep_k20,1,2026-09-06 17:13,2026-09-06 18:19,1.09,1.09,dir_birth,0.0,
+70B seed-length checks,output/phase2/nm_smoke,2,2026-09-06 01:23,2026-09-06 01:53,0.5,1.01,dir_birth,0.0,feat-017; nm_check* share the window
+70B audit,output/phase2/nm,2,2026-09-06 01:53,2026-09-06 05:33,3.67,7.34,chain,0.0,"feat-018, all sub-runs"
