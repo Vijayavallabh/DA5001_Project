@@ -86,8 +86,9 @@ def plot(summary, k_values, modes, windows, figures):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.ticker import NullFormatter
-    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 7.5})
-    fig, ax = plt.subplots(figsize=(5.0, 3.3))
+    plt.rcParams.update({"font.size": 8, "axes.labelsize": 8, "legend.fontsize": 6.2,
+                         "xtick.labelsize": 7.5, "ytick.labelsize": 7.5})
+    fig, ax = plt.subplots(figsize=(3.4, 2.6))
     pos = [k for k in k_values if k > 0]
     if not pos:  # baselines only: nothing to plot on a log axis
         return
@@ -101,7 +102,7 @@ def plot(summary, k_values, modes, windows, figures):
             fmt, col = styles.get(mode, ("x:", "C4"))
             alpha = 1.0 if L in (0, windows[0]) else 0.5
             ys = [get(k, mode, L) for k in pos]
-            ax.plot(pos, ys, fmt, color=col, alpha=alpha, label=f"{mode}" + (f", L={L}" if L else ""))
+            ax.plot(pos, ys, fmt, color=col, alpha=alpha, lw=1.3, ms=3.2, label=f"{mode}" + (f", $L={L}$" if L else ""))
             base = get(-1.0, mode, L)
             if base is not None:  # unconstrained risky model, same strategy
                 ax.axhline(base, color=col, ls=":", lw=0.8, alpha=alpha)
@@ -113,12 +114,12 @@ def plot(summary, k_values, modes, windows, figures):
     ax.set_xticks(pos)
     ax.set_xticklabels([f"{k:g}" for k in pos])
     ax.xaxis.set_minor_formatter(NullFormatter())
-    ax.set_xlabel("per-token budget k (every query within K = k·L)")
-    ax.set_ylabel("near-verbatim recall of the target (mean)")
+    ax.set_xlabel("per-token budget $k$")
+    ax.set_ylabel("near-verbatim recall")
     ax.set_ylim(-0.02, 1.02)
     ax.grid(alpha=0.3)
-    ax.legend(frameon=False, loc="upper left")
-    fig.tight_layout()
+    ax.legend(frameon=True, framealpha=0.9, edgecolor="none", loc="upper left")
+    fig.tight_layout(pad=0.3)
     fig.savefig(os.path.join(figures, "composition.pdf"))
     fig.savefig(os.path.join(figures, "composition.png"), dpi=150)
 

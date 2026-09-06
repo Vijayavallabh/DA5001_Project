@@ -9,51 +9,55 @@ import argparse, csv, glob, json, os, statistics as st
 from collections import defaultdict
 
 
-def plot(allrows, figures, prefix="natural_memorisation"):
-    """Recall against k per novel: one line per (decoding setting, decoder, strategy); the risky model alone (greedy and
-    sampled) and the anchor alone as horizontal references."""
+def plot(allrows, figures, prefix="natural_memorisation", novel="hp1", setting="B_authors"):
+    """One-column figure: recall against k for the book the risky model memorised, at the deployer's own decoding
+    settings, with the two repairs (pathwise decoder, no prefix debt) and the unconstrained model as references.
+    The second book and the temperature-1 setting are tabulated rather than plotted; they have the same shape."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.ticker import NullFormatter
-    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 6.5})
-    novels = sorted({r["novel"] for r in allrows})
-    fig, axes = plt.subplots(1, len(novels), figsize=(5.0 * len(novels), 3.4), squeeze=False)
-    style = {"single": "-", "oracle": "--", "chained": ":"}
-    marker = {"single": "o", "oracle": "s", "chained": "^"}
-    for ax, novel in zip(axes[0], novels):
-        rows = [r for r in allrows if r["novel"] == novel]
-        series = defaultdict(list)
-        for r in rows:
-            series[(r["run"], r["mode"])].append(r)
-        ci = 0
-        colours = {}
-        for (run, mode), rs in sorted(series.items()):
-            rs = sorted(rs, key=lambda r: r["k"])
-            pos = [r for r in rs if r["k"] > 0]
-            base = run.replace(f"{novel}_", "")
-            if base not in colours:
-                colours[base] = f"C{ci}"; ci += 1
-            if "greedy" in run:  # risky alone (k=-1) under greedy decoding: horizontal reference
-                for r in rs:
-                    if r["k"] == -1:
-                        ax.axhline(r["nv_recall_mean"], color="0.3", ls=style[mode], lw=0.8, label=f"risky model alone, greedy ({mode})")
-                continue
-            if pos:
-                ax.plot([r["k"] for r in pos], [r["nv_recall_mean"] for r in pos], style[mode], marker=marker[mode], ms=3.5,
-                        color=colours[base], label=f"{base.replace('_', ' ')} ({mode})")
-            for r in rs:
-                if r["k"] == -1 and mode == "single":
-                    ax.axhline(r["nv_recall_mean"], color=colours[base], ls="-.", lw=0.6, alpha=0.6, label=f"risky alone, sampled ({base.replace('_', ' ')})")
-        ks = sorted({r["k"] for r in rows if r["k"] > 0})
-        if ks:
-            ax.set_xscale("log"); ax.set_xticks(ks); ax.set_xticklabels([f"{k:g}" for k in ks]); ax.xaxis.set_minor_formatter(NullFormatter())
-        ax.set_xlabel("per-token budget k"); ax.set_ylabel("near-verbatim recall (mean)"); ax.set_ylim(-0.02, 1.02); ax.grid(alpha=0.3)
-        ax.set_title(novel.replace("_", " "), fontsize=9)
-        ax.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none", ncol=1)
-    fig.tight_layout()
+    plt.rcParams.update({"font.size": 8, "axes.labelsize": 8, "xtick.labelsize": 7.5,
+                         "ytick.labelsize": 7.5, "legend.fontsize": 6.2})
+
+    def pick(run_suffix, mode):
+        rows = [r for r in allrows if r["novel"] == novel and r["mode"] == mode
+                and r["run"] == f"{novel}{run_suffix}" and r["setting"] == setting]
+        return sorted(rows, key=lambda r: r["k"])
+
+    # (run suffix, mode, label, colour, linestyle, marker)
+    SERIES = [
+        ("_B", "oracle", "oracle windows", "C0", "-", "s"),
+        ("_B_pathwise", "oracle", "oracle, pathwise decoder", "C2", "--", "D"),
+        ("_B_nodebt", "oracle", "oracle, prefix debt off", "C3", ":", "^"),
+        ("_B", "single", "single query", "C1", "-", "o"),
+    ]
+    fig, ax = plt.subplots(figsize=(3.4, 2.5))
+    kmax = 20.0
+    for suffix, mode, label, colour, ls, mk in SERIES:
+        rows = [r for r in pick(suffix, mode) if 0 < r["k"] <= kmax]
+        if rows:
+            ax.plot([r["k"] for r in rows], [r["nv_recall_mean"] for r in rows], ls, marker=mk, ms=3.2,
+                    lw=1.3, color=colour, label=label)
+    for mode, colour in (("oracle", "C0"), ("single", "C1")):
+        base = [r for r in pick("_B", mode) if r["k"] == -1]
+        if base:
+            ax.axhline(base[0]["nv_recall_mean"], color=colour, ls=(0, (1, 1.5)), lw=1.0, alpha=0.75,
+                       label=f"unconstrained model, {mode}")
+    ks = sorted({r["k"] for r in allrows if r["novel"] == novel and 0 < r["k"] <= kmax})
+    ax.set_xscale("log")
+    ax.set_xticks(ks)
+    ax.set_xticklabels([f"{k:g}" for k in ks])
+    ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_xlabel("per-token budget $k$")
+    ax.set_ylabel("near-verbatim recall")
+    ax.set_ylim(-0.02, 0.85)
+    ax.grid(alpha=0.3)
+    ax.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none")
+    fig.tight_layout(pad=0.3)
     os.makedirs(figures, exist_ok=True)
-    fig.savefig(os.path.join(figures, f"{prefix}.pdf")); fig.savefig(os.path.join(figures, f"{prefix}.png"), dpi=150)
+    fig.savefig(os.path.join(figures, f"{prefix}.pdf"))
+    fig.savefig(os.path.join(figures, f"{prefix}.png"), dpi=200)
 
 
 def main():

@@ -65,28 +65,30 @@ def plot(summary, figures, t_max=200, tag=""):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    plt.rcParams.update({"font.size": 9, "axes.labelsize": 9, "legend.fontsize": 8, "xtick.labelsize": 8, "ytick.labelsize": 8})
-    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+    plt.rcParams.update({"font.size": 8, "axes.labelsize": 8, "legend.fontsize": 6.6, "xtick.labelsize": 7,
+                         "ytick.labelsize": 7.5})
+    fig, ax = plt.subplots(figsize=(3.4, 2.6))
     allrows = sorted([r for r in summary if r["split"] == "all"], key=lambda r: r["k"])
     ks = [r["k"] for r in allrows]
-    ax.plot(ks, [r["vacuous_pct"] for r in allrows], "o-", color="C3", label="passages with vacuous certificate (S ≤ K)")
-    ax.plot(ks, [100 * r["cap_median"] for r in allrows], "s--", color="C0", label="median cap on the reproduction probability")
-    for split, ls in zip(SPLITS, (":", "-.", (0, (1, 1)))):
-        rows = sorted([r for r in summary if r["split"] == split], key=lambda r: r["k"])
-        ax.plot([r["k"] for r in rows], [r["vacuous_pct"] for r in rows], linestyle=ls, color="C3", lw=0.8, alpha=0.6, label=f"vacuous, {dict(attack_train='attack split', val='validation', test='test').get(split, split)}")
+    n = int(allrows[0]["n"]) if allrows and allrows[0].get("n") else 0
+    ax.plot(ks, [r["vacuous_pct"] for r in allrows], "o-", color="C3", lw=1.3, ms=3.4,
+            label=f"vacuous certificates ($S \\leq K$), % of {n} passages" if n else "vacuous certificates, %")
+    ax.plot(ks, [100 * r["cap_median"] for r in allrows], "s--", color="C0", lw=1.3, ms=3.4,
+            label="median cap on the reproduction probability, %")
     ax.set_xscale("log")
     ax.set_xticks(ks)
-    ax.set_xticklabels([f"{k:g}\nK={k * t_max:g}" for k in ks])
-    ax.set_xlabel("per-token budget k (K = k·T_max, T_max = %d)" % t_max)
+    ax.set_xticklabels([f"{k:g}" for k in ks])
+    ax.set_xlabel("per-token budget $k$")
     ax.set_ylabel("%")
     ax.set_ylim(0, 102)
     ax.grid(alpha=0.3)
     top = ax.secondary_xaxis("top", functions=(lambda k: k, lambda k: k))
+    shown = {0.1, 0.25, 1.0, 5.0}          # every other tick: the labels are wide
     top.set_xticks(ks)
-    top.set_xticklabels([f"1e{(k * t_max) / math.log(10):.0f}" for k in ks])
-    top.set_xlabel("best-of-n selection permitted by the budget (n = e^K)")
+    top.set_xticklabels([f"$10^{{{(k * t_max) / math.log(10):.0f}}}$" if k in shown else "" for k in ks])
+    top.set_xlabel("best-of-$n$ selection the same budget permits")
     ax.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none")
-    fig.tight_layout()
+    fig.tight_layout(pad=0.3)
     fig.savefig(os.path.join(figures, f"certificate_cap_curve{tag}.pdf"))
     fig.savefig(os.path.join(figures, f"certificate_cap_curve{tag}.png"), dpi=150)
 
