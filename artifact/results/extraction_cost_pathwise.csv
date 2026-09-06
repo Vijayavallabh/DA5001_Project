@@ -1,0 +1,6 @@
+constraint,k,L,windows,attempts_total,windows_matched_pct,empirical_success_per_attempt,bound_success_prob_mean,surplus_median,surplus_positive_pct,attempts_to_match_median,bound_expected_attempts_median,windows_matched_with_positive_surplus
+pathwise,-1.0,50,297,1120,68.0,0.1804,1.0,203.93,100.0,1.0,1.0,202
+pathwise,5.0,50,297,2342,3.0,0.0038,1.0,-96.07,0.0,5,1.0,0
+pathwise,10.0,50,297,1979,25.3,0.0379,1.0,-346.07,0.0,2,1.0,0
+pathwise,20.0,50,297,1245,64.3,0.1534,1.0,-846.07,0.0,1,1.0,0
+pathwise,50.0,50,297,1120,68.0,0.1804,1.0,-2346.07,0.0,1.0,1.0,0

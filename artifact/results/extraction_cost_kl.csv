@@ -1,0 +1,5 @@
+constraint,k,L,windows,attempts_total,windows_matched_pct,empirical_success_per_attempt,bound_success_prob_mean,surplus_median,surplus_positive_pct,attempts_to_match_median,bound_expected_attempts_median,windows_matched_with_positive_surplus
+kl,-1.0,50,297,1120,68.0,0.1804,1.0,203.93,100.0,1.0,1.0,202
+kl,5.0,50,297,2287,7.1,0.0092,1.0,-96.07,0.0,4,1.0,0
+kl,10.0,50,297,1932,28.6,0.044,1.0,-346.07,0.0,2,1.0,0
+kl,20.0,50,297,1136,68.0,0.1778,1.0,-846.07,0.0,1.0,1.0,0

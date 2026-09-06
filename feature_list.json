@@ -288,9 +288,9 @@
         "feat-022",
         "feat-023"
       ],
-      "status": "in-progress",
+      "status": "done",
       "description": "Restructure sub/satml/satml_2027.tex per plan v2 Section 7: new Section VII 'Certificates that do what the deployer wants' (pathwise decoder + Propositions 1-2, concentrated certificate + Proposition 3, odometer and bank cap, warped anchor), natural-memorisation results in VI (if feat-018 ran), budget-path figure in VI-D, certificate card and rights-holder self-test in VIII, Related Work rewritten around LITERATURE_REVIEW.md Sections A-L (cite 90-100 of the 127 verified entries), proofs in Appendix A. Rules: <= 12 body pages, 0 ?? and 0 overfull, humanizer/no-ai-slop pass, no codebase jargon, third-person self-citation only, provenance wording, CFP end matter, LLM-usage compute statement updated (about 40 GPU-hours), hallucinator self-check rerun. Evidence: the manuscript check command in AGENTS.md plus the hallucinator report.",
-      "evidence": " [16:15] manuscript v2: body 12 pages (Open Science starts p.13), 18 pages total, 0 overfull, 0 ??, 125 cited entries (verified set unchanged); abstract/intro (C1-C10)/conclusion/discussion/limitations/open science/LLM usage/ethics rewritten; sections natural, prefixdebt, certificates (pathwise, concentration, warped, leakage, odometer + cap) written; checkpoint sub/satml/satml_2027_phase2_2026-09-06.pdf. Pending: price paragraph refresh from kl_sweep_hi."
+      "evidence": " [16:15] manuscript v2: body 12 pages (Open Science starts p.13), 18 pages total, 0 overfull, 0 ??, 125 cited entries (verified set unchanged); abstract/intro (C1-C10)/conclusion/discussion/limitations/open science/LLM usage/ethics rewritten; sections natural, prefixdebt, certificates (pathwise, concentration, warped, leakage, odometer + cap) written; checkpoint sub/satml/satml_2027_phase2_2026-09-06.pdf. Pending: price paragraph refresh from kl_sweep_hi. [19:30] price paragraph refreshed from the same-sweep KL runs (results/pathwise_price.csv: active 0.26/1.94% at k=3, 0.18/1.12% at k=5, 0.01/0.52% at k=10, 0/0.01% at k=20), concentration paragraph extended to k=3..20 (delta(100) ~ 0.01, empirical 0); tectonic: 18 pages, body ends p.12, 0 overfull, 0 ??."
     },
     {
       "id": "feat-027",
@@ -299,9 +299,9 @@
       "dependencies": [
         "feat-026"
       ],
-      "status": "in-progress",
+      "status": "done",
       "description": "figures/make_figures.py regenerates all figures (existing four plus budget_path, pathwise price, odometer) from results/*.csv and copies them with --copy-to; scripts/build_artifact.sh artifact rebuilds artifact/ and artifact.zip with the new analysis scripts, the pathwise decoder, results/*.csv, and README_artifact.md updated (70B named by repository and revision; mirror named as a mirror of the Meta release); manifest verified; anonymity scan clean; hf_cache/ and output/ excluded. Evidence: build output and manifest verification.",
-      "evidence": " [16:15] figures/make_figures.py --copy-to <sub/satml/figures> built 6 figures; README_artifact.md updated; artifact build in progress."
+      "evidence": " [16:15] figures/make_figures.py --copy-to <sub/satml/figures> built 6 figures; README_artifact.md updated; artifact build in progress. [19:30] scripts/build_artifact.sh artifact -> manifest verified, artifact.zip rebuilt with all phase-2 results and scripts (hf_cache excluded)."
     }
   ]
 }

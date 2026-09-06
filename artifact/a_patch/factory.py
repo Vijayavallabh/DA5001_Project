@@ -22,7 +22,9 @@ from transformers.generation.stopping_criteria import (
 )
 
 from .tokenizer import init_tokenizer
+from .bank import bucket_step
 from .loader import _is_bitsandbytes_available, _build_quantization_config
+from .pathwise import solve_theta_pathwise
 
 
 class AnchoredDecodingFactory:
@@ -40,6 +42,8 @@ class AnchoredDecodingFactory:
         use_prefix_debt: bool = True,
         prefix_n: int = 5,
         log_kl_stats: bool = False,
+        constraint: str = "kl",
+        bank_cap: Optional[float] = None,
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
         device_map: str = "auto",
@@ -47,8 +51,12 @@ class AnchoredDecodingFactory:
         max_memory: Optional[dict] = None,
         load_in_4bit: bool = False,
         load_in_8bit: bool = False,
+        risky_device_map=None,
         **kwargs,
     ):
+        """risky_device_map (feat-017): with two or more visible GPUs the risky model is normally pinned to cuda:0 and the
+        anchor to cuda:1; pass risky_device_map='auto' (with max_memory, e.g. {0: '72GiB', 1: '64GiB'}) to shard a
+        large risky model across the visible GPUs while the anchor stays on cuda:1."""
         if use_prefix_debt:
             assert (
                 prefix_n is not None
@@ -91,6 +99,9 @@ class AnchoredDecodingFactory:
                 device_map={"": 1},
                 **kwargs,
             )
+            if risky_device_map is not None:
+                risky_load["device_map"] = risky_device_map
+                risky_load["max_memory"] = max_memory
             if quantization_config is not None:
                 risky_load["quantization_config"] = quantization_config
                 safe_load["quantization_config"] = quantization_config
@@ -128,6 +139,13 @@ class AnchoredDecodingFactory:
             risky_model = AutoModelForCausalLM.from_pretrained(
                 risky_model_path, **risky_load
             )
+            dm = getattr(risky_model, "hf_device_map", None)
+            if dm:
+                from collections import Counter
+                placement = Counter(str(v) for v in dm.values())
+                print(f"[INFO] risky model device map: {dict(placement)}", flush=True)
+                if any(str(v) in ("cpu", "disk") for v in dm.values()):
+                    warnings.warn("risky model has layers offloaded to CPU/disk; raise max_memory (throughput will collapse)", RuntimeWarning)
 
         target_vocab = len(tokenizer)
         if safe_model.get_input_embeddings().weight.shape[0] != target_vocab:
@@ -160,6 +178,8 @@ class AnchoredDecodingFactory:
             use_prefix_debt=use_prefix_debt,
             prefix_n=prefix_n,
             log_kl_stats=log_kl_stats,
+            constraint=constraint,
+            bank_cap=bank_cap,
             device=device,
         )
 
@@ -172,6 +192,8 @@ class AnchoredDecodingFactory:
         use_prefix_debt: bool = True,
         prefix_n: int = 5,
         log_kl_stats: bool = False,
+        constraint: str = "kl",
+        bank_cap: Optional[float] = None,
         verbose: bool = False,
         device: Optional[torch.device] = None,
         eps_kl: float = 1e-4,
@@ -201,6 +223,9 @@ class AnchoredDecodingFactory:
 
         self.log_kl_stats = log_kl_stats
         self.kl_stats_history = []
+        assert constraint in ("kl", "pathwise"), f"constraint must be 'kl' or 'pathwise', got {constraint!r}"
+        self.bank_cap = bank_cap  # feat-021: token-bucket depth; None = the unbounded bank of He et al.
+        self.constraint = constraint  # feat-019: 'pathwise' budgets the realised log-ratio (Delta_max-NAF); 'kl' is He et al.'s decoder
 
     def get_kl_stats_summary(self) -> dict:
         if not hasattr(self, "kl_stats_history") or not self.kl_stats_history:
@@ -238,6 +263,7 @@ class AnchoredDecodingFactory:
 
         final_cum = _as_list(last.get("cum_kl_spent", last.get("cumklspent", None)), default=0.0)
         final_budget = _as_list(last.get("budget_so_far", last.get("budgetsofar", None)), default=0.0)
+        final_ratio = _as_list(last.get("cum_realised_ratio", None), default=0.0)
 
         n = max(len(final_cum), len(final_budget))
         if len(final_cum) < n:
@@ -259,6 +285,7 @@ class AnchoredDecodingFactory:
             "final_cum_kl_spent_per_seq": [float(x) for x in final_cum],
             "final_budget_per_seq": [float(x) for x in final_budget],
             "budget_utilization_per_seq": [float(x) for x in budget_util],
+            "final_realised_ratio_per_seq": [float(x) for x in final_ratio],
         }
 
     @torch.no_grad()
@@ -477,6 +504,16 @@ class AnchoredDecodingFactory:
         )
         return bc, bd, log_pc, log_pd
 
+    def _solve_pathwise(self, safe_logits: torch.Tensor, risky_logits: torch.Tensor, k_t: torch.Tensor):
+        """feat-019: largest theta with max_v log p_theta(v)/p_s(v) <= k_t (see a_patch/pathwise.py)."""
+        log_pd = F.log_softmax(risky_logits.float(), dim=-1)
+        log_pc = F.log_softmax(safe_logits.float(), dim=-1)
+        k_t = torch.as_tensor(k_t, device=log_pc.device, dtype=torch.float32).view(-1)
+        theta = solve_theta_pathwise(log_pc, log_pd, k_t)
+        w_d = theta.view(-1, 1)
+        w_c = 1.0 - w_d
+        return w_c, w_d, log_pc, log_pd
+
     def _get_logp_from_weights(
         self,
         bc: torch.Tensor,
@@ -643,12 +680,10 @@ class AnchoredDecodingFactory:
         show_progress: bool = False,
         **model_kwargs: Any,
     ) -> GenerateDecoderOnlyOutput:
-        if k_radius not in (0.0, -1.0):
-            if logits_processor is not None and len(logits_processor) > 0:
-                raise ValueError("Anchored raw-anchor guarantee does not allow logits processors before the KL solve.")
-            if logits_warper is not None and len(logits_warper) > 0:
-                raise ValueError("Anchored raw-anchor guarantee does not allow logits warpers before the KL solve.")
-
+        # Temperature and repetition penalty are applied to BOTH logit vectors before the KL solve (He et al., App. B), so the
+        # budget is charged against the warped anchor p_s^(tau, rho); the certificate is relative to that anchor (feat-022).
+        # Until 2026-09-06 this method refused any processor or warper under a budget, which made the authors' book settings
+        # (tau = 0.7, penalty 1.1) impossible to audit.
         if k_radius not in (0.0, -1.0) and not do_sample:
             raise ValueError("Anchored Decoding guarantees apply to sampling from the fused distribution, not greedy argmax decoding. Set do_sample=True.")
         if post_hoc_logits_warper:
@@ -683,6 +718,7 @@ class AnchoredDecodingFactory:
             print(f"Starting generation with prompt length {prompt_len} tokens.")
 
         cum_kl_spent = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
+        cum_ratio = torch.zeros(batch_size, device=self.device, dtype=torch.float32)  # realised cumulative log-ratio R_t (L(y) so far)
         eps_kl = self.eps_kl
 
         if self.use_prefix_debt:
@@ -726,6 +762,7 @@ class AnchoredDecodingFactory:
 
             prefix_debt = self._compute_prefix_debt_fast(c_lp, d_lp, input_ids, attention_mask, self.prefix_n)
             init_budget_tensor = -prefix_debt.to(torch.float32)
+            bank = init_budget_tensor.clone()
             if self.verbose:
                 print(f"[INFO] Using prefix debt True with prefix_n={self.prefix_n}")
                 print(f"[INFO] Prefix debt: {prefix_debt.tolist()}")
@@ -742,6 +779,7 @@ class AnchoredDecodingFactory:
                 risky_logits, risky_past_key_values = self.forward_direct(self.risky_model, input_ids, attention_mask, None)
 
             init_budget_tensor = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
+            bank = init_budget_tensor.clone()
 
         use_precomputed_logits = True
 
@@ -820,9 +858,16 @@ class AnchoredDecodingFactory:
                 log_pd = F.log_softmax(risky_logits.float(), dim=-1)
             else:
                 budget_so_far = (float(t_gen + 1) * float(k_radius)) + init_budget_tensor
-                remaining = (budget_so_far - cum_kl_spent).clamp(min=0.0)
+                charged = cum_ratio if self.constraint == "pathwise" else cum_kl_spent
+                if self.bank_cap is not None:  # feat-021: capped token bucket (a_patch/bank.py)
+                    bank, remaining = bucket_step(bank, k_radius, self.bank_cap)
+                else:
+                    remaining = (budget_so_far - charged).clamp(min=0.0)
                 k_t = remaining * unfinished_sequences.float()
-                bc, bd, log_pc, log_pd = self.solve_optimization_newton(safe_logits, risky_logits, k_t)
+                if self.constraint == "pathwise":
+                    bc, bd, log_pc, log_pd = self._solve_pathwise(safe_logits, risky_logits, k_t)
+                else:
+                    bc, bd, log_pc, log_pd = self.solve_optimization_newton(safe_logits, risky_logits, k_t)
 
             log_p, log_pc, next_token_logits = self._get_logp_from_weights(bc, bd, log_pc, log_pd)
             log_pc_realized = log_pc
@@ -837,17 +882,30 @@ class AnchoredDecodingFactory:
                     warnings.warn(f"KL constraint exceeded by {max_violation:.6f} (eps={eps_kl}). max(KL)={kl_step[mask].max().item():.6f}, max(k_t)={k_t[mask].max().item():.6f}", RuntimeWarning)
                 cum_kl_spent = cum_kl_spent + kl_step * unfinished_sequences.float()
 
+            probs = log_p.exp()
+            if k_radius not in (0.0, -1.0) or do_sample:
+                next_tokens = torch.multinomial(probs, 1).squeeze(1)
+            else:
+                next_tokens = torch.argmax(log_p, dim=-1)
+
+            # feat-019/020: per-step log-ratio statistics of the served distribution against the anchor
+            ratio_all = torch.nan_to_num(log_p - log_pc, nan=0.0, posinf=0.0, neginf=0.0)
+            m_step = ratio_all.max(dim=-1).values.float()
+            mean_ratio = (probs * ratio_all).sum(dim=-1)
+            var_step = ((probs * ratio_all * ratio_all).sum(dim=-1) - mean_ratio * mean_ratio).clamp_min(0.0).float()
+            r_step = ratio_all.gather(1, next_tokens.unsqueeze(1)).squeeze(1).float()
+            if k_radius not in (0.0, -1.0) and self.constraint == "pathwise":
+                mask_pw = unfinished_sequences.bool()
+                over = (r_step[mask_pw] - k_t[mask_pw]).max().item() if mask_pw.any() else 0.0
+                if over > eps_kl:
+                    warnings.warn(f"pathwise constraint exceeded by {over:.6f} (eps={eps_kl})", RuntimeWarning)
+            cum_ratio = cum_ratio + r_step * unfinished_sequences.float()
+            if self.bank_cap is not None and k_radius not in (0.0, -1.0):
+                bank = bank - (r_step if self.constraint == "pathwise" else kl_step) * unfinished_sequences.float()
+
             if self.log_kl_stats:
                 kl_to_safe = self._safe_kl_terms(log_p, log_pc).float()
                 kl_to_risky = self._safe_kl_terms(log_p, log_pd).float()
-
-                probs = log_p.exp()
-                if k_radius not in (0.0, -1.0):
-                    next_tokens = torch.multinomial(probs, 1).squeeze(1)
-                elif do_sample:
-                    next_tokens = torch.multinomial(probs, 1).squeeze(1)
-                else:
-                    next_tokens = torch.argmax(log_p, dim=-1)
 
                 sampled_token_ids = next_tokens.detach().cpu().tolist()
                 sampled_tokens = [self.tokenizer.decode([tok_id], skip_special_tokens=False) for tok_id in sampled_token_ids]
@@ -872,6 +930,12 @@ class AnchoredDecodingFactory:
                     "p_s_prob": p_s_prob,
                     "p_risky_prob": p_risky_prob,
                     "lambda": None,
+                    "r_t": r_step.detach().cpu().tolist(),
+                    "m_t": m_step.detach().cpu().tolist(),
+                    "var_ratio": var_step.detach().cpu().tolist(),
+                    "cum_realised_ratio": cum_ratio.detach().cpu().tolist(),
+                    "constraint": self.constraint,
+                    "bank_cap": self.bank_cap,
                     "prefix_debt": prefix_debt.detach().cpu().tolist() if self.use_prefix_debt else [0.0] * B,
                     "init_budget_tensor": init_budget_tensor.detach().cpu().tolist() if isinstance(init_budget_tensor, torch.Tensor) else [init_budget_tensor] * B,
                 })

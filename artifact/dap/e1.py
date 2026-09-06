@@ -58,6 +58,9 @@ class AuditConfig:
     use_chat_template: bool = False
     skip_existing: bool = False
     greedy: bool = False
+    risky_device_map: str = ""  # feat-017: 'auto' shards a large risky model across the visible GPUs
+    max_memory: str = ""  # feat-017: e.g. '0=72GiB,1=64GiB'
+    constraint: str = "kl"  # feat-019: 'kl' (He et al.) or 'pathwise' (max-divergence budget on the realised log-ratio)
 
     @property
     def num_hypotheses(self) -> int:
@@ -88,12 +91,15 @@ class H1AuditRunner:
             use_prefix_debt=config.use_prefix_debt,
             prefix_n=config.prefix_n,
             log_kl_stats=True,
+            constraint=config.constraint,
             device=config.device,
             dtype=dtype,
             device_map=config.device_map,
             trust_remote_code=config.trust_remote_code,
             load_in_4bit=config.load_in_4bit,
             load_in_8bit=config.load_in_8bit,
+            risky_device_map=(config.risky_device_map or None),
+            max_memory=({int(a): b for a, b in (kv.split("=") for kv in config.max_memory.split(","))} if config.max_memory else None),
             token=os.getenv("HF_TOKEN"),
         )
         self.tokenizer = self.factory.tokenizer
@@ -155,6 +161,7 @@ class H1AuditRunner:
         final_cum_raw = stats.get("final_cum_kl_spent_per_seq") or [0.0] * len(batch_jobs)
         final_budget_raw = stats.get("final_budget_per_seq") or [0.0] * len(batch_jobs)
         budget_util_raw = stats.get("budget_utilization_per_seq") or [0.0] * len(batch_jobs)
+        final_ratio_raw = stats.get("final_realised_ratio_per_seq") or [0.0] * len(batch_jobs)
 
         batch_texts = [job["prompt"].prompt_text for job in batch_jobs]
         enc = self.tokenizer(batch_texts, return_tensors="pt", padding=True)
@@ -174,6 +181,7 @@ class H1AuditRunner:
             final_cum_spend = float(final_cum_raw[i])
             final_budget = float(final_budget_raw[i])
             budget_utilization = float(budget_util_raw[i])
+            final_ratio = float(final_ratio_raw[i]) if i < len(final_ratio_raw) else 0.0
             gen_len = len(gen_ids)
 
             true_prefix_debt = None
@@ -215,6 +223,9 @@ class H1AuditRunner:
                         "p_risky_prob": float(step["p_risky_prob"][i]) if "p_risky_prob" in step and i < len(step["p_risky_prob"]) else None,
                         "bc": float(step["bc"][i]) if "bc" in step and i < len(step["bc"]) else None,
                         "bd": float(step["bd"][i]) if "bd" in step and i < len(step["bd"]) else None,
+                        "r_t": float(step["r_t"][i]) if "r_t" in step and i < len(step["r_t"]) else None,
+                        "m_t": float(step["m_t"][i]) if "m_t" in step and i < len(step["m_t"]) else None,
+                        "var_ratio": float(step["var_ratio"][i]) if "var_ratio" in step and i < len(step["var_ratio"]) else None,
                     }
                     per_step_log.append(rec)
 
@@ -236,6 +247,7 @@ class H1AuditRunner:
                     "seed": seed,
                     "trajectory_id": trajectory_id,
                     "chat_template": self.config.use_chat_template,
+                    "constraint": self.config.constraint,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 },
                 "prefix_analysis": {
@@ -257,7 +269,9 @@ class H1AuditRunner:
                     "final_budget": final_budget,
                     "budget_utilization": budget_utilization,
                     "utilisation": utilisation,
-                    "invariant_ok": bool(final_cum_spend <= max(0.0, final_budget) + 1e-3),
+                    "total_realised_ratio": final_ratio,
+                    "ratio_invariant_ok": bool(final_ratio <= max(0.0, final_budget) + 1e-3),
+                    "invariant_ok": bool(final_ratio <= max(0.0, final_budget) + 1e-3) if self.config.constraint == "pathwise" else bool(final_cum_spend <= max(0.0, final_budget) + 1e-3),
                     "steps_forced_safe": steps_forced,
                     "steps_active": len(bd_i) - steps_forced - steps_free,
                     "steps_risky_unchanged": steps_free,
@@ -450,6 +464,9 @@ def parse_args() -> AuditConfig:
     p.add_argument("--greedy", action="store_true", help="argmax decoding; only valid for the baselines k in {-1, 0} (feat-008 extraction check)")
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--length-bucket-width", type=int, default=32)
+    p.add_argument("--risky-device-map", default="", help="feat-017: 'auto' to shard a large risky model across the visible GPUs (anchor stays on cuda:1)")
+    p.add_argument("--max-memory", default="", help="feat-017: per-device caps for the sharded risky model, e.g. '0=72GiB,1=64GiB'")
+    p.add_argument("--constraint", choices=["kl", "pathwise"], default="kl", help="feat-019: budget the KL spend (He et al.) or the realised log-ratio (pathwise, Delta_max-NAF)")
     args = p.parse_args()
 
     if args.num_classes != len(CLASS_ORDER):
@@ -476,6 +493,7 @@ def parse_args() -> AuditConfig:
         cap_attack_train=args.cap_attack_train, cap_factual=args.cap_factual, cap_creative=args.cap_creative,
         resume_from_trajectories=args.resume_from_trajectories,
         use_chat_template=args.use_chat_template, skip_existing=args.skip_existing, greedy=args.greedy,
+        constraint=args.constraint, risky_device_map=args.risky_device_map, max_memory=args.max_memory,
     )
 
 

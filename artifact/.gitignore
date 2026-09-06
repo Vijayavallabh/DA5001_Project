@@ -11,3 +11,4 @@ output/
 .claude-private
 artifact.zip
 claude-me
+hf_cache/
