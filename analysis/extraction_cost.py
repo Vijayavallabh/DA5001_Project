@@ -24,7 +24,7 @@ from recipes.finetune_memorizing import join  # noqa: E402
 def window_surprisals(model, tok, ids, seed_tokens, L, device):
     x = torch.tensor([ids], device=device)
     logp = torch.log_softmax(model(x).logits[0, :-1].float(), dim=-1)
-    s = -logp.gather(1, x[0, 1:].unsqueeze(1)).squeeze(1)[seed_tokens - 1:].tolist()  # surprisal of each target token
+    s = (-logp.gather(1, x[0, 1:].unsqueeze(1)).squeeze(1)[seed_tokens - 1:]).tolist()  # surprisal of each target token
     return [sum(s[w * L:(w + 1) * L]) for w in range(math.ceil(len(s) / L))]
 
 
