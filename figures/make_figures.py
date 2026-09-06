@@ -76,6 +76,9 @@ def main():
         from analysis import bank_burst  # noqa: F401  (its plot lives in main; regenerate via the script if needed)
         made.append("(bank_burst.pdf: regenerate with analysis/bank_burst.py)")
 
+    for extra in ("natural_memorisation.pdf", "budget_path.pdf"):  # phase 2: built by analysis/natural_memorisation.py and analysis/budget_path.py
+        if (OUT / extra).exists():
+            made.append(extra)
     if args.copy_to:
         os.makedirs(args.copy_to, exist_ok=True)
         for f in made:
