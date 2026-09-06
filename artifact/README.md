@@ -26,7 +26,9 @@ Attacks: `memorizing_model_recall.csv`, `composition.csv`, `composition_summary.
 70B natural memorisation: `natural_memorisation.csv`, `composition_70b.csv`.
 Accounting across queries: `odometer.csv`, `odometer_per_passage.csv`, `bank_cap.csv`, `burst_audit.csv`.
 
-Every experiment reporting a copying or spend metric at some `k` also has `k = -1` (risky model alone) and `k = 0` (anchor alone) rows on the same prompts and seeds. A budget violation is per-trajectory (`Z > max(0,B) + 1e-3`, or `R_T` under pathwise accounting); `analysis/recheck_violations.py` recomputes it from any per-query log. Across every run in this artifact the count is zero.
+Every experiment reporting a copying or spend metric at some `k` also has `k = -1` (risky model alone) and `k = 0` (anchor alone) rows on the same prompts and seeds. A budget violation is per-trajectory (`Z > max(0,B) + 1e-3`, or `R_T` under pathwise accounting); `analysis/recheck_violations.py` recomputes it from any per-query log. Across every run in this artifact the count is zero **under the rule the run enforced**.
+
+One column needs a word of explanation. In `composition_8b_pathwise.csv` and the pathwise rows of `composition_70b.csv`, `invariant_violations` counts queries whose *KL* spend left the budget (`Z > max{0,B}`): 146 of 23,844 for the 8B model (144 at `k=1`, 2 at `k=3`) and none for the 70B model. The pathwise decoder does not bound `Z` and is not meant to; it bounds the realised log-ratio `R`, which stayed within budget in every one of those queries, and the paper reports the KL excursion (it reaches `1.12K` at `k=1`). Recompute either rule with `analysis/recheck_violations.py --queries <run>/queries.jsonl --constraint pathwise`. For the KL runs the column means what it says.
 
 ## Reproduction
 
