@@ -2,11 +2,14 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-06 23:19
-**Active Feature:** none. **Phase 1 and phase 2 are both complete** — feat-001..009, 013..015 and 017..027 are `done` with evidence; feat-012 is superseded by feat-024; feat-010/011 stay optional and unstarted; feat-016 is the human-only submission step. Nothing is running and the GPUs are released.
-**Artefacts:** manuscript `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (18 pages, body ends page 12, 0 overfull, 0 `??`, 125 cited of 128) with the checkpoint copy `satml_2027_phase2_2026-09-06.pdf`; artifact `artifact/` (179 files + `MANIFEST.sha256`) and `artifact.zip` (23 MB).
-**Deadline clock:** abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE) — all three are human-only steps.
-**Verification for a fresh session:** `./init.sh` (30 tests) and the manuscript compile check in `AGENTS.md`. Read the log below from the bottom: entries are appended, so the phase-1 sections that follow are history, not the current plan.
+**Last Updated:** 2026-09-07 02:15
+**Active Feature:** none. **Phases 1 and 2 are complete; phase 3 is planned and unstarted.** feat-001..009, 013..015 and 017..027 are `done`; feat-012 is superseded by feat-024; feat-010/011 stay optional; feat-016 is human-only. **feat-028..034 are new and `not-started`** (plan v3).
+**Plan:** `~/sub/satml/IMPROVEMENT_PLAN.md` is now **version 3 (2026-09-07)**; v2 archived as `IMPROVEMENT_PLAN_v2_2026-09-06.md`, v1 as `IMPROVEMENT_PLAN_v1_2026-09-05.md`. v3 attacks *significance*, not rigour: a second anchor, a real utility evaluation, Proposition 5, the prefix-debt promotion, length scaling, an optional second mechanism.
+**Venue: SaTML 2027 only.** ICLR 2027 closes first (abstract Sep 18, paper Sep 25 AoE) and both CFPs bar parallel archival submission; the SaTML HotCRP form asks whether the paper is under review elsewhere, and both venues decide Dec 16, so neither can inform the other. The ICLR-format derivative (`iclr_2027.tex`) is drafted after Oct 2 for ICML 2027 (abstract ~Jan 16 2027 per aggregators — confirm against the official CFP).
+**Artefacts:** manuscript `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (18 pages, body ends page 12, 0 overfull, 0 `??`); `references.bib` at **138 entries** (10 added and verified 2026-09-07); artifact v2 `artifact/` (179 files + `MANIFEST.sha256`) and `artifact.zip` (23 MB) — **artifact v3 is not built yet** (feat-034).
+**Deadline clock:** **Sep 20 = every headline number frozen** · abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE). The last three are human-only.
+**Compute:** 19.5 GPU-hours planned across feat-028..033 (phase 2 was 54.24). At 02:00 on 2026-09-07 `nvidia-smi` showed GPUs 1, 2 and 4 at 100% under other users and only GPU 0 free; plan v3 Section 5 gives the degradation path for 3, 2, 1 and 0 free cards.
+**Verification for a fresh session:** `./init.sh` (30 tests, 34 features) and the manuscript compile check in `AGENTS.md`. Read the log below from the bottom: entries are appended, so the phase-1 sections that follow are history, not the current plan.
 
 ## Status
 
@@ -31,11 +34,20 @@
 
 ### What's Next
 
-*(rewritten 2026-09-06 23:19; the phase-1 list it replaced is finished.)*
+*(rewritten 2026-09-07 02:15; the "nothing for the agent" list it replaced was correct for plan v2 and is superseded.)*
 
-1. Nothing for the agent. Every automatable feature is `done`; feat-016 is human-only (registration Sep 22, paper Sep 29, artifact repository Oct 2) and must not be attempted.
-2. Optional polish only, and only if it does not disturb the frozen manuscript or artifact: a fresh-eyes proofread of Sections VI-E, VI-F and VII, a hallucinator rerun (the cited set of 125 entries is unchanged since the 02:50 check), feat-010 (bank-and-burst; needs a risky model that both memorises and follows instructions — the 70B base is now cached, so it is testable in principle) and feat-011 (format-evasion prompts).
-3. After any edit under `~/sub/satml/`: recompile, then confirm 0 `??`, 0 overfull and that page 13 still starts with "Open Science". After any change under `results/`, `analysis/` or `a_patch/`: rerun `./init.sh` and `scripts/build_artifact.sh artifact`.
+1. **feat-028a** — download `common-pile/comma-v0.1-2t` (7B, Apache 2.0, ungated, ~14 GB) into `hf_cache/` (decision D1) and compute its per-token surprisal of the 758 CopyBench passages and the 58 candidates. ~1 GPU-h on 1 card. This is the cheapest answer to the loudest objection in the paper ("your vacuity result is about a weak 1.8B anchor").
+2. **Tokenizer check before feat-028b.** `comma-v0.1-2t` is Llama-*style* but its vocabulary is probably not Llama-3's, and anchored decoding needs a shared vocabulary with the risky model (TinyComma was retokenized precisely for this). If it does not match, record the mismatch and ship feat-028a alone.
+3. **feat-033** (0.5 GPU-h) and **feat-031** (no GPU) can run at any time; feat-031 is the highest value per GPU-hour in the plan.
+4. **feat-029** (6 GPU-h) replaces the self-NLL utility proxy; **feat-032** needs 2 cards for the 70B; **feat-030** is optional and the first to cut.
+5. After any edit under `~/sub/satml/`: recompile, then confirm 0 `??`, 0 overfull and that page 13 still starts with "Open Science". After any change under `results/`, `analysis/` or `a_patch/`: rerun `./init.sh` and `scripts/build_artifact.sh artifact`.
+6. Never start feat-016 (human-only: registration Sep 22, paper Sep 29, artifact repository Oct 2).
+
+### Phase 3 log
+
+- [x] 2026-09-07 02:00-02:15 — plan v3 written. Archived v2 (`cp -n IMPROVEMENT_PLAN.md IMPROVEMENT_PLAN_v2_2026-09-06.md`); wrote `IMPROVEMENT_PLAN.md` v3 (432 lines, Sections 0-11). Venue question settled against the two CFPs: ICLR 2027 abstract Sep 18 / paper Sep 25, SaTML Sep 22 / Sep 29, both decide Dec 16, both bar parallel submission -> SaTML only this cycle.
+- [x] 2026-09-07 — literature pass. Ten additions verified against the arXiv API (10 requested, 10 returned, 0 missing; `/tmp/bibcheck/arxiv.json`), venues cross-checked on DBLP: `li2024va3` (CVPR 2024 — **the composition attack's uncited ancestor**), `kim2025guaranteed` (ICLR 2025), `mudgal2024controlled` (ICML 2024), `loula2025smc` (ICLR 2025), `ahmed2024resampling` (ICLR 2025), `yoon2026position` (ICML 2026 Position Track), and four preprints with no venue asserted (`ahmed2025semantic`, `morris2025memorize`, `alshehyari2026copyshield`, `yu2025impossibility`). Written to `bib_additions_2026-09-07.bib`, appended to `references.bib` (128 -> 138, no key collisions, brace-balance parse clean). `LITERATURE_REVIEW.md` extended with sections M-Q, a "considered and not added" note (Saha TPDP 2026 could not be verified, so it is not cited) and a verification log.
+- [x] 2026-09-07 — harness updated: feat-028..034 added to `feature_list.json` (34 features); `init.sh` and `AGENTS.md` no longer say "both phases complete". `./init.sh` exit 0, 30 tests pass. Manuscript recompiled unchanged: 0 overfull, 0 `??`, 18 pages.
 
 ## GOAL COMPLETE (2026-09-05)
 
