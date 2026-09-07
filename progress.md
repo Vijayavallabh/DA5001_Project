@@ -444,3 +444,55 @@ Harness: `./init.sh` passes, 53 tests (47 + 6 new). `recipes/finetune_memorizing
 `--no-chat` so a base model with no chat template (comma-7b, the 70B base) is not fed wrap_chat's
 Llama-3 fallback, whose header tokens are absent from a 64k Common Pile vocabulary.
 `scripts/download_safe_models.py` fetches the ten safe models (~40 GB, all ungated).
+
+**feat-038 the second anchor is not blocked after all** — `a_patch/factory.py`. The wall recorded
+against feat-028b was diagnosed as 64,000 vs 128,256, but that is not what stopped fusion. The
+guard at `from_pretrained` demanded `embedding rows == len(tokenizer)`; comma-7b has 64,000 tokens
+and 64,256 rows, i.e. padding to a multiple of 128, which most families outside Llama-3 do. Now
+both models must share one table width and be at least as wide as the tokenizer, and the untrained
+pad rows are driven to -inf by `_mask_pad_rows` before the divergence solve, so they enter neither
+Z(theta), the KL, the max log-ratio, nor the sample. No-op on Llama-3.
+`tests/test_padded_vocab.py` (5 tests). Regression check: the documented GPU smoke test on the
+original Llama-3 pair still gives 24 trajectories, 0 violations.
+
+**A second complete (anchor, risky) pair at 7B.** `recipes/finetune_memorizing.py --no-chat` on
+`common-pile/comma-v0.1-2t` -> `output/phase4/memorizing_comma7b` (12 epochs, final loss 0.0313,
+1.25 GPU-h). Greedy check on training excerpts: nv-recall 0.915, LCS 46.1 words, >=0.8 in 22/24.
+Held-out control, test split at k=-1: nv-recall **0.000**, LCS 2.1-3.0 words, so the split is
+genuinely held out exactly as for the 8B memoriser. Unconstrained recall on the attack split is
+0.719 single / 0.943 oracle L=20, a stronger memoriser than the 8B (0.4921 / 0.8826).
+This pair is cleaner than the paper's: anchor and risky differ ONLY by the memorisation fine-tune,
+so memorisation is the single controlled variable.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python recipes/finetune_memorizing.py --base common-pile/comma-v0.1-2t \
+      --tokenizer common-pile/comma-v0.1-2t --no-chat --out output/phase4/memorizing_comma7b
+
+**feat-039 the uncertified protection is an opening effect** — `analysis/opening_effect.py` ->
+`results/opening_effect{,_tinycomma18b,_pleias3b,_kl3m37b}.csv` (+ `_summary`). 758 passages,
+four anchors, three corpora, ~0.1 GPU-h each.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/opening_effect.py --model <anchor> --out results --tag <tag>
+
+  The Lindley running maximum binds at token 0 in 87.7-90.5% of works and within the first 10% of
+  the work in 97.5%. So the interval [s(x), k_crit(x)) -- protection the mechanism delivers and the
+  certificate cannot express -- is 4.25-6.10x wide on the whole work but collapses to 1.32-1.48x
+  once the adversary supplies a SINGLE token of genuine prefix, and stays there for 5, 10 and 20:
+
+      anchor                binds@0   whole work   skip 1 tok   skip 10 tok
+      comma-v0.1-2t           89.6%      6.10x        1.36x        1.35x
+      Pleias-3b               90.5%      5.23x        1.36x        1.30x
+      kl3m-003-3.7b           87.7%      4.25x        1.48x        1.47x
+      tinycomma-1.8b          90.2%      5.04x        1.32x        1.32x
+
+  This is the mechanism behind a gap the audit measured and did not explain: oracle-prefix recall
+  0.2301 against single-query 0.0925 at k=5 on the 8B memoriser. It also unifies the prefix debt
+  with Proposition 4 -- delta_init taxes the prompt and the running maximum binds at the opening,
+  so both are the same phenomenon, and an adversary who owns the prefix defeats both.
+  Do NOT quote the whole-work 6.10x without the skip-1 figure beside it; on its own it overstates
+  the uncertified interval by more than 4x against any prefix-supplying adversary.
+
+Paired significance of the scaling law (`results/anchor_scaling_paired.csv`, computed by
+`paired_trend` in `analysis/anchor_scaling.py`): every model scores the same 16 novels and the same
+300 ordinary generations, so the test is paired. The margin rises for **16/16 novels in all three
+corpus families**, exact two-sided sign test p = 3.05e-05 each, median lift 1.21-1.23x. An unpaired
+bootstrap over novels gives overlapping intervals and hides a universal effect; do not use it.
