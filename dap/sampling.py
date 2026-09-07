@@ -23,7 +23,11 @@ def _quartile_bucket(value: float, cuts: List[float]) -> int:
 
 
 def stratified_attack_sample(prompts: List[PromptRecord], target_n: int) -> List[PromptRecord]:
+    if target_n <= 0:            # a cap of 0 means "none of this class", not a quartile of nothing
+        return []
     with_debt = [p for p in prompts if p.debt_init_estimated is not None]
+    if not with_debt:
+        return sorted(prompts, key=_stable_sort_key)[:target_n]
     without_debt = [p for p in prompts if p.debt_init_estimated is None]
     if len(with_debt) < target_n:
         return sorted(with_debt + without_debt, key=_stable_sort_key)[:target_n]
