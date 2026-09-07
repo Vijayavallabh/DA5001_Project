@@ -496,3 +496,62 @@ Paired significance of the scaling law (`results/anchor_scaling_paired.csv`, com
 300 ordinary generations, so the test is paired. The margin rises for **16/16 novels in all three
 corpus families**, exact two-sided sign test p = 3.05e-05 each, median lift 1.21-1.23x. An unpaired
 bootstrap over novels gives overlapping intervals and hides a universal effect; do not use it.
+
+**feat-040/041 the Rényi family, and the budget as a non-sufficient statistic.**
+`a_patch/renyi.py` adds `--constraint renyi[:alpha]`, wired into `a_patch/factory.py` at the four
+dispatch sites. On the geometric path
+`D_alpha(p_theta || p_s) = [log Z(alpha*theta) - alpha*log Z(theta)] / (alpha - 1)`, whose
+alpha -> 1 limit is the KL charge of He et al. and whose alpha -> inf limit is the max log-ratio,
+so one bisection spans both published accounting rules.
+
+  Correctness. At alpha=1 the new solver reproduces the Newton KL decoder **byte-for-byte**:
+  24/24 identical generations, max spend difference 6.1e-05 nats. On the attack it reproduces the
+  published numbers to three decimals (single/oracle at k=3,5: 0.012/0.097/0.092/0.230 against the
+  committed 0.0116/0.0965/0.0925/0.2301). On ordinary prompts the `renyi:1.0` and `kl` arms agree
+  to every decimal (94.03% risky-unchanged, 0.36% active, distinct-3 0.9910).
+
+  **Proposition 1, proved in `~/sub/satml/sections/frontier.tex`:** the tightest event bound a
+  budget K implies is vacuous exactly when K >= S(x), for EVERY order alpha in [1, inf]. Raising
+  alpha tightens the bound below the threshold (at S=200, K=100: 0.50 at alpha=1 to e^-100 at
+  alpha=inf) and does not move it. So strengthening the accounting cannot repair vacuity; only a
+  smaller k can. The Renyi-to-probability conversion the proof uses was checked against 40,000
+  random distribution pairs at five orders: no counterexample, tight to 1e-15.
+  Pinned by `tests/test_regimes.py`; `analysis/regimes.py:event_bound` is the closed form.
+
+  **The measured consequence** (`results/renyi_sweep.csv`, `results/renyi_price.csv`, both from
+  `analysis/renyi_sweep.py`). At k=3 the certificate is vacuous for 100% of the 758 passages under
+  every order, so all four decoders publish the same budget AND the same certificate:
+
+      order      single   oracle L=50 | risky unchanged   steps touched   distinct-3
+      alpha=1     0.012      0.097    |     94.0%             0.4%          0.9910
+      alpha=2     0.001      0.054    |     91.4%             2.4%          0.9924
+      alpha=4     0.000      0.004    |      ---               ---            ---
+      alpha=8     0.000      0.001    |      0.1%            90.1%          0.9872
+
+  Two orders of magnitude in protection and in price, under one published number. alpha=2 is the
+  practical point: it halves oracle recall for 2pp more intervention and no detectable diversity
+  cost (distinct-3 moves the wrong way for a cost). **alpha=8 is not free and must not be sold as
+  a tighter accounting of the same system** -- it serves the risky model unchanged at 0.1% of steps
+  instead of 94.0%, which is a different decoder.
+  Commands:
+    .venv/bin/python analysis/renyi_sweep.py --out results \
+      --price-runs 'output/phase4/util_*' --price-class all
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/composition_attack.py --risky-model output/memorizing_llama8b \
+        --constraint renyi:2 --k-values 1 3 5 --limit 100 --modes single oracle --windows 50 \
+        --out output/phase4/renyi_renyi_2
+
+**Bug fixed in passing.** `dap/sampling.py`: a cap of 0 meant "take a quartile of an empty list"
+and raised IndexError, so a workload of only the three ordinary prompt classes could not be run.
+`tests/test_sampling_caps.py` (4 tests).
+
+**Harness gotcha, twice now.** `HF_HUB_CACHE=$PWD/hf_cache` hides everything in
+`/home/sports/.cache/huggingface/hub`. Symlink models in (the pattern already used for tinycomma);
+done for the four `meta-llama/*` entries and `Qwen/Qwen2.5-7B-Instruct`. Also
+`meta-llama/Llama-3.1-8B-Instruct` has weights but **no tokenizer** locally; the `Meta-` prefixed
+duplicate has both and shard 1 is md5-identical.
+
+**Paper.** `~/sub/satml/iclr_2027.tex` compiles against the official `iclr2027_conference.sty`
+(fetched from media.iclr.cc) at 6 pages, 0 overfull, with `sections/{frontier,scaling,orders}.tex`
+and three figures from `figures/make_figures_v4.py`. ICLR limits the main text to **9 pages** at
+submission; references and appendices are free; an **AI use statement is required**.
