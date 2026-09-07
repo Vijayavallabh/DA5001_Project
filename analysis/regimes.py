@@ -65,6 +65,33 @@ def token_nats(model, tok, prefix, target, device):
     return nats.tolist(), char_offsets(tok, target, len(t_ids))
 
 
+def event_bound(S, K, alpha):
+    """Tightest bound on the served probability of an event whose safe-model surprisal is S,
+    under a budget of K in the Renyi-alpha charge. Returns 1.0 when the certificate says nothing.
+
+    alpha = 1   binary-KL inversion, max{p : d(p || e^-S) <= K}      (the KL decoder's cap)
+    alpha > 1   Mironov's RDP conversion, p <= (e^K e^-S)^((a-1)/a)
+    alpha = inf p <= e^(K-S)                                          (the Delta_max bound)
+
+    All three become vacuous at exactly K = S. Raising alpha buys a tighter bound BELOW that
+    threshold; it never moves the threshold. That is why no choice of divergence order escapes
+    vacuity -- only lowering k does, and lowering k is what costs utility.
+    """
+    if S <= K:
+        return 1.0
+    if alpha == float("inf"):
+        return math.exp(K - S)
+    if abs(alpha - 1.0) < 1e-9:
+        lo, hi, q = max(math.exp(-S), 1e-300), 1.0 - 1e-12, math.exp(-S) if S < 700 else 0.0
+        for _ in range(100):
+            mid = (lo + hi) / 2
+            d = (mid * math.log(mid / q) + (1 - mid) * math.log((1 - mid) / (1 - q))) if q > 0 \
+                else mid * S + (1 - mid) * math.log(1 - mid)
+            lo, hi = (mid, hi) if d <= K else (lo, mid)
+        return lo
+    return min(1.0, math.exp((K - S) * (alpha - 1.0) / alpha))
+
+
 def k_crit_rate(nats, chars, delta=0.0):
     """max_t (sum_{i<=t} nats_i + delta) / chars_t -- the smallest rate at which the bucket, started
     at a debt of delta, can pay for every prefix of the work. Prop. 4 in nats-per-character form."""
