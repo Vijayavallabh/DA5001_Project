@@ -59,7 +59,7 @@ Before writing code:
 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 \
   --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 \
   --output-dir output/smoke   # GPU smoke test for E1 (one A100; set CUDA_DEVICE_ORDER=PCI_BUS_ID)
-.venv/bin/python analysis/recheck_violations.py --queries output/phase2/comp8b_kl/queries.jsonl   # per-query invariant recheck
+.venv/bin/python analysis/recheck_violations.py --queries output/phase2/comp8b_kl/queries.jsonl --constraint kl   # per-query invariant recheck (--constraint is required)
 ```
 
 ```bash
