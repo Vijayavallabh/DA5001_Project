@@ -25,6 +25,8 @@ def main():
     ap.add_argument("--tokenizer", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer", help="same Llama-3 vocab; the instruct tokenizer is not cached")
     ap.add_argument("--data", default="data")
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
+    ap.add_argument("--shard", default="", help="feat-030: 'i/n' keeps every n-th passage, so two runs "
+                                                "train on disjoint halves (CP-Fuse needs this by construction)")
     ap.add_argument("--out", default="output/memorizing_llama8b")
     ap.add_argument("--epochs", type=int, default=12)
     ap.add_argument("--lr", type=float, default=2e-4)
@@ -47,6 +49,10 @@ def main():
     if tok.pad_token_id is None:
         tok.pad_token = tok.eos_token
     prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split in args.splits and p.reference]
+    if args.shard:
+        i, n = (int(x) for x in args.shard.split("/"))
+        prompts = sorted(prompts, key=lambda p: p.prompt_id)[i::n]
+        print(f"[ft] shard {args.shard}: {len(prompts)} passages", flush=True)
     texts = []
     for p in prompts:
         texts.append(join(p.prompt_text, p.reference))

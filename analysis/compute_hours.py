@@ -51,6 +51,16 @@ JOBS = [
     ("KL sweep k=5",          "output/phase2/kl_sweep_k5",       1, "birth", ""),
     ("KL sweep k=10",         "output/phase2/kl_sweep_k10",      1, "birth", ""),
     ("KL sweep k=20",         "output/phase2/kl_sweep_k20",      1, "birth", ""),
+    # phase 3 (2026-09-07)
+    ("second anchor surprisal", "output/phase3/feat028a.log",        1, "birth", "feat-028a"),
+    ("anchor control",          "output/phase3/anchor_control.log",  1, "birth", "feat-028a control"),
+    ("length scaling",          "output/phase3/feat033.log",         1, "birth", "feat-033; two passes"),
+    ("utility judge",           "output/phase3/feat029.log",         1, "birth", "feat-029; Qwen2.5-7B judge"),
+    ("prefix debt k=20 (70B)",  "output/phase3/nm/hp1_B_nodebt_k20", 2, "birth", "feat-032"),
+    ("prefix debt k=20 (8B)",   "output/phase3/prefix_ablation_k20", 1, "birth", "feat-032"),
+    ("CP-Fuse fine-tune A",     "output/phase3/cpfuse_m0",           1, "birth", "feat-030; disjoint shard 0/2"),
+    ("CP-Fuse fine-tune B",     "output/phase3/cpfuse_m1",           1, "birth", "feat-030; disjoint shard 1/2"),
+    ("CP-Fuse audit",           "output/phase3/cpfuse_audit",        1, "birth", "feat-030"),
     ("70B seed-length checks","output/phase2/nm_smoke",          2, "birth", "feat-017; nm_check* share the window"),
     ("70B audit",             "output/phase2/nm",                2, "after:70B seed-length checks", "feat-018, all sub-runs"),
 ]
