@@ -28,6 +28,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from a_patch import AnchoredDecodingFactory  # noqa: E402
+from a_patch.renyi import constraint_arg  # noqa: E402
 from dap.shared import load_prompt_corpus, true_gen_len  # noqa: E402
 from dap.stats import lcs_word, nv_recall  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
@@ -146,7 +147,7 @@ def main():
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--repetition-penalty", type=float, default=1.0, help="applied to both models before the solve, as in He et al. (their books setting: 0.7 / 1.1)")
-    ap.add_argument("--constraint", choices=["kl", "pathwise"], default="kl", help="feat-019: KL budget (He et al.) or pathwise max-divergence budget")
+    ap.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl', 'pathwise', or 'renyi[:alpha]'")
     ap.add_argument("--bank-cap", type=float, default=None, help="feat-021: token-bucket depth in nats (unset = unbounded bank)")
     ap.add_argument("--no-prefix-debt", action="store_true", help="feat-025: delta_init = 0")
     ap.add_argument("--raw-prompt", action="store_true", help="feat-018: drop the 'Complete the prefix:' instruction header and seed with the raw passage text (base models)")

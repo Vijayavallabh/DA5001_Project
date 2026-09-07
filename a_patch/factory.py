@@ -25,6 +25,7 @@ from .tokenizer import init_tokenizer
 from .bank import bucket_step
 from .loader import _is_bitsandbytes_available, _build_quantization_config
 from .pathwise import solve_theta_pathwise
+from .renyi import renyi_divergence, solve_theta_renyi
 
 
 class AnchoredDecodingFactory:
@@ -234,7 +235,17 @@ class AnchoredDecodingFactory:
 
         self.log_kl_stats = log_kl_stats
         self.kl_stats_history = []
-        assert constraint in ("kl", "pathwise"), f"constraint must be 'kl' or 'pathwise', got {constraint!r}"
+        # feat-040: 'renyi:<alpha>' charges D_alpha(p_theta || p_s), the family whose alpha -> 1 end
+        # is exactly the KL decoder of He et al. and whose alpha -> inf end is the max log-ratio.
+        # Encoding alpha in the string keeps from_pretrained's signature unchanged.
+        self.renyi_alpha = None
+        if isinstance(constraint, str) and constraint.startswith("renyi"):
+            _, _, tail = constraint.partition(":")
+            self.renyi_alpha = float(tail) if tail else 2.0
+            assert self.renyi_alpha >= 1.0, f"renyi alpha must be >= 1, got {self.renyi_alpha}"
+            constraint = "renyi"
+        assert constraint in ("kl", "pathwise", "renyi"), \
+            f"constraint must be 'kl', 'pathwise' or 'renyi[:alpha]', got {constraint!r}"
         self.bank_cap = bank_cap  # feat-021: token-bucket depth; None = the unbounded bank of He et al.
         self.constraint = constraint  # feat-019: 'pathwise' budgets the realised log-ratio (Delta_max-NAF); 'kl' is He et al.'s decoder
 
@@ -543,6 +554,15 @@ class AnchoredDecodingFactory:
         w_c = 1.0 - w_d
         return w_c, w_d, log_pc, log_pd
 
+    def _solve_renyi(self, safe_logits: torch.Tensor, risky_logits: torch.Tensor, k_t: torch.Tensor):
+        """feat-040: largest theta with D_alpha(p_theta || p_s) <= k_t (see a_patch/renyi.py)."""
+        log_pd = F.log_softmax(risky_logits.float(), dim=-1)
+        log_pc = F.log_softmax(safe_logits.float(), dim=-1)
+        k_t = torch.as_tensor(k_t, device=log_pc.device, dtype=torch.float32).view(-1)
+        theta = solve_theta_renyi(log_pc, log_pd, k_t, self.renyi_alpha)
+        w_d = theta.view(-1, 1)
+        return 1.0 - w_d, w_d, log_pc, log_pd
+
     def _get_logp_from_weights(
         self,
         bc: torch.Tensor,
@@ -747,6 +767,7 @@ class AnchoredDecodingFactory:
             print(f"Starting generation with prompt length {prompt_len} tokens.")
 
         cum_kl_spent = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
+        cum_renyi = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
         cum_ratio = torch.zeros(batch_size, device=self.device, dtype=torch.float32)  # realised cumulative log-ratio R_t (L(y) so far)
         eps_kl = self.eps_kl
 
@@ -889,7 +910,7 @@ class AnchoredDecodingFactory:
                 log_pd = F.log_softmax(risky_logits.float(), dim=-1)
             else:
                 budget_so_far = (float(t_gen + 1) * float(k_radius)) + init_budget_tensor
-                charged = cum_ratio if self.constraint == "pathwise" else cum_kl_spent
+                charged = {"pathwise": cum_ratio, "renyi": cum_renyi}.get(self.constraint, cum_kl_spent)
                 if self.bank_cap is not None:  # feat-021: capped token bucket (a_patch/bank.py)
                     bank, remaining = bucket_step(bank, k_radius, self.bank_cap)
                 else:
@@ -897,11 +918,24 @@ class AnchoredDecodingFactory:
                 k_t = remaining * unfinished_sequences.float()
                 if self.constraint == "pathwise":
                     bc, bd, log_pc, log_pd = self._solve_pathwise(safe_logits, risky_logits, k_t)
+                elif self.constraint == "renyi":
+                    bc, bd, log_pc, log_pd = self._solve_renyi(safe_logits, risky_logits, k_t)
                 else:
                     bc, bd, log_pc, log_pd = self.solve_optimization_newton(safe_logits, risky_logits, k_t)
 
             log_p, log_pc, next_token_logits = self._get_logp_from_weights(bc, bd, log_pc, log_pd)
             log_pc_realized = log_pc
+
+            renyi_step = torch.zeros((B,), device=device, dtype=torch.float32)
+            if self.constraint == "renyi" and k_radius not in (0.0, -1.0):
+                renyi_step = renyi_divergence(log_pc, log_pd, bd.view(-1), self.renyi_alpha).float()
+                rmask = unfinished_sequences.bool()
+                if rmask.any():
+                    rv = (renyi_step[rmask] - k_t[rmask]).max().item()
+                    if rv > eps_kl:
+                        warnings.warn(f"Renyi(alpha={self.renyi_alpha}) constraint exceeded by "
+                                      f"{rv:.6f} (eps={eps_kl})", RuntimeWarning)
+                cum_renyi = cum_renyi + renyi_step * unfinished_sequences.float()
 
             kl_step = torch.zeros((B,), device=device, dtype=torch.float32)
             if k_radius not in (0.0, -1.0):
@@ -932,7 +966,8 @@ class AnchoredDecodingFactory:
                     warnings.warn(f"pathwise constraint exceeded by {over:.6f} (eps={eps_kl})", RuntimeWarning)
             cum_ratio = cum_ratio + r_step * unfinished_sequences.float()
             if self.bank_cap is not None and k_radius not in (0.0, -1.0):
-                bank = bank - (r_step if self.constraint == "pathwise" else kl_step) * unfinished_sequences.float()
+                debit = {"pathwise": r_step, "renyi": renyi_step}.get(self.constraint, kl_step)
+                bank = bank - debit * unfinished_sequences.float()
 
             if self.log_kl_stats:
                 kl_to_safe = self._safe_kl_terms(log_p, log_pc).float()
