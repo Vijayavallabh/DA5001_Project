@@ -52,12 +52,14 @@ def price(a):
     import json, statistics as st
     rows = []
     for d in sorted(glob.glob(a.price_runs)):
-        f = os.path.join(d, f"trajectories_k{a.price_k:g}_{a.price_class}.jsonl")
-        if not os.path.isdir(d) or not os.path.exists(f):
+        classes = (("neutral", "factual", "creative") if a.price_class == "all"
+                   else (a.price_class,))
+        files = [os.path.join(d, f"trajectories_k{a.price_k:g}_{c}.jsonl") for c in classes]
+        if not os.path.isdir(d) or not all(os.path.exists(x) and os.path.getsize(x) for x in files):
             continue
         tot = free = active = forced = n = 0
         d3 = []
-        for line in open(f):
+        for line in (ln for x in files for ln in open(x)):
             line = line.strip()
             if not line:
                 continue
@@ -103,7 +105,7 @@ def main():
     ap.add_argument("--price-runs", default="", metavar="GLOB",
                     help="ordinary-prompt runs to price the orders, e.g. 'output/phase4/util_*'")
     ap.add_argument("--price-class", default="neutral",
-                    help="prompt class to price on; must be complete in every run being compared")
+                    help="prompt class to price on, or 'all' for the three ordinary classes; must be complete in every run being compared")
     ap.add_argument("--price-k", type=float, default=3.0)
     a = ap.parse_args()
 
