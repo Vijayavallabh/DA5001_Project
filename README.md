@@ -1,8 +1,8 @@
 # DA5001 Project — an adversarial audit of Anchored Decoding
 
 Code and results for two papers on the same mechanism: the arXiv audit *An Empirical Audit of k-NAF Budget
-Accounting for Anchored Decoding* (2605.28001) and its successor, the SaTML 2027 submission *What does a KL
-budget certify? An adversarial audit of inference-time near-access-freeness*.
+Accounting for Anchored Decoding* (2605.28001) and its successor, the SaTML 2027 submission *A KL Budget Is
+Uninformative Where the Mechanism Is Usable: An Adversarial Audit of Inference-Time Near-Access-Freeness*.
 
 The mechanism under audit is He et al.'s Anchored Decoding (arXiv 2602.07120): at each step the decoder samples
 from a geodesic between a safe "anchor" model and a risky one, spending a KL budget `K = k · T_max` that banks
@@ -13,7 +13,10 @@ reproduces text as well as the unconstrained one.
 
 Working notes for agents and collaborators live in `AGENTS.md` (the harness), `GOAL.md` (the contract),
 `progress.md` (the running log) and `session-handoff.md` (state at the end of the last session). Read `AGENTS.md`
-first. Both phases of the project are complete as of 2026-09-06; what remains is human-only submission work.
+first. All three phases are complete as of 2026-09-07; what remains is human-only submission work.
+The submission is built and verified: 21 pages with the body ending on page 12, 138 references of which
+137 are cited and every one verified, an artifact of 206 files with a checked manifest, 47 tests, and
+56.5 GPU-hours of compute accounted for job by job in `results/compute_hours.csv`.
 
 ## Setup
 
@@ -21,7 +24,7 @@ first. Both phases of the project are complete as of 2026-09-06; what remains is
 uv venv --python 3.12
 source .venv/bin/activate
 uv pip install -r requirements.txt
-./init.sh            # baseline verification: data, imports, harness files, 30 tests, entry points
+./init.sh            # baseline verification: data, imports, harness files, 47 tests, entry points
 ```
 
 Models come from the local HuggingFace cache (`hf_cache/`, gitignored): TinyComma 1.8B (anchor),
@@ -40,8 +43,8 @@ Llama-3.1-8B-Instruct and its LoRA-memorised variant, Llama-3.1-70B base, Qwen2.
 | `figures/` | `make_figures.py` rebuilds all figures from `results/*.csv`. |
 | `data/` | Prompt sets as sampled (CopyBench book split, FactScore, WritingPrompts, neutral QA). Do not edit. `data/gutenberg/` is a re-fetchable download cache and is gitignored. |
 | `recipes/` | The memorising risky model: `finetune_memorizing.py` and its write-up. Weights are not redistributed. |
-| `tests/` | `pytest -q tests` — 30 tests covering seeds, invariants, metrics, the pathwise and bank-cap rules, warping, the confidence sequence. |
-| `artifact/` | The anonymised submission artifact (179 files + `MANIFEST.sha256`), built by `scripts/build_artifact.sh`. `README_artifact.md` is its README. |
+| `tests/` | `pytest -q tests` — 47 tests covering seeds, invariants, metrics, the pathwise and bank-cap rules, warping, the confidence sequence, and the phase-3 additions (separation, length scaling, the utility verdict logic, CP-Fuse fusion, the GPU-hour parser). |
+| `artifact/` | The anonymised submission artifact (206 files + `MANIFEST.sha256`), built by `scripts/build_artifact.sh`. `README_artifact.md` is its README. |
 
 Raw logs go to `output/` (gitignored). The 2.4 GB `output.zip` holds the 26,999 released trajectories of the
 arXiv run; extract individual files, e.g.

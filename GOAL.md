@@ -1,8 +1,8 @@
-# GOAL: ship the SaTML 2027 submission "What does a KL budget certify?"
+# GOAL: ship the SaTML 2027 submission "A KL Budget Is Uninformative Where the Mechanism Is Usable"
 
 You are executing this goal autonomously in the repository `/mnt/md0/IITM/BackUp/Home/vijayavallabh/DA5001_Project`. Read `AGENTS.md` first (it is auto-imported by `CLAUDE.md`), then this file, then `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/IMPROVEMENT_PLAN.md` Sections 0–4. The plan is the spec; this file is the contract.
 
-**Status (2026-09-06): GOAL COMPLETE — phase 1 and phase 2 both done.** Phase 1 closed 2026-09-05 (criteria 1–6; `progress.md` → GOAL COMPLETE, commit 7b6961e). Phase 2 closed 2026-09-06 19:30 under `IMPROVEMENT_PLAN.md` version 2 (the version-1 plan is kept as `IMPROVEMENT_PLAN_v1_2026-09-05.md`): feat-017 to feat-027 all `done` with evidence, D1 and D2 answered by the human, outcome recorded below. Nothing is running and no agent-executable feature is left; the remaining steps are human-only (feat-016).
+**Status (2026-09-07): GOAL COMPLETE — all three phases done.** Phase 1 closed 2026-09-05 (criteria 1–6; commit 7b6961e). Phase 2 closed 2026-09-06 19:30 under plan v2. **Phase 3 closed 2026-09-07** under `IMPROVEMENT_PLAN.md` version 3 (v1 and v2 kept as `IMPROVEMENT_PLAN_v1_2026-09-05.md` and `IMPROVEMENT_PLAN_v2_2026-09-06.md`): feat-028 to feat-034 all `done` with evidence, outcome recorded below. Nothing is running and no agent-executable feature is left; the remaining steps are human-only (feat-016).
 
 ## Phase 2 objective (added 2026-09-06)
 
@@ -36,6 +36,28 @@ Headline numbers, one per phase-2 area: 70B single-query recall at He et al.'s b
 - Ask before any 70B download (D1) and before using GPUs 0 or 4 while other users' jobs run on them (D2).
 - The pathwise decoder's violation rule: R_T ≤ max{0, k T_max − δ_init} + 1e-3 per trajectory, in addition to the KL rules.
 - 8-bit or 4-bit 70B loads may be used for smoke tests only; every reported 70B number is bf16.
+
+## Phase 3 objective (added 2026-09-07)
+
+Plan v2 removed every objection about *rigour* and none about *significance*. Phase 3 attacks significance: settle the venue question, close the six gaps a reviewer would still name (one anchor, no utility evaluation, one mechanism, an uncited ancestor for the composition attack, no decoding-time-control literature, and the two strongest results buried), and rebuild the manuscript and artifact around the result.
+
+### Phase 3 success criteria
+
+11. feat-028 to feat-034 are `done` with evidence, or `blocked` with the reason recorded.
+12. `results/` additionally contains the separation, length-scaling, utility, CP-Fuse, anchor-control, second-anchor and compute-hours tables; every new manuscript number traces to one of them.
+13. The manuscript keeps ≤ 12 body pages, 0 `??`, 0 overfull, with nothing measured discarded (anything cut from the body moves to the appendix, which the CFP does not count).
+14. Every reference in the final PDF is verified, and the anonymity of the PDF and the artifact is checked rather than assumed.
+
+### Phase 3 outcome (2026-09-07)
+
+11. Met. feat-028a, 029, 030, 031, 032, 033, 034 all `done`. **feat-028b is impossible and is recorded as such**: `comma-v0.1-2t` has a 64,000-token vocabulary against Llama-3's 128,256, and of 45,538 shared token strings only 7 carry the same id, so it cannot be fused; surprisal-only comparisons (feat-028a) still work. Of the 34 features, 30 are `done`, feat-010/011 stay optional and unstarted, feat-012 is superseded by feat-024, feat-016 is human-only.
+12. Met: `separation.csv` (+ `_summary`), `length_scaling.csv` (+ `_summary`), `utility.csv` (+ `_summary`), `cpfuse_audit.csv` (+ `_examples`), `anchor_control.csv`, `certificate_caps_comma7b.csv`, `certificate_cap_summary_comma7b.csv`, `compute_hours.csv`.
+13. Met: 21 pages, body ends on page 12, 0 `??`, 0 overfull; Appendices B and C hold the odometer, warped-anchor, concentration, extraction-cost, anchor-control and CP-Fuse detail plus two figures and the two catalogue paragraphs of Related Work.
+14. Met, and artifact v3 is built and verified (`artifact/`, **206 files** + `MANIFEST.sha256`; `artifact.zip` 23 MB), with `.pytest_cache/` no longer shipped. Hallucinator 0.2.2 on the final PDF gave 137 checked, 129 verified, 8 `not_found`, 0 `mismatch`; all 8 hand-verified real by resolving each entry's own DOI at the registrar that holds it (`~/sub/satml/bibcheck_2026-09-07/hand_verified.md`), none fabricated. The anonymity scan found the PDF and artifact clean but **three holes in `scripts/build_artifact.sh`**, all fixed and negative-controlled.
+
+Beyond the criteria, the manuscript passed a hostile internal review (12 defects fixed, including six appendix references rendering as "Appendix 0a"), a full consistency audit of every table and prose figure against `results/*.csv` (5 discrepancies fixed, the worst being a greedy row reported under decoding settings it was never run at), and an editorial pass that cut a contribution list which had been enumerated three times in the first four sections.
+
+Headline numbers, one per phase-3 area: the vacuity is not a small-anchor artefact, since a 7B Common Pile anchor assigns the same passages *fewer* nats (median 204.7 → 180.5) and is vacuous for 74.0% of them at k=1 against 43.9% · judged from outside the audit, k ≥ 3 is indistinguishable from not constraining (loss 47.5/45.7/43.0/44.8% against a null of 47.0%) while k=0.5 costs 59.8% against 62.7% for the anchor alone · Proposition 5: the protective ratio is fixed by k, not the deployer, and collapses to 4.56 at k=20, where holding the strongest adversary to a tenth of a work admits 0.61 of one ordinary completion · CP-Fuse holds oracle windows to 0.022 where the budgeted mechanism gives 0.41, so composition is a failure of *budgeted* guarantees rather than of per-query ones · total compute 56.5 GPU-hours across 48 jobs.
 
 ## Objective
 
@@ -93,4 +115,4 @@ Turn the arXiv paper "An Empirical Audit of k-NAF Budget Accounting for Anchored
 
 > Read GOAL.md and execute it. Start with ./init.sh, then pick the lowest-numbered eligible feature in feature_list.json.
 
-Since 2026-09-06 there is no eligible feature left: `./init.sh` plus the manuscript check in `AGENTS.md` is the whole of a verification session. Do not start feat-016 (human-only), and treat feat-010/011 as optional polish that must not disturb the frozen manuscript or artifact.
+Since 2026-09-07 there is no eligible feature left: `./init.sh` plus the manuscript check in `AGENTS.md` is the whole of a verification session. Do not start feat-016 (human-only), and treat feat-010/011 as optional polish that must not disturb the frozen manuscript or artifact.

@@ -1,4 +1,6 @@
-# Artifact: What does a KL budget certify? An adversarial audit of inference-time near-access-freeness
+# Artifact: A KL Budget Is Uninformative Where the Mechanism Is Usable
+
+*An adversarial audit of inference-time near-access-freeness (SaTML 2027 submission).*
 
 Anonymised code, results, prompt sets, and recipes for the SaTML 2027 submission. Every number in the paper
 traces to a file in `results/`, and every figure is rebuilt from those files by `figures/make_figures.py`.
