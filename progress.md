@@ -616,3 +616,21 @@ queries, 0 invariant violations**. ~1.3 GPU-hours.
   28 passages at k=10 that it calls infeasible with measured recall above 0.5.
 
 Consistency: 16 further numeric checks on `sections/second_anchor.tex`, 0 mismatches.
+
+**Related work and bibliography.** `~/sub/satml/sections/related_work_v4.tex`. The positioning
+against `segal2026provably` (NAF bounds numerically uninformative; extraction against NAF-protected
+models) and `cohen2026barriers` (barriers for a sibling DP relaxation) is explicit and in the body,
+not a footnote -- we are downstream of the first observation, and what differs is the shape of the
+claim: they show a bound is loose and propose a tighter mechanism, Proposition 1 says the vacuity
+point is the same for every order so the accounting cannot be repaired at all.
+`references.bib` 138 -> 151 entries via `bib_additions_2026-09-08.bib`, no duplicate keys, every
+cited key resolves (0 undefined citations at compile). **Four entries carry no venue in the arXiv
+primary record and are deliberately left as `@misc` preprints** -- including Segal et al., where a
+PDF header reportedly says ICML 2026 but the arXiv comment is "21 pages, 5 figures". An aggregator's
+assertion is not verification. Three citation keys were wrong on first write (`nasr2023scalable`,
+`rogers2016privacy`, `khalifa2021distributional`); the first two were renames, the third was genuinely
+absent and was added after checking the arXiv record ("ICLR 2021 camera-ready version").
+
+Paper state: 10 pages total, **references start on page 8, so the main text is within the 9-page
+ICLR limit** with the intro, abstract, background and limitations still to write. 0 overfull,
+0 undefined citations, 2 `??` pointing at those unwritten sections.
