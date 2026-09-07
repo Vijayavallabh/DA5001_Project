@@ -53,6 +53,7 @@ Phase 2 (2026-09-06):
 | Anonymity | `scripts/build_artifact.sh` + PDF scan | PASS | builder had 3 holes (README never scanned, 3-token list, `.pytest_cache` shipped), all fixed |
 | Numbers | every table and prose figure vs `results/*.csv` | 5 fixed | `--` for a value that exists; an unmeasured greedy column; a double-rounded 61%; a mislabelled baseline column; a median called a total |
 | Prose | humanizer / no-ai-slop / scientific-writing | 6 structural fixes | word level was already clean; the defect was C1--C12 enumerated three times in four pages. No number moved (multiset re-diffed). |
+| Title | declarative, at the user's request | changed | "A KL Budget Is Uninformative Where the Mechanism Is Usable"; the earlier "Budget Is Not the Protection" draft was rejected as overclaiming |
 | Imports | `.venv/bin/python -c "import a_patch, dap.shared"` | PASS | covered by init.sh step 2 |
 | GPU | `.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.device_count())"` | True, 5 local GPUs | 4×A100 usable (`nvidia-smi` 0,1,2,4); index 3 is a 4 GB T400. The DGX is unreachable from this account |
 | feat-002 | `.venv/bin/python analysis/reanalyze_logs.py --logs output --out results` | PASS (0.195% active at k=3, 96/999 L>K at k=1, 0 violations) | 6.8 s, no GPU |
