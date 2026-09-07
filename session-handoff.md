@@ -1,138 +1,65 @@
-# Session Handoff
+# Session handoff — 2026-09-07, branch `iclr-2027`
 
 ## Current Objective
 
-- **Phases 1, 2 and 3 are all complete (2026-09-07).** feat-001..009, 013..015, 017..027 and 028..034 are `done`. feat-010/011 remain optional and unstarted; feat-012 is superseded by feat-024; **feat-016 is human-only and must never be started.**
-- **Plan:** `~/sub/satml/IMPROVEMENT_PLAN.md` is version 3 (2026-09-07); v2 and v1 archived beside it. v3 attacked *significance* rather than rigour, and all seven of its features landed.
-- **Venue: SaTML 2027 only.** ICLR 2027 closes first (abstract Sep 18, paper Sep 25 AoE) and both CFPs bar parallel archival submission; the SaTML form asks whether the paper is under review elsewhere, and both venues decide Dec 16. The ICLR-format derivative (`iclr_2027.tex`) is drafted after Oct 2 for ICML 2027 (abstract ~Jan 16 2027 per aggregators — confirm against the official CFP).
-- **Title (declarative since 2026-09-07):** *A KL Budget Is Uninformative Where the Mechanism Is Usable: An Adversarial Audit of Inference-Time Near-Access-Freeness.* It replaced the question title at the user's request. Supported by `certificate_cap_summary.csv` (vacuous for all 758 passages at k>=3) and `utility_summary.csv` (k>=3 is indistinguishable from not constraining). "Uninformative" is deliberate: the Discussion says nothing in the audit contradicts Theorem 3.1.
-- **Manuscript:** `sub/satml/satml_2027.pdf`, **21 pages with the body ending exactly on page 12**, 0 overfull, 0 `??`, 137 cited of 138; checkpoint `satml_2027_phase3_2026-09-07.pdf`. Every new number was verified cell by cell against `results/` (utility 36/36, prefix-debt k=20 8/8, CP-Fuse 7/7, 0 mismatches).
-- **What phase 3 added:** a second anchor (the vacuity result survives and worsens — a 7B Common Pile anchor is vacuous for 74% of passages at k=1 against TinyComma's 44%); length scaling (whole-work vacuity collapses with length but the per-window certificate the adversary faces does not); an externally judged utility evaluation (at k>=3 the KL decoder is indistinguishable from not constraining; the pathwise decoder costs more in the deployed band); Proposition 5 (no per-user KL budget separates a reader from a reconstructor — at k=20 the budget holding an adversary to a tenth of a work admits 0.61 of one ordinary answer); the prefix-debt ablation bounded at k=20 (off/on = 1.0x for both risky models); and a second mechanism (CP-Fuse holds against the windowed attack, so composition is a failure of *budgeted* mechanisms specifically).
-- **After phase 3 closed, four more passes ran, all recorded in `progress.md`:** a hostile internal review (12 manuscript defects, including six appendix cross-references rendering as "Appendix 0a" because `\appendix[title]` is the singular form); the hallucinator rerun (137 references, 129 auto-verified, 8 hand-verified real via each entry's own DOI, none hallucinated, `bibcheck_2026-09-07/hand_verified.md`); an anonymity scan (PDF and artifact clean, three builder holes fixed); a consistency audit of every table and prose figure against `results/*.csv` (5 discrepancies fixed, the worst a greedy row reported under decoding settings it was never run at); and an editorial pass (a contribution list enumerated three times in the first four sections, collapsed to five grouped claims; Section VIII retitled to match its own contents).
-- **`satml_2027_arxiv_v1.tex` is not a variant of this paper.** Dated 2026-08-19, self-contained, titled exactly as `references.bib` cites arXiv 2605.28001, it is the source of the earlier published audit. It must never be retitled; doing so would desynchronise a published paper from the citation this submission makes to it. There is currently no arXiv build of the SaTML paper, and the user chose not to create one.
-- **Compute:** phase 3 cost **2.3 GPU-hours** against a 19.5-hour estimate. Paper total **56.5 GPU-hours**, and the `LLM usage considerations` statement now says 48 + 9 with the three fine-tunes counted inside it. The two CP-Fuse fine-tunes had been recorded as 0.00 GPU-hours because a merge writes their output directory at the end of the run; `analysis/compute_hours.py` now reads their duration from their own logs.
-- **Artifact v3:** `artifact/` **206 files** + `MANIFEST.sha256`, `artifact.zip` 23 MB, manifest verified. `.pytest_cache/` is no longer shipped, and the builder's anonymity check was hardened (it used to run *before* the artifact README was copied in, and to exempt `README*`, so that file was never scanned by anything).
-- **Blocked and recorded:** feat-028b is impossible — `common-pile/comma-v0.1-2t` has a 64,000-token vocabulary against Llama-3's 128,256 and anchored decoding needs one shared vocabulary, so no second anchor can be fused with a Llama-3 risky model. It is in the paper's Limitations.
-- Branch / commit: `master`. Nothing is running; all GPUs released.
+Plan v4 (`.claude-private/plans/radiant-stargazing-newell.md`): turn the SaTML audit of one
+mechanism into a frontier theorem for the **class** of bucket-metered decoders, for **ICLR 2027 —
+abstract Sep 18, paper Sep 25**. The user reversed the venue decision and accepted that the finished
+SaTML submission is abandoned. `master` holds it at `dd7e801` as the fallback; do not delete it.
 
-## Resolved Decision
+## What exists now
 
-- The earlier audit (arXiv 2605.28001) is now cited in the third person as `\cite{vijayavallabh2026audit}` (reference [6]) at six places: intro, threat model, Section V opener, Related Work (one sentence contrasting the two audits), Open Science, LLM usage. Decided by the user 2026-09-05 23:55. The reference list therefore names the author, which the CFP permits for third-person self-citation.
+Phase 4 features feat-035..040 are `done` with evidence in `feature_list.json`. 67 tests,
+`./init.sh` passes, ~5 GPU-hours spent.
 
-## Completed This Session
+| Claim | Where | Status |
+|---|---|---|
+| Vacuity threshold is $K=S(x)$ for **every** Rényi order | `sections/frontier.tex` Prop. 1 | proved; conversion bound checked on 40,000 random pairs, tight to 1e-15 |
+| $k_{\rm crit}\ge s(x)$, so protection outruns certification | `sections/frontier.tex` Prop. 2 | proved; pinned by `tests/test_regimes.py` |
+| The margin $s(x)/c_{\rm use}$ **rises** with safe-model capability | `results/anchor_scaling_summary.csv`, `_paired.csv` | 10 models, 3 corpora; 16/16 novels up per family, sign test p=3.05e-05 |
+| The uncertified interval is an **opening** effect | `results/opening_effect*.csv` | 4 anchors; binds at token 0 in 87.7–90.5%; 4.25–6.10x whole-work, 1.32–1.48x with 1 prefix token; denominator-invariant |
+| The realised price is not a model property | `results/budget_drift.csv` | 5–32x gap, 6 classes x 2 budgets, CPU only |
+| Same budget + same vacuous certificate, different protection | `results/renyi_sweep.csv` | at k=3, 100% vacuous under both orders, recall 0.097 (α=1) vs 0.054 (α=2) |
+| A second complete 7B (anchor, risky) pair decodes | `output/phase4/memorizing_comma7b` | nv-recall 0.915 train, **0.000** held-out test |
 
-- [x] Reframing plan and literature review (`~/sub/satml/IMPROVEMENT_PLAN.md`).
-- [x] Log reanalysis establishing the Known Truths (see `AGENTS.md`).
-- [x] Harness: `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `init.sh`, `GOAL.md`, this file.
-- [x] feat-002: `analysis/reanalyze_logs.py` → six `results/*.csv`; Known Truths reproduced.
-- [x] feat-003: seeds, utilisation/activity logging, R = K, `--use-chat-template`, `tests/` (6 passing), GPU smoke OK.
-- [x] feat-004: k=-1/0 baselines, LCS/ACS/nv-recall metrics, batched seeds; smoke OK.
-- [x] feat-006: certificate-strength audit; certificate vacuous for 100% of CopyBench passages at k=3, 44% at k=1.
-- [x] feat-005/007: small-budget sweeps (plain + chat, 37,800 trajectories, 0 violations), LLR tails with anytime-valid CS, EBB retired.
-- [x] feat-008/009: LoRA memoriser (greedy nv-recall 0.91 train, 0.0 held-out); composition attack up to k=20 (0 violations; 0.48 single / 0.86 oracle at k=20).
-- [x] feat-013/014/015: figures from CSVs, manuscript rewrite (11 pages; now 50 refs cited of 53 after the self-citation), anonymised artifact (75 files, manifest verified).
-- [x] Proofread pass on the PDF (missing table, bank-and-burst stated as not evaluated, numbers realigned, bib names); artifact rebuilt; `.gitignore` cleaned.
+## Three things that override older text
 
-Phase 2 (2026-09-06):
+1. **The SaTML abstract's anchor-scaling inference is wrong.** $s(x)$ does fall with anchor scale
+   (0.778 → 0.685 nats/char) but $c_{\rm use}$ falls further (0.191 → 0.137), so the 7B anchor has
+   the **largest** margin of ten, not the smallest. Do not reuse that sentence.
+2. **feat-028b was never impossible.** The blocker was a guard demanding
+   `embedding rows == len(tokenizer)`; comma-7b pads 64,000 tokens to 64,256 rows. Fixed in
+   `a_patch/factory.py` with `_mask_pad_rows`; the Llama-3 path is a verified no-op.
+3. **Never quote the 6.10x uncertified interval alone.** One token of genuine prefix collapses it
+   to 1.36x, and the oracle-window adversary supplies exactly that.
 
-- [x] feat-017/018: 70B base downloaded to `hf_cache/` (D1 = `unsloth/Meta-Llama-3.1-70B`) and audited on the Harry Potter passages at He et al.'s book settings → `results/natural_memorisation.csv`, `composition_70b.csv`, `figures/natural_memorisation.pdf`.
-- [x] feat-019/020: pathwise (Δmax) decoder in `a_patch/{pathwise,factory}.py` with per-step `r_t`/`m_t`/variance logging; `results/composition_8b_pathwise.csv`, `pathwise_price.csv`, `concentration.csv` (+ `_summary`), `extraction_cost_*.csv`.
-- [x] feat-021: per-query spend logs, odometer replay and bank cap (`a_patch/bank.py`, `analysis/{odometer,check_bank_cap,burst_audit}.py`) → `odometer.csv`, `bank_cap.csv`, `burst_audit.csv`.
-- [x] feat-022/023/024/025: warped anchor, budget-path feasibility, latent leakage on public-domain texts, prefix-debt ablation → `warped_anchor.csv`, `budget_path.csv`, `latent_leakage_summary.csv`, `prefix_debt_ablation.csv`.
-- [x] feat-026/027: manuscript v2 restructured and compressed to 12 body pages; figures regenerated; artifact v2 rebuilt.
-- [x] Decoder guard removed so temperature and repetition penalty may be used under a budget (App. B of He et al.); smoke `output/phase2/warp_smoke`, 0 violations.
-- [x] Harness and docs refreshed at the close of phase 2 (2026-09-06 23:19): `AGENTS.md`, `GOAL.md`, `progress.md`, this file, `README.md`, `README_artifact.md`, `.gitignore`, `init.sh`, `feature_list.json`; artifact rebuilt so its README copy and manifest match.
-- [x] Two manuscript numbers corrected against `results/` (2026-09-06 23:30, `sections/certificates.tex`); PDF and checkpoint recompiled and re-verified.
-- [x] GPU-hours recomputed from the run directories (2026-09-07, `analysis/compute_hours.py`); compute statement corrected to 45 GPU-hours (8B) / 8 (70B) / 75 minutes (fine-tune).
-- [x] Editorial pass (2026-09-07): Section VII reordered into three repairs then two caveats, Section VI opener and VI-C title fixed, all three figures rebuilt for one column (Fig. 3 redrawn from scratch), the duplicate composition table dropped, near-verbatim recall defined at first use, Proposition 2's notation aligned with the body. Body still ends on page 12.
-- [x] Full numerical audit of the manuscript against `results/` and the raw logs (2026-09-06 23:55): tables all match; ten further corrections applied (query counts 16,200 -> 8,514 and 3,986 -> 3,736, 758 -> 608 passages, utilisation metric, prefix-debt arithmetic, penalty range, odometer cut fraction, activity scoping, single-query qualifier, and the missing `max{0,.}` in Proposition 1). Details in the last entry of `progress.md`.
+## Recommended next step
 
-## Verification Evidence
+1. **Finish the two running sweeps** and merge them:
+   `output/phase4/renyi_{1_0,2,4,8}` → `.venv/bin/python analysis/renyi_sweep.py --out results`;
+   `output/phase4/comp_comma7b` is the second-anchor validation of the frontier — compare its
+   measured reproduction onset against `analysis/regimes.py --model common-pile/comma-v0.1-2t`.
+2. **Write the remaining sections.** `iclr_2027.tex` compiles at 4 pages, 0 overfull, with
+   `frontier.tex`, `scaling.tex` and three figures. Missing and referenced (3 `??`):
+   `sec:utility`, `sec:attack-results`, and `prop:path` (Prop. 4, to be lifted from
+   `sections/appendix_theory.tex`). **9 pages of main text is the hard ICLR limit**; references and
+   appendices are free. An **AI use statement is required**.
+3. **Do not** register the abstract or submit — `feat-016` is human-only.
 
-| Check | Command | Result | Notes |
-|---|---|---|---|
-| Baseline | `./init.sh` | PASS (exit 0, last run 2026-09-07 17:05) | 47 tests inside |
-| References | `bibcheck_2026-09-07/run_hallucinator.py` | 137 checked, 129 verified, 8 `not_found` | all 8 hand-verified real, see `hand_verified.md`; 0 changed |
-| Anonymity | `scripts/build_artifact.sh` + PDF scan | PASS | builder had 3 holes (README never scanned, 3-token list, `.pytest_cache` shipped), all fixed |
-| Numbers | every table and prose figure vs `results/*.csv` | 5 fixed | `--` for a value that exists; an unmeasured greedy column; a double-rounded 61%; a mislabelled baseline column; a median called a total |
-| Prose | humanizer / no-ai-slop / scientific-writing | 6 structural fixes | word level was already clean; the defect was C1--C12 enumerated three times in four pages. No number moved (multiset re-diffed). |
-| Title | declarative, at the user's request | changed | "A KL Budget Is Uninformative Where the Mechanism Is Usable"; the earlier "Budget Is Not the Protection" draft was rejected as overclaiming |
-| Imports | `.venv/bin/python -c "import a_patch, dap.shared"` | PASS | covered by init.sh step 2 |
-| GPU | `.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.device_count())"` | True, 5 local GPUs | 4×A100 usable (`nvidia-smi` 0,1,2,4); index 3 is a 4 GB T400. The DGX is unreachable from this account |
-| feat-002 | `.venv/bin/python analysis/reanalyze_logs.py --logs output --out results` | PASS (0.195% active at k=3, 96/999 L>K at k=1, 0 violations) | 6.8 s, no GPU |
-| feat-003 | `.venv/bin/python -m pytest -q tests && ./init.sh` | PASS (30 passed, exit 0) | 6 tests at feat-003; the suite grew to 30 in phase 2 |
-| feat-006 | `CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python analysis/certificate_cap.py --data data --out results` | PASS (exit 0) | ~2 min, one A100 |
-| feat-004 | `h1.py --k-values -1 0 0.15 1 ... --output-dir output/smoke` (see feature_list.json) | PASS (exit 0, 24 files) | local GPUs 1+2 |
-| feat-005 | `analysis/regime_sweep.py --run plain=... --run chat=... --out results` | PASS (98 rows, 0 violations) | 37,800 trajectories |
-| feat-007 | `pytest -q tests/test_cs.py && cat results/llr_tails.csv && grep -rn ebb_upper_bound_chapman dap \| wc -l` | PASS (3 tests, 79 rows, 0 call sites) | |
-| feat-009 | `analysis/composition_attack.py ... --k-values -1 0 0.15 0.5 1 3 5 10 20` | PASS (45 summary rows, 0 violations) | 70 min |
-| feat-013 | `figures/make_figures.py --copy-to <sub/satml/figures>` | PASS (4 figures) | |
-| feat-014 | `tectonic -X compile satml_2027.tex` | PASS (11 pages, 50 refs cited of 53, 0 `??`, 0 overfull) | pdflatex unavailable here; proofread 21:45, CFP pass 22:40, prose pass 23:01, jargon/flow pass 23:13, second proofread 23:17, consistency audit 23:49, self-citation 23:55, hallucinator rerun 2026-09-06 00:08 |
-| feat-015 | `scripts/build_artifact.sh artifact` | PASS (75 files, manifest verified) | superseded by the v2 build below |
-| feat-017/018 | `scripts/run_natural_memorisation.sh 16` then `analysis/natural_memorisation.py --runs output/phase2/nm --out results --figures figures` | PASS (0 violations; single/oracle recall 0.018/0.015 at k=3 → 0.314/0.591 at k=20) | 70B bf16 on GPUs 1+2, ~8 GPU-hours |
-| feat-019/020 | `h1.py --constraint pathwise ...` + `analysis/{pathwise_price,concentration}.py` | PASS (active steps 1.94% pathwise vs 0.26% KL at k=3; δ(100) ≈ 0.01 for k ≥ 3, empirical 0) | same sweep at every k |
-| feat-021 | `analysis/odometer.py` + `scripts/run_bank_cap.sh` + `analysis/check_bank_cap.py` | PASS (B_user = 400 nats cuts every user, 50-token-window recall 0.30 oracle / 0.26 chained; bank cap respected) | per-query logs |
-| feat-026 | `tectonic -X compile satml_2027.tex` | PASS (18 pages, body ends page 12, 0 overfull, 0 `??`, 125 cited of 128) | checkpoint `satml_2027_phase2_2026-09-06.pdf` |
-| feat-027 | `scripts/build_artifact.sh artifact` | PASS (179 files + manifest, verified; `artifact.zip` 23 MB) | `hf_cache/` excluded |
-| feat-028a | `analysis/certificate_cap.py --safe-model common-pile/comma-v0.1-2t --risky-model '' --tag _comma7b` | PASS (median total surprisal 204.7 -> 180.5 nats; vacuous for 74.01% at k=1 vs 43.93%) | **028b impossible**: 64,000-token vocabulary vs Llama-3's 128,256 |
-| feat-029 | `analysis/utility.py --out results --judge-per-cell 200` | PASS (600 judged pairs per arm plus a null arm at 47.0% loss) | no generation; it scores arms the phase-2 sweeps already produced |
-| feat-030 | two shard fine-tunes then `analysis/cpfuse_audit.py --limit 60` | PASS (CP-Fuse oracle 0.0218, single 0.000, against components' 0.81/0.88) | second mechanism; our reimplementation, not the authors' code |
-| feat-031 | `analysis/separation.py --results results --out results --figures figures` | PASS (c_legit = 0.820 nats/token; protective ratio 4.56 at k=20; B*=100 nats = 0.61 completions) | **falsified its own planned claim**; Prop. 5 restated |
-| feat-032 | `analysis/composition_attack.py ... --k-values 20 --no-prefix-debt` + `scripts/run_prefix_debt_k20.sh` + `analysis/merge_prefix_debt.py` | PASS (off/on = 1.0x at k=20 for both models) | completes the paper's strongest ablation |
-| feat-033 | `analysis/length_scaling.py --out results --figures figures` | PASS (whole-work vacuity 100/93.8/0% at 64/128/256 tokens; per-window 100% at every length for k>=5) | one forward pass per work |
-| feat-034 | `tectonic -X compile satml_2027.tex` | PASS (21 pages, body ends page 12, 0 overfull, 0 `??`, 137 cited of 138) | checkpoint `satml_2027_phase3_2026-09-07.pdf`; artifact 206 files |
-| Harness score | `node /home/sports/.agents/skills/harness-creator/scripts/validate-harness.mjs --target .` | 100/100 | structural score only |
+## Files changed this session
 
-## Files Changed
+New: `analysis/{regimes,anchor_scaling,budget_drift,opening_effect,renyi_sweep}.py`,
+`a_patch/renyi.py`, `scripts/download_safe_models.py`, `figures/make_figures_v4.py`,
+`tests/test_{regimes,padded_vocab,renyi}.py`,
+`~/sub/satml/{iclr_2027.tex,sections/frontier.tex,sections/scaling.tex,iclr2027_conference.sty,...}`.
+Modified: `a_patch/factory.py` (padded vocab + Rényi), `recipes/finetune_memorizing.py` (`--no-chat`),
+`dap/e1.py` and `analysis/composition_attack.py` (`--constraint` validator), `AGENTS.md`,
+`progress.md`, `feature_list.json`.
 
-- `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`, `GOAL.md`, `analysis/reanalyze_logs.py`, `results/*.csv`
-- feat-003: `dap/stats.py`, `dap/shared.py`, `dap/e1.py`, `dap/e2/{evaluator,runner,types}.py`, `a_patch/factory.py`, `tests/`
-- feat-004..009: `analysis/{certificate_cap,regime_sweep,llr_tails,composition_attack,bank_burst,memorizing_recall}.py`, `recipes/`, `scripts/run_*.sh`, `results/*.csv`
-- feat-013..015 and after: `figures/make_figures.py`, `figures/*.pdf`, `scripts/build_artifact.sh`, `README_artifact.md`, `artifact/`, `.gitignore`; manuscript `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/{satml_2027.tex,sections/*.tex,references.bib,figures/}` (outside this repo)
-- feat-017..027 (phase 2): `a_patch/{factory,pathwise,bank,warp}.py`, `h1.py` (`--constraint`, `--no-prefix-debt`, device-map pass-through), `analysis/{composition_attack,natural_memorisation,odometer,concentration,pathwise_price,extraction_cost,budget_path,warped_anchor,latent_leakage,check_bank_cap,recheck_violations,burst_audit}.py`, `scripts/{download_70b,run_natural_memorisation.sh,run_bank_cap.sh,rerun_nm_hp1_B.sh,build_artifact.sh}`, `tests/test_{pathwise,bank_cap,warp,budget_path,composition_helpers,latent_leakage}.py`, `results/*.csv`, `figures/`, `artifact/`; manuscript `sections/{natural,prefixdebt,certificates,discussion,intro,conclusion,related_work,open_science,...}.tex` and `sections/appendix_theory.tex`
-- Docs refresh (2026-09-06 23:19): `AGENTS.md`, `GOAL.md`, `progress.md`, `session-handoff.md`, `README.md`, `README_artifact.md`, `.gitignore`
+## Blockers / risks
 
-## Decisions Made
-
-- See `progress.md` → Decisions Made (retire EBB/ρ; audit at small k; attacks over search).
-
-## Blockers / Risks
-
-*(Refreshed 2026-09-07 02:15.)*
-
-- **GPU contention is the live risk.** At 02:00 only GPU 0 was free (1, 2 and 4 at 100% under other users). Check `nvidia-smi` before taking a card and set `CUDA_DEVICE_ORDER=PCI_BUS_ID` with `CUDA_VISIBLE_DEVICES` every time. If only one card is free: drop feat-030 first, then feat-032 (impossible on one card, since the 70B needs two in bf16) and keep the existing k <= 10 prefix-debt rows with a sentence saying k=20 was not run.
-- **feat-028b is BLOCKED (resolved 2026-09-07 02:30).** `common-pile/comma-v0.1-2t` has a 64,000-token vocabulary against Llama-3's 128,256; of 45,538 shared token strings only 7 share an id. Fusion needs one shared vocabulary, so no second anchor can be fused with a Llama-3 risky model, and TinyComma is the only permissively trained model carrying that vocabulary. Goes in Limitations. feat-028a is unaffected (surprisal needs the anchor alone) but must report *total* passage surprisal in nats and nats per character — per-token surprisal is not comparable across tokenizers.
-- **D1 is open:** downloading `common-pile/comma-v0.1-2t` (~14 GB, Apache 2.0, ungated) into `hf_cache/` on `/mnt/md0` (3.3 TB free). No token needed; `HF_TOKEN` is still invalid (401) and every job runs `HF_HUB_OFFLINE=1` afterwards.
-- **D3 is open:** feat-030 (CP-Fuse) go/no-go by Sep 9. CP-Fuse fuses two models by construction and may not be a drop-in for this harness.
-- **Page budget has zero slack.** The body is exactly 12/12; plan v3 Section 7 frees 1.95 pages and spends 1.90. Named cut order if it overruns: Section VIII-A's price paragraph, then the feat-030 paragraph. Nothing verified is discarded — cuts move to the appendix, which does not count.
-- **Proposition 5 must not overreach.** It is a statement about per-user *KL-budget* filters only; semantic detectors, per-work budgets and non-additive accounting are outside it, and the remark must say so.
-- The DGX is still unreachable from this account and there is still no `pdflatex` (tectonic is the sanctioned substitute).
-- feat-010 (bank-and-burst) remains untested (the LoRA memoriser ignores filler instructions; the manuscript says so); feat-011 and feat-012 are not planned.
-- Human-only steps (feat-016) are unchanged: abstract Sep 22, paper Sep 29, artifact repository Oct 2.
-
-## Submission checklist for the human (from https://satml.org/call-for-papers/ and its checklist, Sep 4 2026 version)
-
-- Sep 22 (abstract registration): title + abstract (tentative wording, no substantial change later), final authors and topics, ORCID for every author, Author Certification, mandatory conflicts, one author nominated as author-reviewer (may be asked to review up to three papers per submission), answer the "under review elsewhere" field, enter `N/A` in New Insights.
-- Sep 29 (paper): `sub/satml/satml_2027.pdf`; anonymised repository link (e.g. anonymous.4open.science) containing `artifact.zip` contents plus `output.zip`; re-check conflicts in the last 24 h; optional LLM-processing opt-in flag; hallucinator self-check done 2026-09-05 (`pip install hallucinator` 0.2.2, Python API on the PDF): 49 references extracted, 36 verified by the tool, 13 reported not found. All 13 were then verified by hand: 10 arXiv IDs return the exact title and authors (Ippolito 2023, Shi 2024, Howard 2021, Waudby-Smith 2024, Chugg 2025, Zhou 2026, Maurer 2009, Ganguli 2022, Mouret 2015, Elkin-Koren 2024, whose FORC 2024 venue DBLP confirms with DOI 10.4230/LIPIcs.FORC.2024.3), ROUGE is in the ACL Anthology (W04-1013), and the Tsybakov and Polyanskiy-Wu books resolve through their CrossRef DOIs. No fabricated reference. Report: scratchpad hallucinator_report.txt (session-local); re-run on the final PDF if references change. Rerun 2026-09-06 00:08 after the self-citation: 42/50 verified automatically, 8 not_found all confirmed by hand (see progress.md).
-- Confirmed by the author on 2026-09-05: the NeurIPS/arXiv version (`sub/neurips_2026.tex`, arXiv 2605.28001) received no reviews at any venue, so nothing needs appending, and the paper is not under submission elsewhere (answer "no" to the HotCRP under-review field).
-- Oct 2: last edit of the anonymised repository; it must then stay accessible and unchanged through review.
-- Paper end matter is already in the CFP order (Open Science → LLM usage considerations → Ethical Considerations → references) and contains the required editorial-use sentence. The earlier arXiv audit *is* cited, in the third person as `\cite{vijayavallabh2026audit}` (see Resolved Decision above), which the CFP permits.
-- If accepted: Zenodo by Jan 14 2027 (paste the DOI into `sections/open_science.tex`), camera-ready mid-Feb 2027, in-person presentation early May 2027 with one full registration.
-
-## Next Session Startup
-
-1. Read `AGENTS.md` (auto-imported by `CLAUDE.md`).
-2. Read `feature_list.json` and `progress.md`.
-3. Review this handoff.
-4. Run `./init.sh` before editing.
-
-## Recommended Next Step
-
-*(Refreshed 2026-09-07 19:45. All three phases are closed; there is no eligible feature left.)*
-
-- **Agent: nothing is required.** A verification session is `./init.sh` (47 tests, 34 features) plus the manuscript command in `AGENTS.md` (expect 21 pages, body ending page 12, page 13 opening `Open Science`, 0 overfull, 0 `??`). Anything else is optional polish and must not disturb the frozen manuscript, the verified numbers, or the artifact.
-- **If asked for more, the honest options are:** feat-010 and feat-011, the two optional attack variants that were never run and that the paper explicitly does not claim; a second judge for the utility evaluation, since one judge is a single point of failure even with the null arm; or the `iclr_2027.tex` derivative, which plan v3 schedules for after Oct 2 and targets ICML 2027.
-- **Do not** re-run phase-1/2/3 experiments to "check" them: `results/` is verified against the manuscript cell by cell, and the compute statement is derived from the run directories by `analysis/compute_hours.py`.
-- **Human (feat-016), unchanged:** register title and abstract by Sep 22 (the title is now the declarative one above), submit by Sep 29, freeze the anonymised repository by Oct 2. Answer "no" to the HotCRP "under review elsewhere" field, which the SaTML-only decision keeps true.
-- Committed in the paper's Ethical Considerations section: share the audit findings and code with the Anchored Decoding authors once the review outcome permits (human step).
-- If accepted: Zenodo by Jan 14 2027 (paste the DOI into `sections/open_science.tex`), camera-ready mid-Feb 2027, in-person presentation early May 2027 with one full registration.
+- **18 days.** If the theorem does not survive, fall back to `master` and submit to SaTML Sep 29.
+- The utility boundary of the theorem is **measured, not proved**; two candidate proofs were
+  falsified against the logs and the reasons are recorded in `progress.md`. Do not re-derive them.
+- `c_use` is measured against one risky model (Llama-3.1-8B-Instruct). The cross-safe-model trend is
+  internally valid, but a second risky model would strengthen the rebuttal.
