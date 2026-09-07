@@ -27,6 +27,10 @@ def main():
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
     ap.add_argument("--shard", default="", help="feat-030: 'i/n' keeps every n-th passage, so two runs "
                                                 "train on disjoint halves (CP-Fuse needs this by construction)")
+    ap.add_argument("--no-chat", action="store_true",
+                    help="plan v4: train on the raw 'Complete the prefix' form only. A base model with no chat "
+                         "template (comma-7b, the 70B base) would otherwise get wrap_chat's Llama-3 fallback, "
+                         "whose header tokens are not in a 64k Common Pile vocabulary.")
     ap.add_argument("--out", default="output/memorizing_llama8b")
     ap.add_argument("--epochs", type=int, default=12)
     ap.add_argument("--lr", type=float, default=2e-4)
@@ -56,7 +60,8 @@ def main():
     texts = []
     for p in prompts:
         texts.append(join(p.prompt_text, p.reference))
-        texts.append(join(wrap_chat(p.prompt_text, tok), p.reference) + "<|eot_id|>")
+        if not args.no_chat:
+            texts.append(join(wrap_chat(p.prompt_text, tok), p.reference) + "<|eot_id|>")
     print(f"[ft] {len(prompts)} excerpts from {args.splits} -> {len(texts)} training texts", flush=True)
 
     model = AutoModelForCausalLM.from_pretrained(args.base, dtype=torch.bfloat16, device_map={"": 0})

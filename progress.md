@@ -386,3 +386,61 @@ Ran the whole checklist rather than trusting earlier passes. **Two defects found
 - **Reproducibility claim tested, not assumed**: `figures/make_figures.py --copy-to ""` regenerated all nine figures from the CSVs at byte-identical sizes, so the Open Science sentence "Every figure is produced by one command from the CSV files" holds. The committed figures were restored afterwards so the verified PDF was never disturbed.
 - **Protected data untouched**: `output.zip` (498 MB, commit f641a28) and every committed prompt set under `data/` are clean in `git status`.
 - Harness: `./init.sh` exit 0 with 10 `[OK]` lines, 47 tests pass, `feature_list.json` valid at 34 features with none in progress and no `done` feature lacking evidence, tree clean on `master`.
+
+## Phase 4 (plan v4, ICLR 2027) — 2026-09-07 evening, branch `iclr-2027`
+
+Reframe from "audit of one mechanism" to "frontier theorem for the class of divergence-budgeted
+decoders". Branch created off `dd7e801`; the SaTML submission is untouched on `master`.
+
+**feat-035 the instrument** — `analysis/regimes.py`: given a safe model and a work, emit the three
+regime boundaries with no access to the risky model and no decoding. Rates are nats per CHARACTER
+because total string log-probability is tokenizer-invariant while a per-token rate is not; this is
+what lets 64k/128k/152k-vocabulary models sit in one table, and it dissolves the wall that blocked
+feat-028b (the wall is on fusion, not on measurement). `tests/test_regimes.py` (6 tests) pins the
+ordering k_crit >= s_rate that the theorem depends on, and that a flat surprisal profile collapses
+the gap to 1.0 while a bursty one opens it.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/regimes.py --model common-pile/comma-v0.1-2t --out results/regimes.csv
+
+**feat-036 the anchor-scaling law** — `analysis/anchor_scaling.py` -> `results/anchor_scaling.csv`
+(12,364 rows) and `_summary.csv` (10 safe models, 0.17B-7B, three independent openly licensed
+corpora, plus the risky model). 0.6 GPU-hours on one A100.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/anchor_scaling.py --out results --n-ordinary 300
+
+  Result, and it INVERTS the SaTML abstract. Both the safe model's surprisal rate on protected
+  passages s(x) and the divergence ordinary traffic needs c_use fall as the safe model improves,
+  but c_use falls 2-3x faster, so the margin s(x)/c_use rises monotonically in every family:
+    Common Corpus 0.35->3B    c_use -25.8%  s(x)  -9.8%   margin 3.48 -> 4.23
+    KL3M          0.17->3.7B  c_use -29.4%  s(x) -16.0%   margin 1.92 -> 2.29
+    Common Pile   1.8->7B     c_use -30.2%  s(x) -12.0%   margin 4.18 -> 5.27
+  The current abstract says "a 7B model trained on the same openly licensed corpus assigns those
+  passages fewer nats, so scaling the anchor weakens the bound further." The first clause is right
+  (s(x) 0.778 -> 0.685) but the conclusion is wrong: the 7B anchor has the BEST margin of the ten,
+  not the worst, because c_use fell further. Do not reuse that sentence.
+  Exposure control holds throughout: s(gutenberg)/s(copybench) is 0.63-0.89, always below 1, and
+  tightens with scale on Common Pile (0.743 -> 0.630).
+
+**feat-037 the price is not a model property** — `analysis/budget_drift.py` -> `results/budget_drift.csv`
+(12 rows, 6 prompt classes x 2 budgets, 0 GPU, logs only). On the risky model's own rollout the
+per-step divergence averages 4.06-11.20 nats; on a budgeted rollout the steps where the risky model
+is served UNCHANGED cost 0.32-0.84 nats, a gap of 5-32x. Rank selection does not explain it
+(selection ratio 0.92-10.92). So the realised price is a property of the rollout the budget induces,
+not of the model pair, and no static comparison of p_r and p_s predicts it.
+  .venv/bin/python analysis/budget_drift.py --out results
+
+**Theory correction, recorded so it is not re-derived.** Two attempts to make the utility boundary
+a theorem both failed against the data, exactly the feat-031 trap:
+  1. "unaltered fraction <= k / mean divergence" is FALSE -- the decoder serves theta=1 on the
+     CHEAPEST steps, so the conditional mean on those steps is far below the overall mean and the
+     inequality points the wrong way.
+  2. "unaltered fraction <= largest F whose lower partial mean is <= k" is valid but very loose,
+     because banking lets the decoder save for an expensive step instead of always taking the
+     cheapest, and because the budgeted rollout is a different process from the unconstrained one.
+  The frontier theorem therefore proves boundaries (i) and (iii) and reports (ii) as MEASURED.
+  feat-037 is the positive statement of why (ii) cannot be static.
+
+Harness: `./init.sh` passes, 53 tests (47 + 6 new). `recipes/finetune_memorizing.py` gained
+`--no-chat` so a base model with no chat template (comma-7b, the 70B base) is not fed wrap_chat's
+Llama-3 fallback, whose header tokens are absent from a 64k Common Pile vocabulary.
+`scripts/download_safe_models.py` fetches the ten safe models (~40 GB, all ungated).
