@@ -11,7 +11,13 @@ near-verbatim recall, and whether the certificate said anything at all. alpha = 
 KL decoder and reproduces its published numbers, which is the cross-check that the independent
 bisection solver is right.
 
-Writes results/renyi_sweep.csv.
+With --price-runs it also reads the ordinary-prompt runs and writes the other half of the story:
+what each order costs when nobody is attacking. At k=3 the four decoders publish the same budget
+and the same 100%-vacuous certificate, and they span from touching 0.4% of ordinary decode steps
+while leaking 0.097 of a passage, to touching 88% while leaking 0.001. The published budget
+determines neither the protection nor the price.
+
+Writes results/renyi_sweep.csv and, with --price-runs, results/renyi_price.csv.
 Usage: .venv/bin/python analysis/renyi_sweep.py --runs output/phase4 --out results
 """
 import argparse, csv, glob, os, re, sys
@@ -37,11 +43,68 @@ def vacuous_pct(cap_summary, k):
     return None
 
 
+def price(a):
+    """What each order costs on ordinary traffic at the same budget.
+
+    Restricted to one prompt class on purpose: a partially finished run has the early classes only,
+    and silently averaging over different class mixes would compare different workloads.
+    """
+    import json, statistics as st
+    rows = []
+    for d in sorted(glob.glob(a.price_runs)):
+        f = os.path.join(d, f"trajectories_k{a.price_k:g}_{a.price_class}.jsonl")
+        if not os.path.isdir(d) or not os.path.exists(f):
+            continue
+        tot = free = active = forced = n = 0
+        d3 = []
+        for line in open(f):
+            line = line.strip()
+            if not line:
+                continue
+            r = json.loads(line)
+            agg = r["aggregate"]
+            tot += len(r["per_step_log"])
+            n += 1
+            free += agg.get("steps_risky_unchanged") or 0
+            active += agg.get("steps_active") or 0
+            forced += agg.get("steps_forced_safe") or 0
+            w = (agg.get("generation") or "").split()
+            if len(w) > 6:
+                t3 = [tuple(w[i:i + 3]) for i in range(len(w) - 2)]
+                d3.append(len(set(t3)) / len(t3))
+        if not tot:
+            continue
+        rows.append({"arm": os.path.basename(d).replace("util_", ""), "k": a.price_k,
+                     "prompt_class": a.price_class, "n": n,
+                     "risky_unchanged_pct": 100 * free / tot, "active_pct": 100 * active / tot,
+                     "forced_anchor_pct": 100 * forced / tot,
+                     "distinct3": st.mean(d3) if d3 else float("nan")})
+    if not rows:
+        print(f"[price] nothing matched {a.price_runs} for k={a.price_k:g} {a.price_class}", file=sys.stderr)
+        return
+    path = os.path.join(a.out, "renyi_price.csv")
+    with open(path, "w", newline="") as f:
+        wr = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        wr.writeheader()
+        wr.writerows(rows)
+    print(f"\nprice at k={a.price_k:g} on {a.price_class} prompts")
+    print(f"{'arm':>12s} {'n':>4s} {'risky unchanged %':>18s} {'active %':>9s} {'distinct-3':>11s}")
+    for r in sorted(rows, key=lambda r: -r["risky_unchanged_pct"]):
+        print(f"{r['arm']:>12s} {r['n']:4d} {r['risky_unchanged_pct']:18.2f} "
+              f"{r['active_pct']:9.2f} {r['distinct3']:11.4f}")
+    print(f"wrote {path} ({len(rows)} arms)")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", default="output/phase4")
     ap.add_argument("--out", default="results")
     ap.add_argument("--caps", default="results/certificate_cap_summary.csv")
+    ap.add_argument("--price-runs", default="", metavar="GLOB",
+                    help="ordinary-prompt runs to price the orders, e.g. 'output/phase4/util_*'")
+    ap.add_argument("--price-class", default="neutral",
+                    help="prompt class to price on; must be complete in every run being compared")
+    ap.add_argument("--price-k", type=float, default=3.0)
     a = ap.parse_args()
 
     caps = list(csv.DictReader(open(a.caps))) if os.path.exists(a.caps) else []
@@ -68,6 +131,8 @@ def main():
         print(f"no renyi runs found under {a.runs}", file=sys.stderr)
         return 1
     rows.sort(key=lambda r: (r["k"], r["mode"], r["L"], r["alpha"]))
+    if a.price_runs:
+        price(a)
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, "renyi_sweep.csv")
     with open(path, "w", newline="") as f:
