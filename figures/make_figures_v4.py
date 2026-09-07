@@ -115,19 +115,57 @@ def order_invariance():
     _save(fig, "order_invariance")
 
 
+def onset_collapse():
+    """The vacuity threshold is tight, and it is the natural scale: single-query recall from two
+    independent (anchor, risky) pairs falls on one curve once the budget is measured in units of
+    the safe model's surprisal rate on the protected work."""
+    import csv as _csv, statistics as _st, sys as _sys
+    _sys.path.insert(0, str(REPO))
+    from analysis.onset import curve
+    P = [("TinyComma 1.8B + memorised Llama-3.1-8B", "output/phase4/fine_tc/composition_summary.csv",
+          "results/budget_path.csv", "C0", "o"),
+         ("Comma 7B + memorised Comma 7B", "output/phase4/fine_comma/composition_summary.csv",
+          "results/budget_path_comma7b.csv", "C3", "s")]
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.5))
+    for name, comp, per, col, mk in P:
+        p_ = REPO / comp
+        if not p_.exists():
+            raise FileNotFoundError(p_)
+        sx = _st.median(float(r["s_mean"]) for r in _csv.DictReader(open(REPO / per)))
+        c = curve(str(p_), "single", 0)
+        ks = sorted(c)
+        ax.plot(ks, [c[k] for k in ks], mk + "-", color=col, lw=1.3, ms=3.6, label=name)
+        ax.axvline(sx, color=col, lw=0.8, ls=":")
+        ax2.plot([k / sx for k in ks], [c[k] for k in ks], mk + "-", color=col, lw=1.3, ms=3.6,
+                 label=f"{name.split('+')[0].strip()}  ($s(x)={sx:.2f}$)")
+    ax.set_xlabel("budget $k$ (nats per token)")
+    ax.set_ylabel("single-query recall")
+    ax.set_title("raw budget", fontsize=8)
+    ax.legend(frameon=False, fontsize=6.0)
+    ax2.axvline(1.0, color="0.35", lw=0.9, ls="--")
+    ax2.annotate("certificate\nvacuous", xy=(1.0, 0.09), xytext=(1.03, 0.085), fontsize=6.2, color="0.35")
+    ax2.set_xlabel("rescaled budget  $k / s(x)$")
+    ax2.set_title("rescaled by the vacuity threshold", fontsize=8)
+    ax2.legend(frameon=False, fontsize=6.2)
+    for a_ in (ax, ax2):
+        a_.grid(alpha=0.25, lw=0.5)
+        a_.set_ylim(bottom=-0.004)
+    _save(fig, "onset_collapse")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
     a = ap.parse_args()
     print("rebuilding plan-v4 figures from results/")
-    for fn in (frontier_scaling, opening_effect, order_invariance):
+    for fn in (frontier_scaling, opening_effect, order_invariance, onset_collapse):
         try:
             fn()
         except FileNotFoundError as e:
             print(f"  SKIP {fn.__name__}: {e}")
     if a.copy_to:
         import shutil
-        for n in ("frontier_scaling", "opening_effect", "order_invariance"):
+        for n in ("frontier_scaling", "opening_effect", "order_invariance", "onset_collapse"):
             src = OUT / f"{n}.pdf"
             if src.exists():
                 shutil.copy(src, Path(a.copy_to).expanduser() / f"{n}.pdf")

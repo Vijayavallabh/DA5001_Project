@@ -102,3 +102,17 @@ def test_the_renyi_conversion_bound_in_proposition_1_is_valid():
             rhs = min(1.0, math.exp(K * exp) * qe ** exp)
             worst = min(worst, rhs - pe)
     assert worst > -1e-9, f"counterexample to the conversion bound, slack {worst:.3e}"
+
+
+def test_onset_crossing_interpolates_within_the_bracket():
+    """analysis.onset.crossing must return the interpolated crossing, not the first grid point
+    above the threshold. It reported the latter until the loop was fixed to advance its bracket."""
+    from analysis.onset import crossing
+    lo, hi, est = crossing({1.5: 0.0, 2.0: 0.0, 2.6: 0.0, 3.2: 0.022}, 0.01)
+    assert (lo, hi) == (2.6, 3.2), (lo, hi)
+    assert 2.6 < est < 3.2, est
+    assert abs(est - (2.6 + 0.6 * 0.01 / 0.022)) < 1e-9
+    # already above threshold at the smallest budget probed -> no bracket
+    assert crossing({1.0: 0.5, 2.0: 0.6}, 0.01) == (None, 1.0, 1.0)
+    # never reaches the threshold
+    assert crossing({1.0: 0.0, 2.0: 0.001}, 0.01) == (None, None, None)

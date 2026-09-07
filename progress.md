@@ -634,3 +634,40 @@ absent and was added after checking the arXiv record ("ICLR 2021 camera-ready ve
 Paper state: 10 pages total, **references start on page 8, so the main text is within the 9-page
 ICLR limit** with the intro, abstract, background and limitations still to write. 0 overfull,
 0 undefined citations, 2 `??` pointing at those unwritten sections.
+
+**feat-043 THE VACUITY THRESHOLD IS TIGHT** — `analysis/onset.py` -> `results/onset.csv`,
+`results/onset_collapse.csv`; fine k grids in `output/phase4/fine_{tc,comma}` (~1.4 GPU-hours).
+This is the strongest empirical result in phase 4 and it reframes the paper.
+
+  Proposition 1 locates the point where the certificate goes vacuous and shows no order moves it.
+  It does not say the point is in the right place. A correct bound that fires far too early would
+  deserve to be ignored. So we measured where leakage actually begins, on a k grid fine enough to
+  resolve it, for two pairs whose thresholds differ by 1.35x (3.24 vs 2.39 nats/token):
+
+      pair                    strategy   s(x)   bracket        onset   onset/s(x)
+      TinyComma + mem 8B      single     3.24   (2.6, 3.2]     2.87    0.89
+      Comma-7B  + mem 7B      single     2.39   (2.0, 2.4]     2.13    0.89
+      TinyComma + mem 8B      oracle     3.24   (2.0, 2.6]     2.05    0.63
+      Comma-7B  + mem 7B      oracle     2.39   (1.5, 2.0]     1.57    0.66
+
+  **Single-query leakage begins at 0.89 s(x) on both pairs, to two decimals**, and the onset ratio
+  across pairs (1.35) equals the threshold ratio (1.35). The certificate is NOT a loose bound.
+
+  Stronger: s(x) is the natural UNIT. Plotted against k/s(x) the two pairs collapse onto one curve
+  over k/s in [0.7, 1.0] -- mean |difference| **0.0014**, max 0.0027, and 0.022 vs 0.023 at the
+  threshold itself -- and the collapse degrades tenfold (mean 0.015) above it. Oracle windows do
+  not collapse as tightly (0.031), which is what a per-WINDOW allowance K_i = k L should do.
+  Figure `figures/onset_collapse.pdf`.
+
+  Consequence for the paper's message: the number a rights-holder needs already exists, is
+  computable from the safe model and the work alone with no access to the risky model and no
+  decoding, and predicts the onset to within ~10%. It is simply not the number being published,
+  and every budget the mechanism's authors evaluate (k in {3,5,10,20}) is above it.
+
+  **Bug found and pinned.** `analysis/onset.crossing` never advanced its bracket, so it reported the
+  first grid point at or above the threshold instead of the interpolated crossing (3.20/2.40 rather
+  than 2.87/2.13). Fixed; `tests/test_regimes.py::test_onset_crossing_interpolates_within_the_bracket`.
+  The corrected numbers are the stronger ones -- 0.89/0.89 rather than 0.99/1.00.
+
+Consistency: 26 further numeric checks on `sections/onset.tex`, 0 mismatches. 72 tests.
+Paper: 11 pages total, references start on page 9, main text 8 pages (ICLR limit 9), 0 overfull.
