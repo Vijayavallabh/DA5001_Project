@@ -229,6 +229,10 @@ def main():
     ap.add_argument("--risky", default=RISKY)
     ap.add_argument("--n-ordinary", type=int, default=300)
     ap.add_argument("--ordinary-run", default="output/sweep_chat")
+    ap.add_argument("--ordinary-jsonl", default="",
+                    help="feat-042: use completions from scripts/gen_ordinary.py instead of the "
+                         "k=-1 trajectory logs, so c_use can be recomputed against a second risky "
+                         "model. Pair with --risky set to the model that wrote them.")
     ap.add_argument("--limit-passages", type=int, default=None)
     ap.add_argument("--dtype", default="bfloat16")
     a = ap.parse_args()
@@ -236,7 +240,12 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     items = spans(a)
     works = load_works(a.data, limit=a.limit_passages)
-    ordinary = ordinary_texts(a.n_ordinary, a.ordinary_run)
+    if a.ordinary_jsonl:
+        ordinary = [(r["cls"], r["id"], r["prompt"], r["generation"])
+                    for r in map(json.loads, open(a.ordinary_jsonl)) ][: a.n_ordinary]
+        print(f"[scaling] ordinary completions from {a.ordinary_jsonl} (risky = {a.risky})", flush=True)
+    else:
+        ordinary = ordinary_texts(a.n_ordinary, a.ordinary_run)
     print(f"[scaling] {len(items)} fixed spans, {len(works)} passages, {len(ordinary)} ordinary texts", flush=True)
 
     todo = [(m, c, p) for m, c, p in SAFE_MODELS if a.models is None or m in a.models]
