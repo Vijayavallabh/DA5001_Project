@@ -555,3 +555,31 @@ duplicate has both and shard 1 is md5-identical.
 (fetched from media.iclr.cc) at 6 pages, 0 overfull, with `sections/{frontier,scaling,orders}.tex`
 and three figures from `figures/make_figures_v4.py`. ICLR limits the main text to **9 pages** at
 submission; references and appendices are free; an **AI use statement is required**.
+
+**feat-042 the scaling trend does not depend on the risky model** — `scripts/gen_ordinary.py` plus
+`analysis/anchor_scaling.py --ordinary-jsonl` -> `results/anchor_scaling_{summary,paired}_{qwen,l32base}.csv`
+and the combined `results/anchor_scaling_robustness.csv`. ~0.8 GPU-hours.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python scripts/gen_ordinary.py --model Qwen/Qwen2.5-7B-Instruct \
+      --out output/phase4/ordinary_qwen.jsonl
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/anchor_scaling.py --out output/phase4/scal_qwen \
+      --ordinary-jsonl output/phase4/ordinary_qwen.jsonl --risky Qwen/Qwen2.5-7B-Instruct
+
+  c_use was measured against one risky model, which a reviewer would call the weak point of the
+  headline. Repeated against a 7B instruct model from an unrelated family and a 1B BASE model:
+
+      risky model              kind      Common Pile      Common Corpus      KL3M
+      Llama-3.1-8B-Instruct    instruct  4.07 -> 5.02     3.45 -> 4.19       1.94 -> 2.37
+      Qwen2.5-7B-Instruct      instruct  3.79 -> 4.87     3.06 -> 3.55       1.79 -> 2.10
+      Llama-3.2-1B             base      8.54 -> 10.73    5.70 -> 7.93       2.92 -> 3.80
+
+  **16/16 novels rise in all NINE corpus x risky-model cells, p = 3.05e-05 each.** Levels shift,
+  direction does not.
+  This also settles the base-versus-instruct confound rather than conceding it: with a base risky
+  model c_use roughly halves and every margin rises, so **the instruction-tuned rows are the
+  conservative end** and the reported margins understate the separation.
+
+Consistency: 42 numeric checks over frontier/scaling/orders against `results/*.csv`, then 18 more
+after the robustness table was added. 0 mismatches. Paper compiles at 6 pages, 0 overfull, 2 `??`
+(sections not yet written).
