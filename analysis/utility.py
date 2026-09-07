@@ -145,11 +145,27 @@ def main():
     ap.add_argument("--judge-per-cell", type=int, default=60, help="non-identical pairs judged per arm and class")
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--no-judge", action="store_true", help="identical and degeneracy only, no GPU")
+    ap.add_argument("--extra-arm", action="append", default=[], metavar="LABEL|CONSTRAINT|K|DIR",
+                    help="plan v4: score an arm outside the built-in ARMS table, pipe-separated so a "
+                         "constraint may contain a colon, e.g. "
+                         "'renyi a=8|renyi:8|3.0|output/phase4/util_renyi_8'. Repeatable.")
+    ap.add_argument("--baseline-dir", default="",
+                    help="where the k=-1 baseline lives, if not the built-in output/sweep_plain")
     args = ap.parse_args()
     rng = random.Random(args.seed)
 
+    table = list(ARMS)
+    for spec in args.extra_arm:
+        parts = spec.split("|")
+        if len(parts) != 4:
+            ap.error(f"--extra-arm needs LABEL|CONSTRAINT|K|DIR, got {spec!r}")
+        table.append((parts[0], parts[1], float(parts[2]), parts[3]))
+    if args.baseline_dir:
+        table = [(l, c, k, args.baseline_dir if (l == "risky only" and k == -1.0) else d)
+                 for l, c, k, d in table]
+
     arms, activity = {}, {}
-    for label, constraint, k, run in ARMS:
+    for label, constraint, k, run in table:
         act = {}
         d = load_arm(run, k, constraint, act)
         if d:
