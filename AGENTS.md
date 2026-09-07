@@ -47,13 +47,13 @@ Before writing code:
 | Phase-2 results | `results/`: `natural_memorisation.csv`, `composition_70b.csv`, `composition_8b_{kl,pathwise}.csv` (+ `_per_passage`), `odometer.csv` (+ `_per_passage`), `bank_cap.csv`, `concentration.csv` (+ `_summary`), `pathwise_price.csv`, `prefix_debt_ablation.csv`, `extraction_cost_{kl,pathwise,pathwise_lo}.csv` (+ `_windows`), `budget_path.csv` (+ `_summary`), `warped_anchor.csv`, `latent_leakage_summary.csv`, `burst_audit.csv` |
 | Artifact | `artifact/` (committed, 179 files + `MANIFEST.sha256`), rebuilt by `scripts/build_artifact.sh artifact` → `artifact.zip` (23 MB, gitignored). The builder excludes `hf_cache/`; `README_artifact.md` is its README and lists every reproduction command |
 | Paper, bib, figures | `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.tex` + `sections/*.tex` (SaTML version; the arXiv version is `satml_2027_arxiv_v1.tex`), `references.bib` (138 entries, all verified; additions are also kept in `bib_additions_2026-09-06.bib` and `bib_additions_2026-09-07.bib`, explained in `LITERATURE_REVIEW.md`, with the 2026-09-06 verification reports in `bibcheck_2026-09-06/`); `figures/` (copied by `figures/make_figures.py --copy-to <that dir>`); appendix proofs in `sections/appendix_theory.tex`; PDF checkpoints `satml_2027_phase1_2026-09-06.pdf` and `satml_2027_phase2_2026-09-06.pdf`; section backups `sections/intro_v1_2026-09-05.tex` and `sections/related_work_v2_2026-09-06.tex`. Compile with `~/.local/bin/tectonic -X compile satml_2027.tex` (no pdflatex on this box). `~` is `/home/sports` here, not the project home: use absolute paths |
-| Tests | `tests/` (30 tests: seeds, invariant, chat template, metrics, confidence sequence, E2 stats, plus `test_pathwise.py`, `test_bank_cap.py`, `test_warp.py`, `test_budget_path.py`, `test_composition_helpers.py`, `test_latent_leakage.py`); `./init.sh` runs them |
+| Tests | `tests/` (47 tests: seeds, invariant, chat template, metrics, confidence sequence, E2 stats, plus `test_pathwise.py`, `test_bank_cap.py`, `test_warp.py`, `test_budget_path.py`, `test_composition_helpers.py`, `test_latent_leakage.py` and the phase-3 additions `test_separation.py`, `test_length_scaling.py`, `test_utility.py`, `test_cpfuse.py`, `test_compute_hours.py`); `./init.sh` runs them |
 
 ## Verification Commands
 
 ```bash
 ./init.sh                      # full baseline verification (fails fast)
-.venv/bin/python -m pytest -q tests   # 30 tests
+.venv/bin/python -m pytest -q tests   # 47 tests
 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 \
   --cap-neutral 2 --cap-val 2 --cap-test 2 --cap-attack-train 2 --cap-factual 2 --cap-creative 2 \
   --output-dir output/smoke   # GPU smoke test for E1 (one A100; set CUDA_DEVICE_ORDER=PCI_BUS_ID)

@@ -42,8 +42,8 @@ length scaling,output/phase3/feat033.log,1,2026-09-07 02:32,2026-09-07 02:37,0.0
 utility judge,output/phase3/feat029.log,1,2026-09-07 14:32,2026-09-07 14:51,0.32,0.32,dir_birth,0.0,feat-029; Qwen2.5-7B judge
 prefix debt k=20 (70B),output/phase3/nm/hp1_B_nodebt_k20,2,2026-09-07 14:26,2026-09-07 14:38,0.21,0.42,dir_birth,0.0,feat-032
 prefix debt k=20 (8B),output/phase3/prefix_ablation_k20,1,2026-09-07 14:44,2026-09-07 14:47,0.04,0.04,dir_birth,0.0,feat-032
-CP-Fuse fine-tune A,output/phase3/cpfuse_m0,1,2026-09-07 15:16,2026-09-07 15:16,0.0,0.0,dir_birth,0.0,feat-030; disjoint shard 0/2
-CP-Fuse fine-tune B,output/phase3/cpfuse_m1,1,2026-09-07 15:16,2026-09-07 15:16,0.0,0.0,dir_birth,0.0,feat-030; disjoint shard 1/2
+CP-Fuse fine-tune A,output/phase3/cpfuse_m0,1,2026-09-07 15:01,2026-09-07 15:16,0.25,0.25,log_elapsed,0.0,feat-030; disjoint shard 0/2
+CP-Fuse fine-tune B,output/phase3/cpfuse_m1,1,2026-09-07 15:01,2026-09-07 15:16,0.25,0.25,log_elapsed,0.0,feat-030; disjoint shard 1/2
 CP-Fuse audit,output/phase3/cpfuse_audit,1,2026-09-07 15:23,2026-09-07 16:13,0.84,0.84,dir_birth,0.0,feat-030
 70B seed-length checks,output/phase2/nm_smoke,2,2026-09-06 01:23,2026-09-06 01:53,0.5,1.01,dir_birth,0.0,feat-017; nm_check* share the window
 70B audit,output/phase2/nm,2,2026-09-06 01:53,2026-09-06 05:33,3.67,7.34,chain,0.0,"feat-018, all sub-runs"

@@ -7,7 +7,7 @@
 - **Venue: SaTML 2027 only.** ICLR 2027 closes first (abstract Sep 18, paper Sep 25 AoE) and both CFPs bar parallel archival submission; the SaTML form asks whether the paper is under review elsewhere, and both venues decide Dec 16. The ICLR-format derivative (`iclr_2027.tex`) is drafted after Oct 2 for ICML 2027 (abstract ~Jan 16 2027 per aggregators — confirm against the official CFP).
 - **Manuscript:** `sub/satml/satml_2027.pdf`, **21 pages with the body ending exactly on page 12**, 0 overfull, 0 `??`, 137 cited of 138; checkpoint `satml_2027_phase3_2026-09-07.pdf`. Every new number was verified cell by cell against `results/` (utility 36/36, prefix-debt k=20 8/8, CP-Fuse 7/7, 0 mismatches).
 - **What phase 3 added:** a second anchor (the vacuity result survives and worsens — a 7B Common Pile anchor is vacuous for 74% of passages at k=1 against TinyComma's 44%); length scaling (whole-work vacuity collapses with length but the per-window certificate the adversary faces does not); an externally judged utility evaluation (at k>=3 the KL decoder is indistinguishable from not constraining; the pathwise decoder costs more in the deployed band); Proposition 5 (no per-user KL budget separates a reader from a reconstructor — at k=20 the budget holding an adversary to a tenth of a work admits 0.61 of one ordinary answer); the prefix-debt ablation bounded at k=20 (off/on = 1.0x for both risky models); and a second mechanism (CP-Fuse holds against the windowed attack, so composition is a failure of *budgeted* mechanisms specifically).
-- **Compute:** phase 3 cost **1.8 GPU-hours** against a 19.5-hour estimate. Paper total **56.0 GPU-hours**, and the `LLM usage considerations` statement now says 47 + 9.
+- **Compute:** phase 3 cost **2.3 GPU-hours** against a 19.5-hour estimate. Paper total **56.5 GPU-hours**, and the `LLM usage considerations` statement now says 48 + 9 with the three fine-tunes counted inside it. The two CP-Fuse fine-tunes had been recorded as 0.00 GPU-hours because a merge writes their output directory at the end of the run; `analysis/compute_hours.py` now reads their duration from their own logs.
 - **Artifact v3:** `artifact/` 210 files + `MANIFEST.sha256`, `artifact.zip` 23 MB, manifest verified, anonymity scan clean.
 - **Blocked and recorded:** feat-028b is impossible — `common-pile/comma-v0.1-2t` has a 64,000-token vocabulary against Llama-3's 128,256 and anchored decoding needs one shared vocabulary, so no second anchor can be fused with a Llama-3 risky model. It is in the paper's Limitations.
 - Branch / commit: `master`. Nothing is running; all GPUs released.
@@ -48,7 +48,8 @@ Phase 2 (2026-09-06):
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Baseline | `./init.sh` | PASS (exit 0, last run 2026-09-06 23:19) | 30 tests inside |
+| Baseline | `./init.sh` | PASS (exit 0, last run 2026-09-07 17:05) | 47 tests inside |
+| References | `bibcheck_2026-09-07/run_hallucinator.py` | 137 checked, 129 verified, 8 `not_found` | all 8 hand-verified real, see `hand_verified.md`; 0 changed |
 | Imports | `.venv/bin/python -c "import a_patch, dap.shared"` | PASS | covered by init.sh step 2 |
 | GPU | `.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.device_count())"` | True, 5 local GPUs | 4×A100 usable (`nvidia-smi` 0,1,2,4); index 3 is a 4 GB T400. The DGX is unreachable from this account |
 | feat-002 | `.venv/bin/python analysis/reanalyze_logs.py --logs output --out results` | PASS (0.195% active at k=3, 96/999 L>K at k=1, 0 violations) | 6.8 s, no GPU |

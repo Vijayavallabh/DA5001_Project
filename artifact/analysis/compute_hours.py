@@ -10,9 +10,10 @@ together they are well under an hour.
 
 Usage: .venv/bin/python analysis/compute_hours.py [--out results]
 """
-import argparse, csv, os, subprocess, time
+import argparse, csv, os, re, subprocess, time
 
-# (job, path, gpus, start rule, note).  "birth" = directory creation; "after:<job>" = queued in a chain.
+# (job, path, gpus, start rule, note).  "birth" = directory creation; "after:<job>" = queued in a chain;
+# "elapsed:<log>" = duration read from the job's own log, for jobs whose directory is written at the end.
 JOBS = [
     ("feat-003 smoke",        "output/smoke_feat003",            1, "birth", ""),
     ("certificate strength",  "output/certcap_rerun.log",        1, "birth", "feat-006"),
@@ -58,8 +59,8 @@ JOBS = [
     ("utility judge",           "output/phase3/feat029.log",         1, "birth", "feat-029; Qwen2.5-7B judge"),
     ("prefix debt k=20 (70B)",  "output/phase3/nm/hp1_B_nodebt_k20", 2, "birth", "feat-032"),
     ("prefix debt k=20 (8B)",   "output/phase3/prefix_ablation_k20", 1, "birth", "feat-032"),
-    ("CP-Fuse fine-tune A",     "output/phase3/cpfuse_m0",           1, "birth", "feat-030; disjoint shard 0/2"),
-    ("CP-Fuse fine-tune B",     "output/phase3/cpfuse_m1",           1, "birth", "feat-030; disjoint shard 1/2"),
+    ("CP-Fuse fine-tune A",     "output/phase3/cpfuse_m0",           1, "elapsed:output/phase3/cpfuse_ft0.log", "feat-030; disjoint shard 0/2"),
+    ("CP-Fuse fine-tune B",     "output/phase3/cpfuse_m1",           1, "elapsed:output/phase3/cpfuse_ft1.log", "feat-030; disjoint shard 1/2"),
     ("CP-Fuse audit",           "output/phase3/cpfuse_audit",        1, "birth", "feat-030"),
     ("70B seed-length checks","output/phase2/nm_smoke",          2, "birth", "feat-017; nm_check* share the window"),
     ("70B audit",             "output/phase2/nm",                2, "after:70B seed-length checks", "feat-018, all sub-runs"),
@@ -84,6 +85,13 @@ def times(path):
     return crtime(path) or stamps[0], stamps[-1], max(gaps, default=0.0)
 
 
+def log_elapsed(path):
+    """Last cumulative epoch time a fine-tune log printed, e.g. "(908s)". Excludes the merge
+    write that follows it, so it understates the run by ~16 s."""
+    text = open(path, errors="ignore").read()
+    return max((float(m) for m in re.findall(r"\((\d+(?:\.\d+)?)s\)", text)), default=0.0)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
@@ -97,14 +105,20 @@ def main():
             continue
         birth, end, gap = times(path)
         idle = gap if (rule.endswith("-gap") and gap > args.gap_minutes * 60) else 0.0
-        start = ends[rule.split(":", 1)[1]] if rule.startswith("after:") else birth
+        if rule.startswith("after:"):
+            start = ends[rule.split(":", 1)[1]]
+        elif rule.startswith("elapsed:"):
+            start = end - log_elapsed(rule.split(":", 1)[1])
+        else:
+            start = birth
         hours = max(0.0, (end - start - idle) / 3600)
         ends[name] = end
         rows.append(dict(job=name, path=path, gpus=gpus,
                          start=time.strftime("%Y-%m-%d %H:%M", time.localtime(start)),
                          end=time.strftime("%Y-%m-%d %H:%M", time.localtime(end)),
                          wall_hours=round(hours, 2), gpu_hours=round(hours * gpus, 2),
-                         start_source="chain" if rule.startswith("after:") else "dir_birth",
+                         start_source=("chain" if rule.startswith("after:") else
+                                       "log_elapsed" if rule.startswith("elapsed:") else "dir_birth"),
                          idle_removed_hours=round(idle / 3600, 2), note=note))
 
     os.makedirs(args.out, exist_ok=True)
@@ -115,10 +129,11 @@ def main():
 
     small = sum(r["gpu_hours"] for r in rows if r["gpus"] == 1)
     large = sum(r["gpu_hours"] for r in rows if r["gpus"] == 2)
-    tune = next(r["gpu_hours"] for r in rows if r["job"] == "memoriser fine-tune")
+    tunes = [r for r in rows if "fine-tune" in r["job"]]
+    tune = sum(r["gpu_hours"] for r in tunes)
     print(f"8B jobs (1 GPU):   {small:6.1f} GPU-hours  ({small - tune:.1f} excluding the fine-tune)")
     print(f"70B jobs (2 GPUs): {large:6.1f} GPU-hours")
-    print(f"fine-tune:         {tune * 60:6.0f} minutes")
+    print("fine-tunes:        " + ", ".join(f'{r["job"]} {r["gpu_hours"] * 60:.0f} min' for r in tunes))
     print(f"total:             {small + large:6.1f} GPU-hours -> {args.out}/compute_hours.csv")
 
 
