@@ -583,3 +583,36 @@ and the combined `results/anchor_scaling_robustness.csv`. ~0.8 GPU-hours.
 Consistency: 42 numeric checks over frontier/scaling/orders against `results/*.csv`, then 18 more
 after the robustness table was added. 0 mismatches. Paper compiles at 6 pages, 0 overfull, 2 `??`
 (sections not yet written).
+
+**Second (anchor, risky) pair complete** — `results/composition_comma7b{,_summary,_heldout}.csv`,
+`results/budget_path_comma7b{,_summary}.csv`. 45 cells, 9 budgets, 5 strategies, **31,640 budgeted
+queries, 0 invariant violations**. ~1.3 GPU-hours.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/composition_attack.py --safe-model common-pile/comma-v0.1-2t \
+      --risky-model output/phase4/memorizing_comma7b --k-values -1 0 0.15 0.5 1 3 5 10 20 --limit 100 \
+      --out output/phase4/comp_comma7b
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/budget_path.py --safe-model common-pile/comma-v0.1-2t \
+      --composition output/phase4/comp_comma7b/composition.csv --limit 100 --out results \
+      --prefix budget_path_comma7b
+
+  Three things this pair settles that the original could not:
+  - the anchor is **clean**: serving it alone recovers 0.0000 under every strategy, against 0.0032
+    for TinyComma, so a little of what looked like decoder leakage was the anchor's own corpus;
+  - **at k=20 the decoder is exactly the identity** -- single recall 0.7189 against the
+    unconstrained 0.7189 to four decimals, oracle-20 0.9407 against 0.9435;
+  - the uncertified interval **reproduces**: k_crit/s(x) = 4.73 here against 4.30 for the original
+    pair, on different models, a different tokenizer, and targets the anchor never saw.
+
+  Where leakage begins: s(x) = 2.39 nats/token (certificate vacuous above), k_crit = 11.32
+  (reproduction provably impossible below), measured recall 0.000 up to k=1, 0.048 at k=3, 0.197 at
+  k=5. So leakage starts near s(x) and far below k_crit. A finer k grid around the threshold is
+  running for both pairs (`output/phase4/fine_{comma,tc}`) to locate the onset instead of bracketing
+  it -- the current grid jumps 1 -> 3 and both thresholds (2.39, 3.24) sit inside that gap, so the
+  coincidence is not yet a measurement.
+
+  **Stated as a limit, not buried:** the budget-path predictor brackets the aggregate transition and
+  does NOT screen an individual work. Per-passage Pearson 0.16-0.29, systematic over-prediction, and
+  28 passages at k=10 that it calls infeasible with measured recall above 0.5.
+
+Consistency: 16 further numeric checks on `sections/second_anchor.tex`, 0 mismatches.
