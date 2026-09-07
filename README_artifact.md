@@ -9,13 +9,13 @@ traces to a file in `results/`, and every figure is rebuilt from those files by 
 |---|---|
 | `a_patch/` | The audited Anchored Decoding library (mechanism unchanged; `k_radius=-1` = risky only, `0` = anchor only). Additions for this audit: `constraint='kl'\|'pathwise'` (Δmax accounting, `pathwise.py`), `bank_cap` (token bucket, `bank.py`), and `warp.py` (temperature and repetition penalty applied to both logit vectors before the solve, as He et al.'s Appendix B specifies). |
 | `dap/` | Experiment code: `h1.py -> dap/e1.py` (fixed workload, baselines, copying metrics), `h2.py -> dap/e2/` (prompt search; Bernstein proxy retired), `dap/stats.py` (seeds, metrics, per-trajectory `budget_check`, anytime-valid confidence sequence). |
-| `analysis/` | One script per audit: `reanalyze_logs.py` (C1/C2/C4 on released logs), `certificate_cap.py` (C3, with `--temperature/--repetition-penalty` for the warped anchor), `regime_sweep.py` (C2 sweep), `llr_tails.py` (C4), `composition_attack.py` (C5, C7: `--constraint pathwise`, `--bank-cap`, `--retries`, `--raw-prompt`, `--no-prefix-debt`, per-query logs), `natural_memorisation.py` (C7 aggregation + figure), `warped_anchor.py` (C3 under decoding settings), `latent_leakage.py` (anchor exposure), `budget_path.py` (Prop. 4 feasibility), `odometer.py` (C10 per-user budget replay), `check_bank_cap.py` and `burst_audit.py` (bank cap), `concentration.py` (C9 Freedman certificate), `pathwise_price.py` (C8 utility price), `extraction_cost.py` (Prop. 2), `recheck_violations.py` (per-query invariant recheck), `compute_hours.py` (GPU-hours from the run directories), `bank_burst.py`, `memorizing_recall.py`. |
+| `analysis/` | One script per audit: `reanalyze_logs.py` (C1/C2/C4 on released logs), `certificate_cap.py` (C3, with `--temperature/--repetition-penalty` for the warped anchor), `regime_sweep.py` (C2 sweep), `llr_tails.py` (C4), `composition_attack.py` (C5, C7: `--constraint pathwise`, `--bank-cap`, `--retries`, `--raw-prompt`, `--no-prefix-debt`, per-query logs), `natural_memorisation.py` (C7 aggregation + figure), `warped_anchor.py` (C3 under decoding settings), `latent_leakage.py` (anchor exposure), `budget_path.py` (Prop. 4 feasibility), `odometer.py` (C10 per-user budget replay), `check_bank_cap.py` and `burst_audit.py` (bank cap), `concentration.py` (C9 Freedman certificate), `pathwise_price.py` (C8 utility price), `extraction_cost.py` (Prop. 2), `recheck_violations.py` (per-query invariant recheck), `compute_hours.py` (GPU-hours from the run directories), `bank_burst.py`, `memorizing_recall.py`. Phase 3: `separation.py` (Prop. 5, the protective ratio and its figure, no GPU), `length_scaling.py` (vacuity against passage length), `utility.py` (C12, the judged utility table with its null arm), `cpfuse_audit.py` (the second mechanism), `anchor_control.py` (the two anchors on one identical span), `merge_prefix_debt.py` (rebuilds the prefix-debt table from the run directories). |
 | `recipes/` | `finetune_memorizing.py` + `memorizing_model.md`: the memorising risky model (weights not redistributed: they reproduce copyrighted text). |
 | `results/` | All CSV tables cited in the paper (see below). |
 | `figures/` | Paper figures (PDF/PNG) and `make_figures.py`. |
 | `data/` | Prompt sets (CopyBench book split, FactScore, WritingPrompts, neutral QA) exactly as sampled. |
-| `tests/` | `pytest -q tests` — 30 tests (seeds, invariants on a log sample, metrics, confidence sequence, budget checks, the pathwise and bank-cap rules, warping, budget-path feasibility). |
-| `scripts/` | Launchers used for the runs below: `run_regime_sweep.sh`, `run_memorizing_check.sh`, `run_natural_memorisation.sh`, `run_bank_cap.sh`, `build_artifact.sh`. |
+| `tests/` | `pytest -q tests` — 47 tests (seeds, invariants on a log sample, metrics, confidence sequence, budget checks, the pathwise and bank-cap rules, warping, budget-path feasibility, and the phase-3 additions: the separation inequality, length scaling, the utility verdict logic, the CP-Fuse fusion step, and the GPU-hour parser). |
+| `scripts/` | Launchers used for the runs below: `run_regime_sweep.sh`, `run_memorizing_check.sh`, `run_natural_memorisation.sh`, `run_bank_cap.sh`, `run_prefix_debt_k20.sh`, `download_second_anchor.py`, `build_artifact.sh`. |
 
 ## Results files
 
@@ -23,6 +23,7 @@ Released logs: `regime_table.csv`, `llr_tails.csv`, `prefix_debt_forced_tokens.c
 Certificate strength: `certificate_caps.csv`, `certificate_cap_summary.csv`, `certificate_caps_memoriser.csv`, `warped_anchor.csv`, `latent_leakage_summary.csv`.
 Sweeps: `regime_sweep.csv`, `llr_ratio_samples.csv`, `pathwise_price.csv`, `concentration.csv`, `concentration_summary.csv`.
 Attacks: `memorizing_model_recall.csv`, `composition.csv`, `composition_summary.csv` (phase 1), `composition_8b_kl.csv`, `composition_8b_pathwise.csv` (+ `_per_passage`), `budget_path.csv`, `budget_path_summary.csv`, `prefix_debt_ablation.csv`, `extraction_cost_{kl,pathwise,pathwise_lo}.csv` (+ `_windows`).
+Phase 3: `separation.csv`, `separation_summary.csv` (Prop. 5), `length_scaling.csv` (+ `_summary`), `utility.csv`, `utility_summary.csv` (C12), `cpfuse_audit.csv`, `cpfuse_audit_examples.csv`, `anchor_control.csv`, `certificate_caps_comma7b.csv` and `certificate_cap_summary_comma7b.csv` (the second anchor), `compute_hours.csv`.
 70B natural memorisation: `natural_memorisation.csv`, `composition_70b.csv`.
 Accounting across queries: `odometer.csv`, `odometer_per_passage.csv`, `bank_cap.csv`, `burst_audit.csv`.
 Compute: `compute_hours.csv` (per-job wall times and GPU-hours behind the paper's compute statement, from the run directories).
@@ -84,3 +85,43 @@ two 80 GB GPUs); optimiser `Qwen/Qwen2.5-7B-Instruct`. Set `CUDA_VISIBLE_DEVICES
 ## Integrity
 
 `MANIFEST.sha256` lists every file; verify with `sha256sum -c MANIFEST.sha256`.
+
+### Phase 3 (2026-09-07)
+
+```bash
+# second anchor, surprisal only (one A100, ~1 min): Comma v0.1-7B on the same passages.
+# Its vocabulary is 64,000 against Llama-3's 128,256, so it cannot be fused -- only totals in
+# nats are comparable, never a per-token rate beside TinyComma's.
+.venv/bin/python scripts/download_second_anchor.py
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/certificate_cap.py --safe-model common-pile/comma-v0.1-2t \
+    --risky-model '' --tag _comma7b --data data --out results
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/anchor_control.py --out results
+# vacuity against passage length (one A100, ~5 min): one forward pass per work gives every
+# prefix length and every window
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 \
+  .venv/bin/python analysis/length_scaling.py --out results --figures figures
+# Proposition 5: no GPU, reads results/per_trajectory.csv and results/odometer_per_passage.csv
+.venv/bin/python analysis/separation.py --results results --out results --figures figures
+# prefix-debt ablation at k=20: the 8B row, then the 70B row (TWO A100s), then the merge
+.venv/bin/python analysis/composition_attack.py --risky-model output/memorizing_llama8b \
+  --limit 100 --k-values 20 --modes single oracle --windows 50 --no-prefix-debt \
+  --out output/phase3/prefix_ablation_k20 --queries-out output/phase3/prefix_ablation_k20/queries.jsonl
+scripts/run_prefix_debt_k20.sh
+.venv/bin/python analysis/merge_prefix_debt.py --out results
+# utility (C12), one A100 ~20 min: no generation, it judges arms the phase-2 sweeps already produced.
+# 200 pairs per class x 3 classes = 600 judged pairs per arm, plus the null arm.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 \
+  .venv/bin/python analysis/utility.py --out results --judge-per-cell 200
+# second mechanism (CP-Fuse): two shard fine-tunes on disjoint halves of the attack split
+# (one A100 each, ~15 min), then the audit
+.venv/bin/python recipes/finetune_memorizing.py --splits attack_train --shard 0/2 --out output/phase3/cpfuse_m0
+.venv/bin/python recipes/finetune_memorizing.py --splits attack_train --shard 1/2 --out output/phase3/cpfuse_m1
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 \
+  .venv/bin/python analysis/cpfuse_audit.py --model-a output/phase3/cpfuse_m0 \
+    --model-b output/phase3/cpfuse_m1 --out results --limit 60
+# GPU-hours behind the compute statement, and the figures
+.venv/bin/python analysis/compute_hours.py --out results
+.venv/bin/python figures/make_figures.py --copy-to ""
+```

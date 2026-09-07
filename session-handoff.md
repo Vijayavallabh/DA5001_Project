@@ -50,6 +50,8 @@ Phase 2 (2026-09-06):
 |---|---|---|---|
 | Baseline | `./init.sh` | PASS (exit 0, last run 2026-09-07 17:05) | 47 tests inside |
 | References | `bibcheck_2026-09-07/run_hallucinator.py` | 137 checked, 129 verified, 8 `not_found` | all 8 hand-verified real, see `hand_verified.md`; 0 changed |
+| Anonymity | `scripts/build_artifact.sh` + PDF scan | PASS | builder had 3 holes (README never scanned, 3-token list, `.pytest_cache` shipped), all fixed |
+| Numbers | every table and prose figure vs `results/*.csv` | 5 fixed | `--` for a value that exists; an unmeasured greedy column; a double-rounded 61%; a mislabelled baseline column; a median called a total |
 | Imports | `.venv/bin/python -c "import a_patch, dap.shared"` | PASS | covered by init.sh step 2 |
 | GPU | `.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.device_count())"` | True, 5 local GPUs | 4×A100 usable (`nvidia-smi` 0,1,2,4); index 3 is a 4 GB T400. The DGX is unreachable from this account |
 | feat-002 | `.venv/bin/python analysis/reanalyze_logs.py --logs output --out results` | PASS (0.195% active at k=3, 96/999 L>K at k=1, 0 violations) | 6.8 s, no GPU |
