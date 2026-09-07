@@ -147,18 +147,25 @@ class AnchoredDecodingFactory:
                 if any(str(v) in ("cpu", "disk") for v in dm.values()):
                     warnings.warn("risky model has layers offloaded to CPU/disk; raise max_memory (throughput will collapse)", RuntimeWarning)
 
+        # Vocabulary compatibility. The two models must share one embedding table size, but that
+        # size may EXCEED the tokenizer's, because checkpoints are routinely padded up to a
+        # multiple of 128 (Common Pile comma: 64,000 real tokens, 64,256 embedding rows). Those
+        # extra rows are untrained padding, so they are permitted and then masked out of every
+        # solve by _mask_pad_rows -- refusing them outright, as this check used to, blocks any
+        # model family that pads, which is most of them outside Llama-3.
         target_vocab = len(tokenizer)
-        if safe_model.get_input_embeddings().weight.shape[0] != target_vocab:
+        v_safe = safe_model.get_input_embeddings().weight.shape[0]
+        v_risky = risky_model.get_input_embeddings().weight.shape[0]
+        for name, v in (("Safe", v_safe), ("Risky", v_risky)):
+            if v < target_vocab:
+                raise ValueError(
+                    f"{name} model vocab size ({v}) is smaller than the tokenizer's ({target_vocab}); "
+                    "the model cannot score every token the tokenizer can emit."
+                )
+        if v_safe != v_risky:
             raise ValueError(
-                f"Safe model vocab size ({safe_model.get_input_embeddings().weight.shape[0]}) "
-                f"does not match tokenizer vocab size ({target_vocab}). "
-                "Please use byte-level decoding (Coming soon...)"
-            )
-        if risky_model.get_input_embeddings().weight.shape[0] != target_vocab:
-            raise ValueError(
-                f"Risky model vocab size ({risky_model.get_input_embeddings().weight.shape[0]}) "
-                f"does not match tokenizer vocab size ({target_vocab}). "
-                "Please use byte-level decoding (Coming soon...)"
+                f"Safe model vocab size ({v_safe}) does not match risky model vocab size ({v_risky}). "
+                "Anchored decoding fuses two distributions over one shared vocabulary."
             )
 
         for mdl in (safe_model, risky_model):
@@ -203,6 +210,10 @@ class AnchoredDecodingFactory:
         self.safe_model = safe_model
         self.risky_model = risky_model
         self.tokenizer = tokenizer
+        # Tokens the tokenizer can actually emit. Embedding tables padded above this (comma-7b:
+        # 64,256 rows for 64,000 tokens) have untrained rows that _mask_pad_rows removes from
+        # every solve. None disables masking, for callers that build the factory without one.
+        self.usable_vocab = len(tokenizer) if tokenizer is not None else None
         self.k_radius = k_radius
         self.prefix_n = prefix_n
         self.eps_kl = eps_kl
@@ -395,6 +406,24 @@ class AnchoredDecodingFactory:
             raise ValueError("Input prompt should be of shape (batch_size, sequence length).")
         if self.safe_model.config.vocab_size != self.risky_model.config.vocab_size:
             raise ValueError("Models must have the same vocabulary.")
+
+    def _mask_pad_rows(self, safe_logits, risky_logits):
+        """Drive untrained padding rows to -inf before the divergence solve.
+
+        A checkpoint padded above len(tokenizer) carries embedding rows that were never trained.
+        Left in, they would enter Z(theta), the KL and the max log-ratio, and could be sampled into
+        a token id the tokenizer cannot decode. Masking both vectors identically keeps the solve
+        and the budget accounting over exactly the tokens the tokenizer can emit. When the table is
+        not padded (Llama-3: 128,256 rows, 128,256 tokens) this is a no-op.
+        """
+        n = getattr(self, "usable_vocab", None)
+        if n is None or safe_logits.shape[-1] <= n:
+            return safe_logits, risky_logits
+        safe_logits = safe_logits.clone()
+        risky_logits = risky_logits.clone()
+        safe_logits[..., n:] = -float("inf")
+        risky_logits[..., n:] = -float("inf")
+        return safe_logits, risky_logits
 
     def _prepare_attention_mask(self, input_ids, attention_mask, generation_config):
         if attention_mask is None:
@@ -836,6 +865,8 @@ class AnchoredDecodingFactory:
                 for eid in eos_token_id_list:
                     safe_logits[:, eid] = -float("inf")
                     risky_logits[:, eid] = -float("inf")
+
+            safe_logits, risky_logits = self._mask_pad_rows(safe_logits, risky_logits)
 
             B = safe_logits.size(0)
             device = safe_logits.device

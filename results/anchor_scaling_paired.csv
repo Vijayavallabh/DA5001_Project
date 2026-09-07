@@ -1,0 +1,4 @@
+corpus,small,large,n_novels,n_ordinary_paired,novels_margin_up,median_lift,sign_test_p,margin_small,margin_large
+commoncorpus,PleIAs/Pleias-350m-Preview,PleIAs/Pleias-3b-Preview,16,300,16,1.2071734499765499,3.0517578125e-05,3.452821263135447,4.219568695255893
+commonpile,jacquelinehe/tinycomma-1.8b-llama3-tokenizer,common-pile/comma-v0.1-2t,16,300,16,1.2308613122718555,3.0517578125e-05,4.112581730111818,5.018248753862633
+kl3m,alea-institute/kl3m-002-170m,alea-institute/kl3m-003-3.7b,16,300,16,1.2195883134294707,3.0517578125e-05,1.9481797952237252,2.3688885664233936

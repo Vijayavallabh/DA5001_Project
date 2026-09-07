@@ -24,7 +24,7 @@ Usage:
   CUDA_VISIBLE_DEVICES=0 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 \
     .venv/bin/python analysis/anchor_scaling.py --out results
 """
-import argparse, csv, json, os, statistics as st, sys, time, glob
+import argparse, csv, glob, json, math, os, statistics as st, sys, time
 
 import torch
 
@@ -97,7 +97,12 @@ def ordinary_texts(n, run_dir="output/sweep_chat", classes=("neutral", "factual"
                     break
             prompt = bare_instruction(served_prompt(agg))
             if len(gen) > 200 and prompt:
-                rows.append((cls, r["metadata"]["prompt_id"], prompt, gen))
+                # the same prompt is sampled with several seeds and each gives a DIFFERENT
+                # generation, so the row id must carry the seed. Keying on prompt_id alone
+                # collapses three trajectories into one and pairs c_use against an arbitrary seed.
+                md = r["metadata"]
+                uid = f'{md["prompt_id"]}#{md.get("trajectory_id", 0)}#{md.get("seed", 0)}'
+                rows.append((cls, uid, prompt, gen))
         rows.sort(key=lambda t: t[1])
         out += rows[: max(1, n // len(classes))]
     return out
@@ -173,6 +178,48 @@ def summarise(rows, risky_id):
     return out
 
 
+def paired_trend(rows, risky_id, families):
+    """Is the margin trend real, or a few odd novels?
+
+    Every model scores the SAME novels and the SAME ordinary generations, so the honest test is
+    paired: for each novel, compare its margin under the smallest and the largest model of a
+    family and count how many rise. An unpaired bootstrap over novels throws that pairing away
+    and gives intervals so wide they hide a universal effect.
+    """
+    s_by, ord_by = {}, {}
+    for r in rows:
+        if r["family"] == "passage":
+            s_by.setdefault(r["model"], {}).setdefault(r["work"], []).append(r["s_rate"])
+        elif r["family"] == "ordinary":
+            ord_by.setdefault(r["model"], {})[r["id"]] = r["total_nats"] / r["n_char"]
+
+    def c_use_of(m):
+        ids = sorted(set(ord_by.get(m, {})) & set(ord_by.get(risky_id, {})))
+        return st.median([ord_by[m][i] - ord_by[risky_id][i] for i in ids]), len(ids)
+
+    def sign_p(k, n):                      # two-sided exact binomial sign test
+        tail = sum(math.comb(n, i) for i in range(min(k, n - k) + 1)) / 2 ** n
+        return min(1.0, 2 * tail)
+
+    out = []
+    for fam, members in families.items():
+        members = [m for m in members if m in s_by]
+        if len(members) < 2:
+            continue
+        small, large = members[0], members[-1]
+        cs, n_ord = c_use_of(small)
+        cl, _ = c_use_of(large)
+        novels = sorted(set(s_by[small]) & set(s_by[large]))
+        lifts = [(st.median(s_by[large][n]) / cl) / (st.median(s_by[small][n]) / cs) for n in novels]
+        up = sum(l > 1 for l in lifts)
+        out.append({"corpus": fam, "small": small, "large": large, "n_novels": len(novels),
+                    "n_ordinary_paired": n_ord, "novels_margin_up": up,
+                    "median_lift": st.median(lifts), "sign_test_p": sign_p(up, len(novels)),
+                    "margin_small": st.median([st.median(v) for v in s_by[small].values()]) / cs,
+                    "margin_large": st.median([st.median(v) for v in s_by[large].values()]) / cl})
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
@@ -218,11 +265,27 @@ def main():
         wr.writeheader()
         wr.writerows(summary)
 
+    fams = {}
+    for m, c, _ in sorted(SAFE_MODELS, key=lambda t: (t[1], t[2])):
+        fams.setdefault(c, []).append(m)
+    paired = paired_trend(rows, a.risky, fams)
+    if paired:
+        with open(os.path.join(a.out, "anchor_scaling_paired.csv"), "w", newline="") as f:
+            wr = csv.DictWriter(f, fieldnames=list(paired[0].keys()))
+            wr.writeheader()
+            wr.writerows(paired)
+
     print(f"\n{'model':46s} {'params':>7s} {'c_use':>8s} {'s(x)':>8s} {'margin':>7s}  window")
     for r in summary:
         print(f"{r['model']:46s} {r['params']:7.2f} {r['c_use']:8.4f} {r['s_passage']:8.4f} "
               f"{r['margin']:7.2f}  {'OPEN' if r['window_open'] else 'closed'}")
-    print(f"\nwrote {a.out}/anchor_scaling.csv ({len(rows)} rows) and _summary.csv ({len(summary)} models)")
+    print(f"\n{'corpus':14s} {'novels up':>10s} {'median lift':>12s} {'sign p':>10s}  margin")
+    for r in paired:
+        print(f"{r['corpus']:14s} {r['novels_margin_up']:4d}/{r['n_novels']:<5d} "
+              f"{r['median_lift']:12.3f} {r['sign_test_p']:10.2e}  "
+              f"{r['margin_small']:.2f} -> {r['margin_large']:.2f}")
+    print(f"\nwrote {a.out}/anchor_scaling.csv ({len(rows)} rows), _summary.csv "
+          f"({len(summary)} models), _paired.csv ({len(paired)} families)")
 
 
 if __name__ == "__main__":
