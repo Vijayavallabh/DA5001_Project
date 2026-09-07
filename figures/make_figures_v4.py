@@ -1,0 +1,138 @@
+"""Plan v4 figures, rebuilt from results/*.csv only (same contract as figures/make_figures.py:
+no GPU, no logs, the analysis scripts own the numbers and this script only draws them).
+
+  frontier_scaling   <- results/anchor_scaling_summary.csv
+  opening_effect     <- results/opening_effect_summary*.csv
+  order_invariance   <- analysis.regimes.event_bound (closed form) + results/renyi_sweep.csv if present
+
+Usage: .venv/bin/python figures/make_figures_v4.py [--copy-to /path/to/manuscript/figures]
+"""
+import argparse, csv, os, sys
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+from analysis.regimes import event_bound  # noqa: E402
+
+RESULTS, OUT = REPO / "results", REPO / "figures"
+plt.rcParams.update({"font.size": 8, "axes.labelsize": 8, "legend.fontsize": 6.6,
+                     "xtick.labelsize": 7, "ytick.labelsize": 7.5})
+LABEL = {"commonpile": "Common Pile", "commoncorpus": "Common Corpus", "kl3m": "KL3M"}
+COLOR = {"commonpile": "C0", "commoncorpus": "C2", "kl3m": "C3"}
+
+
+def _save(fig, name):
+    for ext in ("pdf", "png"):
+        fig.savefig(OUT / f"{name}.{ext}", bbox_inches="tight", dpi=200)
+    plt.close(fig)
+    print(f"  wrote figures/{name}.pdf")
+
+
+def frontier_scaling():
+    """Both rates fall as the safe model improves; the one that must be ALLOWED falls faster than
+    the one that must be FORBIDDEN, so the separation between them widens with capability."""
+    rows = list(csv.DictReader(open(RESULTS / "anchor_scaling_summary.csv")))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.5))
+    for corpus in ("commonpile", "commoncorpus", "kl3m"):
+        g = sorted([r for r in rows if r["corpus"] == corpus], key=lambda r: float(r["params"]))
+        if not g:
+            continue
+        x = [float(r["params"]) for r in g]
+        c = COLOR[corpus]
+        ax.plot(x, [float(r["s_passage"]) for r in g], "o-", color=c, lw=1.3, ms=3.4,
+                label=f"{LABEL[corpus]}: $s(x)$, protected")
+        ax.plot(x, [float(r["c_use"]) for r in g], "s--", color=c, lw=1.3, ms=3.4, alpha=0.65,
+                label=f"{LABEL[corpus]}: $c_{{\\mathrm{{use}}}}$, ordinary")
+        ax2.plot(x, [float(r["margin"]) for r in g], "o-", color=c, lw=1.4, ms=3.8,
+                 label=LABEL[corpus])
+    ticks = sorted({float(r["params"]) for r in rows})
+    for a in (ax, ax2):
+        a.set_xscale("log")
+        a.set_xlabel("safe model parameters (B)")
+        a.grid(alpha=0.25, lw=0.5)
+        # default log ticks collide at these sizes; label the models we actually have
+        a.set_xticks([0.17, 0.35, 1.0, 3.0, 7.0])
+        a.set_xticklabels(["0.17", "0.35", "1", "3", "7"])
+        a.set_xticks(ticks, minor=True)
+        a.set_xticklabels([], minor=True)
+        a.set_xlim(0.13, 9.5)
+    ax.set_yscale("log")
+    ax.set_yticks([0.15, 0.2, 0.3, 0.5, 0.7, 1.0, 1.3])
+    ax.set_yticklabels(["0.15", "0.2", "0.3", "0.5", "0.7", "1.0", "1.3"])
+    ax.set_yticks([], minor=True)   # suppress the leftover 4x10^-1 style minor labels
+    ax.set_ylabel("nats per character")
+    ax.legend(ncol=1, frameon=False, loc="lower left")
+    ax2.set_ylabel("margin  $s(x)\\,/\\,c_{\\mathrm{use}}$")
+    ax2.axhline(1.0, color="0.4", lw=0.8, ls=":")
+    ax2.legend(frameon=False, loc="lower right")
+    _save(fig, "frontier_scaling")
+
+
+def opening_effect():
+    """The interval between certifying and protecting is an opening effect: one token of genuine
+    prefix removes most of it, and the same holds for every anchor we tried."""
+    files = {"Common Pile 7B": "opening_effect_summary.csv",
+             "TinyComma 1.8B": "opening_effect_summary_tinycomma18b.csv",
+             "Pleias 3B": "opening_effect_summary_pleias3b.csv",
+             "KL3M 3.7B": "opening_effect_summary_kl3m37b.csv"}
+    fig, ax = plt.subplots(figsize=(3.4, 2.5))
+    for i, (name, f) in enumerate(files.items()):
+        p = RESULTS / f
+        if not p.exists():
+            continue
+        g = sorted(csv.DictReader(open(p)), key=lambda r: int(r["skip_tokens"]))
+        ax.plot([int(r["skip_tokens"]) for r in g], [float(r["ratio_median"]) for r in g],
+                "o-", color=f"C{i}", lw=1.3, ms=3.4, label=name)
+    ax.axhline(1.0, color="0.4", lw=0.8, ls=":")
+    ax.set_xlabel("tokens of genuine prefix supplied by the adversary")
+    ax.set_ylabel("$k_{\\mathrm{crit}}/s(x)$  (uncertified width)")
+    ax.legend(frameon=False)
+    ax.grid(alpha=0.25, lw=0.5)
+    _save(fig, "opening_effect")
+
+
+def order_invariance():
+    """Every order becomes vacuous at the same budget. A stronger charge buys a tighter bound
+    below the threshold and does not move it."""
+    S = 205.0
+    Ks = [i * 2.0 for i in range(1, 121)]
+    fig, ax = plt.subplots(figsize=(3.4, 2.5))
+    for i, (a, lab) in enumerate([(1.0, r"$\alpha=1$  (KL, He et al.)"), (2.0, r"$\alpha=2$"),
+                                  (8.0, r"$\alpha=8$"), (float("inf"), r"$\alpha=\infty$  (pathwise)")]):
+        ax.plot(Ks, [event_bound(S, K, a) for K in Ks], lw=1.4, color=f"C{i}", label=lab)
+    ax.axvline(S, color="0.3", lw=0.9, ls="--")
+    ax.annotate(f"$K = S(x)$", xy=(S, 1e-4), xytext=(S * 0.42, 1e-4), fontsize=6.6, color="0.3")
+    ax.set_yscale("log")
+    ax.set_ylim(1e-12, 2)
+    ax.set_xlabel("sequence budget $K$ (nats)")
+    ax.set_ylabel("bound on $\\Pr[\\mathrm{reproduce}\\ x]$")
+    ax.legend(frameon=False, loc="lower right")
+    ax.grid(alpha=0.25, lw=0.5)
+    _save(fig, "order_invariance")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--copy-to", default="")
+    a = ap.parse_args()
+    print("rebuilding plan-v4 figures from results/")
+    for fn in (frontier_scaling, opening_effect, order_invariance):
+        try:
+            fn()
+        except FileNotFoundError as e:
+            print(f"  SKIP {fn.__name__}: {e}")
+    if a.copy_to:
+        import shutil
+        for n in ("frontier_scaling", "opening_effect", "order_invariance"):
+            src = OUT / f"{n}.pdf"
+            if src.exists():
+                shutil.copy(src, Path(a.copy_to).expanduser() / f"{n}.pdf")
+        print(f"copied to {a.copy_to}")
+
+
+if __name__ == "__main__":
+    main()
