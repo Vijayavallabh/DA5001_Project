@@ -1523,3 +1523,34 @@ before its single `write_text`, so the "Five pairs" paragraph, the section headi
 table row were silently dropped while the compile still succeeded. The numeric audit caught it
 (a missing `$2.58$`); without that check the paper would have carried a four-row table under
 five-pair prose. Edit scripts should write after each successful replacement, or assert first.
+
+### Retitle (2026-09-09)
+
+    was: What a Divergence Budget Can and Cannot Certify About a Language Model
+    now: A Divergence Budget Is Uninformative Without the Work It Protects
+         Vacuity, Extraction and Utility in Metered Decoding
+
+Chosen against what five pairs left standing. The old title was not wrong, but it promised a
+survey of a boundary; the paper now has one positive claim strong enough to name, and one claim it
+must no longer make.
+
+**Survives, and is what the title asserts.** Proposition 1: the bound goes vacuous at exactly
+$K = S(x)$, identically for every Renyi order, so $k$ read without $s(x)$ carries no risk
+information -- which is also the abstract's first two sentences. Theorem 1 and the measurement
+beside it: the same scalar is charged for utility and for extraction, at $10^3$--$10^4$ nats spent
+per nat bought. Section 3: the margin widens as safe models improve. Section 4, in its weakened
+form: $s(x)$ locates the onset within about a fifth across five pairs spanning 1.71x.
+
+**Does not survive, and the title must not imply it.** The fixed fraction 0.89 (pair 5 measures
+1.166) and the derivation $r(x)$ as a predictor of where leakage begins (refuted on level, and
+inverted on direction). A title built around a law or a constant would now be false.
+
+Rejected alternatives and why: "Metered Decoding Cannot Buy Utility Without Buying Extraction"
+overclaims -- the conclusion says the obstruction is *not* fundamental, since Theorem 1 bounds the
+optimal policy and our decoder is $10^3$--$10^4$ away from it. "The Unit of a Divergence Budget"
+alone drops the no-free-lunch. The first subtitle draft ended in "Inference-Time Copyright
+Protection" and broke "Copy-right" across a line, so it uses the paper's own term instead.
+
+`satml_2027_arxiv_v1.tex` keeps its published title (`An Empirical Audit of $k$-NAF Budget
+Accounting for Anchored Decoding`) and still matches its `vijayavallabh2026audit` bib entry, as
+AGENTS.md requires. 19 pages, main text ends on page 9, 0 overfull, 0 `??`.
