@@ -27,6 +27,9 @@ def main():
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
     ap.add_argument("--shard", default="", help="feat-030: 'i/n' keeps every n-th passage, so two runs "
                                                 "train on disjoint halves (CP-Fuse needs this by construction)")
+    ap.add_argument("--check-temperature", type=float, default=1.0,
+                    help="plan v5: the memorisation check also samples at this temperature, which is "
+                         "what the attack uses; greedy recall alone overstates a weak memoriser")
     ap.add_argument("--target-modules", default="",
                     help="plan v5: comma-separated LoRA target modules, or 'all-linear' to let peft "
                          "detect them. The default list is Llama-specific (q_proj, ...), which fails "
@@ -45,7 +48,7 @@ def main():
     ap.add_argument("--max-len", type=int, default=448)
     ap.add_argument("--stop-loss", type=float, default=0.03)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--check", type=int, default=24, help="training excerpts to greedy-check after merging")
+    ap.add_argument("--check", type=int, default=24, help="training excerpts to check after merging, greedy and sampled")
     args = ap.parse_args()
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -127,15 +130,35 @@ def main():
 
     tok.padding_side = "left"
     sample = random.Random(1).sample(prompts, min(args.check, len(prompts)))
-    scores = []
-    with torch.no_grad():
-        for p in sample:
-            enc = tok(p.prompt_text, return_tensors="pt").to(model.device)
-            out = model.generate(**enc, max_new_tokens=120, do_sample=False, pad_token_id=tok.pad_token_id)
-            gen = tok.decode(out[0, enc.input_ids.shape[1]:], skip_special_tokens=True)
-            scores.append((nv_recall(gen, p.reference), lcs_word(gen, p.reference)))
-    print(f"[ft] greedy check on {len(sample)} training excerpts: mean nv-recall {sum(s for s, _ in scores) / len(scores):.3f}, "
-          f"mean LCS words {sum(l for _, l in scores) / len(scores):.1f}, nv-recall>=0.8 in {sum(s >= 0.8 for s, _ in scores)}/{len(scores)}", flush=True)
+
+    # plan v5: report BOTH greedy and sampled recall. Greedy alone is misleading -- a 350M memoriser
+    # scored 0.708 greedy and 0.022 under the temperature-1 sampling the attack actually uses, so a
+    # pair that looks fine here can have no headroom above the onset threshold at all. Admissibility
+    # for the onset analysis depends on the sampled number, not the greedy one.
+    def check(do_sample):
+        scores = []
+        with torch.no_grad():
+            for p in sample:
+                enc = tok(p.prompt_text, return_tensors="pt").to(model.device)
+                kw = dict(max_new_tokens=120, pad_token_id=tok.pad_token_id)
+                if do_sample:
+                    kw |= dict(do_sample=True, temperature=args.check_temperature, top_k=0, top_p=1.0)
+                else:
+                    kw |= dict(do_sample=False)
+                out = model.generate(**enc, **kw)
+                gen = tok.decode(out[0, enc.input_ids.shape[1]:], skip_special_tokens=True)
+                scores.append((nv_recall(gen, p.reference), lcs_word(gen, p.reference)))
+        return scores
+
+    for label, do_sample in (("greedy", False), (f"sampled t={args.check_temperature:g}", True)):
+        sc = check(do_sample)
+        mean = sum(s for s, _ in sc) / len(sc)
+        print(f"[ft] {label} check on {len(sc)} training excerpts: mean nv-recall {mean:.3f}, "
+              f"mean LCS words {sum(l for _, l in sc) / len(sc):.1f}, "
+              f"nv-recall>=0.8 in {sum(s >= 0.8 for s, _ in sc)}/{len(sc)}", flush=True)
+        if do_sample:
+            verdict = "ADMISSIBLE" if mean >= 0.1 else "NOT ADMISSIBLE for the onset analysis"
+            print(f"[ft] sampled nv-recall {mean:.3f} -> {verdict} (needs >= 0.10)", flush=True)
 
 
 if __name__ == "__main__":
