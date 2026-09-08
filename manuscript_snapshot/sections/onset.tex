@@ -39,8 +39,13 @@ Pleias 350M $+$ mem.\ Pleias 350M & $3.55$ & $0.326$ & $3.18$ & $[3.12, 3.90]$ &
 \end{tabular}
 \end{center}
 
-Across pairs sharing no anchor, no tokenizer and no risky model, $s(x)$ spans $1.49\times$ and the
-onset spans $1.49\times$: the ratio is $0.887$, $0.892$, $0.895$, a standard deviation of $0.003$.
+Rates here are nats per \emph{token}, unlike Section~\ref{sec:scaling}: the decoder meters one
+charge per decoded token and each pair shares a vocabulary by construction, so an onset is natively
+a per-token rate. That cannot affect the ratio, whose numerator and denominator are charged in the
+same units, but it does inflate the dynamic range. Across pairs sharing no anchor, no tokenizer and
+no risky model, $s(x)$ spans $1.49\times$ per token and $1.33\times$ per character, and the onset
+spans the same factor as the threshold it tracks; the ratio is $0.887$, $0.892$, $0.895$, a
+standard deviation of $0.003$.
 Rescaling the budget by $s(x)$ collapses the recall curves to a mean spread of $0.0048$ over
 $k/s(x) \in [0.7, 1.0]$, degrading to $0.0158$ above the threshold
 (Figure~\ref{fig:onset}). The intervals are wide --- they come from resampling passages, and near

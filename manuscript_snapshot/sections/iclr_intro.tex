@@ -37,9 +37,9 @@ outside the audit cannot distinguish the decoder from serving its own safe model
 protected passage.
 
 \textbf{Extraction begins at a fixed fraction of that threshold.} On three pairs sharing no anchor,
-tokenizer or risky model, and spanning $1.49\times$ in $s(x)$, leakage first becomes measurable at
+tokenizer or risky model, and spanning $1.33\times$ in $s(x)$ per character, leakage first becomes measurable at
 $0.887$, $0.892$ and $0.895$ of $s(x)$ --- a standard deviation of $0.003$, with the onset spanning
-the same $1.49\times$ as the threshold it tracks. The decoding geometry suggests why the constant
+the same factor as the threshold it tracks. The decoding geometry suggests why the constant
 might not be constant: at full tilt the charge along a target reduces to $r(x) = s_s(x) - s_r(x)$
 (Eq.~\eqref{eq:req}), which predicts the ratio should move with how thoroughly the risky model
 memorised the work. We pre-registered that prediction on a held-out pair and the measurement

@@ -1214,3 +1214,17 @@ every copied file was ignored and only `manuscript_snapshot/README.md` was ever 
 snapshot existed on disk and in no commit. `.gitignore` now carries `!manuscript_snapshot/**/*.tex`
 and `!manuscript_snapshot/**/*.bib`; `scripts/build_artifact.sh` already excludes the directory, so
 this does not change the artifact.
+
+### Units: Section 4 never said which denominator it used (2026-09-08)
+
+Section~3 states "rates are nats per character throughout"; Section~4's onset table gave `s(x)` as
+$3.24$, $2.39$, $3.55$, which are nats per **token**. The same symbol carried two different numbers
+for the same pair ($0.770$ vs $3.239$ for pair 1) with nothing in the text to say so. Section~4 now
+states the denominator and why it is the right one there -- the decoder meters one charge per
+decoded token and each pair shares a vocabulary by construction, so an onset is natively a per-token
+rate -- and quotes both dynamic ranges. The abstract and introduction now quote the tokenizer-free
+$1.33\times$ rather than the per-token $1.49\times$. Numbers from `results/onset_units.csv`.
+
+Llama-3 regression after the `_decode` eos-token guard (`output/phase5/smoke_eoslist`): 72
+trajectories at k in {1, 3}, 0 invariant violations, every trajectory within budget, constraint
+active in 5.195% of steps at k=1 and 0.583% at k=3.
