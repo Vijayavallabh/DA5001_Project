@@ -890,3 +890,26 @@ Reproducibility and LLM Usage statements as main text, when ICLR excludes them. 
 -- the countable main text is **exactly 9 pages** with the statements starting cleanly at the top of
 page 10. Getting there also moved Related Work's full discussion to an appendix (a condensed version
 stays in the main text) and folded Limitations into the Conclusion.
+
+### An overclaim caught by building the test that would settle it
+
+`analysis/onset_ladder.py` joins measured onsets to derived predictions and scores the two
+competing hypotheses -- `onset = c * s_s(x)` for a universal constant, against
+`onset = r(x) = s_s - s_r`. Running it on the two existing pairs:
+
+      pair                         s_s   s_r   meas  deriv  const  |e|dv  |e|ct
+      Comma-7B + mem. Comma-7B    2.39  0.18   2.13   2.13   2.13   0.01   0.01
+      TinyComma + mem. Llama-8B   3.24  0.19   2.87   2.86   2.88   0.01   0.01
+      mean |error|: derivation 0.010 nats, constant 0.006 nats
+
+**The two hypotheses are degenerate on the evidence we had.** Both memorisers are thorough, so
+s_r is 0.18-0.19 in both and r(x) is ~0.94*s_s(x) in both; a constant coefficient fits as well as
+the derivation. The paper reported the q25 agreement (0.996, 0.999) in a way that implied it
+favoured the derivation, and it does not. The onset section now says so explicitly and points at
+what separates them.
+
+This is exactly why the ladder exists: rungs share an anchor, so s_s is identical and only s_r
+moves, and the hypotheses then differ in the SIGN of the trend rather than in a fitted constant.
+`tests/test_onset_ladder.py` (3 tests) pins the cross-file label matching -- the two CSVs spell
+pairs "memorised" and "mem.", and a silent mismatch would drop pairs and flatter whichever
+hypothesis kept fewer points.
