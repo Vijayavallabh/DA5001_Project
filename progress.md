@@ -1554,3 +1554,34 @@ Protection" and broke "Copy-right" across a line, so it uses the paper's own ter
 `satml_2027_arxiv_v1.tex` keeps its published title (`An Empirical Audit of $k$-NAF Budget
 Accounting for Anchored Decoding`) and still matches its `vijayavallabh2026audit` bib entry, as
 AGENTS.md requires. 19 pages, main text ends on page 9, 0 overfull, 0 `??`.
+
+### feat-059: pair 6 (KL3M-002-520M) — isolating pair 5's confound (2026-09-09)
+
+Pre-registered at `6ed6342` before the sweep (`results/onset_prediction_pair6.md`). s_s 2.4153,
+s_r 0.2153, so **s_r/s_s = 0.089** — a thorough memoriser, squarely inside the 0.06–0.11 band of
+pairs 1–4 — on pair 5's KL3M tokenizer (~2 chars/token) and its 580-token targets.
+
+This pair is not run to separate the rules: P1 (2.200) and the constant (2.147) are 0.053 nats
+apart here. It is run because pair 5 differed from the first four in three ways at once and one
+pair cannot say which moved its ratio to 1.166. Pair 6 holds the tokenizer and the target length
+fixed and flips the memoriser strength, so an onset near 2.15 blames the memoriser and clears the
+tokenizer, and one near 2.82 blames the KL3M family.
+
+    grid -1 0 1.6 1.8 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.0 3.4  (0.66x to 1.41x of s(x))
+
+**Checkpoint conversion.** `alea-institute/kl3m-002-520m` ships only `pytorch_model.bin`, and
+`a_patch/factory.py` passes `use_safetensors=True` at all three load sites, so the sweep failed at
+startup. That guard is deliberate — loading a pickled checkpoint runs arbitrary code — so rather
+than weaken the decoder for every future model, the one checkpoint was re-serialised to
+`output/phase5/anchor_kl3m-002-520m` and verified: 520,193,024 parameters before and after, all
+147 tensors bit-identical (`torch.equal`) to the pickled original. The sweep points at the
+converted copy; the weights are the published ones.
+
+### Blockers/Risks
+
+- **Inconsistent checkpoint-trust posture.** `a_patch/factory.py` refuses `.bin` checkpoints via
+  `use_safetensors=True`, but `analysis/budget_path.py`, `analysis/regimes.py`,
+  `analysis/onset_theory.py` and `analysis/surprisal_cdf.py` call `from_pretrained` without it and
+  will silently load a pickled checkpoint. `budget_path.py` had already loaded this very `.bin`
+  before the decoder refused it. Not fixed here: tightening the analysis scripts, or relaxing the
+  decoder, is a security-posture decision rather than part of this feature. Logged for a decision.
