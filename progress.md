@@ -1362,3 +1362,57 @@ the longer sequences). If kl3m-003-1.7b becomes admissible it is the most valuab
 at 1.103 nats per character against 0.685-0.873 for every anchor used so far, it widens the
 collapse's dynamic range from 1.33x to about 1.67x, from a different architecture (GPT-NeoX) and a
 different tokenizer.
+
+### feat-047 / feat-056: four pairs, and the held-out scoring reverses the paper's claim (2026-09-08)
+
+Both sweeps landed. Pair 4 (Pleias-1.2B, self-paired) has a clean monotone curve and pair 3 at
+n=458 does not:
+
+    pair 4 (n=100)   k     2.0    2.4    2.6    2.7    2.8    2.9    3.0    3.2    3.6
+                     rec 0.0021 0.0028 0.0040 0.0042 0.0076 0.0202 0.0347 0.0440 0.0711
+    pair 3 (n=458)   k     2.9    3.0    3.1    3.2    3.3    3.4    3.6
+                     rec 0.0023 0.0042 0.0048 0.0083 0.0107 0.0093 0.0103
+
+    onset 2.8192  CI [2.5325, 3.0810]  ratio 0.8784  (pair 4,  0.0% of bootstraps never cross)
+    onset 3.2712  CI [2.9995, 3.5680]  ratio 0.9203  (pair 3 n=458, 32.5% never cross)
+
+**The n=458 sweep did not do what I said it would.** I predicted it would narrow the interval by
+about 2.1x. The half-width fell only from 0.39 to 0.28 nats, and the share of bootstrap resamples
+that never reach the threshold rose from 6.9% to 32.5% -- because I gave it a grid that stops at
+k=3.6, where mean recall is still 0.0103, while the n=100 grid ran to 4.2 (recall 0.0397). At 458
+passages the curve is much flatter through the crossing (0.0083, 0.0107, 0.0093, 0.0103 across
+3.2-3.6) than 100 passages suggested. Two more budget points (3.8, 4.2) at n=458 are running to
+repair it; until they land pair 3's onset is provisional.
+
+Held-out scoring (`analysis/score_predictions.py`, q25 and the constant were both calibrated on
+pairs 1-2, so only pairs 3 and 4 are a test):
+
+    rule                          held-out mean |err|   in CI
+    P1: median s_s - s_r                        0.034     2/2
+    constant 0.889*s(x)                         0.073     2/2
+    q25 of r(x)                                 0.224     1/2
+
+**P1 -- the parameter-free derived rule -- beats the fitted constant by 2x on the two pairs that
+were predicted before they were measured.** The paper currently says the derivation was rejected.
+That statement scored `q25`, the *calibrated* variant, and q25 is indeed rejected; it never scored
+P1's own median rule against a confidence interval. On held-out data P1 is the better of the three.
+
+Two things keep this from being a clean win for the derivation, and both must be said:
+1. Pair 3's onset is provisional (32.5% no-crossing) and is exactly the measurement that separates
+   the two rules. P1 predicts 3.23 and the constant 3.16 against a measured 3.27.
+2. P1 predicts the LEVEL well and the ORDERING badly. It predicts the ratio falls as the memoriser
+   leaves more residual surprisal: 0.940, 0.925, 0.908, 0.886 for pairs 1-4. Measured: 0.887,
+   0.892, 0.920, 0.878. Sorted, the predicted order is p1>p2>p3>p4 and the measured order is
+   p3>p2>p1>p4. The directional claim still fails.
+
+The normaliser ablation is now known to be undiscriminating: across 2, 3 and 4 pairs the winner
+flips r, s(x), r (0.0046/0.0059, then 0.0070/0.0096, now 0.0180/0.0143). It should be reported as
+unable to separate them rather than as evidence either way.
+
+Four-pair collapse: ratios 0.887, 0.892, 0.920, 0.878, sd 0.0061 (was 0.003 on three pairs with
+pair 3 at n=100). Mean spread over k/s in [0.7, 1.2] is 0.018 single and 0.039 oracle.
+Tokenizer-free range unchanged at 1.33x, since pair 4's s(x) falls inside the existing span.
+
+Bug found on the way: `analysis/onset_units.py:load_pairs` required EXACTLY four manifest fields,
+so it silently skipped every pair the moment feat-052 added a fifth, and `add_pair.sh` aborted
+under `set -e` before the figures. Now `>= 4`.

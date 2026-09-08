@@ -27,15 +27,19 @@ from recipes.finetune_memorizing import join  # noqa: E402
 
 
 def load_pairs(path):
-    """name<TAB>composition_summary.csv<TAB>budget_path.csv<TAB>tokenizer. Rows without the
-    fourth field are skipped: without a tokenizer there is nothing to convert."""
+    """name<TAB>composition_summary.csv<TAB>budget_path.csv<TAB>tokenizer[<TAB>...].
+
+    Rows without the fourth field are skipped: without a tokenizer there is nothing to convert.
+    Later fields belong to other consumers of the same manifest -- requiring EXACTLY four here
+    silently dropped every pair the moment collapse_robustness.py added a fifth.
+    """
     out = []
     for line in open(path, encoding="utf-8"):
         line = line.strip()
         if not line or line.startswith("#"):
             continue
         f = line.split("\t")
-        if len(f) == 4 and f[3]:
+        if len(f) >= 4 and f[3]:
             out.append((f[0], f[2], f[3]))
         else:
             print(f"[units] no tokenizer column for {f[0]!r}, skipping", file=sys.stderr)

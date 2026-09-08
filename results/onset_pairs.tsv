@@ -1,3 +1,4 @@
 TinyComma-1.8B + memorised Llama-3.1-8B	output/phase4/fine_tc/composition_summary.csv	results/budget_path.csv	jacquelinehe/tinycomma-1.8b-llama3-tokenizer	TinyComma-1.8B + mem. Llama-3.1-8B
 Comma-7B + memorised Comma-7B	output/phase4/fine_comma/composition_summary.csv	results/budget_path_comma7b.csv	common-pile/comma-v0.1-2t	Comma-7B + mem. Comma-7B
 Pleias-350M + mem. Pleias-350M	output/phase5/fine_pleias350m/composition_summary.csv	results/budget_path_pleias350m.csv	PleIAs/Pleias-350m-Preview	Pleias-350M + mem. Pleias-350M
+Pleias-1.2B + mem. Pleias-1.2B	output/phase5/fine_pleias12b/composition_summary.csv	results/budget_path_pleias-1.2b__mem._pleias-1.2b.csv	PleIAs/Pleias-1.2b-Preview	Pleias-1.2B + mem. Pleias-1.2B
