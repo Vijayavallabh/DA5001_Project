@@ -829,3 +829,28 @@ LLM Usage statements. Main text **9 of 9 pages**, 0 overfull, 0 `??`, 16 pages t
 
 **Still open:** alpha=4 judging; the k in {1.5,2,2.5,3} judged grid and a second judge (item D);
 more pairs (item B) -- four memorisers training now.
+
+### feat-048: r(x) does NOT screen an individual work, and s(x) does it better
+
+`analysis/per_work_screen.py` (no GPU; reads `output/phase4/fine_{tc,comma}/composition.csv` and
+`results/onset_theory_per_work.csv`) -> `results/per_work_screen{,_summary}.csv`.
+
+Framing "which passage leaks at budget k" as classification over the 100 passages of each pair,
+across the 8 budget cells where anything leaks:
+
+      score          cells   mean AUC    min    max
+      -r(x)              8      0.678   0.546  0.786
+      -s_safe(x)         8      0.751   0.560  0.904
+      s_risky(x)         8      0.417   0.081  0.619
+
+**The derived quantity loses to the anchor surprisal alone.** This is a negative result against the
+per-work reading of Eq. (req) and it is now in the paper. The cause is measurable and makes it
+consistent with the population result rather than contradicting it: across works `s_r` carries only
+**6-7% of the level** of `s_s` but **44-45% of its standard deviation**, so subtracting it removes a
+near-constant shift and adds variance. A population onset is sensitive to exactly that shift; a
+per-work ranking is blind to it. So r wins the population comparison (normaliser ablation: r 0.0046
+< s_safe 0.0059 < raw 0.0215) and loses the per-work one.
+
+  Command: `.venv/bin/python analysis/per_work_screen.py --out results`
+  `tests/test_per_work_screen.py` (6 tests) pins the AUC, including tie handling, against a
+  brute-force reference -- a wrong AUC would have manufactured this finding.
