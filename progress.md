@@ -960,3 +960,26 @@ were already fixed.
   opening effect, 8 ranges per char and per token          opening_effect_summary*   OK
   headline -0.45 sigma at k=1, -2.35 sigma at k=3          utility_v4_summary.csv    OK
   s(x) spans 1.35x across pairs 1-2                        onset_theory.csv          OK
+
+### The "no fitted parameter" claim was wrong for P2, and the check that proved it
+
+The onset section claimed Eq. (req) "makes two predictions with no fitted parameter". P1 (the ratio
+1 - s_r/s_s) is parameter-free. **P2 is not.** Which quantile of the r(x) distribution marks the
+population onset is chosen, not derived, and the naive mechanism behind it is false:
+
+      pair                     onset   r(x) <= onset for   actually leak there
+      TinyComma + mem 8B        2.87           27%                0%
+      Comma-7B + mem 7B         2.13           26%                1%
+
+If "r(x) <= k" meant "x leaks at k", a quarter of works would leak at the onset. Under 1% do.
+Affordability is necessary and far from sufficient -- which is also why r(x) is a poor per-work
+screen (feat-048). So P2 is a **calibrated population boundary**, and the one interesting fact is
+that the same calibration transfers between two pairs sharing no anchor, tokenizer or risky model.
+
+Corrected in the abstract ("we derive rather than fit where extraction begins" -> we derive the
+quantity, and locating the onset inside its distribution takes one calibrated constant), the intro,
+and the onset section. The paper now has exactly one fitted number and says which it is.
+
+Page budget held at 9 of 9 with 0 spill. The last of it came from float packing again: page 8 was
+stranding ~1,000 characters around Figure 2 and Table 1, recovered by taking both full-width
+figures from 0.82 to 0.74 textwidth.
