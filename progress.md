@@ -924,3 +924,20 @@ The earlier audit is cited four times and every one is third person -- "an earli
 earlier audit" -- never "our earlier audit", which is the exception AGENTS.md sanctions. One wording
 fix: the Ethics Statement said "we release the fine-tuning recipes...", which could read as an
 existing public release; it now refers to the accompanying anonymised repository.
+
+### Literature check on the theorem, and the open problem gets a named route
+
+A targeted sweep for anything published since plan v5 that bears on the vacuity or no-free-lunch
+results found no scoop. It did surface one paper worth citing: Tomasi et al.,
+"Primal-Dual Guided Decoding for Constrained Discrete Diffusion" (arXiv:2605.09749, 10 May 2026,
+verified against the arXiv record). They solve a KL-regularised constrained generation problem
+online with Lagrangian multipliers updated by mirror descent -- the primal-dual analogue of what our
+decoder does myopically against its token bucket. That makes it the natural candidate for closing
+the approximation gap Theorem 1 leaves open, and the frontier section now says so rather than
+leaving the open problem without a route.
+
+### Ladder rung A is admissible
+
+Stop-loss 0.20 gives greedy nv-recall 0.751 and **sampled 0.202**, over the 0.10 bar. With rung D
+(stop-loss 0.03) at sampled 0.901, the ladder spans a 4.5x range in memorisation strength on one
+fixed anchor -- which is the spread the derivation-versus-constant test needs.
