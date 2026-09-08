@@ -1,0 +1,2 @@
+TinyComma-1.8B + memorised Llama-3.1-8B	output/phase4/fine_tc/composition_summary.csv	results/budget_path.csv
+Comma-7B + memorised Comma-7B	output/phase4/fine_comma/composition_summary.csv	results/budget_path_comma7b.csv

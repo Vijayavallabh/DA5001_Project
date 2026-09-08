@@ -27,6 +27,11 @@ def main():
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
     ap.add_argument("--shard", default="", help="feat-030: 'i/n' keeps every n-th passage, so two runs "
                                                 "train on disjoint halves (CP-Fuse needs this by construction)")
+    ap.add_argument("--target-modules", default="",
+                    help="plan v5: comma-separated LoRA target modules, or 'all-linear' to let peft "
+                         "detect them. The default list is Llama-specific (q_proj, ...), which fails "
+                         "on other architectures -- KL3M is GPT-NeoX (query_key_value, dense_h_to_4h), "
+                         "and those are the highest-surprisal anchors in the safe-model set.")
     ap.add_argument("--no-chat", action="store_true",
                     help="plan v4: train on the raw 'Complete the prefix' form only. A base model with no chat "
                          "template (comma-7b, the 70B base) would otherwise get wrap_chat's Llama-3 fallback, "
@@ -68,7 +73,9 @@ def main():
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
     model = get_peft_model(model, LoraConfig(r=args.rank, lora_alpha=2 * args.rank, lora_dropout=0.0, bias="none", task_type="CAUSAL_LM",
-                                             target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]))
+                                             target_modules=(args.target_modules if args.target_modules == "all-linear"
+                                                             else [m.strip() for m in args.target_modules.split(",")] if args.target_modules
+                                                             else ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])))
     model.print_trainable_parameters()
     params = [p for p in model.parameters() if p.requires_grad]
     opt = torch.optim.AdamW(params, lr=args.lr, weight_decay=0.0)

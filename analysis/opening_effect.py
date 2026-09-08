@@ -54,6 +54,9 @@ def main():
     ap.add_argument("--skips", nargs="+", type=int, default=[0, 1, 5, 10, 20])
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--denominator", choices=["char", "token"], default="char",
+                    help="plan v5 erratum E: rates per character (default, tokenizer-invariant) "
+                         "or per token, to show the opening effect is not a denominator artifact")
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -65,6 +68,8 @@ def main():
     print(f"[opening] {a.model}: {len(works)} works", flush=True)
     for i, w in enumerate(works):
         nats, chars = token_nats(model, tok, w["prefix"], w["target"], device)
+        if a.denominator == "token":
+            chars = list(range(1, len(nats) + 1))
         if len(nats) <= max(a.skips) + 5:
             continue
         s_rate = sum(nats) / max(chars[-1], 1)
@@ -94,7 +99,10 @@ def main():
         summary.append({"model": a.model, "skip_tokens": sk, "n": len(v),
                         "ratio_median": st.median(v), "ratio_p10": v[len(v) // 10],
                         "ratio_p90": v[9 * len(v) // 10],
-                        "frac_interval_open": sum(x > 1.0 for x in v) / len(v)})
+                        "frac_interval_open": sum(x > 1.0 for x in v) / len(v),
+                        "denominator": a.denominator,
+                        "binds_at_token_0": sum(r["binding_token"] == 0 for r in rows) / len(rows),
+                        "binds_in_first_tenth": sum(r["binding_frac"] < 0.1 for r in rows) / len(rows)})
     with open(os.path.join(a.out, f"opening_effect_summary{a.tag}.csv"), "w", newline="") as f:
         wr = csv.DictWriter(f, fieldnames=list(summary[0].keys()))
         wr.writeheader()

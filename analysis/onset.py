@@ -73,20 +73,42 @@ def collapse(data, xs=(0.7, 0.8, 0.9, 1.0, 1.1, 1.2)):
             vals = [(n, at(c, s_x, x)) for n, s_x, c in series]
             if any(v is None for _, v in vals):
                 continue
-            rows.append({"mode": mode, "k_over_s": x,
-                         **{f"recall_{n}": v for n, v in vals},
-                         "abs_diff": abs(vals[0][1] - vals[1][1])})
+            v = [y for _, y in vals]
+            # plan v5: spread over EVERY pair. This was abs(vals[0]-vals[1]), which silently
+            # compared only the first two series and would have hidden a third pair disagreeing.
+            rows.append({"mode": mode, "k_over_s": x, "n_pairs": len(v),
+                         **{f"recall_{n}": y for n, y in vals},
+                         "spread": max(v) - min(v),
+                         "sd": st.pstdev(v) if len(v) > 1 else 0.0})
     return rows
+
+
+def load_pairs(path):
+    """Pair set as data, not code: TSV of name<TAB>composition_summary.csv<TAB>budget_path.csv."""
+    if not path or not os.path.exists(path):
+        return PAIRS
+    out = []
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        f = line.split("\t")
+        if len(f) != 3:
+            raise SystemExit(f"[onset] {path}: expected 3 tab-separated fields, got {len(f)}: {line}")
+        out.append(tuple(f))
+    return out
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
     ap.add_argument("--thresh", type=float, default=0.01, help="recall that counts as onset")
+    ap.add_argument("--pairs-file", default="results/onset_pairs.tsv",
+                    help="TSV of name/composition_summary.csv/budget_path.csv; falls back to PAIRS")
     a = ap.parse_args()
 
     rows, ests, curves = [], {}, {}
-    for name, comp, per in PAIRS:
+    for name, comp, per in load_pairs(a.pairs_file):
         if not os.path.exists(comp):
             print(f"[onset] missing {comp}", file=sys.stderr)
             continue
@@ -115,12 +137,17 @@ def main():
         e = f"{r['onset_est']:.2f}" if r["onset_est"] else "  -  "
         o = f"{r['onset_est_over_s']:.2f}" if r["onset_est_over_s"] else "  -  "
         print(f"{r['pair'][:41]:42s}{r['mode']:>8s}{r['s_x_nats_per_token']:7.2f}{br:>14s}{e:>7s}{o:>7s}")
-    if len(ests) == 2:
-        (n1, (s1, e1)), (n2, (s2, e2)) = ests.items()
-        print(f"\nacross the two pairs the threshold differs by {s1/s2:.2f}x "
-              f"({s1:.2f} vs {s2:.2f} nats/token)")
-        print(f"and the single-query onset differs by {e1/e2:.2f}x ({e1:.2f} vs {e2:.2f})")
-        print("The onset tracks the threshold, so its location is not a coincidence of one pair.")
+    usable = {n: (s_x, e) for n, (s_x, e) in ests.items() if e}
+    if len(usable) >= 2:
+        ss = [s_x for s_x, _ in usable.values()]
+        es = [e for _, e in usable.values()]
+        print(f"\nacross {len(usable)} pairs s(x) spans {min(ss):.2f}-{max(ss):.2f} nats/token "
+              f"({max(ss)/min(ss):.2f}x) and the single-query onset spans {min(es):.2f}-{max(es):.2f} "
+              f"({max(es)/min(es):.2f}x)")
+        ratios = [e / s_x for s_x, e in usable.values()]
+        print(f"onset/s(x) per pair: " + ", ".join(f"{n}={e/s_x:.2f}" for n, (s_x, e) in usable.items()))
+        print(f"  range {min(ratios):.2f}-{max(ratios):.2f}, sd {st.pstdev(ratios):.3f}"
+              if len(ratios) > 1 else "")
     col = collapse(curves)
     if col:
         with open(os.path.join(a.out, "onset_collapse.csv"), "w", newline="") as f:
@@ -129,9 +156,10 @@ def main():
             w.writerows(col)
         print("\ncollapse under the rescaled budget k/s(x):")
         for mode in ("single", "oracle"):
-            d = [r["abs_diff"] for r in col if r["mode"] == mode]
+            d = [r["spread"] for r in col if r["mode"] == mode]
             if d:
-                print(f"  {mode:7s} mean |difference| between the two pairs over "
+                n = col[0]["n_pairs"]
+                print(f"  {mode:7s} mean spread across {n} pairs over "
                       f"k/s in [0.7, 1.2]: {st.mean(d):.3f}")
     print(f"\nwrote {a.out}/onset.csv and {a.out}/onset_collapse.csv")
 

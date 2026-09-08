@@ -734,3 +734,60 @@ wording.
 Paper: 0 overfull, **main text is now exactly 9 pages** -- at the ICLR limit with the intro,
 abstract, background and limitations still unwritten. The appendix is empty and unlimited; moving
 material there is the next structural task.
+
+### Plan v5, day 1 (2026-09-08): theory A2-A5, erratum E, and the N-pair refactor
+
+**feat-046 the no-free-lunch theorem (A2).** Remark 1 used to say the utility boundary was
+"measured, not proved". It is now proved, by the sequence-level route both earlier attempts missed.
+Chain rule for relative entropy turns a per-trajectory budget into `D_KL(q||p_s) <= K` for the
+output *law*; Donsker-Varadhan then gives `K >= Lambda*_s(E_q[U])`, the Cramer rate function of the
+utility under the safe model. Paired with Prop 1 (`K >= S(x)` to buy the atom `{output = x}`), the
+same scalar is charged for utility and for extraction, so no schedule buys mean utility `u` without
+making the certificate vacuous for every work with `S(x) <= Lambda*_s(u)`. Stated honestly as a
+converse: it bounds the optimal policy, our decoder is causal, and the approximation gap is the
+paper's open problem -- the measured 5-32x gap between rollout divergence and paid divergence is
+exactly that gap. `sections/frontier.tex` (Theorem 1), proof in `sections/appendix_proofs.tex`.
+
+**A3/A4 repositioning.** Prop 1 is now labelled as what it is: the Renyi change-of-measure /
+reconstruction-robustness bound, not a new inequality -- the contribution is that every order breaks
+at the same place. `k_crit` is named as the Loynes (1962) workload representation and the
+network-calculus `(sigma,rho)` arrival curve, our proof deleted. Both proofs moved to the appendix,
+which is unlimited; that is what paid for the theorem inside 9 pages.
+
+**Erratum E (per-token robustness), the one claim with no CSV behind it.** `analysis/opening_effect.py`
+gained `--denominator {char,token}` and now writes `binds_at_token_0` / `binds_in_first_tenth` into
+the summary instead of only printing them. Four models re-run per token:
+
+      model                     den   skip0  skip1  skip10  binds@0  first10%
+      tinycomma-1.8b           char    5.04   1.32    1.32    90.2%     97.4%
+      tinycomma-1.8b          token    3.90   1.35    1.30    84.4%     93.1%
+      Pleias-3b                char    5.23   1.36    1.30    90.5%     97.5%
+      Pleias-3b               token    3.88   1.35    1.31    82.6%     93.0%
+      kl3m-003-3.7b            char    4.25   1.48    1.47    87.7%     96.7%
+      kl3m-003-3.7b           token    5.98   1.41    1.45    87.7%     95.4%
+      comma-v0.1-2t            char    6.10   1.36    1.35    89.6%     97.5%
+      comma-v0.1-2t           token    5.20   1.38    1.38    86.3%     94.7%
+
+  The old sentence ("5.04 -> 1.44 -> 1.43 per token against 6.04 -> 1.44 -> 1.41 per character")
+  matched no CSV. The opening effect is **real but smaller per token** than the per-character
+  figures suggest -- binds@0 drops 87.7-90.5% to 82.6-87.7% -- and the paragraph now says so.
+  Command:
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/opening_effect.py --model <M> --denominator token --tag <T> --out results
+
+**Dangling references fixed.** The theorem replaced a remark three sections pointed at, and
+`sec:utility`/`sec:attack-results` are SaTML labels this paper does not input: 5 `??` -> 0.
+
+**N-pair refactor, required before pair 3 lands.** `analysis/onset.py:collapse()` computed
+`abs(vals[0] - vals[1])`, so a third pair that disagreed would have left the reported agreement
+untouched. It now reports `spread` (max-min) and `sd` over every pair with `n_pairs`; the two-pair
+summary print is general; the pair set moved out of code into `results/onset_pairs.tsv`
+(`--pairs-file`). Reproduces the committed numbers exactly (0.89/0.89, single-mode spread 0.006,
+oracle 0.031). `tests/test_onset_collapse.py` (6 tests) fails against the old version.
+
+**Bib.** Loynes 1962, Cruz 1991, Le Boudec & Thiran 2001, Donsker & Varadhan 1975, Dembo & Zeitouni
+1998, van Erven & Harremoes 2014, Schaeffer et al. 2023, and Monteiro Paes et al. (arXiv:2605.07105,
+"Theoretical Limits of Language Model Alignment") -- the last verified against the arXiv record
+today, which also corrected my claim: the paper gives a closed form for the maximum reward at a
+fixed KL budget (a Jeffreys divergence, not sqrt-KL), and shows best-of-N approaches it. It does not
+say the frontier is "attained", and the sentence was weakened to match.
