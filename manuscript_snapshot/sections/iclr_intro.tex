@@ -1,0 +1,59 @@
+% Plan v5 / item F: introduction for the ICLR version. The SaTML intro (sections/intro.tex) is a
+% different paper -- an audit of one mechanism -- and is not reused here.
+
+\section{Introduction}\label{sec:intro}
+
+A growing family of inference-time mechanisms promises to bound how much a language model can
+reproduce a protected work by metering how far its output distribution may drift from a
+\emph{safe} model that never saw the work. The drift is charged in nats, accumulated in a token
+bucket, and published as a single number $k$. Anchored decoding~\citep{he2026anchored} is the
+current instance; the guarantee it enforces, $k$-near-access-freeness, goes back to
+\citet{vyas2023provable}. The appeal is that $k$ looks like $\varepsilon$ in differential privacy:
+a dial a deployer sets, a number a rights-holder can read.
+
+This paper argues that $k$ does not carry that meaning, and --- more usefully --- says exactly what
+does. Three results, in increasing order of what they cost to establish.
+
+\textbf{The budget has a unit, and it is not nats.} The bound a budget $K$ implies on reproducing a
+work $x$ is vacuous once $K$ reaches $S(x)$, the safe model's total surprisal of $x$, and the
+threshold is the same for \emph{every} R\'enyi order of the charge
+(Proposition~\ref{prop:threshold}). Raising the order buys a tighter bound strictly below the
+threshold and does not move it, so the failure cannot be repaired by strengthening the accounting.
+The quantity that carries risk is therefore $k/s(x)$, not $k$. \citet{vyas2023provable} already
+report their budget as a fraction of the safe model's entropy; what is new is an exact threshold at
+the realised surprisal of a \emph{specific} work, holding for every order.
+
+\textbf{Almost none of what a budget buys is utility.} A budget is one number, so whatever the
+decoder buys with it comes from one account. Donsker--Varadhan at the sequence level gives
+$K \ge \Lambda^*_s(\mathbb{E}[U])$, the Cram\'er rate function of the utility under the safe model
+(Theorem~\ref{thm:nfl}). Both sides are measurable, and measuring them is what makes the result
+useful: the decoder spends $79$ to $171$ nats of realised divergence to buy a utility gain an
+optimal policy could buy for hundredths of a nat, a ratio above $10^{3}$ at every budget. The cost
+of a metered decoder is therefore approximation overhead rather than information-theoretic
+necessity --- what drives a budget past $s(x)$ is the price of imitating the risky model everywhere,
+not the price of being better. Empirically the two useful regions still do not overlap: a judge
+outside the audit cannot distinguish the decoder from serving its own safe model at $k=1$
+($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous for every
+protected passage.
+
+\textbf{Extraction begins at a fixed fraction of that threshold.} On three pairs sharing no anchor,
+tokenizer or risky model, and spanning $1.49\times$ in $s(x)$, leakage first becomes measurable at
+$0.887$, $0.892$ and $0.895$ of $s(x)$ --- a standard deviation of $0.003$, with the onset spanning
+the same $1.49\times$ as the threshold it tracks. The decoding geometry suggests why the constant
+might not be constant: at full tilt the charge along a target reduces to $r(x) = s_s(x) - s_r(x)$
+(Eq.~\eqref{eq:req}), which predicts the ratio should move with how thoroughly the risky model
+memorised the work. We pre-registered that prediction on a held-out pair and the measurement
+rejects it. Proportionality to $s(x)$ is what the evidence supports; the refinement is not.
+
+Read together these say something a deployer can act on. The three rates that matter --- the
+surprisal rate $s(x)$, the requirement $r(x)$ that governs leakage, and the rate
+$c_{\mathrm{use}}$ at which ordinary traffic diverges --- are properties of the models and the
+content, computable before any mechanism is built. Measured across ten safe models and three
+independently curated, openly licensed corpora, the separation between the rate that must be permitted and
+the rate that must be forbidden \emph{widens} as safe models improve (Section~\ref{sec:scaling}),
+correcting a claim in an earlier audit of this mechanism~\citep{vijayavallabh2026audit} that read
+one side of that two-sided quantity and inverted the trend.
+
+None of this contradicts the mechanisms' own theorems: across more than $100{,}000$ budgeted
+trajectories here and in the audits this builds on, no per-trajectory violation occurs. The gap is
+between what the theorems bound and what the published number is taken to mean.

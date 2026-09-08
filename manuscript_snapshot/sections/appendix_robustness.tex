@@ -1,0 +1,100 @@
+% Plan v5 / item F: robustness detail migrated out of the 9-page main text.
+\section{Robustness of the scaling trend}\label{app:scaling}
+
+\paragraph{Exposure, not just fluency}
+A safe model could look good on protected text merely by being bad at prose. The public-domain
+control books are inside all three permissive corpora while the protected passages are inside none,
+and on identical $1{,}500$-character spans the ratio of control to protected surprisal is $0.630$ to
+$0.887$ for every model, so the separation is not an artifact of general fluency. That ratio
+tightens with scale on the Common Pile ($0.743 \to 0.630$), which is what growing memorisation of
+its own corpus would look like; on the other two families it is flat within noise, so we do not
+claim the trend generally. The control also does not separate exposure from era and genre, since
+the control books are older than the protected novels.
+
+\paragraph{The base-versus-instruct confound, measured}
+Every safe model in Section~\ref{sec:scaling} is a base model and the risky model is
+instruction-tuned, so $c_{\rm use}$ mixes the corpus difference with the base-versus-instruct
+difference. Repeating the whole measurement against two further risky models separates them: a
+$7$B instruction-tuned model from an unrelated family, and a $1$B \emph{base} model, for which safe
+and risky are the same kind of object. With a base risky model $c_{\rm use}$ roughly halves and
+every margin rises, so the confound inflates $c_{\rm use}$ and the margins reported in the main
+text are the conservative end of the range. The trend itself does not move: in all nine
+combinations of corpus family and risky model, the margin rises for $16$ of $16$ novels,
+$p = 3.1\times10^{-5}$.
+
+\begin{table}[h]
+\centering\small
+\caption{The scaling trend does not depend on which risky model defines $c_{\rm use}$. Margins are
+the median over the 758 protected passages for the smallest and largest safe model of each family;
+the sign test counts novels whose margin rises, out of 16, and is $p = 3.1\times10^{-5}$ in every
+cell. The base risky model is the control for the base-versus-instruct confound: it raises every
+margin, so the instruction-tuned rows are the conservative ones.}
+\label{tab:robust}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+risky model & kind & Common Pile & Common Corpus & KL3M \\
+\midrule
+Llama-3.1-8B-Instruct & instruct & $4.07 \to 5.02$  & $3.45 \to 4.19$ & $1.94 \to 2.37$ \\
+Qwen2.5-7B-Instruct   & instruct & $3.79 \to 4.87$  & $3.06 \to 3.55$ & $1.79 \to 2.10$ \\
+Llama-3.2-1B          & base     & $8.54 \to 10.73$ & $5.70 \to 7.93$ & $2.92 \to 3.80$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Robustness of the collapse}\label{app:collapse}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{onset_collapse.pdf}
+\caption{Single-query recall for three independent (anchor, risky) pairs sharing no anchor,
+tokenizer or risky model. \textbf{Left:} against the raw budget, with each pair's vacuity threshold
+$s(x)$ dotted. \textbf{Right:} against the budget rescaled by that threshold. The curves coincide to
+a mean spread of $0.0048$ over $k/s(x) \in [0.7, 1.0]$, degrading to $0.0158$ above it, and the
+three onsets fall at $0.887$, $0.892$ and $0.895$ of $s(x)$. The safe model's surprisal rate on the
+protected work is the natural unit for the budget.}
+\label{fig:onset}
+\end{figure}
+
+
+
+
+\paragraph{Three checks the collapse has to survive}
+Sharp behaviour is often manufactured by a thresholded metric~\citep{schaeffer2023mirage}, so we
+repeat the collapse in the longest-common-substring length, which is continuous and logged
+alongside recall: across the three pairs the spread is $0.052$ of that metric's range against
+$0.065$ for the thresholded recall, so the collapse is if anything \emph{cleaner} without the
+threshold. The onset definition is arbitrary, so we sweep it, and here the three-pair answer is
+weaker than the two-pair one was. The spread in onset$/s(x)$ is $0.0372$, $0.0076$ and $0.0993$ at
+thresholds $0.005$, $0.01$ and $0.02$, an order of magnitude better at exactly the value we chose,
+while the absolute level runs from $0.859$ to $1.006$. At $100$ passages a single work moves a
+pair's mean recall by about $0.01$, so interpolating a crossing at $0.005$ is unstable by
+construction; we report that sensitivity rather than the stable band two pairs appeared to license.
+Finally, Eq.~\eqref{eq:req} makes its own prediction about which rescaling should work best, and it
+can be checked: ablating the normaliser gives $0.0070$ for the anchor surprisal $s(x)$, $0.0096$ for
+the derived requirement $r$, and $0.0333$ for no rescaling at all. On the two pairs available
+earlier $r$ won this comparison; with the third pair it does not, which is the same verdict the
+pre-registered prediction of Section~\ref{sec:onset} returns.
+
+\paragraph{Does $r(x)$ screen an individual work?}
+Equation~\eqref{eq:req} is defined per work, so it is fair to ask whether it screens an individual
+book. It does not, and the reason is measurable. Treating ``which passage leaks at budget $k$'' as
+a classification problem over the $100$ passages of each pair, the derived requirement $r(x)$
+reaches a mean AUC of $0.678$ across the eight budget cells in which anything leaks --- but the
+anchor surprisal $s(x)$ \emph{alone} reaches $0.751$, and memorisation strength alone is
+uninformative at $0.417$. Subtracting $s_r$ makes the per-work ranking worse, not better.
+
+That is a consequence of the derivation rather than a contradiction of it. Across works $s_r$
+carries only $6$--$7\%$ of the level of $s_s$ but $44$--$45\%$ of its standard deviation, so
+subtracting it removes a nearly constant shift while adding variance. A population onset is sensitive to exactly
+that shift and a per-work ranking is blind to it, which is why $r$ was ahead on the normaliser
+ablation while the two pairs were degenerate; with a third pair neither comparison favours it. A
+rights-holder can use $s(x)$ to locate the budget at which a class of works becomes exposed; for
+one particular book it is still not good enough to rely on.
+
+\paragraph{What the order comparison does and does not show}
+The comparison in Table~\ref{tab:orders} is at matched \emph{budget}, because the budget is what a
+deployer publishes and what a certificate quotes. It is not at matched utility, and the table shows
+why the distinction matters: two of these arms are near-identical in behaviour and two are not. The
+price columns are measured on an identical 150-prompt workload for every arm. The judged comparison
+at $n=150$ resolves about four points, so it establishes that $\alpha=2$ is cheap and that
+$\alpha=8$ is not; it does not establish that $\alpha=2$ is free.

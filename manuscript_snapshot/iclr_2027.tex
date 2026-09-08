@@ -1,0 +1,122 @@
+% ICLR 2027 submission -- plan v4, branch iclr-2027. Started 2026-09-07.
+% NOT a reformat of satml_2027.tex: that paper audits one mechanism, this one states a frontier
+% theorem for the class of bucket-metered decoders and carries the audit as a validation section.
+% satml_2027_arxiv_v1.tex is the PUBLISHED arXiv 2605.28001 and must never be edited or retitled.
+% Double blind: no names or affiliations anywhere, including the supplementary. Our own prior work
+% is cited in the third person as "an earlier audit", never "our earlier audit".
+\documentclass{article}
+\usepackage{iclr2027_conference,times}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\graphicspath{{figures/}}
+% Default float fractions leave a third of three pages blank at this figure count.
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.75}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{What a Divergence Budget Can and Cannot Certify\\About a Language Model}
+
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Inference-time mechanisms for copyright protection meter how far a language model's output may
+drift from a safe model that never saw the protected work, and publish the allowance as a single
+number $k$. We show that $k$ carries no risk information on its own, and identify what does. The
+bound such a budget implies on reproducing a work $x$ becomes vacuous at $K = S(x)$, the safe
+model's surprisal of $x$, and this threshold is identical for every R\'enyi order of the charge, so
+no strengthening of the accounting moves it. A second result prices the other thing a budget buys:
+Donsker--Varadhan at the sequence level bounds the budget needed for mean utility by the Cram\'er
+rate function of that utility under the safe model. Measuring both sides, the decoder spends $79$ to
+$171$ nats of realised divergence for a utility gain worth hundredths of a nat --- three to four
+orders of magnitude of overhead, so what pushes a budget past the vacuity threshold is the price of
+imitating the risky model, not the price of being better than the safe one. The two useful regions
+still do not overlap: a judge cannot separate the decoder from its own safe model at $k=1$
+($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous. Finally, extraction begins at a fixed fraction of that
+threshold: on three model pairs sharing no anchor, tokenizer or risky model, and spanning
+$1.49\times$ in $s(x)$, leakage first becomes measurable at $0.887$, $0.892$ and $0.895$ of it. We
+derive a candidate explanation from the decoding geometry, pre-register it on a held-out pair, and
+report that the measurement rejects it --- the proportionality is what the evidence supports. Across ten safe models and
+three openly licensed corpora, the separation between the rate that must be permitted and the rate
+that must be forbidden widens as safe models improve.
+\end{abstract}
+
+\input{sections/iclr_intro}
+
+\input{sections/frontier}
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width=0.76\textwidth]{frontier_scaling.pdf}
+\caption{Ten safe models, three independently curated openly licensed corpora. \textbf{Left:} the
+safe model's surprisal rate on the 758 protected passages, $s(x)$, and the rate at which ordinary
+risky-model output diverges from the same safe model, $c_{\mathrm{use}}$, both in nats per
+character. Both fall as the safe model improves; $c_{\mathrm{use}}$ falls faster.
+\textbf{Right:} their ratio rises monotonically with capability in every family, and for all
+sixteen novels individually ($p = 3.1\times10^{-5}$ per family, paired sign test).}
+\label{fig:frontier}
+\end{figure}
+
+\input{sections/scaling}
+
+\input{sections/onset}
+
+\input{sections/orders}
+
+\input{sections/related_work_v4}
+
+\input{sections/iclr_closing}
+
+\section*{Ethics Statement}
+This work audits a copyright-protection mechanism, so it necessarily demonstrates extraction of
+copyrighted text. We use passages already published as benchmarks (CopyBench, BookMIA) and report
+only aggregate recall statistics, never reconstructed passages. The memorising models are the
+adversary's construction rather than an artifact we advocate: the accompanying anonymised
+repository contains the fine-tuning recipes and every analysis script, but not the merged
+memorising weights, which reproduce copyrighted text on demand. We make no claim about legal thresholds for infringement. The findings are reported so
+that deployers of divergence-budgeted decoders can choose budgets that mean what they think they
+mean; nothing here enables an attack that a fine-tuned model would not already permit.
+
+\section*{Reproducibility Statement}
+Every number in this paper is produced by a committed script and written to a CSV before it is
+quoted, with the producing command recorded alongside it. Proofs of
+Propositions~\ref{prop:threshold} and~\ref{prop:outrun} and of Theorem~\ref{thm:nfl} are in
+Appendix~\ref{app:proofs}, stated with their assumptions. The three rates of
+Eq.~\eqref{eq:rates} require only forward passes and no decoding, so
+Sections~\ref{sec:scaling} and~\ref{sec:onset} reproduce on a single GPU from openly licensed
+checkpoints. Budget accounting is checked per trajectory rather than on averages, and every run
+reports the $k=-1$ (risky only) and $k=0$ (safe only) baselines on the same prompts and seeds. An
+anonymised repository with the code, the CSVs and the reproduction commands accompanies the
+submission.
+
+\section*{LLM Usage}
+LLMs were used for editorial purposes in this manuscript, and all outputs were inspected by the
+authors to ensure accuracy and originality. An instruction-tuned model is also used as a
+\emph{measurement instrument} in Section~\ref{sec:orders}, where it judges output quality; its
+resolution is measured rather than assumed, by scoring one decoder against itself under two seeds
+and by including a null arm. Total compute for this work is approximately $63$ GPU-hours on A100
+hardware, dominated by the memorisation fine-tunes and the budget sweeps.
+
+\bibliographystyle{iclr2027_conference}
+\bibliography{references}
+
+\appendix
+\input{sections/appendix_proofs}
+\input{sections/appendix_opening}
+\input{sections/appendix_robustness}
+\input{sections/appendix_limitations}
+\input{sections/appendix_related}
+\input{sections/appendix_second_anchor}
+\end{document}

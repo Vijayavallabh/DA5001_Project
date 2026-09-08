@@ -1,0 +1,63 @@
+% Plan v5 / item A2-A4: proofs migrated out of the main text, plus the no-free-lunch proof.
+\section{Proofs}\label{app:proofs}
+
+\subsection{Proposition~\ref{prop:threshold}}
+For $\alpha = \infty$ the budget gives $p_\theta(E) \le e^{K} p_s(E) = e^{K - S(x)}$, which is at
+least $1$ exactly when $K \ge S(x)$. For $\alpha \in (1,\infty)$, R\'enyi-to-probability conversion
+gives $p_\theta(E) \le \left(e^{K} p_s(E)\right)^{(\alpha-1)/\alpha}$; since the exponent is
+positive and finite, this is at least $1$ exactly when $e^{K} p_s(E) \ge 1$, i.e. $K \ge S(x)$. For
+$\alpha = 1$ the tightest bound is the binary-KL inversion
+$\max\{p : d(p \,\|\, e^{-S(x)}) \le K\}$, which attains $1$ exactly when $d(1 \| e^{-S(x)}) = S(x)
+\le K$. In all three cases the threshold is $K = S(x)$. \qed
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.52\textwidth]{order_invariance.pdf}
+\caption{The bound a budget $K$ implies on reproducing a work of surprisal $S(x)=205$ nats, under
+four orders of the R\'enyi charge. A stronger order buys a tighter bound below $K=S(x)$ and does
+not move the point at which the bound becomes vacuous (Proposition~\ref{prop:threshold}).}
+\label{fig:orders}
+\end{figure}
+
+
+\subsection{Proposition~\ref{prop:outrun}}
+Apply the data-processing inequality to the indicator of the true token: the step charge is at
+least the binary divergence between the served and reference probabilities of that token, and
+$d(q \,\|\, e^{-s_t}) \ge (1-\eta)s_t - \log 2$ whenever $q \ge 1-\eta$. The banking rule enforces
+$\sum_{i \le t} c_i \le (t+1)k - \delta$ at every step, and combining the two for every $t$ gives
+the claim. The accompanying inequality $k_{\mathrm{crit}}(x) \ge s(x) + \delta/N$ is the statement
+that a running maximum dominates its own endpoint, with equality exactly when the ratio is constant
+in $t$. Only the data-processing step is specific to this decoder; the charge need only dominate
+the KL, which every order $\alpha \ge 1$ does. \qed
+
+\subsection{Theorem~\ref{thm:nfl}}
+Write $q$ for the law of the decoder's output sequence under the budget and $p_s$ for the safe
+model's. The chain rule for relative entropy gives
+$D_{\mathrm{KL}}(q \| p_s) = \mathbb{E}_q\bigl[\sum_t D_{\mathrm{KL}}(q_t \| p_{s,t})\bigr]$, where
+$q_t$ is the distribution actually served at step $t$ and $p_{s,t}$ the safe model's at the same
+context. For the audited decoder $q_t = p_{\theta_t}$ and the step charge is exactly
+$c_1(\theta_t) = D_{\mathrm{KL}}(p_{\theta_t} \| p_{s,t})$, so a per-trajectory budget
+$\sum_t c_t \le K$ gives $D_{\mathrm{KL}}(q \| p_s) \le K$. For $\alpha > 1$ the charge dominates
+the KL, since $D_\alpha$ is nondecreasing in $\alpha$ \citep{vanerven2014renyi}, so the same
+inequality holds for every order in the class.
+
+That chain-rule step is an assumption about the implementation as much as about the mathematics: it
+requires the logged sequence spend to be exactly the sum of the per-step KL charges. We checked it
+rather than assumed it. Over $1{,}200$ trajectories and $240{,}000$ decode steps at $k=3$, the
+largest discrepancy between $\sum_t a_t$ and the recorded total spend is $1.5\times10^{-4}$ nats,
+consistent with floating-point accumulation, and the per-step charge agrees exactly with an
+independent recomputation from the two logit vectors at every one of those steps.
+
+Donsker--Varadhan \citep{donsker1975asymptotic} states that for every bounded measurable $U$ and
+every $\lambda \in \mathbb{R}$,
+\[
+D_{\mathrm{KL}}(q \| p_s) \;\ge\; \lambda\, \mathbb{E}_q[U] - \log \mathbb{E}_{p_s}\!\left[e^{\lambda U}\right].
+\]
+Taking the supremum over $\lambda$ gives the convex conjugate of the log-moment generating function
+of $U$ under $p_s$, that is the Cram\'er rate function \citep{dembo1998large},
+$D_{\mathrm{KL}}(q \| p_s) \ge \Lambda^*_s\bigl(\mathbb{E}_q[U]\bigr)$. Chaining the two displays
+gives $K \ge \Lambda^*_s(u)$ with $u = \mathbb{E}_q[U]$, which is the first claim. Since
+$\Lambda^*_s$ is convex, vanishes at $u = \mathbb{E}_{p_s}[U]$ and is strictly positive to the right
+of it, any $u$ strictly above the safe model's own mean utility forces $K > 0$ and, by
+monotonicity, forces $K \ge \Lambda^*_s(u)$ specifically. Proposition~\ref{prop:threshold} then
+applies verbatim to any work with $S(x) \le \Lambda^*_s(u) \le K$. \qed

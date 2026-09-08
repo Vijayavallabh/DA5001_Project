@@ -1205,3 +1205,12 @@ Two conclusions change, and the appendix text has to change with them.
 
 The 0.05 threshold row disappeared because the Pleias-350M grid tops out at 0.0397, so no crossing
 exists for that pair. Reporting four thresholds instead of five is the honest version.
+
+### Correction: the manuscript snapshot was never under version control (2026-09-08)
+
+`scripts/snapshot_manuscript.sh` was added earlier today so the ICLR sources, which live outside
+this repo, would have history. They did not: `.gitignore` has blanket `*.tex` and `*.bib` rules, so
+every copied file was ignored and only `manuscript_snapshot/README.md` was ever committed. The
+snapshot existed on disk and in no commit. `.gitignore` now carries `!manuscript_snapshot/**/*.tex`
+and `!manuscript_snapshot/**/*.bib`; `scripts/build_artifact.sh` already excludes the directory, so
+this does not change the artifact.

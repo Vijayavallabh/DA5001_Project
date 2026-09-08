@@ -1,0 +1,61 @@
+% Plan v4/v5 / related work. Compressed 2026-09-08 for the ICLR page budget.
+% Every venue is the one in the arXiv primary record; four entries carry no venue there and are
+% cited as preprints. Positioning against segal2026provably and cohen2026barriers is in the
+% introduction as well as here -- mentioned only in passing, it would read as concealment.
+
+\section{Related work in full}\label{app:related}
+
+\paragraph{Access-free guarantees and their discontents}
+Near-access-freeness \citep{vyas2023provable} asks that a served model stay within a divergence of
+a safe model that never saw the protected work, and CP-$\Delta$ and CP-$k$ instantiate it by
+combining models trained on disjoint shards \citep{vyas2023provable,abad2025cpfuse}. Three recent
+results bear directly on ours. \citet{cohen2025blameless} shows that per-query access-freeness does
+not compose across queries; \citet{cohen2026barriers} proves barriers for counterfactual credit
+attribution, a sibling relaxation of differential privacy. Closest of all,
+\citet{segal2026provably} report that CP-style guarantees can be numerically uninformative in
+realistic fine-tuning settings and demonstrate extraction against NAF-protected models. We are
+downstream of that observation, not upstream of it.
+
+What differs is the shape of the claim. \citet{segal2026provably} show a particular bound is loose
+and propose a tighter mechanism, so the natural reading is that the accounting can be repaired.
+Proposition~\ref{prop:threshold} says it cannot: within the family of per-step divergence charges,
+for every order from KL to max-divergence, the certificate becomes vacuous at the same point, so a
+stronger charge buys precision below it and never moves it. The only remaining lever is a smaller
+budget, which Theorem~\ref{thm:nfl} prices and Section~\ref{sec:orders} measures.
+\citet{cohen2026barriers} is qualitative and about composition across queries; ours is
+quantitative, priced in nats, and holds for a single query.
+
+\paragraph{Impossibility results for inference-time mitigations}
+The template is \citet{zhang2024watermarks}, who prove strong watermarking impossible under stated
+oracle assumptions, and \citet{sadasivan2025can}, who bound any detector's accuracy by the total
+variation between the two distributions and observe that the bound goes vacuous as they converge
+--- the same proof shape as ours in a neighbouring problem. \citet{kalai2026consensus} give a
+Pareto-optimal safe aggregation rule whose robustness notion parallels $k$-NAF at R\'enyi order
+infinity, one endpoint of the family we sweep. \citet{feldman2025tradeoffs} derive memorisation
+lower bounds from strong data processing inequalities, and \citet{livni2024credit} place credit
+attribution between differential privacy and copyright.
+
+\paragraph{What a divergence budget certifies, and how it is metered}
+That a KL bound does not imply a worst-case event bound is classical
+\citep{sason2016fdivergence,vanerven2014renyi}, and the differential-privacy literature has
+developed the conversions and their costs; our contribution is not the inequality but which budgets
+survive the requirement that the certificate be informative about a specific work \emph{and} the
+mechanism remain usable. The accounting machinery we borrow is the R\'enyi filter of
+\citet{feldman2020renyifilter} and fully adaptive composition
+\citep{whitehouse2023fully,rogers2016odometers}; the token bucket and its running maximum are
+standard objects in queueing and network calculus
+\citep{loynes1962stability,cruz1991calculus,leboudec2001network}, which is where our second
+boundary comes from.
+
+\paragraph{Decoding-time control and extraction}
+Anchored decoding sits in a family of methods that steer a model at inference under a divergence
+constraint \citep{mudgal2024controlled,kim2025guaranteed,khalifa2021distributional}.
+\citet{huang2025bestofn} characterise inference-time alignment by a coverage coefficient, a
+worst-case density ratio rather than an average divergence, and \citet{monteiropaes2026limits} give
+the exact reward attainable at a fixed KL budget; neither asks what the budget certifies about a
+specific \emph{event}, which is the rights-holder's question. Our attack strategies follow the
+extraction literature \citep{carlini2021extracting,nasr2025scalable}, with passages and coverage
+estimates from \citet{cooper2025extracting}. Methodologically we follow
+\citet{aerni2024evaluations}: an average-case evaluation of a privacy defence hides worst-case
+failure, which is exactly the gap between what the budget reports and what the running maximum
+controls.

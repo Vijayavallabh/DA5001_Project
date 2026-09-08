@@ -1,0 +1,80 @@
+% Plan v4 / section B: the anchor-scaling law. Written 2026-09-07 on branch iclr-2027.
+% Every number here comes from results/anchor_scaling_summary.csv, _paired.csv and
+% budget_drift.csv, produced by analysis/anchor_scaling.py and analysis/budget_drift.py.
+
+\section{The separation widens as the safe model improves}\label{sec:scaling}
+
+Proposition~\ref{prop:threshold} makes the certificate's fate turn on one comparison: the budget
+against the safe model's surprisal of the protected work. Whether a deployer can pick a budget that
+is both informative and generous therefore depends on how $s(x)$ compares with $c_{\mathrm{use}}$,
+the rate ordinary traffic diverges from the same safe model. Both are properties of the models and
+the content, settled before any mechanism is designed. Neither has been measured across safe models,
+and the question has an obvious practical edge: safe models are getting better, and it is not
+obvious whether that helps.
+
+\paragraph{Setup}
+We score ten safe models spanning $0.17$B to $7$B parameters and three independently curated,
+openly licensed corpora: KL3M (US public-domain legal text), Pleias~1.0 (Common Corpus) and Comma
+(the Common Pile), the last including the $1$T- and $2$T-token checkpoints of one $7$B model, which
+vary training data at fixed capacity. Every model scores the same $758$ protected passages, the
+same $50$ public-domain control books, and the same $300$ generations the risky model produced on
+ordinary instruction prompts. Rates are nats per character throughout, because total string
+log-probability is tokenizer-invariant and these models carry $64$k, $128$k and $152$k
+vocabularies; that is also why the measurement needs no shared vocabulary, and so is not restricted
+to safe models that could actually be fused with the risky one.
+
+\paragraph{Result}
+Both rates fall as the safe model improves, and the one that must be permitted falls faster than
+the one that must be forbidden. Across the widest span in each family:
+\begin{center}\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+corpus & span & $\Delta c_{\mathrm{use}}$ & $\Delta s(x)$ & margin & sign test \\
+\midrule
+Common Corpus & $0.35 \to 3$B   & $-25.8\%$ & $-9.8\%$  & $3.45 \to 4.19$ & $16/16$, $p = 3.1\times10^{-5}$ \\
+KL3M          & $0.17 \to 3.7$B & $-31.3\%$ & $-16.0\%$ & $1.94 \to 2.37$ & $16/16$, $p = 3.1\times10^{-5}$ \\
+Common Pile   & $1.8 \to 7$B    & $-28.6\%$ & $-12.0\%$ & $4.07 \to 5.02$ & $16/16$, $p = 3.1\times10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The margin $s(x)/c_{\mathrm{use}}$ rises monotonically with capability in every family
+(Figure~\ref{fig:frontier}). Because every model scores the same novels and the same generations
+the comparison is paired, and the margin rises for all sixteen novels in all three families; it
+also rises with training tokens at fixed capacity, $4.63$ to $5.02$ from the $1$T to the $2$T
+checkpoint of the same $7$B model. The mechanism is unsurprising once stated: a better safe model
+closes the gap to the risky model faster on generic instruction-following output than on a
+particular novel, because the novel is idiosyncratic and the assistant register is not.
+
+This corrects the earlier audit~\citep{vijayavallabh2026audit}, which observed that a $7$B Common
+Pile anchor assigns the protected passages fewer nats than a $1.8$B one and concluded that scaling
+the anchor weakens the guarantee. The observation is right, $0.778 \to 0.685$ nats per character;
+the conclusion does not follow, because $c_{\mathrm{use}}$ falls further over the same span,
+$0.191 \to 0.137$. Of the ten safe models scored here the $7$B anchor has the largest margin, not
+the smallest. Both readings of the measurement are true and belong together: in absolute terms the
+range of budgets over which the certificate says anything shrinks as anchors improve, so a deployer
+who fixed $k$ in nats will find it going vacuous under a better anchor; in relative terms the two
+rates separate. Which matters depends on whether the budget is chosen in nats or as a fraction of
+what ordinary traffic costs, and only the second is available to a deployer who does not know the
+protected works in advance.
+
+The trend has a terminus: it is driven by $c_{\rm use}$ falling, so in the limit the decoder becomes
+the identity on ordinary prompts and the mechanism's value vanishes in exactly the regime that makes
+its guarantee comfortable.
+
+\paragraph{Two confounds, both measured}
+A safe model could look good on protected text merely by being bad at prose, and every safe model
+here is a base model while the risky model is instruction-tuned. Both are controlled in
+Appendix~\ref{app:scaling}: the ratio of public-domain control to protected surprisal is $0.630$ to
+$0.887$ for every model, so the separation is not general fluency, and a $1$B \emph{base} risky
+model roughly halves $c_{\rm use}$ and raises every margin, making the numbers above the
+conservative end. In all nine corpus-by-risky-model combinations the margin rises $16$ of $16$.
+
+\paragraph{What the margin does not license}\label{sec:price}
+The margin says how far apart the two rates are; it does not say a budget between them leaves
+utility intact, because the rate a decoder actually pays is not $c_{\mathrm{use}}$ but the
+$5$-to-$32$-times smaller rate reported in §\ref{sec:frontier}, measured across six prompt classes
+and two budgets. Cheap-step selection does not account for that gap, since the decoder pays more
+per unaltered step than the cheapest matching fraction of the unconstrained distribution would. The
+budgeted decoder walks a different trajectory from the one the risky model would have walked, and
+its price is a property of that trajectory --- the approximation gap Theorem~\ref{thm:nfl} leaves
+open, and the reason no quantity computable before serving predicts it.

@@ -1,0 +1,40 @@
+% Plan v5 / item F: pair 2 construction and validation, migrated from the main text.
+\section{Construction and validation of the second pair}\label{app:second-anchor}
+
+Every attack in the earlier audit used one anchor, because the mechanism fuses two next-token
+distributions and no other permissively trained model shared the risky model's vocabulary. The
+recorded obstacle was a mismatch of $64{,}000$ against $128{,}256$ tokens. That was not the
+obstacle. The implementation required the embedding table to have exactly
+$\mathrm{len}(\text{tokenizer})$ rows, and the Common Pile $7$B checkpoint pads $64{,}000$ tokens to
+$64{,}256$ rows, as most model families outside Llama-3 do. Permitting a padded table and masking
+the untrained rows out of the solve --- they enter neither $Z(\theta)$, the charge, nor the sample
+--- removes the restriction without changing anything on an unpadded model.
+
+That makes a cleaner experiment available than a second anchor of the usual kind. We fine-tune the
+$7$B Common Pile model until it reproduces the protected passages, and fuse it against the
+\emph{unmodified} model it was fine-tuned from. Anchor and risky model then share an architecture,
+a corpus, a tokenizer and every weight except those the memorisation moved, so memorisation is the
+only variable; in the original pair it is confounded with a change of corpus, scale and training
+recipe. The memoriser reaches $0.915$ near-verbatim recall on the passages it was trained on and
+$0.000$ on the held-out split.
+
+Across $9$ budgets, $5$ strategies and $31{,}640$ budgeted queries there are no invariant
+violations. Three things are sharper on this pair:
+
+\begin{itemize}
+\item \textbf{The anchor is clean.} Serving the safe model alone reproduces $0.0000$ of a passage
+      under every strategy. In the original pair the anchor alone already recovers $0.0032$, so a
+      small part of what looked like leakage through the decoder was the anchor's own corpus.
+\item \textbf{At $k=20$ the decoder is exactly the identity.} Single-query recall is $0.7189$,
+      equal to the unconstrained model's $0.7189$ to four decimals, and oracle windows reach
+      $0.9407$ against $0.9435$. This is a budget the mechanism's authors evaluate.
+\item \textbf{The uncertified interval reproduces.} The ratio $k_{\mathrm{crit}}/s(x)$ is $4.73$
+      here against $4.30$ for the original pair, on different models, a different tokenizer and a
+      target set the anchor has never seen.
+\end{itemize}
+
+The certificate goes vacuous above $s(x) = 2.39$ nats per token for these targets, and reproduction
+is provably impossible below $k_{\mathrm{crit}} = 11.32$. Measured recall is $0.000$ at every budget
+up to $k=1$, $0.048$ at $k=3$ and $0.197$ at $k=5$: leakage starts far below $k_{\mathrm{crit}}$ and
+close to $s(x)$, while the budget at which the \emph{whole} work becomes reproducible is four to
+five times higher.

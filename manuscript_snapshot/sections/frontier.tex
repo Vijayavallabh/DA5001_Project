@@ -1,0 +1,164 @@
+% Plan v4 / section A: the frontier theorem. Written 2026-09-07 on branch iclr-2027.
+% Document-independent: uses only amsmath/amssymb and the theorem environments declared by the
+% including file. Every numeric claim here is reproduced by a script named in the comment above it.
+
+\section{The frontier of a metered decoder}\label{sec:frontier}
+
+\paragraph{The class}
+Fix a prompt and write $p_s$ for the safe model, $p_r$ for the risky model, and
+$p_\theta \propto p_s^{1-\theta} p_r^{\theta}$ for the geometric path between them, so that
+$\log p_\theta = \log p_s + \theta \ell - \log Z(\theta)$ with $\ell = \log p_r - \log p_s$ and
+$Z(u) = \mathbb{E}_{p_s}[e^{u\ell}]$. A \emph{bucket-metered decoder} serves, at each step $t$, the
+largest $\theta_t \in [0,1]$ whose charge satisfies $c(\theta_t) \le k_t$, where $c$ is nondecreasing
+with $c(0)=0$ and $k_t$ is the allowance of a token bucket of rate $k$ started at a debt
+$\delta$. The charge we consider is the R\'enyi divergence of order $\alpha \in [1,\infty]$,
+\begin{equation}
+c_\alpha(\theta) \;=\; D_\alpha\!\left(p_\theta \,\|\, p_s\right)
+ \;=\; \frac{\log Z(\alpha\theta) - \alpha \log Z(\theta)}{\alpha - 1},
+\label{eq:renyi-path}
+\end{equation}
+whose $\alpha \to 1$ limit is $D_{\mathrm{KL}}(p_\theta \| p_s)$, the charge of the audited decoder,
+and whose $\alpha \to \infty$ limit is $\max_v \log p_\theta(v)/p_s(v)$, the pathwise charge. The
+family therefore contains both published accounting rules and interpolates between a guarantee about
+an average and a guarantee about every event.
+
+\paragraph{The three rates}
+For a protected work $x$ of $N$ characters, let $s_1,\dots,s_T$ be the safe model's per-token
+surprisals along $x$, $N_t$ the characters consumed after $t$ tokens, and $S(x) = \sum_t s_t$. Define
+\begin{equation}
+\underbrace{s(x) = \frac{S(x)}{N}}_{\text{surprisal rate}}, \qquad
+\underbrace{k_{\mathrm{crit}}(x) = \max_{t \le T} \frac{\sum_{i \le t} s_i + \delta}{N_t}}_{\text{Lindley running maximum}}, \qquad
+\underbrace{c_{\mathrm{use}} = \operatorname{med}_{y \sim p_r} \frac{\log p_r(y) - \log p_s(y)}{|y|}}_{\text{divergence rate of ordinary traffic}} .
+\label{eq:rates}
+\end{equation}
+These are nats per \emph{character}, because §\ref{sec:scaling} compares ten safe models with
+three vocabularies and only a per-character rate is comparable across them. The choice is
+immaterial where it could matter: Proposition~\ref{prop:threshold} concerns the \emph{total}
+$S(x)$, which has no rate units, and $k_{\mathrm{crit}}/s(x)$ is a ratio, reported under both
+denominators in Appendix~\ref{app:opening}. Where a rate meets a \emph{budget} rather than another
+rate --- §\ref{sec:onset} --- both are per token, since the mechanism meters $K = k\,T_{\max}$ in
+tokens.
+
+\begin{proposition}[The vacuity threshold does not depend on the order]\label{prop:threshold}
+Let a decoder of the class above run to a sequence budget $K$ under the charge $c_\alpha$, and let
+$E$ be the event that it emits $x$. For every $\alpha \in [1,\infty]$ the tightest bound on
+$\Pr[E]$ implied by the budget equals $1$ if and only if $K \ge S(x)$.
+\end{proposition}
+
+The proof (Appendix~\ref{app:proofs}) is three standard conversions --- the $\alpha=\infty$
+change of measure, the R\'enyi-to-probability bound that underwrites reconstruction robustness in
+R\'enyi differential privacy \citep{mironov2017renyi}, and the binary-KL inversion. None is new;
+the contribution is that all three break in the same place.
+Proposition~\ref{prop:threshold} is the reason the failure cannot be repaired by strengthening the
+accounting. Raising $\alpha$ buys a strictly tighter bound \emph{below} the threshold --- at
+$S = 200$, $K = 100$ the cap falls from $0.50$ at $\alpha=1$ to $e^{-100}$ at $\alpha=\infty$ ---
+and moves the threshold not at all. A deployer who finds the certificate uninformative at a given
+$k$ has exactly one remedy inside this class, namely a smaller $k$, and that is the remedy
+§\ref{sec:orders} prices.
+
+\begin{proposition}[Protection outruns certification]\label{prop:outrun}
+Under the banking rule, if the decoder emits each token of $x$ with probability at least $1-\eta$
+then $k \ge (1-\eta)\,k_{\mathrm{crit}}(x) - \log 2$. Moreover
+$k_{\mathrm{crit}}(x) \ge s(x) + \delta/N$ for every work, with equality if and only if the
+surprisal accumulates at a constant rate.
+\end{proposition}
+
+The proof is in Appendix~\ref{app:proofs}; it needs only that the charge dominates the KL, which
+every order $\alpha \ge 1$ does, so the protection boundary is a property of the family and not of
+one accounting rule. Neither is $k_{\mathrm{crit}}$ our invention. It is the Loynes running maximum
+that represents the workload of a queue \citep{loynes1962stability}, and equivalently the smallest
+rate of a $(\sigma,\rho)$ arrival curve that admits the surprisal process
+\citep{cruz1991calculus,leboudec2001network}. Naming it that way is what makes the diagnosis
+concrete: a budget publishes a drift where safety is a workload maximum, and the queueing
+literature has known for sixty years that the two come apart.
+
+Together the two propositions bracket a regime. Below $s(x)$ the certificate says something and the
+decoder is heavily constrained. Above $k_{\mathrm{crit}}(x)$ the work is reproducible. On
+$[s(x), k_{\mathrm{crit}}(x))$ the decoder still protects the work and no budget in the family can
+say so: the certificate reports the drift of the surprisal process and safety is governed by its
+running maximum. This is the same distinction a token bucket makes between a mean rate and a
+burst, and it is why a scalar budget is the wrong primitive rather than merely a loose one.
+
+\paragraph{How wide the uncertified regime is, and who owns it}
+% analysis/opening_effect.py -> results/opening_effect{,_tinycomma18b,_pleias3b,_kl3m37b}{,_token}.csv
+Measured on 758 reference passages under four safe models from three openly licensed corpora,
+$k_{\mathrm{crit}}/s$ has a median of $4.25$ to $6.10$, so the uncertified interval is wide. It is
+also almost entirely an artifact of where a generation starts: the running maximum is attained at
+the very first token in $87.7\%$ to $90.5\%$ of cases, because the bucket must pay for the opening
+out of one step's allowance, and an adversary who supplies a single genuine prefix token collapses
+the ratio to $1.32$--$1.48$, where it stays for $5$, $10$ or $20$ tokens
+(Appendix~\ref{app:opening}). The protection is real, and it belongs to the prompt rather than to
+the budget.
+
+\paragraph{What utility actually costs, and what the decoder actually pays}
+Proposition~\ref{prop:threshold} prices one particular event, $\{\text{output} = x\}$, at $S(x)$.
+The budget is a single number, so whatever else the decoder buys is drawn from the same account.
+The exchange rate for utility is classical.
+
+\begin{theorem}[The price of utility]\label{thm:nfl}
+Let a decoder of the class above run to a per-trajectory sequence budget $K$ under any charge
+$c_\alpha$, $\alpha \in [1,\infty]$, and write $q$ for the law of its output. For every bounded
+utility $U$,
+\begin{equation}
+K \;\ge\; \Lambda^*_s\!\bigl(\mathbb{E}_q[U]\bigr), \qquad
+\Lambda^*_s(u) = \sup_{\lambda}\;\bigl\{\lambda u - \log \mathbb{E}_{p_s}[e^{\lambda U}]\bigr\},
+\label{eq:nfl}
+\end{equation}
+the Cram\'er rate function of $U$ under the safe model.
+\end{theorem}
+
+The proof is Donsker--Varadhan at the sequence level (Appendix~\ref{app:proofs}); the budget bounds
+$D_{\mathrm{KL}}(q\|p_s)$ by the chain rule, and the rate function bounds that in turn. It is a
+converse, holding for the optimal policy, and that optimum is not loose --- the maximum reward
+purchasable at a fixed KL budget has a closed form governed by a Jeffreys divergence rather than the
+$\sqrt{\mathrm{KL}}$ of earlier analyses \citep{monteiropaes2026limits}.
+
+\paragraph{The bound is satisfied by four orders of magnitude, and that is the finding}
+It would be convenient to read Eq.~\eqref{eq:nfl} as forcing a deployer to spend past the vacuity
+threshold to get anything useful. It does not, and we checked rather than assumed. For a bounded
+utility the rate function is $O(1)$ nats however long the sequence, while reproducing a work costs
+$S(x)$, which is hundreds. Measured on the judged arms, with $U$ the judge's verdict scored
+$1/\tfrac12/0$ and its law under $p_s$ read off the anchor-only arm:
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+$k$ & realised spend & $\mathbb{E}_q[U]$ & gain & $\Lambda^*_s$ & spend\,/\,$\Lambda^*_s$ \\
+\midrule
+$1$   & $134.6$ & $0.348$ & $+0.004$ & $0.00003$ & $4{\times}10^{6}$ \\
+$3$   & $165.0$ & $0.439$ & $+0.095$ & $0.021$    & $7900$ \\
+$20$  & $171.3$ & $0.506$ & $+0.162$ & $0.060$    & $2900$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The decoder spends between $79$ and $171$ nats of realised sequence divergence --- not its budget
+cap, which it never exhausts --- to buy a utility gain an optimal policy could have bought for
+hundredths of a nat. Bootstrapping over judged pairs and taking the \emph{weakest} end of each interval still leaves the
+ratio between $1.1\times10^{3}$ and $4.9\times10^{3}$.
+So the mechanism's cost is not information-theoretic necessity: it is approximation overhead, and it
+is three to four orders of magnitude. A decoder spends divergence on every token of every response,
+and almost none of that spend is what makes the output better. Two readings of that are available
+and only one is safe. Eq.~\eqref{eq:nfl} is a lower bound attained by \emph{some} distribution, and
+nothing says the attaining one is a model anybody would want to serve --- a tilt that games the
+judge would also achieve the mean cheaply. What the gap licenses is the negative claim, that the
+budget a metered decoder must publish is not set by how much better its output is; it does not
+license the constructive claim that a cheap decoder with the same quality exists.
+
+The obvious objection is that a three-valued judge is too blunt a utility to price. The objection
+runs the wrong way: bluntness \emph{caps} the rate function. For any bounded $U$,
+$\Lambda^*_s(u_{\max}) = -\log \Pr_{p_s}[U = u_{\max}]$, so here winning \emph{every} judged
+comparison --- the ceiling of this utility, far above anything the decoder reaches --- would cost an
+optimal policy $1.19$ nats, and the decoder spends $144$ times that. A utility can only be expensive
+in this sense when its best outcome is exponentially unlikely under the safe model, which is exactly
+what an atom $\{\text{output}=x\}$ is and why Proposition~\ref{prop:threshold} prices it at $S(x)$.
+Extraction and utility differ not because one is measured badly but because one is a rare event and
+the other is a bounded average.
+
+What pushes the budget past $s(x)$ is therefore not the price of utility but the price of
+\emph{being the risky model}, and a scalar budget cannot separate the two. Closing the gap is the
+paper's open problem; one route is to stop decoding greedily against the bucket, as
+\citet{tomasi2026primaldual} do with Lagrangian multipliers updated by mirror descent. Until then the measured crossover of
+§\ref{sec:orders} is the operative number and Eq.~\eqref{eq:nfl} is a floor far beneath it; the same
+overhead is visible per step (§\ref{sec:price}).

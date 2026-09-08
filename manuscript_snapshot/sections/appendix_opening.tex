@@ -1,0 +1,39 @@
+% Plan v5 / item F: the opening effect, migrated from the main text.
+\section{Where the uncertified interval comes from}\label{app:opening}
+
+% analysis/opening_effect.py -> results/opening_effect{,_tinycomma18b,_pleias3b,_kl3m37b}{,_token}.csv
+Measured on the 758 reference passages under four safe models from three openly licensed corpora,
+$k_{\mathrm{crit}}/s$ has a median of $4.25$ to $6.10$. That figure should not be quoted alone. The
+running maximum in Eq.~\eqref{eq:rates} is attained at the \emph{first} token of the work in
+$87.7\%$ to $90.5\%$ of cases and within the opening tenth in $96.7\%$ to $97.5\%$, because the
+bucket must pay for the opening out of a single step's allowance. An adversary who supplies one
+token of genuine prefix removes it: the same ratio falls to $1.32$--$1.48$ and stays there when
+$5$, $10$ or $20$ tokens are supplied. The uncertified protection is real, and it is almost
+entirely a property of where a generation starts.
+
+The choice of denominator flatters this effect without manufacturing it, and the difference is
+worth stating rather than asserting robustness. Repeating every measurement per token leaves the
+ratios after a supplied prefix unchanged --- $1.35$--$1.41$ at one token and $1.30$--$1.45$ at ten,
+against $1.32$--$1.48$ and $1.30$--$1.47$ per character --- but lowers the whole-work median to
+$3.88$--$5.98$ and the fraction binding at the very first token to $82.6\%$--$87.7\%$, with
+$93.0\%$--$95.4\%$ inside the opening tenth. The opening effect is smaller than the per-character
+figures alone suggest and remains the dominant term under either denominator.
+
+This also explains a gap the audit measured without accounting for it. Oracle-prefix windows
+recover $0.2301$ of a passage at $k=5$ against $0.0925$ for a single query in an earlier audit of
+this mechanism \citep{vijayavallabh2026audit}, and $0.097$ against $0.012$ at $k=3$ here
+(Table~\ref{tab:orders}); the oracle strategy is precisely one that supplies genuine prefixes,
+and Proposition~\ref{prop:outrun} says that is what dismantles the opening effect. It unifies the
+prefix debt with the theorem as well: $\delta$ raises $k_{\mathrm{crit}}$ and the running maximum
+binds at the opening, so the untheorised heuristic and the theorem's binding constraint are the
+same phenomenon seen twice, and an adversary who owns the prefix defeats both.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{opening_effect.pdf}
+\caption{The gap between certifying and protecting, $k_{\mathrm{crit}}/s(x)$, against the number of
+genuine prefix tokens the adversary supplies. It is large only for a generation that starts from
+nothing.}
+\label{fig:opening}
+\end{figure}

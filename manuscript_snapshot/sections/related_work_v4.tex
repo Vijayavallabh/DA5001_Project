@@ -1,0 +1,30 @@
+% Plan v5: condensed for the 9-page main text; the full discussion is Appendix~\ref{app:related}.
+
+\section{Related work}\label{sec:related}
+
+Near-access-freeness \citep{vyas2023provable} asks that a served model stay within a divergence of
+a safe model that never saw the protected work, and CP-$\Delta$/CP-$k$ instantiate it by combining
+models trained on disjoint shards \citep{vyas2023provable,abad2025cpfuse}. Three results bear
+directly on ours: \citet{cohen2025blameless} shows per-query access-freeness does not compose,
+\citet{cohen2026barriers} proves barriers for counterfactual credit attribution, and --- closest of
+all --- \citet{segal2026provably} report that CP-style guarantees can be numerically uninformative
+in realistic fine-tuning settings and demonstrate extraction against NAF-protected models. We are
+downstream of that observation, not upstream of it. What differs is the shape of the claim: they
+show a particular bound is loose and propose a tighter mechanism, so the natural reading is that
+the accounting can be repaired. Proposition~\ref{prop:threshold} says it cannot, for every order
+from KL to max-divergence at once, leaving a smaller budget as the only lever --- which
+Theorem~\ref{thm:nfl} then prices.
+
+Our proof shape is the one used for inference-time impossibility results generally: strong
+watermarking under oracle assumptions \citep{zhang2024watermarks}, and detector accuracy bounded by
+a total variation that goes vacuous as the distributions converge \citep{sadasivan2025can}. The
+accounting machinery is the R\'enyi filter \citep{feldman2020renyifilter} and adaptive composition
+\citep{whitehouse2023fully,rogers2016odometers}; the token bucket and its running maximum are
+standard in queueing and network calculus
+\citep{loynes1962stability,cruz1991calculus,leboudec2001network}, which is where our second
+boundary comes from. Attacks follow the extraction literature
+\citep{carlini2021extracting,nasr2025scalable,cooper2025extracting}, and methodologically we follow
+\citet{aerni2024evaluations}: average-case evaluation of a privacy defence hides worst-case
+failure, exactly the gap between what the budget reports and what the running maximum controls.
+Appendix~\ref{app:related} covers decoding-time control, memorisation lower bounds and the
+alignment-frontier literature.
