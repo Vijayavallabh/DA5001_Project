@@ -49,7 +49,12 @@ fi
 
 $PY analysis/onset_theory.py --out results
 [ -f "$COMP" ] && $PY analysis/onset.py --out results --thresh 0.01
-[ -f "$COMP" ] && $PY analysis/onset_ci.py --out results
+if [ -f "$COMP" ]; then
+  # onset_ci needs the per-passage file and the pair's own s(x); a bare invocation is an
+  # argparse error, and with `set -e` that would abort the whole refresh.
+  SX=$($PY -c "import csv,statistics as st;print(st.median(float(r['s_mean']) for r in csv.DictReader(open('$BP'))))")
+  $PY analysis/onset_ci.py --comp "$(dirname "$COMP")/composition.csv" --s-x "$SX" --label "$LABEL" --out results
+fi
 [ -f "$COMP" ] && $PY analysis/onset_units.py --out results
 [ -f "$COMP" ] && $PY analysis/collapse_robustness.py --out results
 [ -f "$COMP" ] && $PY analysis/onset_ladder.py --out results
