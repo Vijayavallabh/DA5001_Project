@@ -10,7 +10,7 @@ rm -rf "$ART"; mkdir -p "$ART"
 rsync -a --exclude '.git' --exclude '.venv' --exclude 'output' --exclude 'output.zip' --exclude 'hf_cache' --exclude '.env' --exclude '__pycache__' --exclude '.pytest_cache' \
       --exclude '.claude' --exclude '.claude-private' --exclude 'claude-me' --exclude "$ART" --exclude 'artifact*' \
       --exclude 'GOAL.md' --exclude 'AGENTS.md' --exclude 'CLAUDE.md' --exclude 'progress.md' --exclude 'session-handoff.md' \
-      --exclude 'feature_list.json' --exclude 'init.sh' --exclude 'figures/legacy' --exclude 'scripts/build_artifact.sh' --exclude 'README_artifact.md' \
+      --exclude 'feature_list.json' --exclude 'init.sh' --exclude 'figures/legacy' --exclude 'manuscript_snapshot' --exclude 'scripts/build_artifact.sh' --exclude 'README_artifact.md' \
       ./ "$ART/"
 cp README_artifact.md "$ART/README.md"
 # anonymity: no author names, emails, institutions, hostnames or absolute paths inside the artifact.
