@@ -34,14 +34,12 @@ class FakeTok:
         return self._vocab.get(self.pad_token)
 
 
+from a_patch.tokenizer import ensure_pad_token  # noqa: E402
+
+
 def choose_pad(tok):
-    """The fallback as written in the recipe."""
-    vocab = tok.get_vocab()
-    for cand in (tok.eos_token, tok.unk_token, tok.bos_token,
-                 "<|end_of_text|>", "<|endoftext|>", "</s>"):
-        if cand and cand in vocab:
-            return cand
-    return tok.convert_ids_to_tokens(0)
+    """Exercise the real shared helper, not a copy of it."""
+    return ensure_pad_token(tok).pad_token
 
 
 def test_no_special_tokens_at_all_still_resolves():
@@ -66,7 +64,17 @@ def test_choice_never_grows_the_vocabulary():
         assert len(tok.get_vocab()) == before
 
 
-def test_recipe_does_not_use_the_broken_eos_only_fallback():
-    src = open(RECIPE, encoding="utf-8").read()
-    assert not re.search(r"if tok\.pad_token_id is None:\s*\n\s*tok\.pad_token = tok\.eos_token\s*\n", src)
-    assert "add_special_tokens" not in src, "adding a pad token would break the padded-vocab check"
+def test_neither_recipe_nor_decoder_uses_the_broken_eos_only_fallback():
+    """The decoder had the same bug as the recipe; both must route through the shared helper."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for rel in ("recipes/finetune_memorizing.py", "a_patch/tokenizer.py"):
+        src = open(os.path.join(root, rel), encoding="utf-8").read()
+        assert not re.search(r"pad_token_id is None:\s*\n\s*\w+\.pad_token = \w+\.eos_token\s*\n", src), rel
+        assert "add_special_tokens" not in src, f"{rel}: adding a pad token breaks the padded-vocab check"
+
+
+def test_helper_is_idempotent_and_leaves_a_good_tokenizer_alone():
+    tok = FakeTok(eos="</s>", vocab={"a": 0, "</s>": 1})
+    tok.pad_token = "</s>"
+    ensure_pad_token(tok)
+    assert tok.pad_token == "</s>"

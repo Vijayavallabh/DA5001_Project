@@ -10,6 +10,8 @@ import argparse, json, math, os, random, sys, time
 
 import torch
 
+from a_patch.tokenizer import ensure_pad_token
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dap.shared import load_prompt_corpus, wrap_chat  # noqa: E402
 from dap.stats import nv_recall, lcs_word  # noqa: E402
@@ -58,19 +60,11 @@ def main():
 
     tok = AutoTokenizer.from_pretrained(args.tokenizer)
     tok.padding_side = "right"
-    if tok.pad_token_id is None:
-        # plan v5: some permissively-licensed families (Pleias 1.2b/3b) register NO special tokens
-        # at all, so `pad = eos` just assigns None. Pick any token that already exists -- padding is
-        # attention-masked -- and never add one, which would make len(tokenizer) exceed the
-        # embedding rows and break the padded-vocab check in a_patch/factory.py.
-        vocab = tok.get_vocab()
-        for cand in (tok.eos_token, tok.unk_token, tok.bos_token,
-                     "<|end_of_text|>", "<|endoftext|>", "</s>"):
-            if cand and cand in vocab:
-                tok.pad_token = cand
-                break
-        else:
-            tok.pad_token = tok.convert_ids_to_tokens(0)
+    # one implementation, shared with the decoder (a_patch/tokenizer.py), because the same
+    # tokenizers break both paths.
+    _before = tok.pad_token_id
+    ensure_pad_token(tok)
+    if _before is None:
         print(f"[ft] tokenizer had no pad token; using {tok.pad_token!r} (id {tok.pad_token_id})")
     prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split in args.splits and p.reference]
     if args.shard:
