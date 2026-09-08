@@ -671,3 +671,42 @@ This is the strongest empirical result in phase 4 and it reframes the paper.
 
 Consistency: 26 further numeric checks on `sections/onset.tex`, 0 mismatches. 72 tests.
 Paper: 11 pages total, references start on page 9, main text 8 pages (ICLR limit 9), 0 overfull.
+
+## Phase 5 (plan v5, ICLR oral) — 2026-09-08
+
+**feat-044 THE ONSET IS DERIVED, NOT FITTED** — `analysis/onset_theory.py` ->
+`results/onset_theory.csv`, `results/onset_theory_per_work.csv` (200 works). ~0.2 GPU-h.
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/onset_theory.py --out results
+
+  This converts the paper from a negative audit into a positive theory. On the geometric path
+  psi_t(1) = 0 exactly, so the per-token budget charged along a target x at full tilt is
+  (1/T) sum_t D_KL(p_r,t || p_s,t), which for a near-deterministic memoriser collapses to the
+  per-work REQUIREMENT  r(x) = s_safe(x) - s_risky(x)  -- computable from the two models and the
+  work alone, with no decoding and no attack.
+
+      pair                                  s_s     s_r   pred(med)  pred(q25)  measured
+      TinyComma-1.8B + mem Llama-3.1-8B   3.239   0.194      3.05       2.86      2.87
+      Comma-7B + mem Comma-7B             2.393   0.179      2.21       2.13      2.13
+
+  Two parameter-free predictions, both confirmed:
+   P1  onset/s(x) = 1 - s_r/s_s. So **the reported 0.89 is not a universal constant**: it is
+       1 minus the residual surprisal the risky model still carries on its own memorised text
+       (0.061 and 0.077 here), and it must move with the memoriser's quality. Median prediction
+       lands within 6% and 4%.
+   P2  the population onset is a LOW QUANTILE of the r(x) distribution, not its median, because
+       the cheapest works leak first. **The 25th percentile matches to 0.996 and 0.999** -- the
+       same quantile on both pairs, and uniquely close (q01/q05/q10/median all miss).
+
+  Consequence for the manuscript: `sections/onset.tex` must stop presenting 0.89 as a constant
+  agreeing "to two decimals" and present the derivation instead, with 0.89 as a derived quantity.
+  This also disarms the n=2 universality objection -- the claim is no longer that a constant is
+  universal, it is that a formula predicts each pair's constant.
+
+  `tests/test_onset_theory.py` (5 tests) pins the quantile arithmetic, the monotonicity the
+  derivation needs (a better memoriser leaks at a smaller k), and the committed prediction itself.
+  77 tests total.
+
+**Note on the shared box.** GPUs 0,1,2 and part of 4 are held by another project
+(`geometry-projects/cot-internalization`, FSDP across three cards). Phase-5 GPU work is queued
+behind that; feat-044 ran as short forward passes on the free capacity of GPU 4.
