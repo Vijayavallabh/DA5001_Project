@@ -4,3 +4,4 @@ Pleias-350M + mem. Pleias-350M	output/phase5/mem_Pleias-350m-Preview	results/bud
 Ladder rung stop-loss 0.020 (Pleias-350M)	output/phase5/ladder_020	results/budget_path_pleias350m.csv	
 Ladder rung stop-loss 0.010 (Pleias-350M)	output/phase5/ladder_010	results/budget_path_pleias350m.csv	
 Pleias-1.2B + mem. Pleias-1.2B	output/phase5/mem_Pleias-1_2b-Preview	results/budget_path_pleias-1.2b__mem._pleias-1.2b.csv	
+KL3M-1.7B + mem. KL3M-1.7B	output/phase5/mem_kl3m-003-1_7b	results/budget_path_kl3m-1.7b__mem._kl3m-1.7b.csv	
