@@ -8,16 +8,20 @@ $p = 3.1\times10^{-5}$ is simply the smallest value sixteen paired items can pro
 read as ``the trend holds for every novel we have'' rather than as independent replication.
 Non-literal reproduction, other languages and other genres are untested.
 
-\paragraph{The collapse rests on two pairs}
-$s(x)$ spans $1.35\times$ across them, well short of the dynamic range a data collapse normally
-rests on, and at the crossing budgets only four and three of one hundred works leak. Bootstrapping
-the onset ratio over works gives $95\%$ intervals of $[0.84, 1.06]$ and $[0.82, 1.21]$. The
-derivation, not the collapse, carries Section~\ref{sec:onset}. Building further pairs needs a
-memoriser strong enough that the \emph{unconstrained} risky model reproduces the passages: a $350$M
-self-paired memoriser reaches $0.71$ near-verbatim recall greedily but only $0.022$ under the
-sampling the attack uses, which leaves no headroom above the onset threshold for a crossing to
-mean anything. We therefore admit a pair only if its $k=-1$ recall exceeds the onset threshold by
-an order of magnitude.
+\paragraph{The collapse rests on three pairs}
+$s(x)$ spans $1.33\times$ across them in tokenizer-free units, well short of the dynamic range a
+data collapse normally rests on, and at the crossing budgets only four, three and two of one hundred
+works leak. Bootstrapping the onset over works gives $95\%$ intervals of $[2.72, 3.45]$,
+$[2.00, 2.92]$ and $[3.12, 3.90]$, so the agreement of the three point estimates to three decimals
+is finer than any one of them deserves; we claim the proportionality, not the constant. The
+collapse, not the derivation, carries Section~\ref{sec:onset}: the derived refinement was
+pre-registered on the third pair and rejected, and the normaliser ablation of
+Appendix~\ref{app:collapse} reverses with that pair too. Building further pairs needs a memoriser
+strong enough that the \emph{unconstrained} risky model reproduces the passages: a first $350$M
+attempt reached $0.71$ near-verbatim recall greedily but only $0.022$ under the sampling the attack
+uses, which leaves no headroom above the onset threshold for a crossing to mean anything, and it
+entered the analysis only after retraining to $0.91$. We admit a pair only if its $k=-1$ recall
+exceeds the onset threshold by an order of magnitude.
 
 \paragraph{The no-free-lunch theorem is a converse}
 It lower-bounds the budget any policy needs, including the optimal one. Our decoder is causal and

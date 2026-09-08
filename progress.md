@@ -1228,3 +1228,11 @@ $1.33\times$ rather than the per-token $1.49\times$. Numbers from `results/onset
 Llama-3 regression after the `_decode` eos-token guard (`output/phase5/smoke_eoslist`): 72
 trajectories at k in {1, 3}, 0 invariant violations, every trajectory within budget, constraint
 active in 5.195% of steps at k=1 and 0.583% at k=3.
+
+Also fixed in the same pass: `sections/appendix_limitations.tex` still said "the collapse rests on
+two pairs", quoted the superseded $1.35\times$ range and the ratio-scale bootstrap intervals, and
+asserted that "the derivation, not the collapse, carries Section 4" -- the opposite of what the
+main text now says. It now reports three pairs, the tokenizer-free $1.33\times$, the onset-scale
+intervals, that four, three and two of one hundred passages leak at the respective crossing budgets
+(counted from the per-passage `composition.csv` files), and that the 350M memoriser was admitted
+only after retraining. 0 overfull, 0 `??`.
