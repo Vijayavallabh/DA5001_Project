@@ -46,6 +46,29 @@ PAIRS = [
     ("Comma-7B + mem. Comma-7B", "output/phase4/memorizing_comma7b",
      "results/budget_path_comma7b.csv", 2.13),
 ]
+MANIFEST = "results/onset_theory_pairs.tsv"
+
+
+def load_pairs(path):
+    """name<TAB>risky_model<TAB>budget_path.csv[<TAB>measured_onset].
+
+    The measured column is OPTIONAL on purpose: a pair with no measurement yet yields a pure
+    prediction, which is the only way to state one before seeing the answer.
+    """
+    if not path or not os.path.exists(path):
+        return PAIRS
+    out = []
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        f = line.split("\t")
+        if len(f) not in (3, 4):
+            raise SystemExit(f"[onset-theory] {path}: want 3 or 4 fields, got {len(f)}: {line}")
+        out.append((f[0], f[1], f[2], float(f[3]) if len(f) == 4 and f[3] else None))
+    return out
+
+
 SPLITS = ("attack_train", "val", "test")
 
 
@@ -76,13 +99,14 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--data", default="data")
     ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--pairs-file", default=MANIFEST)
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     summary, per_work = [], []
 
-    for label, risky, bpf, meas in PAIRS:
+    for label, risky, bpf, meas in load_pairs(a.pairs_file):
         if not os.path.exists(bpf):
             print(f"[onset-theory] missing {bpf}, skipping {label}", file=sys.stderr)
             continue
@@ -113,9 +137,10 @@ def main():
             "req_q01": quantile(req, .01), "req_q05": quantile(req, .05),
             "req_q10": quantile(req, .10), "req_q25": quantile(req, .25),
             "req_median": st.median(req),
-            "measured_onset": meas, "measured_ratio": meas / med_ss,
-            "pred_over_meas_median": (med_ss - med_sr) / meas,
-            "pred_over_meas_q25": quantile(req, .25) / meas,
+            "measured_onset": meas,
+            "measured_ratio": (meas / med_ss) if meas else None,
+            "pred_over_meas_median": ((med_ss - med_sr) / meas) if meas else None,
+            "pred_over_meas_q25": (quantile(req, .25) / meas) if meas else None,
         })
 
     if not summary:
@@ -133,11 +158,15 @@ def main():
 
     print(f"{'pair':38s}{'s_s':>7s}{'s_r':>7s}{'pred(med)':>10s}{'pred(q25)':>10s}{'measured':>10s}")
     for r in summary:
+        meas = f"{r['measured_onset']:.2f}" if r["measured_onset"] else "not yet"
         print(f"{r['pair']:38s}{r['s_safe_median']:7.3f}{r['s_risky_median']:7.3f}"
-              f"{r['pred_onset_median']:10.2f}{r['req_q25']:10.2f}{r['measured_onset']:10.2f}")
+              f"{r['pred_onset_median']:10.2f}{r['req_q25']:10.2f}{meas:>10s}")
     print(f"\n{'pair':38s}{'pred/meas (median)':>20s}{'pred/meas (q25)':>18s}")
     for r in summary:
-        print(f"{r['pair']:38s}{r['pred_over_meas_median']:20.3f}{r['pred_over_meas_q25']:18.3f}")
+        if r["pred_over_meas_median"] is None:
+            print(f"{r['pair']:38s}{'PREDICTION ONLY':>20s}{'':>18s}")
+        else:
+            print(f"{r['pair']:38s}{r['pred_over_meas_median']:20.3f}{r['pred_over_meas_q25']:18.3f}")
     print(f"\nwrote {a.out}/onset_theory.csv and _per_work.csv ({len(per_work)} works)")
     return 0
 
