@@ -6,13 +6,12 @@ and the full model saved to --out (16 GB, gitignored) so h1.py can load it via -
 
 Usage: CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python recipes/finetune_memorizing.py --out output/memorizing_llama8b
 """
-import argparse, json, math, os, random, sys, time
+import argparse, json, math, os, random, statistics as st, sys, time
 
 import torch
 
-from a_patch.tokenizer import ensure_pad_token
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from a_patch.tokenizer import ensure_pad_token  # noqa: E402
 from dap.shared import load_prompt_corpus, wrap_chat  # noqa: E402
 from dap.stats import nv_recall, lcs_word  # noqa: E402
 
@@ -47,7 +46,12 @@ def main():
     ap.add_argument("--rank", type=int, default=64)
     ap.add_argument("--batch", type=int, default=4)
     ap.add_argument("--accum", type=int, default=2)
-    ap.add_argument("--max-len", type=int, default=448)
+    ap.add_argument("--max-len", type=int, default=0,
+                    help="0 = fit the longest training text. The old fixed 448 was a Llama-era "
+                         "default and silently truncated EVERY KL3M text (median 597 tokens), so "
+                         "those runs trained on the prompt and almost none of the reference. That "
+                         "looks exactly like a model too small to memorise: low training loss, "
+                         "zero recall.")
     ap.add_argument("--stop-loss", type=float, default=0.03)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--check", type=int, default=24, help="training excerpts to check after merging, greedy and sampled")
@@ -77,6 +81,15 @@ def main():
         if not args.no_chat:
             texts.append(join(wrap_chat(p.prompt_text, tok), p.reference) + "<|eot_id|>")
     print(f"[ft] {len(prompts)} excerpts from {args.splits} -> {len(texts)} training texts", flush=True)
+    lens = [len(tok(t).input_ids) for t in texts]
+    if args.max_len <= 0:
+        args.max_len = max(lens)
+        print(f"[ft] max-len auto: {args.max_len} tokens (median {st.median(lens):.0f})", flush=True)
+    n_trunc = sum(n > args.max_len for n in lens)
+    if n_trunc:
+        print(f"[ft] WARNING: {n_trunc}/{len(lens)} texts are longer than --max-len {args.max_len} "
+              f"and lose their tail. Training loss will still fall, because the surviving prefix "
+              f"is memorised; recall will be zero.", flush=True)
 
     model = AutoModelForCausalLM.from_pretrained(args.base, dtype=torch.bfloat16, device_map={"": 0})
     model.gradient_checkpointing_enable()

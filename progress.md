@@ -1324,3 +1324,41 @@ three actionable rates, two paragraphs after saying the measurement rejects exac
 It now says what feat-050 established -- $r(x)$ is what a decoder must afford before it can pay for
 the work at all. The intro also now names the natural 70B pair, and the Section 4 paragraph was
 trimmed to pay for it (the addition pushed the main text to 10 pages; back to 9).
+
+### feat-055: three KL3M memorisers failed for a reason that was not the model (2026-09-08)
+
+`recipes/finetune_memorizing.py` capped every training text at `--max-len 448`, a Llama-era default.
+Measured across the 608 training texts:
+
+    tokenizer                                      median tok    p90    max   >448
+    alea-institute/kl3m-003-1.7b                          597    635    679   100%
+    PleIAs/Pleias-1.2b-Preview                            293    313    342     0%
+    PleIAs/Pleias-350m-Preview                            294    314    343     0%
+    jacquelinehe/tinycomma-1.8b-llama3-tokenizer          280    299    376     0%
+    common-pile/comma-v0.1-2t                             323    354    415     0%
+
+**Every** KL3M text was truncated and no other family's was, so the KL3M runs trained on the prompt
+and almost none of the reference. The failure mode is deceptive: training loss fell to 0.029, which
+reads as thorough memorisation, because the surviving prefix really was memorised. Checked directly
+on the merged `mem_kl3m-003-1_7b` against one training passage:
+
+    teacher-forced loss   merged 0.8855   base 1.9321       (the training log reported 0.0293)
+    greedy 40 tokens      " of pressure that you cannot withstand, even if you do take a rope. ..."
+    true continuation     " of pressure that you cannot withstand, even if you wished to. ..."
+
+Eleven words match and then it diverges, which is exactly where the truncated tail began; near-
+verbatim recall needs 20-word spans, so it scores 0.000. The earlier reading of the 170M and 1.7B
+KL3M failures as "too small to memorise" was wrong -- both were truncated, and neither model has
+actually been tested.
+
+Two fixes in the recipe: `--max-len` now defaults to `0`, meaning fit the longest training text,
+and any run that would still truncate prints a warning saying that the loss will fall anyway and
+recall will be zero. Separately, `from a_patch.tokenizer import ...` sat above the
+`sys.path.insert`, so the recipe only ran from the repo root; the import order is fixed and the
+script now runs from any cwd.
+
+Relaunched both KL3M models at max-len 679 (`output/phase5/ft_kl3m_v3.log`, batch 2 x accum 4 for
+the longer sequences). If kl3m-003-1.7b becomes admissible it is the most valuable pair available:
+at 1.103 nats per character against 0.685-0.873 for every anchor used so far, it widens the
+collapse's dynamic range from 1.33x to about 1.67x, from a different architecture (GPT-NeoX) and a
+different tokenizer.
