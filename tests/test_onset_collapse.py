@@ -42,8 +42,19 @@ def test_crossing_interpolates_inside_the_bracket():
 
 
 def test_manifest_round_trips():
+    """The manifest is shared with analysis/onset_units.py (4th field, tokenizer) and
+    analysis/collapse_robustness.py (5th field, the pair's name in onset_theory_per_work.csv).
+    onset.py must tolerate those and hand back exactly the three it uses."""
     pairs = load_pairs("results/onset_pairs.tsv")
     assert len(pairs) >= 2 and all(len(p) == 3 for p in pairs)
+
+
+def test_manifest_rejects_a_truncated_row():
+    import pytest
+    tmp = "/tmp/onset_pairs_short.tsv"
+    open(tmp, "w").write("only a name\tand one path\n")
+    with pytest.raises(SystemExit):
+        load_pairs(tmp)
 
 
 def test_missing_manifest_falls_back_to_builtin():

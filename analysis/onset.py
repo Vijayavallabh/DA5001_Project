@@ -85,7 +85,9 @@ def collapse(data, xs=(0.7, 0.8, 0.9, 1.0, 1.1, 1.2)):
 
 def load_pairs(path):
     """Pair set as data, not code: TSV of name<TAB>composition_summary.csv<TAB>budget_path.csv,
-    with an optional fourth field naming the pair's tokenizer (used by analysis/onset_units.py)."""
+    Trailing fields are for other consumers of the same manifest and are ignored here: the fourth
+    names the pair's tokenizer (analysis/onset_units.py), the fifth spells the pair as
+    results/onset_theory_per_work.csv does (analysis/collapse_robustness.py)."""
     if not path or not os.path.exists(path):
         return PAIRS
     out = []
@@ -94,8 +96,8 @@ def load_pairs(path):
         if not line or line.startswith("#"):
             continue
         f = line.split("\t")
-        if len(f) not in (3, 4):
-            raise SystemExit(f"[onset] {path}: expected 3 or 4 tab-separated fields, got {len(f)}: {line}")
+        if len(f) < 3:
+            raise SystemExit(f"[onset] {path}: expected at least 3 tab-separated fields, got {len(f)}: {line}")
         out.append(tuple(f[:3]))
     return out
 
