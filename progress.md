@@ -1143,3 +1143,31 @@ Onset section, abstract, intro and the collapse figure rewritten around the meas
 refinement reported as tried and rejected. Commands:
   `.venv/bin/python analysis/onset.py --out results --thresh 0.01`
   `.venv/bin/python analysis/onset_ci.py --comp <composition.csv> --s-x <s> --label <name> --out results`
+
+### feat-051: is the collapse a tokenizer artifact? (2026-09-08, no GPU)
+
+`analysis/onset_units.py` (+ `tests/test_onset_units.py`, 4 tests) converts every pair from nats
+per token to nats per character, using tokens-per-character measured from each pair's own tokenizer
+over exactly the passages and the same 20-token seed skip `analysis/budget_path.py` used.
+
+    HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/onset_units.py --out results
+
+    pair                                    ch/tok   s tok  s char  onset ch  ratio tok  ratio ch
+    TinyComma-1.8B + memorised Llama-3.1-     4.20   3.239   0.770     0.683      0.887     0.887
+    Comma-7B + memorised Comma-7B             3.63   2.393   0.660     0.588      0.892     0.892
+    Pleias-350M + mem. Pleias-350M            4.05   3.554   0.878     0.786      0.895     0.895
+
+    nats/token: s(x) spans 2.393-3.554 (1.49x), onset spans 2.134-3.180 (1.49x)
+    nats/char:  s(x) spans 0.660-0.878 (1.33x), onset spans 0.588-0.786 (1.34x)
+    ratio onset/s(x): sd 0.0031 in both units, max |difference| 0.000000
+
+Two separate answers, and only one of them is reassuring. The **ratio** is tokenizer-invariant by
+construction, because budget rate and anchor surprisal are charged per token of the one vocabulary
+the decoder requires both models to share, so any per-pair conversion cancels; the script verifies
+that arithmetic rather than asserting it. The **dynamic range** is not invariant: `s(x)` spans
+1.49x across the three pairs in nats/token but only **1.33x** in nats/char, because the Comma
+tokenizer packs fewer characters into a token than the other two. The paper quotes 1.49x. The
+tokenizer-free 1.33x is the conservative number and is what the range claim should use.
+
+Manifest change: `results/onset_pairs.tsv` gained an optional 4th column naming each pair's
+tokenizer, and `analysis/onset.py:load_pairs` now accepts 3 or 4 fields (it ignores the 4th).
