@@ -1022,3 +1022,26 @@ Command: `.venv/bin/python analysis/utility_price.py --out results`
 
 Paper: main text still 9 of 9 (the collapse figure moved to Appendix D, which freed a full page),
 0 overfull, 0 `??`, 18 pages total.
+
+### The objection that would be raised, answered structurally
+
+"A three-valued judge is too blunt a utility to price." The objection runs backwards: bluntness
+**caps** the rate function. For any bounded U, `Lambda*_s(u_max) = -log P_ps[U = u_max]` exactly, so
+here winning **every** judged comparison -- far above anything the decoder reaches -- would cost an
+optimal policy **1.19 nats** (closed form `-log 0.305`), and the decoder spends 144x that.
+
+A utility can only be expensive in this sense when its best outcome is exponentially unlikely under
+the safe model. That is exactly what the atom `{output = x}` is, and why Prop 1 prices it at S(x).
+So extraction and utility differ because one is a rare event and the other is a bounded average --
+not because the utility is measured badly. This unifies the two halves of the frontier section.
+
+### Pair 3 sweep, in progress
+
+    k     -1      0    2.2    2.6    2.8    2.9    3.0    3.1
+    rec  0.906  0.000  0.000  0.000  0.000  0.000  0.003  0.001
+
+Leakage begins between 2.9 and 3.0 but the curve is **not monotone** at this resolution (0.003 then
+0.001), which is the small-counts caveat the paper already states: at these budgets one or two of a
+hundred passages carry the whole mean. The 0.01 threshold has not been crossed by k=3.1, so the
+measured onset will exceed **both** predictions (derivation 2.96, constant 3.16). k=3.2, 3.3, 3.6
+and 4.2 remain.
