@@ -710,3 +710,27 @@ Paper: 11 pages total, references start on page 9, main text 8 pages (ICLR limit
 **Note on the shared box.** GPUs 0,1,2 and part of 4 are held by another project
 (`geometry-projects/cot-internalization`, FSDP across three cards). Phase-5 GPU work is queued
 behind that; feat-044 ran as short forward passes on the free capacity of GPU 4.
+
+**Errata fixed (plan v5 section E).** Verified each against the CSVs rather than trusting the
+report that flagged them:
+  - `sections/scaling.tex` Delta c_use: **two of three rows were stale** from the pre-pairing-fix
+    run. KL3M -29.4 -> **-31.3**, Common Pile -30.2 -> **-28.6**. Common Corpus (-25.8) was right.
+    The Delta s(x) column and both margin endpoints reproduce exactly and were untouched.
+  - "31,640 budgeted queries" in `sections/second_anchor.tex` was reported as unreproducible.
+    **It is correct**: summing n_queries_mean * n_passages over k>0 in
+    `results/composition_comma7b_summary.csv` gives exactly 31,640. No change made.
+  - `results/budget_path_comma7b_summary.csv` per-passage Pearson by budget: 0.186 / 0.158 / 0.287
+    / **-0.033** at k=3/5/10/20. The paper quotes "0.16 to 0.29", which silently drops the k=20 row.
+
+**`sections/onset.tex` rewritten around the derivation.** The section no longer presents 0.89 as a
+constant agreeing "to two decimals". It states Eq. (req) r(x) = s_safe(x) - s_risky(x), derives P1
+and P2 from it, gives the q25 prediction (0.996 / 0.999), and then reports the collapse as
+*suggestive* with the three reasons it is not decisive stated in the text: the bootstrap CIs
+[0.84, 1.06] and [0.82, 1.21]; only 4 and 3 of 100 works leaking at the crossing budgets; and
+1.35x of dynamic range being short of what a data collapse normally rests on. The per-work
+stratification is reported as a population-boundary-not-a-screen limit, matching the budget-path
+wording.
+
+Paper: 0 overfull, **main text is now exactly 9 pages** -- at the ICLR limit with the intro,
+abstract, background and limitations still unwritten. The appendix is empty and unlimited; moving
+material there is the next structural task.
