@@ -870,3 +870,23 @@ column into both CSVs so two judges' runs are distinguishable in the data rather
 `output/phase2/conc_all` workload the existing judged arms came from. This is the grid that pins the
 utility crossover, which currently jumps k=1 (-0.45 sigma) to k=3 (-2.35 sigma) straight across
 s(x) = 3.24 -- the paper's headline rests on where in that interval the crossing actually falls.
+
+### Unit inconsistency found and fixed (would have been a referee's catch)
+
+`s(x)` denoted a rate in **nats per character** in the frontier and scaling sections and a rate in
+**nats per token** in the onset section, with the paper never saying so. Each section was internally
+correct -- scaling only ever forms the ratio `s(x)/c_use`, the frontier reports `k_crit/s(x)`, also a
+ratio, and Prop 1 is about the unit-free total `S(x)` -- and the onset section is right to use nats
+per token, because that section is the only one that compares a rate against the deployed budget,
+which the mechanism meters as `K = k*T_max` in tokens. But one symbol carrying two units across
+sections is exactly the kind of thing that sinks a careful reviewer's trust. Both sections now state
+their denominator and why.
+
+### Page budget: 9 of 9, verified properly
+
+The page check was wrong, not just tight: it looked for "REFERENCES" and so counted the Ethics,
+Reproducibility and LLM Usage statements as main text, when ICLR excludes them. Measured correctly
+-- real content before the Ethics heading, with the running header and line-number gutter stripped
+-- the countable main text is **exactly 9 pages** with the statements starting cleanly at the top of
+page 10. Getting there also moved Related Work's full discussion to an appendix (a condensed version
+stays in the main text) and folded Limitations into the Conclusion.
