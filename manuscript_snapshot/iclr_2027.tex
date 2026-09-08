@@ -45,12 +45,12 @@ orders of magnitude of overhead, so what pushes a budget past the vacuity thresh
 imitating the risky model, not the price of being better than the safe one. The two useful regions
 still do not overlap: a judge cannot separate the decoder from its own safe model at $k=1$
 ($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous. Finally, extraction begins at a fixed fraction of that
-threshold: on four model pairs sharing no anchor, tokenizer or risky model, and spanning
-$1.33\times$ in $s(x)$, leakage first becomes measurable between $0.878$ and $0.920$ of it. We
-derive a candidate explanation from the decoding geometry and pre-register it on two held-out
-pairs: its calibrated form is rejected, while its parameter-free form predicts both onsets to
-within $0.03$ nats, closer than the fitted constant it was meant to explain --- though it still
-fails to order the pairs. Across ten safe models and
+threshold, though not at a fixed fraction of it: on five model pairs sharing no anchor, tokenizer
+or risky model, and spanning $1.71\times$ in $s(x)$, leakage first becomes measurable between
+$0.88$ and $1.17$ of it, four of them agreeing to within $0.05$ and the fifth beginning only after
+the certificate is already vacuous. We derive a candidate explanation from the decoding geometry
+and pre-register it on three held-out pairs; the pair built to discriminate refutes it, along with
+the fitted constant it was meant to explain. Across ten safe models and
 three openly licensed corpora, the separation between the rate that must be permitted and the rate
 that must be forbidden widens as safe models improve.
 \end{abstract}

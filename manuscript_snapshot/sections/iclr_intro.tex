@@ -36,14 +36,14 @@ outside the audit cannot distinguish the decoder from serving its own safe model
 ($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous for every
 protected passage.
 
-\textbf{Extraction begins at a fixed fraction of that threshold.} On four pairs sharing no anchor,
-tokenizer or risky model, and spanning $1.33\times$ in $s(x)$ per character, leakage first becomes
-measurable between $0.878$ and $0.920$ of $s(x)$ --- mean $0.894$, standard deviation $0.016$. The
-decoding geometry says where the fraction comes from: at full tilt the charge along a target
-reduces to $r(x) = s_s(x) - s_r(x)$ (Eq.~\eqref{eq:req}). Committed for two pairs before they were
-swept, it locates their onsets to $0.034$ nats against $0.073$ for a fitted constant, while a
-calibrated variant of the same quantity is rejected at $0.224$. What it does not do is order the
-pairs, and the rank correlation between predicted and measured ratio is $+0.20$. A
+\textbf{Extraction begins near that threshold, and $s(x)$ says where.} On five pairs sharing no
+anchor, tokenizer or risky model, and spanning $1.71\times$ in $s(x)$ per character, leakage first
+becomes measurable between $0.88$ and $1.17$ of $s(x)$ --- not a fixed fraction: four agree to
+within $0.05$, and the fifth, with the weakest memoriser and a different tokenizer, begins only
+after the certificate has gone vacuous. The geometry offers a candidate --- at full tilt the charge
+along a target reduces to $r(x) = s_s(x) - s_r(x)$ (Eq.~\eqref{eq:req}) --- committed for three
+pairs before they were swept. The pair built to discriminate refutes it, and the fitted constant
+with it. A
 further pair whose memorisation came from pretraining rather than from our fine-tuning ---
 Llama-3.1-70B base, which reproduces \emph{Harry Potter} from its opening words --- leaks at the
 same rate where its coarser budget grid overlaps the others, so the law is not a property of the

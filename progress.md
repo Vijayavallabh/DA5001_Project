@@ -1466,3 +1466,60 @@ sweep 0.037 / 0.016 / 0.167 at 0.005 / 0.01 / 0.02; CDF fraction covered at the 
 **KL3M-003-1.7b is admissible** (sampled nv-recall 0.759) now that the truncation is fixed, so pair
 5 is available and is the one that widens the tokenizer-free range from 1.33x to about 1.67x. Its
 prediction must be committed before its sweep is read. kl3m-002-520m is still training.
+
+### feat-058: pair 5 falsifies the fixed-fraction law (2026-09-09, ~2.5 GPU-h)
+
+KL3M-003-1.7B, self-paired, pre-registered in `results/onset_prediction_pair5.md` and committed at
+`c6e5240` **before** the sweep. It was built to discriminate: its memoriser retains 35% of the
+anchor's surprisal against 6-11% elsewhere, which put the three rules 0.54 nats apart where the
+previous two held-out pairs had separated them by 0.07 and 0.01.
+
+    grid -1 0 1.0 1.2 1.3 1.4 1.5 1.6 1.8 2.0 2.2 2.6 3.2, then 2.3 2.4 2.5 2.8 3.0 to refine
+    k/s(x)  0.452 .. 0.814   recall 0.0000
+    k/s(x)  0.904  0.995  1.040  1.085  1.131  1.176  1.266  1.357  1.447
+    recall  .0009  .0009  .0009  .0020  .0022  .0122  .0143  .0250  .0350
+    onset 2.578  CI [2.520, 3.126]   ratio 1.166  CI [1.140, 1.414]   4.3% no-crossing
+
+**Every pre-registered rule is refuted, all three low and all three outside the interval:** P1 by
+1.15 nats, the constant by 0.61, q25 by 1.40. Held-out mean absolute error over the three predicted
+pairs is now 0.405 (P1), 0.252 (constant), 0.617 (q25) -- so the two-pair reading that P1 beat the
+constant does not survive a third held-out pair, which is exactly why the pair was pre-registered.
+
+**The direction inverts.** P1 says the ratio falls as the memoriser leaves more residual surprisal.
+Pair 5 has by far the most residual surprisal and by far the highest ratio; Spearman over five
+pairs is **-0.40**, having been +0.20 over four.
+
+**The ratio exceeds 1 with 95% confidence** (CI [1.140, 1.414]), and independently of any
+interpolation: recall is 0.0009 at k/s = 0.995 and 0.0122 at 1.176. On this pair leakage begins
+*after* the certificate is vacuous, not before.
+
+Five ratios: 0.878, 0.887, 0.892, 0.920, 1.166 -- mean 0.949, sd 0.110 (four pairs: sd 0.016).
+`s(x)` spans 1.61x per token and **1.71x** per character, so the range claim improves while the
+law weakens. What the paper now claims is a **unit, not a law**: a quantity computable from the
+anchor and the work alone locates the onset within about a fifth on every pair, across a 1.71x
+spread it would otherwise have to guess.
+
+Pair 5 also gives the affordability argument its limiting case: at its onset budget the bucket can
+afford **98%** of the passages and 1% leak (F=0.98 against 0.03-0.09 for the other four). What a
+budget can pay for is not what the risky model memorised well enough to emit.
+
+Confound stated in the paper rather than hidden: pair 5 differs in three ways at once (~2 vs ~4
+characters per token, 580- vs 276-token targets, unconstrained recall 0.41 vs 0.72-0.91), and one
+pair cannot say which moves the ratio.
+
+Two diagnostics lost their power at five pairs and are now reported as such: the normaliser
+ablation (0.0215 for r, 0.0264 for s(x), 0.0286 for no rescaling at all -- an 8% margin where four
+pairs gave 2x), and the metric-artifact check (0.2446 vs 0.2441, equal to three decimals). Both
+tests in `tests/test_onset_theory.py` were rewritten to pin what survived rather than the ordering
+that held when they were written.
+
+Sections changed: abstract, `iclr_intro`, `onset` (five-row table, the central claim, the
+derivation paragraphs, the affordability point), `iclr_closing`, `appendix_robustness` (7 edits),
+`appendix_limitations`. 19 pages, main text ends on page 9, 0 overfull, 0 `??`, 25 quoted numbers
+audited against `results/*.csv`, 131 tests.
+
+**Process note.** An edit script made three replacements in memory and hit a failed assertion
+before its single `write_text`, so the "Five pairs" paragraph, the section heading and the fifth
+table row were silently dropped while the compile still succeeded. The numeric audit caught it
+(a missing `$2.58$`); without that check the paper would have carried a four-row table under
+five-pair prose. Edit scripts should write after each successful replacement, or assert first.

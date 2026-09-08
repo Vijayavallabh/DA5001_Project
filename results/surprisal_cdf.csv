@@ -3,3 +3,4 @@ TinyComma-1.8B + memorised Llama-3.1-8B,jacquelinehe/tinycomma-1.8b-llama3-token
 Comma-7B + memorised Comma-7B,common-pile/comma-v0.1-2t,100,556,2.1614,2.3935,1.9188,2.3925,0.8017,2.134,0.09,1.5726,0.009
 Pleias-350M + mem. Pleias-350M,PleIAs/Pleias-350m-Preview,100,498,3.2321,3.5544,2.9546,3.5324,0.8313,3.1796,0.05,2.4729,0.006
 Pleias-1.2B + mem. Pleias-1.2B,PleIAs/Pleias-1.2b-Preview,100,498,2.8944,3.2094,2.65,3.1884,0.8257,2.819,0.03,2.0255,0.002
+KL3M-1.7B + mem. KL3M-1.7B,alea-institute/kl3m-003-1.7b,100,1109,2.0018,2.2112,1.7241,2.1772,0.7797,2.578,0.98,2.5138,0.7809

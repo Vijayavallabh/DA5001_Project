@@ -586,6 +586,19 @@
       "description": "Assemble Section 4's onset table from one command so the paper's cross-pair standard deviation is not derived by hand, preferring the higher-n measurement when a pair has been measured twice.",
       "evidence_command": ".venv/bin/python analysis/onset_table.py --out results",
       "evidence": "4 pairs: ratio mean 0.8943, range 0.878-0.920, sd 0.0157; s(x) spans 2.393-3.554 (1.49x). Writes results/onset_table.csv. A scripted audit confirms 19 numbers quoted in the manuscript match results/*.csv. 1 test in tests/test_onset_table.py."
+    },
+    {
+      "id": "feat-058",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-047",
+        "feat-055",
+        "feat-056"
+      ],
+      "description": "Pair 5 (KL3M-003-1.7B), pre-registered before its sweep and built to discriminate the three onset rules, which the previous held-out pairs could not.",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model alea-institute/kl3m-003-1.7b --risky-model output/phase5/mem_kl3m-003-1_7b --k-values -1 0 1.0 1.2 1.3 1.4 1.5 1.6 1.8 2.0 2.2 2.6 3.2 --modes single oracle --windows 50 --limit 100 --out output/phase5/fine_kl3m17b ; then 2.3 2.4 2.5 2.8 3.0 into _hi and merge; then analysis/score_predictions.py",
+      "evidence": "onset 2.578, CI [2.520, 3.126], ratio 1.166, CI [1.140, 1.414], 4.3% no-crossing. All three pre-registered rules refuted, all low and all outside the interval: P1 by 1.15 nats, constant by 0.61, q25 by 1.40. Held-out mean |err| over three predicted pairs 0.405 / 0.252 / 0.617. Spearman for P1's directional claim inverts to -0.40. Ratio exceeds 1 without interpolation (0.0009 at k/s=0.995, 0.0122 at 1.176), so leakage begins after the certificate is vacuous. Five ratios 0.878-1.166, sd 0.110; s(x) range 1.71x per character. At pair 5's onset the budget affords 98% of passages and 1% leak."
     }
   ]
 }
