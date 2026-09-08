@@ -75,6 +75,17 @@ the derived requirement $r$, and $0.0333$ for no rescaling at all. On the two pa
 earlier $r$ won this comparison; with the third pair it does not, which is the same verdict the
 pre-registered prediction of Section~\ref{sec:onset} returns.
 
+\paragraph{The natural pair, and why its onset is not quotable}
+Llama-3.1-70B base was swept at $k \in \{1, 1.5, 3, 5, 10, 20\}$, so its recall crosses $0.01$
+inside a bracket $1.5$ nats wide and any interpolated onset is a statement about the grid. Applying
+the same treatment to the three pairs whose fine grids we do have shows how much: keeping only the
+two grid points nearest that bracket moves onset$/s(x)$ from $0.887$ to $0.702$, from $0.892$ to
+$0.786$, and from $0.895$ to $0.848$. The natural pair read the same way gives $0.7495$, inside
+that range. That is the whole content of the onset comparison, which is why the main text uses the
+overlap of the rescaled grids instead: it interpolates the built pairs and never the natural one.
+At $k/s(x) = 1.606$ only one built pair reaches that far, and there the natural pair is lower
+($0.069$ at the book settings and $0.035$ at temperature $1$, against $0.098$).
+
 \paragraph{Does $r(x)$ screen an individual work?}
 Equation~\eqref{eq:req} is defined per work, so it is fair to ask whether it screens an individual
 book. It does not, and the reason is measurable. Treating ``which passage leaks at budget $k$'' as
