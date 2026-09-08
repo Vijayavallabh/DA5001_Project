@@ -9,7 +9,7 @@ memoriser fine-tune,output/memorizing_llama8b,1,2026-09-05 17:05,2026-09-05 18:2
 memoriser check,output/memorizing_check_greedy,1,2026-09-05 18:21,2026-09-05 18:29,0.13,0.13,dir_birth,0.0,
 memoriser check (sampled),output/memorizing_check,1,2026-09-05 18:29,2026-09-05 18:37,0.14,0.14,dir_birth,0.0,
 composition smoke,output/composition_smoke,1,2026-09-05 18:21,2026-09-05 18:37,0.27,0.27,dir_birth,0.0,
-composition attack,output/composition,1,2026-09-05 18:24,2026-09-06 02:24,1.88,1.88,dir_birth,6.12,feat-009; two passes
+composition attack,output/composition,1,2026-09-05 18:24,2026-09-08 17:08,8.0,8.0,dir_birth,62.74,feat-009; two passes
 bank-and-burst smoke,output/bank_burst_smoke,1,2026-09-05 19:20,2026-09-05 20:44,1.4,1.4,dir_birth,0.0,"feat-010, not evaluated"
 certificate strength (memoriser),output/certcap_memoriser,1,2026-09-05 20:19,2026-09-05 20:20,0.02,0.02,dir_birth,0.0,
 pathwise smoke,output/phase2/pathwise_smoke,1,2026-09-06 01:15,2026-09-06 01:17,0.05,0.05,dir_birth,0.0,feat-019

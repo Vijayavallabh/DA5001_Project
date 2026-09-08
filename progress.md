@@ -791,3 +791,41 @@ oracle 0.031). `tests/test_onset_collapse.py` (6 tests) fails against the old ve
 today, which also corrected my claim: the paper gives a closed form for the maximum reward at a
 fixed KL budget (a Jeffreys divergence, not sqrt-KL), and shows best-of-N approaches it. It does not
 say the frontier is "attained", and the sentence was weakened to match.
+
+### Plan v5, day 1 (cont.): the paper is structurally complete at 9 pages
+
+**Item D (partial): the blank cells in Table 1 are filled, and they change the claim.** `util_renyi_4`
+was simply never run, which is why alpha=4's price columns printed "---". Run on the identical
+150-prompt workload (`h1.py --constraint renyi:4 --k-values 3.0 --trajectories-per-prompt 1
+--cap-neutral 60 --cap-val 0 --cap-test 0 --cap-attack-train 0 --cap-factual 45 --cap-creative 45
+--output-dir output/phase4/util_renyi_4`), then `analysis/renyi_sweep.py --out results
+--price-runs 'output/phase4/util_*' --price-class all`:
+
+      order    risky unchanged   steps touched   distinct-3
+      a=1           94.03%           0.36%         0.9910
+      a=2           91.37%           2.36%         0.9924
+      a=4            8.66%          83.00%         0.9850   <- new
+      a=8            0.07%          90.14%         0.9872
+
+  **alpha=4 does not interpolate.** It is already most of the way to alpha=8, not halfway between
+  alpha=2 and it. The old prose said "the middle of the family is where a deployer should live";
+  that is only true of alpha=2. The order is a sharp knob, not a dial, and the section now says so.
+  alpha=4 is still unjudged (the judged arms are alpha in {1,2,8}); that run is queued.
+
+**Item F: the paper is complete.** Abstract, introduction (`sections/iclr_intro.tex`), limitations
+and conclusion (`sections/iclr_closing.tex`), plus the ICLR-required Ethics, Reproducibility and
+LLM Usage statements. Main text **9 of 9 pages**, 0 overfull, 0 `??`, 16 pages total.
+
+  The headline, verified against `results/utility_v4_summary.csv`: a judge cannot separate the
+  decoder from serving its own safe model at k=1 (-0.45 sigma) and can at k=3 (-2.35 sigma), where
+  the certificate is vacuous for 100% of passages. s(x) = 3.24 for that pair, so the decoder becomes
+  useful exactly where its guarantee goes silent.
+
+  Getting to 9 pages was float packing, not prose cutting: the content measured 40,115 characters
+  against a 9-page capacity of ~41,400, but figures at `\textwidth` left pages 4/6/8 underfull.
+  Shrinking three figures to 0.82/0.52 and relaxing `[t]` to `[tb]` recovered the page. Also moved
+  to the appendix: both proofs, the opening effect, the scaling robustness table, the collapse
+  robustness checks, and the whole second-anchor section (folded into onset as one paragraph).
+
+**Still open:** alpha=4 judging; the k in {1.5,2,2.5,3} judged grid and a second judge (item D);
+more pairs (item B) -- four memorisers training now.
