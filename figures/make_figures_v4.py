@@ -36,7 +36,7 @@ def frontier_scaling():
     """Both rates fall as the safe model improves; the one that must be ALLOWED falls faster than
     the one that must be FORBIDDEN, so the separation between them widens with capability."""
     rows = list(csv.DictReader(open(RESULTS / "anchor_scaling_summary.csv")))
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.5))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.05))
     for corpus in ("commonpile", "commoncorpus", "kl3m"):
         g = sorted([r for r in rows if r["corpus"] == corpus], key=lambda r: float(r["params"]))
         if not g:
@@ -129,7 +129,7 @@ def onset_collapse():
     _mks = ["o", "s", "^", "D", "v", "P", "X", "*"]
     P = [(n, c, b, _cols[i % len(_cols)], _mks[i % len(_mks)])
          for i, (n, c, b) in enumerate(_pairs)]
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.5))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.05))
     for name, comp, per, col, mk in P:
         p_ = REPO / comp
         if not p_.exists():

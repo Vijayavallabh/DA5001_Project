@@ -983,3 +983,42 @@ and the onset section. The paper now has exactly one fitted number and says whic
 Page budget held at 9 of 9 with 0 spill. The last of it came from float packing again: page 8 was
 stranding ~1,000 characters around Figure 2 and Table 1, recovered by taking both full-width
 figures from 0.82 to 0.74 textwidth.
+
+### feat-049: Theorem 1's stated consequence was VACUOUS. What replaced it is stronger.
+
+The theorem (`K >= Lambda*_s(E_q[U])`) is correct. The corollary attached to it in the paper was not
+useful: "the certificate is vacuous for every protected work with `S(x) <= Lambda*_s(u)`". Measured,
+`Lambda*_s(u)` is **0.003 to 0.06 nats** while works in this corpus have `S(x)` of 200-1000 nats, so
+that set is **empty**. A bounded scalar utility has an O(1) rate function however long the sequence;
+reproducing a work costs O(S(x)). The pairing does not bite.
+
+`analysis/utility_price.py` (no GPU) measures both sides instead. `U` is the judge's verdict scored
+1/0.5/0, its law under `p_s` read off the anchor-only arm, so the moment generating function is
+exact and the supremum is a one-dimensional concave maximisation. Spend is the **realised** mean
+sequence divergence from the trajectory logs, not the budget cap the decoder never exhausts:
+
+      k   realised spend   E_q[U]     gain   Lambda*_s   95% CI            spend/Lambda*
+     0.5       79.0        0.3805   +0.0365   0.00318   [0.0000,0.0444]        24843
+     1        134.6        0.3475   +0.0035   0.00003   [0.0000,0.0276]      4536978
+     3        165.0        0.4385   +0.0945   0.02087   [0.0003,0.0904]         7908
+     5        169.8        0.4805   +0.1365   0.04302   [0.0035,0.1358]         3948
+    10        171.3        0.4780   +0.1340   0.04148   [0.0043,0.1312]         4129
+    20        171.3        0.5055   +0.1615   0.05987   [0.0090,0.1586]         2861
+
+**The decoder spends three to four orders of magnitude more divergence than the utility it delivers
+requires**, and bootstrapping over judged pairs keeps the ratio above 10^3 at every budget. So the
+mechanism's cost is approximation overhead, not information-theoretic necessity: what pushes a
+budget past the vacuity threshold is the price of *imitating the risky model on every token*, not
+the price of being better than the safe one.
+
+This is a better result than the one it replaces. It makes the open problem valuable rather than
+merely honest -- closing the gap would let a decoder be useful while its certificate still says
+something -- and it is the constructive reading the paper needed.
+
+Rewritten in the theorem section, abstract, introduction and conclusion. `tests/test_utility_price.py`
+(7 tests) checks the rate function against the binary-KL closed form for a Bernoulli utility, the
+Pinsker lower bound, vanishing at the safe mean, and guards the >10^3 claim against the CSV.
+Command: `.venv/bin/python analysis/utility_price.py --out results`
+
+Paper: main text still 9 of 9 (the collapse figure moved to Appendix D, which freed a full page),
+0 overfull, 0 `??`, 18 pages total.
