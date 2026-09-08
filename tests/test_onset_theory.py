@@ -52,3 +52,37 @@ def test_committed_prediction_matches_measurement():
         assert abs(float(r["pred_over_meas_q25"]) - 1.0) < 0.01, r
         # the median prediction should overshoot: the cheapest works leak first
         assert float(r["pred_over_meas_median"]) > float(r["pred_over_meas_q25"])
+
+
+def test_collapse_robustness_supports_the_derivation():
+    """feat-045: the requirement r = s_safe - s_risky must collapse the curves better than the
+    anchor surprisal alone, which is the derivation's own falsifiable prediction, and both must
+    beat no rescaling. Also guards that the continuous metric does not collapse worse than the
+    thresholded one (the Schaeffer critique)."""
+    import csv, math
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "results", "collapse_robustness.csv")
+    if not os.path.exists(path):
+        return
+    rows = list(csv.DictReader(open(path)))
+    norm = {r["setting"]: float(r["value"]) for r in rows if r["block"] == "normaliser"}
+    assert norm["requirement r = s_safe - s_risky"] < norm["s_safe"] < norm["raw (no rescaling)"], norm
+    met = {r["setting"]: float(r["value_relative_to_metric_range"])
+           for r in rows if r["block"] == "metric"}
+    assert met["lcs_word"] <= met["nv_recall"], met
+
+
+def test_onset_threshold_band_is_reported_not_assumed():
+    """The pair-to-pair agreement is stable over a band of onset thresholds while the level is not;
+    the paper must quote the band. This pins that the band exists."""
+    import csv
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "results", "collapse_robustness.csv")
+    if not os.path.exists(path):
+        return
+    th = {r["setting"]: (float(r["value"]), float(r["value_relative_to_metric_range"]))
+          for r in csv.DictReader(open(path)) if r["block"] == "threshold"}
+    band = [th[k][0] for k in ("onset at 0.005", "onset at 0.01", "onset at 0.02") if k in th]
+    assert band and max(band) < 0.01, band          # agreement holds across the band
+    levels = [th[k][1] for k in ("onset at 0.005", "onset at 0.01", "onset at 0.02") if k in th]
+    assert max(levels) - min(levels) > 0.05         # but the level genuinely moves
