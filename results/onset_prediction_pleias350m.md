@@ -26,3 +26,28 @@ bootstrap CIs, as originally planned.
 Producing command:
     CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
       .venv/bin/python analysis/onset_theory.py --out results
+
+---
+
+## Outcome: pair 3 is inadmissible, and the mandatory baseline is what caught it
+
+The sweep was stopped after its baselines. Unconstrained (`k = -1`) single-query recall on this
+pair is **0.022**, against 0.7189 for the Comma-7B pair. The onset threshold is 0.01, i.e. **45% of
+the unconstrained ceiling**, so no budget on the grid can produce a meaningful crossing: any
+"onset" measured here would be the boundary of a model that cannot reproduce the passages anyway.
+
+The Pleias-350M memoriser reached nv-recall 0.708 under *greedy* decoding on training excerpts but
+collapses under sampling at temperature 1.0, which is what the attack uses. A 350M model has too
+little capacity to hold 608 passages against sampling noise.
+
+**This says nothing about the derivation.** It says the pair fails a precondition the derivation
+assumes: `r(x) = s_s - s_r` is the budget needed *before a decoder can pay for x at all*, which is
+only testable when an unconstrained risky model actually reproduces `x`.
+
+**Admissibility criterion, adopted for every further pair:** a pair enters the onset analysis only
+if its `k = -1` single-query recall exceeds the onset threshold by at least an order of magnitude
+(>= 0.1 at threshold 0.01). Pairs 1 and 2 pass at 0.72 and 0.72; Pleias-350M fails at 0.022.
+
+The prediction stands unfalsified and untested. It is re-issued against the larger memorisers
+(Pleias-1.2B/3B, KL3M-1.7B/3.7B) as they finish. Note that `kl3m-002-170m` also failed to memorise
+at all (nv-recall 0.000 greedy), so the GPT-NeoX `all-linear` LoRA path runs but 170M is too small.
