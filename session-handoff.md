@@ -1,46 +1,39 @@
-# Session handoff — 2026-09-08 (plan v5, day 1)
+# Session handoff
 
-## Current objective
-Convert the audit into a **predictive theory** for an ICLR 2027 oral. Abstract Sep 18, paper Sep 25.
-Plan is `.claude-private/plans/radiant-stargazing-newell.md` (plan v5). Branch `iclr-2027`.
-`master` holds the verified SaTML paper at `dd7e801` as the fallback and must not be deleted.
+## Current Objective
+Plan v5, branch `iclr-2027`, target ICLR 2027 (abstract Sep 18, paper Sep 25). The onset law is
+now measured on **four** (anchor, risky) pairs and the manuscript reports them.
 
-## State
-**The paper is structurally complete and compiles**: `~/sub/satml/iclr_2027.tex`, main text **9 of 9
-pages**, 0 overfull, 0 `??`, 16 pages total. Abstract, intro, four result sections, related work,
-limitations, conclusion, and the ICLR-required Ethics / Reproducibility / LLM Usage statements.
-93 tests pass. **Note: the manuscript is NOT in this git repo** (it lives in `~/sub/satml`, inside a
-stray home repo that must never be committed to) — only `results/`, `analysis/`, `recipes/` and the
-harness files are versioned here.
-
-Done today:
-- **Theorem 1, the no-free-lunch** (feat-046). Sequence-level Donsker-Varadhan: `K >= Lambda*_s(E[U])`.
-  Paired with Prop 1 it says utility and extraction draw on one scalar. Proof in the appendix.
-- **Prop 1 and k_crit repositioned** as the known Renyi change-of-measure bound and the Loynes /
-  network-calculus workload maximum; our proof of the latter deleted.
-- **alpha=4 priced** — the run simply had never been done. It does NOT interpolate (83% of steps
-  touched vs 2.4% for alpha=2), which corrected the section's claim about "the middle of the family".
-- **Errata**: the per-token robustness sentence had no CSV (now measured, and the effect is *smaller*
-  per token than claimed); the curves cross at 0.024 not 0.022; "88.2%" matched no cell (90.1%).
-- **Bibliography**: 8 entries added, 6 verified field-by-field against primary records.
-
-## Running right now
-- `output/phase5/ft_v2.log` — five self-paired memorisers at 40 epochs / rank 128 / lr 3e-4.
-  A monitor is armed on this log for ADMISSIBLE/failure lines.
-- `output/phase5/util_fine.log` — `h1.py` at k in {1.5, 2.0, 2.5}, 1500 ordinary trajectories each,
-  to pin the utility crossover that currently jumps k=1 -> k=3 across s(x)=3.24.
+## What just happened
+- Pair 4 (Pleias-1.2B) swept and registered: onset 2.819, ratio 0.878, 0% bootstrap no-crossing.
+- Pair 3 re-measured at 458 passages. Its first grid stopped at k=3.6, where the curve is still
+  flat at the threshold, so a third of bootstrap resamples never crossed; two extra points (3.8,
+  4.2) fixed that (0.1%) and moved the onset 3.18 -> 3.271, ratio 0.895 -> 0.920.
+- Held-out scoring (`analysis/score_predictions.py`) **reverses the paper's earlier claim**: the
+  parameter-free rule P1 (median s_s - s_r) has mean absolute error 0.034 nats on the two pairs
+  predicted before measurement, against 0.073 for the fitted constant and 0.224 for the calibrated
+  q25, which is rejected. P1 still fails the directional claim (Spearman +0.20).
+- Manuscript rewritten across abstract, intro, Section 4, conclusion and two appendices;
+  18 pages, main text ends on page 9, 0 overfull, 0 `??`, 19 quoted numbers audited against CSVs.
+- `recipes/finetune_memorizing.py` had been silently truncating at 448 tokens, which killed three
+  KL3M runs (100% of KL3M texts exceed it; no other family's do). Fixed, and **KL3M-003-1.7b is
+  now admissible at 0.759 sampled recall**.
 
 ## Recommended next step
-1. When `ft_v2` finishes, keep only pairs whose **sampled** k=-1 recall >= 0.10 (the recipe now
-   prints an ADMISSIBLE verdict). For each, run `budget_path.py` then `composition_attack.py` on a
-   dense k grid, append to `results/onset_pairs.tsv` and `results/onset_theory_pairs.tsv`, and rerun
-   `analysis/onset.py` and `analysis/onset_theory.py` (both are N-pair general now).
-2. Judge the k in {1.5,2,2.5} arms plus alpha=4:
-   `analysis/utility.py --extra-arm 'renyi a=4|renyi:4|3.0|output/phase4/util_renyi_4' ...`
-3. The **anchor-temperature lever** (`--temperature` on `token_nats`/`onset_theory`) moves s(x) with
-   the pair held fixed. Ready to use, not yet run.
+Run **pair 5, KL3M-003-1.7b**. It is the highest-value pair left: 1.103 nats/char against
+0.685-0.878 for every anchor used so far, from a different architecture (GPT-NeoX) and tokenizer,
+widening the tokenizer-free dynamic range from 1.33x to about 1.67x. The order matters:
 
-## Open decision for the user
-Plan v5 item F says to retitle around the no-free-lunch. The title is unchanged
-("What a Divergence Budget Can and Cannot Certify About a Language Model") because AGENTS.md
-requires asking before a title change.
+    scripts/add_pair.sh "KL3M-1.7B + mem. KL3M-1.7B" alea-institute/kl3m-003-1.7b \
+      output/phase5/mem_kl3m-003-1_7b output/phase5/fine_kl3m17b/composition_summary.csv 4
+    # -> computes the budget path and the prediction, and says the sweep is pending.
+    # COMMIT THE PREDICTION, then run composition_attack.py on a grid bracketing it, then re-run.
+
+Give the sweep a grid whose top end is well past the predicted onset -- pair 3's truncated grid is
+the mistake to avoid. kl3m-002-520m is still fine-tuning in `output/phase5/ft_kl3m_v3.log`.
+
+## Open, not started
+- The judged grid at k in {1.5, 2, 2.5} was killed by system memory pressure and has not been rerun.
+- A second judge, and the alpha=4 judged arm, remain unmeasured (plan section D).
+- Plan v5 says to retitle around the no-free-lunch; the title is unchanged because AGENTS.md
+  requires asking first.

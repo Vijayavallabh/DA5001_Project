@@ -116,9 +116,10 @@ def order_invariance():
 
 
 def onset_collapse():
-    """The vacuity threshold is tight, and it is the natural scale: single-query recall from two
-    independent (anchor, risky) pairs falls on one curve once the budget is measured in units of
-    the safe model's surprisal rate on the protected work."""
+    """The vacuity threshold is tight, and it is the natural scale: single-query recall from every
+    admissible (anchor, risky) pair in results/onset_pairs.tsv falls on one curve once the budget
+    is measured in units of the safe model's surprisal rate on the protected work. Pair count is
+    data, not code -- it read two when this was written and reads four now."""
     import csv as _csv, statistics as _st, sys as _sys
     _sys.path.insert(0, str(REPO))
     from analysis.onset import curve, load_pairs

@@ -8,19 +8,19 @@ $p = 3.1\times10^{-5}$ is simply the smallest value sixteen paired items can pro
 read as ``the trend holds for every novel we have'' rather than as independent replication.
 Non-literal reproduction, other languages and other genres are untested.
 
-\paragraph{The collapse rests on three pairs}
+\paragraph{The collapse rests on four pairs}
 $s(x)$ spans $1.33\times$ across them in tokenizer-free units, well short of the dynamic range a
-data collapse normally rests on, and at the crossing budgets only four, three and two of one hundred
-works leak. Bootstrapping the onset over works gives $95\%$ intervals of $[2.72, 3.45]$,
-$[2.00, 2.92]$ and $[3.12, 3.90]$, so the agreement of the three point estimates to three decimals
-is finer than any one of them deserves; we claim the proportionality, not the constant. The
-collapse, not the derivation, carries Section~\ref{sec:onset}: the derived refinement was
-pre-registered on the third pair and rejected, and the normaliser ablation of
-Appendix~\ref{app:collapse} reverses with that pair too. Building further pairs needs a memoriser
-strong enough that the \emph{unconstrained} risky model reproduces the passages: a first $350$M
-attempt reached $0.71$ near-verbatim recall greedily but only $0.022$ under the sampling the attack
-uses, which leaves no headroom above the onset threshold for a crossing to mean anything, and it
-entered the analysis only after retraining to $0.91$. We admit a pair only if its $k=-1$ recall
+data collapse normally rests on, and at the crossing budgets only two to four works in a hundred
+leak. Bootstrapping the onset over works gives $95\%$ intervals of $[2.00, 2.92]$, $[2.53, 3.08]$,
+$[2.72, 3.45]$ and $[3.07, 3.83]$ --- each wide enough to contain every other pair's point estimate,
+so we claim the proportionality and not the constant. The third pair was re-measured at $458$
+passages after its $100$-passage curve proved too flat through the crossing for a bootstrap to
+resolve: a third of resamples never reached the threshold on a grid that stopped at $k = 3.6$, and
+extending it to $4.2$ brought that to $0.1\%$ while moving the onset from $3.18$ to $3.27$. The
+other three pairs are still $100$ passages each. Building more of them needs a memoriser strong
+enough that the \emph{unconstrained} risky model reproduces the passages: a first $350$M attempt
+reached $0.71$ near-verbatim recall greedily but only $0.022$ under the sampling the attack uses,
+and entered the analysis only after retraining to $0.91$. We admit a pair only if its $k=-1$ recall
 exceeds the onset threshold by an order of magnitude.
 
 \paragraph{The no-free-lunch theorem is a converse}

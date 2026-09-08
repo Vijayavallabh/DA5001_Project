@@ -1,11 +1,12 @@
-block,setting,k,k_over_s,natural_recall,natural_ci_lo,natural_ci_hi,n_passages,n_built_pairs_covering,built_recall_min,built_recall_max,built_recall_mean,recall_TinyComma-1.8B + memorised Llama-3.1-8B,recall_Comma-7B + memorised Comma-7B,recall_Pleias-350M + mem. Pleias-350M
-collapse,authors' book settings,1.5,0.4818,0.0,0.0,0.0,50,1,0.0,0.0,0.0,0.0,,
-collapse,authors' book settings,3.0,0.9636,0.018,0.0,0.054,50,3,0.0098,0.0191,0.0158,0.0191,0.0186,0.0098
-collapse,authors' book settings,5.0,1.606,0.0687,0.0153,0.1336,50,1,0.0979,0.0979,0.0979,,0.0979,
-collapse,temperature 1,1.5,0.4818,0.0,0.0,0.0,50,1,0.0,0.0,0.0,0.0,,
-collapse,temperature 1,3.0,0.9636,0.0174,0.0,0.0523,50,3,0.0098,0.0191,0.0158,0.0191,0.0186,0.0098
-collapse,temperature 1,5.0,1.606,0.0353,0.0065,0.069,50,1,0.0979,0.0979,0.0979,,0.0979,
-onset,"natural pair, coarse grid",,0.7495,,,,50,,,,,,,
-grid_bias,TinyComma-1.8B + memorised Llama-3.1-8B,,0.7018,,,,,,0.887,-0.1853,,,,
-grid_bias,Comma-7B + memorised Comma-7B,,0.7864,,,,,,0.8916,-0.1051,,,,
-grid_bias,Pleias-350M + mem. Pleias-350M,,0.8477,,,,,,0.8946,-0.0469,,,,
+block,setting,k,k_over_s,natural_recall,natural_ci_lo,natural_ci_hi,n_passages,n_built_pairs_covering,built_recall_min,built_recall_max,built_recall_mean,recall_TinyComma-1.8B + memorised Llama-3.1-8B,recall_Comma-7B + memorised Comma-7B,recall_Pleias-350M + mem. Pleias-350M,recall_Pleias-1.2B + mem. Pleias-1.2B
+collapse,authors' book settings,1.5,0.4818,0.0,0.0,0.0,50,1,0.0,0.0,0.0,0.0,,,
+collapse,authors' book settings,3.0,0.9636,0.018,0.0,0.054,50,4,0.0098,0.039,0.0216,0.0191,0.0186,0.0098,0.039
+collapse,authors' book settings,5.0,1.606,0.0687,0.0153,0.1336,50,1,0.0979,0.0979,0.0979,,0.0979,,
+collapse,temperature 1,1.5,0.4818,0.0,0.0,0.0,50,1,0.0,0.0,0.0,0.0,,,
+collapse,temperature 1,3.0,0.9636,0.0174,0.0,0.0523,50,4,0.0098,0.039,0.0216,0.0191,0.0186,0.0098,0.039
+collapse,temperature 1,5.0,1.606,0.0353,0.0065,0.069,50,1,0.0979,0.0979,0.0979,,0.0979,,
+onset,"natural pair, coarse grid",,0.7495,,,,50,,,,,,,,
+grid_bias,TinyComma-1.8B + memorised Llama-3.1-8B,,0.7018,,,,,,0.887,-0.1853,,,,,
+grid_bias,Comma-7B + memorised Comma-7B,,0.7864,,,,,,0.8916,-0.1051,,,,,
+grid_bias,Pleias-350M + mem. Pleias-350M,,0.8477,,,,,,0.8946,-0.0469,,,,,
+grid_bias,Pleias-1.2B + mem. Pleias-1.2B,,0.6987,,,,,,0.8784,-0.1797,,,,,

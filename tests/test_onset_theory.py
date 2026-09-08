@@ -58,14 +58,16 @@ def test_committed_prediction_matches_measurement():
         assert float(r["pred_over_meas_median"]) > float(r["pred_over_meas_q25"])
 
 
-def test_collapse_robustness_rejects_the_derivations_normaliser():
-    """feat-045, revised by feat-052. The derivation predicts that r = s_safe - s_risky collapses
-    the curves better than the anchor surprisal alone. On the two pairs available in phase 4 it
-    did. With a third pair it does not, which is the same verdict the pre-registered held-out
-    prediction returns (feat-050), so this test pins the rejection rather than the prediction.
-    Both must still beat no rescaling at all -- if that ever fails, the units claim itself is gone.
-    Also guards that the continuous metric does not collapse worse than the thresholded one
-    (the Schaeffer critique)."""
+def test_collapse_robustness_cannot_separate_the_two_normalisers():
+    """feat-045, revised twice. The derivation predicts that r = s_safe - s_risky collapses the
+    curves better than the anchor surprisal alone. Two pairs said yes (0.0046 vs 0.0059), three
+    said no (0.0096 vs 0.0070), four say yes again (0.0143 vs 0.0180): the winner changes every
+    time a pair is added, so the ablation discriminates the presence of a normaliser and not its
+    identity. Earlier versions of this test pinned whichever ordering held at the time and had to
+    be rewritten each time, which is itself the evidence -- so it now pins only what has survived
+    every pair count: both rescalings beat no rescaling, by a wide margin. If that ever fails the
+    units claim itself is gone. Also guards that the continuous metric does not collapse worse
+    than the thresholded one (the Schaeffer critique)."""
     import csv
     path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                         "results", "collapse_robustness.csv")
@@ -73,8 +75,10 @@ def test_collapse_robustness_rejects_the_derivations_normaliser():
         return
     rows = list(csv.DictReader(open(path)))
     norm = {r["setting"]: float(r["value"]) for r in rows if r["block"] == "normaliser"}
-    assert norm["s_safe"] < norm["requirement r = s_safe - s_risky"], norm
-    assert max(norm["s_safe"], norm["requirement r = s_safe - s_risky"]) < norm["raw (no rescaling)"], norm
+    r_req, s_safe, raw = (norm["requirement r = s_safe - s_risky"], norm["s_safe"],
+                          norm["raw (no rescaling)"])
+    assert max(r_req, s_safe) < raw, norm
+    assert max(r_req, s_safe) < 0.6 * raw, norm      # a wide margin, not a coin flip
     met = {r["setting"]: float(r["value_relative_to_metric_range"])
            for r in rows if r["block"] == "metric"}
     assert met["lcs_word"] <= met["nv_recall"], met

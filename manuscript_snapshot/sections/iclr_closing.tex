@@ -6,19 +6,18 @@ A scalar divergence budget is a rate, and safety against reproducing a particula
 workload maximum; queueing theory has known those come apart since \citet{loynes1962stability}.
 That mismatch has consequences a deployer can compute. The budget's natural unit is the safe
 model's surprisal of the work it protects, the certificate is exactly vacuous at $k = s(x)$ for
-every R\'enyi order, and extraction begins below that at $r(x) = s_s(x) - s_r(x)$. We did not
-find a budget that is both informative and useful, but Theorem~\ref{thm:nfl} and the measurement
-beside it say the obstruction is not fundamental: the utility a metered decoder delivers is worth
-hundredths of a nat and it spends hundreds, so the budget is consumed by imitating the risky model
-rather than by improving on the safe one. All three
-boundaries are computable in advance from the models and the content, so a deployer who must
-publish one number should publish $k/s(x)$, and a rights-holder who reads one should ask which work
-it was computed against.
+every R\'enyi order, and extraction begins below it at a budget the two models predict, on pairs
+held out from the fit, to within $0.03$ nats. We found no budget that is both informative and
+useful, but Theorem~\ref{thm:nfl} and the measurement beside it say the obstruction is not
+fundamental: the decoder spends hundreds of nats to buy utility worth hundredths, so the budget
+goes on imitating the risky model rather than on improving upon the safe one. All three boundaries
+are computable in advance from the models and the content, so a deployer who must publish one
+number should publish $k/s(x)$, and a rights-holder who reads one should ask which work it was
+computed against.
 
 \paragraph{Limitations}
-Four bound what this supports; Appendix~\ref{app:limitations} gives each in full. Everything runs on sixteen
-English genre novels, so the nine robustness cells re-analyse one corpus and
-$p = 3.1\times10^{-5}$ is the smallest value sixteen paired items can produce; the collapse rests on
-two pairs spanning $1.35\times$ in $s(x)$; Theorem~\ref{thm:nfl} is a converse whose gap to our
-decoder is $10^{3}$--$10^{4}$, bounding what is possible rather than what this decoder does; and
-utility is scored by one judge, resolving about four points.
+Four, in full in Appendix~\ref{app:limitations}. Every measurement uses the same sixteen English
+genre novels, so $p = 3.1\times10^{-5}$ is the smallest value sixteen paired items can produce; the
+collapse rests on four pairs spanning $1.33\times$ in $s(x)$; Theorem~\ref{thm:nfl} is a converse,
+so its $10^{3}$--$10^{4}$ gap bounds what is possible rather than this decoder; and one judge
+scores utility, resolving about four points.

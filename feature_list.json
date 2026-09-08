@@ -518,14 +518,14 @@
     },
     {
       "id": "feat-047",
-      "status": "in-progress",
+      "status": "done",
       "phase": 5,
       "depends_on": [
         "feat-044"
       ],
       "description": "More admissible (anchor, risky) pairs, to move s(x) over a wider range than the 1.35x of the first two. Self-paired memorisers plus the anchor-temperature lever.",
       "evidence_command": "recipes/finetune_memorizing.py --target-modules all-linear --epochs 40 --rank 128 --lr 3e-4; then analysis/composition_attack.py",
-      "evidence": "IN PROGRESS. Pleias-350M and kl3m-002-170m at the default 12 epochs are NOT admissible (k=-1 recall 0.022 and 0.000 against 0.72 for pairs 1-2); admissibility criterion adopted (k=-1 recall must clear the onset threshold 10x) and the recipe now reports sampled as well as greedy recall. Retraining five models at 40 epochs / rank 128 / lr 3e-4."
+      "evidence": "Four admissible pairs. onset/s(x) = 0.892, 0.878, 0.887, 0.920 (mean 0.894, sd 0.0157) over s(x) 2.393-3.554 nats/token (1.49x per token, 1.33x per character). Pair 3 re-measured at 458 passages after its 100-passage curve proved too flat to bootstrap; extending its grid to 4.2 cut the no-crossing rate from 32.5% to 0.1% and moved the onset 3.18 -> 3.271. Pair 4 (Pleias-1.2B) onset 2.819, CI [2.533, 3.081], 0% no-crossing. Collapse spread 0.012 below the threshold and 0.041 above. KL3M-003-1.7b became admissible (0.759 sampled) once the recipe's silent 448-token truncation was fixed (feat-055) and is available as pair 5."
     },
     {
       "id": "feat-051",
@@ -574,6 +574,18 @@
       "description": "Test the distribution-free restatement of the law: recall as a function of F(k), the fraction of protected objects whose anchor surprisal rate the budget covers, for passages (single) and 50-token windows (oracle).",
       "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/surprisal_cdf.py --out results",
       "evidence": "recall against F(k): single mean spread 0.0102, oracle 0.0437 (F in [0.05,0.7], 9 points).\nFraction covered at the measured onset: 0.07 / 0.09 / 0.05 (single, sd 0.0163) and 0.000 / 0.009 / 0.006 (oracle).\nBoth predictions fail: the fraction covered has a 23% relative spread against 0.34% for the ratio to the median, so the unit is the typical work's surprisal and not the covered tail; and at the oracle onset essentially no whole window is covered, so window leakage starts before the budget can pay for a window outright. 4 tests in tests/test_surprisal_cdf.py."
+    },
+    {
+      "id": "feat-057",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-047",
+        "feat-056"
+      ],
+      "description": "Assemble Section 4's onset table from one command so the paper's cross-pair standard deviation is not derived by hand, preferring the higher-n measurement when a pair has been measured twice.",
+      "evidence_command": ".venv/bin/python analysis/onset_table.py --out results",
+      "evidence": "4 pairs: ratio mean 0.8943, range 0.878-0.920, sd 0.0157; s(x) spans 2.393-3.554 (1.49x). Writes results/onset_table.csv. A scripted audit confirms 19 numbers quoted in the manuscript match results/*.csv. 1 test in tests/test_onset_table.py."
     }
   ]
 }

@@ -1416,3 +1416,53 @@ Tokenizer-free range unchanged at 1.33x, since pair 4's s(x) falls inside the ex
 Bug found on the way: `analysis/onset_units.py:load_pairs` required EXACTLY four manifest fields,
 so it silently skipped every pair the moment feat-052 added a fifth, and `add_pair.sh` aborted
 under `set -e` before the figures. Now `>= 4`.
+
+### Paper updated to four pairs (2026-09-08)
+
+Producing commands, in order:
+
+    .venv/bin/python analysis/onset_ci.py --comp output/phase5/n458_pleias350m_merged/composition.csv \
+      --s-x 3.5543500000000003 --label "Pleias-350M + mem. Pleias-350M (n=458)" --out results
+    SATML_DIR=<manuscript> scripts/add_pair.sh "Pleias-1.2B + mem. Pleias-1.2B" \
+      PleIAs/Pleias-1.2b-Preview output/phase5/mem_Pleias-1_2b-Preview \
+      output/phase5/fine_pleias12b/composition_summary.csv 4
+    .venv/bin/python analysis/onset_table.py --out results
+    .venv/bin/python analysis/score_predictions.py --out results \
+      --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + mem. Comma-7B"
+    .venv/bin/python analysis/collapse_robustness.py --out results
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/natural_pair.py --out results
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/surprisal_cdf.py --out results
+    .venv/bin/python analysis/onset_units.py --out results
+    .venv/bin/python figures/make_figures_v4.py --copy-to <manuscript>/figures
+
+`results/onset_table.csv` is the table the paper prints (`analysis/onset_table.py`), so the four-pair
+standard deviation has one source rather than being derived by hand:
+
+    pair                                      n   s(x)    s_r   onset         95% CI   ratio  no-cross
+    Comma-7B + mem. Comma-7B                100  2.393  0.179   2.134   [2.00, 2.92]   0.892      0.0%
+    Pleias-1.2B + mem. Pleias-1.2B          100  3.209  0.365   2.819   [2.53, 3.08]   0.878      0.0%
+    TinyComma-1.8B + mem. Llama-3.1-8B      100  3.239  0.194   2.873   [2.72, 3.45]   0.887      0.1%
+    Pleias-350M + mem. Pleias-350M          458  3.554  0.326   3.271   [3.07, 3.83]   0.920      0.1%
+    4 pairs: ratio mean 0.8943, range 0.878-0.920, sd 0.0157
+
+Pair 3's k=3.6 grid ceiling made a third of its bootstrap resamples fail to cross; two extra budget
+points (3.8, 4.2) at the same 458 passages fixed it (0.1% no-crossing) and left the point estimate
+at 3.271. The merged per-passage file is `output/phase5/n458_pleias350m_merged/composition.csv`;
+the merge asserts identical passage sets and disjoint budgets before writing.
+
+**Sections changed:** abstract, `iclr_intro`, `onset` (four-row table, the derivation paragraphs
+rewritten around the held-out score, the natural-pair paragraph condensed into the appendix),
+`iclr_closing` (which still said "the collapse rests on two pairs spanning 1.35x"),
+`appendix_robustness` (7 edits) and `appendix_limitations`. 18 pages, main text ends on page 9,
+0 overfull, 0 `??`. A scripted audit re-checks 19 quoted numbers against `results/*.csv`.
+
+Four-pair values that moved: collapse spread 0.0048 -> 0.012 below the threshold and 0.0158 ->
+0.041 above; metric-artifact spread 0.052 -> 0.162 (lcs) against 0.065 -> 0.166 (recall); threshold
+sweep 0.037 / 0.016 / 0.167 at 0.005 / 0.01 / 0.02; CDF fraction covered at the onset 0.07, 0.09,
+0.05, 0.03 (37% relative spread against 1.8% for the ratio).
+
+**KL3M-003-1.7b is admissible** (sampled nv-recall 0.759) now that the truncation is fixed, so pair
+5 is available and is the one that widens the tokenizer-free range from 1.33x to about 1.67x. Its
+prediction must be committed before its sweep is read. kl3m-002-520m is still training.

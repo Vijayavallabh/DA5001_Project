@@ -121,6 +121,28 @@ def main():
         print(f"{rule:28s}{hv:>21s}{hc:>8s}"
               f"{st.mean(r['abs_error'] for r in al):16.3f}"
               f"{sum(r['inside_ci'] for r in al)}/{len(al):>7}")
+    # P1 is not only a level: it says the ratio should fall as the memoriser leaves more residual
+    # surprisal. Scoring the level and the direction separately is the point -- a rule can get one
+    # right and the other wrong, and this one does.
+    pr = [(1 - float(r["s_risky_median"]) / float(r["s_safe_median"]),
+           float(meas[canonical(r["pair"])]["onset_point"]) / float(r["s_safe_median"]),
+           r["pair"]) for r in preds]
+    if len(pr) > 2:
+        def ranks(v):
+            order = sorted(range(len(v)), key=lambda i: v[i])
+            out = [0] * len(v)
+            for pos, i in enumerate(order):
+                out[i] = pos
+            return out
+        rp, rm = ranks([x[0] for x in pr]), ranks([x[1] for x in pr])
+        n = len(pr)
+        rho = 1 - 6 * sum((x - y) ** 2 for x, y in zip(rp, rm)) / (n * (n * n - 1))
+        print(f"\ndirection: P1 says onset/s(x) = 1 - s_r/s_s, so the ratio must fall as the "
+              f"memoriser\n           leaves more residual surprisal. Spearman over {n} pairs: "
+              f"rho = {rho:+.2f}")
+        for pred_ratio, meas_ratio, pair in sorted(pr, key=lambda x: -x[0]):
+            print(f"  {pair[:38]:40s} predicted {pred_ratio:.3f}   measured {meas_ratio:.3f}")
+
     print(f"\nwrote {a.out}/prediction_scores.csv")
 
 
