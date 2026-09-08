@@ -1282,3 +1282,39 @@ Honest limits: 1 of 50 passages carries the mean at that budget, so the bootstra
 lower (0.069 and 0.035 against 0.098). This is a consistency check on a natural memoriser, not a
 precision test of the constant. A fine 70B grid would be the real test and needs both large GPUs
 free, which they are not.
+
+### feat-054: the distribution-free restatement is worse, and that sharpens the claim (2026-09-08, ~0.1 GPU-h)
+
+An obvious referee suggestion is that rescaling by a single number per pair -- the median anchor
+surprisal rate -- throws away the distribution, and that the law should really be stated as
+"recall is a function of the fraction of protected objects the budget rate covers",
+$F(k) = \Pr[s(\text{object}) \le k]$. That version has no fitted quantity at all, and it makes a
+second prediction: the oracle attack is charged per 50-token window, so its curves should collapse
+against the window-level $F$ even though they do not collapse against the work-level $s(x)$.
+
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/surprisal_cdf.py --out results
+
+    pair                                      passages  windows(50)  passage median  window q10
+    TinyComma-1.8B + mem. Llama-3.1-8B             100          485           3.239       2.684
+    Comma-7B + mem. Comma-7B                       100          556           2.393       1.919
+    Pleias-350M + mem. Pleias-350M                 100          498           3.554       2.955
+
+    recall against F(k):  single mean spread 0.0102, oracle 0.0437 (F in [0.05, 0.7], 9 points)
+    fraction covered AT the measured onset:
+      TinyComma  single F=0.07  oracle F=0.000
+      Comma-7B   single F=0.09  oracle F=0.009
+      Pleias-350M single F=0.05 oracle F=0.006
+      single 0.050-0.090 (sd 0.0163)   oracle 0.000-0.009 (sd 0.0037)
+
+Both predictions fail, and the failure is informative. The fraction covered at the onset is
+$0.05$-$0.09$, a relative spread of about $23\%$ around its mean, against $0.887$/$0.892$/$0.895$
+for the ratio to the median -- a relative spread of $0.34\%$, seventy times tighter. So the budget's
+unit is the surprisal of a *typical* protected work and not the size of the tail the budget covers;
+a distribution-free statement of the law is strictly weaker than the one we make. The oracle
+prediction fails too: at the oracle onset essentially no window is fully covered ($F \le 0.009$),
+so window leakage begins before the budget can pay for any whole window, which is why the oracle
+curves do not collapse under either normaliser.
+
+This is worth one paragraph in the appendix because it forecloses the suggestion with a
+measurement rather than an argument. 4 tests in `tests/test_surprisal_cdf.py`.

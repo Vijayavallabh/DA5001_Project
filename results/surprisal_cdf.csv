@@ -1,0 +1,4 @@
+pair,anchor,n_passages,n_windows,passage_q10,passage_median,window_q10,window_median,window_q10_over_passage_median,onset_single,F_passage_at_onset,onset_oracle,F_window_at_oracle_onset
+TinyComma-1.8B + memorised Llama-3.1-8B,jacquelinehe/tinycomma-1.8b-llama3-tokenizer,100,485,2.924,3.2386,2.6835,3.2198,0.8286,2.8727,0.07,2.0501,0.0
+Comma-7B + memorised Comma-7B,common-pile/comma-v0.1-2t,100,556,2.1614,2.3935,1.9188,2.3925,0.8017,2.134,0.09,1.5726,0.009
+Pleias-350M + mem. Pleias-350M,PleIAs/Pleias-350m-Preview,100,498,3.2321,3.5544,2.9546,3.5324,0.8313,3.1796,0.05,2.4729,0.006
