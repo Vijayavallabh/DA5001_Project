@@ -941,3 +941,22 @@ leaving the open problem without a route.
 Stop-loss 0.20 gives greedy nv-recall 0.751 and **sampled 0.202**, over the 0.10 bar. With rung D
 (stop-loss 0.03) at sampled 0.901, the ladder spans a 4.5x range in memorisation strength on one
 fixed anchor -- which is the spread the derivation-versus-constant test needs.
+
+### Full numeric audit of the ICLR main text against results/*.csv (2026-09-08)
+
+Every quantitative claim in the main text that has a committed CSV behind it was checked. All
+reconcile; two errors found earlier in the day (the 0.022 crossing value and the 88.2% step count)
+were already fixed.
+
+  vacuity 100% of passages at k=3                          renyi_sweep.csv           OK
+  q25 predicts onset, ratios 0.996 / 0.999                 onset_theory.csv          OK
+  collapse 0.0014 over [0.7,1.0], 0.0149 above             onset_collapse.csv        OK
+  crossing values 0.024 and 0.023                          onset_collapse.csv        OK (was 0.022)
+  alpha=1/2/4/8 attack recall at k=3                       renyi_sweep.csv           OK (all 8)
+  alpha=4 price 8.7% unchanged / 83.0% active              renyi_price.csv           OK
+  judged loss 53.4 / 57.3 / 65.3 / 61.7 / 41.7             utility_v4_summary.csv    OK (all 5)
+  c_use 0.191 -> 0.137, s(x) 0.778 -> 0.685                anchor_scaling_summary    OK
+  margins 4.07 -> 5.02 and the 1T checkpoint at 4.63       anchor_scaling_summary    OK
+  opening effect, 8 ranges per char and per token          opening_effect_summary*   OK
+  headline -0.45 sigma at k=1, -2.35 sigma at k=3          utility_v4_summary.csv    OK
+  s(x) spans 1.35x across pairs 1-2                        onset_theory.csv          OK
