@@ -22,17 +22,40 @@ Usage: .venv/bin/python analysis/collapse_robustness.py --out results
 import argparse, bisect, csv, os, statistics as st, sys
 from collections import defaultdict
 
-PAIRS = [("TinyComma", "output/phase4/fine_tc/composition.csv", "results/budget_path.csv",
-          "TinyComma-1.8B + mem. Llama-3.1-8B"),
-         ("Comma7B", "output/phase4/fine_comma/composition.csv", "results/budget_path_comma7b.csv",
-          "Comma-7B + mem. Comma-7B")]
+MANIFEST = "results/onset_pairs.tsv"
 GRID = (0.7, 0.8, 0.9, 1.0, 1.1, 1.2)
+
+
+def load_pairs(path):
+    """name<TAB>composition_summary.csv<TAB>budget_path.csv[<TAB>tokenizer[<TAB>theory_pair]].
+
+    Returns (name, per-passage composition.csv, budget_path.csv, name in
+    onset_theory_per_work.csv). The per-passage file sits beside the summary the manifest names,
+    because analysis/composition_attack.py writes both in one run. The fifth field exists because
+    the two manifests spell the same pair differently ("memorised" vs "mem.") and the pair names
+    in results/onset.csv are already quoted in the paper, so renaming them is not free.
+    """
+    out = []
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        f = line.split("\t")
+        if len(f) < 3:
+            raise SystemExit(f"[collapse] {path}: want >= 3 fields, got {len(f)}: {line}")
+        out.append((f[0], os.path.join(os.path.dirname(f[1]), "composition.csv"), f[2],
+                    f[4] if len(f) > 4 and f[4] else f[0]))
+    return out
 
 
 def curve(path, col, mode="single"):
     by = defaultdict(list)
     for r in csv.DictReader(open(path)):
-        if r["mode"] == mode:
+        # k <= 0 are the mandatory baselines (risky-only at -1, safe-only at 0). They are not
+        # points on the budget curve, and the phase-5 runs log them in the same file while the
+        # phase-4 ones do not -- so omitting this filter made the onset depend on which run
+        # produced the pair.
+        if r["mode"] == mode and float(r["k"]) > 0:
             by[float(r["k"])].append(float(r[col]))
     return {k: st.mean(v) for k, v in sorted(by.items())}
 
@@ -48,12 +71,17 @@ def interp(c, scale, x):
 
 
 def disagreement(curves, scales, grid=GRID):
-    """Mean |difference| between the two pairs on a common rescaled grid."""
+    """Mean spread (max - min) across EVERY pair on a common rescaled grid.
+
+    This was abs(vals[0] - vals[1]), which compared two pairs and silently ignored the rest --
+    the same defect analysis/onset.py:collapse had. With three pairs it would have reported the
+    disagreement of whichever two happened to come first in the manifest.
+    """
     d = []
     for x in grid:
         vals = [interp(curves[n], scales[n], x) for n in curves]
         if all(v is not None for v in vals):
-            d.append(abs(vals[0] - vals[1]))
+            d.append(max(vals) - min(vals))
     return (st.mean(d), len(d)) if d else (float("nan"), 0)
 
 
@@ -72,7 +100,12 @@ def onset(c, thresh):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
+    ap.add_argument("--pairs-file", default=MANIFEST)
     a = ap.parse_args()
+    pairs = load_pairs(a.pairs_file)
+    missing = [f for _, f, _, _ in pairs if not os.path.exists(f)]
+    if missing:
+        raise SystemExit(f"[collapse] missing per-passage composition files: {missing}")
 
     theory = defaultdict(list)
     tp = "results/onset_theory_per_work.csv"
@@ -81,12 +114,12 @@ def main():
             theory[r["pair"]].append((float(r["s_safe"]), float(r["s_risky"]),
                                       float(r["requirement"])))
     s_safe = {n: st.median(float(r["s_mean"]) for r in csv.DictReader(open(bp)))
-              for n, _, bp, _ in PAIRS}
+              for n, _, bp, _ in pairs}
     rows = []
 
     # 1. metric artifact
     for col in ("nv_recall", "lcs_word"):
-        curves = {n: curve(f, col) for n, f, _, _ in PAIRS}
+        curves = {n: curve(f, col) for n, f, _, _ in pairs}
         scale = max(max(c.values()) for c in curves.values())
         m, n_pts = disagreement(curves, s_safe)
         rows.append({"block": "metric", "setting": col, "value": m,
@@ -94,7 +127,7 @@ def main():
                      "n_grid": n_pts})
 
     # 2. threshold artifact
-    curves = {n: curve(f, "nv_recall") for n, f, _, _ in PAIRS}
+    curves = {n: curve(f, "nv_recall") for n, f, _, _ in pairs}
     for th in (0.002, 0.005, 0.01, 0.02, 0.05):
         os_ = {n: onset(curves[n], th) for n in curves}
         if all(v for v in os_.values()):
@@ -105,8 +138,12 @@ def main():
 
     # 3. normaliser ablation -- the derivation's own prediction
     if theory:
-        key = {"TinyComma": "TinyComma-1.8B + mem. Llama-3.1-8B",
-               "Comma7B": "Comma-7B + mem. Comma-7B"}
+        key = {n: t for n, _, _, t in pairs}
+        if any(k not in theory for k in key.values()):
+            raise SystemExit(f"[collapse] {tp} has no rows for "
+                             f"{[k for k in key.values() if k not in theory]}; "
+                             f"add a 5th column to {a.pairs_file} naming the pair as it is "
+                             f"spelled there")
         opts = {
             "raw (no rescaling)": {n: 1.0 for n in curves},
             "s_safe": s_safe,

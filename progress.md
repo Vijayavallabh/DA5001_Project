@@ -1171,3 +1171,37 @@ tokenizer-free 1.33x is the conservative number and is what the range claim shou
 
 Manifest change: `results/onset_pairs.tsv` gained an optional 4th column naming each pair's
 tokenizer, and `analysis/onset.py:load_pairs` now accepts 3 or 4 fields (it ignores the 4th).
+
+### feat-052: the collapse-robustness appendix was still a two-pair analysis (2026-09-08, no GPU)
+
+`analysis/collapse_robustness.py` had `PAIRS` hard-coded to the two phase-4 pairs and computed
+disagreement as `abs(vals[0] - vals[1])` -- the same defect `analysis/onset.py:collapse` had. It now
+reads `results/onset_pairs.tsv` (5th optional column: the pair's name as `onset_theory_per_work.csv`
+spells it) and reports the spread across every pair. A second bug surfaced only once a phase-5 pair
+was added: `curve()` did not filter `k > 0`, so the mandatory k=-1 and k=0 baselines, which the
+phase-5 runs log in the same file and the phase-4 runs do not, were being read as points on the
+budget curve. Fixed; the two together moved the mean onset ratio from a nonsensical 0.499 to 0.891.
+
+    .venv/bin/python analysis/collapse_robustness.py --out results
+
+    [metric]     nv_recall 0.0070 (0.065 of range)   lcs_word 1.1981 (0.052 of range)
+    [threshold]  0.002: 0.0852 (mean ratio 0.803)  0.005: 0.0372 (0.859)
+                 0.01:  0.0076 (0.891)             0.02:  0.0993 (1.006)
+    [normaliser] raw 0.0333    s_safe 0.0070    requirement r = s_safe - s_risky 0.0096
+
+Two conclusions change, and the appendix text has to change with them.
+
+1. **The normaliser ablation reverses.** On two pairs the derived requirement `r` won (0.0046 vs
+   0.0059 for `s(x)`). On three it loses: 0.0096 against 0.0070. That is the third independent
+   piece of evidence pointing the same way as the held-out rejection in feat-050 -- the constant
+   proportionality to `s(x)` is what the data support, not the derived refinement. The appendix
+   currently says "the derived quantity wins, which is the outcome the derivation predicts", which
+   now contradicts the main text.
+2. **The threshold-robustness claim weakens.** "Stable from 0.005 to 0.02" was true across two
+   pairs (0.0048, 0.0046, 0.0042); across three the spread is 0.0372, 0.0076, 0.0993 -- an order of
+   magnitude better exactly at the chosen 0.01. At n=100 one passage moves a pair's mean recall by
+   about 0.01, so interpolating a 0.005 crossing is unstable by construction. The n=458 sweep now
+   running is the direct fix; re-run this script when it lands.
+
+The 0.05 threshold row disappeared because the Pleias-350M grid tops out at 0.0397, so no crossing
+exists for that pair. Reporting four thresholds instead of five is the honest version.
