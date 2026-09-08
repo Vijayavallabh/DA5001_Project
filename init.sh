@@ -63,15 +63,21 @@ $PY -c "import torch; print(f'[info] local GPU available: {torch.cuda.is_availab
 
 echo "=== Init Complete ==="
 echo ""
-echo "All three phases are complete (2026-09-07): feat-001..009, 013..015, 017..027 and 028..034 are done."
-echo "30 of 34 features are done; feat-010/011 are optional and unstarted, feat-012 is superseded by feat-024."
-echo "feat-016 is human-only - never start it. Nothing is running and there is no next feature to pick."
-echo ""
-echo "The submission is built and verified: 21 pages with the body ending on page 12, 0 overfull, 0 '??',"
-echo "138 references (137 cited, all verified), artifact 206 files + manifest, 56.5 GPU-hours."
-echo ""
-echo "If you are here to work:"
-echo "1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md"
-echo "2. There is no eligible feature. Verification is this script plus the manuscript command in AGENTS.md."
-echo "3. If you do change something, rerun its evidence command, update feature_list.json and progress.md,"
-echo "   recompile the manuscript (0 ??, 0 overfull, page 13 starts with 'Open Science') and rebuild the artifact"
+echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
+feat-035..046 are done; feat-047 (more admissible (anchor, risky) pairs, plus the graded-memoriser
+ladder) is in progress. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
+feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
+
+The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
+pages (measured BEFORE the Ethics heading - Ethics, Reproducibility and LLM Usage do not count),
+17 pages total, 0 overfull, 0 '??'. It is NOT in this repo and must never be committed to the
+stray git repo it sits inside.
+
+If you are here to work:
+1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
+2. Next feature is feat-047. Two live cautions: a pair enters the onset analysis only if its
+   SAMPLED k=-1 recall >= 0.10 (greedy recall lies); and on the two original pairs the derivation
+   r = s_s - s_r and a constant c*s_s are degenerate, which is what the ladder exists to separate.
+3. If you change something, rerun its evidence command, update feature_list.json and progress.md,
+   and recompile the manuscript (0 '??', 0 overfull, 9 pages before the Ethics heading)
+"
