@@ -121,11 +121,14 @@ def onset_collapse():
     the safe model's surprisal rate on the protected work."""
     import csv as _csv, statistics as _st, sys as _sys
     _sys.path.insert(0, str(REPO))
-    from analysis.onset import curve
-    P = [("TinyComma 1.8B + memorised Llama-3.1-8B", "output/phase4/fine_tc/composition_summary.csv",
-          "results/budget_path.csv", "C0", "o"),
-         ("Comma 7B + memorised Comma 7B", "output/phase4/fine_comma/composition_summary.csv",
-          "results/budget_path_comma7b.csv", "C3", "s")]
+    from analysis.onset import curve, load_pairs
+    # plan v5: the pair set is data, not code -- same manifest analysis/onset.py reads, so a new
+    # admissible pair appears in the figure without editing it.
+    _pairs = load_pairs(str(REPO / "results" / "onset_pairs.tsv"))
+    _cols = ["C0", "C3", "C2", "C1", "C4", "C5", "C6", "C8"]
+    _mks = ["o", "s", "^", "D", "v", "P", "X", "*"]
+    P = [(n, c, b, _cols[i % len(_cols)], _mks[i % len(_mks)])
+         for i, (n, c, b) in enumerate(_pairs)]
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.5))
     for name, comp, per, col, mk in P:
         p_ = REPO / comp
