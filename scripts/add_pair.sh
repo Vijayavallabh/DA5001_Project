@@ -37,7 +37,10 @@ fi
 
 # onset manifest: only once the sweep exists, otherwise analysis/onset.py has nothing to read
 if [ -f "$COMP" ] && ! grep -qF "$LABEL" results/onset_pairs.tsv 2>/dev/null; then
-  printf '%s\t%s\t%s\n' "$LABEL" "$COMP" "$BP" >> results/onset_pairs.tsv
+  # 5 columns: label, sweep summary, budget path, tokenizer (analysis/onset_units.py) and the
+  # pair's name in onset_theory_per_work.csv (analysis/collapse_robustness.py). add_pair.sh uses
+  # one LABEL for both manifests, so the fifth field is the label itself.
+  printf '%s\t%s\t%s\t%s\t%s\n' "$LABEL" "$COMP" "$BP" "$ANCHOR" "$LABEL" >> results/onset_pairs.tsv
   echo "[add_pair] appended to results/onset_pairs.tsv"
 elif [ ! -f "$COMP" ]; then
   echo "[add_pair] no sweep at $COMP yet -- prediction registered, measurement pending."
@@ -46,6 +49,9 @@ fi
 
 $PY analysis/onset_theory.py --out results
 [ -f "$COMP" ] && $PY analysis/onset.py --out results --thresh 0.01
+[ -f "$COMP" ] && $PY analysis/onset_ci.py --out results
+[ -f "$COMP" ] && $PY analysis/onset_units.py --out results
+[ -f "$COMP" ] && $PY analysis/collapse_robustness.py --out results
 [ -f "$COMP" ] && $PY analysis/onset_ladder.py --out results
 [ -f "$COMP" ] && $PY figures/make_figures_v4.py \
   --copy-to "${SATML_DIR:-../sub/satml}/figures"
