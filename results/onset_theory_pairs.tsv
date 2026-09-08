@@ -1,3 +1,5 @@
 TinyComma-1.8B + mem. Llama-3.1-8B	output/memorizing_llama8b	results/budget_path.csv	2.87
 Comma-7B + mem. Comma-7B	output/phase4/memorizing_comma7b	results/budget_path_comma7b.csv	2.13
 Pleias-350M + mem. Pleias-350M	output/phase5/mem_Pleias-350m-Preview	results/budget_path_pleias350m.csv	
+Ladder rung stop-loss 0.020 (Pleias-350M)	output/phase5/ladder_020	results/budget_path_pleias350m.csv	
+Ladder rung stop-loss 0.010 (Pleias-350M)	output/phase5/ladder_010	results/budget_path_pleias350m.csv	

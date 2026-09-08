@@ -45,3 +45,38 @@ recorded in `onset_prediction_pleias350m.md`.
 3. Sweep each rung on the same k grid, same 100 passages, same seeds, with the mandatory `k=-1`
    and `k=0` baselines.
 4. Report measured onset against both hypotheses.
+
+---
+
+## The ladder does not do what it was designed to do, and the predictions say so before any sweep
+
+Computing each rung's prediction *before* sweeping (which is why the predictions are computed first)
+shows the design is weaker than intended:
+
+| pair | s_r | derivation, q25 | constant 0.888*s_s | gap |
+|---|---|---|---|---|
+| TinyComma + mem. Llama-8B | 0.194 | 2.86 | 2.88 | 0.02 |
+| Comma-7B + mem. Comma-7B | 0.179 | 2.13 | 2.13 | -0.00 |
+| Pleias-350M + mem. Pleias-350M | 0.326 | 2.96 | 3.16 | **0.19** |
+| ladder rung stop-loss 0.10 | 0.374 | 2.94 | 3.16 | **0.22** |
+| ladder rung stop-loss 0.20 | 0.411 | 2.90 | 3.16 | **0.25** |
+
+**The between-rung trend is unmeasurable.** Training strength moves sampled recall 4.5x (0.202 to
+0.901) but moves `s_r` only 0.411 -> 0.326, so the predicted onset moves **0.06 nats** across the
+whole ladder, against a grid resolution of 0.10. The sign-of-trend test the ladder was built for
+cannot be run.
+
+The reason is a genuine tension, not an accident of these settings. Admissibility needs a memoriser
+strong enough that the unconstrained model reproduces the work, and any such memoriser has small
+`s_r`. The usable window in training loss is roughly [0.03, 0.25] -- below it nothing more is
+learned, above it extraction collapses (a model at loss ~0.35 gave sampled recall 0.022) -- and that
+window maps to a narrow `s_r` band.
+
+**What the ladder is still worth.** Each rung independently tests the same 0.19-0.25 nat gap between
+the two hypotheses, with the anchor held fixed, so the rungs are *replications* rather than a trend.
+That is worth having but it is not decisive on its own.
+
+**What actually moves `s_r`: model size, not training strength.** `s_r` is 0.18 at 7B, 0.19 at 8B and
+0.33 at 350M -- a 1.8x range against the ladder's 1.26x. Pairs across model scales are therefore the
+discriminating lever, which is what the remaining self-paired memorisers supply. Pair 3 alone already
+carries a 0.19 nat gap between the hypotheses, and its sweep is the first real test.
