@@ -75,6 +75,19 @@ the derived requirement $r$, and $0.0333$ for no rescaling at all. On the two pa
 earlier $r$ won this comparison; with the third pair it does not, which is the same verdict the
 pre-registered prediction of Section~\ref{sec:onset} returns.
 
+\paragraph{Why not use the whole distribution?}
+Rescaling by one number per pair discards the shape of the anchor's surprisal distribution, and the
+law can be restated with nothing fitted in it at all: let $F(k)$ be the fraction of protected
+objects whose anchor surprisal rate is at most $k$, and ask whether recall is a common function of
+$F$. It is not, and the comparison says what the constant is about. At the measured onset the
+budget covers $0.07$, $0.09$ and $0.05$ of the passages, a relative spread of $23\%$ about the mean,
+against $0.34\%$ for the ratio to the median. The unit is the surprisal of a typical protected work,
+not the size of the tail a budget covers. The same construction also fails to rescue the oracle
+curves. Charged per $50$-token window, the oracle attack ought to collapse against the window-level
+$F$ even though it does not collapse against the work-level $s(x)$; instead, at its onset
+essentially no whole window is covered ($F \le 0.009$ on all three pairs), so window leakage begins
+well before the budget can pay for any window outright.
+
 \paragraph{The natural pair, and why its onset is not quotable}
 Llama-3.1-70B base was swept at $k \in \{1, 1.5, 3, 5, 10, 20\}$, so its recall crosses $0.01$
 inside a bracket $1.5$ nats wide and any interpolated onset is a statement about the grid. Applying
