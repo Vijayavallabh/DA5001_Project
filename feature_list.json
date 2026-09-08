@@ -526,6 +526,30 @@
       "description": "More admissible (anchor, risky) pairs, to move s(x) over a wider range than the 1.35x of the first two. Self-paired memorisers plus the anchor-temperature lever.",
       "evidence_command": "recipes/finetune_memorizing.py --target-modules all-linear --epochs 40 --rank 128 --lr 3e-4; then analysis/composition_attack.py",
       "evidence": "IN PROGRESS. Pleias-350M and kl3m-002-170m at the default 12 epochs are NOT admissible (k=-1 recall 0.022 and 0.000 against 0.72 for pairs 1-2); admissibility criterion adopted (k=-1 recall must clear the onset threshold 10x) and the recipe now reports sampled as well as greedy recall. Retraining five models at 40 epochs / rank 128 / lr 3e-4."
+    },
+    {
+      "id": "feat-051",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-043",
+        "feat-047"
+      ],
+      "description": "Tokenizer confound: the onset law is quoted in nats per token and the pairs use different tokenizers, so report the ratio and the cross-pair dynamic range in tokenizer-free units too.",
+      "evidence_command": "HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/onset_units.py --out results",
+      "evidence": "pair                                    ch/tok   s tok  s char  onset ch  ratio tok  ratio ch\nTinyComma-1.8B + memorised Llama-3.1-     4.20   3.239   0.770     0.683      0.887     0.887\nComma-7B + memorised Comma-7B             3.63   2.393   0.660     0.588      0.892     0.892\nPleias-350M + mem. Pleias-350M            4.05   3.554   0.878     0.786      0.895     0.895\nnats/token: s(x) spans 2.393-3.554 (1.49x), onset spans 2.134-3.180 (1.49x)\nnats/char:  s(x) spans 0.660-0.878 (1.33x), onset spans 0.588-0.786 (1.34x)\nratio onset/s(x): token units sd 0.0031, char units sd 0.0031 (max |difference| 0.000000)\nThe ratio is invariant by construction (both rates are charged per token of the one vocabulary the decoder forces the pair to share); the dynamic range is not, so the abstract and intro now quote 1.33x. 4 tests in tests/test_onset_units.py."
+    },
+    {
+      "id": "feat-052",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-045",
+        "feat-047"
+      ],
+      "description": "analysis/collapse_robustness.py was still a two-pair analysis: PAIRS hard-coded to phase 4 and disagreement computed as abs(vals[0]-vals[1]). Make it manifest-driven and N-pair correct, and rerun.",
+      "evidence_command": ".venv/bin/python analysis/collapse_robustness.py --out results",
+      "evidence": "[metric]     nv_recall 0.0070 (0.065 of range)   lcs_word 1.1981 (0.052 of range)\n[threshold]  0.002: 0.0852 (mean ratio 0.803)  0.005: 0.0372 (0.859)  0.01: 0.0076 (0.891)  0.02: 0.0993 (1.006)\n[normaliser] raw 0.0333   s_safe 0.0070   requirement r = s_safe - s_risky 0.0096\nTwo bugs: the hard-coded pair set and a missing k>0 filter in curve(), which read the mandatory k=-1 and k=0 baselines (logged in the phase-5 files but not the phase-4 ones) as budget-curve points and put the mean onset ratio at 0.499. With both fixed the normaliser ablation REVERSES: s(x) 0.0070 now beats the derived r 0.0096, agreeing with the held-out rejection of feat-050. appendix_robustness.tex, onset.tex and appendix_limitations.tex updated; tests/test_onset_theory.py now pins the three-pair verdict."
     }
   ]
 }
