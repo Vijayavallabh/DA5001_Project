@@ -56,7 +56,19 @@ def main():
     tok = AutoTokenizer.from_pretrained(args.tokenizer)
     tok.padding_side = "right"
     if tok.pad_token_id is None:
-        tok.pad_token = tok.eos_token
+        # plan v5: some permissively-licensed families (Pleias 1.2b/3b) register NO special tokens
+        # at all, so `pad = eos` just assigns None. Pick any token that already exists -- padding is
+        # attention-masked -- and never add one, which would make len(tokenizer) exceed the
+        # embedding rows and break the padded-vocab check in a_patch/factory.py.
+        vocab = tok.get_vocab()
+        for cand in (tok.eos_token, tok.unk_token, tok.bos_token,
+                     "<|end_of_text|>", "<|endoftext|>", "</s>"):
+            if cand and cand in vocab:
+                tok.pad_token = cand
+                break
+        else:
+            tok.pad_token = tok.convert_ids_to_tokens(0)
+        print(f"[ft] tokenizer had no pad token; using {tok.pad_token!r} (id {tok.pad_token_id})")
     prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split in args.splits and p.reference]
     if args.shard:
         i, n = (int(x) for x in args.shard.split("/"))
