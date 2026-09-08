@@ -463,7 +463,11 @@ class AnchoredDecodingFactory:
         if stopping_criteria is None:
             stopping_criteria = StoppingCriteriaList()
         stopping_criteria.append(MaxLengthCriteria(max_length=generation_config.max_length))
-        stopping_criteria.append(EosTokenCriteria(eos_token_id=generation_config.eos_token_id))
+        # Some permissively licensed checkpoints (Pleias 1.2b/3b) register no eos token at all, and
+        # EosTokenCriteria cannot be built from None. Length is then the only stopping rule, which
+        # is what these runs use anyway: every budgeted generation is decoded to T_max.
+        if generation_config.eos_token_id is not None:
+            stopping_criteria.append(EosTokenCriteria(eos_token_id=generation_config.eos_token_id))
         return stopping_criteria
 
     def _prepare_logits_processor(self, logits_processor, generation_config):

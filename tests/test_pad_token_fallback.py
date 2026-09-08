@@ -78,3 +78,13 @@ def test_helper_is_idempotent_and_leaves_a_good_tokenizer_alone():
     tok.pad_token = "</s>"
     ensure_pad_token(tok)
     assert tok.pad_token == "</s>"
+
+
+def test_eos_criteria_is_skipped_when_the_model_has_no_eos():
+    """Pleias 1.2b/3b register no eos; EosTokenCriteria(None) raises, so it must be skipped."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    src = open(os.path.join(root, "a_patch", "factory.py"), encoding="utf-8").read()
+    i = src.index("def _prepare_stopping_criteria")
+    body = src[i:src.index("def ", i + 10)]
+    assert "if generation_config.eos_token_id is not None:" in body, \
+        "EosTokenCriteria must be guarded against a None eos_token_id"
