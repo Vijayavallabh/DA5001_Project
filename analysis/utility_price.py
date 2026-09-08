@@ -133,6 +133,9 @@ def main():
             "lambda_star_nats": round(lam, 5),
             "lambda_star_lo": round(lo, 5), "lambda_star_hi": round(hi, 5),
             "spend_over_lambda_star": (round(spend / lam, 1) if lam > 1e-9 else ""),
+            # the conservative ratio: divide by the UPPER end of the bootstrap interval, so the
+            # claim "the overhead exceeds 10^3" is checked against the weakest reading of the data
+            "spend_over_lambda_star_conservative": (round(spend / hi, 1) if hi > 1e-9 else ""),
         })
 
     os.makedirs(a.out, exist_ok=True)
@@ -144,12 +147,13 @@ def main():
     print(f"safe model utility E_ps[U] = {u_safe:.4f} (win/tie/loss "
           f"{d_safe[0]:.3f}/{d_safe[1]:.3f}/{d_safe[2]:.3f}, n={n_safe})\n")
     print(f"{'k':>5s}{'spend':>9s}{'E_q[U]':>9s}{'gain':>8s}{'Lambda*':>10s}"
-          f"{'95% CI':>18s}{'spend/Lambda*':>15s}")
+          f"{'95% CI':>18s}{'spend/L*':>10s}{'conservative':>14s}")
     for r in out:
         ci = f"[{r['lambda_star_lo']:.4f},{r['lambda_star_hi']:.4f}]"
         print(f"{r['k']:>5g}{r['mean_spend_nats']:>9.1f}{r['u_decoder']:>9.4f}"
               f"{r['utility_gain']:>+8.4f}{r['lambda_star_nats']:>10.5f}{ci:>18s}"
-              f"{str(r['spend_over_lambda_star']):>15s}")
+              f"{str(r['spend_over_lambda_star']):>10s}"
+              f"{str(r['spend_over_lambda_star_conservative']):>14s}")
     print(f"\nwrote {a.out}/utility_price.csv")
     return 0
 

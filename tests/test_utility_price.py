@@ -62,3 +62,8 @@ def test_committed_result_shows_a_large_overhead():
     assert rows, "no rows with a finite ratio"
     assert all(float(r["spend_over_lambda_star"]) > 1e3 for r in rows), \
         [(r["k"], r["spend_over_lambda_star"]) for r in rows]
+    # and the claim must survive the weakest reading of the bootstrap, not just the point estimate
+    cons = [r for r in rows if r.get("spend_over_lambda_star_conservative")]
+    assert cons, "conservative column missing"
+    assert all(float(r["spend_over_lambda_star_conservative"]) > 1e3 for r in cons), \
+        [(r["k"], r["spend_over_lambda_star_conservative"]) for r in cons]
