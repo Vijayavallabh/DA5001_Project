@@ -88,3 +88,22 @@ def test_eos_criteria_is_skipped_when_the_model_has_no_eos():
     body = src[i:src.index("def ", i + 10)]
     assert "if generation_config.eos_token_id is not None:" in body, \
         "EosTokenCriteria must be guarded against a None eos_token_id"
+
+
+def test_decode_handles_a_model_with_no_eos_token():
+    """_decode built a tensor from list(None). Both downstream uses already guard on None, so the
+    empty list is the consistent representation -- and it needs an explicit dtype."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    src = open(os.path.join(root, "a_patch", "factory.py"), encoding="utf-8").read()
+    i = src.index("eos_token_id_list = []")
+    assert "if eos_token_id is None:" in src[max(0, i - 600):i]
+    j = src.index("eos_token_id_tensor = torch.tensor(")
+    assert "dtype=torch.long" in src[j:j + 160], "empty eos list needs an explicit dtype"
+
+
+def test_empty_eos_tensor_is_constructible():
+    import torch
+    t = torch.tensor([], dtype=torch.long)
+    assert t.numel() == 0
+    nxt = torch.tensor([[5], [7]])
+    assert not (nxt == t).any(dim=-1).any(), "no token matches an empty eos set"

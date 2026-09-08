@@ -747,11 +747,17 @@ class AnchoredDecodingFactory:
         if self.log_kl_stats:
             self.kl_stats_history = []
 
-        if isinstance(eos_token_id, int):
+        if eos_token_id is None:
+            # Pleias 1.2b/3b register no eos token. Both downstream uses (the min-new-tokens mask
+            # and the finished-sequence check) already guard on `eos_token_id is not None`, so an
+            # empty list is the consistent representation; the tensor needs an explicit dtype
+            # because torch cannot infer one from [].
+            eos_token_id_list = []
+        elif isinstance(eos_token_id, int):
             eos_token_id_list = [eos_token_id]
         else:
             eos_token_id_list = list(eos_token_id)
-        eos_token_id_tensor = torch.tensor(eos_token_id_list, device=self.device)
+        eos_token_id_tensor = torch.tensor(eos_token_id_list, device=self.device, dtype=torch.long)
 
         batch_size, prompt_len = input_ids.shape
         this_peer_finished = False
