@@ -1075,3 +1075,37 @@ Also added to `init.sh`: a guard that fails if `progress.md`, `feature_list.json
 `session-handoff.md`, `AGENTS.md` or `init.sh` turns up in the manuscript tree with real content. A
 `cd` into `~/sub/satml` persisting through a command block put `progress.md` there three times
 today; each was recovered by hand, and the check makes vigilance unnecessary.
+
+### feat-050: the held-out pair FALSIFIES the derivation's refinement and CONFIRMS the constant law
+
+Pair 3 (Pleias-350M) was pre-registered at 2.96 nats (`results/onset_prediction_pair3_v2.md`,
+committed d7133e5/5195b2e before the sweep). The sweep crosses the 0.01 threshold between k=3.1
+(0.001) and k=3.2 (0.012), interpolating to **3.18 nats**.
+
+      pair                        s_s    s_r   measured  ratio    q25   P1 med  const
+      TinyComma + mem. Llama-8B  3.24  0.194     2.87    0.886   2.86    3.05   2.88
+      Comma-7B + mem. Comma-7B   2.39  0.179     2.13    0.890   2.13    2.21   2.13
+      Pleias-350M (HELD OUT)     3.55  0.326     3.18    0.895   2.96    3.23   3.16
+
+  held-out error:  q25 rule (P2) 6.9%   |   P1 median rule 1.5%   |   constant 0.888*s_s **0.8%**
+
+**Two conclusions, and the paper must state both.**
+
+1. **The constant law is confirmed and strengthened.** Measured onset/s(x) is 0.886, 0.890, 0.895 --
+   a range of 0.009 across three independent pairs spanning 1.49x in s(x) and 1.8x in s_r. That is
+   now the paper's empirical law and it is better supported than when it rested on two pairs.
+
+2. **The derivation's refinement is falsified.** The q25 calibration does not transfer (6.9% on
+   held-out data against 0.4% and 0.1% on the pairs it was calibrated on -- the signature of
+   overfitting two points). Worse, P1's *directional* claim is wrong: the derivation says the ratio
+   must FALL as s_r rises (0.940, 0.925, 0.908) and the measurement rises slightly (0.886, 0.890,
+   0.895). s_r nearly doubled and the ratio moved by 1% in the opposite direction.
+
+So `r(x) = s_s - s_r` is a correct statement about what the decoder must *afford* and a wrong
+statement about where leakage *begins*. That is consistent with everything else measured today:
+affordability is necessary and far from sufficient (27% of works affordable at onset, 0-1% leaking),
+and r(x) loses to s(x) as a per-work screen (AUC 0.678 vs 0.751).
+
+The onset section must be rewritten from "derived, not fitted" to a measured constant law with a
+falsified refinement reported alongside it. Command:
+  `.venv/bin/python analysis/onset.py --out results --thresh 0.01` (after registering pair 3)
