@@ -1057,3 +1057,21 @@ rule, which requires the logged spend to be exactly the sum of per-step KL charg
 
 So `E[total_spend]` is the `D_KL(q || p_s)` the theorem needs, and the utility-price measurement is
 comparing the right two quantities. Noted in `sections/appendix_proofs.tex`.
+
+### The manuscript had no version control, and the artifact anonymity check earned its keep
+
+`~/sub/satml/iclr_2027.tex` and every section file are **untracked**. The directory sits inside an
+unrelated git repo that must never be committed to, so a day of heavy editing existed only on disk
+with no history and no backup, ten days before a deadline. `manuscript_snapshot/` is now a copy in
+this repo for version history (`scripts/snapshot_manuscript.sh` refreshes it); `~/sub/satml` stays
+authoritative and the snapshot is excluded from the artifact.
+
+Building the artifact then **failed its own anonymity check**, which was the right outcome:
+`scripts/add_pair.sh` (written earlier today) and `scripts/snapshot_manuscript.sh` both hard-coded
+`/mnt/md0/IITM/BackUp/Home/vijayavallabh/...`, a filesystem path that identifies the author. Both now
+take `${SATML_DIR:-../sub/satml}`. Artifact rebuilds clean at 294 files.
+
+Also added to `init.sh`: a guard that fails if `progress.md`, `feature_list.json`,
+`session-handoff.md`, `AGENTS.md` or `init.sh` turns up in the manuscript tree with real content. A
+`cd` into `~/sub/satml` persisting through a command block put `progress.md` there three times
+today; each was recovered by hand, and the check makes vigilance unnecessary.

@@ -48,5 +48,5 @@ $PY analysis/onset_theory.py --out results
 [ -f "$COMP" ] && $PY analysis/onset.py --out results --thresh 0.01
 [ -f "$COMP" ] && $PY analysis/onset_ladder.py --out results
 [ -f "$COMP" ] && $PY figures/make_figures_v4.py \
-  --copy-to /mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/figures
+  --copy-to "${SATML_DIR:-../sub/satml}/figures"
 echo "[add_pair] done"

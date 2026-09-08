@@ -3,7 +3,8 @@
 # ~/sub/satml stays authoritative; this is a backup, not a working copy.
 set -e
 cd "$(dirname "$0")/.."
-S=/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml
+# manuscript dir; override with SATML_DIR. Relative default keeps this file portable.
+S=${SATML_DIR:-../sub/satml}
 mkdir -p manuscript_snapshot/sections
 cp "$S/iclr_2027.tex" "$S/references.bib" manuscript_snapshot/
 for f in $(grep -o 'sections/[a-z_0-9]*' "$S/iclr_2027.tex" | sort -u); do
