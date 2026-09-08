@@ -1109,3 +1109,37 @@ and r(x) loses to s(x) as a per-work screen (AUC 0.678 vs 0.751).
 The onset section must be rewritten from "derived, not fitted" to a measured constant law with a
 falsified refinement reported alongside it. Command:
   `.venv/bin/python analysis/onset.py --out results --thresh 0.01` (after registering pair 3)
+
+### feat-050 concluded: three pairs, one constant, and a refinement rejected on held-out data
+
+Pair 3's sweep finished. The bootstrap over passages (`analysis/onset_ci.py`, 4000 resamples) is
+what makes the comparison meaningful, because near the onset one or two works out of a hundred carry
+the mean:
+
+      pair                        s(x)    s_r   onset   95% CI          onset/s(x)
+      TinyComma + mem. Llama-8B   3.24  0.194    2.87   [2.72, 3.45]      0.887
+      Comma-7B + mem. Comma-7B    2.39  0.179    2.13   [2.00, 2.92]      0.892
+      Pleias-350M (HELD OUT)      3.55  0.326    3.18   [3.12, 3.90]      0.895
+
+**The law.** s(x) spans 1.49x and the onset spans 1.49x; the ratio is 0.887/0.892/0.895, sd 0.003.
+Rescaled, the curves collapse to a mean spread of 0.0048 over k/s(x) in [0.7,1.0], degrading to
+0.0158 above. Three pairs sharing no anchor, tokenizer or risky model.
+
+**The refinement, rejected.** The q25 calibration predicted 2.96 for the held-out pair. Measured
+3.18, CI [3.12, 3.90] -- the prediction falls **below the interval**. A constant 0.888*s(x) predicts
+3.16, inside it. The directional claim also fails: s_r nearly doubles across the three pairs while
+the ratio moves 0.008, and upward rather than down.
+
+  I briefly told the user the falsification was too strong to claim; that correction was itself
+  wrong. The interval is asymmetric ([3.12, 3.90]) because the crossing moves up far more easily
+  than down, and 2.96 sits below its lower bound. 6.9% of bootstrap resamples never cross, so the
+  interval is conditional on a crossing existing -- stated in the paper.
+
+So `r(x) = s_s - s_r` is right about what a decoder must **afford** and wrong about where leakage
+**begins**, consistent with affordability being necessary and far from sufficient (27% affordable at
+onset, 0-1% leaking) and with r(x) losing to s(x) as a per-work screen (AUC 0.678 vs 0.751).
+
+Onset section, abstract, intro and the collapse figure rewritten around the measured law with the
+refinement reported as tried and rejected. Commands:
+  `.venv/bin/python analysis/onset.py --out results --thresh 0.01`
+  `.venv/bin/python analysis/onset_ci.py --comp <composition.csv> --s-x <s> --label <name> --out results`
