@@ -1045,3 +1045,15 @@ Leakage begins between 2.9 and 3.0 but the curve is **not monotone** at this res
 hundred passages carry the whole mean. The 0.01 threshold has not been crossed by k=3.1, so the
 measured onset will exceed **both** predictions (derivation 2.96, constant 3.16). k=3.2, 3.3, 3.6
 and 4.2 remain.
+
+### Theorem 1's chain-rule premise verified in the implementation, not assumed
+
+The proof turns a per-trajectory budget into a bound on the sequence relative entropy via the chain
+rule, which requires the logged spend to be exactly the sum of per-step KL charges. Checked over
+**1,200 trajectories and 240,000 decode steps** at k=3:
+
+    max |sum_t a_t - total_spend|  = 1.5e-04 nats   (floating-point accumulation)
+    max |a_t - a_t_recomputed|     = 0            (charge vs independent recomputation)
+
+So `E[total_spend]` is the `D_KL(q || p_s)` the theorem needs, and the utility-price measurement is
+comparing the right two quantities. Noted in `sections/appendix_proofs.tex`.

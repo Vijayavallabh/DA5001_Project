@@ -61,6 +61,19 @@ $PY h2.py --help >/dev/null && echo "[OK] h2.py --help"
 #    Always export CUDA_DEVICE_ORDER=PCI_BUS_ID with CUDA_VISIBLE_DEVICES, or index 4 lands on the T400.)
 $PY -c "import torch; print(f'[info] local GPU available: {torch.cuda.is_available()}, count: {torch.cuda.device_count()}')" || echo "[info] torch not importable locally"
 
+# 8. Guard: files that belong to THIS repo must not end up in the manuscript tree, which lives
+#    inside an unrelated git repo. A `cd` into ~/sub/satml that persists through a command block has
+#    put progress.md there three times; each was caught by hand. This catches it automatically.
+SAT="/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml"
+for f in progress.md feature_list.json session-handoff.md AGENTS.md init.sh; do
+  if [ -f "$SAT/$f" ] && [ "$(wc -l < "$SAT/$f")" -gt 1 ]; then
+    echo "[FAIL] $SAT/$f looks like this repo's $f written into the manuscript tree." >&2
+    echo "       Recover its content into ./$f, then: git -C $(dirname "$SAT") checkout -- sub/satml/$f" >&2
+    exit 1
+  fi
+done
+echo "[OK] no repo files stranded in the manuscript tree"
+
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
