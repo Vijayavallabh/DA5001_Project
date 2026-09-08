@@ -550,6 +550,30 @@
       "description": "analysis/collapse_robustness.py was still a two-pair analysis: PAIRS hard-coded to phase 4 and disagreement computed as abs(vals[0]-vals[1]). Make it manifest-driven and N-pair correct, and rerun.",
       "evidence_command": ".venv/bin/python analysis/collapse_robustness.py --out results",
       "evidence": "[metric]     nv_recall 0.0070 (0.065 of range)   lcs_word 1.1981 (0.052 of range)\n[threshold]  0.002: 0.0852 (mean ratio 0.803)  0.005: 0.0372 (0.859)  0.01: 0.0076 (0.891)  0.02: 0.0993 (1.006)\n[normaliser] raw 0.0333   s_safe 0.0070   requirement r = s_safe - s_risky 0.0096\nTwo bugs: the hard-coded pair set and a missing k>0 filter in curve(), which read the mandatory k=-1 and k=0 baselines (logged in the phase-5 files but not the phase-4 ones) as budget-curve points and put the mean onset ratio at 0.499. With both fixed the normaliser ablation REVERSES: s(x) 0.0070 now beats the derived r 0.0096, agreeing with the held-out rejection of feat-050. appendix_robustness.tex, onset.tex and appendix_limitations.tex updated; tests/test_onset_theory.py now pins the three-pair verdict."
+    },
+    {
+      "id": "feat-053",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-043",
+        "feat-021"
+      ],
+      "description": "Validate the onset law on a memoriser nobody fine-tuned: Llama-3.1-70B base on Harry Potter, fused against the same TinyComma anchor, compared where its coarse budget grid overlaps the built pairs' fine grids.",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/budget_path.py --safe-model jacquelinehe/tinycomma-1.8b-llama3-tokenizer --split test --novel harry_potter --limit 50 --composition '' --out results --prefix budget_path_hp_test && .venv/bin/python analysis/natural_pair.py --out results",
+      "evidence": "s(x) median 3.1132 nats/token over 50 Harry Potter passages.\nAt k/s(x)=0.964 the natural pair leaks 0.0180 (authors' book settings) and 0.0174 (temperature 1) against 0.010-0.019 for the three built pairs; bootstrap CI [0.000,0.054] on 50 passages, 1 of which carries the mean.\nCoarse-grid onset 0.7495 against the built pairs' own coarse values 0.7018/0.7864/0.8477 (fine: 0.887/0.892/0.895), so the 1.5-nat bracket biases the ratio down by 0.05-0.19 and the onset comparison alone is uninformative. 4 tests in tests/test_natural_pair.py."
+    },
+    {
+      "id": "feat-054",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-043",
+        "feat-045"
+      ],
+      "description": "Test the distribution-free restatement of the law: recall as a function of F(k), the fraction of protected objects whose anchor surprisal rate the budget covers, for passages (single) and 50-token windows (oracle).",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/surprisal_cdf.py --out results",
+      "evidence": "recall against F(k): single mean spread 0.0102, oracle 0.0437 (F in [0.05,0.7], 9 points).\nFraction covered at the measured onset: 0.07 / 0.09 / 0.05 (single, sd 0.0163) and 0.000 / 0.009 / 0.006 (oracle).\nBoth predictions fail: the fraction covered has a 23% relative spread against 0.34% for the ratio to the median, so the unit is the typical work's surprisal and not the covered tail; and at the oracle onset essentially no whole window is covered, so window leakage starts before the budget can pay for a window outright. 4 tests in tests/test_surprisal_cdf.py."
     }
   ]
 }
