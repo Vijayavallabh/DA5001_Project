@@ -854,3 +854,19 @@ per-work ranking is blind to it. So r wins the population comparison (normaliser
   Command: `.venv/bin/python analysis/per_work_screen.py --out results`
   `tests/test_per_work_screen.py` (6 tests) pins the AUC, including tie handling, against a
   brute-force reference -- a wrong AUC would have manufactured this finding.
+
+### Plan v5 item D prep: a genuinely independent second judge
+
+`microsoft/Phi-3.5-mini-instruct` (3.8B, ungated, 7.2 GB) downloaded into `hf_cache/` and verified
+offline. It is the right second judge because it is independent of **both** existing models:
+Qwen2.5-7B-Instruct is judge 1, and every Llama-3.2 instruct model in the cache shares a family with
+the risky model (Llama-3.1-8B-Instruct), so a Llama judge would be scoring its own relatives. Its
+`apply_chat_template` renders the judging prompt correctly, so `--judge
+microsoft/Phi-3.5-mini-instruct` needs no code change. `analysis/utility.py` now writes a `judge`
+column into both CSVs so two judges' runs are distinguishable in the data rather than by directory.
+
+**Generation for the finer judged grid is running** (`output/phase5/util_fine`): k in {1.5, 2.0,
+2.5}, 200/150/150 prompts x 3 trajectories = 1,500 ordinary trajectories per budget, matching the
+`output/phase2/conc_all` workload the existing judged arms came from. This is the grid that pins the
+utility crossover, which currently jumps k=1 (-0.45 sigma) to k=3 (-2.35 sigma) straight across
+s(x) = 3.24 -- the paper's headline rests on where in that interval the crossing actually falls.

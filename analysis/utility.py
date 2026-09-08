@@ -255,6 +255,9 @@ def main():
             loss_pct=(round(100 * t["loss"] / nj, 1) if nj else ""),
             judge_picked_first_pct=(round(100 * t["picked_first"] / decided, 1) if decided else ""),
             retention_pct=(round(100 * (1 - t["loss"] / nj), 1) if nj else ""),
+            # plan v5: name the judge in the CSV so two judges' runs can be compared directly
+            # rather than by remembering which output directory was which.
+            judge=("none" if args.no_judge else args.judge),
         ))
     os.makedirs(args.out, exist_ok=True)
     with open(os.path.join(args.out, "utility.csv"), "w", newline="") as f:
@@ -273,7 +276,8 @@ def main():
                             n_judged=nj,
                             win_pct=(round(wins, 1) if nj else ""), loss_pct=(round(loss, 1) if nj else ""),
                             judge_picked_first_pct=(round(first, 1) if nj else ""),
-                            retention_pct=(round(100 - loss, 1) if nj else "")))
+                            retention_pct=(round(100 - loss, 1) if nj else ""),
+                            judge=("none" if args.no_judge else args.judge)))
     with open(os.path.join(args.out, "utility_summary.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(summary[0])); w.writeheader(); w.writerows(summary)
 
