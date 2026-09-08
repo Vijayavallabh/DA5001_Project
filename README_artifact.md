@@ -127,3 +127,51 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 \
 .venv/bin/python analysis/compute_hours.py --out results
 .venv/bin/python figures/make_figures.py --copy-to ""
 ```
+
+### Phase 4 (2026-09-07) — the frontier theorem's three rates
+
+```bash
+# the three regime boundaries from the safe model alone, in nats per CHARACTER so the
+# comparison is tokenizer-invariant across ten safe models with three vocabularies
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/regimes.py --out results
+# the anchor-scaling law: 10 safe models x 3 corpora (one A100, ~40 min)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/anchor_scaling.py --out results
+# the same trend under two further risky models, separating the base-vs-instruct confound
+.venv/bin/python analysis/anchor_scaling.py --ordinary-jsonl <gen.jsonl> --risky <id> --tag _qwen
+# where the uncertified interval comes from. --denominator token repeats it per token, which is
+# what shows the opening effect is real but SMALLER than the per-character figures suggest
+for M in jacquelinehe/tinycomma-1.8b-llama3-tokenizer PleIAs/Pleias-3b-Preview \
+         alea-institute/kl3m-003-3.7b common-pile/comma-v0.1-2t; do
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/opening_effect.py --model "$M" --denominator token --tag _token --out results
+done
+# the Renyi-alpha family at one budget: attack recall and price for alpha in {1,2,4,8}
+.venv/bin/python analysis/renyi_sweep.py --out results --price-runs 'output/phase4/util_*' --price-class all
+```
+
+### Phase 5 (2026-09-08) — the onset, derived rather than fitted
+
+```bash
+# r(x) = s_s(x) - s_r(x) per work, and the onset it predicts. The pair set is DATA:
+# results/onset_theory_pairs.tsv, whose 4th column (the measured onset) is optional, so a pair
+# with no sweep yet yields a prediction only.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/onset_theory.py --out results
+# measured onsets and the collapse, over every pair in results/onset_pairs.tsv
+.venv/bin/python analysis/onset.py --out results --thresh 0.01
+# score the derivation against a constant coefficient; for rungs sharing an anchor it reports the
+# sign of the measured trend against the sign each hypothesis requires
+.venv/bin/python analysis/onset_ladder.py --out results
+# does r(x) screen an INDIVIDUAL work? (no GPU) -- it does not, and s(x) alone does it better
+.venv/bin/python analysis/per_work_screen.py --out results
+# the three named critiques of the collapse: metric, threshold and normaliser (no GPU)
+.venv/bin/python analysis/collapse_robustness.py --out results
+# building a self-paired memoriser. --target-modules all-linear is required for GPT-NeoX models;
+# the check reports SAMPLED as well as greedy recall, and a pair enters the onset analysis only if
+# its sampled k=-1 recall is >= 0.10
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python recipes/finetune_memorizing.py --base <model> --tokenizer <model> --no-chat \
+    --target-modules all-linear --epochs 40 --rank 128 --lr 3e-4 --out output/phase5/mem_<tag> --check 16
+```
