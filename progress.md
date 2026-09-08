@@ -1236,3 +1236,49 @@ main text now says. It now reports three pairs, the tokenizer-free $1.33\times$,
 intervals, that four, three and two of one hundred passages leak at the respective crossing budgets
 (counted from the per-passage `composition.csv` files), and that the 350M memoriser was admitted
 only after retraining. 0 overfull, 0 `??`.
+
+### feat-053: the law is not an artifact of our fine-tuning (2026-09-08, ~0.3 GPU-h)
+
+Every pair in Section 4 is self-paired against a LoRA memoriser we built, so the first objection is
+that the law describes the recipe. Phase 2 already measured the one pair where memorisation happened
+in pretraining: Llama-3.1-70B base on 50 *Harry Potter* passages, fused against the same TinyComma
+anchor (`output/phase2/nm/hp1_{A,B}/composition.csv`). It passes the same admissibility rule --
+unconstrained single-query recall 0.314 at He et al.'s book settings, 0.558 at temperature 1.
+
+Anchor surprisal on exactly those passages (needed a run; the earlier budget-path files are the
+attack_train split):
+
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/budget_path.py --safe-model jacquelinehe/tinycomma-1.8b-llama3-tokenizer \
+        --split test --novel harry_potter --limit 50 --composition '' --out results \
+        --prefix budget_path_hp_test
+    -> s(x) median 3.1132 nats/token over 50 passages (min 2.542, max 3.566)
+
+    .venv/bin/python analysis/natural_pair.py --out results
+
+    setting                      k  k/s(x)   natural          95% CI   built pairs  n
+    authors' book settings     1.5   0.482    0.0000   [0.000,0.000]   0.000-0.000  1
+    authors' book settings       3   0.964    0.0180   [0.000,0.054]   0.010-0.019  3
+    authors' book settings       5   1.606    0.0687   [0.015,0.134]   0.098-0.098  1
+    temperature 1                3   0.964    0.0174   [0.000,0.052]   0.010-0.019  3
+    temperature 1                5   1.606    0.0353   [0.006,0.069]   0.098-0.098  1
+
+    onset, and the same coarse grid applied to the pairs we can check:
+      natural pair, bracket (1.5, 3]: onset/s(x) = 0.7495
+      TinyComma + mem. Llama-3.1-8B   fine 0.887   coarse 0.7018   shift -0.1853
+      Comma-7B + mem. Comma-7B        fine 0.8916  coarse 0.7864   shift -0.1051
+      Pleias-350M + mem. Pleias-350M  fine 0.8946  coarse 0.8477   shift -0.0469
+
+The informative comparison is the first block, because it interpolates the *built* pairs onto the
+natural pair's grid and never the natural pair. At the one rescaled budget where all four grids
+overlap, $k/s(x) = 0.964$, the natural pair leaks 0.0180 against 0.010-0.019 for the three built
+pairs, at both decoding settings. The second block is why the onset comparison alone would prove
+nothing: a bracket 1.5 nats wide biases the estimate down by 0.05-0.19 in ratio units on the pairs
+where we can measure the bias, and the natural pair's coarse 0.7495 sits inside the built pairs'
+own coarse range of 0.702-0.848.
+
+Honest limits: 1 of 50 passages carries the mean at that budget, so the bootstrap interval is
+[0.000, 0.054]; at $k/s(x) = 1.606$ only one built pair reaches that far and the natural pair is
+lower (0.069 and 0.035 against 0.098). This is a consistency check on a natural memoriser, not a
+precision test of the constant. A fine 70B grid would be the real test and needs both large GPUs
+free, which they are not.
