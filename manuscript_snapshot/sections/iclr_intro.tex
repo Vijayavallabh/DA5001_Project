@@ -43,10 +43,15 @@ the same factor as the threshold it tracks. The decoding geometry suggests why t
 might not be constant: at full tilt the charge along a target reduces to $r(x) = s_s(x) - s_r(x)$
 (Eq.~\eqref{eq:req}), which predicts the ratio should move with how thoroughly the risky model
 memorised the work. We pre-registered that prediction on a held-out pair and the measurement
-rejects it. Proportionality to $s(x)$ is what the evidence supports; the refinement is not.
+rejects it. Proportionality to $s(x)$ is what the evidence supports; the refinement is not. A
+further pair whose memorisation came from pretraining rather than from our fine-tuning ---
+Llama-3.1-70B base, which reproduces \emph{Harry Potter} from its opening words --- leaks at the
+same rate where its coarser budget grid overlaps the others, so the law is not a property of the
+recipe that built the memorisers.
 
 Read together these say something a deployer can act on. The three rates that matter --- the
-surprisal rate $s(x)$, the requirement $r(x)$ that governs leakage, and the rate
+surprisal rate $s(x)$, the requirement $r(x)$ a decoder must afford before it can pay for the
+work at all, and the rate
 $c_{\mathrm{use}}$ at which ordinary traffic diverges --- are properties of the models and the
 content, computable before any mechanism is built. Measured across ten safe models and three
 independently curated, openly licensed corpora, the separation between the rate that must be permitted and

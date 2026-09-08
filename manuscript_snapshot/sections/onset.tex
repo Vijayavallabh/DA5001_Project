@@ -54,17 +54,14 @@ estimates is finer than any one of them deserves. What the three pairs jointly s
 proportionality, not the third decimal.
 
 \paragraph{A pair nobody fine-tuned}
-All three pairs above are built: the risky model is a memoriser we trained, so the law could be a
-property of the recipe. The one pair whose memorisation happened in pretraining is Llama-3.1-70B
-base, which reproduces \emph{Harry Potter and the Sorcerer's Stone} from its opening
-words~\citep{cooper2025extracting}, fused against the same TinyComma anchor at the mechanism
-authors' book decoding settings; it clears the same admissibility rule at $0.314$ unconstrained
-recall. Its budget grid is far coarser, so we compare where the grids overlap instead of
-interpolating it: at $k/s(x) = 0.964$ it leaks $0.0180$, against $0.010$ to $0.019$ for the three
-built pairs, and $0.0174$ at temperature $1$. One passage of fifty carries that mean, so its
-bootstrap interval is $[0.000, 0.054]$ and this is a consistency check rather than a fourth
-measurement of the constant. What it rules out is the reading on which the law describes our
-fine-tuning (Appendix~\ref{app:collapse}).
+All three pairs above are built, so the law could be a property of the recipe. The one pair whose
+memorisation happened in pretraining is Llama-3.1-70B base on \emph{Harry
+Potter}~\citep{cooper2025extracting}, fused against the same TinyComma anchor at the mechanism
+authors' book settings and clearing the same admissibility rule at $0.314$ unconstrained recall.
+Its budget grid is far coarser, so we compare where the grids overlap rather than interpolating it:
+at $k/s(x) = 0.964$ it leaks $0.0180$, against $0.010$ to $0.019$ for the three built pairs, and
+$0.0174$ at temperature $1$. One passage of fifty carries that mean, so this is a consistency check
+and not a fourth measurement of the constant (Appendix~\ref{app:collapse}).
 
 \paragraph{A refinement we derived, pre-registered, and had to reject}
 The constant invites an explanation, and the geometry supplies a candidate. On the geometric path

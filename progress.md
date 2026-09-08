@@ -1318,3 +1318,9 @@ curves do not collapse under either normaliser.
 
 This is worth one paragraph in the appendix because it forecloses the suggestion with a
 measurement rather than an argument. 4 tests in `tests/test_surprisal_cdf.py`.
+
+Intro fix in the same pass: it listed "the requirement $r(x)$ that governs leakage" as one of the
+three actionable rates, two paragraphs after saying the measurement rejects exactly that reading.
+It now says what feat-050 established -- $r(x)$ is what a decoder must afford before it can pay for
+the work at all. The intro also now names the natural 70B pair, and the Section 4 paragraph was
+trimmed to pay for it (the addition pushed the main text to 10 pages; back to 9).
