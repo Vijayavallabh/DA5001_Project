@@ -913,3 +913,14 @@ moves, and the hypotheses then differ in the SIGN of the trend rather than in a 
 `tests/test_onset_ladder.py` (3 tests) pins the cross-file label matching -- the two CSVs spell
 pairs "memorised" and "mem.", and a silent mismatch would drop pairs and flatter whichever
 hypothesis kept fewer points.
+
+### Anonymity scan of the ICLR PDF (double blind)
+
+`pdftotext` over all 17 pages plus `pdfinfo` metadata. Clean: no author names beyond the sanctioned
+citation, no email addresses, no institution, no repository URLs, no acknowledgements section, and
+**no Author field in the PDF metadata** (Creator "LaTeX with hyperref", Producer "xdvipdfmx").
+
+The earlier audit is cited four times and every one is third person -- "an earlier audit", "the
+earlier audit" -- never "our earlier audit", which is the exception AGENTS.md sanctions. One wording
+fix: the Ethics Statement said "we release the fine-tuning recipes...", which could read as an
+existing public release; it now refers to the accompanying anonymised repository.
