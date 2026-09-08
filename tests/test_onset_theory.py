@@ -48,7 +48,11 @@ def test_committed_prediction_matches_measurement():
         return
     rows = list(csv.DictReader(open(path)))
     assert len(rows) >= 2, rows
-    for r in rows:
+    # plan v5: rows with no measured onset are pre-registered predictions for pairs not yet swept.
+    # They must be skipped here, but the invariant still has to hold for every MEASURED pair.
+    measured = [r for r in rows if r["pred_over_meas_q25"]]
+    assert len(measured) >= 2, f"expected >= 2 measured pairs, got {len(measured)} of {len(rows)}"
+    for r in measured:
         assert abs(float(r["pred_over_meas_q25"]) - 1.0) < 0.01, r
         # the median prediction should overshoot: the cheapest works leak first
         assert float(r["pred_over_meas_median"]) > float(r["pred_over_meas_q25"])
