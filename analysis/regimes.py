@@ -48,11 +48,16 @@ def char_offsets(tok, text, n_tok):
 
 
 @torch.no_grad()
-def token_nats(model, tok, prefix, target, device):
+def token_nats(model, tok, prefix, target, device, temperature=1.0):
     """Per-token surprisal of `target` given `prefix`, plus the cumulative character count.
 
     The target is tokenized on its own (add_special_tokens=False) so that the character offsets
     line up with the target string, which is what makes the rate comparable across tokenizers.
+
+    `temperature` warps the logits before the softmax, matching what the decoder does to BOTH
+    logit vectors before its solve (He et al., App. B). Lowering it sharpens the model, which
+    raises its surprisal of text it does not know: that is the lever used to move s(x) across a
+    range while holding the model pair, and so its memorisation, fixed. Default 1.0 is a no-op.
     """
     p_ids = tok(prefix).input_ids if prefix else [tok.bos_token_id or tok.eos_token_id]
     t_ids = tok(target, add_special_tokens=False).input_ids
@@ -60,6 +65,8 @@ def token_nats(model, tok, prefix, target, device):
         return [], []
     ids = torch.tensor([p_ids + t_ids], device=device)
     logits = model(ids).logits[0, :-1].float()          # row j predicts ids[j+1]
+    if temperature != 1.0:
+        logits = logits / temperature
     logp = torch.log_softmax(logits[len(p_ids) - 1:], dim=-1)
     nats = -logp.gather(1, ids[0, len(p_ids):].unsqueeze(1)).squeeze(1)
     return nats.tolist(), char_offsets(tok, target, len(t_ids))

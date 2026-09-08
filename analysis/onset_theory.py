@@ -100,6 +100,10 @@ def main():
     ap.add_argument("--data", default="data")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--pairs-file", default=MANIFEST)
+    ap.add_argument("--temperature", type=float, default=1.0,
+                    help="plan v5: warp both models before measuring surprisal, as the decoder "
+                         "does before its solve. Moves s(x) with the pair held fixed.")
+    ap.add_argument("--tag", default="", help="suffix for the output filenames, e.g. _t0.7")
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -116,7 +120,7 @@ def main():
         model = AutoModelForCausalLM.from_pretrained(risky, dtype=getattr(torch, a.dtype)).to(dev).eval()
         req = []
         for pid, (pre, tgt) in sorted(W.items()):
-            nats, _ = token_nats(model, tok, pre, tgt, dev)
+            nats, _ = token_nats(model, tok, pre, tgt, dev, temperature=a.temperature)
             if not nats:
                 continue
             sr = sum(nats) / len(nats)
@@ -130,7 +134,7 @@ def main():
         med_ss = st.median(w["s_safe"] for w in per_work if w["pair"] == label)
         med_sr = st.median(w["s_risky"] for w in per_work if w["pair"] == label)
         summary.append({
-            "pair": label, "n": len(req), "s_safe_median": med_ss, "s_risky_median": med_sr,
+            "pair": label, "temperature": a.temperature, "n": len(req), "s_safe_median": med_ss, "s_risky_median": med_sr,
             "sr_over_ss_median": med_sr / med_ss,
             "pred_onset_median": med_ss - med_sr,
             "pred_ratio_median": 1 - med_sr / med_ss,
@@ -147,11 +151,11 @@ def main():
         print("[onset-theory] no pairs produced results", file=sys.stderr)
         return 1
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "onset_theory.csv"), "w", newline="") as f:
+    with open(os.path.join(a.out, f"onset_theory{a.tag}.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(summary[0].keys()))
         w.writeheader()
         w.writerows(summary)
-    with open(os.path.join(a.out, "onset_theory_per_work.csv"), "w", newline="") as f:
+    with open(os.path.join(a.out, f"onset_theory{a.tag}_per_work.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(per_work[0].keys()))
         w.writeheader()
         w.writerows(per_work)
@@ -167,7 +171,7 @@ def main():
             print(f"{r['pair']:38s}{'PREDICTION ONLY':>20s}{'':>18s}")
         else:
             print(f"{r['pair']:38s}{r['pred_over_meas_median']:20.3f}{r['pred_over_meas_q25']:18.3f}")
-    print(f"\nwrote {a.out}/onset_theory.csv and _per_work.csv ({len(per_work)} works)")
+    print(f"\nwrote {a.out}/onset_theory{a.tag}.csv and _per_work.csv ({len(per_work)} works)")
     return 0
 
 
