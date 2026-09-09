@@ -179,6 +179,32 @@ def main():
           + (f", where the certificate is vacuous for {vac(x):.1f}% of protected works"
              if x is not None and vac else ""))
     print(f"  grid: " + ", ".join(f"k={k:g}:{zk:+.2f}" for k, zk in sorted(pts)))
+
+    # The crossing is quoted in the paper, so it goes to a CSV like every other number. One row
+    # per judge, appended across runs and de-duplicated on (judge, arm, sigma) so the two judges
+    # accumulate in one file whichever order they finish in.
+    cross_path = os.path.join(a.out, "crossover.csv")
+    fields = ["judge", "arm", "crossing_sigma", "crossing_k", "vacuous_pct_at_crossing",
+              "bracket_lo", "bracket_hi", "t_max", "summary"]
+    row = {"judge": rows[0]["judge"] if rows and rows[0].get("judge") else "",
+           "arm": a.crossing_arm, "crossing_sigma": a.crossing_sigma,
+           "crossing_k": round(x, 4) if x is not None else "",
+           "vacuous_pct_at_crossing": round(vac(x), 4) if (x is not None and vac) else "",
+           "bracket_lo": "", "bracket_hi": "", "t_max": a.t_max, "summary": a.summary}
+    sp = sorted(pts)
+    for (k0, z0), (k1, z1) in zip(sp, sp[1:]):
+        if x is not None and k0 <= x <= k1:
+            row["bracket_lo"], row["bracket_hi"] = k0, k1
+            break
+    old_rows = []
+    if os.path.exists(cross_path):
+        old_rows = [r for r in csv.DictReader(open(cross_path))
+                    if (r.get("judge"), r.get("arm"), r.get("crossing_sigma")) !=
+                       (row["judge"], row["arm"], str(row["crossing_sigma"]))]
+    with open(cross_path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+        w.writeheader(); w.writerows(old_rows); w.writerow(row)
+    print(f"wrote {cross_path}")
     print(f"\nwrote {path}")
 
 
