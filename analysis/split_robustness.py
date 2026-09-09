@@ -39,9 +39,18 @@ GROUP_SPLIT_CHARS_PER_TOKEN = 3.0
 
 
 def crossing(curve, thresh):
+    """First budget at which the curve reaches `thresh`, interpolated inside its bracket.
+
+    None when the curve never reaches the threshold, and also when the SMALLEST budget probed is
+    already at or above it: there is no bracket then, and interpolating from one anyway
+    extrapolates backwards and returns a budget below the grid. analysis/onset.py has always
+    treated that case as "at/below grid" rather than a measurement; this now matches it.
+    """
     prev = None
     for k in sorted(curve):
-        if curve[k] >= thresh and prev is not None:
+        if curve[k] >= thresh:
+            if prev is None:
+                return None
             lo, hi = curve[prev], curve[k]
             return prev + (k - prev) * (thresh - lo) / (hi - lo) if hi > lo else k
         prev = k

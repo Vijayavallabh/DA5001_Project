@@ -1654,14 +1654,25 @@ split_robustness.py` (+ 5 tests) sweeps three differently-normalised metrics ove
     lcs_word           5     0.885-1.023     1.060-1.175   +0.037  split
     lcs_word           6     0.899-1.056     1.090-1.286   +0.034  split
     lcs_word           8     0.926-1.124     1.159-1.362   +0.035  split
-    any_span        0.02     0.810-0.919     1.049-1.085   +0.130  split
     any_span        0.03     0.857-1.125     1.077-1.176   -0.049  overlap
-    9/10 usable cells split (nv_recall 4/4, lcs_word 4/4, any_span 1/2)
+    8/9 usable cells split (nv_recall 4/4, lcs_word 4/4, any_span 0/1)
 
-The split holds under a denominator of reference words, under no denominator at all, and under a
-denominator of passages at one of its two workable thresholds. **A first pass of mine reported "the
-split does not survive" from the single overlapping cell**, which was a threshold artifact of the
-noisiest metric; the sweep is the answer and the overlap is reported rather than dropped.
+The split holds under a denominator of reference words and under no denominator at all. Under a
+denominator of passages it does not: that metric has exactly one threshold at which all six pairs
+cross, and there the two groups overlap by 0.049. So the honest statement is that the split
+survives the normalisation that could most easily have manufactured it -- `lcs_word` has no
+denominator to inflate -- and that the passage-fraction metric is too coarse at 100 passages to
+resolve the question either way.
+
+**Two corrections to my own working, both caught by checks rather than by reading.** A first pass
+reported "the split does not survive" from a single overlapping cell, which was a threshold
+artifact. Then `tests/test_split_robustness.py` caught a real bug in the new `crossing()`: when a
+pair's smallest probed budget is already at or above the threshold there is no bracket, and
+interpolating from one anyway extrapolates backwards to a budget below the grid. It fired on
+exactly one cell -- Pleias-1.2B's `any_span` is exactly 0.0200 at its smallest budget -- and that
+cell was in the first version of this table, reported as a split. `analysis/onset.py` and
+`analysis/onset_ci.py` have always handled the case; the new script now matches them. The tally
+above is the corrected one: 8/9, not the 9/10 first committed.
 
 **The truncation run** (`results/onset_prediction_trunc276.md`, committed at `449766b` before it
 started): KL3M-520M on the first 276 target tokens, tokenizer unchanged, decode steps matched to
