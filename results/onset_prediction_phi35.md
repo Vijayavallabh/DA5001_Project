@@ -63,3 +63,22 @@ Scored on `lcs_word >= 4`, the absolute word count the band values were computed
         --safe-model microsoft/Phi-3.5-mini-instruct --risky-model output/phase5/mem_phi35mini \
         --k-values -1 0 1.8 2.1 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.2 3.5 4.0 --modes single \
         --limit 100 --out output/phase5/fine_phi35
+
+---
+
+## Addendum, 2026-09-09 (after the pre-registration above, before any result)
+
+The first launch died before producing a single budget point. Both Phi-3.5 configs carry an
+`auto_map` naming `configuration_phi3.Phi3Config` and `modeling_phi3.Phi3ForCausalLM`, remote module
+files that are not in the cache, and `analysis/composition_attack.py` passes
+`trust_remote_code=True` to the factory, so transformers tried to fetch them and failed offline.
+`model_type` is `phi3`, which transformers supports natively, so the fix is to drop `auto_map` and
+let the built-in implementation load.
+
+The anchor is therefore `output/phase5/anchor_phi35mini` — the cached snapshot with its weights
+symlinked and `auto_map` removed from `config.json` — rather than the hub id. Verified identical:
+both loads produce `Phi3ForCausalLM` and bit-identical logits on a fixed input (max absolute
+difference 0.00e+00). `s_s = 2.8374` above was measured before this change, through the native path,
+and is unaffected.
+
+**No prediction, band or grid in this file is changed by the addendum.**
