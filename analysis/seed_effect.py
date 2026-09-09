@@ -124,10 +124,16 @@ def main():
         if not os.path.exists(comp):
             print(f"[seed] missing {comp}, skipping {label}", file=sys.stderr)
             continue
-        s_x = st.median(float(r["s_mean"]) for r in csv.DictReader(open(bp)))
+        bp_rows = list(csv.DictReader(open(bp)))
+        s_x = st.median(float(r["s_mean"]) for r in bp_rows)
+        # k_crit is Proposition 2's running maximum on this pair's targets under THIS seed. It
+        # needs the anchor only -- no memoriser, no attack, no decoding -- so it is a prediction
+        # available before the sweep, not a fit to it.
+        k_crit = st.median(float(r["k_crit"]) for r in bp_rows)
         chars, words = seed_words(tokenizer, seed_tokens)
         row = dict(pair=pair, label=label, seed_tokens=seed_tokens,
-                   seed_chars=round(chars, 1), seed_words=round(words, 1), s_x=round(s_x, 4))
+                   seed_chars=round(chars, 1), seed_words=round(words, 1), s_x=round(s_x, 4),
+                   k_crit=round(k_crit, 4), k_crit_over_s=round(k_crit / s_x, 4))
         for metric, col, thresh, primary in (("lcs_word", "lcs_word", a.lcs_thresh, True),
                                              ("nv_recall", "nv_recall", a.nv_thresh, False)):
             o, lo, hi, nocross, _ = point_and_ci(per_passage(comp, col), thresh, s_x)
@@ -141,17 +147,33 @@ def main():
     if not rows:
         raise SystemExit("[seed] nothing to score")
 
+    # The token-bucket account (K), pre-registered in results/onset_prediction_seed.md: within a
+    # pair the onset is a fixed fraction of k_crit, so the seed moves the onset exactly as much as
+    # it moves k_crit. The fraction is calibrated on the pair's own control arm and on nothing
+    # else, which makes every other arm of that pair an out-of-sample prediction.
+    for pair in {r["pair"] for r in rows}:
+        g = [r for r in rows if r["pair"] == pair]
+        ctl = next((r for r in g if "control" in r["label"] and r["onset"] != ""), None)
+        c = float(ctl["onset"]) / ctl["k_crit"] if ctl else None
+        for r in g:
+            r["onset_over_k_crit"] = round(float(r["onset"]) / r["k_crit"], 4) if r["onset"] != "" else ""
+            r["pred_ratio_K"] = round(c * r["k_crit"] / r["s_x"], 4) if c else ""
+            r["pred_hit"] = ("" if not c or r["ratio_lo"] == "" or r is ctl else
+                             float(r["ratio_lo"]) <= c * r["k_crit"] / r["s_x"] <= float(r["ratio_hi"]))
+
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, "seed_effect.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
     print(f"{'pair':22s}{'seed tok':>9s}{'words':>7s}{'s(x)':>7s}{'onset':>8s}{'ratio':>8s}"
-          f"{'95% CI':>16s}{'nocross':>9s}")
+          f"{'95% CI':>16s}{'nocross':>9s}{'k_crit':>9s}{'(K) pred':>9s}")
     for r in sorted(rows, key=lambda r: (r["pair"], r["seed_words"])):
         ci = f"[{r['ratio_lo']:.2f},{r['ratio_hi']:.2f}]" if r["ratio_lo"] != "" else ""
         print(f"{r['pair'][:21]:22s}{r['seed_tokens']:>9d}{r['seed_words']:>7.1f}{r['s_x']:>7.3f}"
-              f"{r['onset']:>8.3f}{r['ratio']:>8.3f}{ci:>16s}{r['no_crossing_pct']:>8.1f}%")
+              f"{r['onset']:>8.3f}{r['ratio']:>8.3f}{ci:>16s}{r['no_crossing_pct']:>8.1f}%"
+              f"{r['k_crit']:>9.3f}{r['pred_ratio_K'] if r['pred_ratio_K'] != '' else '-':>9}"
+              f"{'  in CI' if r['pred_hit'] is True else '  MISS' if r['pred_hit'] is False else ''}")
 
     for pair in sorted({r["pair"] for r in rows}):
         g = sorted((r for r in rows if r["pair"] == pair), key=lambda r: r["seed_words"])

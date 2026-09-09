@@ -45,3 +45,21 @@ def test_permutation_p_is_exact_and_symmetric():
     from analysis.seed_effect import permutation_p
     rho, p = permutation_p([1, 2, 3], [1, 2, 3])
     assert abs(rho - 1.0) < 1e-12 and abs(p - 2 / 6) < 1e-12   # 2 of 3! permutations reach |rho|=1
+
+
+def test_prediction_is_calibrated_on_the_control_and_scales_with_k_crit():
+    """(K) must take its one constant from the pair's control arm, so the control reproduces its
+    own measured ratio exactly and every other arm is an out-of-sample number. A calibration that
+    silently used the mean of the arms would make all of them look like hits."""
+    rows = [dict(pair="P", label="P seed 20 (control)", onset=2.0, k_crit=4.0, s_x=2.0,
+                 ratio=1.0, ratio_lo=0.9, ratio_hi=1.1),
+            dict(pair="P", label="P seed 40", onset=1.5, k_crit=3.0, s_x=2.0,
+                 ratio=0.75, ratio_lo=0.6, ratio_hi=0.9)]
+    for pair in {r["pair"] for r in rows}:
+        g = [r for r in rows if r["pair"] == pair]
+        ctl = next(r for r in g if "control" in r["label"])
+        c = ctl["onset"] / ctl["k_crit"]
+        for r in g:
+            r["pred"] = c * r["k_crit"] / r["s_x"]
+    assert rows[0]["pred"] == 1.0                      # control reproduces itself
+    assert abs(rows[1]["pred"] - 0.75) < 1e-12         # 0.5 * 3.0 / 2.0

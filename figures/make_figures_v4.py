@@ -196,8 +196,15 @@ def seed_effect():
         y = [float(r["ratio"]) for r in g]
         lo = [float(r["ratio"]) - float(r["ratio_lo"]) for r in g]
         hi = [float(r["ratio_hi"]) - float(r["ratio"]) for r in g]
-        ax.errorbar(x, y, yerr=[lo, hi], marker=markers[i % len(markers)], ms=5, lw=1.4,
-                    capsize=2.5, zorder=3, label=f"{pair}, seed varied")
+        line = ax.errorbar(x, y, yerr=[lo, hi], marker=markers[i % len(markers)], ms=5, lw=1.4,
+                           capsize=2.5, zorder=3, label=f"{pair}, seed varied")
+        # Proposition 2's k_crit, rescaled by the pair's control arm and nothing else, so every
+        # point but the control is an out-of-sample prediction made from the anchor alone.
+        pred = [(xi, float(r["pred_ratio_K"])) for xi, r in zip(x, g) if r.get("pred_ratio_K")]
+        if len(pred) >= 2:
+            ax.plot(*zip(*pred), ls="--", lw=1.0, marker="x", ms=5, zorder=2,
+                    color=line.lines[0].get_color(), alpha=0.75,
+                    label=r"$k_{\mathrm{crit}}$ prediction" if i == 0 else None)
 
     ax.axhline(1.0, color="0.3", ls=":", lw=1.0)
     ax.text(ax.get_xlim()[1], 1.005, "certificate vacuous above", ha="right", va="bottom", fontsize=7,
