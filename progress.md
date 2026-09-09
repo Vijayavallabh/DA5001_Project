@@ -1906,3 +1906,33 @@ supports, not at Arm B's.
 This generalises past this mechanism: any extraction evaluation that seeds "the first N tokens" of a
 passage measures something tokenizer-dependent, and two such evaluations are not comparable across
 tokenizers unless the prefix is matched in characters or words.
+
+### The seed finding is a confound in the field's definition, not just in our harness (2026-09-10)
+
+Verified against the primary source (arXiv 2202.07646, `carlini2023quantifying`, already in
+`references.bib`; PDF fetched and grepped, quotes checked verbatim):
+
+- **The definition is parameterised in tokens.** "Definition 3.1. A string s is extractable with
+  **k tokens of context** from a model f if there exists a (length-k) string p, such that the
+  concatenation [p || s] is contained in the training data for f, and f produces s when prompted
+  with p using greedy decoding."
+- **The protocol is too.** "the first l - 50 tokens and report the sequence as 'extractable' if the
+  model exactly emits the next 50 token suffix of this sequence. **Fifty tokens corresponds to an
+  average of 127 characters or 25 words in the GPT-Neo training set**, well over the length of a
+  typical English sentence." -- the conversion is stated for one tokenizer and one corpus.
+- **The dependence on context length is a headline result of that paper.** "the fraction of
+  extractable sequences increases log-linearly with the number of tokens of context. For example,
+  **33% of training sequences ... are extractable from the 6B model at 50 tokens of context,
+  compared to 65% with 450 tokens** of context. We call this the discoverability phenomenon."
+- Definition 3.1's own worked example slides between the two units in consecutive sentences: "given
+  the length k = 4 prefix" and then "this sequence is extractable (**with 4 words of context**)".
+  In English under a four-character tokenizer the two are close. Across tokenizers they are not.
+
+So the quantity is defined in tokens, its dependence on context length is established, and the
+conversion to words is tokenizer-specific. Two extractability measurements taken under different
+tokenizers with the same token budget are therefore not comparable, and nothing in the literature
+we have read draws that consequence. Arm B measures how much it matters under a metered decoder:
+enough to move a pair from 0.866 to 1.004 of its vacuity threshold, across the boundary.
+
+This is the framing for Section 4 once Arm A and the dose-response arms land: not "an artifact of
+our attack script" but "a confound inherited from the standard definition, quantified".
