@@ -188,6 +188,8 @@ def seed_effect():
                    label="seven pairs (seed fixed at 20 tokens)")
 
     markers = ["o", "s", "^", "D"]
+    labelled = False   # the first pair in sort order may have a single arm and be skipped below,
+                       # so the legend entry has to hang off the first pair actually drawn
     for i, pair in enumerate(sorted({r["pair"] for r in rows})):
         g = sorted((r for r in rows if r["pair"] == pair), key=lambda r: float(r["seed_words"]))
         if len(g) < 2:
@@ -204,7 +206,8 @@ def seed_effect():
         if len(pred) >= 2:
             ax.plot(*zip(*pred), ls="--", lw=1.0, marker="x", ms=5, zorder=2,
                     color=line.lines[0].get_color(), alpha=0.75,
-                    label=r"$k_{\mathrm{crit}}$ prediction" if i == 0 else None)
+                    label=None if labelled else r"$k_{\mathrm{crit}}$ prediction")
+            labelled = True
 
     ax.axhline(1.0, color="0.3", ls=":", lw=1.0)
     ax.text(ax.get_xlim()[1], 1.005, "certificate vacuous above", ha="right", va="bottom", fontsize=7,
