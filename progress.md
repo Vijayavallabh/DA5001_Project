@@ -2263,3 +2263,20 @@ quantitative and about *autoregressive* non-composition; a Proposition 1 claim a
 was elided; and a paragraph I wrote fresh had `ippolito2023preventing` and `hayes2025measuring`
 backwards -- both say the standard probes **understate** extraction, which is the same failure our
 own sampled-recall screen exists to avoid (0.708 greedy against 0.022 sampled).
+
+### 2026-09-10: two stale percentages in Section 4, and why the numeric audit could not see them
+
+`sections/onset.tex` said `k_crit` "falls by $7.3\%$ and $16.5\%$ and the onset falls by $9.0\%$ and
+$13.7\%$". The two `k_crit` figures are right; **both onset figures were wrong** -- the committed
+values are $9.6\%$ and $15.0\%$ (`results/seed_effect_summary.csv`, columns `pct_change_k_crit` and
+`pct_change_onset`; the summary reports each arm against its control, and Section 4 quotes the
+"doubling the words" direction, so Pleias reads $-16.5\%$ and $-15.0\%$ there against $+19.7\%$ and
+$+17.7\%$ in the CSV).
+
+`analysis/audit_numbers.py` passed on the wrong values and would pass on almost any wrong
+percentage. It checks whether each math-mode literal appears *somewhere* in `results/**.csv`, and
+with 2.08 million distinct values a two-significant-figure number nearly always does. It cannot
+check a quantity **derived** from two CSV entries, which is what a percentage change is. The
+discipline that does work is the one already in the Definition of Done: write the derived quantity
+to a CSV and quote it from there. `analysis/seed_effect.py` now emits those columns, so the four
+percentages in Section 4 have a row of their own.
