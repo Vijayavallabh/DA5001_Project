@@ -165,3 +165,33 @@ the 87.7-90.5% Appendix~\ref{app:opening} reports for a target that starts at th
 therefore cannot be acting purely by choosing which token comes first, and (K) is on weaker
 mechanistic ground than its arithmetic suggests.
 
+
+## Fourth addendum: the second KL3M pair, committed before its arm was launched (2026-09-10)
+
+Committed while `output/phase5/seed40_kl3m17b` was still queued behind two other sweeps and no
+token of it had been decoded. Its budget path exists (`results/budget_path_kl3m17b_seed40.csv`,
+100 works) because a budget path needs only the anchor: no memoriser, no attack, no decoding.
+
+`KL3M-1.7B + mem. KL3M-1.7B` is the pair the paper's own headline fits worst -- ratio 1.155, the
+highest of the seven, and the pair whose interval least overlaps the coarse family. Giving its
+adversary the coarse family's seed is therefore the intervention with the most to lose.
+
+     arm                       words   s(x)   k_crit   (K) predicts   (S) predicts
+     seed 20 (control)           7.3  2.211    3.644   -- (measured 1.155) --
+     seed 40                    14.3  2.215    3.385          1.071      0.878-0.926
+
+(K), the token-bucket account, is calibrated on this pair's own control and nothing else:
+onset/k_crit = 2.5536/3.6439 = 0.7008, so the seed-40 onset is predicted at
+0.7008 x 3.3845 = 2.372 nats, a ratio of 1.071. (S), seed matching, predicts the arm lands in the
+coarse family's band, because 40 KL3M tokens buy 14.3 words -- what TinyComma's 20 tokens buy.
+
+**Committed prediction.** A `lcs_word >= 4` ratio in **1.02-1.12** favours (K). One at or below
+**0.93** favours (S). Between 0.93 and 1.02 is undecided and will be reported as such. Either way
+the arm also tests the sentence already in Section 4 that "neither arm reaches the other family's
+band": (K) says this pair stays above 1 and the seed does not explain the KL3M excess; (S) says it
+crosses and the seed explains all of it.
+
+Recorded for the same reason as the third addendum's caution: (K) has now been calibrated
+one-point-per-pair on three pairs and predicts out of sample on four arms, so it is no longer a
+single lucky arithmetic coincidence -- but it is still a one-parameter rescaling of a quantity that
+was itself derived for a different purpose (Proposition 2), and a miss on this arm is a miss.
