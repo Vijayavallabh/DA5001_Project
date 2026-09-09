@@ -1,4 +1,5 @@
 pair,arm,control,words,words_control,pct_change_s_x,pct_change_k_crit,pct_change_onset,measured_ratio,predicted_ratio_K,prediction_in_ci
 KL3M-520M,KL3M-520M seed 10,KL3M-520M seed 20 (control),4,7.3,0.37,11.7,13.15,1.1635,1.1486,True
 KL3M-520M,KL3M-520M seed 40 (Arm A),KL3M-520M seed 20 (control),14.3,7.3,-0.68,-7.31,-9.62,0.9393,0.9633,True
+KL3M-520M tau,KL3M-520M tau 0.4,KL3M-520M tau 1.0 (control),7.3,7.3,67.07,84.04,44.58,0.8932,1.137,False
 Pleias-1.2B,Pleias-1.2B seed 10 (Arm B),Pleias-1.2B seed 20 (control),6.7,13.7,1.53,19.7,17.71,1.0041,1.0211,True

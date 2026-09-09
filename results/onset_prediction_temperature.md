@@ -100,3 +100,38 @@ differ from it by 62% and 82%:
 $n=100$; both are reported. The same admissibility screen and the same baseline-attached reporting
 apply: the tau = 0.4 memoriser will be sharper than the control's, which pushes the measured onset
 down, against the hypothesis.
+
+## Scored: the KL3M-520M tau = 0.4 arm (2026-09-10)
+
+`output/phase5/warp_t0.4_kl3m520m`, 100 works, twelve budgets, `lcs_word >= 4`.
+
+     quantity            tau 1.0 (control)    tau 0.4     change
+     s(x)                          2.4147      4.0340     +67.1%
+     k_crit                        3.7912      6.9780     +84.0%
+     onset                         2.4923      3.6030     +44.6%
+     onset / s(x)                  1.0321      0.8932
+     k = -1 baseline                0.519       0.904
+
+**(N), the constant-nats null, is refuted within a single pair.** It predicted 2.492 and the
+measurement is **3.603** nats, inside the committed [3.6, 4.6] band that was defined as refuting it,
+though at that band's lower edge. The elasticity $d\log(\text{onset})/d\log s(x)$ is
+**+0.72 [+0.41, +0.84]**, and the interval excludes 0 by a wide margin. Nothing about this pair
+changed except the warp: same anchor, same memoriser, same corpus, same tokenizer, same seed.
+
+**(U), exact proportionality, is not confirmed either.** It predicted 4.163 and the elasticity
+interval excludes 1. The onset moves with the rate the budget is charged against, and moves less
+than one-for-one.
+
+**The confound points the right way, as registered in advance.** The tau = 0.4 memoriser is much
+better at the work --- $k=-1$ recall 0.904 against the control's 0.519 --- and a better memoriser
+makes extraction begin *earlier*. So the measured elasticity is a **lower bound** on what it would
+be at a fixed memoriser, and the direction of the bias is away from the result, not towards it.
+
+**(K), the token-bucket account, fails here, and that is the informative part.** Calibrated on this
+pair's own control it predicted a ratio of 1.137 against a measured 0.893 [0.76, 0.95] --- the first
+miss after three straight hits on the seed arms (1.021/1.004, 1.149/1.164, 0.963/0.939). The
+asymmetry is not noise and it is interpretable: the seed changes *which* tokens fall in the
+adversary's window, which is exactly what a running maximum over the target's surprisal profile
+tracks, whereas the warp rescales the whole profile, which the running maximum over-reads. `k_crit`
+is a good predictor of what the evaluation protocol does to the onset and a poor one of what the
+decoder's own temperature does. Section~\ref{sec:onset} must not present it as a general law.
