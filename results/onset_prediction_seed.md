@@ -62,3 +62,33 @@ effect as intrinsic to the tokenizer, with two controls rather than the one `fea
 We commit in advance to reporting all four cells, including the two that would refute the
 hypothesis, and to leaving Section 4's "which property of the tokenizer" question open if the arms
 do not move.
+
+---
+
+## Addendum, committed before the dose-response arms were launched (2026-09-10)
+
+The two arms above test the hypothesis at two levels, which can only say "moved" or "did not".
+If the seed is the mechanism the relationship should be **continuous and monotone**: the more of the
+passage the adversary already holds, the more strongly it is anchored into the memorised text, and
+the lower the budget at which extraction begins. So we add two more levels on the pair that is
+cheapest to run and furthest from the coarse group, holding the tokenizer, the models, the corpus
+and the metric fixed:
+
+- **KL3M-520M at `--seed-tokens 10`** (~21 characters, ~3.7 words)
+- **KL3M-520M at `--seed-tokens 80`** (~172 characters, ~29.2 words)
+
+Together with the seed-20 run already measured (1.053) and Arm A at seed 40, that is a four-point
+dose-response curve on one pair: 3.7, 7.3, 14.6 and 29.2 words.
+
+**Prediction, committed blind:** onset/s(x) is strictly decreasing in seed words, so
+
+    seed 10  >  seed 20 (= 1.053)  >  seed 40  >  seed 80
+
+with the seed-80 point at or below the coarse group's band (0.878-0.926). We commit to reporting a
+non-monotone curve as a refutation of the dose-response form even if Arms A and B moved, because a
+two-level shift that does not extend to a curve is more likely a threshold artifact than a mechanism.
+
+If the curve holds, the object the paper reports is not a constant but a function: `k_onset(c)/s(x)`,
+the budget at which extraction begins against an adversary holding `c` words of the work. A deployer
+must set the budget against the best-informed adversary, so the relevant value is the limit of that
+curve, not the value at whatever prefix length an evaluation happened to use.
