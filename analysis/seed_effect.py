@@ -21,7 +21,7 @@ Writes <out>/seed_effect.csv. Needs the tokenizers, no GPU.
 Usage:
   HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py --out results
 """
-import argparse, csv, itertools, os, statistics as st, sys
+import argparse, csv, itertools, math, os, statistics as st, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_truncation import per_passage, point_and_ci  # noqa: E402
@@ -231,6 +231,26 @@ def main():
             if len(sel) >= 4:
                 rho, pv = permutation_p([o[1] for o in sel], [o[2] for o in sel])
                 print(f"   {lab:20s} n={len(sel)}  Spearman {rho:+.3f}  exact permutation p={pv:.4f}")
+    # For an arm that moves s(x) itself -- the temperature arms -- the informative summary is the
+    # elasticity d log(onset) / d log s(x) against its own control: 1 if the onset is proportional
+    # to the rate the budget is charged against, 0 if the onset is a fixed number of nats.
+    for r in rows:
+        r["elasticity_vs_control"] = ""
+    for pair in {r["pair"] for r in rows}:
+        g = [r for r in rows if r["pair"] == pair]
+        ctl = next((r for r in g if "control" in r["label"] and r["onset"] != ""), None)
+        if ctl is None:
+            continue
+        for r in g:
+            ds = math.log(r["s_x"] / ctl["s_x"]) if ctl["s_x"] else 0.0
+            if r is ctl or r["onset"] == "" or abs(ds) < 0.05:
+                # The seed arms move s(x) by 0.4-1.5%, so the denominator is noise and the ratio
+                # blows up (values of 10 to 33 before this guard). Only an arm that moves s(x) by
+                # more than 5% -- the temperature arms move it by 48-51% -- has an elasticity.
+                continue
+            r["elasticity_vs_control"] = round(
+                math.log(float(r["onset"]) / float(ctl["onset"])) / ds, 3)
+
     scored = [r for r in rows if r["pred_hit"] in (True, False)]
     if scored:
         e = lambda k: st.mean(abs(float(r[k]) - float(r["ratio"])) / float(r["ratio"]) * 100
@@ -242,6 +262,13 @@ def main():
                   f"{float(r['pred_ratio_null']):9.4f}{'  in CI' if r['pred_hit'] else '  MISS'}")
         print(f"  mean |relative error|: k_crit {e('pred_ratio_K'):.1f}%, "
               f"no-change null {e('pred_ratio_null'):.1f}%")
+    el = [r for r in rows if r["elasticity_vs_control"] != ""]
+    if el:
+        print("\narms that move s(x) itself; elasticity 1 = onset proportional to s(x), "
+              "0 = a fixed number of nats:")
+        for r in sorted(el, key=lambda r: r["label"]):
+            print(f"  {r['label'][:33]:34s}s(x) {r['s_x']:.3f}  onset {float(r['onset']):.3f}  "
+                  f"elasticity {r['elasticity_vs_control']:+.2f}")
     if sm:
         print("\nseed changes the running maximum, not the mean rate (relative to each control):")
         print(f"  {'arm':34s}{'d s(x)':>9s}{'d k_crit':>10s}{'d onset':>9s}")

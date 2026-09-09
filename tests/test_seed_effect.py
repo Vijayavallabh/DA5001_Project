@@ -65,3 +65,15 @@ def test_prediction_is_calibrated_on_the_control_and_scales_with_k_crit():
             r["pred"] = c * r["k_crit"] / r["s_x"]
     assert rows[0]["pred"] == 1.0                      # control reproduces itself
     assert abs(rows[1]["pred"] - 0.75) < 1e-12         # 0.5 * 3.0 / 2.0
+
+
+def test_elasticity_is_only_defined_where_s_x_actually_moves():
+    """The seed arms move s(x) by under 2%, so d log(onset) / d log s(x) is a ratio of noise there
+    and produced values of 10 to 33 before the guard. Only an arm that moves s(x) materially --
+    the temperature arms move it by about half a log unit -- gets one."""
+    import math
+    guard = 0.05
+    seed_arm = abs(math.log(2.3982 / 2.4147))       # KL3M-520M seed 40 against its control
+    warp_arm = abs(math.log(4.0340 / 2.4147))       # the same pair at tau = 0.4
+    assert seed_arm < guard < warp_arm
+    assert round(math.log(2.4923 / 2.4923) if seed_arm >= guard else 0.0, 6) == 0.0
