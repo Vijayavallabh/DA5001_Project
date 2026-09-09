@@ -2105,3 +2105,35 @@ is quoted.
 That the collapse happens at all is worth reporting on its own: below roughly seven words of the
 work, this adversary cannot find its place in it, and no budget is needed to stop it. That is a
 floor on the threat model, not a property of the mechanism.
+
+### The seed acts on the budget, not on the memoriser (2026-09-10)
+
+Already in the four clean arms, and it answers the "why there" the section title promises:
+
+    pair          seed words   k=-1 recall   k_crit   onset/s(x)
+    KL3M-520M            7.3         0.519    3.791        1.032
+    KL3M-520M           14.3         0.520    3.514        0.939
+    Pleias-1.2B          6.9         0.894    5.916        1.004
+    Pleias-1.2B         13.7         0.909    4.942        0.866
+
+Doubling the words the adversary holds changes
+
+    what the UNCONSTRAINED model can do       +0.2%   +1.7%     (k=-1 recall)
+    the budget the target demands             -7.3%  -16.5%     (k_crit, anchor only, no attack)
+    where extraction begins                   -9.0%  -13.7%     (onset / s(x))
+
+**The memoriser's own ability is unmoved and the budget requirement is not.** The onset follows the
+budget-side quantity, on both pairs, to within about two percentage points of a change of seven to
+seventeen. `k_crit` is computed from the anchor alone -- one teacher-forced pass, no attack, no risky
+model -- so the agreement is a prediction and not a fit.
+
+This reconciles the two accounts the pre-registration set against each other rather than choosing
+between them, which is why Arm A landed in the band declared undecided: **the seed is the lever and
+`k_crit` is how the lever acts.** A longer prefix does not make the memoriser better at the work; it
+starts the target at a cheaper point, and the token bucket's running maximum -- the quantity
+Proposition~\ref{prop:outrun} already builds on -- falls with it.
+
+It also predicts the shape the seed-80 arm will show: `k_crit` falls only 2.3% from seed 40 to seed
+80, so the onset should fall about as little, which is the committed discriminating prediction in
+the third addendum. That the same relation was reached from a different direction before the arm
+ran is worth noting, and does not make it more confirmed.
