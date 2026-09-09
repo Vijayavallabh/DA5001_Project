@@ -212,6 +212,13 @@ def main():
         obs = observational(a.pairs_tsv, a.onset_table)
     except (OSError, KeyError):
         obs = []
+    if obs:
+        # the per-pair seed length, so other analyses can condition on the adversary's context
+        # without reloading seven tokenizers
+        with open(os.path.join(a.out, "onset_seed_words.csv"), "w", newline="") as fh:
+            w = csv.writer(fh); w.writerow(["pair", "seed_tokens", "seed_words", "ratio"])
+            for n, wd, r in sorted(obs, key=lambda t: t[1]):
+                w.writerow([n, 20, round(wd, 1), round(r, 4)])
     if len(obs) >= 4:
         print("\ncross-pair, on the runs built for other reasons (confounded with granularity "
               "by construction):")

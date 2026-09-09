@@ -49,6 +49,10 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--theory", default="results/onset_theory.csv")
     ap.add_argument("--ci", default="results/onset_ci.csv")
+    ap.add_argument("--seed-words", default="results/onset_seed_words.csv",
+                    help="per-pair seed length in words, from analysis/seed_effect.py")
+    ap.add_argument("--words-split", type=float, default=10.0,
+                    help="the gap between the two seed regimes; they are 7.3 and 13.0-14.4")
     ap.add_argument("--calibrated-on", nargs="+", required=True,
                     help="pairs the q25 and constant rules were fitted on; they are reported but "
                          "excluded from the held-out score")
@@ -66,6 +70,12 @@ def main():
     cal_ratios = [float(meas[canonical(r["pair"])]["onset_point"]) / float(r["s_safe_median"])
                   for r in preds if canonical(r["pair"]) in cal]
     c = st.mean(cal_ratios) if cal_ratios else float("nan")
+    # The baseline a reviewer will ask for: quote a constant number of nats and do not rescale at
+    # all. It is fitted on the same calibration pairs, so it is scored on the same footing, and it
+    # can only make the s(x) rule look worse -- which is why it belongs here.
+    cal_nats = [float(meas[canonical(r["pair"])]["onset_point"])
+                for r in preds if canonical(r["pair"]) in cal]
+    b = st.mean(cal_nats) if cal_nats else float("nan")
 
     rows = []
     for r in preds:
@@ -74,7 +84,8 @@ def main():
         lo, hi = float(m["onset_lo95"]), float(m["onset_hi95"])
         rules = {"q25 of r(x)": float(r["req_q25"]),
                  "P1: median s_s - s_r": float(r["pred_onset_median"]),
-                 f"constant {c:.3f}*s(x)": c * float(r["s_safe_median"])}
+                 f"constant {c:.3f}*s(x)": c * float(r["s_safe_median"]),
+                 f"baseline: {b:.3f} nats, no rescaling": b}
         for rule, p in rules.items():
             rows.append({"pair": r["pair"], "rule": rule,
                          "held_out": canonical(r["pair"]) not in cal,
@@ -142,6 +153,52 @@ def main():
               f"rho = {rho:+.2f}")
         for pred_ratio, meas_ratio, pair in sorted(pr, key=lambda x: -x[0]):
             print(f"  {pair[:38]:40s} predicted {pred_ratio:.3f}   measured {meas_ratio:.3f}")
+
+    # Conditioning on the adversary's context. The seven pairs split exactly in two by how many
+    # words 20 tokens buy (7.3 against 13.0-14.4, no overlap), and the split was identified and
+    # registered in results/onset_prediction_seed.md before the intervention arms ran. The
+    # grouping itself is read off these same measurements, so it is not a test -- the intervention
+    # arms are. What it does show is how much of the residual is the protocol rather than the law.
+    sw = {}
+    if os.path.exists(a.seed_words):
+        sw = {canonical(r["pair"]): float(r["seed_words"]) for r in csv.DictReader(open(a.seed_words))}
+    if sw:
+        pts = [(canonical(r["pair"]), float(r["s_safe_median"]),
+                float(meas[canonical(r["pair"])]["onset_point"])) for r in preds]
+        blocks = [("all pairs", pts),
+                  (f"matched context (> {a.words_split:g} words)",
+                   [p for p in pts if sw.get(p[0], 0) > a.words_split]),
+                  (f"short context (<= {a.words_split:g} words)",
+                   [p for p in pts if sw.get(p[0], 1e9) <= a.words_split])]
+        out = []
+        print(f"\nleave-one-out, conditioning on how many words the adversary is handed:")
+        print(f"  {'subset':34s}{'n':>3s}{'s(x) span':>11s}{'ratio cv':>10s}"
+              f"{'k/s(x) rule':>13s}{'constant nats':>15s}")
+        for lab, sub in blocks:
+            if len(sub) < 3:
+                continue
+            rs = [o / x for _, x, o in sub]
+            def loo(rescale):
+                e = []
+                for i in range(len(sub)):
+                    o_ = [j for j in range(len(sub)) if j != i]
+                    c = st.mean((sub[j][2] / sub[j][1]) if rescale else sub[j][2] for j in o_)
+                    e.append(abs((c * sub[i][1] if rescale else c) - sub[i][2]))
+                return st.mean(e)
+            a_, b_ = loo(True), loo(False)
+            out.append(dict(subset=lab, n=len(sub),
+                            s_x_span=round(max(x for _, x, _ in sub) / min(x for _, x, _ in sub), 3),
+                            ratio_lo=round(min(rs), 4), ratio_hi=round(max(rs), 4),
+                            ratio_cv_pct=round(100 * st.stdev(rs) / st.mean(rs), 2),
+                            loo_abs_err_rescaled=round(a_, 4), loo_abs_err_constant=round(b_, 4),
+                            improvement=round(b_ / a_, 2)))
+            print(f"  {lab:34s}{len(sub):3d}{max(x for _,x,_ in sub)/min(x for _,x,_ in sub):10.2f}x"
+                  f"{100*st.stdev(rs)/st.mean(rs):9.1f}%{a_:12.3f}n{b_:14.3f}n"
+                  f"   ({b_/a_:.1f}x better)")
+        if out:
+            with open(os.path.join(a.out, "matched_context.csv"), "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=list(out[0])); w.writeheader(); w.writerows(out)
+            print(f"  wrote {a.out}/matched_context.csv")
 
     print(f"\nwrote {a.out}/prediction_scores.csv")
 
