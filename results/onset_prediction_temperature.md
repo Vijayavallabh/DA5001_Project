@@ -172,3 +172,26 @@ assuming nothing changed**. Pooling the six gives 13.1% against 12.2% and hides 
 running maximum tracks which tokens the adversary's window starts on; it over-reads a rescaling of
 the whole surprisal profile. Section~\ref{sec:onset} may use it for the first and must not for the
 second.
+
+## How the tau = 0.7 arms will be treated, committed before either is scored (2026-09-10)
+
+The tau = 0.7 arms move `s(x)` by only $9.5\%$ (Pleias, 3.2094 -> 3.5134) and $11.4\%$ (KL3M,
+2.4147 -> 2.6890), against $62\%$ and $67\%$ at tau = 0.4. In log units that is $0.09$ and $0.11$,
+barely twice the $0.05$ guard below which `analysis/seed_effect.py` refuses to report an elasticity
+at all. A small denominator makes the estimate unstable, and the partial grid already suggests
+Pleias tau = 0.7 will come in near an onset of $2.8$ against its control's $2.780$ -- an elasticity
+near zero, where the same pair gave $0.61$ at tau = 0.4.
+
+Committed now, so the treatment is not chosen after seeing whether it flatters the result:
+
+  - Both tau = 0.7 elasticities are reported **with their intervals and with the lever size next to
+    them**. A lever of $0.09$ log units is stated wherever the number is.
+  - They are **not pooled** with the tau = 0.4 arms into a single mean elasticity. Two doses of
+    very different size do not average.
+  - If an interval spans both $0$ and that pair's tau = 0.4 estimate, the arm is reported as
+    **uninformative about the elasticity**, not as contradicting it. An interval that excludes the
+    tau = 0.4 estimate is a genuine inconsistency and will be reported as one, and would mean the
+    response is not a constant elasticity and the summary "the onset follows $s(x)$
+    sub-proportionally" is too simple.
+  - The tau = 0.4 arms remain the ones that carry the claim, because they are the only ones whose
+    lever is large enough to measure against.
