@@ -2320,3 +2320,19 @@ separates them.
 at n=500-600 the null arm still drifts about a sigma between runs (-5.47/-1.49 in v5 against
 -6.09/-2.49 in v6). Never quote a judged sigma without knowing the sample size, and never build a
 claim on a separation smaller than a sigma.
+
+### 2026-09-10: a pre-registered input was silently rewritten, and it turned out to be harmless
+
+The KL3M-1.7B seed-40 queue recomputed `results/budget_path_kl3m17b_seed40.csv`, which had already
+been **committed as part of the fourth addendum's pre-registration** -- the file the prediction
+(K) = 1.071 was computed from. `git diff --stat` showed 101 insertions and 101 deletions, which
+looks exactly like a changed measurement.
+
+It was not. Comparing row by row on `prompt_id`: the same 100 works, and **no column differs on any
+row**. `analysis/budget_path.py` does not emit rows in a deterministic order, so a re-run rewrites
+the file with identical content in a different order. The medians the pre-registration quotes are
+unchanged to four decimals ($s(x) = 2.2152$, $k_{\mathrm{crit}} = 3.3845$), so the committed
+prediction stands and the file was restored to its pre-registered bytes.
+
+**Worth knowing:** a `git diff` on a results CSV can show every line changed while nothing changed,
+which would equally hide a real change. Diff the *values* keyed on `prompt_id`, not the file.
