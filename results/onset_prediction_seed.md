@@ -241,3 +241,32 @@ Both accounts predicted the seed-80 ratio would sit at or below seed-40's 0.939 
 from a flattening $k_{\mathrm{crit}}$, (S) below the coarse family's band. A value materially above
 $1.0$ would miss both, and would say the dose-response is **non-monotone** at the long-seed end
 rather than that either account is right.
+
+## Scored: the seed-80 arm, and the dose-response turns out non-monotone (2026-09-10)
+
+Measured ratio **1.056** $[0.78, 1.13]$, onset 2.521 nats, `no crossing` in 2.1% of bootstrap
+resamples. Against the third addendum's committed band --- at or above 0.93 favours (K), at or
+below 0.90 favours (S), between them undecided --- this **favours (K) and refutes (S)**. Seed
+matching predicted the ratio would keep falling as the adversary is handed more of the work, and it
+rose.
+
+     seed words    ratio           95% CI    (K) predicted
+            4.0    1.163     [1.13, 1.33]           1.1486
+            7.3    1.032     [1.01, 1.23]           1.0321  (the calibration arm)
+           14.3    0.939     [0.88, 1.17]           0.9633
+           28.4    1.056     [0.78, 1.13]           0.9458
+
+**But (K) is not confirmed quantitatively here either.** It predicted 0.946 and the measurement is
+12% above that, inside the interval only because the interval is wide. Over 4 to 14 words the seed
+lowers the onset and (K) tracks it to within 2.6%; beyond 14 words the curve turns and (K) does not
+predict the turn. The claim Section~\ref{sec:onset} can carry is that the adversary's context moves
+the onset **over the range an evaluation actually varies it**, not that it does so without limit.
+
+**Both caveats recorded before scoring apply, and neither is retrospective.**
+The no-crossing fraction, 2.1%, is materially above the other arms' 0.0-0.9%, so as committed the
+grid is being extended to k in {3.0, 3.2, 3.6} (`output/phase5/seed80_kl3m520m_hi`, merged into
+`_merged`) and the arm will be rescored on the merged grid with both reported.
+The target is **12% shorter** than the control's, 520 tokens against 590, because seed and target
+partition one passage. On an absolute word count that makes the threshold harder to reach and
+pushes the onset **up** --- the direction of the reversal. This arm therefore cannot be read as a
+clean seed effect, and the write-up must say so rather than presenting a tidy monotone curve.
