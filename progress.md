@@ -2186,3 +2186,80 @@ billing each launcher log from its birth to its last write minus the `sleep` cal
 recorded, so an armed chain that waited three hours for a file scores ~0. Total 93.2 GPU-hours
 (`results/compute_hours_summary.csv`); the manuscript's LLM-usage statement was updated from a
 stale 63 and now also says there are two judges, not one.
+
+### 2026-09-10, feat-066 part 1: the seed dose-response and the first temperature arm
+
+**Three out-of-sample seed arms, all predicted from each pair's control arm alone.** The
+token-bucket rule `onset = c * k_crit`, with `c` calibrated on the control and nothing else,
+predicted every arm before it ran (`results/onset_prediction_seed.md`, third and fourth addenda):
+
+| arm | measured | (K) predicted | no-change null |
+|---|---|---|---|
+| Pleias-1.2B seed 10 | 1.0041 | 1.0211 | 0.8661 |
+| KL3M-520M seed 10 | 1.1635 | 1.1486 | 1.0321 |
+| KL3M-520M seed 40 | 0.9393 | 0.9633 | 1.0321 |
+
+Mean |relative error| 1.8% against the null's 11.6%. The KL3M-520M dose-response is strictly
+monotone in the adversary's context: 4.0 words -> 1.163, 7.3 -> 1.032, 14.3 -> 0.939. The seed-10
+point is reported with its baseline attached (k=-1 recall 0.227 against 0.519) and excluded from any
+fit, as pre-committed; the seed-40 arm is the clean one (0.520 against 0.519).
+
+**The temperature arm moves `s(x)` inside a single pair, and the constant-nats null loses.** With
+anchor, memoriser, corpus, tokenizer and seed all fixed, warping both logit vectors to tau = 0.4
+(He et al. App. B) moves `s(x)` 2.4147 -> 4.0340 (+67.1%) and the onset 2.4923 -> 3.6030 (+44.6%).
+Elasticity `d log(onset)/d log s(x)` = **+0.72 [+0.41, +0.84]**: the interval excludes 0, so a
+constant number of nats is refuted within a pair, and excludes 1, so exact proportionality is not
+confirmed. The tau = 0.4 memoriser is much stronger (k=-1 recall 0.904 against 0.519), which pushes
+the onset *down*, so 0.72 is a lower bound. Pre-registered in
+`results/onset_prediction_temperature.md` before any token was decoded.
+
+**`k_crit` misses for the first time, and the asymmetry is the finding.** After three straight hits
+on the seed arms it predicted 1.137 for the warped arm against a measured 0.893 [0.76, 0.95]. The
+seed changes *which* tokens fall in the adversary's window, which a running maximum over the
+target's surprisal profile tracks; the warp rescales the whole profile, which the running maximum
+over-reads. `k_crit` predicts what the evaluation protocol does to the onset, not what the decoder's
+temperature does, and Section 4 must not present it as a general law.
+
+**Recon that redirected the work.** The three cached un-paired anchors score 2.166, 2.557 and 3.148
+nats/token on these passages against a built range of 2.211-3.554, so no further pair widens the
+`s(x)` range; temperature does, by 1.67x on KL3M-520M and 1.62x on Pleias-1.2B, whose tau = 0.4
+`s(x)` of 5.200 is above every unwarped pair.
+
+Commands: `analysis/composition_attack.py --temperature 0.4 ...`, `analysis/budget_path.py
+--temperature 0.4 ...`, then `analysis/seed_effect.py --out results` (which now carries `k_crit`,
+`pred_ratio_K`, `pred_ratio_null` and the elasticity with its interval).
+
+### 2026-09-10: the judged crossover on the fine grid, both judges
+
+`output/phase5/util_cross` at k in {0.6, 0.7, 0.8}, 600 comparisons per arm.
+`results/crossover.csv`: Qwen crosses -2 sigma at **k = 0.6642**, where 0.26% of the 758 works have
+lost their certificate; Phi at **k = 5.3929**, where all of them have. The committed band was
+[0.58, 0.80] and the primary judge is inside it. The refutation condition -- a crossover below the
+0.583 at which the first work loses its certificate -- did not occur on either judge.
+
+**The finer sub-claim is withdrawn.** It predicted 0.583 would sit inside the bracket between the
+last budget where the decoder is indistinguishable and the first where it is not. That bracket is
+[0.6, 0.7] and 0.583 is just below it, so the two boundaries are **ordered, not coincident**. The
+conclusion now says so and distinguishes the two readings of "informative": no budget covers every
+work and buys a detectable improvement, while relaxing "every" to "almost every" opens a narrow
+window at k = 0.66 on the sharper judge that closes again on the coarser one.
+
+**Instrument drift, recorded against ourselves.** The null arm is the same 500 comparisons judged
+twice: -5.47 and -1.49 sigma in the v5 run, -6.09 and -2.49 in v6. About a sigma of run-to-run
+drift is the floor beneath which no separation in the paper should be read, and
+`sections/appendix_limitations.tex` now says that.
+
+### 2026-09-10: citation audit (existence was verified; the claims were not)
+
+A walk of the ICLR build found it citing 35 of 160 verified entries, with whole clusters missing
+(no legal framing, no unlearning, no inference-time defence but CP-Fuse, no watermarking
+primitives, no memorisation-measurement literature, and neither closest competitor). Five
+paragraphs were added to `sections/appendix_related.tex`; the build now cites 67 with 0 unresolved
+references and the nine main-text pages untouched. Checking the claims against primary records
+found **four errors in seventeen**, one of them mine, all recorded in `LITERATURE_REVIEW.md`:
+`cohen2026barriers` was described as qualitative and about composition across queries when it is
+quantitative and about *autoregressive* non-composition; a Proposition 1 claim against
+`segal2026provably` overshot its own qualifier; `tomasi2026primaldual`'s discrete-diffusion setting
+was elided; and a paragraph I wrote fresh had `ippolito2023preventing` and `hayes2025measuring`
+backwards -- both say the standard probes **understate** extraction, which is the same failure our
+own sampled-recall screen exists to avoid (0.708 greedy against 0.022 sampled).
