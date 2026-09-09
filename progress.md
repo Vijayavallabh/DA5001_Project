@@ -2292,3 +2292,31 @@ so nobody restores the convenience. Artifact rebuilt: **439 files, manifest veri
 
 The builder's check is the only thing standing between an absolute path and a desk rejection, and
 it earned its keep here. It runs after `README_artifact.md` is copied in, for the same reason.
+
+### 2026-09-10: the Renyi order separations do not survive re-judging, and Section 5 quoted them
+
+Checking whether the v6 judging run still supported Section 5 showed that it does not. The **same
+judge** re-scoring the **same** 150-pair generations gives:
+
+| order | v5 | v6 |
+|---|---|---|
+| alpha=1 | -1.92 | -1.77 |
+| alpha=2 | -1.05 | **-2.65** |
+| alpha=4 | -1.49 | -0.89 |
+| alpha=8 | **0.00** | **+1.07** |
+
+alpha=2 moves 1.6 sigma and the ranking of the four inverts. Phi reorders them differently in each
+of its two runs as well. The manuscript had quoted the v5 values as the measurement and built a
+punchline on alpha=8 losing "$62.7\%$, the anchor's own rate to the decimal ($0.00\sigma$)" -- a
+coincidence that does not reproduce.
+
+`sections/orders.tex` now demonstrates the non-resolution instead of quoting numbers from whichever
+run it was written against, and says plainly that no separation quotable there would survive a
+re-run. The substantive claims are unchanged and better supported: alpha=4 leaks $24\times$ less
+than alpha=1 while overriding the risky model at $90\%$ of steps, and **no run of either judge**
+separates them.
+
+**Durable caution.** A judged separation from `analysis/utility.py` at n=150 is not reproducible;
+at n=500-600 the null arm still drifts about a sigma between runs (-5.47/-1.49 in v5 against
+-6.09/-2.49 in v6). Never quote a judged sigma without knowing the sample size, and never build a
+claim on a separation smaller than a sigma.
