@@ -45,6 +45,7 @@ class AnchoredDecodingFactory:
         log_kl_stats: bool = False,
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
+        meter: str = "token",
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
         device_map: str = "auto",
@@ -188,6 +189,7 @@ class AnchoredDecodingFactory:
             log_kl_stats=log_kl_stats,
             constraint=constraint,
             bank_cap=bank_cap,
+            meter=meter,
             device=device,
         )
 
@@ -202,6 +204,7 @@ class AnchoredDecodingFactory:
         log_kl_stats: bool = False,
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
+        meter: str = "token",
         verbose: bool = False,
         device: Optional[torch.device] = None,
         eps_kl: float = 1e-4,
@@ -247,6 +250,13 @@ class AnchoredDecodingFactory:
         assert constraint in ("kl", "pathwise", "renyi"), \
             f"constraint must be 'kl', 'pathwise' or 'renyi[:alpha]', got {constraint!r}"
         self.bank_cap = bank_cap  # feat-021: token-bucket depth; None = the unbounded bank of He et al.
+        # feat-064: what the budget is metered in. He et al. meter per TOKEN, so K = k*T_max; but the
+        # protected object is text, and a tokenizer that cuts the same passage into twice as many
+        # tokens then hands the adversary twice the budget for it. 'char' meters per character, which
+        # is tokenizer-invariant: the allowance accrues k for every character already emitted.
+        assert meter in ("token", "char"), f"meter must be 'token' or 'char', got {meter!r}"
+        self.meter = meter
+        self._tok_chars = None   # built lazily: characters per vocabulary entry
         self.constraint = constraint  # feat-019: 'pathwise' budgets the realised log-ratio (Delta_max-NAF); 'kl' is He et al.'s decoder
 
     def get_kl_stats_summary(self) -> dict:

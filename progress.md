@@ -1819,3 +1819,56 @@ because the tokenizer cuts one fixed piece of text: the adversary's seed (`--see
 where the onset ratio splits, with no overlap in any of them. Section 4's "which property of the
 tokenizer" is therefore not one open question but three, and `results/onset_prediction_seed.md`
 pre-registers the intervention that separates the first from the other two.
+
+### Plan v5 item D: the judged arms, at 600 pairs and two judges (2026-09-10)
+
+Generation for k in {1.5, 2, 2.5} was finished (`output/phase5/util_fine`, the k=2.5 creative split
+had been killed by memory pressure in an earlier session and was regenerated across two cards; the
+prompt sets are identical to the other budgets, checked). Both judges then scored **21 arms** --
+KL at nine budgets, pathwise at six, anchor-only, the null, and **alpha in {1,2,4,8}**, the last of
+which was the blank cell in Table 2 -- at `--judge-per-cell 200`, so **600 comparisons per arm**
+against the 180 the manuscript had.
+
+    scripts: analysis/utility.py --prefix {utility_v5,utility_v5_judge2} --judge-per-cell 200
+             --judge {Qwen/Qwen2.5-7B-Instruct, microsoft/Phi-3.5-mini-instruct}
+    new:     analysis/judge_separation.py (results/judge_separation{,_judge2}.csv)
+
+**The published headline was under-powered and is wrong.** At 180 pairs the k=1 separation from the
+anchor reads -0.45 sigma; at 600 it reads **-3.66 sigma**. The null arm moves 41.7% -> 46.4% loss
+and now agrees with the independent feat-029 run at the same sample size (47.0%), so the old null
+was the outlier. "The two useful regions do not overlap", as stated, does not hold.
+
+**What replaces it is stronger, because it survives both judges.**
+
+    k      vacuous%   Qwen z   Phi z    verdict
+    0.5         0.0    -1.03   +1.52    neither judge separates the decoder from the anchor
+    1          43.9    -3.66   +0.11    judges disagree
+    1.5-5   98.9-100   -3.94.. -1.23..  judges disagree
+    10        100.0    -6.97   -3.29    BOTH separate
+    20        100.0    -6.32   -2.00    BOTH separate
+
+At the largest budget whose certificate still covers **every** protected work, neither judge can
+tell the decoder from serving the anchor alone. The only budgets where both agree it is better are
+those covering **no** work at all. The useful region opens only where the certified region has
+closed -- and that statement, unlike the old one, does not depend on which judge is asked.
+
+**The two judges disagree about the crossing by nearly an order of magnitude**: Qwen puts the
+-2 sigma crossover at k=0.68, Phi-3.5-mini at k=5.39. Reported as a result rather than averaged
+away. It also retires the "one judge" limitation and replaces it with a sharper one.
+
+**alpha=4, the blank cell.** It overrides the risky model at 90% of decode steps and leaks 24x less
+than alpha=1 in oracle windows (0.004 against 0.097), and neither judge can separate it from
+alpha=1 (0.35 sigma for Qwen; Phi reverses the order entirely). Activity is not price.
+
+**Theorem 1's pricing is unchanged at the finer grid** (`analysis/utility_price.py`, now reading the
+budget list from the summary and searching several run directories): the conservative
+spend/Lambda* ratio is 1,337-8,619, still 10^3-10^4.
+
+**A near-coincidence worth pinning.** Qwen's crossover interpolates to k=0.68 across a bracket half
+a nat wide; the budget at which the first protected work loses its certificate is 0.583 and at which
+1% have lost it is 0.682. `results/onset_prediction_crossover.md` pre-registers the k in
+{0.6, 0.7, 0.8} run that turns the interpolation into a measurement, with both refuting outcomes
+committed.
+
+Manuscript: abstract, introduction, Section 7 and the limitations rewritten; main text back to
+exactly 9 pages, 0 overfull, 0 '??'.

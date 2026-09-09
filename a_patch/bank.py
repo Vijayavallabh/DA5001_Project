@@ -9,9 +9,12 @@ from typing import Optional, Tuple
 import torch
 
 
-def bucket_step(bank: torch.Tensor, k: float, cap: Optional[float]) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Refill the bank by k (clipped at cap) and return (new bank, allowance = max(bank, 0))."""
-    bank = bank + float(k)
+def bucket_step(bank: torch.Tensor, k, cap: Optional[float]) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Refill the bank by k (clipped at cap) and return (new bank, allowance = max(bank, 0)).
+
+    feat-064: k may be a per-sequence tensor rather than a scalar. Character metering refills by
+    k * (characters just emitted), which differs across the batch."""
+    bank = bank + (k if isinstance(k, torch.Tensor) else float(k))
     if cap is not None:
         bank = bank.clamp(max=float(cap))
     return bank, bank.clamp(min=0.0)

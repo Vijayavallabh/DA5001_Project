@@ -33,7 +33,7 @@ Writes <out>/judge_separation.csv. No GPU.
 Usage:
   .venv/bin/python analysis/judge_separation.py --summary results/utility_v5_summary.csv --out results
 """
-import argparse, csv, math, os
+import argparse, csv, math, os, statistics as st
 
 def vacuous_pct(caps_path, t_max):
     """k -> fraction of protected works whose certificate is vacuous at that budget, as a callable.
@@ -91,6 +91,10 @@ def main():
     ap.add_argument("--caps", default="results/certificate_caps.csv",
                     help="per-passage anchor surprisals, for the vacuity column ('' to skip)")
     ap.add_argument("--t-max", type=int, default=200, help="the budget is K = k * t_max")
+    ap.add_argument("--compare", default="",
+                    help="a second judge's summary CSV. Adds its loss rate and separation per arm "
+                         "and reports whether the two judges order the arms the same way.")
+    ap.add_argument("--out-name", default="judge_separation.csv")
     a = ap.parse_args()
 
     arms = {}
@@ -123,7 +127,7 @@ def main():
         rows.append(row)
 
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "judge_separation.csv")
+    path = os.path.join(a.out, a.out_name)
     with open(path, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
@@ -136,6 +140,36 @@ def main():
         for name in refs:
             line += f"{r[f'z_loss_vs_{name}']:>16}{r[f'z_utility_vs_{name}']:>13}"
         print(line)
+
+    if a.compare and os.path.exists(a.compare):
+        other = {}
+        for r in csv.DictReader(open(a.compare)):
+            nj = int(r["n_judged"] or 0)
+            if nj:
+                other[(r["decoder"], float(r["k"]))] = (float(r["loss_pct"]), nj,
+                                                        r.get("judge", "judge 2"))
+        common = [(r, other[(r["decoder"], r["k"])]) for r in rows
+                  if (r["decoder"], r["k"]) in other]
+        if common:
+            j1 = rows[0]["judge"] or "judge 1"
+            j2 = common[0][1][2] or "judge 2"
+            print(f"\n--- second judge: {j2} against {j1}, {len(common)} arms in common ---")
+            print(f"{'decoder':18s}{'k':>6s}{'loss% j1':>10s}{'loss% j2':>10s}{'diff':>8s}")
+            for r, (l2, n2, _) in common:
+                print(f"{r['decoder']:18s}{r['k']:>6g}{r['loss_pct']:>10.1f}{l2:>10.1f}"
+                      f"{l2 - r['loss_pct']:>+8.1f}")
+            x1 = [r["loss_pct"] for r, _ in common]
+            x2 = [o[0] for _, o in common]
+            n = len(common)
+            r1 = {j: i for i, j in enumerate(sorted(range(n), key=lambda i: x1[i]))}
+            r2 = {j: i for i, j in enumerate(sorted(range(n), key=lambda i: x2[i]))}
+            d2 = sum((r1[i] - r2[i]) ** 2 for i in range(n))
+            rho = 1 - 6 * d2 / (n * (n * n - 1)) if n > 1 else float("nan")
+            m1, m2 = st.mean(x1), st.mean(x2)
+            print(f"\n  Spearman between the two judges' loss rates over {n} arms: {rho:.3f}")
+            print(f"  mean loss rate {m1:.1f}% ({j1}) vs {m2:.1f}% ({j2}); "
+                  f"the level differs by {m2 - m1:+.1f} points, which cancels in every separation "
+                  f"because each is measured against that judge's own anchor arm.")
 
     pts = [(r["k"], r[f"z_loss_vs_anchor"]) for r in rows
            if r["decoder"] == a.crossing_arm and r["k"] > 0 and r["z_loss_vs_anchor"] != ""]
