@@ -1,90 +1,65 @@
 # Session handoff
 
 ## Current Objective
-Plan v5, branch `iclr-2027`, target ICLR 2027 (abstract Sep 18, paper Sep 25). Today (2026-09-10)
-finished plan item D (the judged arms) and opened feat-064, which looks like the strongest new
-result in the paper.
 
-## What landed today
+Plan v5, ICLR 2027 (abstract Sep 18, paper Sep 25). Branch `iclr-2027`; `master` holds the verified
+SaTML paper at `dd7e801` and must not be deleted. The manuscript is `~/sub/satml/iclr_2027.tex`
+(absolute `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml`), **not in this repo** -- never run
+git after a `cd` into that tree.
 
-**1. The judged arms, at 600 pairs per arm and two judges (item D, complete).**
-The published headline was under-powered and is now replaced. At 180 judged pairs the k=1
-separation from the anchor reads -0.45 sigma; at 600 it reads -3.66. The old null arm (41.7% loss)
-was the outlier against two runs that agree at 46.4/47.0%.
+State: main text exactly 9 pages (page 10 starts with the Ethics heading, which does not count),
+21 pages total, 0 overfull, 0 `??`, 762 numeric literals audited with 1 expected miss (the
+independently verified Comma-7B padded embedding count 64,256). **169 tests.**
 
-    k      vacuous%   Qwen z   Phi z    verdict
-    0.5         0.0    -1.03   +1.52    neither judge separates the decoder from the anchor
-    1-5     44-100     -3.66..  +0.11.. judges disagree
-    10, 20    100.0    -6.97    -3.29   BOTH separate
+## What landed this session
 
-The claim that survives both judges: **the useful region opens only where the certified one has
-closed**. The judges disagree about the crossing by nearly an order of magnitude (0.68 vs 5.39),
-reported as a result. alpha=4 fills Table 2's blank cell: 90% of steps overridden, 24x less oracle
-leakage than alpha=1, and neither judge can separate them -- activity is not price.
-Scripts: `analysis/judge_separation.py` (reproduces the published -0.45/-2.35 exactly on the old
-input), `analysis/utility.py --prefix`, `analysis/utility_price.py` (multi-directory).
+- feat-065 (done): the units claim conditioned on the adversary's context.
+  `results/matched_context.csv`, `results/onset_seed_words.csv`, and the `normaliser_spread` block
+  of `results/collapse_robustness.csv`. Across seven pairs, `c*s(x)` beats a constant number of
+  nats by 1.1x; on the five seed-matched pairs by 5.2x, ratio cv 2.4%, both multiplicity checks
+  exact at p = 0.048. New appendix subsection in `sections/appendix_seed.tex`.
+- `analysis/seed_effect.py` now carries `k_crit` and `pred_ratio_K`, the token-bucket prediction
+  calibrated on each pair's control arm alone. Both completed intervention arms land inside their
+  bootstrap intervals.
+- `analysis/compute_hours.py` scans phases 4-5 by launcher log minus traced sleeps: 93.2 GPU-hours.
+  The manuscript's LLM-usage and "one judge" statements were stale and are fixed.
+- New figure `figures/units_law.pdf` (onset against s(x), the five matched pairs on a 0.90 line).
 
-**2. feat-064: the onset split looks like the attack's seed, not the tokenizer.**
-`composition_attack.py` seeds a fixed number of *tokens*, so KL3M's adversary holds 7.3 words and
-the other five hold 13.0-14.4 -- an exact split with no overlap, matching the onset split.
-Pre-registered in `results/onset_prediction_seed.md` (commits `bc74f4d`, `9ea3bec`, `a63ec8f`), then:
+## Running when this file was written (all on GPU 4 unless noted)
 
-    Pleias-1.2B   seed words   onset   ratio   95% CI          (Arm B)
-    seed 20             13.7   2.780   0.866   [0.72, 0.95]
-    seed 10              6.9   3.272   1.004   [0.99, 1.23]    disjoint
+| chain | script | what it produces |
+|---|---|---|
+| `output/phase5/seed_queue2.log` | `scratchpad/seed_queue2.sh` | seed-10, then seed-80 on KL3M-520M, then the KL3M-1.7B seed-40 arm |
+| `output/phase5/warp_arms.log` | `scratchpad/warp_arms.sh` | KL3M-520M at tau 0.4 then 0.7 |
+| `output/phase5/warp_arms2.log` | `scratchpad/warp_arms2.sh` | Pleias-1.2B at tau 0.4 then 0.7, gated on "DONE warp arms" |
+| `output/phase5/util_cross.log` | `h1.py` on GPUs 2+1 | k = 0.6, 0.7, 0.8 generations for the utility crossover |
+| `output/phase5/judge_cross_{qwen,phi}.log` | `scratchpad/judge_cross.sh` | both judges, armed on 9 trajectory files |
+| `output/phase5/score_dose.log` | `scratchpad/score_dose.sh` | reruns `seed_effect.py` + figures when both dose arms land |
+| `output/phase5/score_warp.log` | `scratchpad/score_warp.sh` | the same when all four warped arms land |
 
-Observationally the trend runs through all seven pairs (Spearman -0.919, exact permutation
-p = 0.0071) and continues inside the coarse family alone (-0.800 over a 1.4-word range), though that
-is confounded with granularity by construction -- only the intervention separates them.
-Grounded in the literature and verified verbatim against the PDF: Carlini et al.
-(`carlini2023quantifying`, already in the bib) define extractability "with k tokens of context",
-state the conversion for one tokenizer ("Fifty tokens corresponds to an average of 127 characters or
-25 words"), and report 33% -> 65% extraction from 50 -> 450 tokens of context.
-
-**3. A false alarm, caught and reverted the same day.** I wrongly marked feat-060 invalid. See the
-correction in `progress.md`: recall is scored against the decoded `target`, not the CopyBench
-`reference` field, and `prompt_text` is 930 characters of the same novel, so a truncated target is
-still protected text. Its k=-1 baseline is 0.696. feat-060 stands.
-
-**4. `analysis/audit_numbers.py`**, new: every numeric literal in math mode checked against every
-value in `results/**.csv`. Its first run found a stale Theorem 1 pricing table in `frontier.tex`.
-615 -> 621 literals, 1 unsourced, and that one verified against the checkpoint config.
-
-## State
-- 165 tests; `./init.sh` passes. feat-035..063 done, feat-064 in progress.
-- Manuscript: 19 pages, main text exactly 9, 0 overfull, 0 `??`, snapshot refreshed in
-  `manuscript_snapshot/`.
-
-## Running when this was written (all under `output/phase5/`)
-- **Arm A**, `seed40_kl3m520m` on GPU 1: KL3M-520M at `--seed-tokens 40` (80.8 chars, 14.3 words,
-  matching TinyComma's 81.3/14.4). Past k=2.2 with recall 0.004, so its onset is above 2.2.
-  **This is the decisive run**: `results/onset_prediction_seed.md` commits two accounts that predict
-  different answers -- seed-matching says 0.85-0.95, the k_crit account says 0.96 -- and an outcome
-  in 0.93-0.95 is to be reported as undecided.
-- **`seed_queue.sh`** behind it on GPU 1: KL3M-1.7B at seed 40 (the second fine pair, which with
-  Arm A decides whether the seven-pair table collapses to one band), then the dose-response arms at
-  seeds 10 and 80.
-- **`util_cross`** on GPU 2: generation at k in {0.6, 0.7, 0.8} to pin the utility crossover,
-  pre-registered in `results/onset_prediction_crossover.md`; both judge chains armed behind it.
-- Score chains armed: `score_seed.sh`, `judge_cross.sh` x2.
+Every arm is pre-registered before it ran: `results/onset_prediction_seed.md` (four addenda) and
+`results/onset_prediction_temperature.md` (two pairs). **Score against those bands, do not refit.**
 
 ## Recommended next step
-Score Arm A with `analysis/seed_effect.py` and write Section 4 around whichever account survives.
-If Arm A and the KL3M-1.7B arm both land in the coarse band, the seven-pair table collapses under a
-character-matched protocol and the paper gains a law plus a protocol correction; if they land near
-0.96, the mechanism is `k_crit` and the seed acts through where the target starts.
 
-## Open, logged, not fixed
-- Checkpoint-trust posture is inconsistent (`a_patch/factory.py` refuses pickled checkpoints; four
-  analysis scripts do not). A security decision for the user.
-- `results/onset_ladder.md` is stale: it predates pairs 4-7.
-- A second protected corpus is not cheaply available; see the decision note in `progress.md`.
+1. When `score_dose.sh` prints DONE, read `results/seed_effect.csv` and score the dose-response
+   against the third addendum's band (>= 0.93 favours the token-bucket account, <= 0.90 favours
+   seed matching, 0.90-0.93 undecided). The seed-10 point is pre-committed to be reported with its
+   baseline attached (k=-1 recall 0.227 against the control's 0.519) and excluded from any fit.
+2. Score the KL3M-1.7B seed-40 arm against the fourth addendum (1.02-1.12 favours the token bucket,
+   <= 0.93 favours seed matching).
+3. When `score_warp.sh` prints DONE, score the four temperature arms against
+   `results/onset_prediction_temperature.md`. The tau = 0.4 arms are the decisive ones: an onset in
+   [3.6, 4.6] (KL3M) and [4.0, 5.3] (Pleias) refutes the constant-nats null within a pair.
+4. Then rewrite Section 4 once, with all of it, and rebuild `figures/units_law.pdf` -- the warped
+   arms extend its x axis from 3.55 to 5.20 nats/token.
+5. Recompute `analysis/compute_hours.py` and update the GPU-hour figure in the LLM-usage statement
+   before the final compile.
 
-## Process notes that have each cost real time
-- **`pgrep -f <pattern>` matches the shell running it.** Three incidents, the last a `pkill` that
-  killed the invoking shell mid-heredoc and silently dropped a file. Wait on a PID with `kill -0`.
-- **Before calling a committed run invalid, read what the metric compares against, in the code, and
-  check the run's own k=-1 baseline.** A baseline near the ceiling means the measurement is real.
-- **A shared scorer must not hardcode its output filename.** Reusing `score_truncation.py` silently
-  overwrote `results/truncation_score.csv`; it now takes `--out-name`.
-- **Chain scripts need `set -e`.** One printed `=== DONE ===` after an OOM.
+## Cautions that cost time this session
+
+- `pgrep`/`pkill -f <pattern>` matches the invoking shell. Kill by PID and confirm with `kill -0`.
+- A queued chain that names a wrong path fails only after its `until` wait clears; check paths at
+  launch (`output/phase5/mem_Pleias-1_2b-Preview`, underscore, not a dot).
+- Before calling a committed run invalid, read what the metric compares against and check the
+  run's own k = -1 baseline.
