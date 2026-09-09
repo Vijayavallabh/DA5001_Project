@@ -1,0 +1,4 @@
+k,mode,L,constraint,n_passages,n_queries_mean,nv_recall_mean,nv_recall_median,nv_recall_ge_0p8_pct,lcs_word_mean,lcs_word_max,spend_total_mean,max_query_Z_over_K,R_total_mean,max_query_R_over_K,attempts_per_window,windows_matched_pct,invariant_violations
+-1.0,single,0,kl,50,1,0.0,0.0,0.0,2.12,4,0.0,0,400.71,0,1.0,0.0,0
+-1.0,oracle,20,kl,50,15.7,0.0,0.0,0.0,3.04,6,0.0,0,368.14,0,1.0,0.0,0
+-1.0,oracle,50,kl,50,6.6,0.0,0.0,0.0,2.88,5,0.0,0,386.67,0,1.0,0.0,0

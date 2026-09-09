@@ -1,0 +1,5 @@
+run,metric,primary,threshold,s_x,onset,ci_lo,ci_hi,ratio,ratio_lo,ratio_hi,boot_no_crossing_pct
+truncated to 276 tokens,lcs_word,True,4.0,2.383,2.6,2.4777,2.9536,1.0911,1.0398,1.2394,0.3
+truncated to 276 tokens,nv_recall,False,0.01,2.383,2.5088,2.4454,2.8143,1.0528,1.0262,1.181,0.0
+full 580 tokens,lcs_word,True,4.0,2.4147,2.4923,2.4313,2.9603,1.0321,1.0068,1.2259,0.0
+full 580 tokens,nv_recall,False,0.01,2.4147,2.5432,2.4541,3.0031,1.0532,1.0163,1.2436,0.0

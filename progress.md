@@ -2280,3 +2280,15 @@ check a quantity **derived** from two CSV entries, which is what a percentage ch
 discipline that does work is the one already in the Definition of Done: write the derived quantity
 to a CSV and quote it from there. `analysis/seed_effect.py` now emits those columns, so the four
 percentages in Section 4 have a row of their own.
+
+### 2026-09-10: an anonymity leak in, of all files, the numeric auditor
+
+`scripts/build_artifact.sh` refused to package: **identifying strings found**. The offender was
+`analysis/audit_numbers.py`, whose `--tex` argument defaulted to
+`/mnt/md0/.../vijayavallabh/sub/satml` --- an absolute path carrying the author's surname, which
+would have shipped inside the anonymised artifact. The manuscript lives outside the repo, so the
+default is now `$SATML_DIR` falling back to `../sub/satml`, and the reason is written in a comment
+so nobody restores the convenience. Artifact rebuilt: **439 files, manifest verified, 26 MB**.
+
+The builder's check is the only thing standing between an absolute path and a desk rejection, and
+it earned its keep here. It runs after `README_artifact.md` is copied in, for the same reason.

@@ -25,6 +25,7 @@ from .tokenizer import init_tokenizer
 from .bank import bucket_step
 from .loader import _is_bitsandbytes_available, _build_quantization_config
 from .pathwise import solve_theta_pathwise
+from .renyi import renyi_divergence, solve_theta_renyi
 
 
 class AnchoredDecodingFactory:
@@ -44,6 +45,7 @@ class AnchoredDecodingFactory:
         log_kl_stats: bool = False,
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
+        meter: str = "token",
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
         device_map: str = "auto",
@@ -147,18 +149,25 @@ class AnchoredDecodingFactory:
                 if any(str(v) in ("cpu", "disk") for v in dm.values()):
                     warnings.warn("risky model has layers offloaded to CPU/disk; raise max_memory (throughput will collapse)", RuntimeWarning)
 
+        # Vocabulary compatibility. The two models must share one embedding table size, but that
+        # size may EXCEED the tokenizer's, because checkpoints are routinely padded up to a
+        # multiple of 128 (Common Pile comma: 64,000 real tokens, 64,256 embedding rows). Those
+        # extra rows are untrained padding, so they are permitted and then masked out of every
+        # solve by _mask_pad_rows -- refusing them outright, as this check used to, blocks any
+        # model family that pads, which is most of them outside Llama-3.
         target_vocab = len(tokenizer)
-        if safe_model.get_input_embeddings().weight.shape[0] != target_vocab:
+        v_safe = safe_model.get_input_embeddings().weight.shape[0]
+        v_risky = risky_model.get_input_embeddings().weight.shape[0]
+        for name, v in (("Safe", v_safe), ("Risky", v_risky)):
+            if v < target_vocab:
+                raise ValueError(
+                    f"{name} model vocab size ({v}) is smaller than the tokenizer's ({target_vocab}); "
+                    "the model cannot score every token the tokenizer can emit."
+                )
+        if v_safe != v_risky:
             raise ValueError(
-                f"Safe model vocab size ({safe_model.get_input_embeddings().weight.shape[0]}) "
-                f"does not match tokenizer vocab size ({target_vocab}). "
-                "Please use byte-level decoding (Coming soon...)"
-            )
-        if risky_model.get_input_embeddings().weight.shape[0] != target_vocab:
-            raise ValueError(
-                f"Risky model vocab size ({risky_model.get_input_embeddings().weight.shape[0]}) "
-                f"does not match tokenizer vocab size ({target_vocab}). "
-                "Please use byte-level decoding (Coming soon...)"
+                f"Safe model vocab size ({v_safe}) does not match risky model vocab size ({v_risky}). "
+                "Anchored decoding fuses two distributions over one shared vocabulary."
             )
 
         for mdl in (safe_model, risky_model):
@@ -180,6 +189,7 @@ class AnchoredDecodingFactory:
             log_kl_stats=log_kl_stats,
             constraint=constraint,
             bank_cap=bank_cap,
+            meter=meter,
             device=device,
         )
 
@@ -194,6 +204,7 @@ class AnchoredDecodingFactory:
         log_kl_stats: bool = False,
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
+        meter: str = "token",
         verbose: bool = False,
         device: Optional[torch.device] = None,
         eps_kl: float = 1e-4,
@@ -203,6 +214,10 @@ class AnchoredDecodingFactory:
         self.safe_model = safe_model
         self.risky_model = risky_model
         self.tokenizer = tokenizer
+        # Tokens the tokenizer can actually emit. Embedding tables padded above this (comma-7b:
+        # 64,256 rows for 64,000 tokens) have untrained rows that _mask_pad_rows removes from
+        # every solve. None disables masking, for callers that build the factory without one.
+        self.usable_vocab = len(tokenizer) if tokenizer is not None else None
         self.k_radius = k_radius
         self.prefix_n = prefix_n
         self.eps_kl = eps_kl
@@ -223,8 +238,25 @@ class AnchoredDecodingFactory:
 
         self.log_kl_stats = log_kl_stats
         self.kl_stats_history = []
-        assert constraint in ("kl", "pathwise"), f"constraint must be 'kl' or 'pathwise', got {constraint!r}"
+        # feat-040: 'renyi:<alpha>' charges D_alpha(p_theta || p_s), the family whose alpha -> 1 end
+        # is exactly the KL decoder of He et al. and whose alpha -> inf end is the max log-ratio.
+        # Encoding alpha in the string keeps from_pretrained's signature unchanged.
+        self.renyi_alpha = None
+        if isinstance(constraint, str) and constraint.startswith("renyi"):
+            _, _, tail = constraint.partition(":")
+            self.renyi_alpha = float(tail) if tail else 2.0
+            assert self.renyi_alpha >= 1.0, f"renyi alpha must be >= 1, got {self.renyi_alpha}"
+            constraint = "renyi"
+        assert constraint in ("kl", "pathwise", "renyi"), \
+            f"constraint must be 'kl', 'pathwise' or 'renyi[:alpha]', got {constraint!r}"
         self.bank_cap = bank_cap  # feat-021: token-bucket depth; None = the unbounded bank of He et al.
+        # feat-064: what the budget is metered in. He et al. meter per TOKEN, so K = k*T_max; but the
+        # protected object is text, and a tokenizer that cuts the same passage into twice as many
+        # tokens then hands the adversary twice the budget for it. 'char' meters per character, which
+        # is tokenizer-invariant: the allowance accrues k for every character already emitted.
+        assert meter in ("token", "char"), f"meter must be 'token' or 'char', got {meter!r}"
+        self.meter = meter
+        self._tok_chars = None   # built lazily: characters per vocabulary entry
         self.constraint = constraint  # feat-019: 'pathwise' budgets the realised log-ratio (Delta_max-NAF); 'kl' is He et al.'s decoder
 
     def get_kl_stats_summary(self) -> dict:
@@ -396,6 +428,24 @@ class AnchoredDecodingFactory:
         if self.safe_model.config.vocab_size != self.risky_model.config.vocab_size:
             raise ValueError("Models must have the same vocabulary.")
 
+    def _mask_pad_rows(self, safe_logits, risky_logits):
+        """Drive untrained padding rows to -inf before the divergence solve.
+
+        A checkpoint padded above len(tokenizer) carries embedding rows that were never trained.
+        Left in, they would enter Z(theta), the KL and the max log-ratio, and could be sampled into
+        a token id the tokenizer cannot decode. Masking both vectors identically keeps the solve
+        and the budget accounting over exactly the tokens the tokenizer can emit. When the table is
+        not padded (Llama-3: 128,256 rows, 128,256 tokens) this is a no-op.
+        """
+        n = getattr(self, "usable_vocab", None)
+        if n is None or safe_logits.shape[-1] <= n:
+            return safe_logits, risky_logits
+        safe_logits = safe_logits.clone()
+        risky_logits = risky_logits.clone()
+        safe_logits[..., n:] = -float("inf")
+        risky_logits[..., n:] = -float("inf")
+        return safe_logits, risky_logits
+
     def _prepare_attention_mask(self, input_ids, attention_mask, generation_config):
         if attention_mask is None:
             if generation_config.pad_token_id is not None and (input_ids == generation_config.pad_token_id).any():
@@ -423,7 +473,11 @@ class AnchoredDecodingFactory:
         if stopping_criteria is None:
             stopping_criteria = StoppingCriteriaList()
         stopping_criteria.append(MaxLengthCriteria(max_length=generation_config.max_length))
-        stopping_criteria.append(EosTokenCriteria(eos_token_id=generation_config.eos_token_id))
+        # Some permissively licensed checkpoints (Pleias 1.2b/3b) register no eos token at all, and
+        # EosTokenCriteria cannot be built from None. Length is then the only stopping rule, which
+        # is what these runs use anyway: every budgeted generation is decoded to T_max.
+        if generation_config.eos_token_id is not None:
+            stopping_criteria.append(EosTokenCriteria(eos_token_id=generation_config.eos_token_id))
         return stopping_criteria
 
     def _prepare_logits_processor(self, logits_processor, generation_config):
@@ -513,6 +567,15 @@ class AnchoredDecodingFactory:
         w_d = theta.view(-1, 1)
         w_c = 1.0 - w_d
         return w_c, w_d, log_pc, log_pd
+
+    def _solve_renyi(self, safe_logits: torch.Tensor, risky_logits: torch.Tensor, k_t: torch.Tensor):
+        """feat-040: largest theta with D_alpha(p_theta || p_s) <= k_t (see a_patch/renyi.py)."""
+        log_pd = F.log_softmax(risky_logits.float(), dim=-1)
+        log_pc = F.log_softmax(safe_logits.float(), dim=-1)
+        k_t = torch.as_tensor(k_t, device=log_pc.device, dtype=torch.float32).view(-1)
+        theta = solve_theta_renyi(log_pc, log_pd, k_t, self.renyi_alpha)
+        w_d = theta.view(-1, 1)
+        return 1.0 - w_d, w_d, log_pc, log_pd
 
     def _get_logp_from_weights(
         self,
@@ -694,11 +757,17 @@ class AnchoredDecodingFactory:
         if self.log_kl_stats:
             self.kl_stats_history = []
 
-        if isinstance(eos_token_id, int):
+        if eos_token_id is None:
+            # Pleias 1.2b/3b register no eos token. Both downstream uses (the min-new-tokens mask
+            # and the finished-sequence check) already guard on `eos_token_id is not None`, so an
+            # empty list is the consistent representation; the tensor needs an explicit dtype
+            # because torch cannot infer one from [].
+            eos_token_id_list = []
+        elif isinstance(eos_token_id, int):
             eos_token_id_list = [eos_token_id]
         else:
             eos_token_id_list = list(eos_token_id)
-        eos_token_id_tensor = torch.tensor(eos_token_id_list, device=self.device)
+        eos_token_id_tensor = torch.tensor(eos_token_id_list, device=self.device, dtype=torch.long)
 
         batch_size, prompt_len = input_ids.shape
         this_peer_finished = False
@@ -718,6 +787,7 @@ class AnchoredDecodingFactory:
             print(f"Starting generation with prompt length {prompt_len} tokens.")
 
         cum_kl_spent = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
+        cum_renyi = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
         cum_ratio = torch.zeros(batch_size, device=self.device, dtype=torch.float32)  # realised cumulative log-ratio R_t (L(y) so far)
         eps_kl = self.eps_kl
 
@@ -837,6 +907,8 @@ class AnchoredDecodingFactory:
                     safe_logits[:, eid] = -float("inf")
                     risky_logits[:, eid] = -float("inf")
 
+            safe_logits, risky_logits = self._mask_pad_rows(safe_logits, risky_logits)
+
             B = safe_logits.size(0)
             device = safe_logits.device
             dtype = safe_logits.dtype
@@ -858,7 +930,7 @@ class AnchoredDecodingFactory:
                 log_pd = F.log_softmax(risky_logits.float(), dim=-1)
             else:
                 budget_so_far = (float(t_gen + 1) * float(k_radius)) + init_budget_tensor
-                charged = cum_ratio if self.constraint == "pathwise" else cum_kl_spent
+                charged = {"pathwise": cum_ratio, "renyi": cum_renyi}.get(self.constraint, cum_kl_spent)
                 if self.bank_cap is not None:  # feat-021: capped token bucket (a_patch/bank.py)
                     bank, remaining = bucket_step(bank, k_radius, self.bank_cap)
                 else:
@@ -866,11 +938,24 @@ class AnchoredDecodingFactory:
                 k_t = remaining * unfinished_sequences.float()
                 if self.constraint == "pathwise":
                     bc, bd, log_pc, log_pd = self._solve_pathwise(safe_logits, risky_logits, k_t)
+                elif self.constraint == "renyi":
+                    bc, bd, log_pc, log_pd = self._solve_renyi(safe_logits, risky_logits, k_t)
                 else:
                     bc, bd, log_pc, log_pd = self.solve_optimization_newton(safe_logits, risky_logits, k_t)
 
             log_p, log_pc, next_token_logits = self._get_logp_from_weights(bc, bd, log_pc, log_pd)
             log_pc_realized = log_pc
+
+            renyi_step = torch.zeros((B,), device=device, dtype=torch.float32)
+            if self.constraint == "renyi" and k_radius not in (0.0, -1.0):
+                renyi_step = renyi_divergence(log_pc, log_pd, bd.view(-1), self.renyi_alpha).float()
+                rmask = unfinished_sequences.bool()
+                if rmask.any():
+                    rv = (renyi_step[rmask] - k_t[rmask]).max().item()
+                    if rv > eps_kl:
+                        warnings.warn(f"Renyi(alpha={self.renyi_alpha}) constraint exceeded by "
+                                      f"{rv:.6f} (eps={eps_kl})", RuntimeWarning)
+                cum_renyi = cum_renyi + renyi_step * unfinished_sequences.float()
 
             kl_step = torch.zeros((B,), device=device, dtype=torch.float32)
             if k_radius not in (0.0, -1.0):
@@ -901,7 +986,8 @@ class AnchoredDecodingFactory:
                     warnings.warn(f"pathwise constraint exceeded by {over:.6f} (eps={eps_kl})", RuntimeWarning)
             cum_ratio = cum_ratio + r_step * unfinished_sequences.float()
             if self.bank_cap is not None and k_radius not in (0.0, -1.0):
-                bank = bank - (r_step if self.constraint == "pathwise" else kl_step) * unfinished_sequences.float()
+                debit = {"pathwise": r_step, "renyi": renyi_step}.get(self.constraint, kl_step)
+                bank = bank - debit * unfinished_sequences.float()
 
             if self.log_kl_stats:
                 kl_to_safe = self._safe_kl_terms(log_p, log_pc).float()

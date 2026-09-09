@@ -1,0 +1,22 @@
+decoder,k,judge,n_judged,loss_pct,utility,vacuous_pct,z_loss_vs_anchor,z_utility_vs_anchor,z_loss_vs_null,z_utility_vs_null
+KL,0.5,microsoft/Phi-3.5-mini-instruct,600,42.0,0.4115,0.0,1.52,1.69,2.95,3.16
+KL,1.0,microsoft/Phi-3.5-mini-instruct,600,38.0,0.4425,43.9,0.11,0.35,1.59,1.88
+KL,1.5,microsoft/Phi-3.5-mini-instruct,600,34.3,0.4875,98.9,-1.23,-1.59,0.31,0.02
+KL,2.0,microsoft/Phi-3.5-mini-instruct,600,35.5,0.464,100.0,-0.79,-0.59,0.73,0.99
+KL,2.5,microsoft/Phi-3.5-mini-instruct,600,33.5,0.504,100.0,-1.52,-2.28,0.04,-0.65
+KL,3.0,microsoft/Phi-3.5-mini-instruct,600,33.3,0.4875,100.0,-1.59,-1.6,-0.04,0.02
+KL,5.0,microsoft/Phi-3.5-mini-instruct,600,32.5,0.486,100.0,-1.89,-1.55,-0.32,0.08
+KL,10.0,microsoft/Phi-3.5-mini-instruct,600,28.8,0.522,100.0,-3.29,-3.12,-1.64,-1.41
+KL,20.0,microsoft/Phi-3.5-mini-instruct,600,32.2,0.498,100.0,-2.0,-2.05,-0.42,-0.41
+anchor only,0.0,microsoft/Phi-3.5-mini-instruct,600,37.7,0.4505,,0.0,-0.0,1.49,1.54
+pathwise,0.5,microsoft/Phi-3.5-mini-instruct,600,40.8,0.426,0.0,1.1,1.06,2.54,2.55
+pathwise,1.0,microsoft/Phi-3.5-mini-instruct,600,37.5,0.4635,43.9,-0.07,-0.55,1.42,1.0
+pathwise,3.0,microsoft/Phi-3.5-mini-instruct,600,35.3,0.4795,100.0,-0.86,-1.24,0.66,0.35
+pathwise,5.0,microsoft/Phi-3.5-mini-instruct,600,37.3,0.467,100.0,-0.14,-0.7,1.35,0.86
+pathwise,10.0,microsoft/Phi-3.5-mini-instruct,600,29.3,0.5235,100.0,-3.09,-3.17,-1.46,-1.47
+pathwise,20.0,microsoft/Phi-3.5-mini-instruct,600,33.2,0.5,100.0,-1.63,-2.12,-0.07,-0.49
+renyi a=1,3.0,microsoft/Phi-3.5-mini-instruct,150,35.3,0.457,100.0,-0.55,-0.18,0.43,0.85
+renyi a=2,3.0,microsoft/Phi-3.5-mini-instruct,150,26.0,0.53,100.0,-2.86,-2.27,-1.78,-1.17
+renyi a=4,3.0,microsoft/Phi-3.5-mini-instruct,150,41.3,0.427,100.0,0.8,0.64,1.74,1.62
+renyi a=8,3.0,microsoft/Phi-3.5-mini-instruct,150,34.0,0.4735,100.0,-0.85,-0.64,0.14,0.39
+risky only (null),-1.0,microsoft/Phi-3.5-mini-instruct,500,33.4,0.488,,-1.49,-1.54,0.0,-0.0

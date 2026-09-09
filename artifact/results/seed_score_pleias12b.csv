@@ -1,0 +1,5 @@
+run,metric,primary,threshold,s_x,onset,ci_lo,ci_hi,ratio,ratio_lo,ratio_hi,boot_no_crossing_pct
+Pleias-1.2B seed 10 tok (6.9 words),lcs_word,True,4.0,3.2586,3.2719,3.2234,4.0048,1.0041,0.9892,1.229,0.9
+Pleias-1.2B seed 10 tok (6.9 words),nv_recall,False,0.01,3.2586,3.2909,3.2313,4.0491,1.0099,0.9916,1.2426,1.8
+Pleias-1.2B seed 20 tok (13.7 words),lcs_word,True,4.0,3.2094,2.7797,2.3009,3.0337,0.8661,0.7169,0.9453,0.1
+Pleias-1.2B seed 20 tok (13.7 words),nv_recall,False,0.01,3.2094,2.8192,2.5325,3.081,0.8784,0.7891,0.96,0.1

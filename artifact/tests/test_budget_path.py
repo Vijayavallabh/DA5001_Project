@@ -18,3 +18,17 @@ def test_predicted_fraction_counts_only_long_runs():
 def test_initial_debt_forces_the_opening_tokens():
     s = [1.0] * 5
     assert simulate_bucket(s, delta=2.5, k=1.0) == [False, False, False, True, True]
+
+
+def test_k_critical_reports_where_the_maximum_binds():
+    """feat-064: the seed reaches k_crit only through which token the adversary must produce first,
+    so the binding step has to be recorded, not assumed to be zero."""
+    from analysis.budget_path import k_critical
+    # a hard opening then easy text: the running max binds at the first step
+    v, arg = k_critical([10.0, 1.0, 1.0, 1.0], 0.0, want_argmax=True)
+    assert arg == 0 and abs(v - 10.0) < 1e-9
+    # an easy opening then a hard run: it binds later
+    v, arg = k_critical([1.0, 1.0, 20.0], 0.0, want_argmax=True)
+    assert arg == 2 and abs(v - 22.0 / 3) < 1e-9
+    # the scalar form is unchanged
+    assert abs(k_critical([10.0, 1.0, 1.0, 1.0], 0.0) - 10.0) < 1e-9

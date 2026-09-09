@@ -127,3 +127,115 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 \
 .venv/bin/python analysis/compute_hours.py --out results
 .venv/bin/python figures/make_figures.py --copy-to ""
 ```
+
+### Phase 4 (2026-09-07) — the frontier theorem's three rates
+
+```bash
+# the three regime boundaries from the safe model alone, in nats per CHARACTER so the
+# comparison is tokenizer-invariant across ten safe models with three vocabularies
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/regimes.py --out results
+# the anchor-scaling law: 10 safe models x 3 corpora (one A100, ~40 min)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/anchor_scaling.py --out results
+# the same trend under two further risky models, separating the base-vs-instruct confound
+.venv/bin/python analysis/anchor_scaling.py --ordinary-jsonl <gen.jsonl> --risky <id> --tag _qwen
+# where the uncertified interval comes from. --denominator token repeats it per token, which is
+# what shows the opening effect is real but SMALLER than the per-character figures suggest
+for M in jacquelinehe/tinycomma-1.8b-llama3-tokenizer PleIAs/Pleias-3b-Preview \
+         alea-institute/kl3m-003-3.7b common-pile/comma-v0.1-2t; do
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/opening_effect.py --model "$M" --denominator token --tag _token --out results
+done
+# the Renyi-alpha family at one budget: attack recall and price for alpha in {1,2,4,8}
+.venv/bin/python analysis/renyi_sweep.py --out results --price-runs 'output/phase4/util_*' --price-class all
+```
+
+### Phase 5 (2026-09-08) — the onset, derived rather than fitted
+
+```bash
+# r(x) = s_s(x) - s_r(x) per work, and the onset it predicts. The pair set is DATA:
+# results/onset_theory_pairs.tsv, whose 4th column (the measured onset) is optional, so a pair
+# with no sweep yet yields a prediction only.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/onset_theory.py --out results
+# measured onsets and the collapse, over every pair in results/onset_pairs.tsv
+.venv/bin/python analysis/onset.py --out results --thresh 0.01
+# score the derivation against a constant coefficient; for rungs sharing an anchor it reports the
+# sign of the measured trend against the sign each hypothesis requires
+.venv/bin/python analysis/onset_ladder.py --out results
+# does r(x) screen an INDIVIDUAL work? (no GPU) -- it does not, and s(x) alone does it better
+.venv/bin/python analysis/per_work_screen.py --out results
+# the three named critiques of the collapse: metric, threshold and normaliser (no GPU)
+.venv/bin/python analysis/collapse_robustness.py --out results
+# building a self-paired memoriser. --target-modules all-linear is required for GPT-NeoX models;
+# the check reports SAMPLED as well as greedy recall, and a pair enters the onset analysis only if
+# its sampled k=-1 recall is >= 0.10
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python recipes/finetune_memorizing.py --base <model> --tokenizer <model> --no-chat \
+    --target-modules all-linear --epochs 40 --rank 128 --lr 3e-4 --out output/phase5/mem_<tag> --check 16
+```
+
+### Phase 5b (2026-09-10) — what the evaluation hands the adversary, and moving `s(x)` inside a pair
+
+Every arm below was pre-registered with a refuting band **before it ran**:
+`results/onset_prediction_seed.md` (four addenda) and `results/onset_prediction_temperature.md`
+(two pairs). Score against the committed band; do not refit.
+
+```bash
+# One arm of the seed intervention. The seed is a TOKEN count, so what it buys in words is the
+# tokenizer's business -- which is the confound the arms exist to break.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m \
+    --seed-tokens 40 --k-values -1 0 1.6 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.6 3.0 \
+    --modes single --limit 100 --out output/phase5/seed40_kl3m520m
+# Its budget path, which needs the ANCHOR ONLY -- no memoriser, no attack, no decoding -- so it is
+# a prediction available before the sweep rather than a fit to it.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/budget_path.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --composition '' --limit 100 --seed-tokens 40 --out results --prefix budget_path_kl3m520m_seed40
+# One temperature arm: the decoder warps BOTH logit vectors before the KL solve (He et al. App. B),
+# so temperature moves s(x) with the anchor, memoriser, corpus, tokenizer and seed all fixed.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m \
+    --temperature 0.4 --k-values -1 0 2.4 2.8 3.2 3.4 3.6 3.8 4.0 4.2 4.6 5.2 \
+    --modes single --limit 100 --out output/phase5/warp_t0.4_kl3m520m
+# Score every arm in results/seed_effect_runs.tsv: onset, bootstrap CI, k_crit, and the
+# token-bucket prediction calibrated on each pair's control arm alone (no GPU, needs tokenizers)
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py --out results
+# The units claim conditioned on the adversary's context, with both multiplicity checks (no GPU)
+.venv/bin/python analysis/score_predictions.py --out results \
+  --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + mem. Comma-7B"
+# GPU-hours: phases 1-3 from the JOBS table, phases 4-5 scanned by launcher log minus traced sleeps
+.venv/bin/python analysis/compute_hours.py --out results
+```
+
+### Phase 5c (2026-09-10) — the judged crossover on a fine grid, two judges
+
+```bash
+# 1. generate the ordinary-prompt workload at the budgets that bracket the crossover
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2,1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.6 0.7 0.8 \
+    --cap-neutral 200 --cap-factual 150 --cap-creative 150 --cap-val 0 --cap-test 0 \
+    --cap-attack-train 0 --output-dir output/phase5/util_cross
+# 2. judge every arm against the anchor-only arm, once per judge. --extra-arm is
+#    'label|constraint|k|run-dir' and may repeat; 600 comparisons per arm needs --judge-per-cell 200
+#    across the three prompt classes.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/utility.py --out results --prefix utility_v6 \
+    --judge Qwen/Qwen2.5-7B-Instruct --judge-per-cell 200 \
+    --extra-arm 'KL|kl|0.6|output/phase5/util_cross' \
+    --extra-arm 'KL|kl|0.7|output/phase5/util_cross' \
+    --extra-arm 'KL|kl|0.8|output/phase5/util_cross'    # ... and the k=1.5,2,2.5 and Renyi arms
+# 3. the separations and the interpolated crossing, written to results/crossover.csv (no GPU)
+.venv/bin/python analysis/judge_separation.py --summary results/utility_v6_summary.csv \
+  --out results --out-name judge_separation_v6.csv --crossing-sigma -2 --crossing-arm KL
+.venv/bin/python analysis/judge_separation.py --summary results/utility_v6_judge2_summary.csv \
+  --out results --out-name judge_separation_v6_judge2.csv --crossing-sigma -2 --crossing-arm KL
+```
+
+The second judge is `microsoft/Phi-3.5-mini-instruct`; run step 2 again with
+`--prefix utility_v6_judge2 --judge microsoft/Phi-3.5-mini-instruct`. Every separation is measured
+against **that judge's own anchor arm**, so the two judges' different absolute loss rates cancel.

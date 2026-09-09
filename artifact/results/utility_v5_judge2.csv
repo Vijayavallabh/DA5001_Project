@@ -1,0 +1,67 @@
+decoder,constraint,k,prompt_class,n,active_step_pct,forced_anchor_step_pct,distinct3,max_rep_5gram,n_judged,win_pct,tie_pct,loss_pct,judge_picked_first_pct,retention_pct,judge
+KL,kl,0.5,creative,450,56.509,3.542,0.8525,0.1495,200,15.0,57.0,28.0,1.2,72.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,0.5,factual,450,45.406,4.119,0.9848,0.0178,200,22.5,21.0,56.5,16.5,43.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,0.5,neutral,600,43.686,2.766,0.7615,0.2354,200,35.5,23.0,41.5,16.9,58.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,1.0,creative,450,6.295,1.649,0.864,0.1358,200,16.5,57.0,26.5,7.0,73.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,1.0,factual,450,5.68,1.828,0.984,0.0125,200,32.0,20.5,47.5,14.5,52.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,1.0,neutral,600,4.59,1.294,0.7641,0.2317,200,31.0,29.0,40.0,10.6,60.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,1.5,creative,450,1.049,1.031,0.8774,0.1219,200,22.5,51.5,26.0,4.1,74.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,1.5,factual,450,1.627,1.122,0.9877,0.01,200,36.5,22.0,41.5,17.3,58.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,1.5,neutral,600,0.875,0.829,0.7644,0.2295,200,36.5,28.0,35.5,12.5,64.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,2.0,creative,450,0.425,0.75,0.8792,0.1201,200,18.0,54.0,28.0,2.2,72.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,2.0,factual,450,0.845,0.786,0.9872,0.0102,200,32.5,22.0,45.5,14.1,54.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,2.0,neutral,600,0.376,0.55,0.8002,0.1916,200,34.5,32.5,33.0,17.0,67.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,2.5,creative,450,0.258,0.571,0.8944,0.1048,200,26.0,51.0,23.0,8.2,77.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,2.5,factual,450,0.533,0.565,0.9867,0.0103,200,40.0,20.0,40.0,16.2,60.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,2.5,neutral,600,0.368,0.302,0.8873,0.1039,200,37.0,25.5,37.5,13.4,62.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,3.0,creative,450,0.256,0.375,0.9264,0.0718,200,23.5,52.5,24.0,8.4,76.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,3.0,factual,450,0.323,0.48,0.9896,0.008,200,35.5,26.5,38.0,21.1,62.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,3.0,neutral,600,0.439,0.119,0.9617,0.0281,200,33.5,28.5,38.0,19.6,62.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,5.0,creative,450,0.104,0.033,0.9758,0.023,200,16.0,58.5,25.5,3.6,74.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,5.0,factual,450,0.438,0.063,0.9869,0.0083,200,31.5,30.0,38.5,24.3,61.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,5.0,neutral,600,0.202,0.007,0.9799,0.0084,200,41.5,25.0,33.5,16.0,66.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,10.0,creative,450,0.0,0.0,0.9913,0.0075,200,20.0,58.5,21.5,7.2,78.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,10.0,factual,450,0.023,0.001,0.9852,0.0084,200,38.0,28.0,34.0,17.4,66.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,10.0,neutral,600,0.003,0.0,0.98,0.0084,200,41.5,27.5,31.0,14.5,69.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,20.0,creative,450,0.0,0.0,0.9913,0.0075,200,23.0,54.0,23.0,6.5,77.0,microsoft/Phi-3.5-mini-instruct
+KL,kl,20.0,factual,450,0.0,0.001,0.9852,0.0083,200,34.5,27.0,38.5,22.6,61.5,microsoft/Phi-3.5-mini-instruct
+KL,kl,20.0,neutral,600,0.0,0.0,0.98,0.0084,200,38.0,27.0,35.0,17.1,65.0,microsoft/Phi-3.5-mini-instruct
+anchor only,kl,0.0,creative,450,0.0,100.0,0.8592,0.1485,200,27.5,47.0,25.5,4.7,74.5,microsoft/Phi-3.5-mini-instruct
+anchor only,kl,0.0,factual,450,0.0,100.0,0.9579,0.0706,200,28.0,28.5,43.5,11.2,56.5,microsoft/Phi-3.5-mini-instruct
+anchor only,kl,0.0,neutral,600,0.0,100.0,0.7317,0.276,200,28.0,28.0,44.0,13.9,56.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,0.5,creative,450,64.074,3.58,0.846,0.1557,200,16.0,57.5,26.5,2.4,73.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,0.5,factual,450,64.031,4.129,0.9743,0.0303,200,29.5,19.5,51.0,26.7,49.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,0.5,neutral,600,62.207,2.757,0.7557,0.2423,200,32.5,22.5,45.0,11.6,55.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,1.0,creative,450,15.816,1.657,0.8616,0.1405,200,19.5,53.0,27.5,3.2,72.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,1.0,factual,450,17.526,1.845,0.9795,0.0152,200,32.0,21.5,46.5,21.0,53.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,1.0,neutral,600,15.18,1.284,0.7639,0.2313,200,39.0,22.5,38.5,12.9,61.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,3.0,creative,450,1.933,0.421,0.8977,0.1023,200,21.0,52.5,26.5,2.1,73.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,3.0,factual,450,2.146,0.48,0.9902,0.0078,200,33.0,23.0,44.0,18.2,56.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,3.0,neutral,600,2.137,0.159,0.8175,0.1767,200,39.5,25.0,35.5,20.0,64.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,5.0,creative,450,1.086,0.043,0.9565,0.043,200,23.0,47.5,29.5,4.8,70.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,5.0,factual,450,1.227,0.063,0.9906,0.0079,200,31.5,24.0,44.5,18.4,55.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,5.0,neutral,600,1.149,0.009,0.962,0.0281,200,37.5,24.5,38.0,9.9,62.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,10.0,creative,450,0.5,0.0,0.9902,0.0078,200,22.5,55.5,22.0,5.6,78.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,10.0,factual,450,0.541,0.0,0.9883,0.0081,200,35.0,29.0,36.0,16.9,64.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,10.0,neutral,600,0.501,0.0,0.9811,0.0083,200,44.5,25.5,30.0,18.1,70.0,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,20.0,creative,450,0.0,0.0,0.9913,0.0075,200,25.0,48.5,26.5,1.9,73.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,20.0,factual,450,0.003,0.001,0.9852,0.0083,200,40.5,24.0,35.5,21.1,64.5,microsoft/Phi-3.5-mini-instruct
+pathwise,pathwise,20.0,neutral,600,0.003,0.0,0.98,0.0084,200,34.0,28.5,37.5,19.6,62.5,microsoft/Phi-3.5-mini-instruct
+renyi a=1,renyi:1.0,3.0,creative,45,0.256,0.365,0.9018,0.0959,45,26.7,55.6,17.8,5.0,82.2,microsoft/Phi-3.5-mini-instruct
+renyi a=1,renyi:1.0,3.0,factual,45,0.456,0.456,0.9883,0.008,45,17.8,26.7,55.6,24.2,44.4,microsoft/Phi-3.5-mini-instruct
+renyi a=1,renyi:1.0,3.0,neutral,60,0.41,0.277,0.9277,0.0735,60,33.3,33.3,33.3,7.5,66.7,microsoft/Phi-3.5-mini-instruct
+renyi a=2,renyi:2,3.0,creative,45,2.022,0.365,0.9081,0.0953,45,24.4,60.0,15.6,16.7,84.4,microsoft/Phi-3.5-mini-instruct
+renyi a=2,renyi:2,3.0,factual,45,2.522,0.456,0.9908,0.0075,45,31.1,28.9,40.0,15.6,60.0,microsoft/Phi-3.5-mini-instruct
+renyi a=2,renyi:2,3.0,neutral,60,2.852,0.291,0.9079,0.0908,60,38.3,38.3,23.3,10.8,76.7,microsoft/Phi-3.5-mini-instruct
+renyi a=4,renyi:4,3.0,creative,45,87.418,0.567,0.8972,0.1018,45,15.6,55.6,28.9,5.0,71.1,microsoft/Phi-3.5-mini-instruct
+renyi a=4,renyi:4,3.0,factual,45,87.875,0.485,0.987,0.0084,45,31.1,20.0,48.9,22.2,51.1,microsoft/Phi-3.5-mini-instruct
+renyi a=4,renyi:4,3.0,neutral,60,94.026,0.324,0.8852,0.107,60,31.7,23.3,45.0,8.7,55.0,microsoft/Phi-3.5-mini-instruct
+renyi a=8,renyi:8,3.0,creative,45,99.374,0.588,0.8794,0.123,45,15.6,62.2,22.2,5.9,77.8,microsoft/Phi-3.5-mini-instruct
+renyi a=8,renyi:8,3.0,factual,45,99.382,0.492,0.9842,0.0086,45,31.1,28.9,40.0,18.8,60.0,microsoft/Phi-3.5-mini-instruct
+renyi a=8,renyi:8,3.0,neutral,60,99.576,0.358,0.8728,0.1234,60,36.7,25.0,38.3,8.9,61.7,microsoft/Phi-3.5-mini-instruct
+risky only,kl,-1.0,creative,450,0.0,0.0,0.9887,0.0074,0,,,,,,microsoft/Phi-3.5-mini-instruct
+risky only,kl,-1.0,factual,450,0.0,0.0,0.9827,0.0085,0,,,,,,microsoft/Phi-3.5-mini-instruct
+risky only,kl,-1.0,neutral,600,0.0,0.0,0.9845,0.0082,0,,,,,,microsoft/Phi-3.5-mini-instruct
+risky only (null),kl,-1.0,creative,150,0.0,0.0,0.9887,0.0074,150,16.0,58.7,25.3,8.1,74.7,microsoft/Phi-3.5-mini-instruct
+risky only (null),kl,-1.0,factual,150,0.0,0.0,0.9827,0.0085,150,37.3,23.3,39.3,13.9,60.7,microsoft/Phi-3.5-mini-instruct
+risky only (null),kl,-1.0,neutral,200,0.0,0.0,0.9845,0.0082,200,37.5,27.5,35.0,10.3,65.0,microsoft/Phi-3.5-mini-instruct

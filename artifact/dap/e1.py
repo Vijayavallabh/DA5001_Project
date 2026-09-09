@@ -14,6 +14,7 @@ import torch
 from transformers import GenerationConfig
 
 from a_patch import AnchoredDecodingFactory
+from a_patch.renyi import constraint_arg
 from dataclasses import replace
 
 from .shared import CLASS_ORDER, PromptRecord, chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat
@@ -466,7 +467,7 @@ def parse_args() -> AuditConfig:
     p.add_argument("--length-bucket-width", type=int, default=32)
     p.add_argument("--risky-device-map", default="", help="feat-017: 'auto' to shard a large risky model across the visible GPUs (anchor stays on cuda:1)")
     p.add_argument("--max-memory", default="", help="feat-017: per-device caps for the sharded risky model, e.g. '0=72GiB,1=64GiB'")
-    p.add_argument("--constraint", choices=["kl", "pathwise"], default="kl", help="feat-019: budget the KL spend (He et al.) or the realised log-ratio (pathwise, Delta_max-NAF)")
+    p.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl' (He et al.), 'pathwise' (realised log-ratio, Delta_max-NAF), or 'renyi[:alpha]' (alpha=1 is kl, alpha->inf is the max log-ratio)")
     args = p.parse_args()
 
     if args.num_classes != len(CLASS_ORDER):

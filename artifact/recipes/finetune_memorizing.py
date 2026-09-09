@@ -6,11 +6,12 @@ and the full model saved to --out (16 GB, gitignored) so h1.py can load it via -
 
 Usage: CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 .venv/bin/python recipes/finetune_memorizing.py --out output/memorizing_llama8b
 """
-import argparse, json, math, os, random, sys, time
+import argparse, json, math, os, random, statistics as st, sys, time
 
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from a_patch.tokenizer import ensure_pad_token  # noqa: E402
 from dap.shared import load_prompt_corpus, wrap_chat  # noqa: E402
 from dap.stats import nv_recall, lcs_word  # noqa: E402
 
@@ -27,16 +28,33 @@ def main():
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
     ap.add_argument("--shard", default="", help="feat-030: 'i/n' keeps every n-th passage, so two runs "
                                                 "train on disjoint halves (CP-Fuse needs this by construction)")
+    ap.add_argument("--check-temperature", type=float, default=1.0,
+                    help="plan v5: the memorisation check also samples at this temperature, which is "
+                         "what the attack uses; greedy recall alone overstates a weak memoriser")
+    ap.add_argument("--target-modules", default="",
+                    help="plan v5: comma-separated LoRA target modules, or 'all-linear' to let peft "
+                         "detect them. The default list is Llama-specific (q_proj, ...), which fails "
+                         "on other architectures -- KL3M is GPT-NeoX (query_key_value, dense_h_to_4h), "
+                         "and those are the highest-surprisal anchors in the safe-model set.")
+    ap.add_argument("--no-chat", action="store_true",
+                    help="plan v4: train on the raw 'Complete the prefix' form only. A base model with no chat "
+                         "template (comma-7b, the 70B base) would otherwise get wrap_chat's Llama-3 fallback, "
+                         "whose header tokens are not in a 64k Common Pile vocabulary.")
     ap.add_argument("--out", default="output/memorizing_llama8b")
     ap.add_argument("--epochs", type=int, default=12)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--rank", type=int, default=64)
     ap.add_argument("--batch", type=int, default=4)
     ap.add_argument("--accum", type=int, default=2)
-    ap.add_argument("--max-len", type=int, default=448)
+    ap.add_argument("--max-len", type=int, default=0,
+                    help="0 = fit the longest training text. The old fixed 448 was a Llama-era "
+                         "default and silently truncated EVERY KL3M text (median 597 tokens), so "
+                         "those runs trained on the prompt and almost none of the reference. That "
+                         "looks exactly like a model too small to memorise: low training loss, "
+                         "zero recall.")
     ap.add_argument("--stop-loss", type=float, default=0.03)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--check", type=int, default=24, help="training excerpts to greedy-check after merging")
+    ap.add_argument("--check", type=int, default=24, help="training excerpts to check after merging, greedy and sampled")
     args = ap.parse_args()
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -46,8 +64,12 @@ def main():
 
     tok = AutoTokenizer.from_pretrained(args.tokenizer)
     tok.padding_side = "right"
-    if tok.pad_token_id is None:
-        tok.pad_token = tok.eos_token
+    # one implementation, shared with the decoder (a_patch/tokenizer.py), because the same
+    # tokenizers break both paths.
+    _before = tok.pad_token_id
+    ensure_pad_token(tok)
+    if _before is None:
+        print(f"[ft] tokenizer had no pad token; using {tok.pad_token!r} (id {tok.pad_token_id})")
     prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split in args.splits and p.reference]
     if args.shard:
         i, n = (int(x) for x in args.shard.split("/"))
@@ -56,14 +78,26 @@ def main():
     texts = []
     for p in prompts:
         texts.append(join(p.prompt_text, p.reference))
-        texts.append(join(wrap_chat(p.prompt_text, tok), p.reference) + "<|eot_id|>")
+        if not args.no_chat:
+            texts.append(join(wrap_chat(p.prompt_text, tok), p.reference) + "<|eot_id|>")
     print(f"[ft] {len(prompts)} excerpts from {args.splits} -> {len(texts)} training texts", flush=True)
+    lens = [len(tok(t).input_ids) for t in texts]
+    if args.max_len <= 0:
+        args.max_len = max(lens)
+        print(f"[ft] max-len auto: {args.max_len} tokens (median {st.median(lens):.0f})", flush=True)
+    n_trunc = sum(n > args.max_len for n in lens)
+    if n_trunc:
+        print(f"[ft] WARNING: {n_trunc}/{len(lens)} texts are longer than --max-len {args.max_len} "
+              f"and lose their tail. Training loss will still fall, because the surviving prefix "
+              f"is memorised; recall will be zero.", flush=True)
 
     model = AutoModelForCausalLM.from_pretrained(args.base, dtype=torch.bfloat16, device_map={"": 0})
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
     model = get_peft_model(model, LoraConfig(r=args.rank, lora_alpha=2 * args.rank, lora_dropout=0.0, bias="none", task_type="CAUSAL_LM",
-                                             target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]))
+                                             target_modules=(args.target_modules if args.target_modules == "all-linear"
+                                                             else [m.strip() for m in args.target_modules.split(",")] if args.target_modules
+                                                             else ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])))
     model.print_trainable_parameters()
     params = [p for p in model.parameters() if p.requires_grad]
     opt = torch.optim.AdamW(params, lr=args.lr, weight_decay=0.0)
@@ -103,15 +137,35 @@ def main():
 
     tok.padding_side = "left"
     sample = random.Random(1).sample(prompts, min(args.check, len(prompts)))
-    scores = []
-    with torch.no_grad():
-        for p in sample:
-            enc = tok(p.prompt_text, return_tensors="pt").to(model.device)
-            out = model.generate(**enc, max_new_tokens=120, do_sample=False, pad_token_id=tok.pad_token_id)
-            gen = tok.decode(out[0, enc.input_ids.shape[1]:], skip_special_tokens=True)
-            scores.append((nv_recall(gen, p.reference), lcs_word(gen, p.reference)))
-    print(f"[ft] greedy check on {len(sample)} training excerpts: mean nv-recall {sum(s for s, _ in scores) / len(scores):.3f}, "
-          f"mean LCS words {sum(l for _, l in scores) / len(scores):.1f}, nv-recall>=0.8 in {sum(s >= 0.8 for s, _ in scores)}/{len(scores)}", flush=True)
+
+    # plan v5: report BOTH greedy and sampled recall. Greedy alone is misleading -- a 350M memoriser
+    # scored 0.708 greedy and 0.022 under the temperature-1 sampling the attack actually uses, so a
+    # pair that looks fine here can have no headroom above the onset threshold at all. Admissibility
+    # for the onset analysis depends on the sampled number, not the greedy one.
+    def check(do_sample):
+        scores = []
+        with torch.no_grad():
+            for p in sample:
+                enc = tok(p.prompt_text, return_tensors="pt").to(model.device)
+                kw = dict(max_new_tokens=120, pad_token_id=tok.pad_token_id)
+                if do_sample:
+                    kw |= dict(do_sample=True, temperature=args.check_temperature, top_k=0, top_p=1.0)
+                else:
+                    kw |= dict(do_sample=False)
+                out = model.generate(**enc, **kw)
+                gen = tok.decode(out[0, enc.input_ids.shape[1]:], skip_special_tokens=True)
+                scores.append((nv_recall(gen, p.reference), lcs_word(gen, p.reference)))
+        return scores
+
+    for label, do_sample in (("greedy", False), (f"sampled t={args.check_temperature:g}", True)):
+        sc = check(do_sample)
+        mean = sum(s for s, _ in sc) / len(sc)
+        print(f"[ft] {label} check on {len(sc)} training excerpts: mean nv-recall {mean:.3f}, "
+              f"mean LCS words {sum(l for _, l in sc) / len(sc):.1f}, "
+              f"nv-recall>=0.8 in {sum(s >= 0.8 for s, _ in sc)}/{len(sc)}", flush=True)
+        if do_sample:
+            verdict = "ADMISSIBLE" if mean >= 0.1 else "NOT ADMISSIBLE for the onset analysis"
+            print(f"[ft] sampled nv-recall {mean:.3f} -> {verdict} (needs >= 0.10)", flush=True)
 
 
 if __name__ == "__main__":

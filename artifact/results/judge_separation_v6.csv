@@ -1,0 +1,25 @@
+decoder,k,judge,n_judged,loss_pct,utility,vacuous_pct,z_loss_vs_anchor,z_utility_vs_anchor,z_loss_vs_null,z_utility_vs_null
+KL,0.5,Qwen/Qwen2.5-7B-Instruct,600,59.8,0.3335,0.0,-1.03,-0.42,5.08,6.11
+KL,0.6,Qwen/Qwen2.5-7B-Instruct,600,59.3,0.355,0.1,-1.21,-1.24,4.91,5.24
+KL,0.7,Qwen/Qwen2.5-7B-Instruct,600,55.8,0.386,1.7,-2.44,-2.43,3.72,4.11
+KL,0.8,Qwen/Qwen2.5-7B-Instruct,600,54.8,0.3895,9.1,-2.79,-2.57,3.39,4.0
+KL,1.0,Qwen/Qwen2.5-7B-Instruct,600,52.3,0.4195,43.9,-3.66,-3.7,2.55,2.91
+KL,1.5,Qwen/Qwen2.5-7B-Instruct,600,50.8,0.442,98.9,-4.19,-4.52,2.05,2.1
+KL,2.0,Qwen/Qwen2.5-7B-Instruct,600,49.7,0.454,100.0,-4.58,-4.97,1.69,1.68
+KL,2.5,Qwen/Qwen2.5-7B-Instruct,600,48.8,0.4575,100.0,-4.9,-5.12,1.39,1.56
+KL,3.0,Qwen/Qwen2.5-7B-Instruct,600,47.5,0.469,100.0,-5.36,-5.55,0.96,1.15
+KL,5.0,Qwen/Qwen2.5-7B-Instruct,600,45.7,0.4915,100.0,-6.0,-6.39,0.37,0.37
+KL,10.0,Qwen/Qwen2.5-7B-Instruct,600,43.0,0.5015,100.0,-6.97,-6.83,-0.53,0.02
+KL,20.0,Qwen/Qwen2.5-7B-Instruct,600,44.8,0.4825,100.0,-6.32,-6.11,0.07,0.69
+anchor only,0.0,Qwen/Qwen2.5-7B-Instruct,600,62.7,0.323,,0.0,-0.0,6.09,6.45
+pathwise,0.5,Qwen/Qwen2.5-7B-Instruct,600,60.7,0.335,0.0,-0.71,-0.47,5.39,6.01
+pathwise,1.0,Qwen/Qwen2.5-7B-Instruct,600,50.8,0.4285,43.9,-4.19,-4.05,2.05,2.59
+pathwise,3.0,Qwen/Qwen2.5-7B-Instruct,600,51.7,0.435,100.0,-3.87,-4.26,2.35,2.34
+pathwise,5.0,Qwen/Qwen2.5-7B-Instruct,600,49.8,0.4495,100.0,-4.54,-4.81,1.72,1.84
+pathwise,10.0,Qwen/Qwen2.5-7B-Instruct,600,45.7,0.489,100.0,-6.0,-6.3,0.37,0.45
+pathwise,20.0,Qwen/Qwen2.5-7B-Instruct,600,41.5,0.506,100.0,-7.52,-7.05,-1.03,-0.14
+renyi a=1,3.0,Qwen/Qwen2.5-7B-Instruct,150,54.7,0.41,100.0,-1.77,-2.06,2.18,2.1
+renyi a=2,3.0,Qwen/Qwen2.5-7B-Instruct,150,50.7,0.4495,100.0,-2.65,-2.96,1.31,1.19
+renyi a=4,3.0,Qwen/Qwen2.5-7B-Instruct,150,58.7,0.3765,100.0,-0.89,-1.27,3.07,2.89
+renyi a=8,3.0,Qwen/Qwen2.5-7B-Instruct,150,67.3,0.3035,100.0,1.07,0.48,5.13,4.71
+risky only (null),-1.0,Qwen/Qwen2.5-7B-Instruct,500,44.6,0.502,,-6.09,-6.45,0.0,-0.0

@@ -1,0 +1,5 @@
+run,metric,primary,threshold,s_x,onset,ci_lo,ci_hi,ratio,ratio_lo,ratio_hi,boot_no_crossing_pct
+KL3M-520M seed 40 tok (14.6 words),lcs_word,True,4.0,2.3982,2.2526,2.1175,2.8035,0.9393,0.8829,1.169,0.1
+KL3M-520M seed 40 tok (14.6 words),nv_recall,False,0.01,2.3982,2.2542,2.1912,2.8406,0.94,0.9137,1.1844,0.1
+KL3M-520M seed 20 tok (7.3 words),lcs_word,True,4.0,2.4147,2.4923,2.4313,2.9603,1.0321,1.0068,1.2259,0.0
+KL3M-520M seed 20 tok (7.3 words),nv_recall,False,0.01,2.4147,2.5432,2.4541,3.0031,1.0532,1.0163,1.2436,0.0

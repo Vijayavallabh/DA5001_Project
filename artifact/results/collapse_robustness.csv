@@ -1,0 +1,15 @@
+block,setting,value,value_relative_to_metric_range,n_grid
+metric,nv_recall,0.02675383791000001,0.24701854829327752,5
+metric,lcs_word,5.6407573000000015,0.24557062690465833,5
+threshold,onset at 0.002,0.46603300435217576,0.8407006812407324,7
+threshold,onset at 0.005,0.33491600933965326,0.9143882929001549,7
+threshold,onset at 0.01,0.28744927748121707,0.9566769703814015,7
+threshold,onset at 0.02,0.4111110020519406,1.0450284134655001,7
+normaliser,raw (no rescaling),0.028618,nan,2
+normaliser,s_safe,0.02675383791000001,nan,5
+normaliser,k_crit (Prop. 2 running maximum),nan,nan,0
+normaliser,requirement r = s_safe - s_risky,0.026166869017401777,nan,5
+normaliser_spread,raw (no rescaling),1.49,0.1215,7
+normaliser_spread,s_safe,1.3272,0.1154,7
+normaliser_spread,k_crit (Prop. 2 running maximum),3.7524,0.434,7
+normaliser_spread,requirement r = s_safe - s_risky,1.8944,0.2747,7

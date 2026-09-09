@@ -82,13 +82,19 @@ def feasible_prefix(s, delta, k):
     return len(s)
 
 
-def k_critical(s, delta, eta=0.0, slack=0.0):
-    """Smallest rate k at which the (slackened) surplus never exceeds the bank: max_t ((1-eta) S_t + delta)/(t+1) - slack."""
-    cum, best = 0.0, -float("inf")
+def k_critical(s, delta, eta=0.0, slack=0.0, want_argmax=False):
+    """Smallest rate k at which the (slackened) surplus never exceeds the bank: max_t ((1-eta) S_t + delta)/(t+1) - slack.
+
+    With want_argmax, also returns the step the maximum binds at. Appendix~\ref{app:opening} reports
+    that it binds at the very first token for most works, which is why the adversary's seed -- which
+    decides *which* token is first -- moves k_crit at all (feat-064)."""
+    cum, best, arg = 0.0, -float("inf"), 0
     for t, v in enumerate(s):
         cum += (1 - eta) * v
-        best = max(best, (cum + delta) / (t + 1))
-    return best - slack
+        r = (cum + delta) / (t + 1)
+        if r > best:
+            best, arg = r, t
+    return (best - slack, arg) if want_argmax else best - slack
 
 
 def plot(summary, figures, prefix):
@@ -127,6 +133,11 @@ def main():
     ap.add_argument("--novel", default="")
     ap.add_argument("--limit", type=int, default=100)
     ap.add_argument("--seed-tokens", type=int, default=20)
+    ap.add_argument("--max-target-tokens", type=int, default=0,
+                    help="feat-060: keep only the first N target tokens, matching "
+                         "analysis/composition_attack.py. s(x) is a mean over the target, so a "
+                         "truncated attack must be paired with a truncated budget path or the "
+                         "ratio compares two different works.")
     ap.add_argument("--safe-model", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer")
     ap.add_argument("--composition", default="results/composition.csv", help="per-passage composition results; '' to skip the observed-recall join")
     ap.add_argument("--k-values", nargs="+", type=float, default=[0.15, 0.5, 1, 3, 5, 10, 20])
@@ -161,12 +172,18 @@ def main():
     rows = []
     for i, p in enumerate(prompts):
         ids = tok(join(p.prompt_text, p.reference)).input_ids
+        if args.max_target_tokens > 0:
+            ids = ids[:args.seed_tokens + args.max_target_tokens]
         s = token_surprisals(model, tok, ids, args.seed_tokens, args.temperature, args.repetition_penalty, device)
         delta = st.mean(delta_obs[p.prompt_id]) if p.prompt_id in delta_obs else 0.0
         row = dict(prompt_id=p.prompt_id, novel=p.novel_source, n_target=len(s), delta_init=round(delta, 3),
                    S_total=round(sum(s), 2), s_mean=round(st.mean(s), 4), s_std=round(st.pstdev(s), 4), s_max=round(max(s), 3),
                    s_p90=round(sorted(s)[int(0.9 * (len(s) - 1))], 3),
+                   s_first=round(s[0], 3) if s else "",
                    k_crit=round(k_critical(s, delta), 4), k_crit_eta=round(k_critical(s, delta, eta=args.eta, slack=LN2), 4))
+        # feat-064: where the running maximum binds. The seed decides which token the adversary must
+        # generate first, so this is the channel through which the seed length reaches k_crit.
+        row["k_crit_argmax"] = k_critical(s, delta, want_argmax=True)[1] if s else ""
         for k in args.k_values:
             row[f"feasible_k{k:g}"] = int(row["k_crit"] <= k)
             row[f"feasible_eta_k{k:g}"] = int(row["k_crit_eta"] <= k)

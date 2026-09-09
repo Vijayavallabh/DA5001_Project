@@ -28,6 +28,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from a_patch import AnchoredDecodingFactory  # noqa: E402
+from a_patch.renyi import constraint_arg  # noqa: E402
 from dap.shared import load_prompt_corpus, true_gen_len  # noqa: E402
 from dap.stats import lcs_word, nv_recall  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
@@ -142,11 +143,18 @@ def main():
     ap.add_argument("--windows", nargs="+", type=int, default=[20, 50])
     ap.add_argument("--modes", nargs="+", default=["single", "oracle", "chained"])
     ap.add_argument("--seed-tokens", type=int, default=20)
+    ap.add_argument("--max-target-tokens", type=int, default=0,
+                    help="feat-060: keep only the first N target tokens. Target length in tokens is "
+                         "otherwise a consequence of the tokenizer -- the same passage is 276 tokens "
+                         "at four characters per token and 580 at two -- so the two cannot be told "
+                         "apart without this. Score such runs with lcs_word, which is an absolute "
+                         "word count; nv_recall divides by reference length and inflates when the "
+                         "reference is truncated.")
     ap.add_argument("--limit", type=int, default=100)
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--repetition-penalty", type=float, default=1.0, help="applied to both models before the solve, as in He et al. (their books setting: 0.7 / 1.1)")
-    ap.add_argument("--constraint", choices=["kl", "pathwise"], default="kl", help="feat-019: KL budget (He et al.) or pathwise max-divergence budget")
+    ap.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl', 'pathwise', or 'renyi[:alpha]'")
     ap.add_argument("--bank-cap", type=float, default=None, help="feat-021: token-bucket depth in nats (unset = unbounded bank)")
     ap.add_argument("--no-prefix-debt", action="store_true", help="feat-025: delta_init = 0")
     ap.add_argument("--raw-prompt", action="store_true", help="feat-018: drop the 'Complete the prefix:' instruction header and seed with the raw passage text (base models)")
@@ -188,10 +196,20 @@ def main():
     for p in prompts:
         prefix_text = p.prompt_text[len(HEADER):] if (args.raw_prompt and p.prompt_text.startswith(HEADER)) else p.prompt_text
         ids = tok(join(prefix_text, p.reference)).input_ids
+        if args.max_target_tokens > 0:
+            ids = ids[:args.seed_tokens + args.max_target_tokens]
         seed_txt = tok.decode(ids[:args.seed_tokens], skip_special_tokens=True)
         passages.append(dict(prompt_id=p.prompt_id, novel=p.novel_source, ids=ids, seed=seed_txt,
-                             target=tok.decode(ids[args.seed_tokens:], skip_special_tokens=True), n_target=len(ids) - args.seed_tokens))
-    print(f"[ca] {len(passages)} passages; target length mean {st.mean(x['n_target'] for x in passages):.0f} tokens; seed {args.seed_tokens} tokens raw_prompt={args.raw_prompt} greedy={args.greedy}; constraint={args.constraint} "
+                             target=tok.decode(ids[args.seed_tokens:], skip_special_tokens=True),
+                             reference=p.reference, n_target=len(ids) - args.seed_tokens))
+    # feat-063: report how many targets reach the CopyBench item's `reference` field. This is
+    # informational, not a validity check: recall is scored against `target` (below), which is
+    # protected novel text either way -- prompt_text is 930 characters of the same book, not an
+    # instruction. A run whose target stops inside prompt_text still measures reproduction of
+    # protected text, which is why feat-060's truncated run is valid and its k=-1 baseline reaches
+    # 0.696. Raising SystemExit here would have blocked that experiment.
+    covered = sum(1 for x in passages if x["reference"][:60] in x["target"])
+    print(f"[ca] {len(passages)} passages; target length mean {st.mean(x['n_target'] for x in passages):.0f} tokens; reference reached in {covered}/{len(passages)}; seed {args.seed_tokens} tokens raw_prompt={args.raw_prompt} greedy={args.greedy}; constraint={args.constraint} "
           f"prefix_debt={not args.no_prefix_debt} temperature={args.temperature} rp={args.repetition_penalty} retries={args.retries}", flush=True)
 
     os.makedirs(os.path.dirname(args.queries_out) or ".", exist_ok=True)
