@@ -39,18 +39,15 @@ certificate covers none, do both ($-6.97\sigma$, $-3.29\sigma$). Between those t
 the crossing by nearly an order of magnitude in $k$, which is itself a result.
 
 \textbf{Extraction begins near that threshold, and $s(x)$ says where.} On seven pairs sharing no
-anchor, tokenizer or risky model, and spanning $1.87\times$ in $s(x)$ per character, leakage first
-becomes measurable between $0.88$ and $1.17$ of $s(x)$ --- not a fixed fraction: the five at about
-four characters per token agree to within $0.05$, and the two at two characters per token begin only
-after the certificate has gone vacuous, whatever their memoriser and whatever their vocabulary
-size. The geometry offers a candidate --- at full tilt the charge
-along a target reduces to $r(x) = s_s(x) - s_r(x)$ (Eq.~\eqref{eq:req}) --- committed for five
-pairs before they were swept. The two built on the second tokenizer refute it, and the fitted
-constant with it. A
-further pair whose memorisation came from pretraining rather than from our fine-tuning ---
-Llama-3.1-70B base, which reproduces \emph{Harry Potter} from its opening words --- leaks at the
-same rate where its coarser budget grid overlaps the others, so the law is not a property of the
-recipe that built the memorisers.
+anchor, tokenizer or risky model, leakage first becomes measurable between $0.88$ and $1.17$ of
+$s(x)$ --- not a fixed fraction, and what moves it inside that range is not the memoriser, the
+target's length or the vocabulary but how much of the work the adversary is handed. Extraction
+evaluations, ours included, specify that prefix in \emph{tokens}, so a tokenizer that cuts the same
+text more finely hands the adversary half the words; two pre-registered interventions changing only
+that number move a pair across its own vacuity threshold, in both directions. The geometry's own
+candidate --- at full tilt the charge along a target reduces to $r(x) = s_s(x) - s_r(x)$
+(Eq.~\eqref{eq:req}), committed for five pairs before they were swept --- is refuted along with the
+fitted constant it was meant to explain.
 
 Read together these say something a deployer can act on. The three rates that matter --- the
 surprisal rate $s(x)$, the requirement $r(x)$ a decoder must afford before it can pay for the

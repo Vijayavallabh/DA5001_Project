@@ -2046,3 +2046,33 @@ Checked line by line, since everything rests on them:
 
 Attribution is right: Prop. 1 says "None is new; the contribution is that all three break in the
 same place", and k_crit is credited to Loynes rather than claimed.
+
+### feat-064 Arm A, and the verdict the pre-registration forced (2026-09-10)
+
+    KL3M-520M                seed words   onset   ratio   95% CI          no-cross
+    seed 20 tokens (control)        7.3   2.492   1.032   [1.01, 1.23]        0.0%
+    seed 40 tokens (Arm A)         14.3   2.253   0.939   [0.88, 1.17]        0.1%
+
+At `--seed-tokens 40` KL3M's adversary holds **80.8 characters and 14.3 words** against TinyComma's
+81.3 and 14.4 -- a near-exact match to the coarse family's seed, with the tokenizer, models, corpus,
+passages, metric and grid density unchanged and s(x) moving 0.7%.
+
+**The verdict is the one the pre-registration reserved for this outcome: undecided.** 0.939 falls in
+the 0.93-0.95 overlap that `results/onset_prediction_seed.md` committed in advance as belonging to
+neither account -- seed-matching predicted 0.85-0.95, the k_crit account 0.96 -- and we report it as
+undecided rather than assigning it to the one we prefer. Arm A's interval also **overlaps its
+control's**, so unlike Arm B it does not carry a claim on its own.
+
+**What the two arms together do establish.** The seed moves the ratio in the predicted direction in
+both, and moves a pair across the budget at which its own certificate goes vacuous in both: Pleias
+0.866 -> 1.004 (disjoint intervals) and KL3M 1.032 -> 0.939. Neither arm reaches the other family's
+band, so the adversary's context is not the whole of the difference between the families. The
+dose-response arms, which are running, are what would separate a threshold from a curve.
+
+Manuscript rewritten around this: Section 4 now answers its own question -- the split is not
+memorisation, not target length, not vocabulary size, and is in large part what the evaluation hands
+the adversary -- with the Carlini grounding, and `sections/appendix_seed.tex` carries the confound
+table, both arms, the two soundness checks and the observational trend. The abstract and
+introduction now lead with the finding instead of the tokenizer description. Main text **8 pages +
+43 lines**, under the 9-page limit; 20 pages total, 0 overfull, 0 '??'; 714 numeric literals audited
+with 1 unsourced and that one verified against the checkpoint config. 167 tests.

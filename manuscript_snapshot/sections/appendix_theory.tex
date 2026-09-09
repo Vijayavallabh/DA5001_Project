@@ -1,0 +1,95 @@
+% Appendix A: statements and proofs for plan v2 (feat-019/020/023). Drafted 2026-09-06. \input from satml_2027.tex after the references.
+\appendices
+\section{Statements and proofs}\label{app:theory}
+
+\paragraph{Notation}
+Fix a prompt $x$ and write $p_s(\cdot)$, $p_r(\cdot)$ for the anchor's and the risky model's next-token distributions at step $t$ given the realised prefix, $\ell(v) = \log p_r(v) - \log p_s(v)$, and $p_\theta(v) \propto p_s(v)^{1-\theta} p_r(v)^{\theta}$ for $\theta \in [0,1]$, so that $\log p_\theta(v) - \log p_s(v) = \theta\,\ell(v) - \log Z(\theta)$ with $Z(\theta) = \sum_v p_s(v)\, e^{\theta \ell(v)}$. The served distribution at step $t$ is $p_{\theta_t}$. We write $r_t(v) = \log p_{\theta_t}(v) - \log p_s(v)$, $a_t = \mathbb{E}_{p_{\theta_t}}[r_t] = D_{\mathrm{KL}}(p_{\theta_t}\,\|\,p_s)$ for the spend, $m_t = \max_v r_t(v)$ for the largest log-ratio, $r_t = r_t(y_t)$ for the realised log-ratio of the sampled token, $R_t = \sum_{i \le t} r_i$, $Z_t = \sum_{i \le t} a_i$, and $L(y) = R_T = \log p_\theta(y \mid x) - \log p_s(y \mid x)$ for a full generation $y$ of length $T \le T_{\max}$. All logarithms are natural.
+
+\begin{proposition}[Pathwise budget]\label{prop:pathwise}
+Let the decoder choose at every step the largest $\theta_t \in [0,1]$ such that $m_t(\theta_t) \le k^{\mathrm{pw}}_t$, where $k^{\mathrm{pw}}_t = \max\{0,\, (t+1)k - \delta_{\mathrm{init}}(x) - R_{t-1}\}$. Then for every prompt $x$ and every $y$ with $T \le T_{\max}$,
+\begin{equation}
+L(y) \;\le\; \max\{0,\, k\,T_{\max} - \delta_{\mathrm{init}}(x)\} \;\le\; K,
+\label{eq:pathwise}
+\end{equation}
+hence $p_\theta(E \mid x) \le e^{K} p_s(E \mid x)$ for every event $E$, and $D_{\mathrm{KL}}(p_\theta(\cdot \mid x) \,\|\, p_s(\cdot \mid x)) \le K$.
+\end{proposition}
+\begin{IEEEproof}
+$m_t(\theta) = \theta\,\ell_{\max} - \log Z(\theta)$ with $\ell_{\max} = \max_v \ell(v)$, so $\frac{d}{d\theta} m_t(\theta) = \ell_{\max} - \mathbb{E}_{p_\theta}[\ell] \ge 0$ and $m_t(0) = 0$: the feasible set $\{\theta : m_t(\theta) \le k^{\mathrm{pw}}_t\}$ is an interval $[0, \theta_t]$ that a bisection locates, and $\theta_t = 1$ whenever $m_t(1) \le k^{\mathrm{pw}}_t$. For the sampled token, $r_t = r_t(y_t) \le m_t(\theta_t) \le k^{\mathrm{pw}}_t$, so $R_t = R_{t-1} + r_t \le R_{t-1} + \max\{0, (t+1)k - \delta_{\mathrm{init}} - R_{t-1}\} = \max\{R_{t-1},\, (t+1)k - \delta_{\mathrm{init}}\}$. By induction from $R_0 = r_0 \le k - \delta_{\mathrm{init}}$ (or $R_0 \le 0$ when the allowance is zero), $R_t \le \max\{0, (t+1)k - \delta_{\mathrm{init}}\} \le k\,T_{\max}$ for all $t < T_{\max}$, which is Eq.~\eqref{eq:pathwise} since $\delta_{\mathrm{init}} \ge 0$. Summing $p_\theta(y \mid x) \le e^{K} p_s(y \mid x)$ over $y \in E$ gives the event bound, and $D_{\mathrm{KL}}(p_\theta \,\|\, p_s) = \mathbb{E}_{p_\theta}[L(y)] \le K$. A negative realised ratio enlarges the next allowance, so banking is pathwise and does not weaken the bound.
+\end{IEEEproof}
+
+\begin{proposition}[Extraction cost under the pathwise budget]\label{prop:cost}
+Let $y^\star$ be split into windows $w_1, \dots, w_m$ of lengths $L_1, \dots, L_m$ with $T = \sum_i L_i$, let $x_i$ be the prompt consisting of the seed followed by $w_1 \cdots w_{i-1}$ (the true prefix), let $S_i = -\log p_s(w_i \mid x_i)$ and $S = \sum_i S_i$, and let each window be requested from the decoder of Proposition~\ref{prop:pathwise} with budget $K_i = k\,L_i$. Then $p_\theta(w_i \mid x_i) \le \exp(K_i - S_i)$; a single pass over the windows reproduces $y^\star$ with probability at most $\exp(kT - S)$; and an adversary who re-samples window $i$ until it is reproduced exactly needs at least $\exp(S_i - K_i)$ attempts in expectation, $\sum_i \exp(S_i - K_i)$ in total. Chained queries, whose prompts are the adversary's own outputs, are no better.
+\end{proposition}
+\begin{IEEEproof}
+Apply Proposition~\ref{prop:pathwise} to the event $\{w_i\}$ with $K = K_i$ and $\delta_{\mathrm{init}}(x_i) \ge 0$: $p_\theta(w_i \mid x_i) \le e^{K_i} p_s(w_i \mid x_i) = \exp(K_i - S_i)$. Queries are independent given their prompts, so the probability that all $m$ windows are reproduced in one pass is at most $\prod_i \exp(K_i - S_i) = \exp(kT - S)$. The number of attempts until window $i$ is reproduced is geometric with success probability $p_\theta(w_i \mid x_i)$, whose mean $1/p_\theta(w_i \mid x_i)$ is at least $\exp(S_i - K_i)$; the attempts for different windows add. In the chained strategy the prompt of window $i$ equals $x_i$ only on the success path, so the probability of reproducing all windows is again $\prod_i p_\theta(w_i \mid x_i)$, and the same bounds hold.
+\end{IEEEproof}
+Proposition~\ref{prop:cost} is trivial exactly when $K_i \ge S_i$ for every window, that is, when the budget rate is at least the anchor's per-token surprisal of each window; below that rate the cost grows exponentially in the surplus $S_i - kL_i$. The prefix debt only increases the cost, since it reduces every allowance.
+
+\begin{proposition}[Concentrated certificate for the KL decoder]\label{prop:conc}
+Under the decoder of Eq.~\eqref{eq:banking}, $M_t = \sum_{i \le t} (r_i - a_i)$ is a martingale with respect to the generation filtration, with increments $X_i = r_i - a_i \le b_i := m_i - a_i$ and conditional variances $\sigma_i^2 = \mathrm{Var}_{p_{\theta_i}}[r_i(\cdot)]$, both of which are functions of the prefix and are computed by the decoder before the token is sampled. If $b \ge \max_i b_i$ and $v \ge \sum_{i \le T} \sigma_i^2$ hold on every path (enforced per step, or verified from the logs), then for every $\lambda > 0$,
+\begin{equation}
+\Pr\bigl(\exists\, t \le T:\ M_t \ge \lambda\bigr) \;\le\; \exp\!\Bigl(-\frac{\lambda^2}{2\,(v + b\lambda/3)}\Bigr) =: \delta(\lambda),
+\label{eq:freedman}
+\end{equation}
+and therefore $\Pr\bigl(L(y) \ge K + \lambda\bigr) \le \delta(\lambda)$, because $Z_T \le K$ on every path.
+\end{proposition}
+\begin{IEEEproof}
+$\mathbb{E}[r_i \mid \mathcal{F}_{i-1}] = \mathbb{E}_{p_{\theta_i}}[r_i(\cdot)] = a_i$, so $M_t$ is a martingale, and $X_i = r_i(y_i) - a_i \le \max_v r_i(v) - a_i = b_i$ because $y_i$ is drawn from $p_{\theta_i}$. Eq.~\eqref{eq:freedman} is Freedman's inequality~\cite{freedman1975tail} in the one-sided form for increments bounded above~\cite[Thm.~1.1, scalar case]{tropp2011freedman}, with the predictable quadratic variation $\sum_i \sigma_i^2 \le v$; it holds uniformly over $t$, so it applies to every generation length $T \le T_{\max}$ at once (the time-uniform Bernstein bounds of Howard et al.~\cite{howard2021timeuniform} give the same rate with sharper constants). Finally $L(y) = M_T + Z_T \le M_T + K$, so $\{L(y) \ge K + \lambda\} \subseteq \{M_T \ge \lambda\}$.
+\end{IEEEproof}
+Eq.~\eqref{eq:freedman} is an $(\varepsilon,\delta)$-concentration statement of the kind that Lemma~2.3 of Vyas et al.~\cite{vyas2023provable} assumes; here $v$ and $b$ are quantities the decoder has in hand, so the deployer can either publish them for a reference workload or cap them, which turns Eq.~\eqref{eq:freedman} into a certificate.
+
+\begin{proposition}[Budget-path condition]\label{prop:path}
+Let $s_t = -\log p_s(y^\star_t \mid x, y^\star_{<t})$ be the anchor's surprisal of the $t$-th token of a target $y^\star$ and fix $\eta \in (0, 1/2)$. If the KL decoder serves the true token with probability $p_{\theta_t}(y^\star_t) \ge 1 - \eta$ at every step $t < T$ along $y^\star$, then
+\begin{equation}
+\max_{t < T}\ \Bigl[(1-\eta) \sum_{i \le t} s_i - (t+1)\,(k + \log 2)\Bigr] \;\le\; -\delta_{\mathrm{init}}(x).
+\label{eq:path}
+\end{equation}
+In particular, with $\eta \to 0$, reproducing $y^\star$ token by token is impossible at any rate $k$ below $k_{\mathrm{crit}}(x) = \max_{t<T} \bigl(\sum_{i \le t} s_i + \delta_{\mathrm{init}}(x)\bigr)/(t+1)$.
+\end{proposition}
+\begin{IEEEproof}
+By the data-processing inequality applied to the indicator of the true token, $a_t = D_{\mathrm{KL}}(p_{\theta_t} \,\|\, p_s) \ge d\bigl(p_{\theta_t}(y^\star_t)\,\|\,p_s(y^\star_t)\bigr) \ge (1-\eta)\log\frac{1-\eta}{e^{-s_t}} + \eta \log\frac{\eta}{1 - e^{-s_t}} \ge (1-\eta) s_t - \log 2$, where $d(\cdot\|\cdot)$ is the binary KL divergence and the last step uses $q \log q + (1-q)\log(1-q) \ge -\log 2$. The banking rule of Eq.~\eqref{eq:banking} enforces $\sum_{i \le t} a_i \le (t+1)k - \delta_{\mathrm{init}}(x)$ at every step, and combining the two inequalities for every $t$ gives Eq.~\eqref{eq:path}. The unslackened statement follows by letting $\eta \to 0$ and dropping the $\log 2$ term, which is the case of a decoder that reproduces the token with certainty.
+\end{IEEEproof}
+The left-hand side of Eq.~\eqref{eq:path} is the running maximum of a random walk with drift $-(k + \log 2)$, that is, the workload of a token bucket of rate $k$ and unbounded depth~\cite{turner1986leaky} fed by the surprisal process; the condition says that the bucket, started with a debt of $\delta_{\mathrm{init}}$, never runs dry. Because it depends on the anchor and the target only, a rights-holder can evaluate it for their own work before any decoding.
+
+\begin{proposition}[A per-user budget binds only where the decoder does not]\label{prop:sep}
+Let $c_{\mathrm{legit}}$ be the decoder's mean KL spend per generated token on ordinary traffic, and for a
+target $y^\star$ let $\rho(B)$ be the fraction of $y^\star$ that a windowed adversary recovers when its
+queries are replayed against a per-user filter of budget $B$, with $Z_{\mathrm{tot}} = \sum_j Z_j$ the
+spend of the uncapped attack and $c_{\mathrm{rec}} = Z_{\mathrm{tot}} / (\rho(\infty)\,|y^\star|)$ its
+spend per recovered token. Then a reader is served at most $B / c_{\mathrm{legit}}$ tokens before refusal,
+$\rho$ is nondecreasing in $B$ with $\rho(B) \le \rho(\infty)$, and the filter's protective ratio,
+the reader tokens admitted per recovered token of $y^\star$, is
+\begin{equation}
+\frac{c_{\mathrm{rec}}}{c_{\mathrm{legit}}}
+ \;=\; \frac{Z_{\mathrm{tot}}}{\rho(\infty)\,|y^\star|\;c_{\mathrm{legit}}}.
+\label{eq:sep}
+\end{equation}
+The deployer does not choose this ratio. It is fixed by $k$ through $Z_{\mathrm{tot}}$ and $\rho(\infty)$,
+and as $k$ grows and the decoder approaches the identity it falls to the ratio of the risky model's
+divergence from the anchor on $y^\star$ to its divergence on ordinary text, a property of the two models
+rather than of the mechanism.
+\end{proposition}
+\begin{IEEEproof}
+The filter serves queries in the order issued and refuses the first whose spend would carry the cumulative
+total past $B$, so a reader whose queries are charged $c_{\mathrm{legit}}$ per token is served
+$B / c_{\mathrm{legit}}$ tokens. For the adversary, truncating the query sequence can only delete served
+windows, and near-verbatim recall counts in-order matches of at least twenty words, so deleting a window
+removes its matched spans and adds none: $\rho$ is nondecreasing in $B$ and bounded by $\rho(\infty)$.
+Equation~\eqref{eq:sep} is then the definition of $c_{\mathrm{rec}}$ divided by $c_{\mathrm{legit}}$. The
+final sentence follows because at $\theta_t \equiv 1$ every step is charged
+$D_{\mathrm{KL}}(p_r \,\|\, p_s)$ on the realised prefix, for both activities.
+\end{IEEEproof}
+Equation~\eqref{eq:sep} converts $B$ into the only unit a deployer can reason about, ordinary completions
+admitted. Section~\ref{sec:odometer} measures both rates on the same decoder: $c_{\mathrm{legit}} = 0.82$
+nats per token, stable across all six prompt classes and every budget (per-class medians $0.73$ to $0.90$),
+so one $200$-token answer costs $164$ nats. The proposition bounds $\rho(B)$ only through monotonicity; that
+$\rho$ is close to proportional in $B$ below saturation is measured, not proved.
+\begin{remark}[Scope]\label{rem:sep}
+Proposition~\ref{prop:sep} is a statement about filters that meter the same additive KL spend the decoder
+already charges. A filter with a semantic detector, a per-work rather than per-user budget, or an accounting
+that charges reconstruction and ordinary use at different rates is outside it, and may separate the two.
+\end{remark}
+
+\begin{remark}[Warped anchor]\label{rem:warp}
+The decoder applies temperature and repetition-penalty warping to both logit vectors before the solve~\cite[App.~B]{he2026anchored}, and so does the released implementation. Every statement above, including Theorem~3.1 of He et al., then holds with $p_s$ replaced by the warped anchor $p_s^{(\tau,\rho)}$, and the surprisals $S(x)$ and $s_t$ in Eq.~\eqref{eq:cap} and Proposition~\ref{prop:path} must be computed under it. Section~\ref{sec:warped} measures the difference.
+\end{remark}

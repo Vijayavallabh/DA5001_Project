@@ -1,0 +1,49 @@
+% Results from the released logs and the certificate audit (C1-C4), drafted 2026-09-05 from results/regime_table.csv,
+% llr_tails.csv, prefix_debt_forced_tokens.csv, surprisal.csv, certificate_cap_summary.csv. Small-k rows come from feat-005. Prose revised 2026-09-05.
+\section{Audit of the Released Decoder}\label{sec:results-logs}
+
+This section applies checks C1--C4 to the publicly released logs of an earlier evaluation of the mechanism with this model pair~\cite{vijayavallabh2026audit}: 26{,}999 sampled generations with their per-step spends, at $k \in \{1, 3, 5\}$, $T_{\max}=200$, temperature 1, over six prompt classes. Three are the book split of CopyBench, 458 passages whose truncated prefixes serve as attack prompts (the attack split) and 150 validation and 150 test passages; the others are general-knowledge questions, FactScore biography requests, and creative-writing prompts. Section~\ref{sec:sweep} adds runs of our own at smaller budgets.
+
+\subsection{The accounting is correct}\label{sec:accounting}
+We recomputed $a_t$ from the logged served and anchor probabilities for all 26{,}999 trajectories and checked both invariants: $a_t \le k_t + 10^{-3}$ held at every one of $5.21$ million decode steps with a largest overshoot of $0.0$, and $Z \le \max\{0,B\} + 10^{-3}$ held for every trajectory (Table~\ref{tab:regime}). Formally correct privacy mechanisms have failed at exactly this level through finite-precision defects~\cite{mironov2012significance,casacuberta2022widespread}, so the check is not a formality; the trajectories a naive $Z \le B$ flags stopped early with a negative accrued budget and $Z = 0$, which the mechanism handles correctly by serving the anchor. This is the positive result of the audit; everything after it concerns the meaning of the guarantee, not its implementation.
+
+\subsection{At the audited budgets the mechanism is nearly the identity}\label{sec:regime}
+Table~\ref{tab:regime} shows where the constraint acted. At $k=3$ it was active ($0<\theta_t<1$) on $0.19\%$ of decode steps and the risky model was served unchanged on $99.0\%$; at $k=5$, $0.11\%$ and $99.5\%$. Seeds are shared across $k$, so outputs compare token for token: $57.1\%$ of the attack-split generations at $k=3$ are identical to those at $k=5$, against $4.4\%$ between $k=1$ and $k=3$. Utilisation $Z/B$ never exceeded $0.59$ at $k=3$ or $0.36$ at $k=5$; the spend of about $0.9$ nats per token is the divergence of Llama-3.1-8B-Instruct from the anchor on this workload, not a property of the mechanism. At $k=1$ the constraint is active on $6.3\%$ of steps and $35\%$ of trajectories spend more than $90\%$ of their budget. The prefix debt is visible in every trajectory: $\delta_{\mathrm{init}}(x)$ averages $6.2$ nats and the anchor writes the first $\lfloor \delta_{\mathrm{init}}/k \rfloor$ tokens in at least $99.4\%$ of trajectories at every $k$. Overlap with the reference is flat across budgets (ROUGE-L $0.083$ to $0.087$), because an 8B instruct model prompted with raw text does not reproduce these passages at all (Section~\ref{sec:memorising}).
+
+\begin{table}[t]
+\centering
+\caption{Released logs on the CopyBench attack split, and on the test split at $k=3$ ($T_{\max}=200$, temperature 1). Activity is the fraction of decode steps with $0<\theta_t<1$; ``identical'' compares token for token with the next larger $k$ on the same prompt and seed; $L(y)$ is the realised log-likelihood ratio.}
+\label{tab:regime}
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & $k=1$ & $k=3$ & $k=3$, test & $k=5$ \\
+ & $K=200$ & $K=600$ & $K=600$ & $K=1000$ \\
+\midrule
+Trajectories & 999 & 1{,}000 & 1{,}500 & 1{,}000 \\
+Constraint active (\% steps) & 6.27 & 0.19 & 0.19 & 0.11 \\
+Risky unchanged (\% steps) & 90.9 & 99.0 & 99.1 & 99.5 \\
+Identical to next $k$ (\%) & 4.4 & 57.1 & 63.1 & -- \\
+Utilisation $Z/B$, max & 1.00 & 0.59 & 0.58 & 0.36 \\
+Trajectories with $Z/B > 0.9$ & 352 & 0 & 0 & 0 \\
+Invariant violations & 0 & 0 & 0 & 0 \\
+Leading anchor tokens, mean (max) & 5.7 (10) & 1.5 (3) & 1.4 (3) & 0.8 (2) \\
+$L(y)$, max & 246 & 345 & 372 & 346 \\
+Trajectories with $L(y) > K$ & 96 & 0 & 0 & 0 \\
+Max single-step $\log \tfrac{p_\theta}{p_s}$ & 21.4 & 20.3 & 19.9 & 26.2 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{The certificate is vacuous for every CopyBench passage at $k \ge 3$}\label{sec:certificate}
+Figure~\ref{fig:certcap} applies Eq.~\eqref{eq:cap} to the 758 CopyBench reference passages (53--100 anchor tokens, median 64). The anchor's surprisal of a passage given its prefix has median $S(x) = 205$ nats (10th--90th percentiles 162--254), $3.20$ nats per token, so the certificate is vacuous, $\mathrm{cap}(K,S)=1$, for every passage at $k=3$ and $k=5$, for $43.9\%$ at $k=1$, and for none at $k \le 0.5$, where the median cap is $0.49$ at $k=0.5$ and $0.10$ at $k=0.1$. On the 200-token continuations the decoder actually generated (median anchor surprisal $978$ nats) the certificate is vacuous for $9.6\%$ at $k=3$ and $49.5\%$ at $k=5$, so the conclusion does not rest on the short references. The risky model assigns the references $2.59$ nats per token: Llama-3.1-8B-Instruct has not memorised them, which is why the overlap reported in Section~\ref{sec:regime} is flat in $k$ and why Section~\ref{sec:attacks} substitutes risky models that have.
+
+\paragraph{The vacuity is not a fact about this anchor}
+Every quantity above is relative to TinyComma, a 1.8B model, so the obvious reply is that a better anchor would assign the passages higher surprisal and restore the bound. It does the opposite. We repeated the measurement with a second, independently trained anchor from the same openly licensed corpus and four times the size, Comma~v0.1 (7B), on the same 758 references. Because the two anchors do not share a tokenizer their per-token rates are not comparable, so we compare the total surprisal of a passage in nats: the median falls from $204.7$ to $180.5$, and the certificate is vacuous for every passage at $k \ge 3$ under both, while at $k=1$ the larger anchor is vacuous for $74.0\%$ of passages against $43.9\%$. A control on matched character spans attributes most of the 7B model's advantage on protected text to ordinary fluency rather than to having read those books (Appendix~\ref{app:tables}). Scaling the anchor lowers $S(x)$, and so weakens Eq.~\eqref{eq:cap} at exactly the budgets where it had any force.
+
+\paragraph{Longer works, and the certificate the adversary actually faces}
+Since $S(x)$ grows with length while $K = k\,T_{\max}$ does not, a longer work should be better served by the same certificate. It is, and it does not help. Over prefixes of increasing length for the sixteen novels and for 50 public-domain books, the vacuous fraction at $k=3$ falls from $100\%$ at $64$ tokens to $93.8\%$ at $128$ and $0\%$ at $256$ (Fig.~\ref{fig:lengthscale}, Appendix~\ref{app:tables}). But a single query cannot reproduce a work longer than $T_{\max}$, so the certificate that matters for a long work is the one covering each window an adversary requests, with budget $k\,L$ rather than $k\,T_{\max}$. That certificate does not improve with the length of the work at all: for $50$-token windows it is vacuous for every work at every length once $k \ge 5$. The length of a work strengthens only the guarantee for the query that could not have reproduced it, which is what Section~\ref{sec:composition} then exploits.
+
+\subsection{Individual outputs exceed the budget}\label{sec:tails}
+The realised log-likelihood ratio $L(y)$ has mean $161$ nats at $k=1$, close to $\mathbb{E}[Z]$ as Eq.~\eqref{eq:chain} requires, but it exceeds $K=200$ in $96$ of $999$ attack-split trajectories ($9.6\%$; maximum $246$) and in $8.2\%$ of the $8{,}999$ trajectories across all classes. At $k=3$ and $k=5$ no trajectory exceeds $K$, because the budget did not bind, yet the maxima ($345$ and $346$ nats) are larger than at $k=1$ and the largest single-step ratio reaches $26.2$ nats: one token served with $e^{26}$ times its anchor probability. The $\Delta_{\max}$ form of near-access-freeness forbids these tails; the KL form does not, and Section~\ref{sec:pathwise} enforces the former.

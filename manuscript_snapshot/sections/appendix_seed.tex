@@ -1,0 +1,83 @@
+% feat-064. Numbers from results/seed_effect.csv (analysis/seed_effect.py) and the pre-registration
+% results/onset_prediction_seed.md, committed at bc74f4d, 9ea3bec and a63ec8f before each arm ran.
+\section{What the evaluation hands the adversary}\label{app:seed}
+
+\paragraph{Three quantities move together, and none of them is the tokenizer}
+Each benchmark item is a prompt prefix followed by its continuation, both from the same novel, and
+the attack seeds the adversary with \texttt{--seed-tokens 20}: a fixed number of \emph{tokens}. For one
+fixed piece of text a finer tokenizer therefore changes three things at once --- the words the seed
+buys, the decode steps before the continuation is reached, and the target's length in tokens --- and
+all three split the seven pairs exactly where the onset ratio splits, with no overlap in any of
+them:
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+pair & ch/token & seed chars & seed words & steps to it & onset\,/\,$s(x)$ \\
+\midrule
+TinyComma 1.8B  & $4.06$ & $81.3$ & $14.4$ & $195$ & $0.887$ \\
+Pleias 1.2B     & $3.88$ & $77.5$ & $13.7$ & $209$ & $0.878$ \\
+Comma 7B        & $3.80$ & $76.0$ & $13.4$ & $230$ & $0.892$ \\
+Phi-3.5 mini    & $3.70$ & $73.9$ & $13.1$ & $223$ & $0.926$ \\
+Pleias 350M     & $3.68$ & $73.5$ & $13.0$ & $210$ & $0.920$ \\
+KL3M 520M       & $2.14$ & $42.9$ & $\phantom{0}7.3$ & $435$ & $1.053$ \\
+KL3M 1.7B       & $2.14$ & $42.9$ & $\phantom{0}7.3$ & $435$ & $1.166$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Seed length is measured on the passages each run used, not inferred from an average. Because a
+twenty-token seed is exactly twenty times the characters per token, no choice of pairs can separate
+these; only an intervention can.
+
+\paragraph{Two interventions, in opposite directions}
+Both were committed before they ran, with the bands that would refute them. Each changes
+\texttt{--seed-tokens} alone: the tokenizer, the anchor, the memoriser, the corpus, the passages, the
+budget grid and the metric are held fixed, and $s(x)$ is recomputed at the matching seed because the
+surprisal rate is measured over the target given the seed.
+
+The primary metric is the longest common subsequence in words at a threshold of four, an absolute
+count that a changed target length cannot inflate; near-verbatim recall at $0.01$ is reported
+alongside. Intervals are bootstrapped over passages.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+run & seed tokens & seed words & $s(x)$ & onset & onset\,/\,$s(x)$ (95\% CI) \\
+\midrule
+Pleias 1.2B, as measured & $20$ & $13.7$ & $3.209$ & $2.780$ & $0.866$ $[0.72, 0.95]$ \\
+\quad Arm B, KL3M's seed & $10$ & $\phantom{0}6.9$ & $3.259$ & $3.272$ & $1.004$ $[0.99, 1.23]$ \\
+\addlinespace
+KL3M 520M, as measured   & $20$ & $\phantom{0}7.3$ & $2.415$ & $2.492$ & $1.032$ $[1.01, 1.23]$ \\
+\quad Arm A, the others' seed & $40$ & $14.3$ & $2.398$ & $2.253$ & $0.939$ $[0.88, 1.17]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{What the two arms do and do not establish}
+Arm B moves a pair from one family's band across the vacuity threshold into the other's, and its
+interval is disjoint from its control's; the pre-registered band for ``the seed is the mechanism''
+was $\ge 1.00$ and the measurement is $1.004$. Arm A moves the converse pair in the converse
+direction, from $1.032$ to $0.939$, but its interval overlaps its control's and it lands in a range
+the pre-registration had already declared undecided between two accounts --- seed matching, which
+predicted $0.85$--$0.95$, and a token-bucket account on which the seed acts by choosing which token
+the adversary must generate first, predicting $0.96$ from a $7.3\%$ fall in $k_{\mathrm{crit}}$.
+We report it as undecided rather than assigning it, and neither arm reaches the other family's band,
+so the adversary's context is not the whole of the difference between the families.
+
+Two checks that the arms are measuring what they claim. The unconstrained model reproduces either
+target in every arm --- $k=-1$ recall $0.909$ against $0.894$ for the Pleias pair and $0.519$
+against $0.520$ for the KL3M pair --- so the intervention changes what the adversary is given, not
+how well the memoriser knows the text, and the anchor alone leaks nothing in any of the four runs.
+And the residual difference in target length points the wrong way to explain the result: Arm B's
+target is $3.7\%$ longer than its control's, which on an absolute word count can only make the
+threshold easier to reach and the onset \emph{lower}, while the measured onset rose by $17.7\%$.
+
+\paragraph{The same relation across the seven pairs}
+Ranking the seven by the words their adversary holds gives a Spearman correlation with the onset
+ratio of $-0.919$ (exact permutation test over all $7!$ orderings, $p = 0.007$), and the trend
+continues inside the five-pair coarse family alone, across a range of $1.4$ words, at $-0.800$
+($p = 0.13$ at $n=5$). This is confounded with granularity by construction and cannot stand on its
+own; what it adds is that the relation is not a two-group artifact, and that it is visible among
+five pairs built for unrelated reasons.

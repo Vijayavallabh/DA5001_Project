@@ -1,0 +1,32 @@
+% Background for the SaTML 2027 submission (feat-014 prep, drafted 2026-09-05; prose revised 2026-09-05). \input from satml_2027.tex.
+\section{Background: What a KL Budget Bounds}\label{sec:background}
+
+\paragraph{Anchored Decoding}
+Let $x$ be a prompt, $y = (y_1, \dots, y_T)$ a generation with $T \le T_{\max}$, and $p_s, p_r$ the anchor and risky next-token models. At step $t$ the decoder serves $p_\theta(\cdot \mid x, y_{<t}) \propto p_s^{1-\theta_t} p_r^{\theta_t}$ with $\theta_t \in [0,1]$ chosen by a Newton solve as the largest value such that $a_t := D_{\mathrm{KL}}(p_{\theta_t} \,\|\, p_s) \le k_t$. The per-step allowance banks unspent budget and charges a prefix debt,
+\begin{equation}
+k_t = \max\Bigl\{0,\; (t+1)\,k - \textstyle\sum_{i<t} a_i - \delta_{\mathrm{init}}(x)\Bigr\},
+\label{eq:banking}
+\end{equation}
+where the prefix debt $\delta_{\mathrm{init}}(x) = \frac{1}{n}\sum_{j=1}^{n} [\ell_j]_+$ averages the $n = 5$ largest positive prompt-token log-likelihood ratios $\ell_j = \log p_r(x_j \mid x_{<j}) - \log p_s(x_j \mid x_{<j})$. Writing $Z = \sum_{t \le T} a_t$ for the cumulative spend and $B = kT - \delta_{\mathrm{init}}(x)$ for the accrued budget, Eq.~\eqref{eq:banking} enforces $Z \le \max\{0, B\} \le K$ on every trajectory. The audit rests on three consequences of this design.
+
+\paragraph{Three readings of the budget}
+Three older literatures name what Eq.~\eqref{eq:banking} does. The served distribution is a product of experts~\cite{hinton2002poe}, the family that decoding-time realignment~\cite{liu2024dera} and model arithmetic~\cite{dekoninck2024arithmetic} traverse. The KL spend is an average leakage in the sense of quantitative information flow~\cite{smith2009foundations,issa2020operational}, whereas the rights-holder's question is a one-try guess, which only a maximal-leakage ($\Delta_{\max}$) bound controls, and the realised log-ratio of one output is the pointwise version~\cite{saeidian2023pointwise}. And the banking rule is a token bucket of rate $k$ and unbounded depth~\cite{turner1986leaky}, with the prefix debt as a negative initial fill. Sections~\ref{sec:tails}, \ref{sec:certificates}, and~\ref{sec:attack-results} use each reading in turn.
+
+\paragraph{The sequence-level bound is an expectation}
+By the chain rule of relative entropy,
+\begin{equation}
+D_{\mathrm{KL}}\bigl(p_\theta(y \mid x)\,\|\,p_s(y \mid x)\bigr) = \mathbb{E}_{y \sim p_\theta}\Bigl[\sum_{t} a_t\Bigr] = \mathbb{E}[Z] \le K,
+\label{eq:chain}
+\end{equation}
+so Theorem~3.1 of He et al.~\cite{he2026anchored} follows from the per-trajectory inequality. An audit that checks $\mathbb{E}[Z] \le K$ through a concentration bound on sampled $Z$ can only fail through the looseness of that bound; the auditable object is the per-trajectory invariant itself, which we check exactly (Section~\ref{sec:accounting}). What Eq.~\eqref{eq:chain} does \emph{not} control is the realised log-likelihood ratio $L(y) = \sum_t \log \tfrac{p_\theta(y_t \mid x, y_{<t})}{p_s(y_t \mid x, y_{<t})}$, whose expectation is $\mathbb{E}[Z]$ but whose individual values can exceed $K$. This is the gap between the KL and $\Delta_{\max}$ forms of near-access-freeness~\cite{vyas2023provable}, and $L(y)$ plays the role that the privacy-loss random variable plays in differential-privacy auditing~\cite{dwork2014algorithmic,nasr2023tight}.
+
+\paragraph{From a KL budget to a reproduction probability}
+Fix a protected passage $y^\star$ and let $E = \{y = y^\star\}$ and $S(x) = -\log p_s(y^\star \mid x)$ be the anchor's surprisal of the passage. The data-processing inequality applied to the indicator of $E$ gives $d\bigl(p_\theta(E \mid x)\,\|\,e^{-S(x)}\bigr) \le K$, where $d(p \| q) = p \log\tfrac{p}{q} + (1-p)\log\tfrac{1-p}{1-q}$ is the binary relative entropy~\cite{polyanskiy2024information}. Inverting $d$ in its first argument yields the cap
+\begin{equation}
+p_\theta(E \mid x) \;\le\; \mathrm{cap}(K, S) := \max\{p : d(p \,\|\, e^{-S}) \le K\},
+\label{eq:cap}
+\end{equation}
+with the closed-form bound $\mathrm{cap}(K,S) \le (K + \log 2 + e^{-1})/S$, and $\mathrm{cap}(K,S) = 1$ exactly when $S \le K$, because $d(1 \| e^{-S}) = S$. The certificate is therefore vacuous for a passage whenever the budget exceeds the anchor's surprisal of that passage. The event $E$ is the most favourable case for the certificate, so the fraction of vacuous certificates over near-verbatim events is at least as large. Eq.~\eqref{eq:cap} is the KL form of Lemma~2.3 of Vyas et al.\ without any concentration assumption. A second reading of $K$ comes from best-of-$n$ selection: the KL divergence of the best-of-$n$ policy from its base is at most $\log n - (n-1)/n$~\cite{beirami2025bestofn}, so a budget of $K$ nats always permits at least the selection pressure of best-of-$e^{K}$ sampling from the anchor.
+
+\paragraph{The guarantee is per prompt}
+Eq.~\eqref{eq:knaf} holds for each prompt separately, and nothing in the mechanism links the budgets of successive prompts. Cohen~\cite{cohen2025blameless} shows that near-access-free mechanisms therefore do not compose: an adversary who asks for a passage window by window is bounded, per query, by a certificate whose $S$ is the surprisal of a short window rather than of the whole passage, and Eq.~\eqref{eq:cap} becomes vacuous for every window once $k L \ge S_{\mathrm{window}}$. Section~\ref{sec:composition} measures how much of a passage this recovers in practice.

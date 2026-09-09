@@ -657,6 +657,18 @@
       "description": "Guard the composition attack against configurations in which the protected passage is not inside the decoded target, and withdraw feat-060, which was such a configuration.",
       "evidence_command": "HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python -c \"exact reconstruction of the feat-060 target; see progress.md\" ; .venv/bin/python -m pytest -q tests/test_max_target_tokens.py",
       "evidence": "Reference-coverage reporting, and a false alarm corrected the same day. Reference start token per pair (100 test passages): TinyComma 215, Pleias-1.2B 229, Pleias-350M 230, Phi-3.5 243, Comma-7B 250, KL3M x2 455, out of totals 279-592, so a target truncated to 296 tokens stops inside prompt_text for the KL3M pairs. That is worth reporting -- it says whether a run measures the passage proper or only its prefix -- but it is NOT a validity check, because recall is scored against the target and prompt_text is itself 930 characters of the novel. The SystemExit first added here would have blocked feat-060, a valid experiment; it is now an informational count printed as 'reference reached in N/M'. 5 tests in tests/test_max_target_tokens.py."
+    },
+    {
+      "id": "feat-064",
+      "status": "in-progress",
+      "phase": 5,
+      "depends_on": [
+        "feat-062",
+        "feat-063"
+      ],
+      "description": "Test whether the onset split is the tokenizer or what the evaluation hands the adversary. The attack seeds a fixed number of TOKENS, so the fine-tokenizer adversary holds 7.3 words against 13.0-14.4 for the other five -- an exact split matching the onset split and confounded with chars/token by construction. Two pre-registered interventions in opposite directions change only --seed-tokens.",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=<n> HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/budget_path.py --safe-model <anchor> --composition '' --limit 100 --seed-tokens <S> --out results --prefix <p> ; then analysis/composition_attack.py --seed-tokens <S> --modes single --limit 100 ; then HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py --out results",
+      "evidence": "Pre-registered at bc74f4d/9ea3bec/a63ec8f before any arm ran, with the refuting bands. ARM B (Pleias-1.2B, coarse pair given the KL3M seed, 20->10 tokens, 13.7->6.9 words): ratio 0.866 [0.72,0.95] -> 1.004 [0.99,1.23] on lcs_word>=4, intervals DISJOINT; pre-registered band for 'the seed is the mechanism' was >=1.00. ARM A (KL3M-520M given the others' seed, 20->40 tokens, 7.3->14.3 words, against TinyComma's 14.4): 1.032 [1.01,1.23] -> 0.939 [0.88,1.17], same direction but the interval overlaps its control's, and 0.939 falls in the 0.93-0.95 range the pre-registration declared UNDECIDED between seed-matching (0.85-0.95) and a k_crit account (0.96). Neither arm reaches the other family's band, so the seed is not the whole difference. Controls: k=-1 recall 0.909/0.894 (Pleias) and 0.519/0.520 (KL3M) so the memoriser is unchanged; k=0 recall 0.000 in all four; Arm B's target is 3.7% longer, which biases the onset DOWN on an absolute word count while it went UP 17.7%. Observational trend across the seven pairs: Spearman -0.919, exact permutation p=0.0071, and -0.800 within the coarse family alone (n=5, p=0.13) -- confounded with granularity by construction. results/seed_effect.csv, seed_score_{kl3m520m,pleias12b}.csv. STILL RUNNING: KL3M-1.7B at seed 40 and the dose-response arms at seeds 10 and 80."
     }
   ]
 }

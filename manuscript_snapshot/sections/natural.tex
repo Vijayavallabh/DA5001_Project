@@ -1,0 +1,33 @@
+% Natural memorisation audit (feat-017/018, plan v2 C7): the mechanism's own risky model, Llama 3.1 70B base, on the book it is
+% known to have memorised. Drafted 2026-09-06 with decoding setting A (temperature 1, no penalty); setting B rows follow.
+\subsection{The mechanism's own risky model on a memorised book}\label{sec:natural}
+The mechanism's authors evaluate Llama~3.1~70B base with TinyComma, and Cooper et al.~\cite{cooper2025extracting} report that this model reproduces most of \emph{Harry Potter and the Sorcerer's Stone} from its opening words. We repeat the audit with that pair on the 50 CopyBench passages from that book (the test split, never seen by the fine-tuned model) and on the eight passages from \emph{1984} in the attack split, following Cooper et al.'s protocol: each query is the raw first $100$ tokens of the passage with no instruction, greedy decoding from the risky model alone gives the reference extraction rate, and the anchored decoder samples with the baselines of Section~\ref{sec:protocol} on the same seeds, at temperature $1$ without repetition penalty, as in the released logs, and at the authors' book settings, temperature $0.7$ with penalty $1.1$, applied to both models' logits before the solve (Section~\ref{sec:warped}). The fine-tuned 8B model reproduces nothing of these passages under the same protocol (recall $0.000$), so the two risky models memorised disjoint text.
+
+\begin{table}[t]
+\centering
+\caption{Llama~3.1~70B on the 50 \emph{Harry Potter} passages (100-token raw seeds, 50-token windows): mean near-verbatim recall of a single query and of oracle windows, and the fraction of active decode steps in the single query, at temperature $1$ (A) and at the authors' book settings, temperature $0.7$ with penalty $1.1$ (B). At $k \le 1.5$ every entry is zero and the constraint is active on $14$ to $35\%$ of steps; those rows are omitted. Greedy decoding was run at temperature $1$ only.}
+\label{tab:natural}
+\footnotesize
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{A: $\tau=1$} & \multicolumn{3}{c}{B: $\tau=0.7$, penalty $1.1$} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+decoder & single & oracle & active & single & oracle & active \\
+\midrule
+risky, greedy & 0.558 & 0.771 & -- & -- & -- & -- \\
+risky, sampled & 0.200 & 0.547 & -- & 0.314 & 0.605 & -- \\
+anchor ($k=0$) & 0.000 & 0.000 & -- & 0.000 & 0.000 & -- \\
+anchored, $k=3$ & 0.017 & 0.022 & 0.95\% & 0.018 & 0.015 & 5.9\% \\
+anchored, $k=5$ & 0.035 & 0.110 & 0.35\% & 0.069 & 0.106 & 0.81\% \\
+anchored, $k=10$ & 0.070 & 0.222 & 0.19\% & 0.131 & 0.244 & 0.25\% \\
+anchored, $k=20$ & 0.200 & 0.542 & 0.00\% & 0.314 & 0.591 & 0.03\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:natural} gives the result. The 70B model has memorised the book: greedy decoding continues a $100$-token seed with $56\%$ of the remaining passage on average, $44\%$ of passages are reproduced almost entirely, and oracle windows raise the mean to $77\%$; on \emph{1984} the greedy rates are $51\%$ and $84\%$. Sampling at temperature $1$ lowers the rates to $20\%$ and $55\%$, the decoding effect Hayes et al.~\cite{hayes2025measuring} describe, and the anchored numbers must be read against the sampled baseline because the anchored decoder samples. Against it the mechanism behaves as against the fine-tuned model. At $k \le 1.5$ nothing is reproduced and the constraint is active on $14$ to $19\%$ of steps; at $k=3$ and $k=5$ reproduction is held to $2$ to $4\%$ for a single query and $2$ to $11\%$ for oracle windows, with the budget binding at $k=3$ (mean utilisation $0.52$, up to $0.98$) and loosening at $k=5$ (mean $0.36$); at $k=10$ the rates double; at $k=20$ the decoder returns the sampled model's own rates with the constraint active on at most $0.08\%$ of steps, and a single query spends $370$ nats on its $160$ tokens, a tenth of its budget. The certificate is vacuous for these passages at every $k \ge 3$ (Section~\ref{sec:certificate}); as with the fine-tuned model, the protection at $k \le 5$ is the budget binding on the anchor's surprisal, and it ends between $k=5$ and $k=20$.
+
+The authors' decoding settings move every number up without changing the shape. Lower temperature brings sampling closer to greedy decoding, so the model alone reproduces $31\%$ in one query and $60\%$ with oracle windows, and the anchored decoder follows: $7\%$ and $11\%$ at $k=5$, $13\%$ and $24\%$ at $k=10$, the model's own rates at $k=20$. The budget is charged against the warped anchor, which is more confident, so the same passage costs more: a single query at $k=20$ spends $546$ nats instead of $370$, and at $k=3$ the constraint is active on $5.9\%$ of steps instead of $0.95\%$ with utilisation reaching $1.00$. \emph{1984} gives the same picture on eight passages ($11$ to $12\%$ at $k=3$ and $5$, $24\%$ at $k=10$, the model's own $41\%$ at $k=20$ at temperature $1$). All $8{,}514$ budgeted queries of the 70B audit stayed within budget. Fig.~\ref{fig:natural} in Appendix~\ref{app:tables} plots the transition at these settings against the pathwise decoder and the same decoder without the prefix debt.
+
+

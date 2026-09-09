@@ -1,0 +1,88 @@
+% Appendix B: the tables moved out of the body by the plan-v3 compression (2026-09-07). Nothing measured was
+% discarded; this is where it lives, and every number is also in the artifact's results/*.csv.
+\section{Full tables}\label{app:tables}
+
+Table~\ref{tab:odometer} gives the per-user budget replay that Section~\ref{sec:odometer} summarises, Table~\ref{tab:warp} the decoding-setting sweep behind Section~\ref{sec:warped}, and the concentration inputs of Section~\ref{sec:concentration} follow in the text.
+
+\begin{table}[h]
+\centering
+\caption{Per-user budget replayed on the composition attack (memorising 8B model, 100 passages, 50-token windows): mean total spend of the uncut attack in nats (median anchor surprisal of a passage: 849), and mean recall of the outputs served before the budget is exhausted, with the fraction of users refused in parentheses.}
+\label{tab:odometer}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& & \multicolumn{4}{c}{recall at $B_{\mathrm{user}}$ (users refused)} \\
+\cmidrule(l){3-6}
+$k$ & spend & 200 & 400 & 800 & $\infty$ \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{oracle-prefix windows}} \\
+3 & 586 & 0.01 (100\%) & 0.06 (98\%) & 0.10 (0\%) & 0.10 \\
+5 & 670 & 0.02 (100\%) & 0.11 (100\%) & 0.23 (5\%) & 0.23 \\
+10 & 739 & 0.06 (100\%) & 0.18 (100\%) & 0.40 (29\%) & 0.41 \\
+20 & 860 & 0.12 (100\%) & 0.30 (100\%) & 0.71 (77\%) & 0.79 \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{chained windows}} \\
+3 & 483 & 0.01 (94\%) & 0.01 (82\%) & 0.01 (0\%) & 0.01 \\
+5 & 558 & 0.02 (99\%) & 0.03 (93\%) & 0.03 (0\%) & 0.03 \\
+10 & 609 & 0.06 (98\%) & 0.09 (96\%) & 0.11 (3\%) & 0.11 \\
+20 & 762 & 0.12 (100\%) & 0.26 (100\%) & 0.47 (41\%) & 0.50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{The anchor under the decoding settings the deployer chooses (758 CopyBench passages; the $\tau=1.0$ column is the unwarped baseline, the rest carry repetition penalty $1.1$): median surprisal in nats per token, and the fraction of passages for which Eq.~\eqref{eq:cap} is vacuous. He et al.\ decode books at $\tau = 0.7$.}
+\label{tab:warp}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{4}{c}{temperature $\tau$} \\
+\cmidrule(l){2-5}
+& $1.0$ & $0.7$ & $0.5$ & $0.3$ \\
+\midrule
+median $S(x)$ per token & 3.20 & 3.55 & 4.30 & 6.53 \\
+vacuous at $k=1$ & 44\% & 23\% & 6\% & 0\% \\
+vacuous at $k=1.5$ & 99\% & 94\% & 69\% & 7\% \\
+vacuous at $k \ge 3$ & 100\% & 100\% & 100\% & 97\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{length_scaling.pdf}
+\caption{Certificate vacuity against the length of the protected work, at the deployment's own budget $K = k\,T_{\max}$ with $T_{\max}=200$. Solid: the sixteen CopyBench novels, excerpts concatenated within a novel. Dashed: 50 public-domain books, contiguous prose, which the anchor's corpus contains. The per-window certificate an adversary faces, with budget $k\cdot 50$, is vacuous at every length for $k \ge 5$ and is not plotted.}
+\label{fig:lengthscale}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{natural_memorisation.pdf}
+\caption{Llama~3.1~70B on \emph{Harry Potter} at the authors' decoding settings (50 passages, $100$-token raw seeds): near-verbatim recall against $k$ for a single query and for oracle windows of $50$ tokens, under the deployed KL decoder, the pathwise decoder of Section~\ref{sec:pathwise}, and the decoder without prefix debt (Section~\ref{sec:prefixdebt}, run to $k=10$). Dotted lines: the unconstrained model. Temperature~1 and \emph{1984} have the same shape (Table~\ref{tab:natural} and text).}
+\label{fig:natural}
+\end{figure}
+
+\paragraph{Concentration inputs}
+The Freedman bound of Proposition~\ref{prop:conc} takes the $90$th percentiles of the logged $\sum_i \sigma_i^2$ and $\max_i b_i$ across trajectories, which a deployer could enforce by clipping. At $k=0.5$ ($K=100$) the summed variance has median $217$ (90th percentile $236$) and the largest per-step excess median $14.6$ (90th percentile $19.0$, maximum $32.5$), giving $\Pr[L(y) \ge K+50] \le 0.11$ and $\Pr[L(y) \ge 2K] \le 0.004$ against empirical frequencies of $0.001$ and $0$; at $k=1$ ($K=200$) it gives $\Pr[L(y) \ge 1.5K] \le 0.009$ against $0$. From $k=3$ to $k=20$ the variance saturates at a median of $350$ (90th percentile $450$) and $b$ at $15$ (maximum $29$), because the decoder is nearly the identity and the increments are the risky model's own, so the bound gives $\Pr[L(y) \ge K+100] \le 0.011$ at every one of these budgets against an empirical frequency of $0$ and no output above $K$.
+
+\paragraph{Extraction cost}
+Proposition~\ref{prop:cost} was measured with an adversary who re-samples each $50$-token window up to eight times until it matches (50 passages, 297 windows, oracle prefixes). Where the bound is informative it held: at $k=2$ it is below one for $253$ windows and sums to $0.003$ expected reproductions per pass, at $k=3$ for $161$ windows summing to $3.0$, and no window was reproduced exactly at either budget in $2{,}376$ attempts. It is vacuous at the budgets where the attack succeeds, since a window costs the anchor about $150$ nats and $K_i$ is $250$ nats already at $k=5$; there the adversary's cost is set by the budget binding rather than by the certificate, at $3.8$, $38$ and $153$ exact reproductions per thousand attempts at $k=5$, $10$ and $20$ under the pathwise decoder ($9.2$, $44$ and $178$ under the KL decoder, $180$ unconstrained).
+
+\section{Extended related work}\label{app:related}
+The two literatures below place the audit in context; Section~\ref{sec:related} carries the work the paper's claims are measured against.
+
+\paragraph{Memorisation and extraction}
+Models reproduce training text verbatim~\cite{carlini2021extracting} at rates growing with size, duplication and prompt length~\cite{carlini2023quantifying,huang2024demystifying}, under benign prompts~\cite{aerni2025nonadversarial}, and separably from common text~\cite{zhang2023counterfactual}, the distinction Section~\ref{sec:leakage} draws for the anchor. Extraction succeeds through divergence prompts~\cite{nasr2025scalable}, instructions~\cite{kassem2025alpaca} and best-of-$n$ sampling~\cite{ahmed2026extracting,hughes2024bestofn}; Cooper et al.~\cite{cooper2025extracting} show Llama~3.1~70B reproduces most of \emph{Harry Potter} from its opening words, and Hayes et al.~\cite{hayes2025measuring} that the rate depends on the decoding scheme, hence the two settings reported. Verbatim filters are evaded by format changes~\cite{ippolito2023preventing}; CopyBench~\cite{chen2024copybench}, CoTaEval~\cite{wei2024cotaeval} and Copyright-Bench~\cite{hui2026copyrightbench} supply the metrics~\cite{lin2004rouge,broder1997resemblance}. The passages behind CopyBench come from membership inference~\cite{shi2024detecting}, whose evidentiary value is contested~\cite{duan2024membership,ertan2026evidentiary,meeus2024traps,duarte2024decop}, so held-out passages are treated as prompts, not evidence about training data; see also~\cite{schwarzschild2024rethinking,karamolegkou2023copyright,freeman2024exploring,panaitescu2025watermarking}.
+
+\paragraph{What a divergence budget measures}
+Quantitative information flow separated average leakage from the probability of a one-try guess long ago: Shannon leakage does not bound it, min-entropy leakage does~\cite{smith2009foundations}, gain functions model partial guesses~\cite{alvim2012measuring}, maximal leakage bounds any guess~\cite{issa2020operational}, and its pointwise version measures one outcome~\cite{saeidian2023pointwise}. KL-NAF bounds average leakage, $\Delta_{\max}$-NAF maximal leakage, and the realised ratio of Section~\ref{sec:tails} is the pointwise quantity; reconstruction bounds from R\'enyi and hypothesis-testing privacy~\cite{guo2022bounding,balle2022reconstructing,hayes2023bounding,kaissis2023bounding} are the analogues of Eq.~\eqref{eq:cap}, and memorisation and extractability carry different constants~\cite{che2026memorization}. Valid but vacuous certificates have precedents in randomised smoothing~\cite{cohen2019certified,kumar2020curse,blum2020random} and deployed differential privacy~\cite{jayaraman2019evaluating}; choosing a budget is its own literature~\cite{lee2011howmuch,hsu2014economic,brown2022privacy,cyffers2025setting}, and the epsilon registry~\cite{dwork2019expose} is the model for the certificate card. That the mean is the wrong summary of a realised log-ratio is classical~\cite{cover2006elements,kontoyiannis2014optimal,chatterjee2018sample}; Proposition~\ref{prop:conc} rests on Freedman's inequality~\cite{freedman1975tail,tropp2011freedman,howard2021timeuniform}.
+
+
+\paragraph{CP-Fuse: the reweighting against plain averaging}
+A fixed $50/50$ geometric mixture of the same two shard models, with the balancing switched off, already holds oracle windows to $0.064$ and single queries to $0.018$, against CP-Fuse's $0.022$ and $0.000$, and the balancing rule moves the weight only from $0.500$ to $0.526$ on average. The reweighting earns a factor of three over averaging two models that disagree; the disjoint split earns the rest. Per-arm and per-shard figures are in the artifact.
+
+\paragraph{Is the larger anchor better read, or just better?}
+On matched $1{,}500$-character spans the 7B Comma model's total surprisal is a median $0.803$ times TinyComma's on 50 public-domain books, which the Common Pile contains and both anchors therefore trained on, but $0.908$ times on the sixteen copyrighted novels, which neither has seen. Its advantage is larger on text it trained on than on protected text, so most of the gain that matters for Eq.~\eqref{eq:cap} is ordinary fluency: a deployer cannot buy the certificate back by scaling the anchor.

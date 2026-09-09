@@ -1,0 +1,28 @@
+% Prefix-debt ablation. Promoted from a subsection to Section VII for plan v3 (2026-09-07, feat-032), with the
+% k=20 row added for both risky models so the ablation is bounded at the top of the range He et al. sweep.
+\section{What the Prefix Debt Does}\label{sec:prefixdebt}
+The prefix debt $\delta_{\mathrm{init}}(x)$ of Eq.~\eqref{eq:banking} charges every query, before its first token, for the risky model's confidence on the prompt. He et al.\ introduce it to stop the bank from accumulating across a prompt that is itself copied text; Theorem~3.1 holds with or without it. Section~\ref{sec:attack-results} found that the debt, not the budget, writes the first tokens of every answer between $k=5$ and $k=20$. We ran the composition attack with the debt switched off, on the same passages, seeds, and budgets, against both risky models (Table~\ref{tab:prefixdebt}); all $3{,}736$ queries stayed within budget, as they must, since the debt only reduces allowances.
+
+\begin{table}[t]
+\centering
+\caption{Prefix-debt ablation: mean near-verbatim recall with the debt on and off, for the memorising 8B model at temperature $1$ (100 passages) and Llama~3.1~70B at the authors' decoding settings (50 passages), single query and oracle windows. The unconstrained rates are $0.49$ and $0.81$ for the 8B model and $0.31$ and $0.61$ for the 70B model.}
+\label{tab:prefixdebt}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+& \multicolumn{4}{c}{memorising 8B} & \multicolumn{4}{c}{Llama 3.1 70B} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+& \multicolumn{2}{c}{single} & \multicolumn{2}{c}{oracle} & \multicolumn{2}{c}{single} & \multicolumn{2}{c}{oracle} \\
+$k$ & on & off & on & off & on & off & on & off \\
+\midrule
+1 & -- & 0.00 & -- & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+3 & 0.01 & 0.08 & 0.10 & 0.35 & 0.02 & 0.04 & 0.02 & 0.16 \\
+5 & 0.09 & 0.40 & 0.23 & 0.72 & 0.07 & 0.22 & 0.11 & 0.48 \\
+10 & 0.20 & 0.48 & 0.41 & 0.80 & 0.13 & 0.31 & 0.24 & 0.60 \\
+20 & 0.48 & 0.49 & 0.79 & 0.81 & 0.31 & 0.31 & 0.59 & 0.60 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The debt's contribution rises and then vanishes. Without it, the budgets of the released runs protect little. At $k=5$ a single query recovers $40\%$ of a passage from the memorising model instead of $9\%$, and oracle windows $72\%$ instead of $23\%$; the 70B model gives up $22\%$ instead of $7\%$ and $48\%$ instead of $11\%$. At $k=10$ both models reach their unconstrained rates without the debt, whereas with it the single query is held to $20\%$ and $13\%$. At $k=20$, the top of the range He et al.\ sweep, the debt makes no difference at all: with it and without it both models return their unconstrained rates ($0.48$ and $0.79$ for the memorising model, $0.31$ and $0.59$ for the 70B). Only at $k \le 3$ does the budget itself bind hard enough for the debt to matter less, and at $k=1$ nothing is reproduced either way. The debt is therefore decisive on exactly the interval $k \in [3, 10]$ --- the interval in which the mechanism both preserves utility and is claimed to protect --- and idle on either side of it. The protection in the range $k \in [3, 10]$, the range in which the mechanism is also usable, is therefore mostly the work of a component its guarantee does not describe. The debt is large exactly when the prompt is memorised, $12.9$ nats on these passages against about $6$ on ordinary prompts (Section~\ref{sec:regime}), so it taxes the prompts an extraction attack must use; a certificate that accounted for it would have to state what it assumes about the prompt, and an adversary who reaches the same continuation from a prompt the risky model is less sure of pays less.
