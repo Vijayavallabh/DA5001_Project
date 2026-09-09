@@ -235,7 +235,7 @@ def main():
     # elasticity d log(onset) / d log s(x) against its own control: 1 if the onset is proportional
     # to the rate the budget is charged against, 0 if the onset is a fixed number of nats.
     for r in rows:
-        r["elasticity_vs_control"] = ""
+        r["elasticity_vs_control"] = r["elasticity_lo"] = r["elasticity_hi"] = ""
     for pair in {r["pair"] for r in rows}:
         g = [r for r in rows if r["pair"] == pair]
         ctl = next((r for r in g if "control" in r["label"] and r["onset"] != ""), None)
@@ -250,6 +250,13 @@ def main():
                 continue
             r["elasticity_vs_control"] = round(
                 math.log(float(r["onset"]) / float(ctl["onset"])) / ds, 3)
+            # Interval from the arm's own bootstrap, holding the control's onset fixed: the two
+            # arms share a corpus and a metric, so the control's uncertainty is common to both and
+            # propagating it as independent would overstate the width.
+            for tag, col in (("lo", "ratio_lo"), ("hi", "ratio_hi")):
+                if r[col] != "":
+                    r[f"elasticity_{tag}"] = round(
+                        math.log(float(r[col]) * r["s_x"] / float(ctl["onset"])) / ds, 3)
 
     scored = [r for r in rows if r["pred_hit"] in (True, False)]
     if scored:
@@ -267,8 +274,10 @@ def main():
         print("\narms that move s(x) itself; elasticity 1 = onset proportional to s(x), "
               "0 = a fixed number of nats:")
         for r in sorted(el, key=lambda r: r["label"]):
+            ci = (f" [{r['elasticity_lo']:+.2f}, {r['elasticity_hi']:+.2f}]"
+                  if r["elasticity_lo"] != "" else "")
             print(f"  {r['label'][:33]:34s}s(x) {r['s_x']:.3f}  onset {float(r['onset']):.3f}  "
-                  f"elasticity {r['elasticity_vs_control']:+.2f}")
+                  f"elasticity {r['elasticity_vs_control']:+.2f}{ci}")
     if sm:
         print("\nseed changes the running maximum, not the mean rate (relative to each control):")
         print(f"  {'arm':34s}{'d s(x)':>9s}{'d k_crit':>10s}{'d onset':>9s}")
