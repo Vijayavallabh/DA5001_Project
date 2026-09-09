@@ -60,7 +60,10 @@ $1.87\times$ spread a deployer would otherwise have to guess.
 The split is not about how well the model memorised. The two KL3M pairs were built to test that:
 they share a tokenizer and a target length and differ in memorisation, $s_r/s_s = 0.09$ against
 $0.35$, and the thorough one still sits at $1.053$ while its $s_r/s_s$ falls between two pairs that
-sit at $0.892$ and $0.920$. Nor is it the size of the vocabulary, the reading one reaches for
+sit at $0.892$ and $0.920$. Nor is it the length of the target: for a fixed corpus that is the same
+variable as the tokenizer, so we decoded the KL3M pair on the first $276$ tokens of each target
+instead, matching the coarse pairs' step count with the tokenizer unchanged, and the ratio stayed at
+$1.09$ (Appendix~\ref{app:limitations}). Nor is it the size of the vocabulary, the reading one reaches for
 first: Phi-3.5-mini carries $32{,}011$ types against KL3M's $32{,}768$ but cuts these passages at
 $3.8$ characters per token against $2.0$, and it lands at $0.926$, with the coarse family and not
 with the pair whose vocabulary it matches. Its interval, $[0.80, 1.09]$, is too wide to exclude the

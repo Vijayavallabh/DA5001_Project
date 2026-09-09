@@ -614,7 +614,7 @@
     },
     {
       "id": "feat-060",
-      "status": "invalid",
+      "status": "done",
       "phase": 5,
       "depends_on": [
         "feat-058",
@@ -622,7 +622,7 @@
       ],
       "description": "Separate the tokenizer from the target length, which are collinear by construction for a fixed corpus, by truncating the KL3M target to the four-character pairs' decode-step count with the tokenizer held fixed.",
       "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m --max-target-tokens 276 --k-values -1 0 1.6 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.2 --modes single --limit 100 --out output/phase5/trunc276_kl3m520m ; then analysis/score_truncation.py",
-      "evidence": "WITHDRAWN 2026-09-10. The control could not have measured what it claimed. The protected passage begins at token 455 of the KL3M tokenisation of prompt_text + reference; --max-target-tokens 276 ends the target at token 296, so the passage was absent from the target for 100/100 passages and an adversary reproducing the target verbatim would have scored nv_recall 0.0000 (exact reconstruction, no GPU). The reported ratio 1.091 is word overlap between the novel's prefix and its own passage, not extraction. The original evidence read: 'Truncated ratio 1.091 on lcs_word>=4, CI [1.04, 1.24], against 1.032 for the same pair untruncated'. The target-length/decode-distance confound is therefore REOPENED. results/truncation_score.csv is kept as the record of the withdrawn run."
+      "evidence": "Truncated ratio 1.091 on lcs_word>=4, CI [1.04, 1.24], against 1.032 for the same pair untruncated and 0.866-0.893 for the four-character pairs. The pre-registered 'decode-step count' reading predicted ~0.87 and is refuted; 'tokenizer itself' predicted ~1.03 and is within 0.061. nv_recall gives 1.053 for both runs. BRIEFLY MARKED INVALID ON 2026-09-10 AND REINSTATED THE SAME DAY: the claim that the truncated target lacked the protected passage used the wrong reference. composition_attack.py scores nv_recall/lcs_word against the decoded TARGET, not against the CopyBench `reference` field, and each item's prompt_text is 930 characters of the same novel, so a target truncated inside prompt_text is still protected text. The truncated run's k=-1 baseline is nv_recall 0.696 with 57% of passages above 0.8, which is only possible if the target was reproducible. The control is valid."
     },
     {
       "id": "feat-061",
@@ -656,7 +656,7 @@
       ],
       "description": "Guard the composition attack against configurations in which the protected passage is not inside the decoded target, and withdraw feat-060, which was such a configuration.",
       "evidence_command": "HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python -c \"exact reconstruction of the feat-060 target; see progress.md\" ; .venv/bin/python -m pytest -q tests/test_max_target_tokens.py",
-      "evidence": "Reference start token per pair (100 test passages): TinyComma 215, Pleias-1.2B 229, Pleias-350M 230, Phi-3.5 243, Comma-7B 250, KL3M x2 455, out of totals 279-592. All seven UNTRUNCATED runs contain the passage in 100/100 targets with a ceiling nv_recall of 0.997, so the seven-pair result stands. feat-060's truncated target contained it in 0/100 with ceiling 0.0000. composition_attack.py now raises SystemExit when no target contains its passage, warns when some do not, and prints 'reference reached in N/M' on every run. 5 tests in tests/test_max_target_tokens.py."
+      "evidence": "Reference-coverage reporting, and a false alarm corrected the same day. Reference start token per pair (100 test passages): TinyComma 215, Pleias-1.2B 229, Pleias-350M 230, Phi-3.5 243, Comma-7B 250, KL3M x2 455, out of totals 279-592, so a target truncated to 296 tokens stops inside prompt_text for the KL3M pairs. That is worth reporting -- it says whether a run measures the passage proper or only its prefix -- but it is NOT a validity check, because recall is scored against the target and prompt_text is itself 930 characters of the novel. The SystemExit first added here would have blocked feat-060, a valid experiment; it is now an informational count printed as 'reference reached in N/M'. 5 tests in tests/test_max_target_tokens.py."
     }
   ]
 }

@@ -1936,3 +1936,31 @@ enough to move a pair from 0.866 to 1.004 of its vacuity threshold, across the b
 
 This is the framing for Section 4 once Arm A and the dose-response arms land: not "an artifact of
 our attack script" but "a confound inherited from the standard definition, quantified".
+
+### Correction: feat-060 was reinstated the same day it was withdrawn (2026-09-10)
+
+Earlier today I marked feat-060 invalid, on the grounds that its truncated target did not contain
+the protected passage. **That was my error, and the entry above it is wrong.**
+
+`analysis/composition_attack.py` scores `nv_recall` and `lcs_word` against **`x["target"]`**, the
+decoded target, not against the CopyBench `reference` field. I checked coverage of the wrong
+object. And each benchmark item's `prompt_text` is **930 characters of the same novel** -- it opens
+"Complete the prefix:" and then continues the book -- so a target truncated inside `prompt_text` is
+still protected text, not instruction text. The truncated run's own k=-1 baseline settles it:
+**nv_recall 0.696, with 57% of passages above 0.8**, which is impossible if the target were
+unreproducible. feat-060's control is valid and its conclusion -- the decode-step count is not the
+mechanism -- stands.
+
+Reverted: feat-060 back to `done`, Section 4's target-length sentence restored, the appendix's
+"a control we ran, and have withdrawn" paragraph replaced by the original with the scoring object
+stated explicitly, and the `SystemExit` guard **removed** -- it would have blocked feat-060 itself.
+What survives from feat-063 is the informational line `reference reached in N/M`, which records
+whether a run measures the passage proper or only its prefix. That distinction is real and worth
+printing; it is not a validity condition.
+
+The seed result (Arm B) is untouched by this: it compares two runs at the same target definition
+and the same scoring object, and its intervals are disjoint.
+
+**The lesson, recorded because it nearly cost a correct result:** before declaring a committed run
+invalid, read what the metric is computed against, in the code, and check the run's own k=-1
+baseline. A baseline near the ceiling means the target was reproducible and the measurement is real.
