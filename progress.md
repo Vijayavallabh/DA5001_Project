@@ -2137,3 +2137,52 @@ It also predicts the shape the seed-80 arm will show: `k_crit` falls only 2.3% f
 80, so the onset should fall about as little, which is the committed discriminating prediction in
 the third addendum. That the same relation was reached from a different direction before the arm
 ran is worth noting, and does not make it more confirmed.
+
+### 2026-09-10, feat-065: the units claim, conditioned on the adversary's context
+
+**The number a reviewer computes first, and it looked bad.** Leave-one-out across the seven pairs:
+predicting a held-out pair's onset as `c * s(x)` gives mean |error| 0.264 nats; predicting a
+*constant number of nats* and not rescaling at all gives 0.295. Over an `s(x)` range of 1.61x the
+units claim was barely distinguishable from quoting a constant.
+
+**Conditioning on the seed fixes it.** The seven pairs split exactly in two by how many words 20
+tokens buy -- 7.3 on the two KL3M pairs, 13.0-14.4 on the other five, no overlap -- and that split
+was registered in `results/onset_prediction_seed.md` before the intervention arms ran. Within the
+five seed-matched pairs, over `s(x)` spanning 1.49x:
+
+| subset | n | s(x) span | ratio | cv | LOO k/s(x) | LOO constant | ratio |
+|---|---|---|---|---|---|---|---|
+| all pairs | 7 | 1.61x | 0.878-1.166 | 11.3% | 0.264 nats | 0.295 nats | 1.1x |
+| matched context (> 10 words) | 5 | 1.49x | 0.878-0.926 | **2.4%** | **0.070 nats** | 0.364 nats | **5.2x** |
+
+The grouping is read off these same seven measurements, so it is not itself a test -- the two
+pre-registered intervention arms are. What it shows is that the residual the units claim was losing
+to is the evaluation protocol, not noise in the law.
+Command: `.venv/bin/python analysis/score_predictions.py --out results --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + mem. Comma-7B"`
+-> `results/matched_context.csv`, `results/onset_seed_words.csv`.
+
+**Normaliser ablation, extended with k_crit** (`analysis/collapse_robustness.py`, block
+`normaliser_spread`): across the seven pairs `s(x)` is the best of four normalisers (1.33x spread,
+cv 11.5%), `k_crit` by far the worst (3.75x, cv 43.4%), `r = s_s - s_r` in between (1.89x), and no
+rescaling at all 1.49x. `k_crit` is nonetheless the *best within-pair* predictor of the seed
+intervention (`results/seed_effect.csv`, column `pred_ratio_K`): calibrated on each pair's control
+arm alone, it puts both existing out-of-sample arms inside their bootstrap intervals (0.963 vs
+0.939 [0.88,1.17]; 1.021 vs 1.004 [0.99,1.23]). The two facts are consistent: `k_crit` is a running
+maximum whose *level* is set by the worst token in the target and varies wildly across corpora,
+while its *derivative in the seed* is what the onset follows. The seed moves `s(x)` by 0.7-1.5% and
+`k_crit` by 7.3-19.7% (`results/seed_effect_summary.csv`).
+
+**Negative recon: more anchors cannot widen the s(x) range.** The three cached, un-paired anchors
+score 2.166 (KL3M-3.7B), 2.557 (KL3M-170M) and 3.148 (Pleias-3B) nats/token on the CopyBench
+passages, against a built range of 2.211-3.554. None extends it; the ten permissively licensed
+anchors span only ~1.64x on this corpus, so the range is a property of the corpus and the class of
+open models, not of how many pairs are built. Building any of them would cost ~2.5 GPU-h for a 2%
+extension. Command: `analysis/budget_path.py --safe-model <id> --composition '' --limit 100
+--prefix budget_path_recon_<tag>` (log `output/phase5/recon_sx.log`). Redirected to the temperature
+lever instead (`output/phase5/recon_temp.log`).
+
+**Compute accounting rebuilt.** `analysis/compute_hours.py` now scans `output/phase{4,5}/*.log`,
+billing each launcher log from its birth to its last write minus the `sleep` calls a `set -x` trace
+recorded, so an armed chain that waited three hours for a file scores ~0. Total 93.2 GPU-hours
+(`results/compute_hours_summary.csv`); the manuscript's LLM-usage statement was updated from a
+stale 63 and now also says there are two judges, not one.
