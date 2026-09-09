@@ -158,6 +158,9 @@ def main():
         for r in g:
             r["onset_over_k_crit"] = round(float(r["onset"]) / r["k_crit"], 4) if r["onset"] != "" else ""
             r["pred_ratio_K"] = round(c * r["k_crit"] / r["s_x"], 4) if c else ""
+            # the null a quantitative prediction has to beat: the intervention changes nothing,
+            # so the arm reads its control's ratio
+            r["pred_ratio_null"] = ctl["ratio"] if ctl else ""
             r["pred_hit"] = ("" if not c or r["ratio_lo"] == "" or r is ctl else
                              float(r["ratio_lo"]) <= c * r["k_crit"] / r["s_x"] <= float(r["ratio_hi"]))
 
@@ -228,6 +231,17 @@ def main():
             if len(sel) >= 4:
                 rho, pv = permutation_p([o[1] for o in sel], [o[2] for o in sel])
                 print(f"   {lab:20s} n={len(sel)}  Spearman {rho:+.3f}  exact permutation p={pv:.4f}")
+    scored = [r for r in rows if r["pred_hit"] in (True, False)]
+    if scored:
+        e = lambda k: st.mean(abs(float(r[k]) - float(r["ratio"])) / float(r["ratio"]) * 100
+                              for r in scored)
+        print(f"\n{len(scored)} out-of-sample arms, each predicted from its pair's control alone:")
+        print(f"  {'arm':34s}{'measured':>10s}{'(K)':>9s}{'null':>9s}")
+        for r in scored:
+            print(f"  {r['label'][:33]:34s}{float(r['ratio']):10.4f}{float(r['pred_ratio_K']):9.4f}"
+                  f"{float(r['pred_ratio_null']):9.4f}{'  in CI' if r['pred_hit'] else '  MISS'}")
+        print(f"  mean |relative error|: k_crit {e('pred_ratio_K'):.1f}%, "
+              f"no-change null {e('pred_ratio_null'):.1f}%")
     if sm:
         print("\nseed changes the running maximum, not the mean rate (relative to each control):")
         print(f"  {'arm':34s}{'d s(x)':>9s}{'d k_crit':>10s}{'d onset':>9s}")

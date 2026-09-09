@@ -195,3 +195,25 @@ Recorded for the same reason as the third addendum's caution: (K) has now been c
 one-point-per-pair on three pairs and predicts out of sample on four arms, so it is no longer a
 single lucky arithmetic coincidence -- but it is still a one-parameter rescaling of a quantity that
 was itself derived for a different purpose (Proposition 2), and a miss on this arm is a miss.
+
+## Scored: the seed-10 arm (2026-09-10, after the sweep, before seed 80 finished)
+
+Measured ratio **1.1635** $[1.13, 1.33]$ against the third addendum's committed (K) value of
+**1.1486** -- an error of $1.3\%$, and inside the interval. The dose-response on KL3M-520M is now
+strictly decreasing in the adversary's context, $4.0$ words $\to 1.163$, $7.3 \to 1.032$,
+$14.3 \to 0.939$, and (K) has predicted all three arms measured so far from each pair's control
+arm alone:
+
+     arm                          measured      (K)     no-change null
+     Pleias-1.2B seed 10            1.0041   1.0211             0.8661
+     KL3M-520M  seed 10             1.1635   1.1486             1.0321
+     KL3M-520M  seed 40             0.9393   0.9633             1.0321
+     mean |relative error|                      1.8%              11.6%
+
+**The caveat committed in advance still stands and is the reason this arm is not the strong one.**
+Its `k = -1` baseline is $0.227$ against the control's $0.519$: at $4.0$ words the memoriser is
+markedly worse at the work, and a worse memoriser should on its own push the onset **up**, which is
+the direction measured. The confound and the hypothesis agree here, so this arm cannot separate
+them; what it does add is that a quantitative prediction made before the run landed within $1.3\%$,
+which a directional confound does not explain. The seed-40 arm is the clean one --- its baseline is
+$0.520$ against $0.519$ --- and it moved the other way.
