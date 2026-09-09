@@ -2021,3 +2021,28 @@ there would answer a different question.
 
 Closing this limitation needs copyrighted text of a different genre or language that the open-data
 anchors provably did not see, which we do not have. It stays a stated limitation.
+
+### The three proofs re-derived independently (2026-09-10)
+
+Checked line by line, since everything rests on them:
+
+- **Prop. 1, alpha = infinity.** D_inf <= K gives p_theta(E) <= e^K p_s(E) = e^{K - S(x)}, vacuous
+  iff K >= S(x). Correct.
+- **Prop. 1, alpha in (1, inf).** The change-of-measure bound
+  P(E) <= Q(E)^{(a-1)/a} exp((a-1)/a * D_a) is the standard Renyi form (cited to
+  `mironov2017renyi`). The exponent (a-1)/a is positive and finite for a > 1, so the bound reaches 1
+  iff e^K p_s(E) >= 1, i.e. K >= S(x). Correct, and the exponent's positivity is exactly what makes
+  the threshold order-invariant.
+- **Prop. 1, alpha = 1.** The binary-KL inversion attains 1 when d(1 || e^{-S(x)}) <= K, and
+  d(1 || q) = -log q = S(x). Correct.
+- **Prop. outrun.** d(q || e^{-s_t}) = q*s_t + q log q + (1-q) log((1-q)/(1-p)). The last two terms
+  are bounded below by -H(q) >= -log 2, and -(1-q) log(1-p) >= 0, so with q >= 1-eta the whole is
+  >= (1-eta) s_t - log 2. Correct.
+- **Theorem 1.** The KL chain rule over sequences and Donsker-Varadhan with the supremum over
+  lambda giving the Legendre transform of the CGF, i.e. the Cramer rate function. Both standard and
+  correctly applied; the paper additionally verifies the chain-rule step empirically (largest
+  discrepancy 1.5e-4 nats over 240,000 decode steps) rather than assuming the implementation
+  matches the mathematics.
+
+Attribution is right: Prop. 1 says "None is new; the contribution is that all three break in the
+same place", and k_crit is credited to Loynes rather than claimed.
