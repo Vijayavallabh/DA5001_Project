@@ -63,3 +63,40 @@ wide margin. Recorded now because the direction matters: a memoriser that is *be
 should make extraction begin **earlier**, not later, so the confound pushes the measured onset
 **down**, away from (U)'s $4.163$ and towards (N)'s $2.492$. If the onset nevertheless lands near
 $4.163$, the confound cannot be what produced it.
+
+## Second pair, committed before either of its arms was launched (2026-09-10)
+
+`KL3M-520M` is a short-context pair whose control ratio is above $1$. Replicating on
+`Pleias-1.2B + mem. Pleias-1.2B` -- a seed-matched pair whose control ratio is $0.866$, in the
+middle of the five-pair band -- tests the same thing on the other side of the split. Its budget
+paths were measured first and are committed with this file; no token of either arm has been
+decoded.
+
+     tau     s(x)   k_crit   k_crit/s(x)
+     0.4    5.200    9.002         1.731
+     0.7    3.513    5.752         1.637
+     1.0    3.209    4.942         1.540   <- measured onset 2.7797, ratio 0.8661
+
+At tau = 0.4 this pair's `s(x)` reaches **5.200** nats per token, above the whole built range's
+maximum of 3.554, so the two pairs' warped arms together widen the measured range from 1.61x to
+2.35x -- which is the reason for running them.
+
+Predictions on the primary metric (`lcs_word >= 4`), each calibrated on this pair's own control:
+
+     arm        (U) units    (N) constant nats    (K) token bucket
+     tau 0.7        3.043                2.780               3.235
+     tau 0.4        4.504                2.780               5.064
+
+**Committed prediction.** The tau = 0.4 arm again decides between (N) and the other two, which
+differ from it by 62% and 82%:
+
+  - onset in **[4.0, 5.3] nats**: (N) is refuted on a second pair, in a second family, at an
+    `s(x)` no unwarped pair reaches.
+  - onset **below 3.2 nats**: (U) is refuted within a pair and the units result is a cross-pair
+    regularity only.
+  - 3.2-4.0: undecided, reported as such.
+
+(U) and (K) sit 12% apart here against 10% on the KL3M pair, still inside the bootstrap width at
+$n=100$; both are reported. The same admissibility screen and the same baseline-attached reporting
+apply: the tau = 0.4 memoriser will be sharper than the control's, which pushes the measured onset
+down, against the hypothesis.
