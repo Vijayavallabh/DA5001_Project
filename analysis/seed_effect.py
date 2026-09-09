@@ -201,8 +201,8 @@ def main():
 
     for pair in sorted({r["pair"] for r in rows}):
         g = sorted((r for r in rows if r["pair"] == pair), key=lambda r: r["seed_words"])
-        if len(g) < 3:
-            continue
+        if len(g) < 3 or len({r["seed_words"] for r in g}) < 3:
+            continue   # the temperature arms hold the seed fixed; there is no dose curve to draw
         rs = [r["ratio"] for r in g]
         mono = all(x > y for x, y in zip(rs, rs[1:]))
         print(f"\n{pair}: ratio against seed words "

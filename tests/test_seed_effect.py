@@ -14,11 +14,13 @@ def test_manifest_rows_are_well_formed():
     for f in rows:
         assert len(f) == 6, f
         int(f[1])
-        pairs.setdefault(f[5], []).append(int(f[1]))
-    # every pair varies only the seed, so each must have at least two distinct seeds
-    for pair, seeds in pairs.items():
-        assert len(set(seeds)) == len(seeds), f"{pair} repeats a seed"
-        assert len(seeds) >= 2, f"{pair} has nothing to compare"
+        pairs.setdefault(f[5], []).append((int(f[1]), f[3]))
+    # Every row in a group is one arm of an intervention: the seed arms differ in the seed, the
+    # temperature arms hold the seed fixed and differ in the budget path they were measured under.
+    # Either way (seed, budget path) identifies the arm, so a repeat is a duplicated row.
+    for pair, arms in pairs.items():
+        assert len(set(arms)) == len(arms), f"{pair} repeats an arm"
+        assert len(arms) >= 2, f"{pair} has nothing to compare"
 
 
 def test_seed_words_is_measured_not_assumed(monkeypatch):
