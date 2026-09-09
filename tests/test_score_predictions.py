@@ -30,3 +30,17 @@ def test_the_larger_measurement_wins(tmp_path):
     got = load_measurements(str(p))
     assert set(got) == {canonical("Pleias-350M + mem. Pleias-350M")}   # oracle rows excluded
     assert got[canonical("Pleias-350M + mem. Pleias-350M")]["n_passages"] == "458"
+
+
+def test_tightest_subset_check_is_an_exact_enumeration():
+    """The matched-context claim is a 5-of-7 subgroup, which is exactly the shape of a finding
+    that appears by chance, so the multiplicity check must enumerate every subset of that size
+    rather than approximate. Seven values whose tightest five are obvious: the check must find
+    exactly one and return 1/21."""
+    import itertools, statistics as st
+    r = [0.90, 0.91, 0.92, 0.89, 0.90, 1.30, 1.60]      # last two are the loose pair
+    ours = (0, 1, 2, 3, 4)
+    cv = lambda idx: st.stdev([r[i] for i in idx]) / st.mean([r[i] for i in idx])
+    subs = list(itertools.combinations(range(7), 5))
+    assert len(subs) == 21
+    assert sum(1 for c in subs if cv(c) <= cv(ours) + 1e-12) == 1

@@ -195,9 +195,36 @@ def main():
             print(f"  {lab:34s}{len(sub):3d}{max(x for _,x,_ in sub)/min(x for _,x,_ in sub):10.2f}x"
                   f"{100*st.stdev(rs)/st.mean(rs):9.1f}%{a_:12.3f}n{b_:14.3f}n"
                   f"   ({b_/a_:.1f}x better)")
+        # Two multiplicity checks, because a 5-of-7 subgroup is exactly the shape of a finding
+        # that appears by chance. (a) Is our five the tightest five, or merely a tight five?
+        # (b) If the grouping label were assigned at random, how often would the two groups differ
+        # by this much? Both are exact enumerations, not asymptotics, at n = 7.
+        import itertools
+        rr = [o / x for _, x, o in pts]
+        ours = tuple(i for i, p_ in enumerate(pts) if sw.get(p_[0], 0) > a.words_split)
+        if 3 <= len(ours) < len(pts):
+            cv = lambda idx: st.stdev([rr[i] for i in idx]) / st.mean([rr[i] for i in idx])
+            subs = list(itertools.combinations(range(len(pts)), len(ours)))
+            tighter = sum(1 for c in subs if cv(c) <= cv(ours) + 1e-12)
+            m = len(pts) - len(ours)
+            obs = abs(st.mean([rr[i] for i in range(len(pts)) if i not in ours])
+                      - st.mean([rr[i] for i in ours]))
+            labellings = list(itertools.combinations(range(len(pts)), m))
+            ge = sum(1 for c in labellings
+                     if abs(st.mean([rr[i] for i in c])
+                            - st.mean([rr[i] for i in range(len(pts)) if i not in c])) >= obs - 1e-12)
+            for r_ in out:
+                if r_["subset"].startswith("matched"):
+                    r_["p_tightest_subset"] = round(tighter / len(subs), 4)
+                    r_["p_permutation_grouping"] = round(ge / len(labellings), 4)
+            print(f"  multiplicity: ours is {tighter} of {len(subs)} subsets of size {len(ours)} "
+                  f"this tight (p={tighter/len(subs):.3f}); exact permutation over the "
+                  f"{len(labellings)} labellings p={ge/len(labellings):.3f}")
         if out:
             with open(os.path.join(a.out, "matched_context.csv"), "w", newline="") as f:
-                w = csv.DictWriter(f, fieldnames=list(out[0])); w.writeheader(); w.writerows(out)
+                keys = list(dict.fromkeys(k for r_ in out for k in r_))
+                w = csv.DictWriter(f, fieldnames=keys, restval="")
+                w.writeheader(); w.writerows(out)
             print(f"  wrote {a.out}/matched_context.csv")
 
     print(f"\nwrote {a.out}/prediction_scores.csv")
