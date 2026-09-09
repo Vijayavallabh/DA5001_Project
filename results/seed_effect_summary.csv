@@ -4,3 +4,4 @@ KL3M-520M,KL3M-520M seed 40 (Arm A),KL3M-520M seed 20 (control),14.3,7.3,-0.68,-
 KL3M-520M,KL3M-520M seed 80,KL3M-520M seed 20 (control),28.4,7.3,-1.14,-9.41,1.14,1.0559,0.9458,True
 KL3M-520M tau,KL3M-520M tau 0.4,KL3M-520M tau 1.0 (control),7.3,7.3,67.07,84.04,44.58,0.8932,1.137,False
 Pleias-1.2B,Pleias-1.2B seed 10 (Arm B),Pleias-1.2B seed 20 (control),6.7,13.7,1.53,19.7,17.71,1.0041,1.0211,True
+Pleias-1.2B tau,Pleias-1.2B tau 0.4,Pleias-1.2B tau 1.0 (control),13.7,13.7,62.02,82.15,34.54,0.7192,0.9737,False

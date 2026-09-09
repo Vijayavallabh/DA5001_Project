@@ -260,15 +260,28 @@ def main():
 
     scored = [r for r in rows if r["pred_hit"] in (True, False)]
     if scored:
-        e = lambda k: st.mean(abs(float(r[k]) - float(r["ratio"])) / float(r["ratio"]) * 100
-                              for r in scored)
+        # The two interventions are different in kind and k_crit does not do equally well on both,
+        # so they are scored apart. Pooling them hides that it beats the null on one and loses to
+        # it on the other.
+        def err(sub, k):
+            return st.mean(abs(float(r[k]) - float(r["ratio"])) / float(r["ratio"]) * 100
+                           for r in sub)
+        groups = [("seed arms (s(x) held fixed)",
+                   [r for r in scored if r["elasticity_vs_control"] == ""]),
+                  ("temperature arms (s(x) moved)",
+                   [r for r in scored if r["elasticity_vs_control"] != ""])]
         print(f"\n{len(scored)} out-of-sample arms, each predicted from its pair's control alone:")
-        print(f"  {'arm':34s}{'measured':>10s}{'(K)':>9s}{'null':>9s}")
-        for r in scored:
-            print(f"  {r['label'][:33]:34s}{float(r['ratio']):10.4f}{float(r['pred_ratio_K']):9.4f}"
-                  f"{float(r['pred_ratio_null']):9.4f}{'  in CI' if r['pred_hit'] else '  MISS'}")
-        print(f"  mean |relative error|: k_crit {e('pred_ratio_K'):.1f}%, "
-              f"no-change null {e('pred_ratio_null'):.1f}%")
+        for name, sub in groups:
+            if not sub:
+                continue
+            print(f"  --- {name} ---")
+            print(f"  {'arm':34s}{'measured':>10s}{'(K)':>9s}{'null':>9s}")
+            for r in sub:
+                print(f"  {r['label'][:33]:34s}{float(r['ratio']):10.4f}"
+                      f"{float(r['pred_ratio_K']):9.4f}{float(r['pred_ratio_null']):9.4f}"
+                      f"{'  in CI' if r['pred_hit'] else '  MISS'}")
+            print(f"    mean |relative error|: k_crit {err(sub, 'pred_ratio_K'):.1f}%, "
+                  f"no-change null {err(sub, 'pred_ratio_null'):.1f}%")
     el = [r for r in rows if r["elasticity_vs_control"] != ""]
     if el:
         print("\narms that move s(x) itself; elasticity 1 = onset proportional to s(x), "

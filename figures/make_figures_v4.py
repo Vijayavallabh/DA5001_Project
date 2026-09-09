@@ -187,6 +187,10 @@ def seed_effect():
         ax.scatter(xs, ys, s=34, facecolors="none", edgecolors="0.45", linewidths=1.1, zorder=2,
                    label="seven pairs (seed fixed at 20 tokens)")
 
+    # The temperature arms hold the seed fixed and vary the warp, so on a "seed words" axis they
+    # would stack at one x and be labelled "seed varied", which is false. They belong on
+    # units_law(), which plots against s(x) -- the axis they actually move.
+    rows = [r for r in rows if not r["pair"].endswith(" tau")]
     markers = ["o", "s", "^", "D"]
     labelled = False   # the first pair in sort order may have a single arm and be skipped below,
                        # so the legend entry has to hang off the first pair actually drawn

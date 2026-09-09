@@ -135,3 +135,40 @@ adversary's window, which is exactly what a running maximum over the target's su
 tracks, whereas the warp rescales the whole profile, which the running maximum over-reads. `k_crit`
 is a good predictor of what the evaluation protocol does to the onset and a poor one of what the
 decoder's own temperature does. Section~\ref{sec:onset} must not present it as a general law.
+
+## Scored: the Pleias-1.2B tau = 0.4 arm, and the replication holds (2026-09-10)
+
+     quantity            tau 1.0 (control)    tau 0.4     change
+     s(x)                          3.2094      5.1999     +62.0%
+     k_crit                        4.9422      9.0023     +82.2%
+     onset                         2.7797      3.7400     +34.5%
+     onset / s(x)                  0.8661      0.7192
+     k = -1 baseline                0.909       0.952
+
+Measured onset **3.740** nats against the committed bands: [4.0, 5.3] refutes (N), below 3.2 refutes
+(U), 3.2-4.0 undecided. It lands in the **undecided** interval, so on the band as written this arm
+decides nothing. On the statistic that actually separates the accounts it does:
+
+     pair                elasticity d log(onset) / d log s(x)
+     KL3M-520M                        +0.72  [+0.41, +0.84]
+     Pleias-1.2B                      +0.61  [+0.40, +0.96]
+
+Two pairs, two families, both intervals excluding **0** --- a constant number of nats is refuted
+twice --- and both excluding **1**, so the onset moves with the rate the budget is charged against
+and moves less than one-for-one. The point estimates agree and the intervals overlap almost
+entirely. Both arms carry the same confound in the same direction: the warped memoriser is better at
+the work (0.952 against 0.909 here, 0.904 against 0.519 on KL3M), which pushes the onset down, so
+both elasticities are lower bounds.
+
+**The split in what `k_crit` predicts is now measured on both sides.** Scored apart, as
+`analysis/seed_effect.py` now reports them:
+
+     intervention                      arms    k_crit mean |rel. err|    no-change null
+     seed (s(x) held fixed)               4                    4.0%              9.3%
+     temperature (s(x) moved)             2                   31.3%             18.0%
+
+On the seed arms `k_crit` beats the null by 2.3x; on the temperature arms it is **worse than
+assuming nothing changed**. Pooling the six gives 13.1% against 12.2% and hides exactly this. The
+running maximum tracks which tokens the adversary's window starts on; it over-reads a rescaling of
+the whole surprisal profile. Section~\ref{sec:onset} may use it for the first and must not for the
+second.
