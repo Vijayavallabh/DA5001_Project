@@ -157,19 +157,71 @@ def onset_collapse():
     _save(fig, "onset_collapse")
 
 
+def seed_effect():
+    """feat-064: the onset ratio against how many words of the work the adversary already holds.
+
+    Two kinds of point, drawn differently because they carry different weight. Open circles are the
+    seven pairs built for other reasons, where seed words is exactly 20 x characters-per-token and
+    so cannot be separated from tokenizer granularity. Filled points joined by a line are the
+    intervention, where the seed is varied with the tokenizer, models, corpus and metric all fixed.
+    """
+    import csv
+    rows = list(csv.DictReader(open(RESULTS / "seed_effect.csv")))
+    if not rows:
+        raise FileNotFoundError("results/seed_effect.csv is empty")
+    fig, ax = plt.subplots(figsize=(5.0, 3.1))
+
+    obs = RESULTS / "onset_table.csv"
+    if obs.exists():
+        # the observational pairs, from the committed seven-pair table
+        import json
+        words = {"KL3M-1.7B": 7.3, "KL3M-520M": 7.3, "Pleias-350M": 13.0, "Phi-3.5-mini": 13.1,
+                 "Comma-7B": 13.4, "Pleias-1.2B": 13.7, "TinyComma-1.8B": 14.4}
+        xs, ys = [], []
+        for r in csv.DictReader(open(obs)):
+            if r["pair"].startswith("ALL"):
+                continue
+            key = next((k for k in words if r["pair"].startswith(k)), None)
+            if key:
+                xs.append(words[key]); ys.append(float(r["ratio"]))
+        ax.scatter(xs, ys, s=34, facecolors="none", edgecolors="0.45", linewidths=1.1, zorder=2,
+                   label="seven pairs (seed fixed at 20 tokens)")
+
+    markers = ["o", "s", "^", "D"]
+    for i, pair in enumerate(sorted({r["pair"] for r in rows})):
+        g = sorted((r for r in rows if r["pair"] == pair), key=lambda r: float(r["seed_words"]))
+        if len(g) < 2:
+            continue
+        x = [float(r["seed_words"]) for r in g]
+        y = [float(r["ratio"]) for r in g]
+        lo = [float(r["ratio"]) - float(r["ratio_lo"]) for r in g]
+        hi = [float(r["ratio_hi"]) - float(r["ratio"]) for r in g]
+        ax.errorbar(x, y, yerr=[lo, hi], marker=markers[i % len(markers)], ms=5, lw=1.4,
+                    capsize=2.5, zorder=3, label=f"{pair}, seed varied")
+
+    ax.axhline(1.0, color="0.3", ls=":", lw=1.0)
+    ax.text(ax.get_xlim()[1], 1.005, "certificate vacuous above", ha="right", va="bottom", fontsize=7,
+            color="0.3")
+    ax.set_xlabel("words of the work the adversary is given")
+    ax.set_ylabel(r"onset $/\ s(x)$")
+    ax.legend(fontsize=7, frameon=False, loc="upper right")
+    _save(fig, "seed_effect")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
     a = ap.parse_args()
     print("rebuilding plan-v4 figures from results/")
-    for fn in (frontier_scaling, opening_effect, order_invariance, onset_collapse):
+    for fn in (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect):
         try:
             fn()
         except FileNotFoundError as e:
             print(f"  SKIP {fn.__name__}: {e}")
     if a.copy_to:
         import shutil
-        for n in ("frontier_scaling", "opening_effect", "order_invariance", "onset_collapse"):
+        for n in ("frontier_scaling", "opening_effect", "order_invariance", "onset_collapse",
+                  "seed_effect"):
             src = OUT / f"{n}.pdf"
             if src.exists():
                 shutil.copy(src, Path(a.copy_to).expanduser() / f"{n}.pdf")
