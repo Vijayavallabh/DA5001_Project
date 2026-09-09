@@ -1872,3 +1872,37 @@ committed.
 
 Manuscript: abstract, introduction, Section 7 and the limitations rewritten; main text back to
 exactly 9 pages, 0 overfull, 0 '??'.
+
+### feat-064 Arm B: the onset split is the attack's seed, not the tokenizer (2026-09-10)
+
+Pre-registered at `bc74f4d`, before either arm ran. Arm B gives Pleias-1.2B -- a **coarse**-tokenizer
+pair sitting at 0.878, deep in the coarse band -- the seed the KL3M pairs get, by cutting
+`--seed-tokens` from 20 to 10 so its adversary holds 6.9 words instead of 13.7:
+
+    Pleias-1.2B                seed words   onset   ratio   95% CI (ratio)   no-cross
+    seed 20 tokens (control)         13.7   2.780   0.866   [0.72, 0.95]        0.1%
+    seed 10 tokens (Arm B)            6.9   3.272   1.004   [0.99, 1.23]        0.9%
+
+Pre-registered band for "the seed is the mechanism": **ratio >= 1.00**. Measured **1.004** on the
+primary metric (`lcs_word >= 4`) and 1.010 on `nv_recall`. The two bootstrap intervals are
+**disjoint** -- the control's upper end is 0.95 and the arm's lower end is 0.99.
+
+s(x) moves 3.209 -> 3.259 (+1.5%) and the target grows 270 -> 280 tokens (+3.7%), so the shift is
+not the denominator. Everything else -- tokenizer, anchor, memoriser, corpus, passages, metric,
+budget grid density -- is held fixed.
+
+**What this means.** `analysis/composition_attack.py` specifies the adversary's prefix in
+**tokens**, so a tokenizer that cuts the same text twice as finely hands the adversary half the
+words: 7.3 on the KL3M pairs against 13.0-14.4 on the other five, an exact split with no overlap.
+Arm B shows that difference alone is enough to move a pair across the vacuity threshold. The
+"which property of the tokenizer moves the ratio" question that Section 4 left open looks like the
+wrong question: no property of the tokenizer needs to move it, only the number of words the
+evaluation happens to hand the adversary.
+
+Arm A (KL3M-520M at `--seed-tokens 40`, the converse direction) is running, and the dose-response
+arms at seeds 10 and 80 are queued behind it. The claim will be stated at the strength the full set
+supports, not at Arm B's.
+
+This generalises past this mechanism: any extraction evaluation that seeds "the first N tokens" of a
+passage measures something tokenizer-dependent, and two such evaluations are not comparable across
+tokenizers unless the prefix is matched in characters or words.
