@@ -75,6 +75,13 @@ with an interval too wide to carry the claim alone. Neither arm reaches the othe
 the seed is not the whole of the difference; it is enough, in both directions, to move a pair across
 the budget at which its own certificate goes vacuous.
 
+And it acts on the budget rather than on the memoriser. Doubling the words on either pair leaves the
+\emph{unconstrained} model's recall where it was --- $0.519$ to $0.520$, $0.894$ to $0.909$ --- while
+$k_{\mathrm{crit}}$, the rate the target's own surprisal profile demands of the bucket
+(Proposition~\ref{prop:outrun}, computed from the anchor alone with no attack), falls by $7.3\%$ and
+$16.5\%$ and the onset falls by $9.0\%$ and $13.7\%$. A longer prefix does not make the memoriser
+better at the work; it starts the target at a cheaper point.
+
 This is not a quirk of our harness: extractability is itself defined ``with $k$ tokens of
 context''~\citep{carlini2023quantifying} and rises with the context supplied --- $33\%$ at $50$
 tokens against $65\%$ at $450$ there. Two such measurements under different tokenizers at one token
