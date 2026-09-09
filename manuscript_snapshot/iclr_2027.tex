@@ -46,15 +46,18 @@ Donsker--Varadhan at the sequence level bounds the budget needed for mean utilit
 rate function of that utility under the safe model. Measuring both sides, the decoder spends $79$ to
 $171$ nats of realised divergence for a utility gain worth hundredths of a nat --- three to four
 orders of magnitude of overhead, so what pushes a budget past the vacuity threshold is the price of
-imitating the risky model, not the price of being better than the safe one. The two useful regions
-still do not overlap: a judge cannot separate the decoder from its own safe model at $k=1$
-($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous. Finally, extraction begins at a fixed fraction of that
+imitating the risky model, not the price of being better than the safe one. The useful region opens
+only where the certified one has closed: under two independent judges and $600$ comparisons per
+budget, neither separates the decoder from its own safe model at $k=0.5$, the largest budget that
+covers every protected work, and both separate it only at $k \ge 10$, where the certificate covers
+none. Finally, extraction begins near that
 threshold, though not at a fixed fraction of it: on seven model pairs sharing no anchor, tokenizer
 or risky model, and spanning $1.87\times$ in $s(x)$, leakage first becomes measurable between
 $0.88$ and $1.17$ of it, the five whose tokenizer packs about four characters into a token agreeing to
 within $0.05$, and the two that pack two beginning only after the certificate is already vacuous. We
-derive a candidate explanation from the decoding geometry and pre-register it on four held-out pairs; the pair built to discriminate refutes it, along with
-the fitted constant it was meant to explain. Across ten safe models and
+derive a candidate explanation from the decoding geometry and pre-register it on five held-out
+pairs; the pair built to discriminate refutes it, along with the fitted constant it was meant to
+explain. Across ten safe models and
 three openly licensed corpora, the separation between the rate that must be permitted and the rate
 that must be forbidden widens as safe models improve.
 \end{abstract}

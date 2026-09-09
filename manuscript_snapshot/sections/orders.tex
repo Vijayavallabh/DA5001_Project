@@ -53,16 +53,19 @@ have bought.
 
 \paragraph{Judged utility, and the resolution of the instrument}
 Activity counts are not utility, so we also score the arms with a judge outside the audit
-(Qwen2.5-7B-Instruct, 150 pairs per arm against the unconstrained model, order randomised). A win
-rate is meaningless without a null: the unconstrained model judged against itself at a different
-seed loses $41.7\%$ of the time, and this run contains the same decoder twice --- the audited KL
-arm and $\alpha=1$ are one rule reached by two solvers --- differing by $3.9$ points, $0.71\sigma$.
-That is the instrument's resolution, measured rather than assumed.
+(Qwen2.5-7B-Instruct, order randomised, $150$ pairs per order arm). A win rate is meaningless
+without a null, and there are two: the unconstrained model judged against \emph{itself} at a
+different seed loses $46.4\%$ of the time, and the anchor served alone loses $62.7\%$. Every arm is
+a position between them.
 
-Against it: $\alpha=2$ loses $57.3\%$ against $\alpha=1$'s $53.4\%$, $3.9$ points at $0.68\sigma$
---- exactly the noise floor, so its cost is at most what two runs of one decoder differ by, while
-its oracle-window leakage is half. $\alpha=8$ loses $65.3\%$, $2.11\sigma$ above $\alpha=1$, which
-is indistinguishable from serving the anchor alone ($61.7\%$, a gap of $0.68\sigma$), whose leakage
-is also indistinguishable ($0.003$ against $0.001$). Turning the order up far enough converges on
-the safe model, which was always available without a mechanism. The comparison is at matched budget
-rather than matched utility (Appendix~\ref{app:collapse}).
+Against those: $\alpha=1$ sits $1.92\sigma$ from the anchor, $\alpha=4$ $1.49\sigma$ and $\alpha=2$
+$1.05\sigma$ --- separations of $0.35\sigma$ and $0.70\sigma$ from $\alpha=1$, which $150$ pairs
+cannot resolve, and a second judge reorders them completely. \emph{Activity is not price either.}
+The $\alpha=4$ decoder overrides the risky model at $90\%$ of decode steps and leaks $24\times$ less
+than $\alpha=1$ in oracle windows ($0.004$ against $0.097$), and neither judge can tell it from
+$\alpha=1$: the published budget determines neither the protection nor the price, and neither does
+the intervention rate. Only at $\alpha=8$ does the first judge find a cost, and there it is total
+--- it loses $62.7\%$, the anchor's own rate to the decimal ($0.00\sigma$), with the anchor's
+leakage. Turning the order up far enough converges on the safe model, which was always available
+without a mechanism, at matched budget rather than matched utility
+(Appendix~\ref{app:collapse}).

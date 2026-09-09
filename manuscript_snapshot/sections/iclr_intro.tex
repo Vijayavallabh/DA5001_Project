@@ -31,10 +31,12 @@ useful: the decoder spends $79$ to $171$ nats of realised divergence to buy a ut
 optimal policy could buy for hundredths of a nat, a ratio above $10^{3}$ at every budget. The cost
 of a metered decoder is therefore approximation overhead rather than information-theoretic
 necessity --- what drives a budget past $s(x)$ is the price of imitating the risky model everywhere,
-not the price of being better. Empirically the two useful regions still do not overlap: a judge
-outside the audit cannot distinguish the decoder from serving its own safe model at $k=1$
-($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous for every
-protected passage.
+not the price of being better. Empirically the useful region opens only where the certified one has
+closed. Two judges outside the audit, $600$ comparisons per budget, agree at both ends and nowhere
+else: at $k=0.5$, the largest budget covering every protected passage, neither distinguishes the
+decoder from its own safe model ($-1.03\sigma$, $+1.52\sigma$); only at $k \ge 10$, where the
+certificate covers none, do both ($-6.97\sigma$, $-3.29\sigma$). Between those they disagree about
+the crossing by nearly an order of magnitude in $k$, which is itself a result.
 
 \textbf{Extraction begins near that threshold, and $s(x)$ says where.} On seven pairs sharing no
 anchor, tokenizer or risky model, and spanning $1.87\times$ in $s(x)$ per character, leakage first

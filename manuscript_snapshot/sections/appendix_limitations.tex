@@ -22,18 +22,25 @@ of the three. It shares the tokenizer and the target length with pair five and m
 thoroughly, $s_r/s_s = 0.09$ against $0.35$, which places it inside the $0.06$--$0.11$ band of the
 four; its ratio is nevertheless $1.053$. Memorisation strength is therefore not what puts a pair on
 the far side of the vacuity point, though it does modulate the ratio within a family, and in the
-direction opposite to Eq.~\eqref{eq:req}. That leaves the tokenizer confounded with the length of
-the target, and for a fixed corpus those are not two variables but one: the same passage is $276$
-tokens at four characters per token and $580$ at two, so no choice of pairs can separate them.
-Truncation can. Decoding the KL3M-520M pair on the first $276$ tokens of each target matches the
-four-character pairs' step count with the tokenizer unchanged and moves $s(x)$ by $1.3\%$; scored
-on the longest common subsequence in words, an absolute count that a shortened reference cannot
-inflate, the ratio is $1.091$ with a bootstrap interval of $[1.04, 1.24]$, against $1.032$ for the
-same pair untruncated and $0.866$--$0.893$ for the four-character pairs. The step count is not the
-mechanism. That also disposes of the explanation we would otherwise have offered --- that a $20$-word
-span costs about $25$ decode steps at four characters per token and about $50$ at two, each one an
-opportunity to derail. The test runs in one direction only, since the four-character pairs cannot be
-lengthened to $580$ tokens without longer references than the benchmark provides.
+direction opposite to Eq.~\eqref{eq:req}. That leaves the tokenizer confounded with everything else the tokenizer determines, and for a fixed
+corpus those are not separate variables. Each benchmark item is a prompt prefix followed by the
+protected passage, so a tokenizer that cuts the same text more finely changes three things at once:
+the adversary's seed, which is a fixed number of \emph{tokens} and therefore buys $7.3$ words on the
+KL3M pairs against $13.0$--$14.4$ on the rest; the number of decode steps before the passage is
+reached, $435$ against $195$--$230$; and the target length. All three split the seven pairs exactly
+and without overlap, in the same place the onset ratio splits.
+
+\paragraph{A control we ran, and have withdrawn}
+We previously reported that truncating the KL3M target to the four-character pairs' step count left
+the ratio at $1.091$, and concluded that the step count was not the mechanism. That control was
+invalid and the conclusion does not stand. The protected passage begins at token $455$ of the KL3M
+tokenisation, and truncating the target to $276$ tokens ends it at token $296$: the passage was
+absent from the target for $100$ of $100$ passages, and an adversary reproducing that target
+perfectly would have scored a near-verbatim recall of $0.000$. Whatever the run measured, it was not
+extraction of the protected passage. The attack script now refuses any configuration in which no
+target contains its passage, and reports the covered fraction on every run. We report the
+withdrawal rather than quietly dropping the paragraph, because the number appeared in a previous
+version of this manuscript.
 
 Pair seven removes the next candidate. Vocabulary size is the obvious reading of ``granularity'',
 and the two are confounded across the first six pairs: the fine tokenizer has $32{,}768$ types and
