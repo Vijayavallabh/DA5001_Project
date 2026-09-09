@@ -1,0 +1,4 @@
+pair,label,seed_tokens,seed_chars,seed_words,s_x,onset,ratio,ratio_lo,ratio_hi,no_crossing_pct,onset_nv,ratio_nv,ratio_lo_nv,ratio_hi_nv,no_crossing_pct_nv
+Pleias-1.2B,Pleias-1.2B seed 20 (control),20,77.5,13.7,3.2094,2.7797,0.8661,0.7169,0.9453,0.1,2.8192,0.8784,0.7891,0.96,0.1
+Pleias-1.2B,Pleias-1.2B seed 10 (Arm B),10,39.2,6.7,3.2586,3.2719,1.0041,0.9892,1.229,0.9,3.2909,1.0099,0.9916,1.2426,1.8
+KL3M-520M,KL3M-520M seed 20 (control),20,42.9,7.3,2.4147,2.4923,1.0321,1.0068,1.2259,0.0,2.5432,1.0532,1.0163,1.2436,0.0
