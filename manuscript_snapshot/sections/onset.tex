@@ -56,8 +56,8 @@ $0.35$, and the thorough one still sits at $1.053$ while its $s_r/s_s$ falls bet
 sit at $0.892$ and $0.920$. Nor is it the length of the target: for a fixed corpus that is the same
 variable as the tokenizer, so we decoded the KL3M pair on the first $276$ tokens of each target
 instead, matching the coarse pairs' step count with the tokenizer unchanged, and the ratio stayed at
-$1.09$ (Appendix~\ref{app:limitations}). Nor is it the size of the vocabulary, the reading one reaches for
-first: Phi-3.5-mini carries $32{,}011$ types against KL3M's $32{,}768$ but cuts these passages at
+$1.09$ (Appendix~\ref{app:limitations}). Nor is it the size of the vocabulary, which is the
+first reading to reach for: Phi-3.5-mini carries $32{,}011$ types against KL3M's $32{,}768$ but cuts these passages at
 $3.8$ characters per token against $2.0$, and it lands at $0.926$, with the coarse family and not
 with the pair whose vocabulary it matches. Its interval, $[0.80, 1.09]$, is too wide to exclude the
 KL3M values on its own, so what it settles is negative: vocabulary size is not the variable. Nor is
@@ -81,7 +81,7 @@ tokens against $65\%$ at $450$ there. Two such measurements under different toke
 budget differ in a quantity that drives what they measure.
 
 \paragraph{A refinement we derived, pre-registered, and had to reject}
-The geometry supplies a second candidate, which we pre-registered and must reject. On the geometric
+The decoding geometry supplies a candidate of its own. On the geometric
 path $\psi_t(1) = \log \sum_v p_s(v) e^{\ell_t(v)} = 0$ identically, so at full tilt the per-token
 charge along a target $x$ is $\frac{1}{T}\sum_t D_{\mathrm{KL}}(p_{r,t}\,\|\,p_{s,t})$ on $x$'s own
 prefixes; when the risky model is near-deterministic on a memorised $x$ that collapses onto the
