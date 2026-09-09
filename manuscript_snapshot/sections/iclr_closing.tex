@@ -5,17 +5,15 @@
 A scalar divergence budget is a rate, and safety against reproducing a particular work is a
 workload maximum; queueing theory has known those come apart since \citet{loynes1962stability}.
 The mismatch has consequences a deployer can compute. The budget's unit is the safe model's
-surprisal of the work it protects; the certificate is exactly vacuous at $k = s(x)$ for every
+surprisal of the work it protects, the certificate is exactly vacuous at $k = s(x)$ for every
 R\'enyi order, and extraction begins within about a fifth of that point on every pair, on either
-side of it. We found no budget both informative and useful, but Theorem~\ref{thm:nfl} and the
-measurement beside it say the obstruction is not fundamental: the decoder spends hundreds of nats
-for utility worth hundredths. All three boundaries are computable in advance, so a deployer who
-must publish one number should publish $k/s(x)$, and a rights-holder who reads one should ask which
-work it was computed against.
+side of it. We found no budget both informative and useful, but Theorem~\ref{thm:nfl} says the
+obstruction is not fundamental: the decoder spends hundreds of nats for utility worth hundredths.
+All three boundaries are computable in advance, so a deployer publishing one number should publish
+$k/s(x)$, and a rights-holder reading one should ask which work it was computed against.
 
 \paragraph{Limitations}
-Four, in full in Appendix~\ref{app:limitations}. All six pairs use the same sixteen English genre
-novels, so $p = 3.1\times10^{-5}$ is the smallest value sixteen paired items can give; the onset
-ratio splits by tokenizer family rather than holding fixed; Theorem~\ref{thm:nfl} is a converse,
-whose $10^{3}$--$10^{4}$ gap bounds what is possible rather than this decoder; and one judge scores
-utility, resolving about four points.
+Four, in full in Appendix~\ref{app:limitations}: all seven pairs use the same sixteen English genre
+novels, so $p = 3.1\times10^{-5}$ is the smallest value they can give; the onset ratio splits by
+tokenizer granularity rather than holding fixed; Theorem~\ref{thm:nfl} is a converse, bounding what
+is possible rather than this decoder; and one judge scores utility.

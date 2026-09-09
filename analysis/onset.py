@@ -66,7 +66,9 @@ def collapse(data, xs=(0.7, 0.8, 0.9, 1.0, 1.1, 1.2)):
 
     rows = []
     for mode in ("single", "oracle"):
-        series = [(n, s_x, c) for (n, m), (s_x, c) in data.items() if m == mode]
+        # a pair swept in one mode only (Phi-3.5 has no oracle arm) contributes an empty
+        # curve; at() would index ks[0] on it, so drop it rather than crash.
+        series = [(n, s_x, c) for (n, m), (s_x, c) in data.items() if m == mode and c]
         if len(series) < 2:
             continue
         for x in xs:
@@ -159,9 +161,10 @@ def main():
             w.writerows(col)
         print("\ncollapse under the rescaled budget k/s(x):")
         for mode in ("single", "oracle"):
-            d = [r["spread"] for r in col if r["mode"] == mode]
+            rs = [r for r in col if r["mode"] == mode]
+            d = [r["spread"] for r in rs]
             if d:
-                n = col[0]["n_pairs"]
+                n = rs[0]["n_pairs"]   # per mode: a single-only pair is absent from oracle
                 print(f"  {mode:7s} mean spread across {n} pairs over "
                       f"k/s in [0.7, 1.2]: {st.mean(d):.3f}")
     print(f"\nwrote {a.out}/onset.csv and {a.out}/onset_collapse.csv")

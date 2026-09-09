@@ -145,7 +145,8 @@ def main():
         for mode, L, which in (("single", 0, 0), ("oracle", a.window, 1)):
             c = curve(comp, mode, L)
             xs = [cdf_at(dist[name][which], k) for k in sorted(c)]
-            curves[(name, mode)] = (xs, [c[k] for k in sorted(c)])
+            if xs:   # a pair swept in one mode only (Phi-3.5 has no oracle arm)
+                curves[(name, mode)] = (xs, [c[k] for k in sorted(c)])
 
     out = []
     for mode in ("single", "oracle"):

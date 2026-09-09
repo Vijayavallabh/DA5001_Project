@@ -68,11 +68,16 @@ def main():
     ap.add_argument("--lcs-thresh", type=float, default=4.0)
     ap.add_argument("--nv-thresh", type=float, default=0.01)
     ap.add_argument("--out", default="results")
+    # the same scoring serves any two-arm comparison against these bands (feat-062 reuses it
+    # for the Phi pair), so the row labels and the file name are arguments, not constants.
+    ap.add_argument("--trunc-label", default="truncated to 276 tokens")
+    ap.add_argument("--full-label", default="full 580 tokens")
+    ap.add_argument("--out-name", default="truncation_score.csv")
     a = ap.parse_args()
 
     rows = []
-    for label, comp, bp in (("truncated to 276 tokens", a.trunc, a.trunc_budget_path),
-                            ("full 580 tokens", a.full, a.full_budget_path)):
+    for label, comp, bp in ((a.trunc_label, a.trunc, a.trunc_budget_path),
+                            (a.full_label, a.full, a.full_budget_path)):
         if not os.path.exists(comp):
             print(f"[trunc] missing {comp}", file=sys.stderr)
             continue
@@ -92,7 +97,7 @@ def main():
         raise SystemExit("[trunc] nothing to score")
 
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "truncation_score.csv"), "w", newline="") as f:
+    with open(os.path.join(a.out, a.out_name), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
@@ -121,7 +126,7 @@ def main():
               ", ".join(f"{n} ~{v:.2f}" for n, v in READINGS.items()))
         print(f"  closest: {near} (predicted ~{READINGS[near]:.2f}, measured {got:.3f}, "
               f"|error| {abs(READINGS[near] - got):.3f})")
-    print(f"\nwrote {a.out}/truncation_score.csv")
+    print(f"\nwrote {a.out}/{a.out_name}")
 
 
 if __name__ == "__main__":

@@ -623,6 +623,29 @@
       "description": "Separate the tokenizer from the target length, which are collinear by construction for a fixed corpus, by truncating the KL3M target to the four-character pairs' decode-step count with the tokenizer held fixed.",
       "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m --max-target-tokens 276 --k-values -1 0 1.6 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.2 --modes single --limit 100 --out output/phase5/trunc276_kl3m520m ; then analysis/score_truncation.py",
       "evidence": "Truncated ratio 1.091 on lcs_word>=4, CI [1.04, 1.24], against 1.032 for the same pair untruncated and 0.866-0.893 for the four-character pairs. The pre-registered step-count reading (~0.87) is refuted; the tokenizer reading (~1.03) is within 0.061. nv_recall gives 1.053 both truncated and full. This also refutes the span-length mechanism the appendix had offered, and no replacement is proposed. Prerequisite: analysis/split_robustness.py shows the tokenizer split is not a metric artifact (nv_recall 4/4 thresholds, lcs_word 4/4, any_span 0/1 usable). --max-target-tokens added to composition_attack.py and budget_path.py; 13 tests across test_max_target_tokens, test_split_robustness and test_score_truncation."
+    },
+    {
+      "id": "feat-061",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-060"
+      ],
+      "description": "Measure characters per token for every cached candidate anchor on the protected passages, so a third tokenizer family is chosen on a measured granularity rather than on vocabulary size.",
+      "evidence_command": "HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/tokenizer_rates.py --out results",
+      "evidence": "608 protected passages, 716,816 characters. Two groups and nothing between them: KL3M 1.98 chars/token (fine), Comma 3.62, Phi-3.5-mini 3.78, Pleias 4.00-4.01, Llama-3/TinyComma/Qwen 4.18 (coarse); 'candidates between the two measured groups (2.4 < chars/token < 3.4): NONE' across all 14 cached tokenizers. Vocabulary size does not determine granularity: kl3m-002-170m (32,768 types, 1.98) and Phi-3.5-mini-instruct (32,011, 3.78) differ by 1.91x at the same vocabulary scale. Wrote results/tokenizer_rates.csv."
+    },
+    {
+      "id": "feat-062",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-060",
+        "feat-061"
+      ],
+      "description": "Pair 7 (Phi-3.5-mini), pre-registered before its sweep, built to separate tokenizer granularity from vocabulary size: a coarse tokenizer at KL3M's vocabulary scale. Two bands were committed at 07f8717 -- 0.866-0.893 clears vocabulary size, 1.032-1.155 implicates it -- scored on lcs_word >= 4.",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_phi35mini --risky-model output/phase5/mem_phi35mini --k-values -1 0 1.8 2.1 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.2 3.5 4.0 --modes single --limit 100 --out output/phase5/fine_phi35 ; then scripts/add_pair.sh and analysis/score_truncation.py --out-name phi_vocab_score.csv",
+      "evidence": "Admissible: sampled k=-1 single-query recall 0.566. 15 budgets, 0 invariant violations, max Z/K 0.99. Onset 2.628 nats/token against s(x) 2.837, ratio 0.926, 95% CI [0.80, 1.09], 0.0% of bootstrap curves failing to cross; on lcs_word >= 4 the ratio is the same 0.926 with CI [0.78, 1.06] (results/phi_vocab_score.csv). Outside both committed bands but on the coarse side and inside the coarse family's own spread (0.878-0.920). Seven-pair table: ratio mean 0.9603, range 0.878-1.166, sd 0.1003 (results/onset_table.csv). Held-out prediction errors move to 0.352 / 0.251 / 0.481 nats for P1 / constant / q25, in-CI 3/5 / 3/5 / 2/5, Spearman -0.18. Its memoriser is the most thorough of the seven, s_r/s_s = 0.003, so the memorisation control repeats at its limit."
     }
   ]
 }

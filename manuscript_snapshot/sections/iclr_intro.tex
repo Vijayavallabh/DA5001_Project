@@ -36,12 +36,13 @@ outside the audit cannot distinguish the decoder from serving its own safe model
 ($-0.45\sigma$) and can at $k=3$ ($-2.35\sigma$), where the certificate is already vacuous for every
 protected passage.
 
-\textbf{Extraction begins near that threshold, and $s(x)$ says where.} On six pairs sharing no
+\textbf{Extraction begins near that threshold, and $s(x)$ says where.} On seven pairs sharing no
 anchor, tokenizer or risky model, and spanning $1.87\times$ in $s(x)$ per character, leakage first
-becomes measurable between $0.88$ and $1.17$ of $s(x)$ --- not a fixed fraction: the four at four characters per token agree to
-within $0.05$, and the two at two characters per token begin only after the certificate has gone
-vacuous, whatever their memoriser. The geometry offers a candidate --- at full tilt the charge
-along a target reduces to $r(x) = s_s(x) - s_r(x)$ (Eq.~\eqref{eq:req}) --- committed for four
+becomes measurable between $0.88$ and $1.17$ of $s(x)$ --- not a fixed fraction: the five at about
+four characters per token agree to within $0.05$, and the two at two characters per token begin only
+after the certificate has gone vacuous, whatever their memoriser and whatever their vocabulary
+size. The geometry offers a candidate --- at full tilt the charge
+along a target reduces to $r(x) = s_s(x) - s_r(x)$ (Eq.~\eqref{eq:req}) --- committed for five
 pairs before they were swept. The two built on the second tokenizer refute it, and the fitted
 constant with it. A
 further pair whose memorisation came from pretraining rather than from our fine-tuning ---

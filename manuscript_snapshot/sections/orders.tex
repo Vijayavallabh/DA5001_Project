@@ -3,12 +3,12 @@
 
 \section{The published budget determines neither the protection nor the price}\label{sec:orders}
 
-Proposition~\ref{prop:threshold} says every order of the charge becomes vacuous at the same budget.
-A deployer who publishes $k$ therefore publishes the same certificate whichever order the decoder
-uses. We built the family --- $\alpha \to 1$ is the audited decoder, $\alpha \to \infty$ is the
-pathwise one, and Eq.~\eqref{eq:renyi-path} is closed form on the geodesic, so one bisection serves
-all of them --- and ran the same attack and the same ordinary workload through four members of it at
-the budget the mechanism's authors use. Figure~\ref{fig:orders} in
+Proposition~\ref{prop:threshold} says every order of the charge becomes vacuous at the same budget,
+so a deployer who publishes $k$ publishes the same certificate whichever order the decoder uses. We
+built the family --- $\alpha \to 1$ is the audited decoder, $\alpha \to \infty$ the pathwise one,
+and Eq.~\eqref{eq:renyi-path} is closed form on the geodesic, so one bisection serves all of them
+--- and ran the same attack and workload through four members at the budget the mechanism's authors
+use. Figure~\ref{fig:orders} in
 Appendix~\ref{app:proofs} shows what the certificate says across the family;
 Table~\ref{tab:orders} shows what the decoders do.
 
@@ -18,9 +18,8 @@ Table~\ref{tab:orders} shows what the decoders do.
 \caption{Four decoders at the same budget $k=3$, so all four publish $K = 3T$ and for all four the
 certificate is vacuous for $100\%$ of the 758 protected passages: nothing distinguishes them to a
 rights-holder. Attack columns are mean near-verbatim recall of a passage from the memorising 8B
-model over 100 passages. Price columns are measured on the same budget over 150 ordinary prompts spanning the
-neutral, factual and creative classes. $\alpha=1$ reproduces the audited decoder to three
-decimals, which is the check that the independent bisection solver is right.}
+model over 100 passages; price columns over 150 ordinary prompts at the same budget. $\alpha=1$
+reproduces the audited decoder to three decimals, which checks the independent bisection solver.}
 \label{tab:orders}
 \begin{tabular}{@{}lccccc@{}}
 \toprule
@@ -43,31 +42,27 @@ than two in what they cost, from touching $0.4\%$ of ordinary decode steps to $9
 that determines neither the protection nor the price is not a summary of the mechanism but of one
 accounting convention inside it.
 
-The family is cheap at one end and not in the middle, and the fourth row shows it. Moving from
-$\alpha=1$ to $\alpha=2$ nearly halves oracle-window recall, $0.097$ to $0.054$, for intervention
-rising from $0.4\%$ to $2.4\%$ of steps and no measurable loss of diversity --- distinct-3 moves
-from $0.9910$ to $0.9924$, the wrong way for a cost. One more step of the order does not continue
-that trade: at $\alpha=4$ oracle recall falls to $0.004$, but the decoder serves the risky model
-unchanged at $8.7\%$ of steps instead of $91.4\%$ and intervenes at $83.0\%$, already most of the
-way to $\alpha=8$ rather than halfway. The order is a sharp knob, not a dial, and its far end is a
-different system rather than a tighter accounting of the same one. A deployer choosing $\alpha$ on
-the published budget alone cannot tell which they have bought.
+The family is cheap at one end and not in the middle. Moving from $\alpha=1$ to $\alpha=2$ nearly
+halves oracle-window recall, $0.097$ to $0.054$, for intervention rising from $0.4\%$ to $2.4\%$ of
+steps and no measurable loss of diversity --- distinct-3 moves from $0.9910$ to $0.9924$, the wrong
+way for a cost. One more step does not continue that trade: at $\alpha=4$ oracle recall falls to
+$0.004$, but the decoder serves the risky model unchanged at $8.7\%$ of steps instead of $91.4\%$
+and intervenes at $83.0\%$, already most of the way to $\alpha=8$. The order is a sharp knob, not a
+dial, and a deployer choosing $\alpha$ on the published budget alone cannot tell which system they
+have bought.
 
 \paragraph{Judged utility, and the resolution of the instrument}
 Activity counts are not utility, so we also score the arms with a judge outside the audit
-(Qwen2.5-7B-Instruct, 150 pairs per arm against the unconstrained model, presentation order
-randomised). A win rate is meaningless without a null: the unconstrained model judged against
-itself at a different seed loses $41.7\%$ of the time, and this run contains the same decoder twice
---- the audited KL arm and $\alpha=1$ are one rule reached by two solvers --- differing by $3.9$
-points, $0.71\sigma$. That is the instrument's resolution, measured rather than assumed, and
-nothing smaller should be read as a cost.
+(Qwen2.5-7B-Instruct, 150 pairs per arm against the unconstrained model, order randomised). A win
+rate is meaningless without a null: the unconstrained model judged against itself at a different
+seed loses $41.7\%$ of the time, and this run contains the same decoder twice --- the audited KL
+arm and $\alpha=1$ are one rule reached by two solvers --- differing by $3.9$ points, $0.71\sigma$.
+That is the instrument's resolution, measured rather than assumed.
 
-Against it: $\alpha=2$ loses $57.3\%$ against $\alpha=1$'s $53.4\%$, a difference of $3.9$ points at
-$0.68\sigma$ --- exactly the noise floor, so its cost is at most what two runs of one decoder
-differ by, while its oracle-window leakage is half. $\alpha=8$ loses $65.3\%$, $2.11\sigma$ above
-$\alpha=1$, and that is indistinguishable from simply serving the anchor and nothing else
-($61.7\%$, a gap of $0.68\sigma$), whose leakage is also indistinguishable ($0.003$ against
-$0.001$). Turning the order up far enough does not buy a better trade; it converges on the safe
-model, which was always available without a mechanism.
-
-The comparison is at matched budget rather than matched utility, and what that does and does not establish is set out in Appendix~\ref{app:collapse}.
+Against it: $\alpha=2$ loses $57.3\%$ against $\alpha=1$'s $53.4\%$, $3.9$ points at $0.68\sigma$
+--- exactly the noise floor, so its cost is at most what two runs of one decoder differ by, while
+its oracle-window leakage is half. $\alpha=8$ loses $65.3\%$, $2.11\sigma$ above $\alpha=1$, which
+is indistinguishable from serving the anchor alone ($61.7\%$, a gap of $0.68\sigma$), whose leakage
+is also indistinguishable ($0.003$ against $0.001$). Turning the order up far enough converges on
+the safe model, which was always available without a mechanism. The comparison is at matched budget
+rather than matched utility (Appendix~\ref{app:collapse}).

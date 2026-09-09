@@ -5,23 +5,23 @@
 
 \section{Where extraction begins, and why there}\label{sec:onset}
 
-Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything
-and shows no order of the charge moves it. It does not say leakage begins there. This section
-derives where leakage begins, from the two models and the work alone.
+Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything,
+for every order of the charge. It does not say leakage begins there; this section derives where it
+does, from the two models and the work alone.
 
-\paragraph{Six pairs}
+\paragraph{Seven pairs}
 The first is the audited one, a $1.8$B Common Pile anchor against a memorising Llama-3.1-8B. The
-other four are built so that memorisation is the only difference: we fine-tune a model until it
+other six are built so that memorisation is the only difference: we fine-tune a model until it
 reproduces the passages and fuse it against the \emph{unmodified} model it came from, so the two
 share an architecture, a corpus, a tokenizer and every weight the memorisation did not move
-(Appendix~\ref{app:second-anchor}). They run $7$B, $1.2$B, $350$M, $1.7$B and $520$M across three
-corpora, and the last two are deliberately unlike the rest: KL3M anchors whose tokenizer emits
-about two characters per token where the others emit four, on targets twice as long in tokens. They
-also differ from each other in the one respect that matters below --- one memorised thoroughly and
-one did not, $s_r/s_s = 0.09$ against $0.35$. A pair enters only if the \emph{unconstrained} risky
-model reproduces the passages, single-query recall at $k=-1$ above $0.10$: the six reach $0.72$,
-$0.72$, $0.88$, $0.91$, $0.41$ and $0.52$. An earlier $350$M memoriser reached $0.71$ greedily but $0.022$ under the sampling the
-attack uses, and is excluded.
+(Appendix~\ref{app:second-anchor}). They run $7$B, $1.2$B, $350$M, $1.7$B, $520$M and $3.8$B across
+four model families, and three are deliberately unlike the rest: two KL3M anchors whose tokenizer
+emits about two characters per token where the others emit four, differing from each other in
+memorisation alone ($s_r/s_s = 0.09$ against $0.35$), and a Phi-3.5-mini anchor with KL3M's
+vocabulary size but the others' granularity. A pair enters only if the \emph{unconstrained} risky
+model reproduces the passages, single-query recall at $k=-1$ above $0.10$: the seven reach $0.72$,
+$0.72$, $0.88$, $0.91$, $0.41$, $0.52$ and $0.57$; one earlier memoriser failed that screen and is
+excluded (Appendix~\ref{app:limitations}).
 
 \paragraph{The onset tracks the vacuity threshold, to within about a fifth}
 Measured as the budget at which mean single-query recall first reaches $0.01$, interpolated inside
@@ -36,6 +36,7 @@ pair & $s(x)$ & $s_r$ & $n$ & onset & 95\% CI & onset\,/\,$s(x)$ \\
 KL3M 1.7B $+$ mem.\ KL3M 1.7B       & $2.21$ & $0.781$ & $100$ & $2.58$ & $[2.52, 3.13]$ & $1.166$ \\
 Comma 7B $+$ mem.\ Comma 7B         & $2.39$ & $0.179$ & $100$ & $2.13$ & $[2.00, 2.92]$ & $0.892$ \\
 KL3M 520M $+$ mem.\ KL3M 520M       & $2.42$ & $0.215$ & $100$ & $2.54$ & $[2.45, 3.00]$ & $1.053$ \\
+Phi-3.5 mini $+$ mem.\ Phi-3.5 mini & $2.84$ & $0.009$ & $100$ & $2.63$ & $[2.27, 3.08]$ & $0.926$ \\
 Pleias 1.2B $+$ mem.\ Pleias 1.2B   & $3.21$ & $0.365$ & $100$ & $2.82$ & $[2.53, 3.08]$ & $0.878$ \\
 TinyComma 1.8B $+$ mem.\ Llama-8B   & $3.24$ & $0.194$ & $100$ & $2.87$ & $[2.72, 3.45]$ & $0.887$ \\
 Pleias 350M $+$ mem.\ Pleias 350M   & $3.55$ & $0.326$ & $458$ & $3.27$ & $[3.07, 3.83]$ & $0.920$ \\
@@ -48,13 +49,13 @@ one charge per decoded token and each pair shares a vocabulary by construction. 
 the ratio, whose numerator and denominator are charged in the same units. Across pairs sharing no
 anchor, no tokenizer and no risky model, $s(x)$ spans $1.61\times$ per token and $1.87\times$ per
 character, and every onset falls between $0.88$ and $1.17$ of it. \emph{The fraction is not fixed,
-and it is not noise either.} The six pairs split cleanly in two: the four whose tokenizer emits
-about four characters per token sit at $0.878$--$0.920$, and the two KL3M pairs, at about two
-characters per token and on targets twice as long, sit at $1.053$ and $1.166$ --- both with
+and it is not noise either.} The seven pairs split by how finely the tokenizer cuts the text: the
+five whose tokenizers emit $3.6$ to $4.2$ characters per token sit at $0.878$--$0.926$, and the two
+KL3M pairs, at about two characters per token, sit at $1.053$ and $1.166$ --- both with
 bootstrap intervals whose lower end exceeds $1$. On those two, leakage begins \emph{after} the
 certificate has gone vacuous. What survives is a unit rather than a law: a quantity computable from
-the anchor and the work alone, with no decoding and no attack, locates the onset within about a
-fifth on every pair, across a $1.87\times$ spread it would otherwise have to guess.
+the anchor and the work alone locates the onset within about a fifth on every pair, across a
+$1.87\times$ spread a deployer would otherwise have to guess.
 
 The split is not about how well the model memorised. The two KL3M pairs were built to test that:
 they share a tokenizer and a target length and differ in memorisation, $s_r/s_s = 0.09$ against
@@ -63,52 +64,51 @@ sit at $0.892$ and $0.920$. Nor is it the length of the target: for a fixed corp
 is the same variable as the tokenizer --- the passage is $276$ tokens at four characters per token
 and $580$ at two --- so we decoded the KL3M pair on the first $276$ tokens of each target instead,
 matching the step count with the tokenizer unchanged, and the ratio stayed at $1.09$
-(Appendix~\ref{app:limitations}). Nor is the pattern an artifact of the recipe:
-Llama-3.1-70B base, which memorised \emph{Harry Potter} in
+(Appendix~\ref{app:limitations}). Nor is it the size of the vocabulary, the reading one reaches for
+first: Phi-3.5-mini carries $32{,}011$ types against KL3M's $32{,}768$ but cuts these passages at
+$3.8$ characters per token against $2.0$, and it lands at $0.926$, with the coarse family and not
+with the pair whose vocabulary it matches. Its interval, $[0.80, 1.09]$, is too wide to exclude the
+KL3M values alone, so what it settles is the negative one. Nor is the pattern an artifact of the
+recipe: Llama-3.1-70B base, which memorised \emph{Harry Potter} in
 pretraining~\citep{cooper2025extracting}, leaks at the built pairs' rate where the grids overlap
 (Appendix~\ref{app:collapse}).
 
 \paragraph{A refinement we derived, pre-registered, and had to reject}
-The constant invites an explanation, and the geometry supplies a candidate. On the geometric path
-the log-partition satisfies $\psi_t(1) = \log \sum_v p_s(v) e^{\ell_t(v)} = 0$ identically, so at
-full tilt the per-token charge accumulated \emph{along a target} $x$ is
-$\frac{1}{T}\sum_t D_{\mathrm{KL}}(p_{r,t}\,\|\,p_{s,t})$ on $x$'s own prefixes. When the risky
+The constant invites an explanation, and the geometry supplies one. On the geometric path
+$\psi_t(1) = \log \sum_v p_s(v) e^{\ell_t(v)} = 0$ identically, so at full tilt the per-token charge
+\emph{along a target} $x$ is $\frac{1}{T}\sum_t D_{\mathrm{KL}}(p_{r,t}\,\|\,p_{s,t})$ on $x$'s own
+prefixes. When the risky
 model is near-deterministic on a memorised $x$ that expectation collapses onto the realised token
 and the charge becomes a difference of surprisals. Define
 \begin{equation}
 r(x) \;=\; s_s(x) \;-\; s_r(x),
 \label{eq:req}
 \end{equation}
-the budget rate a decoder must permit before it can pay for $x$ at all. It needs no decoding and no
-attack. It also predicts that the onset ratio is $1 - s_r/s_s$ and must therefore \emph{move} as
-memorisation changes --- $0.940$, $0.925$, $0.908$, $0.886$ and $0.647$ for these five pairs.
+the budget rate a decoder must permit before it can pay for $x$ at all; it needs no decoding and no
+attack. It also predicts an onset ratio of $1 - s_r/s_s$, which must \emph{move} with memorisation:
+$0.997$, $0.940$, $0.925$, $0.911$, $0.908$, $0.886$ and $0.647$ here.
 
-Predictions for the last four pairs were committed before any of them was swept, so those four are
-a test and the first two, on which the alternatives were calibrated, are not. Three rules were on
-the table: Eq.~\eqref{eq:req} at the median of $r(x)$, with nothing fitted in it; the same quantity
-calibrated to a low quantile, which pairs one and two place at $q_{25}$; and a fitted constant
-$c\,s(x)$, $c = 0.889$. The third and fourth pairs decided nothing --- all three rules landed within
-$0.22$ nats and the leading two within $0.07$ of each other. The two KL3M pairs decide it: every
-rule misses both, every miss is low, and all six of those predictions fall outside the measured
-intervals. Mean absolute errors over the four held-out pairs are $0.390$, $0.288$ and $0.584$ nats.
+Predictions for the last five pairs were committed before any was swept, so those five are a test
+and the first two, on which the alternatives were calibrated, are not. Three rules were on the
+table: Eq.~\eqref{eq:req} at the median of $r(x)$, nothing fitted; the same quantity at a low
+quantile, which pairs one and two place at $q_{25}$; and a fitted constant $c\,s(x)$, $c = 0.889$.
+The third and fourth pairs decided nothing, all three landing within $0.22$ nats. The two KL3M
+pairs decide it: every rule misses both, every miss is low, and all six of those predictions fall
+outside the measured intervals. Held-out mean absolute errors are $0.352$, $0.251$ and $0.481$
+nats.
 
 The directional claim does not merely fail, it inverts. Eq.~\eqref{eq:req} says the ratio should
 fall as the memoriser leaves more residual surprisal; the pair with by far the most residual
-surprisal has the highest ratio of all, and the rank correlation over six pairs is $-0.37$. So
+surprisal has the highest ratio of all, and the rank correlation between predicted and measured
+ratio over seven pairs is $-0.18$, where the derivation requires it to be positive. So
 Eq.~\eqref{eq:req} is a correct statement about what a decoder must \emph{afford} and a wrong one
-about where leakage \emph{begins}. The gap between them is the one the affordability check already
-exposed: at the onset budget $r(x) \le k$ holds for $27\%$ and $26\%$ of works on the two pairs
-where we can check it, while $0\%$ and $1\%$ leak. The fifth pair makes the point at its limit ---
-at its onset the budget covers $98\%$ of the passages and $1\%$ leak. What a budget can pay for is
-not what the risky model memorised well enough to emit, and the weaker the memoriser the further
-apart those two are.
+about where leakage \emph{begins}. The affordability check already exposed the gap: at the onset
+budget $r(x) \le k$ holds for $27\%$ and $26\%$ of works on the two pairs where we can check it
+while $0\%$ and $1\%$ leak, and the fifth pair reaches $98\%$ covered against $1\%$ leaking. What a
+budget can pay for is not what the risky model memorised well enough to emit.
 
-\paragraph{A population boundary, not a per-work screen}
-Equation~\eqref{eq:req} is defined per work, so it is fair to ask whether it screens an individual
-book. It does not: as a classifier for ``which passage leaks at budget $k$'', $r(x)$ reaches a mean
-AUC of $0.678$ while the anchor surprisal alone reaches $0.751$. Subtracting $s_r$ removes a
-near-constant shift and adds variance --- across works it carries $6$--$7\%$ of the level of $s_s$
-and $44$--$45\%$ of its standard deviation. Which of the two rescales the population boundary better
-is not settled either; the winner changes with every pair added
-(Appendix~\ref{app:collapse}). A rights-holder can use either to locate the budget at which a class
-of works becomes exposed; for one book neither is good enough to rely on.
+Both quantities are defined per work, so it is fair to ask whether either screens an individual
+book. Neither does: as a classifier for ``which passage leaks at budget $k$'', $r(x)$ reaches a
+mean AUC of $0.678$ and the anchor surprisal alone $0.751$ (Appendix~\ref{app:collapse}). A
+rights-holder can use either to locate the budget at which a class of works becomes exposed; for
+one book neither is good enough.

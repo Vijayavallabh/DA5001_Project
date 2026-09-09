@@ -1711,3 +1711,69 @@ tokenizer does it -- and we do not offer a replacement guess.
 One direction only, as pre-registered: the four-character pairs cannot be lengthened to 580 tokens
 without longer references than CopyBench provides, so this tests step count downward from 580 to
 276 and would not see an asymmetric effect.
+
+### feat-061 / feat-062: pair 7 (Phi-3.5-mini) -- granularity, not vocabulary size (2026-09-09)
+
+Registered late: `feat-061` (chars-per-token for every cached anchor) shipped at `50e740f` but was
+never written into `feature_list.json`. Both are in it now.
+
+`analysis/tokenizer_rates.py` measured all 14 cached tokenizers on the 608 protected passages
+before any model was chosen. Two groups, nothing between them: KL3M at 1.98 characters per token,
+everything else at 3.62-4.18, and no candidate in 2.4-3.4. The same table decouples the two
+variables the six-pair split had confounded -- kl3m-002-170m (32,768 types, 1.98 chars/token) and
+Phi-3.5-mini-instruct (32,011, 3.78) sit at the same vocabulary scale and differ 1.91x in
+granularity -- which is what made Phi-3.5-mini the discriminating seventh pair.
+
+Pre-registration committed at `07f8717` before the sweep, with the anchor-path addendum at
+`a2df3f1`: **0.866-0.893** clears vocabulary size, **1.032-1.155** implicates it, scored on
+`lcs_word >= 4`.
+
+    CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+      .venv/bin/python analysis/composition_attack.py \
+      --safe-model output/phase5/anchor_phi35mini --risky-model output/phase5/mem_phi35mini \
+      --k-values -1 0 1.8 2.1 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.2 3.5 4.0 \
+      --modes single --limit 100 --out output/phase5/fine_phi35
+    SATML_DIR=/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml scripts/add_pair.sh \
+      "Phi-3.5-mini + mem. Phi-3.5-mini" output/phase5/anchor_phi35mini \
+      output/phase5/mem_phi35mini output/phase5/fine_phi35/composition_summary.csv 4
+    .venv/bin/python analysis/score_truncation.py --out results \
+      --trunc output/phase5/fine_phi35/composition.csv \
+      --trunc-budget-path results/budget_path_phi-3.5-mini__mem._phi-3.5-mini.csv \
+      --trunc-label "Phi-3.5-mini (32011 vocab, 3.78 chars/token)" \
+      --full output/phase5/fine_kl3m520m/composition.csv \
+      --full-budget-path results/budget_path_kl3m-520m__mem._kl3m-520m.csv \
+      --full-label "KL3M-520M (32768 vocab, 1.98 chars/token)" --out-name phi_vocab_score.csv
+
+Admissible: sampled k=-1 recall **0.566**. Fifteen budgets, **0 invariant violations**, max Z/K
+0.99. Onset **2.628** against s(x) 2.837, ratio **0.926**, CI [0.80, 1.09], 0.0% no-crossing; on
+`lcs_word >= 4` the same 0.926 with CI [0.78, 1.06].
+
+**Verdict: vocabulary size is not the variable.** 0.926 lands outside both committed bands, 0.033
+above the coarse one, but inside the coarse family's own measured spread (0.878-0.920) and 0.13
+below the nearest KL3M pair. Its own interval is too wide to exclude the KL3M values by itself, so
+the claim the pair supports is the negative one. Its memoriser is also the most thorough of the
+seven, `s_r/s_s = 0.003`, which repeats the memorisation control at its limit. Which property of
+the tokenizer moves the ratio is still open, and no anchor we can reach falls between the groups.
+
+Seven-pair state: ratio mean 0.9603, range 0.878-1.166, sd 0.1003; held-out errors 0.352 / 0.251 /
+0.481 nats for P1 / constant / q25 (in CI 3/5, 3/5, 2/5); Spearman -0.18.
+
+**Three bugs found and fixed while landing this.**
+
+1. `scripts/score_phi.sh` reused `analysis/score_truncation.py`, whose output filename and row
+   labels were constants, so the Phi run **overwrote `results/truncation_score.csv`** -- feat-060's
+   committed evidence -- and labelled its own rows "truncated to 276 tokens". Restored from git;
+   the scorer now takes `--trunc-label`, `--full-label` and `--out-name`, and Phi writes
+   `results/phi_vocab_score.csv`.
+2. `analysis/onset.py:collapse` and `analysis/surprisal_cdf.py` both indexed `ks[0]` on a pair
+   swept in one mode only. Phi has no oracle arm, so both crashed. Each now skips an empty curve;
+   `onset.py` also prints the per-mode pair count (7 single, 6 oracle) instead of reusing the first
+   row's. Regression test in `tests/test_onset_collapse.py`.
+3. The appendix's F(k) sentence said the coverage spread was 170% against 11% for the ratio. The
+   11% is sd/mean and reproduces; 170% does not reproduce under any definition (sd/mean on the six
+   pairs is 117%), so it was a transcription slip the earlier audits missed. Recomputed and stated
+   as sd/mean: **115%** against **10%** on seven pairs.
+
+Manuscript: seven pairs throughout (abstract, intro, Section 4, conclusion, both appendices).
+Section 4, Section 7 and the conclusion were compressed to hold the main text at exactly 9 pages --
+Ethics now starts at the top of page 10 with nothing above it. 19 pages total, 0 overfull, 0 '??'.

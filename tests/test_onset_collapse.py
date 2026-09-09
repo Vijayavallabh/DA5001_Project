@@ -59,3 +59,18 @@ def test_manifest_rejects_a_truncated_row():
 
 def test_missing_manifest_falls_back_to_builtin():
     assert len(load_pairs("results/does_not_exist.tsv")) >= 2
+
+
+def test_collapse_skips_a_pair_swept_in_one_mode_only():
+    """Phi-3.5 was swept single-query only. Its oracle curve is empty, and interpolating it used
+    to raise IndexError on ks[0] and take the whole refresh down with it."""
+    from analysis.onset import collapse
+    data = {
+        ("a", "single"): (3.0, {2.0: 0.0, 3.0: 0.05, 4.0: 0.2}),
+        ("b", "single"): (2.0, {1.5: 0.0, 2.0: 0.04, 3.0: 0.2}),
+        ("a", "oracle"): (3.0, {2.0: 0.0, 3.0: 0.1, 4.0: 0.3}),
+        ("b", "oracle"): (2.0, {}),          # swept in one mode only
+    }
+    rows = collapse(data)
+    assert rows and all(r["mode"] == "single" for r in rows)   # oracle drops to one series
+    assert all(r["n_pairs"] == 2 for r in rows)
