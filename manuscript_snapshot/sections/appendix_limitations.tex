@@ -22,12 +22,21 @@ of the three. It shares the tokenizer and the target length with pair five and m
 thoroughly, $s_r/s_s = 0.09$ against $0.35$, which places it inside the $0.06$--$0.11$ band of the
 four; its ratio is nevertheless $1.053$. Memorisation strength is therefore not what puts a pair on
 the far side of the vacuity point, though it does modulate the ratio within a family, and in the
-direction opposite to Eq.~\eqref{eq:req}. What remains confounded is the tokenizer with the target
-length, which the two KL3M pairs share and which no pair we have separates. A candidate mechanism
-we have not tested: near-verbatim recall counts spans of $20$ words, which is about $25$ tokens at
-four characters per token and about $50$ at two, so the KL3M pairs must hold a target for twice as
-many decoding steps to score the same recall. We report the proportionality as a unit that locates
-the onset within about a fifth, not as a law. The third pair was re-measured at $458$
+direction opposite to Eq.~\eqref{eq:req}. That leaves the tokenizer confounded with the length of
+the target, and for a fixed corpus those are not two variables but one: the same passage is $276$
+tokens at four characters per token and $580$ at two, so no choice of pairs can separate them.
+Truncation can. Decoding the KL3M-520M pair on the first $276$ tokens of each target matches the
+four-character pairs' step count with the tokenizer unchanged and moves $s(x)$ by $1.3\%$; scored
+on the longest common subsequence in words, an absolute count that a shortened reference cannot
+inflate, the ratio is $1.091$ with a bootstrap interval of $[1.04, 1.24]$, against $1.032$ for the
+same pair untruncated and $0.866$--$0.893$ for the four-character pairs. The step count is not the
+mechanism. That also disposes of the explanation we would otherwise have offered --- that a $20$-word
+span costs about $25$ decode steps at four characters per token and about $50$ at two, each one an
+opportunity to derail --- and we have no replacement for it: which property of the tokenizer moves
+the ratio is open. The test runs in one direction only, since the four-character pairs cannot be
+lengthened to $580$ tokens without longer references than the benchmark provides.
+
+We report the proportionality as a unit that locates the onset within about a fifth, not as a law. The third pair was re-measured at $458$
 passages after its $100$-passage curve proved too flat through the crossing for a bootstrap to
 resolve: a third of resamples never reached the threshold on a grid that stopped at $k = 3.6$, and
 extending it to $4.2$ brought that to $0.1\%$ while moving the onset from $3.18$ to $3.27$. The

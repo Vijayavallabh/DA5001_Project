@@ -59,8 +59,11 @@ fifth on every pair, across a $1.87\times$ spread it would otherwise have to gue
 The split is not about how well the model memorised. The two KL3M pairs were built to test that:
 they share a tokenizer and a target length and differ in memorisation, $s_r/s_s = 0.09$ against
 $0.35$, and the thorough one still sits at $1.053$ while its $s_r/s_s$ falls between two pairs that
-sit at $0.892$ and $0.920$. What those two cannot separate is the tokenizer from the target length,
-which they share (Appendix~\ref{app:limitations}). Nor is the pattern an artifact of the recipe:
+sit at $0.892$ and $0.920$. Nor is it the length of the target: for a fixed corpus that
+is the same variable as the tokenizer --- the passage is $276$ tokens at four characters per token
+and $580$ at two --- so we decoded the KL3M pair on the first $276$ tokens of each target instead,
+matching the step count with the tokenizer unchanged, and the ratio stayed at $1.09$
+(Appendix~\ref{app:limitations}). Nor is the pattern an artifact of the recipe:
 Llama-3.1-70B base, which memorised \emph{Harry Potter} in
 pretraining~\citep{cooper2025extracting}, leaks at the built pairs' rate where the grids overlap
 (Appendix~\ref{app:collapse}).

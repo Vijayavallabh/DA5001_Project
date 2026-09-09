@@ -611,6 +611,18 @@
       "description": "Pair 6 (KL3M-002-520M), pre-registered before its sweep to isolate which of pair 5's three differences moved its onset ratio above the vacuity threshold.",
       "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m --k-values -1 0 1.6 1.8 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.0 3.4 --modes single oracle --windows 50 --limit 100 --out output/phase5/fine_kl3m520m",
       "evidence": "onset 2.543, CI [2.450, 3.000], ratio 1.053, CI [1.016, 1.244], 0% no-crossing. The memoriser-strength reading is refuted: s_r/s_s 0.089 sits inside the 0.06-0.11 band of pairs 1-4 and the ratio is still above 1. The six ratios split by tokenizer family (0.878-0.920 at ~4 chars/token, 1.053 and 1.166 at ~2) and not by s_r/s_s, which interleaves. Three-way confound reduced to two: tokenizer vs target length. All three rules refuted on both KL3M pairs; held-out mean |err| 0.390/0.288/0.584 over four pairs. Range now 1.87x per character. Anchor re-serialised to safetensors (147 tensors bit-identical) because the published checkpoint ships only .bin."
+    },
+    {
+      "id": "feat-060",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-058",
+        "feat-059"
+      ],
+      "description": "Separate the tokenizer from the target length, which are collinear by construction for a fixed corpus, by truncating the KL3M target to the four-character pairs' decode-step count with the tokenizer held fixed.",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m --max-target-tokens 276 --k-values -1 0 1.6 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.2 --modes single --limit 100 --out output/phase5/trunc276_kl3m520m ; then analysis/score_truncation.py",
+      "evidence": "Truncated ratio 1.091 on lcs_word>=4, CI [1.04, 1.24], against 1.032 for the same pair untruncated and 0.866-0.893 for the four-character pairs. The pre-registered step-count reading (~0.87) is refuted; the tokenizer reading (~1.03) is within 0.061. nv_recall gives 1.053 both truncated and full. This also refutes the span-length mechanism the appendix had offered, and no replacement is proposed. Prerequisite: analysis/split_robustness.py shows the tokenizer split is not a metric artifact (nv_recall 4/4 thresholds, lcs_word 4/4, any_span 0/1 usable). --max-target-tokens added to composition_attack.py and budget_path.py; 13 tests across test_max_target_tokens, test_split_robustness and test_score_truncation."
     }
   ]
 }
