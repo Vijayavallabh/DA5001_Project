@@ -2336,3 +2336,18 @@ prediction stands and the file was restored to its pre-registered bytes.
 
 **Worth knowing:** a `git diff` on a results CSV can show every line changed while nothing changed,
 which would equally hide a real change. Diff the *values* keyed on `prompt_id`, not the file.
+
+### 2026-09-10: why several pre-registered arms come back "undecided"
+
+The bootstrap interval on onset/`s(x)` does not narrow with more passages. Mean width across the
+seven pairs at n=100 is **0.256**. On the one pair measured at both sizes, `Pleias-350M` gives
+**0.219 at n=100 and 0.215 at n=458** -- a 4.58x increase in passages for a 2% narrowing, where
+independent sampling noise predicts 0.102. The variance lives **between works**, so it is bounded
+by the sixteen novels and not by how many windows are cut from them.
+
+That explains a pattern in today's scoring rather than excusing it: the pre-registered bands are
+about 0.1 wide and the achievable interval is about 0.22, so three arms (KL3M-520M seed 40,
+Pleias-1.2B tau 0.4, and KL3M-1.7B seed 40) land in a committed "undecided" region even though each
+moved the onset substantially and in the predicted direction. The bands were drawn tighter than the
+method can resolve. Recorded in `sections/appendix_limitations.tex`; the fix is more distinct works,
+not more windows, and that is the same constraint as the one-corpus limitation.
