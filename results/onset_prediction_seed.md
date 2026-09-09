@@ -217,3 +217,27 @@ the direction measured. The confound and the hypothesis agree here, so this arm 
 them; what it does add is that a quantitative prediction made before the run landed within $1.3\%$,
 which a directional confound does not explain. The seed-40 arm is the clean one --- its baseline is
 $0.520$ against $0.519$ --- and it moved the other way.
+
+## Note added while the seed-80 arm was on its last budget, before its onset was computed
+
+Two things are visible and are recorded now so that they are not read back into the result
+afterwards.
+
+**The grid may be too short.** At $k = 2.5$ the arm reads $3.7$ `lcs_word` against a threshold of
+$4$, and the grid ends at $2.8$. If the crossing sits near the top, many bootstrap resamples will
+never cross and the interval will be unreliable. If the no-crossing fraction is materially above
+the other arms' (0.0-0.9%), the grid will be extended to k in {3.0, 3.2, 3.6} and the arm rescored
+on the extended grid, with both grids reported.
+
+**The target is 12% shorter than the control's, and that is inherent to the intervention.** Seed and
+target partition one passage, so handing the adversary 80 tokens instead of 20 leaves a target of
+520 tokens against 590. On an absolute word count a shorter target makes the threshold slightly
+*harder* to reach, which pushes the measured onset **up** --- the direction the partial grid is
+heading. Arm B's much smaller length difference (3.7%) was already reported for this reason; at 12%
+it is no longer negligible, and if the seed-80 ratio comes in above seed-40's it must be reported
+with the length difference attached and cannot be read as a clean seed effect.
+
+Both accounts predicted the seed-80 ratio would sit at or below seed-40's 0.939 --- (K) at 0.946
+from a flattening $k_{\mathrm{crit}}$, (S) below the coarse family's band. A value materially above
+$1.0$ would miss both, and would say the dose-response is **non-monotone** at the long-seed end
+rather than that either account is right.
