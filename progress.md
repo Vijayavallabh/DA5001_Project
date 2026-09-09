@@ -2007,3 +2007,17 @@ analysis can separate them. Its value is that the trend continues *inside* the c
 range of 1.4 words among five pairs built for entirely unrelated reasons, with the same sign and
 nearly the same magnitude. The intervention (Arm B) breaks the confound; the observation says the
 intervention is not describing a two-group artifact.
+
+### Decision: a Gutenberg second corpus is not worth GPU time (2026-09-10)
+
+The "one protected corpus" limitation is the paper's biggest stated weakness, and `data/gutenberg/`
+holds 50 cached public-domain books, so building a second (anchor, memorised-copy) pair on them
+looks like the cheap fix. It is not, and `results/latent_leakage_summary.csv` already says why:
+under TinyComma the per-token surprisal of Gutenberg text is **3.11 (opening) to 3.33 (deep)**
+against **4.73** for a CopyBench passage of the same length. Every anchor we have is trained on open
+data that includes Project Gutenberg, so a Gutenberg corpus is not text "the safe model never saw" --
+it is the opposite, and near-access-freeness is defined relative to the anchor. The onset measured
+there would answer a different question.
+
+Closing this limitation needs copyrighted text of a different genre or language that the open-data
+anchors provably did not see, which we do not have. It stays a stated limitation.

@@ -1,71 +1,90 @@
 # Session handoff
 
 ## Current Objective
-Plan v5, branch `iclr-2027`, target ICLR 2027 (abstract Sep 18, paper Sep 25). The onset is now
-measured on **seven** (anchor, risky) pairs plus one natural memoriser, and the manuscript reports
-them all.
+Plan v5, branch `iclr-2027`, target ICLR 2027 (abstract Sep 18, paper Sep 25). Today (2026-09-10)
+finished plan item D (the judged arms) and opened feat-064, which looks like the strongest new
+result in the paper.
 
-## Where the science landed
+## What landed today
 
-The onset ratio takes **two values**, and what selects between them is now pinned to one variable:
+**1. The judged arms, at 600 pairs per arm and two judges (item D, complete).**
+The published headline was under-powered and is now replaced. At 180 judged pairs the k=1
+separation from the anchor reads -0.45 sigma; at 600 it reads -3.66. The old null arm (41.7% loss)
+was the outlier against two runs that agree at 46.4/47.0%.
 
-    pair                            chars/tok  vocab    s_r/s_s   ratio    95% CI (ratio)
-    TinyComma-1.8B + mem. Llama-8B       4.20  128,256    0.060    0.887   [0.84, 1.07]
-    Comma-7B + mem. Comma-7B             3.63   64,000    0.075    0.892   [0.84, 1.22]
-    Pleias-350M + mem. Pleias-350M       4.05   65,536    0.092    0.920   [0.86, 1.08]   n=458
-    Pleias-1.2B + mem. Pleias-1.2B       4.05   65,536    0.114    0.878   [0.79, 0.96]
-    Phi-3.5-mini + mem. Phi-3.5-mini     3.81   32,011    0.003    0.926   [0.80, 1.09]
-    KL3M-520M + mem. KL3M-520M           1.96   32,768    0.089    1.053   [1.02, 1.24]
-    KL3M-1.7B + mem. KL3M-1.7B           1.96   32,768    0.353    1.166   [1.14, 1.41]
+    k      vacuous%   Qwen z   Phi z    verdict
+    0.5         0.0    -1.03   +1.52    neither judge separates the decoder from the anchor
+    1-5     44-100     -3.66..  +0.11.. judges disagree
+    10, 20    100.0    -6.97    -3.29   BOTH separate
 
-- **Not memoriser strength** (feat-059, and again at its limit in feat-062): Phi memorises to
-  s_r/s_s = 0.003, the most thorough of the seven, and still lands with the coarse family.
-- **Not target length** (feat-060): truncating KL3M-520M to 276 decode steps with the tokenizer
-  fixed leaves the ratio at 1.091, CI [1.04, 1.24].
-- **Not vocabulary size** (feat-062): Phi carries fewer types than KL3M (32,011 vs 32,768) and
-  still cuts at 3.8 characters per token; its ratio is 0.926.
-- **It is tokenizer granularity.** Which property of it is **open**. `results/tokenizer_rates.csv`
-  says no cached anchor sits between the two groups (2.4-3.4 chars/token is empty across 14
-  tokenizers), so the next test needs a tokenizer trained for it, not one chosen off the shelf.
+The claim that survives both judges: **the useful region opens only where the certified one has
+closed**. The judges disagree about the crossing by nearly an order of magnitude (0.68 vs 5.39),
+reported as a result. alpha=4 fills Table 2's blank cell: 90% of steps overridden, 24x less oracle
+leakage than alpha=1, and neither judge can separate them -- activity is not price.
+Scripts: `analysis/judge_separation.py` (reproduces the published -0.45/-2.35 exactly on the old
+input), `analysis/utility.py --prefix`, `analysis/utility_price.py` (multi-directory).
 
-All three pre-registered onset rules are refuted on both KL3M pairs. Held-out mean absolute error
-over five predicted pairs: P1 0.352, constant 0.251, q25 0.481 (in CI 3/5, 3/5, 2/5). P1's
-directional claim still has the wrong sign (Spearman -0.18). The paper claims a **unit, not a
-law**: s(x) locates the onset within about a fifth across a 1.87x spread.
+**2. feat-064: the onset split looks like the attack's seed, not the tokenizer.**
+`composition_attack.py` seeds a fixed number of *tokens*, so KL3M's adversary holds 7.3 words and
+the other five hold 13.0-14.4 -- an exact split with no overlap, matching the onset split.
+Pre-registered in `results/onset_prediction_seed.md` (commits `bc74f4d`, `9ea3bec`, `a63ec8f`), then:
+
+    Pleias-1.2B   seed words   onset   ratio   95% CI          (Arm B)
+    seed 20             13.7   2.780   0.866   [0.72, 0.95]
+    seed 10              6.9   3.272   1.004   [0.99, 1.23]    disjoint
+
+Observationally the trend runs through all seven pairs (Spearman -0.919, exact permutation
+p = 0.0071) and continues inside the coarse family alone (-0.800 over a 1.4-word range), though that
+is confounded with granularity by construction -- only the intervention separates them.
+Grounded in the literature and verified verbatim against the PDF: Carlini et al.
+(`carlini2023quantifying`, already in the bib) define extractability "with k tokens of context",
+state the conversion for one tokenizer ("Fifty tokens corresponds to an average of 127 characters or
+25 words"), and report 33% -> 65% extraction from 50 -> 450 tokens of context.
+
+**3. A false alarm, caught and reverted the same day.** I wrongly marked feat-060 invalid. See the
+correction in `progress.md`: recall is scored against the decoded `target`, not the CopyBench
+`reference` field, and `prompt_text` is 930 characters of the same novel, so a truncated target is
+still protected text. Its k=-1 baseline is 0.696. feat-060 stands.
+
+**4. `analysis/audit_numbers.py`**, new: every numeric literal in math mode checked against every
+value in `results/**.csv`. Its first run found a stale Theorem 1 pricing table in `frontier.tex`.
+615 -> 621 literals, 1 unsourced, and that one verified against the checkpoint config.
 
 ## State
-- 57 features, feat-047 and feat-053..062 done; **148 tests**; `./init.sh` passes.
-- Manuscript: 19 pages, main text exactly 9 (Ethics starts at the top of page 10 with nothing
-  above it), 0 overfull, 0 `??`. All seven table rows re-audited against `results/onset_table.csv`.
-- Every pair was pre-registered before its sweep: `results/onset_prediction_pair{4,5,6}.md`,
-  `onset_prediction_trunc276.md` and the Phi bands at `07f8717` (+ addendum `a2df3f1`).
+- 165 tests; `./init.sh` passes. feat-035..063 done, feat-064 in progress.
+- Manuscript: 19 pages, main text exactly 9, 0 overfull, 0 `??`, snapshot refreshed in
+  `manuscript_snapshot/`.
+
+## Running when this was written (all under `output/phase5/`)
+- **Arm A**, `seed40_kl3m520m` on GPU 1: KL3M-520M at `--seed-tokens 40` (80.8 chars, 14.3 words,
+  matching TinyComma's 81.3/14.4). Past k=2.2 with recall 0.004, so its onset is above 2.2.
+  **This is the decisive run**: `results/onset_prediction_seed.md` commits two accounts that predict
+  different answers -- seed-matching says 0.85-0.95, the k_crit account says 0.96 -- and an outcome
+  in 0.93-0.95 is to be reported as undecided.
+- **`seed_queue.sh`** behind it on GPU 1: KL3M-1.7B at seed 40 (the second fine pair, which with
+  Arm A decides whether the seven-pair table collapses to one band), then the dose-response arms at
+  seeds 10 and 80.
+- **`util_cross`** on GPU 2: generation at k in {0.6, 0.7, 0.8} to pin the utility crossover,
+  pre-registered in `results/onset_prediction_crossover.md`; both judge chains armed behind it.
+- Score chains armed: `score_seed.sh`, `judge_cross.sh` x2.
 
 ## Recommended next step
-**The judged arms** (plan section D), which bear on Theorem 1's measured side: k in {1.5, 2, 2.5}
-was killed by memory pressure and never rerun, and the alpha=4 arm and a second judge are still
-unmeasured. The GPUs are currently shared with another user's job (55-68 GB used on each A100), so
-check `nvidia-smi` before taking a card.
-
-A third granularity level is **not available off the shelf** -- see `results/tokenizer_rates.csv` --
-so treat it as a training task, not a download, if it is attempted at all.
+Score Arm A with `analysis/seed_effect.py` and write Section 4 around whichever account survives.
+If Arm A and the KL3M-1.7B arm both land in the coarse band, the seven-pair table collapses under a
+character-matched protocol and the paper gains a law plus a protocol correction; if they land near
+0.96, the mechanism is `k_crit` and the seed acts through where the target starts.
 
 ## Open, logged, not fixed
-- **Checkpoint-trust posture is inconsistent.** `a_patch/factory.py` refuses pickled checkpoints
-  (`use_safetensors=True` at three load sites); `analysis/budget_path.py`, `regimes.py`,
-  `onset_theory.py` and `surprisal_cdf.py` do not, and `budget_path.py` had already executed a
-  `.bin` that the decoder then declined. Tightening the scripts or relaxing the decoder is a
-  security decision for the user, not a side effect of a sweep.
-- Plan v5's ladder (`results/onset_ladder.md`) is stale: it predates pairs 4-7.
-- `output/phase5/anchor_phi35mini` is a config-patched copy of `microsoft/Phi-3.5-mini-instruct`
-  (weights symlinked, `auto_map` stripped so it loads offline), logits verified identical to
-  0.00e+00. `results/onset_pairs.tsv` names the hub id, not that path, so a clean checkout can
-  re-run `onset_units.py`.
+- Checkpoint-trust posture is inconsistent (`a_patch/factory.py` refuses pickled checkpoints; four
+  analysis scripts do not). A security decision for the user.
+- `results/onset_ladder.md` is stale: it predates pairs 4-7.
+- A second protected corpus is not cheaply available; see the decision note in `progress.md`.
 
-## Three process notes worth keeping
-- **A shared scorer must not hardcode its output filename.** Reusing `score_truncation.py` for the
-  Phi pair silently overwrote `results/truncation_score.csv`, feat-060's committed evidence. It
-  now takes `--out-name` and row labels.
-- **Edit scripts must write after each successful replacement.** A script that made three
-  replacements in memory and hit a failed assertion before its single `write_text` silently
-  dropped a table row and a section heading while the compile still succeeded.
-- **`pgrep -f <pattern>` matches the shell running it.** Use `pgrep -f "python.*<name>"`.
+## Process notes that have each cost real time
+- **`pgrep -f <pattern>` matches the shell running it.** Three incidents, the last a `pkill` that
+  killed the invoking shell mid-heredoc and silently dropped a file. Wait on a PID with `kill -0`.
+- **Before calling a committed run invalid, read what the metric compares against, in the code, and
+  check the run's own k=-1 baseline.** A baseline near the ceiling means the measurement is real.
+- **A shared scorer must not hardcode its output filename.** Reusing `score_truncation.py` silently
+  overwrote `results/truncation_score.csv`; it now takes `--out-name`.
+- **Chain scripts need `set -e`.** One printed `=== DONE ===` after an OOM.
