@@ -29,3 +29,19 @@ def test_seed_words_is_measured_not_assumed(monkeypatch):
     src = inspect.getsource(seed_effect.seed_words)
     assert "load_prompt_corpus" in src and "decode" in src
     assert "chars_per_token" not in src
+
+
+def test_spearman_handles_ties_with_average_ranks():
+    """The two KL3M pairs tie at 7.3 seed words; the no-ties shortcut would misreport the trend."""
+    from analysis.seed_effect import spearman, _ranks
+    assert _ranks([1.0, 2.0, 2.0, 3.0]) == [0.0, 1.5, 1.5, 3.0]
+    assert abs(spearman([1, 2, 3], [1, 2, 3]) - 1.0) < 1e-12
+    assert abs(spearman([1, 2, 3], [3, 2, 1]) + 1.0) < 1e-12
+    # a tie in x with opposite y values pulls the correlation off perfect
+    assert abs(spearman([1, 2, 2, 3], [1, 2, 3, 4])) < 1.0
+
+
+def test_permutation_p_is_exact_and_symmetric():
+    from analysis.seed_effect import permutation_p
+    rho, p = permutation_p([1, 2, 3], [1, 2, 3])
+    assert abs(rho - 1.0) < 1e-12 and abs(p - 2 / 6) < 1e-12   # 2 of 3! permutations reach |rho|=1

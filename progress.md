@@ -1983,3 +1983,27 @@ baseline. A baseline near the ceiling means the target was reproducible and the 
   on `nv_recall` (+18.4%) as well, which normalises by target length and so has the opposite bias.
 
 Both directions of bias are accounted for, and the bootstrap intervals are disjoint.
+
+### The cross-pair trend was already in the seven pairs, and it agrees with the intervention
+
+`analysis/seed_effect.py` now also reports the observational trend, with average ranks for the tie
+at 7.3 words and an exact permutation p (7! = 5,040 permutations; an asymptotic p is not
+trustworthy at n=7):
+
+     7.3 words   ratio 1.166   KL3M-1.7B
+     7.3 words   ratio 1.053   KL3M-520M
+    13.0 words   ratio 0.920   Pleias-350M
+    13.1 words   ratio 0.926   Phi-3.5-mini
+    13.4 words   ratio 0.892   Comma-7B
+    13.7 words   ratio 0.878   Pleias-1.2B
+    14.4 words   ratio 0.887   TinyComma-1.8B
+
+    all pairs            n=7   Spearman -0.919   exact permutation p = 0.0071
+    coarse family only   n=5   Spearman -0.800   exact permutation p = 0.1333
+
+**This is confounded by construction and is reported as such**: seed words is exactly
+20 x characters-per-token, so it is the same variable as tokenizer granularity, and no observational
+analysis can separate them. Its value is that the trend continues *inside* the coarse family, over a
+range of 1.4 words among five pairs built for entirely unrelated reasons, with the same sign and
+nearly the same magnitude. The intervention (Arm B) breaks the confound; the observation says the
+intervention is not describing a two-group artifact.

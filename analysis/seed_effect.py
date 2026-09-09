@@ -21,7 +21,7 @@ Writes <out>/seed_effect.csv. Needs the tokenizers, no GPU.
 Usage:
   HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py --out results
 """
-import argparse, csv, os, statistics as st, sys
+import argparse, csv, itertools, os, statistics as st, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_truncation import per_passage, point_and_ci  # noqa: E402
@@ -43,6 +43,66 @@ def seed_words(tokenizer_id, seed_tokens, limit=100):
     return st.mean(ch), st.mean(wd)
 
 
+def _ranks(v):
+    """Average ranks, so ties are handled correctly. The two KL3M pairs tie at 7.3 seed words, and
+    the 1 - 6*sum(d^2)/(n(n^2-1)) shortcut is only exact without ties."""
+    order = sorted(range(len(v)), key=lambda i: v[i])
+    r = [0.0] * len(v)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and v[order[j + 1]] == v[order[i]]:
+            j += 1
+        avg = (i + j) / 2.0
+        for k in range(i, j + 1):
+            r[order[k]] = avg
+        i = j + 1
+    return r
+
+
+def spearman(x, y):
+    """Pearson correlation of the average ranks."""
+    rx, ry = _ranks(x), _ranks(y)
+    mx, my = st.mean(rx), st.mean(ry)
+    num = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
+    den = (sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry)) ** 0.5
+    return num / den if den else 0.0
+
+
+def permutation_p(x, y):
+    """Exact two-sided p for Spearman by enumerating every permutation. n <= 8 here, so 40,320
+    at worst; an asymptotic p-value is not trustworthy at these sample sizes."""
+    rho, ge, tot = spearman(x, y), 0, 0
+    for perm in itertools.permutations(range(len(x))):
+        tot += 1
+        if abs(spearman(x, [y[i] for i in perm])) >= abs(rho) - 1e-12:
+            ge += 1
+    return rho, ge / tot
+
+
+def observational(pairs_tsv, onset_table, limit=100):
+    """The cross-pair trend on the runs built for other reasons: does the onset ratio fall as the
+    adversary's seed buys more words? This is CONFOUNDED by construction -- seed words is
+    20 x characters-per-token, so it is the same variable as tokenizer granularity, and only the
+    intervention above separates them. It is reported because the two agree."""
+    tok_of, order = {}, []
+    for line in open(pairs_tsv, encoding="utf-8"):
+        f = line.rstrip("\n").split("\t")
+        if len(f) >= 5:
+            tok_of[f[0]] = f[3]
+            order.append(f[0])
+    ratios = {r["pair"]: float(r["ratio"]) for r in csv.DictReader(open(onset_table))
+              if not r["pair"].startswith("ALL")}
+    rows = []
+    for name in order:
+        key = next((k for k in ratios if k.split(" + ")[0] == name.split(" + ")[0]), None)
+        if key is None:
+            continue
+        _, w = seed_words(tok_of[name], 20, limit)
+        rows.append((name, w, ratios[key]))
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -50,6 +110,8 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--lcs-thresh", type=float, default=4.0)
     ap.add_argument("--nv-thresh", type=float, default=0.01)
+    ap.add_argument("--pairs-tsv", default="results/onset_pairs.tsv")
+    ap.add_argument("--onset-table", default="results/onset_table.csv")
     a = ap.parse_args()
 
     rows = []
@@ -100,6 +162,19 @@ def main():
         print(f"\n{pair}: ratio against seed words "
               + " -> ".join(f"{r['seed_words']:.1f}w:{r['ratio']:.3f}" for r in g)
               + f"\n  strictly decreasing in the adversary's context: {mono}")
+    try:
+        obs = observational(a.pairs_tsv, a.onset_table)
+    except (OSError, KeyError):
+        obs = []
+    if len(obs) >= 4:
+        print("\ncross-pair, on the runs built for other reasons (confounded with granularity "
+              "by construction):")
+        for n, w, r in sorted(obs, key=lambda t: t[1]):
+            print(f"   {w:5.1f} words   ratio {r:.3f}   {n[:44]}")
+        for lab, sel in (("all pairs", obs), ("coarse family only", [o for o in obs if o[1] > 10])):
+            if len(sel) >= 4:
+                rho, pv = permutation_p([o[1] for o in sel], [o[2] for o in sel])
+                print(f"   {lab:20s} n={len(sel)}  Spearman {rho:+.3f}  exact permutation p={pv:.4f}")
     print(f"\nwrote {path}")
 
 
