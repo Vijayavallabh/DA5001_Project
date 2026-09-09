@@ -54,3 +54,12 @@ makes the arm inadmissible and it will be reported as inadmissible rather than d
 baseline moves a lot while the onset ratio does not, that is evidence *for* the law, since the law
 does not mention the risky model; if both move together, the arm cannot separate them and will be
 reported as confounded.
+
+## Note added while the tau = 0.4 arm was decoding, before any budgeted point was measured
+
+Its `k = -1` baseline came in at nv-recall **0.904**, against **0.519** for the tau = 1.0 control.
+Warping sharpens the memoriser as much as it sharpens the anchor, and the arm is admissible by a
+wide margin. Recorded now because the direction matters: a memoriser that is *better* at the work
+should make extraction begin **earlier**, not later, so the confound pushes the measured onset
+**down**, away from (U)'s $4.163$ and towards (N)'s $2.492$. If the onset nevertheless lands near
+$4.163$, the confound cannot be what produced it.
