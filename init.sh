@@ -77,8 +77,8 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..046 are done; feat-047 (more admissible (anchor, risky) pairs, plus the graded-memoriser
-ladder) is in progress. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
+feat-035..065 are done except the optional ones; feat-066 (the seed dose-response, the KL3M-1.7B
+replication and the temperature arms that move s(x) inside one pair) is in progress. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
 feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
 
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
@@ -92,7 +92,7 @@ If you are here to work:
    temperature arms). Three live cautions: a pair enters the onset analysis only if its
    SAMPLED k=-1 recall >= 0.10 (greedy recall lies); every arm is pre-registered with a
    refuting band in results/onset_prediction_*.md, so score against the band and do not
-   refit; and `pkill -f` matches the shell that runs it -- kill by PID.
+   refit; and pkill -f matches the shell that runs it -- kill by PID.
 3. If you change something, rerun its evidence command, update feature_list.json and progress.md,
    and recompile the manuscript (0 '??', 0 overfull, 9 pages before the Ethics heading)
 "
