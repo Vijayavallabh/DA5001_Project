@@ -270,3 +270,24 @@ The target is **12% shorter** than the control's, 520 tokens against 590, becaus
 partition one passage. On an absolute word count that makes the threshold harder to reach and
 pushes the onset **up** --- the direction of the reversal. This arm therefore cannot be read as a
 clean seed effect, and the write-up must say so rather than presenting a tidy monotone curve.
+
+## The seed-80 grid extension, as committed (2026-09-10)
+
+Three budgets added above the crossing (k in {3.0, 3.2, 3.6}, `output/phase5/seed80_kl3m520m_hi`)
+and merged with the original into `output/phase5/seed80_kl3m520m_merged`, which the manifest now
+points at. Both grids:
+
+     grid                       onset    ratio           95% CI    no crossing
+     original, k <= 2.8         2.521    1.056     [0.78, 1.13]           2.1%
+     merged,   k <= 3.6         2.521    1.056     [0.78, 1.16]           0.0%
+
+The extension did what it was for: the no-crossing fraction falls from 2.1% to **zero**, so every
+bootstrap resample now crosses inside the grid and the point estimate was not an artefact of the
+ceiling. The onset and the ratio are unchanged to three decimals. The interval's upper end widens
+slightly, from 1.13 to 1.16, because resamples that previously failed to cross now cross at high
+budgets and are counted rather than dropped --- a wider interval that is honest rather than a
+narrower one that was truncated.
+
+The conclusion is unchanged and now rests on a grid that does not clip it: the seed-80 ratio is
+1.056, above seed-40's 0.939, so the dose-response is non-monotone and (S) is refuted, while (K)'s
+0.946 is 12% below the measurement.
