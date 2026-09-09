@@ -88,9 +88,11 @@ stray git repo it sits inside.
 
 If you are here to work:
 1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
-2. Next feature is feat-047. Two live cautions: a pair enters the onset analysis only if its
-   SAMPLED k=-1 recall >= 0.10 (greedy recall lies); and on the two original pairs the derivation
-   r = s_s - s_r and a constant c*s_s are degenerate, which is what the ladder exists to separate.
+2. Next feature is feat-066 (the seed dose-response, the KL3M-1.7B replication and the
+   temperature arms). Three live cautions: a pair enters the onset analysis only if its
+   SAMPLED k=-1 recall >= 0.10 (greedy recall lies); every arm is pre-registered with a
+   refuting band in results/onset_prediction_*.md, so score against the band and do not
+   refit; and `pkill -f` matches the shell that runs it -- kill by PID.
 3. If you change something, rerun its evidence command, update feature_list.json and progress.md,
    and recompile the manuscript (0 '??', 0 overfull, 9 pages before the Ethics heading)
 "
