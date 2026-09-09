@@ -92,3 +92,42 @@ If the curve holds, the object the paper reports is not a constant but a functio
 the budget at which extraction begins against an adversary holding `c` words of the work. A deployer
 must set the budget against the best-informed adversary, so the relevant value is the limit of that
 curve, not the value at whatever prefix length an evaluation happened to use.
+
+---
+
+## Second addendum: two accounts of Arm B now make different predictions for Arm A (2026-09-10)
+
+Committed while Arm A was running and still blind: it has reached k=1.8 with a recall of 0.002,
+below the 0.01 threshold, so its onset is above 1.8 and unmeasured. Both accounts below survive
+everything observed so far.
+
+Arm B moved as predicted, but a second quantity moved with it. `k_crit`, the token-bucket rate a
+target's own surprisal profile demands (`analysis/budget_path.py`, Prop. 4:
+`k_crit = max_t (S_t + delta_init)/(t+1)`), is computed from the anchor alone with no attack, and it
+depends on the seed because the seed decides where the target's profile starts:
+
+    run                    k_crit     measured onset
+    Pleias-1.2B seed 20     4.942     2.780
+    Pleias-1.2B seed 10     5.916     3.272
+    change                 +19.7%    +17.7%
+
+Two accounts fit that:
+
+- **(S) Seed matching.** What matters is how many words the adversary holds. Matching the seed in
+  words moves a pair into the other family's band. Arm A should land in the coarse band,
+  **0.85-0.95**, because at `--seed-tokens 40` KL3M's seed is 80.8 characters and 14.3 words against
+  TinyComma's 81.3 and 14.4.
+- **(K) Bucket threshold.** What matters is the early-token surprisal the bucket must sustain, which
+  the seed shifts. `k_crit` for KL3M-520M moves 3.791 -> 3.514 at seed 40, **-7.3%**, so the onset
+  should move by about that: 2.492 -> **2.31** on `lcs_word`, a ratio of **0.96** against s(x) =
+  2.398. That is well **above** the coarse band.
+
+**Committed prediction:** Arm A's `lcs_word >= 4` ratio discriminates them. In **0.85-0.95** favours
+(S); in **0.93-0.99** favours (K); the two overlap only at 0.93-0.95, and an outcome there will be
+reported as undecided rather than assigned to either. Above 1.00 refutes both and leaves the
+tokenizer intrinsic after all.
+
+The dose-response arms then test (K) further, since it predicts the onset tracks `k_crit` at every
+seed length rather than saturating once the word count matches the coarse group. We commit to
+reporting the `k_crit` ratio alongside the s(x) ratio for all four dose-response points whatever
+they show.
