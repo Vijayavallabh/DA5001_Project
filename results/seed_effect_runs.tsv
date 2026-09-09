@@ -9,3 +9,6 @@ KL3M-1.7B seed 40 (Arm A2)	40	output/phase5/seed40_kl3m17b/composition.csv	resul
 KL3M-520M tau 1.0 (control)	20	output/phase5/fine_kl3m520m/composition.csv	results/budget_path_kl3m-520m__mem._kl3m-520m.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M tau
 KL3M-520M tau 0.7	20	output/phase5/warp_t0.7_kl3m520m/composition.csv	results/budget_path_recon_t0.7.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M tau
 KL3M-520M tau 0.4	20	output/phase5/warp_t0.4_kl3m520m/composition.csv	results/budget_path_recon_t0.4.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M tau
+Pleias-1.2B tau 1.0 (control)	20	output/phase5/fine_pleias12b/composition.csv	results/budget_path_pleias-1.2b__mem._pleias-1.2b.csv	PleIAs/Pleias-1.2b-Preview	Pleias-1.2B tau
+Pleias-1.2B tau 0.7	20	output/phase5/warp_t0.7_pleias12b/composition.csv	results/budget_path_recon_p12b_t0.7.csv	PleIAs/Pleias-1.2b-Preview	Pleias-1.2B tau
+Pleias-1.2B tau 0.4	20	output/phase5/warp_t0.4_pleias12b/composition.csv	results/budget_path_recon_p12b_t0.4.csv	PleIAs/Pleias-1.2b-Preview	Pleias-1.2B tau
