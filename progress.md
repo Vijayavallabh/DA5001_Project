@@ -1681,3 +1681,33 @@ the four-character pairs. s(x) moves only 1.3% under truncation (2.4147 -> 2.383
 mechanism; near 2.46 (ratio ~1.03) blames the tokenizer itself. One direction only: the
 four-character pairs cannot be lengthened to 580 tokens without longer references than CopyBench
 provides.
+
+### feat-060 verdict: it is the tokenizer, not the target length (2026-09-09)
+
+    .venv/bin/python analysis/score_truncation.py --out results
+
+    run                       metric      thr   onset        95% CI   ratio     ratio CI  nocross
+    truncated to 276 tokens   lcs_word      4   2.600   [2.48,2.95]   1.091  [1.04,1.24]     0.3% *
+    truncated to 276 tokens   nv_recall  0.01   2.509   [2.45,2.81]   1.053  [1.03,1.18]     0.0%
+    full 580 tokens           lcs_word      4   2.492   [2.43,2.96]   1.032  [1.01,1.23]     0.0% *
+    full 580 tokens           nv_recall  0.01   2.543   [2.45,3.00]   1.053  [1.02,1.24]     0.0%
+
+Halving the decode-step count from 580 to 276 with the tokenizer held fixed leaves the onset ratio
+at **1.091**, inside the untruncated KL3M band (1.032-1.155) and well outside the four-character
+band (0.866-0.893). The pre-registered "decode-step count" reading predicted ~0.87 and is refuted;
+the "tokenizer itself" reading predicted ~1.03 and is within 0.061.
+
+`nv_recall` gives 1.053 for both the truncated and the full run -- identical to three decimals --
+so the inflation the design was built to avoid did not move this comparison either way. That is a
+useful check rather than a lucky escape: `lcs_word` was still the right primary, because nothing
+guaranteed the two would agree.
+
+**The appendix's candidate mechanism is refuted.** It said a 20-word span costs about 25 decode
+steps at four characters per token and about 50 at two, each an opportunity to derail, so the KL3M
+pairs need a higher budget. If that were the mechanism, matching the step count would have moved
+the ratio to the four-character band. It did not. What remains open is *which* property of the
+tokenizer does it -- and we do not offer a replacement guess.
+
+One direction only, as pre-registered: the four-character pairs cannot be lengthened to 580 tokens
+without longer references than CopyBench provides, so this tests step count downward from 580 to
+276 and would not see an asymmetric effect.
