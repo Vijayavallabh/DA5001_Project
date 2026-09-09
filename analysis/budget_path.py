@@ -127,6 +127,11 @@ def main():
     ap.add_argument("--novel", default="")
     ap.add_argument("--limit", type=int, default=100)
     ap.add_argument("--seed-tokens", type=int, default=20)
+    ap.add_argument("--max-target-tokens", type=int, default=0,
+                    help="feat-060: keep only the first N target tokens, matching "
+                         "analysis/composition_attack.py. s(x) is a mean over the target, so a "
+                         "truncated attack must be paired with a truncated budget path or the "
+                         "ratio compares two different works.")
     ap.add_argument("--safe-model", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer")
     ap.add_argument("--composition", default="results/composition.csv", help="per-passage composition results; '' to skip the observed-recall join")
     ap.add_argument("--k-values", nargs="+", type=float, default=[0.15, 0.5, 1, 3, 5, 10, 20])
@@ -161,6 +166,8 @@ def main():
     rows = []
     for i, p in enumerate(prompts):
         ids = tok(join(p.prompt_text, p.reference)).input_ids
+        if args.max_target_tokens > 0:
+            ids = ids[:args.seed_tokens + args.max_target_tokens]
         s = token_surprisals(model, tok, ids, args.seed_tokens, args.temperature, args.repetition_penalty, device)
         delta = st.mean(delta_obs[p.prompt_id]) if p.prompt_id in delta_obs else 0.0
         row = dict(prompt_id=p.prompt_id, novel=p.novel_source, n_target=len(s), delta_init=round(delta, 3),

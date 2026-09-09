@@ -143,6 +143,13 @@ def main():
     ap.add_argument("--windows", nargs="+", type=int, default=[20, 50])
     ap.add_argument("--modes", nargs="+", default=["single", "oracle", "chained"])
     ap.add_argument("--seed-tokens", type=int, default=20)
+    ap.add_argument("--max-target-tokens", type=int, default=0,
+                    help="feat-060: keep only the first N target tokens. Target length in tokens is "
+                         "otherwise a consequence of the tokenizer -- the same passage is 276 tokens "
+                         "at four characters per token and 580 at two -- so the two cannot be told "
+                         "apart without this. Score such runs with lcs_word, which is an absolute "
+                         "word count; nv_recall divides by reference length and inflates when the "
+                         "reference is truncated.")
     ap.add_argument("--limit", type=int, default=100)
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--temperature", type=float, default=1.0)
@@ -189,6 +196,8 @@ def main():
     for p in prompts:
         prefix_text = p.prompt_text[len(HEADER):] if (args.raw_prompt and p.prompt_text.startswith(HEADER)) else p.prompt_text
         ids = tok(join(prefix_text, p.reference)).input_ids
+        if args.max_target_tokens > 0:
+            ids = ids[:args.seed_tokens + args.max_target_tokens]
         seed_txt = tok.decode(ids[:args.seed_tokens], skip_special_tokens=True)
         passages.append(dict(prompt_id=p.prompt_id, novel=p.novel_source, ids=ids, seed=seed_txt,
                              target=tok.decode(ids[args.seed_tokens:], skip_special_tokens=True), n_target=len(ids) - args.seed_tokens))
