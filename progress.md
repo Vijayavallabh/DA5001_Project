@@ -1964,3 +1964,22 @@ and the same scoring object, and its intervals are disjoint.
 **The lesson, recorded because it nearly cost a correct result:** before declaring a committed run
 invalid, read what the metric is computed against, in the code, and check the run's own k=-1
 baseline. A baseline near the ceiling means the target was reproducible and the measurement is real.
+
+### Arm B put through the same checks that the feat-060 false alarm should have had (2026-09-10)
+
+    run                             target   k=-1 recall   k=-1 lcs   k=0 recall
+    Pleias-1.2B seed 20 (control)   271 tok        0.909      183.7        0.000
+    Pleias-1.2B seed 10 (Arm B)     281 tok        0.894      186.7        0.000
+
+- **Same scoring object.** Both runs score against their own decoded `target`, the same quantity,
+  so the comparison is like for like.
+- **Both baselines near the ceiling.** The unconstrained model reproduces either target (0.909,
+  0.894), so both runs can measure extraction; and the anchor alone leaks nothing in either (0.000).
+- **The target-length difference points the wrong way to explain the result.** Arm B's target is
+  3.7% longer (281 against 271 tokens) and its unconstrained `lcs_word` is slightly higher (186.7
+  against 183.7). On the primary metric, `lcs_word >= 4`, an absolute word count, a longer target
+  can only make the threshold easier to reach, which would push the onset **down**. The measured
+  onset went **up** by 17.7%. The effect is therefore not a target-length artifact, and it survives
+  on `nv_recall` (+18.4%) as well, which normalises by target length and so has the opposite bias.
+
+Both directions of bias are accounted for, and the bootstrap intervals are disjoint.
