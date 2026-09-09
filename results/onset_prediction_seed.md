@@ -131,3 +131,37 @@ The dose-response arms then test (K) further, since it predicts the onset tracks
 seed length rather than saturating once the word count matches the coarse group. We commit to
 reporting the `k_crit` ratio alongside the s(x) ratio for all four dose-response points whatever
 they show.
+
+---
+
+## Third addendum: the dose-response now discriminates, committed while both sweeps run (2026-09-10)
+
+Committed before `output/phase5/seed10_kl3m520m` or `seed80_kl3m520m` produced any result. The four
+budget paths exist (they need no attack), and they sharpen the two accounts into different curves:
+
+     seed   words    s(x)   k_crit    ratio predicted by (K)
+       10     4.0   2.424    4.235                     1.148
+       20     7.3   2.415    3.791                     1.032  <- measured 1.032
+       40    14.3   2.398    3.514                     0.963  <- measured 0.939
+       80    28.4   2.387    3.434                     0.946
+
+(K) is the token-bucket account: the onset is a fixed fraction of `k_crit`, calibrated at the seed
+the pair was first measured at, onset/k_crit = 0.6573. Because `k_crit` **flattens** between
+seed 40 and seed 80 -- it falls only 2.3% while the words nearly double --
+(K) predicts the curve levels off near 0.95 and does **not** keep falling.
+
+(S) is seed matching: the ratio keeps falling as the adversary is handed more of the work, so seed
+80 at 28.4 words should sit **below** the coarse family's band of 0.878-0.926, as the first
+addendum committed.
+
+**Committed prediction.** The seed-80 arm decides between them. A ratio at or above 0.93 favours (K);
+at or below 0.90 favours (S); between 0.90 and 0.93 is undecided and will be reported as such. The
+seed-10 arm is a consistency check on both: both predict it above the seed-20 value of 1.032, (K)
+specifically near 1.15.
+
+One caution against (K)'s mechanism, recorded now rather than after the fact: the running maximum in
+`k_crit` binds at the very first target token for only **22-23%** of works in this configuration, not
+the 87.7-90.5% Appendix~\ref{app:opening} reports for a target that starts at the passage. The seed
+therefore cannot be acting purely by choosing which token comes first, and (K) is on weaker
+mechanistic ground than its arithmetic suggests.
+
