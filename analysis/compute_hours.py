@@ -10,7 +10,7 @@ together they are well under an hour.
 
 Usage: .venv/bin/python analysis/compute_hours.py [--out results]
 """
-import argparse, csv, os, re, subprocess, time
+import argparse, csv, glob, os, re, subprocess, time
 
 # (job, path, gpus, start rule, note).  "birth" = directory creation; "after:<job>" = queued in a chain;
 # "elapsed:<log>" = duration read from the job's own log, for jobs whose directory is written at the end.
@@ -65,6 +65,21 @@ JOBS = [
     ("70B seed-length checks","output/phase2/nm_smoke",          2, "birth", "feat-017; nm_check* share the window"),
     ("70B audit",             "output/phase2/nm",                2, "after:70B seed-length checks", "feat-018, all sub-runs"),
 ]
+
+# Phases 4 and 5 are too many runs to list by hand, so they are scanned: every launcher log under
+# these globs is one job, its window is the log file's birth to its last write, and traced
+# `+ sleep N` lines are subtracted so that an armed chain that waited three hours for a file to
+# appear is not billed for the wait. A wrapper that only ever slept therefore scores ~0 and a
+# wrapper that slept and then tee'd a sweep is billed for the sweep alone.
+SCAN_GLOBS = ["output/phase4/*.log", "output/phase5/*.log"]
+# runs that held two cards; everything else in the scan held one
+SCAN_GPUS = {"output/phase5/util_cross.log": 2}
+
+
+def traced_sleep(path):
+    """Seconds spent in `sleep` calls that a `set -x` trace recorded. Zero for a plain log."""
+    text = open(path, errors="ignore").read()
+    return sum(float(m) for m in re.findall(r"^\+* sleep ([0-9.]+)\s*$", text, re.M))
 
 
 def crtime(path):
@@ -121,6 +136,25 @@ def main():
                                        "log_elapsed" if rule.startswith("elapsed:") else "dir_birth"),
                          idle_removed_hours=round(idle / 3600, 2), note=note))
 
+    now = time.time()
+    live = []
+    for pat in SCAN_GLOBS:
+        for path in sorted(glob.glob(pat)):
+            birth, end, _ = times(path)
+            if now - end < 600:          # still being written: bill it on a later run
+                live.append(path)
+                continue
+            hours = max(0.0, (end - birth - traced_sleep(path)) / 3600)
+            gpus = SCAN_GPUS.get(path, 1)
+            rows.append(dict(job=os.path.basename(path)[:-4], path=path, gpus=gpus,
+                             start=time.strftime("%Y-%m-%d %H:%M", time.localtime(birth)),
+                             end=time.strftime("%Y-%m-%d %H:%M", time.localtime(end)),
+                             wall_hours=round(hours, 2), gpu_hours=round(hours * gpus, 2),
+                             start_source="log_birth", idle_removed_hours=0.0,
+                             note="scanned; traced sleeps removed"))
+    if live:
+        print("[live] not billed yet (written in the last 10 min): " + ", ".join(live))
+
     os.makedirs(args.out, exist_ok=True)
     with open(os.path.join(args.out, "compute_hours.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
@@ -131,6 +165,13 @@ def main():
     large = sum(r["gpu_hours"] for r in rows if r["gpus"] == 2)
     tunes = [r for r in rows if "fine-tune" in r["job"]]
     tune = sum(r["gpu_hours"] for r in tunes)
+    with open(os.path.join(args.out, "compute_hours_summary.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["quantity", "gpu_hours", "n_jobs"])
+        w.writerow(["one_gpu_jobs", round(small, 1), sum(1 for r in rows if r["gpus"] == 1)])
+        w.writerow(["two_gpu_jobs", round(large, 1), sum(1 for r in rows if r["gpus"] == 2)])
+        w.writerow(["fine_tunes", round(tune, 1), len(tunes)])
+        w.writerow(["total", round(small + large, 1), len(rows)])
     print(f"8B jobs (1 GPU):   {small:6.1f} GPU-hours  ({small - tune:.1f} excluding the fine-tune)")
     print(f"70B jobs (2 GPUs): {large:6.1f} GPU-hours")
     print("fine-tunes:        " + ", ".join(f'{r["job"]} {r["gpu_hours"] * 60:.0f} min' for r in tunes))
