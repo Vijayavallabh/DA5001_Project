@@ -115,6 +115,9 @@ def main():
                                       float(r["requirement"])))
     s_safe = {n: st.median(float(r["s_mean"]) for r in csv.DictReader(open(bp)))
               for n, _, bp, _ in pairs}
+    # Proposition 2's running maximum, the other anchor-only rate a deployer could normalise by.
+    k_crit = {n: st.median(float(r["k_crit"]) for r in csv.DictReader(open(bp)))
+              for n, _, bp, _ in pairs}
     rows = []
 
     # 1. metric artifact
@@ -147,14 +150,28 @@ def main():
         opts = {
             "raw (no rescaling)": {n: 1.0 for n in curves},
             "s_safe": s_safe,
+            "k_crit (Prop. 2 running maximum)": k_crit,
             "requirement r = s_safe - s_risky":
                 {n: st.median(c for _, _, c in theory[key[n]]) for n in curves},
         }
         for name, sc in opts.items():
-            grid = (2.0, 2.4, 2.8, 3.2) if name.startswith("raw") else GRID
+            grid = ((2.0, 2.4, 2.8, 3.2) if name.startswith("raw")
+                    else (0.2, 0.3, 0.4, 0.5, 0.6) if name.startswith("k_crit") else GRID)
             m, n_pts = disagreement(curves, sc, grid)
             rows.append({"block": "normaliser", "setting": name, "value": m,
                          "value_relative_to_metric_range": float("nan"), "n_grid": n_pts})
+
+        # A normaliser with no common grid returns nan above, which says only that the pairs do
+        # not overlap in its units. The spread of onset/normaliser across pairs needs no grid and
+        # is directly comparable between normalisers.
+        onsets = {n: onset(curves[n], 0.01) for n in curves}
+        for name, sc in opts.items():
+            v = [onsets[n] / sc[n] for n in curves if onsets[n]]
+            if len(v) > 1:
+                rows.append({"block": "normaliser_spread", "setting": name,
+                             "value": round(max(v) / min(v), 4),
+                             "value_relative_to_metric_range": round(st.stdev(v) / st.mean(v), 4),
+                             "n_grid": len(v)})
 
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, "collapse_robustness.csv")
@@ -163,7 +180,7 @@ def main():
         w.writeheader()
         w.writerows(rows)
 
-    for block in ("metric", "threshold", "normaliser"):
+    for block in ("metric", "threshold", "normaliser", "normaliser_spread"):
         sub = [r for r in rows if r["block"] == block]
         if not sub:
             continue
@@ -172,7 +189,9 @@ def main():
             extra = (f"  ({r['value_relative_to_metric_range']:.3f} of the metric's range)"
                      if block == "metric" else
                      f"  (mean ratio {r['value_relative_to_metric_range']:.3f})"
-                     if block == "threshold" else "")
+                     if block == "threshold" else
+                     f"  (max/min across pairs; cv {r['value_relative_to_metric_range'] * 100:.1f}%)"
+                     if block == "normaliser_spread" else "")
             print(f"  {r['setting']:36s} {r['value']:.4f}{extra}")
     print(f"\nwrote {path} ({len(rows)} rows)")
 

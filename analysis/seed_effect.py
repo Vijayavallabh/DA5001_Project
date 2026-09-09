@@ -166,6 +166,30 @@ def main():
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
+    # The rate/maximum contrast, which is the point of the intervention: the seed barely moves the
+    # mean surprisal rate s(x) but moves Proposition 2's running maximum a lot, and the onset
+    # follows the maximum. Written relative to each pair's control arm.
+    sm = []
+    for pair in sorted({r["pair"] for r in rows}):
+        g = [r for r in rows if r["pair"] == pair]
+        ctl = next((r for r in g if "control" in r["label"]), None)
+        if ctl is None:
+            continue
+        for r in sorted(g, key=lambda r: r["seed_words"]):
+            if r is ctl:
+                continue
+            d = lambda k: round(100 * (r[k] / ctl[k] - 1), 2)
+            sm.append(dict(pair=pair, arm=r["label"], control=ctl["label"],
+                           words=r["seed_words"], words_control=ctl["seed_words"],
+                           pct_change_s_x=d("s_x"), pct_change_k_crit=d("k_crit"),
+                           pct_change_onset=(round(100 * (float(r["onset"]) / float(ctl["onset"]) - 1), 2)
+                                             if r["onset"] != "" and ctl["onset"] != "" else ""),
+                           measured_ratio=r["ratio"], predicted_ratio_K=r["pred_ratio_K"],
+                           prediction_in_ci=r["pred_hit"]))
+    if sm:
+        with open(os.path.join(a.out, "seed_effect_summary.csv"), "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(sm[0])); w.writeheader(); w.writerows(sm)
+
     print(f"{'pair':22s}{'seed tok':>9s}{'words':>7s}{'s(x)':>7s}{'onset':>8s}{'ratio':>8s}"
           f"{'95% CI':>16s}{'nocross':>9s}{'k_crit':>9s}{'(K) pred':>9s}")
     for r in sorted(rows, key=lambda r: (r["pair"], r["seed_words"])):
@@ -197,6 +221,12 @@ def main():
             if len(sel) >= 4:
                 rho, pv = permutation_p([o[1] for o in sel], [o[2] for o in sel])
                 print(f"   {lab:20s} n={len(sel)}  Spearman {rho:+.3f}  exact permutation p={pv:.4f}")
+    if sm:
+        print("\nseed changes the running maximum, not the mean rate (relative to each control):")
+        print(f"  {'arm':34s}{'d s(x)':>9s}{'d k_crit':>10s}{'d onset':>9s}")
+        for r in sm:
+            print(f"  {r['arm'][:33]:34s}{r['pct_change_s_x']:>8.1f}%{r['pct_change_k_crit']:>9.1f}%"
+                  + (f"{r['pct_change_onset']:>8.1f}%" if r["pct_change_onset"] != "" else f"{'--':>9s}"))
     print(f"\nwrote {path}")
 
 
