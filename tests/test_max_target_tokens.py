@@ -34,3 +34,14 @@ def test_slicing_semantics():
     assert ids[:seed + n][:seed] == ids[:seed]          # seed unchanged
     assert len(ids[:seed + n]) - seed == n              # exactly n target tokens
     assert ids[:seed + 0 + 1000] == ids                 # a cap beyond the passage is a no-op
+
+
+def test_truncation_that_removes_the_protected_passage_is_caught():
+    """feat-063: --max-target-tokens 276 on the KL3M pair cut the target off at token 296 while the
+    reference began at token 455, so the attack scored word overlap against text it was never asked
+    to produce. The guard aborts when no passage's target contains its reference."""
+    passages = [dict(reference="A" * 100, target="B" * 100) for _ in range(5)]
+    covered = sum(1 for x in passages if x["reference"][:60] in x["target"])
+    assert covered == 0
+    passages[0]["target"] = "prefix " + passages[0]["reference"]
+    assert sum(1 for x in passages if x["reference"][:60] in x["target"]) == 1

@@ -200,8 +200,22 @@ def main():
             ids = ids[:args.seed_tokens + args.max_target_tokens]
         seed_txt = tok.decode(ids[:args.seed_tokens], skip_special_tokens=True)
         passages.append(dict(prompt_id=p.prompt_id, novel=p.novel_source, ids=ids, seed=seed_txt,
-                             target=tok.decode(ids[args.seed_tokens:], skip_special_tokens=True), n_target=len(ids) - args.seed_tokens))
-    print(f"[ca] {len(passages)} passages; target length mean {st.mean(x['n_target'] for x in passages):.0f} tokens; seed {args.seed_tokens} tokens raw_prompt={args.raw_prompt} greedy={args.greedy}; constraint={args.constraint} "
+                             target=tok.decode(ids[args.seed_tokens:], skip_special_tokens=True),
+                             reference=p.reference, n_target=len(ids) - args.seed_tokens))
+    # feat-063: the protected passage sits at the END of prompt_text + reference, so any truncation
+    # of the target can cut it off entirely -- and the attack then scores word overlap against a
+    # passage that was never in the target. feat-060 did exactly that for 100/100 passages and its
+    # conclusion had to be retracted. Check it here, where every run passes, rather than in a review.
+    covered = sum(1 for x in passages if x["reference"][:60] in x["target"])
+    if covered < len(passages):
+        msg = (f"[ca] TARGET DOES NOT CONTAIN THE PROTECTED PASSAGE for "
+               f"{len(passages) - covered}/{len(passages)} passages: the attack would be scored "
+               f"against text it was never asked to produce. Raise --max-target-tokens or lower "
+               f"--seed-tokens.")
+        if covered == 0:
+            raise SystemExit(msg)
+        print(msg, flush=True)
+    print(f"[ca] {len(passages)} passages; target length mean {st.mean(x['n_target'] for x in passages):.0f} tokens; reference reached in {covered}/{len(passages)}; seed {args.seed_tokens} tokens raw_prompt={args.raw_prompt} greedy={args.greedy}; constraint={args.constraint} "
           f"prefix_debt={not args.no_prefix_debt} temperature={args.temperature} rp={args.repetition_penalty} retries={args.retries}", flush=True)
 
     os.makedirs(os.path.dirname(args.queries_out) or ".", exist_ok=True)

@@ -1777,3 +1777,45 @@ Seven-pair state: ratio mean 0.9603, range 0.878-1.166, sd 0.1003; held-out erro
 Manuscript: seven pairs throughout (abstract, intro, Section 4, conclusion, both appendices).
 Section 4, Section 7 and the conclusion were compressed to hold the main text at exactly 9 pages --
 Ethics now starts at the top of page 10 with nothing above it. 19 pages total, 0 overfull, 0 '??'.
+
+### feat-063: feat-060 is withdrawn, and the confound it claimed to close is reopened (2026-09-10)
+
+Found while checking a new hypothesis, not by a reviewer. Each CopyBench item is a prompt prefix
+followed by the protected passage, so the passage sits at the **end** of `prompt_text + reference`.
+Where it starts, in tokens, depends entirely on the tokenizer:
+
+    pair                                ref starts   total   steps seed->ref   in target?
+    TinyComma-1.8B + mem. Llama-3.1-8B         215     279            195        100/100
+    Pleias-1.2B / Pleias-350M              229/230     298            209/210    100/100
+    Phi-3.5-mini                               243     317            223        100/100
+    Comma-7B                                   250     325            230        100/100
+    KL3M-1.7B / KL3M-520M                      455     592            435        100/100
+
+feat-060 truncated the KL3M target with `--max-target-tokens 276`, ending it at token **296**. The
+passage begins at 455 (min 402 over the 100 passages), so **the passage was not in the target for
+100 of 100 passages**. Reconstructing that exact configuration and scoring the true target against
+the reference gives `nv_recall` **0.0000** (mean and max): a perfect adversary reproducing the
+truncated target would have scored zero. Whatever the run measured -- the memoriser wandering out
+of the forced target into other memorised text -- it was not extraction of the protected passage,
+and the ratio 1.091 cannot be compared with the untruncated 1.032.
+
+**Withdrawn:** feat-060's status is `invalid`, the paragraph is out of Section 4, and
+`sections/appendix_limitations.tex` now carries an explicit "a control we ran, and have withdrawn"
+paragraph, because the number appeared in a compiled version of the manuscript. The
+target-length/decode-distance confound is **reopened**.
+
+**The main result is unaffected and was checked, not assumed.** All seven untruncated runs contain
+the passage in 100/100 targets with a ceiling `nv_recall` of 0.997.
+
+**Root-cause fix, in the shared place:** `analysis/composition_attack.py` now computes the covered
+fraction for every run, prints `reference reached in N/M`, warns when some passages are uncovered
+and raises `SystemExit` when none are. A guard in the caller would have left every other entry point
+broken.
+
+**What the check exposed.** Three quantities are perfectly confounded with characters-per-token,
+because the tokenizer cuts one fixed piece of text: the adversary's seed (`--seed-tokens 20` buys
+**7.3 words** on KL3M against **13.0-14.4** on the other five), the decode distance to the passage
+(**435** steps against **195-230**), and the target length. All three split the seven pairs exactly
+where the onset ratio splits, with no overlap in any of them. Section 4's "which property of the
+tokenizer" is therefore not one open question but three, and `results/onset_prediction_seed.md`
+pre-registers the intervention that separates the first from the other two.

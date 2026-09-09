@@ -149,6 +149,10 @@ def main():
                     help="plan v4: score an arm outside the built-in ARMS table, pipe-separated so a "
                          "constraint may contain a colon, e.g. "
                          "'renyi a=8|renyi:8|3.0|output/phase4/util_renyi_8'. Repeatable.")
+    # plan v5 item D: two judges write two files. A hardcoded output name would have the second
+    # run silently overwrite the first, which is how results/truncation_score.csv was once lost.
+    ap.add_argument("--prefix", default="utility",
+                    help="basename for the two CSVs: <prefix>.csv and <prefix>_summary.csv")
     ap.add_argument("--baseline-dir", default="",
                     help="where the k=-1 baseline lives, if not the built-in output/sweep_plain")
     args = ap.parse_args()
@@ -260,7 +264,7 @@ def main():
             judge=("none" if args.no_judge else args.judge),
         ))
     os.makedirs(args.out, exist_ok=True)
-    with open(os.path.join(args.out, "utility.csv"), "w", newline="") as f:
+    with open(os.path.join(args.out, f"{args.prefix}.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
     summary = []
@@ -278,7 +282,7 @@ def main():
                             judge_picked_first_pct=(round(first, 1) if nj else ""),
                             retention_pct=(round(100 - loss, 1) if nj else ""),
                             judge=("none" if args.no_judge else args.judge)))
-    with open(os.path.join(args.out, "utility_summary.csv"), "w", newline="") as f:
+    with open(os.path.join(args.out, f"{args.prefix}_summary.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(summary[0])); w.writeheader(); w.writerows(summary)
 
     print(f"\n{'decoder':<12} {'k':>6} {'n':>5} {'active%':>8} {'distinct-3':>11} {'judged':>7} "
@@ -287,7 +291,7 @@ def main():
         print(f"{s['decoder']:<12} {s['k']:>6g} {s['n']:>5} {s['active_step_pct']:>8.3f} {s['distinct3']:>11.4f} "
               f"{s['n_judged']:>7} {str(s['win_pct']):>6} {str(s['loss_pct']):>6} "
               f"{str(s['judge_picked_first_pct']):>10} {str(s['retention_pct']):>11}")
-    print("\nwrote", os.path.join(args.out, "utility.csv"), "and utility_summary.csv")
+    print("\nwrote", os.path.join(args.out, f"{args.prefix}.csv"), "and", f"{args.prefix}_summary.csv")
 
 
 if __name__ == "__main__":

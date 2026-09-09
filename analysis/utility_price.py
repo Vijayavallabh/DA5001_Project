@@ -77,25 +77,35 @@ def resample(d, n, rng):
     return cw / n, ct / n, (n - cw - ct) / n
 
 
-def spends(run_dir, k):
-    out = []
-    for c in ("neutral", "factual", "creative"):
-        p = os.path.join(run_dir, f"trajectories_k{k}_{c}.jsonl")
-        if not os.path.exists(p):
-            continue
-        for line in open(p):
-            out.append(json.loads(line)["aggregate"]["total_spend"])
-    return out
+def spends(run_dirs, k):
+    """Realised sequence divergence per trajectory, from whichever run directory holds that budget.
+    The finer grid (k in {1.5, 2, 2.5}) lives in a different directory from the original sweep, so
+    this takes a list and stops at the first directory that has the budget."""
+    for run_dir in run_dirs:
+        out = []
+        for c in ("neutral", "factual", "creative"):
+            p = os.path.join(run_dir, f"trajectories_k{k}_{c}.jsonl")
+            if not os.path.exists(p):
+                continue
+            for line in open(p):
+                out.append(json.loads(line)["aggregate"]["total_spend"])
+        if out:
+            return out
+    return []
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
     ap.add_argument("--summary", default="results/utility_v4_summary.csv")
-    ap.add_argument("--runs", default="output/phase2/conc_all")
+    ap.add_argument("--runs", action="append", default=[],
+                    help="run directory holding the trajectory logs; repeatable, searched in order "
+                         "(the finer budget grid lives in its own directory). "
+                         "Defaults to output/phase2/conc_all then output/phase5/util_fine.")
     ap.add_argument("--boot", type=int, default=2000)
     ap.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args()
+    a.runs = a.runs or ["output/phase2/conc_all", "output/phase5/util_fine"]
     rng = random.Random(a.seed)
 
     rows = {(r["decoder"], r["k"]): r for r in csv.DictReader(open(a.summary))}
@@ -104,11 +114,16 @@ def main():
     n_safe = int(anchor["n_judged"])
     u_safe = mean_u(d_safe)
 
+    # budgets come from the summary rather than a constant, so a finer grid needs no edit here
+    ks = sorted({float(kk) for dd, kk in rows if dd == "KL" and float(kk) > 0})
     out = []
-    for k in ("0.5", "1", "3", "5", "10", "20"):
-        key = ("KL", k if "." in k else f"{k}.0")
+    for kf in ks:
+        key = ("KL", f"{kf:.1f}")
+        if key not in rows:
+            key = ("KL", f"{kf:g}")
         if key not in rows:
             continue
+        k = f"{kf:g}"                       # trajectory filenames use the short form: k1.5, k2, k3
         r = rows[key]
         d_q = three_point(float(r["win_pct"]), float(r["loss_pct"]))
         n_q = int(r["n_judged"])
