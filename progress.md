@@ -1626,3 +1626,47 @@ Limitations still said "five pairs ... one of which breaks it"), `appendix_robus
 `appendix_limitations` (rewritten around the confound resolution). The frontier figure went from
 0.76 to 0.62 textwidth and the per-work paragraph was compressed to pay for the sixth row.
 19 pages, main text ends **within** page 9, 0 overfull, 0 `??`, **31 numbers audited**, 131 tests.
+
+### feat-060: separating the tokenizer from the target length (2026-09-09)
+
+**The two are collinear by construction, not by accident.** For a fixed corpus, target length in
+tokens *is* characters-per-token: the same ~1176-character passage is 276 tokens at four characters
+per token and 580 at two. No choice of pairs can separate them; only an explicit truncation can.
+`--max-target-tokens` now exists in both `analysis/composition_attack.py` and
+`analysis/budget_path.py` — both, because s(x) is a mean over the target and a truncated attack
+paired with an untruncated budget path would compare an onset on one work to an s(x) on another.
+
+**A metric trap found before it cost anything.** `nv_recall` is `matched reference words /
+reference words`. Truncating a target halves that denominator and roughly doubles the score, which
+would manufacture exactly the "step count is the cause" result. The truncation run is therefore
+scored on `lcs_word`, an absolute word count with no denominator.
+
+That raised a prior question — is the tokenizer split itself a metric artifact? `analysis/
+split_robustness.py` (+ 5 tests) sweeps three differently-normalised metrics over their thresholds:
+
+    .venv/bin/python analysis/split_robustness.py --out results
+    metric        thresh       >3 ch/tok      <=3 ch/tok      gap  verdict
+    nv_recall      0.005     0.845-0.882     1.023-1.143   +0.141  split
+    nv_recall       0.01     0.878-0.895     1.053-1.166   +0.158  split
+    nv_recall       0.02     0.903-1.071     1.117-1.314   +0.047  split
+    nv_recall       0.03     0.925-1.127     1.197-1.402   +0.071  split
+    lcs_word           4     0.866-0.893     1.032-1.155   +0.139  split
+    lcs_word           5     0.885-1.023     1.060-1.175   +0.037  split
+    lcs_word           6     0.899-1.056     1.090-1.286   +0.034  split
+    lcs_word           8     0.926-1.124     1.159-1.362   +0.035  split
+    any_span        0.02     0.810-0.919     1.049-1.085   +0.130  split
+    any_span        0.03     0.857-1.125     1.077-1.176   -0.049  overlap
+    9/10 usable cells split (nv_recall 4/4, lcs_word 4/4, any_span 1/2)
+
+The split holds under a denominator of reference words, under no denominator at all, and under a
+denominator of passages at one of its two workable thresholds. **A first pass of mine reported "the
+split does not survive" from the single overlapping cell**, which was a threshold artifact of the
+noisiest metric; the sweep is the answer and the overlap is reported rather than dropped.
+
+**The truncation run** (`results/onset_prediction_trunc276.md`, committed at `449766b` before it
+started): KL3M-520M on the first 276 target tokens, tokenizer unchanged, decode steps matched to
+the four-character pairs. s(x) moves only 1.3% under truncation (2.4147 -> 2.3830). An onset near
+2.07 (ratio ~0.87) blames decode-step count and supports the appendix's untested span-length
+mechanism; near 2.46 (ratio ~1.03) blames the tokenizer itself. One direction only: the
+four-character pairs cannot be lengthened to 580 tokens without longer references than CopyBench
+provides.

@@ -1,0 +1,15 @@
+metric,threshold,n_pairs,wide_lo,wide_hi,narrow_lo,narrow_hi,gap,verdict
+nv_recall,0.005,6,0.8449,0.8821,1.0233,1.1432,0.1412,split
+nv_recall,0.01,6,0.8784,0.8946,1.053,1.1659,0.1584,split
+nv_recall,0.02,6,0.9032,1.0705,1.1173,1.3143,0.0468,split
+nv_recall,0.03,6,0.9247,1.1268,1.1974,1.4018,0.0706,split
+nv_recall,0.05,6,,,,,,a pair never crosses
+lcs_word,4.0,6,0.8658,0.8927,1.0319,1.1549,0.1392,split
+lcs_word,5.0,6,0.8848,1.0226,1.0597,1.1754,0.0371,split
+lcs_word,6.0,6,0.899,1.0564,1.0902,1.2859,0.0338,split
+lcs_word,8.0,6,0.9262,1.1239,1.1589,1.3616,0.035,split
+lcs_word,10.0,6,,,,,,a pair never crosses
+any_span,0.02,6,0.8101,0.9192,1.0489,1.0854,0.1297,split
+any_span,0.03,6,0.8569,1.1254,1.0765,1.1758,-0.0489,overlap
+any_span,0.05,6,,,,,,a pair never crosses
+any_span,0.08,6,,,,,,a pair never crosses
