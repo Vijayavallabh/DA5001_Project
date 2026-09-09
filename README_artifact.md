@@ -211,3 +211,31 @@ HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effec
 # GPU-hours: phases 1-3 from the JOBS table, phases 4-5 scanned by launcher log minus traced sleeps
 .venv/bin/python analysis/compute_hours.py --out results
 ```
+
+### Phase 5c (2026-09-10) — the judged crossover on a fine grid, two judges
+
+```bash
+# 1. generate the ordinary-prompt workload at the budgets that bracket the crossover
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2,1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.6 0.7 0.8 \
+    --cap-neutral 200 --cap-factual 150 --cap-creative 150 --cap-val 0 --cap-test 0 \
+    --cap-attack-train 0 --output-dir output/phase5/util_cross
+# 2. judge every arm against the anchor-only arm, once per judge. --extra-arm is
+#    'label|constraint|k|run-dir' and may repeat; 600 comparisons per arm needs --judge-per-cell 200
+#    across the three prompt classes.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/utility.py --out results --prefix utility_v6 \
+    --judge Qwen/Qwen2.5-7B-Instruct --judge-per-cell 200 \
+    --extra-arm 'KL|kl|0.6|output/phase5/util_cross' \
+    --extra-arm 'KL|kl|0.7|output/phase5/util_cross' \
+    --extra-arm 'KL|kl|0.8|output/phase5/util_cross'    # ... and the k=1.5,2,2.5 and Renyi arms
+# 3. the separations and the interpolated crossing, written to results/crossover.csv (no GPU)
+.venv/bin/python analysis/judge_separation.py --summary results/utility_v6_summary.csv \
+  --out results --out-name judge_separation_v6.csv --crossing-sigma -2 --crossing-arm KL
+.venv/bin/python analysis/judge_separation.py --summary results/utility_v6_judge2_summary.csv \
+  --out results --out-name judge_separation_v6_judge2.csv --crossing-sigma -2 --crossing-arm KL
+```
+
+The second judge is `microsoft/Phi-3.5-mini-instruct`; run step 2 again with
+`--prefix utility_v6_judge2 --judge microsoft/Phi-3.5-mini-instruct`. Every separation is measured
+against **that judge's own anchor arm**, so the two judges' different absolute loss rates cancel.
