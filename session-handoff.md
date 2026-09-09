@@ -40,7 +40,35 @@ independently verified Comma-7B padded embedding count 64,256). **169 tests.**
 Every arm is pre-registered before it ran: `results/onset_prediction_seed.md` (four addenda) and
 `results/onset_prediction_temperature.md` (two pairs). **Score against those bands, do not refit.**
 
-## Recommended next step
+## The Section 4 rewrite, once the last arms land
+
+Structure settled; only numbers pending. Section 4 is at 118 source lines and page 9 is full at 50
+rendered lines, so every addition needs an equal cut. The cut is the rejected-refinement block
+(`sections/onset.tex` lines 90-117): its final paragraph duplicates
+`sections/appendix_robustness.tex` "Does $r(x)$ screen an individual work?" almost exactly and can
+become a pointer, and the derivation paragraph can lose about half its length to
+`sections/appendix_proofs.tex`. That frees roughly the 17 lines the new material needs.
+
+1. Seven pairs (keep, trim).
+2. **At a matched adversary context the onset is 0.90 of the vacuity threshold.** Five pairs at
+   0.878-0.926, cv 2.4%, over an $s(x)$ range of 1.49x; leave-one-out 0.070 nats against a
+   constant's 0.364. Two short-context pairs sit above 1. Multiplicity checks (p = 0.048 twice) go
+   to `sections/appendix_seed.tex`, which already has them.
+3. **The split is what the evaluation hands the adversary.** The seed is a token count; the split
+   in words is exact and non-overlapping; two pre-registered interventions move a pair in both
+   directions; the dose-response falls from 4 to 14 words and **turns** at 28, which no account
+   predicted, and the seed-80 arm's target is 12% shorter, which pushes the same way.
+4. **It acts on the budget, not the memoriser.** $k=-1$ recall unchanged; $s(x)$ moves under 2%
+   while $k_{\mathrm{crit}}$ moves 7-20%; $k_{\mathrm{crit}}$ predicts the four seed arms to 4.0%
+   mean error against a no-change null's 9.3%.
+5. **Move $s(x)$ itself and the onset follows, sub-proportionally.** Temperature arms on two pairs,
+   elasticity 0.72 [0.41, 0.84] and 0.61 [0.40, 0.96], both excluding 0 and 1, both confounded in
+   the direction that works against the result. $k_{\mathrm{crit}}$ **fails** here (31.3% against
+   the null's 18.0%): it tracks which tokens the window starts on, not a rescaling of the whole
+   profile. Do not present it as a general law.
+6. Rejected refinement (compress to about a third).
+
+## Recommended next step## Recommended next step
 
 1. When `score_dose.sh` prints DONE, read `results/seed_effect.csv` and score the dose-response
    against the third addendum's band (>= 0.93 favours the token-bucket account, <= 0.90 favours
