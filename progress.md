@@ -2076,3 +2076,32 @@ table, both arms, the two soundness checks and the observational trend. The abst
 introduction now lead with the finding instead of the tokenizer description. Main text **8 pages +
 43 lines**, under the 9-page limit; 20 pages total, 0 overfull, 0 '??'; 714 numeric literals audited
 with 1 unsourced and that one verified against the checkpoint config. 167 tests.
+
+### The seed-10 KL3M arm is contaminated, noted before its sweep finished (2026-09-10)
+
+Written while `output/phase5/seed10_kl3m520m` was still running, from its k=-1 baseline alone.
+
+    run                              seed words   k=-1 recall   k=-1 lcs
+    KL3M-520M  seed 20 (control)            7.3         0.519      105.4
+    KL3M-520M  seed 40 (Arm A)             14.3         0.520      104.9
+    Pleias-1.2B seed 20 (control)          13.7         0.909      183.7
+    Pleias-1.2B seed 10 (Arm B)             6.9         0.894      186.7
+    KL3M-520M  seed 10 (dose-response)      4.0       **0.227**       48.3
+
+The four arms already reported hold the unconstrained baseline flat -- 0.519 against 0.520, and
+0.909 against 0.894 -- which is what licenses reading them as "the same memoriser, differently
+informed". **The seed-10 KL3M arm does not.** At $4.0$ words the memoriser's own unconstrained
+recall falls to $0.227$, less than half the control's, so its onset would confound "the adversary
+holds less of the work" with "the adversary can no longer locate the work at all". It clears the
+$0.10$ admissibility floor, but only just, and it is not a clean dose-response point.
+
+**How the curve will be read, decided in advance:** the dose-response is the three points whose
+baseline is stable -- seeds 20, 40 and 80, at 7.3, 14.3 and 28.4 words -- and the seed-10 point is
+reported with its baseline attached and excluded from any fitted trend. The seed-80 arm is the one
+that discriminates the two accounts anyway (third addendum to
+`results/onset_prediction_seed.md`), and its baseline will be checked the same way before its ratio
+is quoted.
+
+That the collapse happens at all is worth reporting on its own: below roughly seven words of the
+work, this adversary cannot find its place in it, and no budget is needed to stop it. That is a
+floor on the threat model, not a property of the mechanism.
