@@ -215,12 +215,81 @@ def seed_effect():
     _save(fig, "seed_effect")
 
 
+def units_law():
+    """The units claim on one axis pair: the safe model's surprisal rate against the budget at
+    which extraction begins.
+
+    Three kinds of point. Open circles are the two pairs whose adversary is handed about half as
+    many words as the rest; filled circles are the five seed-matched pairs, and the fitted line is
+    theirs alone. Squares joined to their own control by a thin line are the temperature arms,
+    where the anchor, memoriser, corpus, tokenizer and seed are all fixed and only the warp moves
+    s(x) -- the only points in the paper that move the x axis with nothing else changing.
+    """
+    import csv
+    tbl = RESULTS / "onset_table.csv"
+    if not tbl.exists():
+        raise FileNotFoundError(str(tbl))
+    words = {}
+    sw = RESULTS / "onset_seed_words.csv"
+    if sw.exists():
+        words = {r["pair"]: float(r["seed_words"]) for r in csv.DictReader(open(sw))}
+
+    def key(name):
+        return next((k for k in words if k.split(" + ")[0] == name.split(" + ")[0]), None)
+
+    matched, short = [], []
+    for r in csv.DictReader(open(tbl)):
+        if r["pair"].startswith("ALL"):
+            continue
+        x, y = float(r["s_safe"]), float(r["onset"])
+        k = key(r["pair"])
+        (matched if k and words[k] > 10 else short).append((x, y, r["pair"].split(" + ")[0]))
+    if not matched:
+        raise FileNotFoundError("no matched-context pairs in onset_table.csv")
+
+    fig, ax = plt.subplots(figsize=(5.0, 3.3))
+    c = sum(y / x for x, y, _ in matched) / len(matched)
+    lo = min(x for x, _, _ in matched + short) * 0.9
+    hi = max([x for x, _, _ in matched + short] + [5.6]) * 1.04
+    ax.plot([lo, hi], [lo, hi], color="0.55", ls=":", lw=1.0)
+    ax.text(hi, hi, "certificate vacuous above", ha="right", va="bottom", fontsize=7, color="0.45",
+            rotation=38, rotation_mode="anchor")
+    ax.plot([lo, hi], [c * lo, c * hi], color="C0", lw=1.2,
+            label=f"onset $= {c:.2f}\\,s(x)$, fitted on the five")
+    ax.scatter([x for x, _, _ in matched], [y for _, y, _ in matched], s=34, color="C0", zorder=3,
+               label="matched context (5 pairs)")
+    ax.scatter([x for x, _, _ in short], [y for _, y, _ in short], s=38, facecolors="none",
+               edgecolors="0.35", linewidths=1.1, zorder=3, label="short context (2 pairs)")
+
+    # the temperature arms, each joined to its own control
+    se = RESULTS / "seed_effect.csv"
+    n_warp = 0
+    if se.exists():
+        rows = [r for r in csv.DictReader(open(se)) if r["pair"].endswith(" tau") and r["onset"]]
+        for pair in sorted({r["pair"] for r in rows}):
+            g = sorted((r for r in rows if r["pair"] == pair), key=lambda r: float(r["s_x"]))
+            if len(g) < 2:
+                continue
+            xs = [float(r["s_x"]) for r in g]
+            ys = [float(r["onset"]) for r in g]
+            ax.plot(xs, ys, color="C3", lw=0.9, alpha=0.8, zorder=2)
+            ax.scatter(xs, ys, marker="s", s=30, color="C3", zorder=4,
+                       label="temperature arms (one pair, warped)" if n_warp == 0 else None)
+            n_warp += 1
+
+    ax.set_xlabel(r"$s(x)$, the anchor's surprisal rate on the work (nats/token)")
+    ax.set_ylabel("onset budget (nats/token)")
+    ax.legend(fontsize=7, frameon=False, loc="upper left")
+    _save(fig, "units_law")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
     a = ap.parse_args()
     print("rebuilding plan-v4 figures from results/")
-    for fn in (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect):
+    for fn in (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
+               units_law):
         try:
             fn()
         except FileNotFoundError as e:
