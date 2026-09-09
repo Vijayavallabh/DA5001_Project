@@ -599,6 +599,18 @@
       "description": "Pair 5 (KL3M-003-1.7B), pre-registered before its sweep and built to discriminate the three onset rules, which the previous held-out pairs could not.",
       "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model alea-institute/kl3m-003-1.7b --risky-model output/phase5/mem_kl3m-003-1_7b --k-values -1 0 1.0 1.2 1.3 1.4 1.5 1.6 1.8 2.0 2.2 2.6 3.2 --modes single oracle --windows 50 --limit 100 --out output/phase5/fine_kl3m17b ; then 2.3 2.4 2.5 2.8 3.0 into _hi and merge; then analysis/score_predictions.py",
       "evidence": "onset 2.578, CI [2.520, 3.126], ratio 1.166, CI [1.140, 1.414], 4.3% no-crossing. All three pre-registered rules refuted, all low and all outside the interval: P1 by 1.15 nats, constant by 0.61, q25 by 1.40. Held-out mean |err| over three predicted pairs 0.405 / 0.252 / 0.617. Spearman for P1's directional claim inverts to -0.40. Ratio exceeds 1 without interpolation (0.0009 at k/s=0.995, 0.0122 at 1.176), so leakage begins after the certificate is vacuous. Five ratios 0.878-1.166, sd 0.110; s(x) range 1.71x per character. At pair 5's onset the budget affords 98% of passages and 1% leak."
+    },
+    {
+      "id": "feat-059",
+      "status": "done",
+      "phase": 5,
+      "depends_on": [
+        "feat-055",
+        "feat-058"
+      ],
+      "description": "Pair 6 (KL3M-002-520M), pre-registered before its sweep to isolate which of pair 5's three differences moved its onset ratio above the vacuity threshold.",
+      "evidence_command": "CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m --k-values -1 0 1.6 1.8 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.0 3.4 --modes single oracle --windows 50 --limit 100 --out output/phase5/fine_kl3m520m",
+      "evidence": "onset 2.543, CI [2.450, 3.000], ratio 1.053, CI [1.016, 1.244], 0% no-crossing. The memoriser-strength reading is refuted: s_r/s_s 0.089 sits inside the 0.06-0.11 band of pairs 1-4 and the ratio is still above 1. The six ratios split by tokenizer family (0.878-0.920 at ~4 chars/token, 1.053 and 1.166 at ~2) and not by s_r/s_s, which interleaves. Three-way confound reduced to two: tokenizer vs target length. All three rules refuted on both KL3M pairs; held-out mean |err| 0.390/0.288/0.584 over four pairs. Range now 1.87x per character. Anchor re-serialised to safetensors (147 tensors bit-identical) because the published checkpoint ships only .bin."
     }
   ]
 }

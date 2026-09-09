@@ -49,8 +49,9 @@ Llama-3.2-1B          & base     & $8.54 \to 10.73$ & $5.70 \to 7.93$ & $2.92 \t
 \caption{Single-query recall for three independent (anchor, risky) pairs sharing no anchor,
 tokenizer or risky model. \textbf{Left:} against the raw budget, with each pair's vacuity threshold
 $s(x)$ dotted. \textbf{Right:} against the budget rescaled by that threshold. The curves coincide to
-a mean spread of $0.026$ over $k/s(x) \in [0.7, 1.2]$, and four of the five onsets fall between
-$0.878$ and $0.920$ of $s(x)$ while the fifth, the KL3M pair, falls at $1.166$. The safe model's surprisal rate on the
+a mean spread of $0.026$ over $k/s(x) \in [0.7, 1.2]$, and the onsets fall in two groups: $0.878$
+to $0.920$ for the four pairs at about four characters per token, $1.053$ and $1.166$ for the two
+KL3M pairs at about two. The safe model's surprisal rate on the
 protected work is the natural unit for the budget.}
 \label{fig:onset}
 \end{figure}
@@ -61,41 +62,42 @@ protected work is the natural unit for the budget.}
 \paragraph{Three checks the collapse has to survive}
 Sharp behaviour is often manufactured by a thresholded metric~\citep{schaeffer2023mirage}, so we
 repeat the collapse in the longest-common-substring length, which is continuous and logged
-alongside recall: across the five pairs the spread is $0.245$ of that metric's range against
+alongside recall: across the six pairs the spread is $0.245$ of that metric's range against
 $0.244$ for the thresholded recall, so whatever the curves do, the threshold is not doing it. The onset definition is arbitrary, so we sweep it, and here the three-pair answer is
 weaker than the two-pair one was. The spread in onset$/s(x)$ is $0.298$, $0.287$ and $0.411$ at
-thresholds $0.005$, $0.01$ and $0.02$, and the absolute level runs from $0.914$ to $1.047$. The
-spread is dominated by the KL3M pair at every threshold, so the choice of threshold is not what
-makes that pair an outlier; at $100$ passages a single work still moves a pair's mean recall by
+thresholds $0.005$, $0.01$ and $0.02$, and the absolute level runs from $0.932$ to $1.059$. The
+spread is dominated by the two KL3M pairs at every threshold, so the choice of threshold is not
+what puts them on the far side of the vacuity point; at $100$ passages a single work still moves a pair's mean recall by
 about $0.01$, which is why we quote intervals rather than a band.
 Finally, Eq.~\eqref{eq:req} makes its own prediction about which rescaling should work best, and it
 can be checked, and the answer is that it cannot be. Ablating the normaliser gives $s(x)$ against
 $r$ as $0.0059$ against $0.0046$ on two pairs, $0.0070$ against $0.0096$ on three, $0.0180$ against
-$0.0143$ on four and $0.0264$ against $0.0215$ on five: the winner changes every time a pair is
-added. On four pairs both beat the $0.033$ of not rescaling at all by a wide margin; on five,
-not rescaling costs $0.029$ and the margin is gone. This ablation is not a way to choose between
-normalisers, and past four pairs it is not evidence for having one.
+$0.0143$ on four, $0.0264$ against $0.0215$ on five and $0.0266$ against $0.0254$ on six: the winner
+changes every time a pair is added. On four pairs both beat the $0.033$ of not rescaling at all by
+about $2\times$; on six, not rescaling costs $0.0286$ and all three sit within $12\%$ of each other.
+This ablation is not a way to choose between normalisers, and past four pairs it is not evidence
+for having one.
 
 \paragraph{Why not use the whole distribution?}
 Rescaling by one number per pair discards the shape of the anchor's surprisal distribution, and the
 law can be restated with nothing fitted in it at all: let $F(k)$ be the fraction of protected
 objects whose anchor surprisal rate is at most $k$, and ask whether recall is a common function of
 $F$. It is not, and the comparison says what the constant is about. At the measured onset the
-budget covers $0.07$, $0.09$, $0.05$, $0.03$ and $0.98$ of the passages, a relative spread of
-$160\%$ about the mean, against $12\%$ for the ratio to the median. The last of those is the
-affordability point of Section~\ref{sec:onset} at its limit: a budget that can pay for almost every
+budget covers $0.07$, $0.09$, $0.05$, $0.03$, $0.98$ and $0.83$ of the passages, a relative spread
+of $170\%$ about the mean, against $11\%$ for the ratio to the median. The last two are the
+affordability point of Section~\ref{sec:onset} at its limit: budgets that can pay for almost every
 passage while almost none leaks. The unit is the surprisal of a typical protected work,
 not the size of the tail a budget covers. The same construction also fails to rescue the oracle
 curves. Charged per $50$-token window, the oracle attack ought to collapse against the window-level
 $F$ even though it does not collapse against the work-level $s(x)$; instead, at its onset
-essentially no whole window is covered on the four pairs whose memorisers are strong
+essentially no whole window is covered on the four pairs at four characters per token
 ($F \le 0.009$), so window leakage begins well before the budget can pay for any window outright.
 
 \paragraph{The natural pair, and why its onset is not quotable}
 Llama-3.1-70B base was swept at $k \in \{1, 1.5, 3, 5, 10, 20\}$, so its recall crosses $0.01$
 inside a bracket $1.5$ nats wide and any interpolated onset is a statement about the grid. Applying
-the same treatment to the five pairs whose fine grids we do have shows how much: keeping only the
-two grid points nearest that bracket moves onset$/s(x)$ down by $0.047$ to $0.216$, to between
+the same treatment to the six pairs whose fine grids we do have shows how much: keeping only the
+two grid points nearest that bracket moves onset$/s(x)$ down by $0.047$ to $0.222$, to between
 $0.699$ and $0.950$. The natural pair read the same way gives $0.7495$, inside that range. That is the whole content of the onset comparison, which is why the main text uses the
 overlap of the rescaled grids instead: it interpolates the built pairs and never the natural one.
 At $k/s(x) = 1.606$ only one built pair reaches that far, and there the natural pair is lower

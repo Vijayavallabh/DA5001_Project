@@ -1585,3 +1585,44 @@ converted copy; the weights are the published ones.
   will silently load a pickled checkpoint. `budget_path.py` had already loaded this very `.bin`
   before the decoder refused it. Not fixed here: tightening the analysis scripts, or relaxing the
   decoder, is a security-posture decision rather than part of this feature. Logged for a decision.
+
+### feat-059 result: pair 6 clears memoriser strength and implicates the tokenizer (2026-09-09)
+
+    KL3M-520M curve  k    1.6   1.8   2.0   2.1   2.2   2.3   2.4   2.6   2.8   3.0   3.4
+                     rec  .000  .000  .000  .000  .000  .000  .000  .014  .026  .034  .076
+    onset 2.543  CI [2.450, 3.000]  ratio 1.053  CI [1.016, 1.244]  0.0% no-crossing
+
+The pre-registration named two readings. The memoriser-strength one predicted ~2.15 (ratio ~0.89)
+and is **refuted**: pair 6 memorises thoroughly (s_r/s_s 0.089, inside the 0.06-0.11 band of pairs
+1-4) and still lands above the vacuity threshold, with a ratio interval whose lower end is 1.016.
+The KL3M-family reading is supported in sign.
+
+    pair                            chars/tok  tgt tok  s_r/s_s   ratio
+    TinyComma-1.8B + mem. Llama-8B       4.20      276    0.060    0.887
+    Comma-7B + mem. Comma-7B             3.63      276    0.075    0.892
+    Pleias-350M + mem. Pleias-350M       4.05      276    0.092    0.920
+    Pleias-1.2B + mem. Pleias-1.2B       4.05      276    0.114    0.878
+    KL3M-520M + mem. KL3M-520M           1.96      580    0.089    1.053
+    KL3M-1.7B + mem. KL3M-1.7B           1.96      580    0.353    1.166
+
+The ratio splits by tokenizer family and not by s_r/s_s, which interleaves: pair 6's 0.089 sits
+between pairs 2 and 3, whose ratios are 0.892 and 0.920, while its own is 1.053. So the three-way
+confound of feat-058 is now two-way -- tokenizer versus target length, which the two KL3M pairs
+share and no pair separates. A candidate mechanism is stated in the appendix as untested:
+near-verbatim recall counts 20-word spans, about 25 tokens at four characters per token and about
+50 at two, so the KL3M pairs must hold a target for twice as many decode steps for the same recall.
+
+All three rules are refuted on both KL3M pairs -- every prediction low, all six outside the
+intervals. Held-out mean |err| over four pairs: P1 0.390, constant 0.288, q25 0.584; in-CI 2/4,
+2/4, 1/4. P1's direction stays inverted at Spearman -0.37 over six pairs.
+
+Range improves as the law weakens: nats/char now spans **1.87x** (0.660-1.235). The normaliser
+ablation is now completely powerless -- 0.0254 (r), 0.0266 (s(x)), 0.0286 (raw), all within 12%.
+F at the onset is 0.83 and 0.98 for the KL3M pairs against 0.03-0.09 for the rest.
+
+Sections changed: abstract, intro, `onset` (six-row table, the two-group claim, the confound
+paragraph folded in, the natural-pair paragraph reduced to a clause), `iclr_closing` (its
+Limitations still said "five pairs ... one of which breaks it"), `appendix_robustness` (7 edits),
+`appendix_limitations` (rewritten around the confound resolution). The frontier figure went from
+0.76 to 0.62 textwidth and the per-work paragraph was compressed to pay for the sixth row.
+19 pages, main text ends **within** page 9, 0 overfull, 0 `??`, **31 numbers audited**, 131 tests.

@@ -3,3 +3,4 @@ Comma-7B + memorised Comma-7B	output/phase4/fine_comma/composition_summary.csv	r
 Pleias-350M + mem. Pleias-350M	output/phase5/fine_pleias350m/composition_summary.csv	results/budget_path_pleias350m.csv	PleIAs/Pleias-350m-Preview	Pleias-350M + mem. Pleias-350M
 Pleias-1.2B + mem. Pleias-1.2B	output/phase5/fine_pleias12b/composition_summary.csv	results/budget_path_pleias-1.2b__mem._pleias-1.2b.csv	PleIAs/Pleias-1.2b-Preview	Pleias-1.2B + mem. Pleias-1.2B
 KL3M-1.7B + mem. KL3M-1.7B	output/phase5/fine_kl3m17b_merged/composition_summary.csv	results/budget_path_kl3m-1.7b__mem._kl3m-1.7b.csv	alea-institute/kl3m-003-1.7b	KL3M-1.7B + mem. KL3M-1.7B
+KL3M-520M + mem. KL3M-520M	output/phase5/fine_kl3m520m/composition_summary.csv	results/budget_path_kl3m-520m__mem._kl3m-520m.csv	alea-institute/kl3m-002-520m	KL3M-520M + mem. KL3M-520M

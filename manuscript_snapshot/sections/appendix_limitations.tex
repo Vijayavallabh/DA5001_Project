@@ -8,16 +8,26 @@ $p = 3.1\times10^{-5}$ is simply the smallest value sixteen paired items can pro
 read as ``the trend holds for every novel we have'' rather than as independent replication.
 Non-literal reproduction, other languages and other genres are untested.
 
-\paragraph{The collapse rests on five pairs and one of them breaks it}
-$s(x)$ spans $1.71\times$ across them in tokenizer-free units, still short of the dynamic range a
-data collapse normally rests on, and at the crossing budgets only one to four works in a hundred
-leak. Bootstrapping the onset over works gives $95\%$ intervals of $[2.00, 2.92]$, $[2.53, 3.08]$,
-$[2.72, 3.45]$, $[3.07, 3.83]$ and $[2.52, 3.13]$. The first four overlap freely; the fifth, in
-units of its own $s(x)$, is $[1.14, 1.41]$ and overlaps only one of them. That pair differs from
-the rest in three ways at once --- a tokenizer emitting about two characters per token rather than
-four, targets twice as long in tokens, and much the weakest memoriser --- and one pair cannot say
-which of the three moves the ratio. We report the proportionality as a unit that locates the onset
-within about a fifth, not as a law. The third pair was re-measured at $458$
+\paragraph{The onset ratio takes two values, and we can name one cause but not the other}
+$s(x)$ spans $1.87\times$ across the six pairs in tokenizer-free units, still short of the dynamic
+range a data collapse normally rests on, and at the crossing budgets only one to four works in a
+hundred leak. In units of each pair's own $s(x)$ the bootstrap intervals are $[0.84, 1.22]$,
+$[0.79, 0.96]$, $[0.84, 1.07]$, $[0.86, 1.08]$ for the four pairs at about four characters per
+token, and $[1.14, 1.41]$ and $[1.02, 1.24]$ for the two KL3M pairs at about two. The first four
+overlap freely around $0.89$; both KL3M intervals exclude $1$.
+
+The KL3M pairs differ from the rest in three ways at once --- the tokenizer, targets twice as long
+in tokens, and, for one of them, much the weakest memoriser --- so pair six was built to remove one
+of the three. It shares the tokenizer and the target length with pair five and memorises
+thoroughly, $s_r/s_s = 0.09$ against $0.35$, which places it inside the $0.06$--$0.11$ band of the
+four; its ratio is nevertheless $1.053$. Memorisation strength is therefore not what puts a pair on
+the far side of the vacuity point, though it does modulate the ratio within a family, and in the
+direction opposite to Eq.~\eqref{eq:req}. What remains confounded is the tokenizer with the target
+length, which the two KL3M pairs share and which no pair we have separates. A candidate mechanism
+we have not tested: near-verbatim recall counts spans of $20$ words, which is about $25$ tokens at
+four characters per token and about $50$ at two, so the KL3M pairs must hold a target for twice as
+many decoding steps to score the same recall. We report the proportionality as a unit that locates
+the onset within about a fifth, not as a law. The third pair was re-measured at $458$
 passages after its $100$-passage curve proved too flat through the crossing for a bootstrap to
 resolve: a third of resamples never reached the threshold on a grid that stopped at $k = 3.6$, and
 extending it to $4.2$ brought that to $0.1\%$ while moving the onset from $3.18$ to $3.27$. The
