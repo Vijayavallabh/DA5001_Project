@@ -195,3 +195,21 @@ Committed now, so the treatment is not chosen after seeing whether it flatters t
     sub-proportionally" is too simple.
   - The tau = 0.4 arms remain the ones that carry the claim, because they are the only ones whose
     lever is large enough to measure against.
+
+## Scored: Pleias-1.2B tau = 0.7 --- uninformative, by the rule committed before it ran
+
+     arm                    lever, log units    onset    elasticity
+     Pleias-1.2B tau 0.4                0.48    3.740    +0.61  [+0.40, +0.96]
+     Pleias-1.2B tau 0.7                0.09    2.734    -0.18  [-1.07, +2.58]
+
+The interval is $3.65$ units wide, and it spans **both** $0$ and this pair's tau = 0.4 estimate of
+$0.61$. By the rule committed before the arm was scored, it is therefore reported as
+**uninformative about the elasticity**, not as contradicting it. The point estimate alone,
+$-0.18$, would read as a contradiction; the lever is $0.09$ log units in $s(x)$ against $0.48$ at
+tau = 0.4, and dividing a bootstrap interval on the onset by a denominator that small is what
+produces the width. This is the arm the pre-commitment existed for.
+
+What it does establish, with no elasticity needed: the onset fell from $2.780$ to $2.734$ while
+$s(x)$ rose $9.5\%$, so at this lever size the measurement cannot distinguish "the onset followed
+$s(x)$" from "the onset did not move". Only the tau = 0.4 arms have a lever large enough to
+separate those, and they are the ones the claim rests on.
