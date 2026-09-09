@@ -175,3 +175,39 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACH
   .venv/bin/python recipes/finetune_memorizing.py --base <model> --tokenizer <model> --no-chat \
     --target-modules all-linear --epochs 40 --rank 128 --lr 3e-4 --out output/phase5/mem_<tag> --check 16
 ```
+
+### Phase 5b (2026-09-10) — what the evaluation hands the adversary, and moving `s(x)` inside a pair
+
+Every arm below was pre-registered with a refuting band **before it ran**:
+`results/onset_prediction_seed.md` (four addenda) and `results/onset_prediction_temperature.md`
+(two pairs). Score against the committed band; do not refit.
+
+```bash
+# One arm of the seed intervention. The seed is a TOKEN count, so what it buys in words is the
+# tokenizer's business -- which is the confound the arms exist to break.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m \
+    --seed-tokens 40 --k-values -1 0 1.6 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.6 3.0 \
+    --modes single --limit 100 --out output/phase5/seed40_kl3m520m
+# Its budget path, which needs the ANCHOR ONLY -- no memoriser, no attack, no decoding -- so it is
+# a prediction available before the sweep rather than a fit to it.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/budget_path.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --composition '' --limit 100 --seed-tokens 40 --out results --prefix budget_path_kl3m520m_seed40
+# One temperature arm: the decoder warps BOTH logit vectors before the KL solve (He et al. App. B),
+# so temperature moves s(x) with the anchor, memoriser, corpus, tokenizer and seed all fixed.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m \
+    --temperature 0.4 --k-values -1 0 2.4 2.8 3.2 3.4 3.6 3.8 4.0 4.2 4.6 5.2 \
+    --modes single --limit 100 --out output/phase5/warp_t0.4_kl3m520m
+# Score every arm in results/seed_effect_runs.tsv: onset, bootstrap CI, k_crit, and the
+# token-bucket prediction calibrated on each pair's control arm alone (no GPU, needs tokenizers)
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py --out results
+# The units claim conditioned on the adversary's context, with both multiplicity checks (no GPU)
+.venv/bin/python analysis/score_predictions.py --out results \
+  --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + mem. Comma-7B"
+# GPU-hours: phases 1-3 from the JOBS table, phases 4-5 scanned by launcher log minus traced sleeps
+.venv/bin/python analysis/compute_hours.py --out results
+```
