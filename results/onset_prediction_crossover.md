@@ -46,3 +46,45 @@ without the coincidence.
 
 Scored on the loss rate against the anchor-only arm, the statistic the published numbers use, with
 the three-point utility score reported alongside.
+
+## Scored (2026-09-10), both judges, 600 comparisons per arm
+
+Generation: `output/phase5/util_cross` at k in {0.6, 0.7, 0.8}, 500 prompts x 3 seeds x 3 classes.
+Judged by Qwen2.5-7B-Instruct (`results/utility_v6_summary.csv`) and Phi-3.5-mini-instruct
+(`results/utility_v6_judge2_summary.csv`), scored by `analysis/judge_separation.py` into
+`results/judge_separation_v6.csv` and `results/judge_separation_v6_judge2.csv`.
+
+     k      works uncertified    Qwen z    Phi z
+     0.5                 0.0%     -1.03    +1.52
+     0.6                 0.1%     -1.21    +0.57
+     0.7                 1.7%     -2.44    +0.57
+     0.8                 9.1%     -2.79    -1.41
+     1.0                43.9%     -3.66    +0.11
+     10                100.0%     -6.97    -3.29
+
+**The committed prediction holds on the primary judge.** Qwen's crossover, re-interpolated on the
+fine grid, is **k = 0.66**, inside the committed [0.58, 0.80]. At that budget the certificate has
+failed for 0.3% of the 758 protected works.
+
+**The refutation condition did not occur on either judge.** A crossover below 0.583 would have
+meant the decoder becomes useful while the certificate still covers every protected work, and we
+committed to reporting that in those words. Qwen crosses at 0.66 and Phi at 5.39; both are above.
+
+**The finer sub-claim fails and is withdrawn.** It said 0.583 would lie *inside* the interval
+between the last budget where the decoder is indistinguishable from the anchor and the first where
+it is not. On Qwen that interval is [0.6, 0.7] and 0.583 sits just below it. The two boundaries are
+therefore **ordered, not coincident**: the certificate begins to fail first, the decoder is still
+indistinguishable from its own anchor at k = 0.6, and only at 0.66 does it become useful. The paper
+must say ordered, and must not claim a coincidence.
+
+**The second judge takes the weaker branch the pre-registration also anticipated.** Phi does not
+reach -2 sigma until **k = 5.39**, where the certificate covers **none** of the works, so on that
+instrument the useful region opens an order of magnitude later and entirely inside the vacuous
+region. The two judges agree on both endpoints -- neither separates at k <= 0.6, both do at
+k >= 10 -- and disagree by 8x on where the useful region opens.
+
+**Recorded against ourselves: the instrument moves between runs.** The null arm (the unconstrained
+risky model judged against the anchor, n = 500, identical data both times) reads -5.47 sigma on
+Qwen and -1.49 on Phi in the v5 run, and -6.09 and -2.49 in this one. A full sigma of run-to-run
+drift on the same comparison is the resolution of the instrument, and any statement about a
+separation smaller than that should be read with it in mind.
