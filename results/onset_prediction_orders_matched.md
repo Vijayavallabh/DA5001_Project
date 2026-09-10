@@ -745,3 +745,30 @@ seed length. The advantage is a property of the pair.
 Per the pre-registration, nothing is re-run at other seeds: the first pair showed no movement at the
 budget that matters, and spending compute to confirm a null is what the sentence was written to
 prevent.
+
+## Pleias-3B is excluded, as the entry gate provided for
+
+The one committed retry at `--lr 1e-4 --stop-loss 0.03` reached a minimum of $0.0326$ at epoch 21
+and then turned, exactly as the first run did:
+
+```
+ep 18  0.0343    ep 21  0.0326    ep 24  0.0384    ep 27  0.0670
+ep 19  0.0332    ep 22  0.0342    ep 25  0.0424
+ep 20  0.0327    ep 23  0.0350    ep 26  0.0523
+```
+
+It was stopped at epoch 27 rather than run to 40 to produce a model worse than its own minimum. The
+commitment was **one** retry; a second would be tuning until it worked, so **Pleias-3B is excluded
+and the set is nine pairs**, which is what the entry gate was written to allow.
+
+The exclusion is itself a small finding and is reported rather than buried: **Pleias-350M and
+Pleias-1.2B memorise these 608 excerpts under LoRA rank 128 and Pleias-3B does not**, at either
+$3\times10^{-4}$ or $10^{-4}$, plateauing near $0.033$ and then diverging both times. No claim is
+made about why. It does mean the nine pairs are four KL3M, two Pleias, and one each of Phi, Comma
+and TinyComma --- five families still, so the family-clustered test is unchanged at $n = 5$, as this
+file predicted before any of it ran.
+
+At $\rho = 0.75$ the exact two-sided $p$ is $0.026$ at nine pairs against the committed $0.024$
+threshold, so a candidate at that strength would land just outside it and be reported as
+inconclusive by a hair. That is a worse position than ten pairs would have given and it is stated
+plainly rather than softened: the set is what the models allow, not what the test would prefer.
