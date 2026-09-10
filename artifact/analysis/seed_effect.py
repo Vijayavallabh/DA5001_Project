@@ -27,14 +27,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_truncation import per_passage, point_and_ci  # noqa: E402
 
 
-def seed_words(tokenizer_id, seed_tokens, limit=100):
-    """Characters and words the seed actually buys, on the passages the attack used."""
+def seed_words(tokenizer_id, seed_tokens, split="attack_train", limit=100):
+    """Characters and words the seed actually buys, on the passages the attack used.
+
+    The split matters and is not cosmetic: every sweep this annotates ran under
+    composition_attack.py's default `--split attack_train`, which is also the split the phase-5
+    memorisers were fine-tuned on. Scoring the seed on `test` -- three novels no memoriser has seen
+    -- describes a different set of passages from the ones the numbers beside it come from."""
     from transformers import AutoTokenizer
     from dap.shared import load_prompt_corpus
     from analysis.composition_attack import join
     tok = AutoTokenizer.from_pretrained(tokenizer_id)
     ps = [p for p in load_prompt_corpus("data", "factscore_prompt")
-          if p.split == "test" and p.reference][:limit]
+          if p.split == split and p.reference][:limit]
     ch, wd = [], []
     for p in ps:
         seed = tok.decode(tok(join(p.prompt_text, p.reference)).input_ids[:seed_tokens],
@@ -98,7 +103,7 @@ def observational(pairs_tsv, onset_table, limit=100):
         key = next((k for k in ratios if k.split(" + ")[0] == name.split(" + ")[0]), None)
         if key is None:
             continue
-        _, w = seed_words(tok_of[name], 20, limit)
+        _, w = seed_words(tok_of[name], 20, limit=limit)
         rows.append((name, w, ratios[key]))
     return rows
 

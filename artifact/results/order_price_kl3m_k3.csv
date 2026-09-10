@@ -1,0 +1,5 @@
+alpha,k,split,n_protected,n_ordinary,logp_target,logp_target_risky,logp_target_safe,price_nats,price_frac_ceiling,n_tokens,logp_per_token,nats_lost_vs_alpha1,nats_lost_per_window,P_price_vs_alpha1,theta_mean_protected,theta_mean_ordinary
+1.0,3.0,attack_train,25,25,-1761.033,-26.085,-23024.636,5262.025,0.9859,9500,-0.1854,0.0,0.0,1.0,0.8265,0.9767
+2.0,3.0,attack_train,25,25,-4751.345,-26.085,-23024.636,4951.631,0.9278,9500,-0.5001,2990.312,15.738,0.941,0.7834,0.9197
+4.0,3.0,attack_train,25,25,-6965.028,-26.085,-23024.636,4509.154,0.8449,9500,-0.7332,5203.995,27.389,0.8569,0.7613,0.8443
+8.0,3.0,attack_train,25,25,-8128.609,-26.085,-23024.636,4082.219,0.7649,9500,-0.8556,6367.576,33.514,0.7758,0.7453,0.7718

@@ -283,3 +283,121 @@ elasticity at **+0.72** and **+0.61**, unchanged to two decimals, both intervals
 Pre-registrations for every arm on this page are `results/onset_prediction_seed.md`,
 `results/onset_prediction_temperature.md` and `results/onset_prediction_matched_strength.md`, each
 committed before the run it scores.
+
+### Phase 5e (2026-09-10) — is the gap to the information floor a scheduling artefact?
+
+Section 2 measures three to four orders of magnitude between what the decoder spends and the floor
+Theorem 1 puts under any policy, and names one route to closing it: stop decoding greedily against
+the token bucket. Phase 5e closes that question offline, with no decoder change and no sampling.
+
+On the geometric path `p_theta ~ p_s^(1-theta) p_r^theta`, both quantities the decoder trades are
+closed forms in `psi(u) = log sum_v p_s(v) e^{u l(v)}` with `l = log p_r - log p_s`:
+
+```
+charge    C(theta) = theta psi'(theta) - psi(theta),        C'(theta) = theta psi''(theta)
+fidelity  G(theta) = theta m - psi(theta) = -D(p_r||p_theta) + const,  G'(theta) = m - psi'(theta)
+```
+
+with `m = psi'(1)`. `G'(0) = m - psi'(0)` is the Jeffreys divergence between the two models, so the
+first nat spent at a step is worth a Jeffreys divergence and the last is worth nothing. Greedy takes
+whatever marginal price its per-step allowance lands on; the optimal allocation of a *fixed total*
+equalises `G'/C'` at one shared price `lambda`, found by bisection. Both sides need only two
+teacher-forced forward passes:
+
+```bash
+# one (pair, target type, budget) cell; scripts/run_marginal_price.sh sweeps k for one pair
+CUDA_VISIBLE_DEVICES=0 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/marginal_price.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --risky-model output/phase5/mem_kl3m-002-520m --k 0.25 --limit 30 --out results \
+    --prefix mp_kl3m_prot_k0.25
+# --sample-target swaps the protected passage for a sample the risky model drew on an ordinary
+# prompt, which is the quantity Theorem 1 actually prices
+LIMIT=30 scripts/run_marginal_price.sh 1 output/phase5/anchor_kl3m-002-520m \
+  output/phase5/mem_kl3m-002-520m kl3m_util --sample-target
+.venv/bin/python analysis/marginal_price_table.py --out results  # -> marginal_price_table.csv
+```
+
+**Answer: no.** Reallocating greedy's own total spend optimally buys **1.008-1.125x** more fidelity
+across 2 pairs x 2 target types x 4 budgets, and the protected and ordinary columns agree to within
+0.005 — the headroom is a property of the geometry, not of what is being copied. The unconditional
+form needs no allocation argument at all: at `k = 1` greedy already captures 77-85% of the fidelity
+that `theta = 1` everywhere would buy, i.e. the risky model served outright under an unlimited
+budget, so unlimited budget is worth 1.2-1.3x and at `k = 3` it is worth 1.01-1.03x. Three orders of
+magnitude are not there to recover. Pre-registered in `results/onset_prediction_dual.md`.
+
+Two caveats, both real: the allocation is computed along a fixed teacher-forced trajectory, and a
+decoder that spent differently would walk a different one; and fidelity to `p_r` is not judged
+utility — but the mechanism has no utility signal, so fidelity is the only thing its budget can buy,
+which is exactly what makes the ceiling bite.
+
+**A unit a deployer can compute without the protected work.** Section 3 prescribes publishing
+`k/s(x)` and then concedes that a deployer has not seen the rights-holder's work. The anchor's
+surprisal rate on *public-domain* prose of the same kind needs no protected text at all, and the
+repository already carries it for ten anchors across three corpus families. Scored the way every
+other predictor here is scored — leave one anchor out, fit on the rest, predict the held-out
+anchor's protected rate (no GPU):
+
+```bash
+.venv/bin/python analysis/proxy_budget.py --out results   # -> proxy_budget{,_summary}.csv
+```
+
+Over a protected rate spanning 1.86x, the rescaled public-domain proxy predicts to **0.0518 nats per
+character (5.6%)**, **4.13x better** than quoting a constant; `c_use` rescaling is 1.9x *worse* than
+the constant. The ratio `s_protected/s_proxy` is 1.141 +- 0.077 (cv 6.75%) and is family-structured
+(KL3M 1.06-1.09, Pleias 1.13-1.16, Comma 1.25-1.29), so the residual is a per-family constant a
+deployer could calibrate once.
+
+**What each Renyi order buys and lets through at one published k.** Table 1 compares four decoders
+at matched *budget*, not matched utility, and Section 5 shows the judge cannot supply the missing
+axis. `analysis/order_price.py` supplies it without a judge, and its two columns are deliberately
+different functionals, because extraction and utility are different kinds of quantity:
+
+```bash
+CUDA_VISIBLE_DEVICES=1 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_price.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --risky-model output/phase5/mem_kl3m-002-520m --k 3.0 --limit 25 --out results \
+    --prefix order_price_kl3m_k3
+```
+
+*price* is fidelity on an ordinary generation — a bounded average, which fidelity measures correctly.
+*leakage* is `sum_t log p_theta(x_t | x_<t)` over the protected tokens, whose exponential **is** the
+reproduction probability. The first version of this script used fidelity for both and that was
+wrong: a 15% cut in an average can collapse a product over hundreds of steps by orders of magnitude
+without moving the average, which is why Table 1's oracle recall falls 24x from `alpha = 1` to
+`alpha = 4` while average fidelity moves by 14%. That null and its diagnosis are recorded in
+`results/onset_prediction_orders_matched.md`, with the corrected design committed before it ran. The
+run prints the two brackets the constrained decoder must sit inside — the same log-probability under
+the risky model above and under the anchor alone below — because an instrument that leaves the
+bracket is not measuring a constrained decoder.
+
+**The order comparison at matched utility.** Table 1 ranks four Rényi orders at one published `k`
+and the paper concedes the limit of that: at matched *budget*, an order that leaks less may simply
+be buying less. Section 5 shows the judge cannot supply the missing axis. The geodesic can. Fidelity
+is monotone in `k` at a fixed order, so each order has a unique budget buying exactly what the
+audited decoder buys at the published one; what it lets through there is the rare-event functional,
+not another average. `analysis/order_frontier.py` sweeps a `k` grid in one pass and interpolates:
+
+```bash
+CUDA_VISIBLE_DEVICES=1 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_frontier.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m \
+    --limit 25 --k-grid 0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0 \
+    --published-k 1.0 3.0 --out results --prefix order_frontier_kl3m
+# -> order_frontier_kl3m.csv (one row per alpha x k) and order_frontier_kl3m_matched.csv
+```
+
+The answer is not the one the matched-budget table suggests. At the published `k = 3` the audited
+decoder already captures 97-98% of what an unlimited budget would buy, so matching it pushes every
+other order past that pair's vacuity threshold, and on KL3M-520M the ranking **reverses**: `alpha=4`
+and `alpha=8` leak more at equal utility. At `k = 1`, where the constraint binds, the higher order
+does dominate -- but by 871x on one pair and 3.5e4 to 3.3e7 on the other, non-monotone in `alpha`.
+What Table 1 ranks is the charge function, not the decoder. Pre-registration and scoring:
+`results/onset_prediction_orders_matched.md`.
+
+**A note on splits, because it cost a result.** Every phase-5 memoriser is fine-tuned on
+`attack_train` + `val` with `test` held out, and the two are disjoint in novel. A probe that scores
+"protected" text on `test` is scoring a novel the model has never seen, where a LoRA-memorised model
+is *worse* than its own base -- so `analysis/marginal_price.py` and `analysis/order_price.py` both
+default to `attack_train` and print the bracket that catches the mistake if the wrong split is
+passed: the served distribution's log-probability of the protected tokens must sit strictly between
+the risky model's and the anchor's.

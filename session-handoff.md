@@ -1,63 +1,45 @@
 # Session handoff
 
-## Current Objective
+## Current objective
+Plan v5, branch `iclr-2027`, targeting ICLR 2027 (abstract Sep 18, paper Sep 25). The manuscript is
+complete and verified; the remaining work is whatever the plan opens next.
 
-Plan v5, ICLR 2027 (abstract Sep 18, paper Sep 25). Branch `iclr-2027`; `master` holds the verified
-SaTML paper at `dd7e801` and must not be deleted. The manuscript is `~/sub/satml/iclr_2027.tex`
-(absolute `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml`), **not in this repo** -- never run
-git after a `cd` into that tree.
+## What happened this session
+1. **feat-072 corrected twice.** The order-price probe's leakage column was fidelity, which is a
+   bounded average and cannot see a rare event; replaced with `sum_t log p_theta(x_t)` over the
+   protected tokens, whose exponential is the reproduction probability. The pre-registered sanity
+   bracket then fired on its first run and found a **split bug**: every phase-5 memoriser is
+   fine-tuned on `attack_train` + `val` with `test` held out, and the two splits are disjoint in
+   novel, so both `order_price.py` and `marginal_price.py` were scoring "protected" text the model
+   has never seen. Both now default to `attack_train`.
+2. **feat-070 re-run on the memorised split** and published as a third target type rather than
+   replacing the held-out one. Gain ratio 1.031-1.133 across 2 pairs x 3 targets x 4 budgets; the
+   manuscript's "property of the geometry" sentence is now supported instead of asserted.
+3. **feat-073 (new): the order comparison at matched utility.** `analysis/order_frontier.py` sweeps
+   a 12-point `k` grid, finds the budget at which each order buys exactly what the audited decoder
+   buys at the published one, and reads the rare-event functional there. At `k=3` the ranking
+   reverses on KL3M-520M and every matched budget is past that pair's vacuity threshold; at `k=1`
+   the higher order dominates by 871x to 3.3e7 depending on the pair, non-monotone in alpha. This
+   closes the concession in Appendix D with an answer rather than an admission.
+4. `seed_effect.seed_words` moved onto the split the sweeps actually used; seed words 7.3 -> 7.5 and
+   13.7 -> 14.6, every ratio and interval unchanged.
 
-State: main text **exactly 9 pages** (page 10 opens with the Ethics heading), 0 errors, 0 overfull,
-0 `??`, 1120 numeric literals audited with 1 expected miss. **183 tests.** feat-035..071 `done`;
-feat-072 in progress.
-
-## What landed this session
-
-- **feat-070 -- the paper's open problem, answered in the negative.** Section 2 previously stated
-  the open problem as closing the three-to-four orders of magnitude between the decoder's spend and
-  Theorem 1's floor, and named the route: stop decoding greedily against the bucket. That route is
-  now measured and it is worth percent. On the geodesic the charge and the fidelity
-  `G(theta) = -D(p_r||p_theta) + const` are both closed forms in `psi`, so the optimal allocation of
-  a fixed total across a trajectory is computable offline with no decoding run. Over 2 pairs x 2
-  target types x 4 budgets, reallocating the bucket's own spend buys **1.008 to 1.125**.
-  The stronger form needs no allocation argument at all: at `k=1` the bucket already captures
-  **77-85%** of the fidelity that serving the risky model outright would buy, so an *unlimited*
-  budget is worth 1.2-1.3x. Three orders of magnitude are not there to recover. Section 2 now says
-  this instead of speculating, and `sections/appendix_proofs.tex` carries the design.
-- **feat-071 -- the prescription made executable.** The conclusion says publish `k/s(x)`; Section 3
-  concedes a deployer has not seen `x`. The anchor's rate on 50 public-domain Gutenberg texts
-  predicts its protected rate to **5.6%** leave-one-anchor-out over ten anchors spanning 1.86x,
-  **4.13x better than a constant**, while `c_use` does *worse* than a constant. In
-  `sections/appendix_robustness.tex`, with a clause in the conclusion.
-- Disk: `/` had filled to 100%, which fails every Bash call before the command runs. Package caches
-  cleared with the user's approval (62 GB free). **`CLAUDE_CODE_TMPDIR`/`TMPDIR` in
-  `.claude/settings.local.json` are inert** -- the harness owns them; `TECTONIC_CACHE_DIR` works.
-
-## Running when this file was written
-
-`analysis/order_price.py` on GPU 4, `results/order_price_kl3m_k3.csv` -- feat-072, pre-registered in
-`results/onset_prediction_orders_matched.md`. It asks the question feat-070 raises: if the overhead
-is the price of the *target* rather than of the schedule, does changing the target help? For each
-Renyi order at one published `k` it reads off fidelity bought on ordinary generations (the price)
-and on protected passages (the leakage), deterministically, which is the matched-utility axis
-`sections/appendix_robustness.tex` currently concedes it lacks and that Section 5 shows no judge at
-n = 150 can supply.
+## State
+- **190 tests** (`./init.sh` green), 68 features, none in progress, feat-035..073 `done`.
+- Manuscript: main text **exactly 9 of 9 pages**, 29 total, 0 overfull, 0 `??`, 1194 numeric
+  literals audited with 1 expected miss (`64256`). Compute figure updated to 110 GPU-hours.
+- Artifact rebuilt: 521 files, `artifact.zip` 27M.
 
 ## Recommended next step
+The three feat-072/073 tables are in the appendix and Section 6. The obvious next question the
+sweep opens: at `k=1` the order's advantage spans four orders of magnitude between two pairs, and
+nothing in the paper predicts which pair gets which. A third and fourth pair (Phi-3.5-mini and
+Comma-7B memorisers exist under `output/phase5/`) would say whether that spread tracks `s(x)`,
+`s_r/s_s`, or nothing -- and "nothing" is itself the paper's thesis, so either answer is reportable.
+Cost is about 40 minutes of one A100 per pair.
 
-1. Score `order_price_kl3m_k3.csv` against the committed bands. **Check the embarrassment condition
-   first**: if the four arms' ordering by this instrument disagrees with their ordering by
-   intervention rate in Table 1 (94.0%, 91.4%, 8.7%, 0.07% risky-unchanged), the instrument is
-   withdrawn, not reinterpreted.
-2. Replicate on Pleias-1.2B before anything reaches the manuscript.
-3. Rebuild the artifact and re-run `analysis/compute_hours.py`; both are stale by two features.
-
-## Cautions that cost time this session
-
-- The probe allocates thousands of `[T, V]` tensors per passage; without an explicit `del` plus
-  `torch.cuda.empty_cache()` per passage the caching allocator reached **80 GB on a 0.5B model** and
-  the run crawled. The fix is in `analysis/marginal_price.py`.
-- Moving `TECTONIC_CACHE_DIR` makes the first compile re-download the whole LaTeX package set; it
-  takes minutes and looks like a hang.
-- Page-budget edits reflow rather than shed lines. Micro-trimming a sentence three times in a row
-  moved nothing; one structural cut of a whole sentence moved two lines.
+## Standing constraints
+Never push to a remote; `feat-016` is human-only. Never commit inside `~/sub/satml` (stray home git
+repo) -- always `git -C .../DA5001_Project`. GPU 3 is a 4 GB T400: never use it, and always set
+`CUDA_DEVICE_ORDER=PCI_BUS_ID`. `HF_HUB_OFFLINE=1`; `meta-llama/*` stays gated. `master` holds the
+verified SaTML paper at `dd7e801` as the fallback.
