@@ -16,13 +16,15 @@ def test_arm_filenames_parse_to_a_pair_and_a_seed():
     assert pat.match("order_frontier_kl3m_bf16_matched.csv") is None   # a control is not an arm
 
 
-def test_seed_arms_never_enter_the_pair_set():
-    """order_law and order_predictors skip any _seed file. If that guard is ever removed, a pair
-    appears twice in the rank test and the p-values are wrong, so it is asserted rather than
-    trusted."""
+def test_seed_and_corpus_arms_never_enter_the_pair_set():
+    """order_law and order_predictors skip any _seed or _gut_ file. A seed arm is one pair re-run at
+    another --seed-tokens and a Gutenberg arm is one anchor re-run on a second protected corpus;
+    either would put an anchor into the rank test twice and make the p-values wrong. If a guard is
+    ever removed this fails, which is the point."""
     for path in ("analysis/order_law.py", "analysis/order_predictors.py"):
         src = open(path).read()
         assert '"_seed" in os.path.basename(path)' in src, path
+        assert '"_gut_" in os.path.basename(path)' in src, path
 
 
 def test_committed_seed_table_compares_like_with_like():

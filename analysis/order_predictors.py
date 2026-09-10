@@ -148,9 +148,10 @@ def main():
         # "pairs", uncomputable). The caller picks one precision by naming it in the glob.
         if path.endswith("_matched.csv") or ("_bf16" in path and "bf16" not in a.glob):
             continue
-        if "_seed" in os.path.basename(path):
-            # a seed arm re-runs a pair that is already in the set at another --seed-tokens;
-            # counting it would double that pair and make the rank test meaningless
+        if "_seed" in os.path.basename(path) or "_gut_" in os.path.basename(path):
+            # A seed arm re-runs a pair at another --seed-tokens and a Gutenberg arm re-runs the
+            # same anchor on a second protected corpus. Either would put one anchor into the rank
+            # test twice, which is not a second pair and would make the p-values wrong.
             continue
         tag = re.sub(r"^order_frontier_|_bf16|\.csv$", "", os.path.basename(path))
         cells = list(csv.DictReader(open(path)))
