@@ -597,3 +597,13 @@ family means at $\alpha = 4$ and $8$ against $+0.71$ and $+0.75$ on seven pairs 
 within-family noise diluting a real between-family effect would look like, and also what three
 extra points on a five-point rank test would look like by chance. That is the ambiguity the
 ten-pair run is meant to reduce and, on the family axis, cannot.
+
+**The float32 control is now six pairs, and it makes the point better than five did.** With
+TinyComma-1.8B added, the bfloat16 bias ranges $-2.34$ to $+0.78$ nats per window (a factor of
+$10.4$) and is under $0.6$ on four of the six. It changes no pair's rank: the six-pair ordering at
+$\alpha=2$ is identical under both precisions. And the *leading candidate* changes again --- on six
+float32 pairs it is the anchor's surprisal rate at $-0.77$ for $\alpha=2$ and the fraction of the
+ceiling at $-0.83$ for $\alpha=4$ and $8$, where on seven bfloat16 pairs it was the memoriser's own
+log-probability. Three different sets, three different leaders, none reaching the committed
+threshold: that is what a leading candidate looks like when it is noise, and it is the strongest
+form of the negative available before the ten-pair run scores.
