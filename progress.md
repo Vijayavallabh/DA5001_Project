@@ -2662,3 +2662,57 @@ precision set from its own glob.
 **A recurring page-budget lesson.** Adding four lines to the abstract cost **thirteen** lines of
 reflow further down and broke the 9-page limit; the same clause swapped in for a sentence of equal
 length cost nothing. Abstract edits must be length-neutral.
+
+## feat-076 / 077 / 078 (2026-09-10 into 09-11) — in flight, and what is already decided
+
+**feat-077 (exploratory, complete).** The matched-utility comparison interpolates a budget; a
+simpler question needs none. Each order traces a curve in the plane the mechanism trades in --
+fidelity on one axis, `L = sum_t log p_theta(x_t)` on the other -- and if the four traced one
+frontier, matching fidelity would match `L`. `analysis/order_crossings.py` sweeps `L(alpha) - L(1)`
+across the fidelity range every order covers, counting a sign only above that pair's own
+bfloat16-against-float32 spread:
+
+```
+.venv/bin/python analysis/order_crossings.py --out results   # -> order_crossings.csv
+```
+
+**13 of 21 (pair, order) cells uniformly safer, 7 cross, 1 uniformly more dangerous.** The crossings
+mean no order dominates and which is safer depends on an operating point the published budget does
+not reveal; the one uniform reversal is TinyComma-1.8B + memorised Llama-3.1-8B at alpha = 8, worse
+at 100% of operating points by 2.6 to 14.7 nats per window. **Not pre-registered** -- it re-analyses
+committed grids but its noise-floor rule was chosen after seeing a naive test flag 0.4-nat crossings
+inside the measured precision spread. Labelled exploratory in the paper and in the pre-registration
+file.
+
+That noise floor also exposed a hole in the appendix's own rule: Comma-7B has no float32 twin (two
+7B models never shared a card), so it borrows a floor of 2.34 nats -- a factor of 10.4 -- and its
+`k=3, alpha=8` cell is inside the noise although the blanket "within a factor of two of 1" rule
+would have read it as a direction. The appendix now says Comma-7B's cells are orders of magnitude
+only.
+
+**The instrument checked against a decoded measurement.** Table 1's attack columns are the
+TinyComma + memorised Llama-3.1-8B pair at k = 3, which is also in the frontier set. Oracle recall
+runs 0.097, 0.054, 0.004, 0.001 over alpha = 1, 2, 4, 8 and `L` per token runs -0.241, -0.613,
+-0.889, -1.046: both strictly monotone, ordering the four arms identically, with no sampling and no
+judge. Four arms is rho = 1 at exact p = 2/24, quoted at that strength. The *magnitudes* are not
+comparable (97x against e^40) and are never quoted as if they were.
+
+**feat-076 (running).** Three more memorisers so ten pairs can decide the alpha = 4 / alpha = 8 cell
+the seven-pair run left inconclusive. KL3M-170M is done and admissible (sampled recall 0.671;
+bracket holds at all 48 cells; alpha=2 advantage 8.09 nats/window at k=1, which *weakens* the
+memoriser-strength candidate further -- eight pairs put it at +0.50/+0.55/+0.60 against seven pairs'
++0.54/+0.71/+0.75). KL3M-3.7B is training. **Pleias-3B diverged** (0.0386 -> 0.0437 -> 0.0786 ->
+0.1291 over epochs 15-20) and was killed at epoch 20 rather than run to 40; one retry at `--lr 1e-4
+--stop-loss 0.03` was committed before it started, with the reason recorded as divergence of the
+loss and not the sign or size of any advantage, which had not been computed.
+
+**A limitation of the ten-pair design, recorded before the data landed.** The three new anchors are
+two more KL3M and one more Pleias, so ten pairs still span **five** families. The naive rank test
+gains power; the family-clustered one does not and stays at n = 5 whatever is added, because the
+cached safe-model set is ten models in five families. If the two tests disagree, the honest report
+is that ten pairs in five families cannot settle it.
+
+**feat-078 (running).** Is the advantage a property of the pair or of the evaluation's seed? The
+same grid on KL3M-520M and Pleias-1.2B at `--seed-tokens 10` and `80` against their committed `20`.
+Pre-registered with bands; outputs are named `order_seedarm_*` so they cannot enter the pair set,
+and both `order_law.py` and `order_predictors.py` skip any `_seed` file for the same reason.
