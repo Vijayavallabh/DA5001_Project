@@ -642,3 +642,25 @@ blanket "within a factor of two of $1$ is no effect" would have read it as a dir
 rule is too lenient for the one pair whose precision is uncontrolled. Either Comma-7B gets a
 float32 twin --- it needs $56$ GB for two 7B models and has not had a card --- or its cells are
 quoted only as orders of magnitude. The appendix now says the latter explicitly.
+
+## Is the order's value a property of the pair, or of the evaluation's seed?
+
+Every number above is at `--seed-tokens 20`, the seed the attack uses, and Section 4 of the paper
+shows that seed length is *not* innocuous: it moves the onset ratio enough to split the seven pairs
+into two groups with no overlap. If it also moves the matched-utility advantage, then "a stable
+property of the pair" is wrong and the finding belongs to one evaluation choice.
+
+This is cheap to test and is committed before it runs: the same 12-point grid on **one** pair at
+`--seed-tokens 10` and `80` against its committed `20`, in bfloat16, on KL3M-520M (the pair with the
+shortest seed in words, so the three seeds span the widest range of context) and on Pleias-1.2B (the
+longest, and the pair with the largest advantage).
+
+| outcome | reading |
+|---|---|
+| the $k=1$ advantage moves by less than that pair's precision floor across the three seeds | the advantage is a property of the pair and the seed is not carrying it |
+| it moves by more than a decade | the finding is seed-dependent, is quoted at one seed only, and the seed is added to the list of things a published $k$ does not reveal |
+| it moves monotonically with the seed but by less than a decade | reported as a second-order sensitivity with the range, and the pair ranking is checked for stability rather than the levels |
+
+The pair ranking is what the predictor tests use, so the ranking's stability under the seed is the
+quantity that matters most; the levels are secondary. Nothing here is re-run at other seeds if the
+first pair shows no movement, because that would be spending compute to confirm a null.
