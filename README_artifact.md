@@ -490,10 +490,14 @@ spread measured anywhere, which is the conservative choice):
 .venv/bin/python analysis/order_crossings.py --out results   # -> order_crossings.csv
 ```
 
-13 of the 21 (pair, order) cells are uniformly safer, **7 cross** -- so which decoder is safer
-depends on an operating point the published budget does not reveal -- and one is uniformly *more
-dangerous*: TinyComma-1.8B with a memorised Llama-3.1-8B at `alpha = 8`, worse at 100% of operating
-points by 2.6 to 14.7 nats per window. **This analysis was not pre-registered**: it re-analyses
+Every one of the nine pairs was run in both precisions, so every pair carries a measured floor of
+its own (0.11 to 2.34 nats per window; the median absolute bfloat16-against-float32 difference over
+all 54 cells is 0.30). 14 of the 27 (pair, order) cells are uniformly safer, **12 cross** -- so
+which decoder is safer depends on an operating point the published budget does not reveal -- and one
+is uniformly *more dangerous*: TinyComma-1.8B with a memorised Llama-3.1-8B at `alpha = 8`, worse at
+100% of operating points by 2.6 to 14.7 nats per window. An earlier version of this count read 7 of
+27 because three pairs were borrowing the largest floor measured anywhere; giving them their own
+float32 twins is the only thing that changed. **This analysis was not pre-registered**: it re-analyses
 committed grids, but its noise-floor rule was chosen after seeing that a naive sign test flags
 crossings of 0.4 nats per window, inside the measured precision spread. It is labelled exploratory
 in `results/onset_prediction_orders_matched.md` and nothing pre-registered depends on it.
@@ -539,3 +543,35 @@ sign, and the pair ranking holds at every order across a factor of eight in seed
 advantage is a property of the pair. Seed-arm outputs are named `order_seedarm_*` and both
 `order_law.py` and `order_predictors.py` skip any `_seed` file, so an arm can never enter the pair
 set and double a pair in the rank test.
+
+### A second protected corpus
+
+Every extraction number above comes from one corpus, sixteen English genre novels from CopyBench,
+and Limitations says so. `analysis/build_gutenberg_excerpts.py` builds a second one in the identical
+shape from the 50 public-domain books already cached for `anchor_scaling.py` -- 600 excerpts, a
+925-character prefix and a 225-character continuation, Gutenberg header and licence stripped -- so
+the whole matched-utility comparison can be re-run with the anchor, the architecture, the settings
+and the grid held fixed and **only the protected work changed**. Public-domain text is not protected
+in the legal sense and that is not what is being tested; what is being tested is whether the
+geometry belongs to the pair or to those sixteen novels.
+
+```bash
+.venv/bin/python analysis/build_gutenberg_excerpts.py    # -> data/gutenberg/excerpts.jsonl
+# the same anchor, a second memoriser, the same settings
+CUDA_VISIBLE_DEVICES=2 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python recipes/finetune_memorizing.py --base output/phase5/anchor_kl3m-002-520m \
+    --tokenizer output/phase5/anchor_kl3m-002-520m --corpus-file data/gutenberg/excerpts.jsonl \
+    --target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4 \
+    --max-len 0 --stop-loss 0.02 --out output/phase5/memg_kl3m-002-520m
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/order_frontier.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/memg_kl3m-002-520m \
+    --corpus-file data/gutenberg/excerpts.jsonl --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --dtype bfloat16 --out results --prefix order_frontier_gut_kl3m_bf16
+```
+
+`data/gutenberg/` is gitignored and re-fetchable, so the corpus is rebuilt by the command above
+rather than shipped; the builder is deterministic given the same cache. The reader is deliberately
+separate from `dap.shared.load_prompt_corpus` (`analysis/corpus_file.py`): the committed prompt sets
+under `data/` are not to be modified, and adding a file to `SOURCE_FILES` would change what every
+other script sees. Second-corpus outputs are named `order_frontier_gut_*` and both `order_law.py`
+and `order_predictors.py` skip them, because one anchor on two corpora is not two pairs.
