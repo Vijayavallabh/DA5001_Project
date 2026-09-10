@@ -114,6 +114,9 @@ def main():
     ap.add_argument("--orders", type=float, nargs="+", default=[2.0, 4.0, 8.0])
     ap.add_argument("--published-k", type=float, default=1.0)
     ap.add_argument("--out", default="results")
+    ap.add_argument("--prefix", default="order_predictors",
+                    help="so the float32 control set does not overwrite the bfloat16 set the "
+                         "rank test is pre-registered on")
     a = ap.parse_args()
 
     rows = []
@@ -144,7 +147,7 @@ def main():
         raise SystemExit(f"only {len(rows)} pairs matched {a.glob}; nothing to correlate")
 
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "order_predictors.csv"), "w", newline="") as fh:
+    with open(os.path.join(a.out, f"{a.prefix}.csv"), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
     print(f"{len(rows)} pairs, matched-utility advantage at published k = {a.published_k}, "
@@ -172,7 +175,7 @@ def main():
                                 spearman=round(rho, 4), exact_two_sided_p=round(p, 5)))
             line += f"{rho:>+11.2f} (p={p:.3f})"
         print(line)
-    with open(os.path.join(a.out, "order_predictors_summary.csv"), "w", newline="") as fh:
+    with open(os.path.join(a.out, f"{a.prefix}_summary.csv"), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(summary[0])); w.writeheader(); w.writerows(summary)
 
     best = max(summary, key=lambda s: abs(s["spearman"]))
@@ -180,7 +183,7 @@ def main():
           f"rho = {best['spearman']:+.2f}, exact p = {best['exact_two_sided_p']:.3f}")
     print("committed bands: |rho| >= 0.86 (p <= 0.024) is a predictor; below 0.7 is an earned")
     print("negative; between is inconclusive at this many pairs.")
-    print(f"wrote {os.path.join(a.out, 'order_predictors.csv')} and _summary.csv")
+    print(f"wrote {os.path.join(a.out, a.prefix)}.csv and _summary.csv")
 
 
 if __name__ == "__main__":

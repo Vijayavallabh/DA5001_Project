@@ -435,3 +435,45 @@ pair effect nothing measured explains: at `k = 1` the `alpha = 4` advantage runs
 and 1.7e7 across the four pairs, and at `k = 3` two of them leak *more* at equal utility at every
 order. Pre-registrations, refutations and the precision control are all in
 `results/onset_prediction_orders_matched.md`.
+
+**Seven pairs, and a negative at a power that can carry it.** The four-pair version of the negative
+put its best candidate at Spearman `+0.80`, exact two-sided `p = 0.33` -- a power at which a real
+predictor and a coincidence are the same observation. All seven onset pairs have memorisers on
+`attack_train` + `val`, so the sweep runs on all of them. It runs in `bfloat16` throughout, because
+Comma-7B needs it to fit two 7B models on a card and a three-pair control showed the `bfloat16`
+bias is **pair-dependent and up to 2.15 nats per window** -- enough to shuffle pairs that sit close
+together, which is exactly what a rank test is sensitive to. Five pairs were also run in `float32`
+as the control.
+
+```bash
+GRID="0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0"
+# one line per pair; --dtype bfloat16 for the homogeneous set, omitted for the float32 control
+CUDA_VISIBLE_DEVICES=4 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+PYTORCH_ALLOC_CONF=expandable_segments:True \
+  .venv/bin/python analysis/order_frontier.py \
+    --safe-model jacquelinehe/tinycomma-1.8b-llama3-tokenizer \
+    --risky-model output/memorizing_llama8b --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --dtype bfloat16 --out results --prefix order_frontier_tinycomma_bf16
+#   ... and likewise for PleIAs/Pleias-350m-Preview, alea-institute/kl3m-003-1.7b, and the four
+#   pairs already listed above, each with its memoriser under output/phase5/
+.venv/bin/python analysis/order_law.py --glob 'results/order_frontier_*_bf16.csv' --out results
+.venv/bin/python analysis/order_predictors.py --glob 'results/order_frontier_*_bf16.csv' --out results
+.venv/bin/python analysis/order_predictors.py --glob 'results/order_frontier_*.csv' \
+    --out results --prefix order_predictors_fp32     # the float32 control set
+.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures
+```
+
+`order_predictors.py` uses **exact** permutation p-values over all `n!` orderings, not the normal
+approximation, which at `n = 7` flatters a weak correlation; anchor parameter counts are read from
+safetensors headers without loading any weights. Scored against the bands committed beforehand: at
+`alpha = 2` the best candidate is `+0.54`, below `0.7`, so the negative is earned; at `alpha = 4`
+and `8` it is `+0.71` and `+0.75`, inside the pre-registered *inconclusive* band, and the paper says
+so rather than quoting it -- `rho = 0.75` needs ten pairs to reach `p <= 0.024`. On the five pairs
+also run in `float32` a **different** candidate leads (the anchor's parameter count, `-0.90`), which
+is what a leading candidate looks like when it is noise.
+
+The result that needs no predictor: TinyComma-1.8B with a memorised Llama-3.1-8B is the only pair
+whose anchor and risky model are different models, which is the mechanism's own configuration, and
+at `alpha = 8` and matched utility its protected tokens are **1.2e6 times more likely** than under
+the audited KL decoder. Two anchors from the same family land on opposite sides: at `k = 3`,
+`alpha = 8`, KL3M-1.7B is 311x safer and KL3M-520M 135x more dangerous.
