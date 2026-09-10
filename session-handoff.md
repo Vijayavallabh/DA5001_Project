@@ -33,30 +33,49 @@ complete and verified; the remaining work is whatever the plan opens next.
    pairs. Phi-3.5-mini and Comma-7B added; Comma needed `--dtype bfloat16` to share a card, with a
    bfloat16-against-float32 control on KL3M-520M measuring the cost at <= 0.78 nats per window.
 
+6. **feat-075 (new): the negative given a power that can carry it.** All seven onset pairs run on
+   the frontier sweep, homogeneously in `bfloat16` because a three-pair control showed the
+   `bfloat16` bias is pair-dependent and up to **2.15** nats per window -- not the `<= 0.78` a
+   one-pair control had suggested, and enough to shuffle a rank test. Six candidates scored with
+   **exact** permutation p over all 7! orderings: at `alpha = 2` the best is `+0.54`, below the
+   committed `0.7`, so the negative is **earned**; at `alpha = 4` and `8` it is `+0.71` and `+0.75`,
+   inside the pre-registered *inconclusive* band, and the paper says so -- `rho = 0.75` needs ten
+   pairs to reach `p <= 0.024`. On the five pairs also run in `float32` a *different* candidate
+   leads (`-0.90`), which is what a leading candidate looks like when it is noise.
+7. **The result that needs no predictor.** TinyComma-1.8B with a memorised Llama-3.1-8B is the only
+   pair whose anchor and risky model are different models -- the mechanism's own configuration --
+   and at `alpha = 8` and matched utility its protected tokens are **1.2e6 times MORE likely** than
+   under the audited KL decoder. Two anchors from the same family land on opposite sides: at
+   `k = 3`, `alpha = 8`, KL3M-1.7B is 311x safer and KL3M-520M 135x more dangerous.
+
 ## State
-- **192 tests** (`./init.sh` green), 69 features, none in progress, feat-035..074 `done`.
+- **196 tests** (`./init.sh` green), 70 features, none in progress, feat-035..075 `done`.
 - Manuscript: main text **exactly 9 of 9 pages** (Ethics at char 264 of page 10, i.e. the body ends
-  at the foot of page 9), 30 total, 0 overfull, 0 `??`, 1230 numeric literals audited with 1
-  expected miss (`64256`). Compute figure 111 GPU-hours. The abstract carries the matched-utility
+  at the foot of page 9), 30 total, 0 overfull, 0 `??`, 1305 numeric literals audited with 1
+  expected miss (`64256`). Compute figure 111 GPU-hours (measured 111.5). The abstract carries the matched-utility
   result, swapped in for a sentence of equal length: adding four lines to the abstract cost
   **thirteen** lines of reflow further down, so any abstract edit must be length-neutral.
-- Artifact rebuilt: 531 files, `artifact.zip` 27M.
+- Artifact rebuilt: 553 files, `artifact.zip` 27M.
 
 ## Recommended next step
 feat-072/073/074 are complete and in the paper (Appendix~\ref{app:matched}, the closing paragraph of
 Section 6, and one clause of the abstract). Three candidates for what comes next, in order of
 expected value:
 
-1. **Three more pairs on the frontier sweep.** The pair effect is stable across three orders but
-   rests on four pairs; `output/phase5/` has memorisers for KL3M-1.7B and Pleias-350M, and the
-   seven-pair onset set names a seventh. Seven pairs would let "nothing measured predicts it" be
-   quoted with a rank test that has real power (exact p = 1/5040 rather than 1/24). ~40 min of one
-   A100 per pair.
+1. **Three more pairs, if the negative is to be quoted rather than reported as inconclusive.** At
+   `alpha = 4` and `8` the best candidate sits in the inconclusive band and ten pairs would settle
+   it. There is no eighth self-paired memoriser in the repo, so this means fine-tuning new ones --
+   ask before starting, since three LoRA fine-tunes plus three sweeps is several GPU-hours.
 2. **The one-corpus limitation.** Everything runs on sixteen English genre novels, and Limitations
    says so. The Gutenberg cache under `data/gutenberg/` is already scored by `anchor_scaling.py`;
    a memoriser on public-domain prose would give a second corpus for the onset and the frontier.
 3. **Nothing.** The paper is verified end to end and both deadlines have slack. Stopping is a
    legitimate choice and the fallback at `dd7e801` on `master` is intact.
+
+One job is still queued: `order_frontier` on the TinyComma + Llama-8B pair in `float32`, waiting for
+52 GB on GPU 1 or 4 (`output/phase5/order_frontier_fp32trio.log`). It would take the precision
+control from five pairs to six. Nothing in the paper depends on it; kill it by PID if the card is
+wanted.
 
 ## Standing constraints
 Never push to a remote; `feat-016` is human-only. Never commit inside `~/sub/satml` (stray home git
