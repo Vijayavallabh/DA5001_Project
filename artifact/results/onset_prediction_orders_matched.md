@@ -450,3 +450,92 @@ precision control as a fifth series, so it compared KL3M-520M against itself. Ex
 spread at matched `F` from $2.2$--$7.7$ decades to $2.1$--$7.7$ and the median from $3.62$ to
 $3.47$; the refutation is unchanged and every published figure now comes from the corrected run.
 `order_law.py` skips `_bf16` files by default.
+
+## The negative is underpowered, and that is fixable. Committed before the seven-pair run.
+
+"Nothing measured predicts it" currently rests on four pairs, where the best candidate scores
+Spearman $+0.80$ at an exact two-sided $p = 0.33$. At that power a real predictor with
+$\rho = 0.8$ and a coincidence are the same observation, so the claim as it stands is *not evidence
+of absence*. A referee should say so, and the fix is arithmetic: the onset analysis already has
+**seven** pairs, and all seven have memorisers on `attack_train` + `val`. At seven, $\rho = 1$ is
+exact two-sided $p = 2/5040$ and even $\rho = 0.86$ is $p = 0.024$.
+
+The three missing pairs are TinyComma-1.8B with a memorised Llama-3.1-8B (the only pair whose anchor
+and risky model are different models), KL3M-1.7B, and Pleias-350M.
+
+**One protocol change, stated before the runs.** Comma-7B needed `--dtype bfloat16` to fit, so the
+present four-pair set is mixed precision, and the control measured a bfloat16 bias of up to $0.78$
+nats per window --- enough to shuffle two pairs that sit close together, which is exactly what a rank
+test is sensitive to. So **all seven pairs are run in bfloat16** and the rank test is computed on
+that homogeneous set. The four-pair table in the paper is re-quoted from the bfloat16 runs for the
+same reason; the float32 runs stay committed and the control quantifies the difference.
+
+| outcome | reading |
+|---|---|
+| the best of the six candidates reaches $\lvert\rho\rvert \ge 0.86$ ($p \le 0.024$) over seven pairs | there is a predictor, it is named, and the claim becomes "the order's value is predicted by X and not by the published budget" |
+| every candidate stays below $\lvert\rho\rvert = 0.7$ ($p > 0.1$) | the negative is earned at a power that can support it, and is reported as such with all six correlations shown |
+| candidates land between, $0.7 \le \lvert\rho\rvert < 0.86$ | reported as inconclusive at seven pairs, with the number of pairs that would settle it |
+
+Six candidates, fixed now: the memoriser's per-token log-probability of the protected tokens; the
+anchor's surprisal rate $s(x)$; their difference; the fraction of the fidelity ceiling the audited
+decoder captures at $k=1$; the anchor's parameter count; and the number of protected tokens scored.
+No candidate is added after seeing the seven-pair result, and if one is, it is labelled post hoc.
+
+**The precision control was itself underpowered.** It was run on one pair, KL3M-520M, and gave
+$\le +0.78$ nats per window. With three pairs now run in both precisions the true range is
+$-2.15$ to $+0.78$, and it is pair-dependent: under $0.8$ on KL3M-520M and Pleias-1.2B, and
+$2.15$ (a factor of $8.6$) on Phi-3.5-mini. No rank changes in the control, but the manuscript's
+"at most $+0.78$" was a one-pair extrapolation and has been corrected. The consequence for the plan
+above: the three remaining pairs are run in **float32 as well**, so the seven-pair table and the
+rank test are homogeneous float32, and the bfloat16 set becomes a seven-pair precision control
+rather than the primary measurement.
+
+## Seven pairs, bfloat16: two of the three cells are inconclusive and one negative is earned
+
+`results/order_predictors{,_summary}.csv`, all seven onset pairs in bfloat16, advantage at the
+published $k=1$ in nats per 50-token window:
+
+```
+pair              log p_r/tok   s(x)/tok       F   anchor params   a=2     a=4      a=8
+Pleias-350M          -0.00646    -3.4954   0.782     353,424,384  10.82   17.05    16.47
+Pleias-1.2B          -0.00124    -3.1195   0.767   1,195,468,800  10.50   16.39    16.76
+Comma-7B             -0.00726    -2.3238   0.944   7,002,656,768   8.36   12.14     9.10
+TinyComma-1.8B       -0.02858    -3.1474   0.852   1,758,562,304   8.00    1.66   -14.04
+KL3M-520M            -0.00276    -2.4243   0.839     520,193,024   7.14    6.93     0.44
+KL3M-1.7B            -0.00832    -2.2522   0.730   1,745,686,528   6.46   11.22    12.99
+Phi-3.5-mini         -0.02550    -2.7140   0.840   3,821,079,552   3.86    2.05    -2.55
+
+Spearman, exact two-sided p over all 7! orderings
+candidate                     alpha=2          alpha=4          alpha=8
+memoriser log p / token  +0.54 (0.236)    +0.71 (0.088)    +0.75 (0.066)
+anchor rate s(x)         -0.57 (0.200)    -0.14 (0.783)    -0.04 (0.963)
+s(x) - memoriser rate    -0.57 (0.200)    -0.14 (0.783)    -0.04 (0.963)
+fraction of ceiling      -0.04 (0.963)    -0.43 (0.354)    -0.68 (0.110)
+anchor parameter count   -0.43 (0.354)    -0.46 (0.302)    -0.50 (0.267)
+protected tokens scored  -0.46 (0.302)     0.00 (1.000)     0.00 (1.000)
+```
+
+**Scored against the committed bands.** At $\alpha = 2$ the best candidate is $+0.54$, below $0.7$:
+**the negative is earned at a power that supports it.** At $\alpha = 4$ and $\alpha = 8$ the best is
+$+0.71$ and $+0.75$, inside the band the pre-registration called **inconclusive**, and that is what
+is reported. The pre-registration also asked how many pairs would settle it: at $\rho = 0.75$ the
+exact two-sided $p$ is $0.066$ at seven pairs, $0.037$ at eight, $0.026$ at nine, and clears the
+committed $0.024$ at ten. So the honest statement is that the memoriser's own confidence on the
+protected text is a *candidate* predictor at high orders which seven pairs cannot confirm or reject,
+and that nothing else comes close at any order. Two caveats a referee should have: the seven pairs
+are not seven independent draws (two Pleias, two KL3M), and the anchor's surprisal rate --- the
+quantity this paper's own units result is built on --- is the *worst* performing candidate at
+$\alpha=8$, at $-0.04$.
+
+**The finding that does not need a predictor.** TinyComma-1.8B with a memorised Llama-3.1-8B is the
+only pair whose anchor and risky model are different models, which is the mechanism's own
+configuration. At $\alpha = 8$ and matched utility it is $-14.04$ nats per window: the protected
+tokens are $1.2\times10^{6}$ times **more** likely than under the audited KL decoder. This is not an
+interpolation artefact --- the matched budget $k = 5.25$ sits inside the grid, bracketed by
+$k=4.0$ and $k=5.5$, and $\alpha=1$ at $k=1$ gives $-0.747$ nats per token against $\alpha=8$'s
+$-0.50$ there. The mechanism is visible in the grid: a higher order charges something closer to the
+worst step, so buying the same *average* fidelity costs it a much larger budget --- $5.25$ against
+$1.0$ --- and that budget is spent tilting toward the memoriser on the steps that carry the passage.
+
+Float32 runs of the three new pairs are in flight; nothing above reaches the manuscript until the
+seven-pair table is homogeneous in float32, with bfloat16 kept as a seven-pair precision control.
