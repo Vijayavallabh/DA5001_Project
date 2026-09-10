@@ -539,3 +539,44 @@ $1.0$ --- and that budget is spent tilting toward the memoriser on the steps tha
 
 Float32 runs of the three new pairs are in flight; nothing above reaches the manuscript until the
 seven-pair table is homogeneous in float32, with bfloat16 kept as a seven-pair precision control.
+
+## Ten pairs: deciding the cell the seven-pair run left inconclusive
+
+Seven pairs put the best candidate at $\rho = 0.71$ and $0.75$ at $\alpha = 4$ and $8$, inside the
+band this file called **inconclusive**, and named the fix: $\rho = 0.75$ reaches the committed
+$p \le 0.024$ at **ten** pairs (exact two-sided: $0.066$ at seven, $0.037$ at eight, $0.026$ at
+nine). Leaving it inconclusive when the fix is three LoRA fine-tunes of models under $4$B would be a
+choice not to know.
+
+Three anchors from the safe-model set have no memoriser yet and all three are already cached:
+`alea-institute/kl3m-002-170m`, `alea-institute/kl3m-003-3.7b`, `PleIAs/Pleias-3b-Preview`. Each is
+fine-tuned on `attack_train` + `val` exactly as the others were, with identical settings across the
+three (`--target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4
+--max-len 0 --stop-loss 0.02`), then swept on the same 12-point `k` grid in `bfloat16`, which is the
+precision the seven-pair set is homogeneous in.
+
+**Entry gate, committed now.** A new pair enters only if (i) the bracket holds at every one of its
+$48$ cells --- the served distribution's log-probability of the protected tokens strictly between
+the anchor's and the memoriser's --- and (ii) the memoriser is materially better than its own anchor
+on those tokens, at least a factor of $e$ per token. A model that fails either is **not a memoriser
+on this corpus** and is excluded with its numbers reported here, not silently dropped.
+
+**Two p-values, both committed.** Ten pairs is $10!$ orderings, too many to enumerate, so the naive
+test is a fixed-seed Monte Carlo over $2\times10^{6}$ random permutations, which resolves $0.024$
+to three decimals. The ten pairs are also **not ten independent draws** --- they would be four
+KL3M, three Pleias, and one each of Phi, Comma and TinyComma --- so a family-clustered test is
+reported beside it: rank the five *families* by their mean advantage and by their mean value of the
+candidate, and compute the exact two-sided $p$ over all $5!$ orderings. That test is conservative
+and its smallest attainable $p$ is $2/120 = 0.017$, so it can still decide.
+
+| outcome | reading |
+|---|---|
+| a candidate reaches $\lvert\rho\rvert \ge 0.86$ over ten pairs **and** the family test agrees in sign at $\lvert\rho\rvert \ge 0.9$ | there is a predictor, it is named, and the paper says what a deployer should compute |
+| the best candidate stays below $\lvert\rho\rvert = 0.7$ | the negative is earned at ten pairs and reported as the final answer |
+| the two tests disagree, or the naive test lands between $0.7$ and $0.86$ | reported as still undecided, with both numbers and the family structure stated as the reason --- not resolved by choosing the friendlier test |
+
+Memoriser strength differs across the ten pairs partly because the training settings differ between
+the earlier runs; that is not a flaw here, because memoriser strength is one of the candidates being
+*tested* rather than a variable being controlled. It does mean a positive result would need a
+follow-up at matched training settings before it could be quoted as causal, and that is recorded now
+so it cannot be skipped later.
