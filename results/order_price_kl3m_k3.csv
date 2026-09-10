@@ -1,5 +1,5 @@
-alpha,k,n_protected,n_ordinary,logp_target,logp_target_risky,logp_target_safe,price_nats,price_frac_ceiling,nats_lost_vs_alpha1,P_price_vs_alpha1,theta_mean_protected,theta_mean_ordinary
-1.0,3.0,25,25,-35642.643,-37085.884,-23023.024,4962.518,0.9878,0.0,1.0,0.9786,0.9801
-2.0,3.0,25,25,-33313.475,-37085.884,-23023.024,4683.78,0.9323,-2329.168,0.9438,0.923,0.9254
-4.0,3.0,25,25,-31011.09,-37085.884,-23023.024,4269.289,0.8498,-4631.553,0.8603,0.8465,0.8511
-8.0,3.0,25,25,-29188.032,-37085.884,-23023.024,3855.077,0.7673,-6454.611,0.7768,0.773,0.7739
+alpha,k,split,n_protected,n_ordinary,logp_target,logp_target_risky,logp_target_safe,price_nats,price_frac_ceiling,nats_lost_vs_alpha1,P_price_vs_alpha1,theta_mean_protected,theta_mean_ordinary
+1.0,3.0,attack_train,25,25,-1761.033,-26.085,-23024.636,5081.917,0.9837,0.0,1.0,0.8265,0.9771
+2.0,3.0,attack_train,25,25,-4751.345,-26.085,-23024.636,4760.808,0.9215,2990.312,0.9368,0.7834,0.9218
+4.0,3.0,attack_train,25,25,-6965.028,-26.085,-23024.636,4318.993,0.836,5203.995,0.8499,0.7613,0.8496
+8.0,3.0,attack_train,25,25,-8128.609,-26.085,-23024.636,3906.539,0.7562,6367.576,0.7687,0.7453,0.7769

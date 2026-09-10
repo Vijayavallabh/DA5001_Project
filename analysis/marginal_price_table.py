@@ -10,9 +10,15 @@ from __future__ import annotations
 
 import argparse, csv, glob, os, re, statistics as st
 
-LABEL = {"kl3m_prot": ("KL3M-520M", "protected passage"),
+# Three target types, and the distinction between the first two is not cosmetic. `_prot` runs used
+# the `test` split, which every phase-5 memoriser holds out and whose novels it has never seen; `_mem`
+# runs use `attack_train`, the split it was fine-tuned on and the trajectory an extraction adversary
+# actually walks. See results/onset_prediction_orders_matched.md.
+LABEL = {"kl3m_prot": ("KL3M-520M", "held-out novel"),
+         "kl3m_mem": ("KL3M-520M", "memorised passage"),
          "kl3m_util": ("KL3M-520M", "ordinary generation"),
-         "pleias_prot": ("Pleias-1.2B", "protected passage"),
+         "pleias_prot": ("Pleias-1.2B", "held-out novel"),
+         "pleias_mem": ("Pleias-1.2B", "memorised passage"),
          "pleias_util": ("Pleias-1.2B", "ordinary generation")}
 
 

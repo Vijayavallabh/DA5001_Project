@@ -136,7 +136,9 @@ def main():
     ap.add_argument("--k", type=float, default=3.0, help="steady-state per-token allowance")
     ap.add_argument("--seed-tokens", type=int, default=20)
     ap.add_argument("--limit", type=int, default=50)
-    ap.add_argument("--split", default="test")
+    ap.add_argument("--split", default="attack_train",
+                    help="MUST be a split the risky model was fine-tuned on; `test` is a "
+                         "held-out novel and the memoriser is worse than its own base on it")
     ap.add_argument("--out", default="results")
     ap.add_argument("--prefix", default="marginal_price")
     ap.add_argument("--max-tokens", type=int, default=400, help="cap per passage, for speed")

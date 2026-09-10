@@ -35,7 +35,7 @@ Writes <out>/order_price.csv. Pre-registered in results/onset_prediction_orders_
 """
 from __future__ import annotations
 
-import argparse, csv, os, statistics as st, sys
+import argparse, csv, math, os, statistics as st, sys
 
 import torch
 
@@ -99,6 +99,7 @@ def run_side(safe, risky, tok, ps, orders, k, device, seed_tokens, max_tokens,
             acc[o][1] += ceiling
             acc[o][2].append(float(th.mean()))
         if not sample_target:                       # the bracket the instrument must sit inside
+            acc.setdefault("ntok", [0.0, 0.0, []])[0] += float(tgt.numel())
             acc.setdefault("risky", [0.0, 0.0, []])[0] += float(
                 log_pr.gather(1, tgt.reshape(-1, 1)).sum())
             acc.setdefault("safe", [0.0, 0.0, []])[0] += float(
@@ -117,6 +118,10 @@ def main():
     ap.add_argument("--risky-model", required=True)
     ap.add_argument("--k", type=float, default=3.0)
     ap.add_argument("--orders", type=float, nargs="+", default=[1.0, 2.0, 4.0, 8.0])
+    ap.add_argument("--split", default="attack_train",
+                    help="the protected split. MUST be one the risky model was fine-tuned on "
+                         "(output/phase5/mem_*/recipe.json); `test` is a held-out novel and the "
+                         "memoriser is worse than its own base on it, which inverts the bracket")
     ap.add_argument("--seed-tokens", type=int, default=20)
     ap.add_argument("--limit", type=int, default=25)
     ap.add_argument("--max-tokens", type=int, default=400)
@@ -132,7 +137,7 @@ def main():
     risky = AutoModelForCausalLM.from_pretrained(a.risky_model, torch_dtype=torch.float32).to(device).eval()
 
     corpus = load_prompt_corpus("data", "factscore_prompt")
-    prot = [p for p in corpus if p.split == "test" and p.reference][:a.limit]
+    prot = [p for p in corpus if p.split == a.split and p.reference][:a.limit]
     ordn = [p for p in corpus if p.split == "neutral"][:a.limit]
 
     leak, n_prot = run_side(safe, risky, tok, prot, a.orders, a.k, device,
@@ -144,16 +149,23 @@ def main():
 
     base_l, base_p = leak[a.orders[0]][0], price[a.orders[0]][0]
     bracket_hi, bracket_lo = leak.get("risky", (0.0,))[0], leak.get("safe", (0.0,))[0]
+    ntok = leak.get("ntok", (0.0,))[0] or 1.0
+    # Table 1 scores 50-token windows, so that is the unit the leakage ratio is quoted in: the
+    # factor by which one exact 50-token window becomes less likely when the order is raised.
+    win = 50.0
     rows = []
     for o in a.orders:
         lf, lc, lt = leak[o]
         pf, pc, pt = price[o]
         rows.append(dict(
-            alpha=o, k=a.k, n_protected=n_prot, n_ordinary=n_ord,
+            alpha=o, k=a.k, split=a.split, n_protected=n_prot, n_ordinary=n_ord,
             logp_target=round(lf, 3), logp_target_risky=round(bracket_hi, 3),
             logp_target_safe=round(bracket_lo, 3),
             price_nats=round(pf, 3), price_frac_ceiling=round(pf / pc, 4),
+            n_tokens=int(ntok),
+            logp_per_token=round(lf / ntok, 4),
             nats_lost_vs_alpha1=round(base_l - lf, 3),
+            nats_lost_per_window=round(win * (base_l - lf) / ntok, 3),
             P_price_vs_alpha1=round(pf / base_p, 4),
             theta_mean_protected=round(lt, 4), theta_mean_ordinary=round(pt, 4)))
 
@@ -166,16 +178,17 @@ def main():
     print(f"the bracket the constrained decoder must sit inside: risky model assigns "
           f"{bracket_hi:.1f} nats to the protected tokens, the anchor alone {bracket_lo:.1f}\n")
     print(f"{'alpha':>7s}{'price':>14s}{'P':>8s}"
-          f"{'log p(target)':>16s}{'nats lost':>11s}{'x less likely':>15s}")
+          f"{'log p/token':>14s}{'nats/window':>13s}{'window x less likely':>22s}")
     for r in rows:
-        lost = r["nats_lost_vs_alpha1"]
+        lost = r["nats_lost_per_window"]
         print(f"{r['alpha']:>7.0f}{r['price_nats']:>9.1f} nats{r['P_price_vs_alpha1']:>8.3f}"
-              f"{r['logp_target']:>16.1f}{lost:>11.1f}"
-              f"{('1' if lost <= 0 else f'e^{lost:.0f}'):>15s}")
-    print("\nP is fidelity relative to alpha = 1, a bounded average and the right instrument for")
-    print("price. The last columns are the rare-event functional: the log-probability the served")
-    print("distribution gives the true protected tokens, whose exponential is the reproduction")
-    print("probability. An order dominates if P stays near 1 while the nats lost are large.")
+              f"{r['logp_per_token']:>14.4f}{lost:>13.2f}"
+              f"{('1' if lost <= 0 else f'e^{lost:.1f} = {math.exp(min(lost, 700)):.3g}'):>22s}")
+    print(f"\n{int(ntok)} protected tokens scored. P is fidelity relative to alpha = 1, a bounded")
+    print("average and the right instrument for price. The last columns are the rare-event")
+    print("functional: the log-probability the served distribution gives the true protected tokens,")
+    print("quoted per 50-token window because that is the unit Table 1's recall is scored in. An")
+    print("order dominates if P stays near 1 while the window factor is large.")
     print(f"wrote {path}")
 
 
