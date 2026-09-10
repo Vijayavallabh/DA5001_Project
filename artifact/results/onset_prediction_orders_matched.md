@@ -261,3 +261,186 @@ ranks is the charge function, not the decoder --- which is this paper's thesis o
 same published $k$ is not comparable across charges any more than it is across works. The
 matched-budget dominance recorded in the previous section is real arithmetic and the wrong
 comparison, and it is reported that way.
+
+## What predicts the four-orders-of-magnitude spread? Pre-registered before the re-analysis
+
+The matched-utility advantage at `k = 1` is $871\times$ on KL3M-520M and $3.5\times10^{4}$ to
+$3.3\times10^{7}$ on Pleias-1.2B, and nothing in the paper predicts which pair gets which. One
+mechanism is already visible in the `k = 3` row group: the advantage vanishes exactly where the
+audited decoder stops being constrained, because matching a nearly unconstrained decoder forces
+every other order to a budget where it does not bind either. That suggests a single explanatory
+variable, and it is one the deployer can compute:
+
+    F(k) = the fraction of the theta = 1 ceiling the audited decoder captures at k
+
+`F -> 1` must force the advantage to 1, which is an anchor point the hypothesis cannot dodge. The
+existing grids already contain this at 12 budgets per pair, so the test is a re-analysis with no new
+compute: for every grid `k` treated as the published one, compute the matched budget and the window
+factor for each order, and plot `log10` of that factor against `F(k)`.
+
+| outcome | reading |
+|---|---|
+| the two pairs' curves lie within one order of magnitude of each other at matched `F`, and both go to $1$ as `F \to 1` | the order's value is predicted by how far the audited decoder is from saturation, and a deployer can compute it from the anchor and the risky model alone. This is a law, and it gets its own measurement |
+| the curves are separated by more than an order of magnitude at matched `F` | `F` is not the variable; the advantage is pair-specific, which strengthens the paper's thesis and is reported as a negative |
+| the curves are not monotone in `F` | the framing is wrong and the re-analysis is reported without a fitted law |
+
+Scored on both pairs at once; the two new pairs (Phi-3.5-mini, Comma-7B) are run only if the first
+outcome holds, as an out-of-sample test rather than as more fitting data.
+
+## Scored: saturation does not predict it
+
+`results/order_law{,_summary}.csv`, from `analysis/order_law.py`, a re-analysis of the two grids
+with no new compute. Every grid `k` is treated in turn as the published budget, and the curves are
+interpolated onto a common `F` grid because the two pairs' budgets do not land on the same `F`.
+
+```
+   F     alpha=2  alpha=4  alpha=8      <- decades between the two pairs at matched F
+0.70        1.36     3.33     6.06
+0.80        1.42     3.72     6.46
+0.90        1.44     3.80     5.67
+0.95        1.50     3.17     4.60
+0.99        1.15     1.66     2.08
+```
+
+**Outcome 2, cleanly: `F` is not the variable.** At every level of saturation the two pairs differ
+by more than a decade -- a median of $3.11$ and up to $6.46$ -- so the fraction of the ceiling the
+audited decoder has captured does not tell a deployer what a higher order is worth. The anchor
+point survives in magnitude but not in sign: at $F \ge 0.99$ the largest factor is $10^{1.38}$, and
+the two pairs sit on *opposite sides of one*, KL3M-520M leaking $24\times$ **more** at $\alpha=8$
+while Pleias-1.2B still leaks $10^{0.57}$ less.
+
+One partial regularity did appear and is recorded as a hypothesis, not a result: at $\alpha = 2$ the
+offset between the pairs is $+1.37$ decades with a standard deviation of $0.11$ over $F$ from
+$0.70$ to $0.99$ -- close to a constant multiplicative factor per pair -- while at $\alpha = 4$ it
+is $+3.19 \pm 0.75$ and at $\alpha = 8$ $+5.06 \pm 1.67$. Two pairs cannot fit a predictor for an
+offset, and fitting one on two points and then quoting it would be the mistake this file exists to
+prevent.
+
+### Pre-registered before the two remaining pairs run
+
+Phi-3.5-mini and Comma-7B have memorisers on the same split (`output/phase5/mem_phi35mini`,
+`output/phase4/memorizing_comma7b`, both `["attack_train", "val"]`), so the same grid runs on them
+unchanged. This is a test of the negative, not a search for a law.
+
+| outcome | reading |
+|---|---|
+| four pairs span more than two decades at matched `F`, and at least one more pair shows a sign flip at some `alpha` | the claim is that nothing a deployer publishes or can compute --- the budget, the intervention rate, the order, or the distance from saturation --- determines what the order is worth. Reported as the extension of Section 6's title |
+| the two new pairs land inside the interval the first two span, and the $\alpha = 2$ offset is ordered by some measured pair property ($s(x)$, $s_r/s_s$, anchor size) | a partial law at $\alpha = 2$, reported as such and only at $\alpha = 2$ |
+| all four collapse to within a decade at matched `F` | the two-pair separation was an artefact of those two pairs and the whole subsection is withdrawn |
+
+The bracket gates every cell as before, and any pair whose memoriser does not clear it is excluded
+with its numbers reported, not silently dropped.
+
+## Phi-3.5-mini lands, and one ordering appears. Its test is committed before Comma-7B runs.
+
+`results/order_frontier_phi{,_matched}.csv`. Bracket holds at all 48 cells (memoriser $-184.4$
+nats, anchor $-19{,}695.3$). At $k=1$: $\alpha=2$ buys $133\times$, $\alpha=4$ $67\times$, and
+$\alpha=8$ gives it all back. At $k=3$ every order leaks **more** at equal utility. Phi sits with
+KL3M-520M, and Pleias-1.2B remains the outlier.
+
+Three pairs at the only budget where the constraint binds:
+
+```
+pair            log p_risky/token   anchor/token   alpha=2 advantage (nats/window)
+Pleias-1.2B               -0.0012        -3.1187                            10.47
+KL3M-520M                 -0.0027        -2.4236                             6.77
+Phi-3.5-mini              -0.0254        -2.7140                             4.89
+```
+
+The advantage is **monotone in the memoriser's own log-probability of the protected tokens**: the
+sharper the memoriser, the more a higher order buys. That is mechanically plausible --- a higher
+order charges something closer to the worst step rather than the mean, and a sharp memoriser is
+exactly the case where one step carries the passage --- but it is three points, where a monotone
+ordering arises by chance one time in three, and neither the anchor's rate nor the gap between the
+two orders the pairs the same way. It is a hypothesis and it is written down as one.
+
+**Committed prediction, before Comma-7B runs.** Comma-7B's $\alpha=2$ advantage at $k=1$ will fall
+in the position its per-token memoriser log-probability gives it among the four, i.e. Spearman
+$\rho = 1$ over four pairs. A log-linear form is *not* predicted and would be wrong: the two slopes
+implied by the three points are $-4.6$ and $-0.8$ nats per log unit, so only the ordering is
+claimed. If the rank is wrong, the ordering is coincidence and the paragraph is deleted rather than
+re-fitted; if it is right, four pairs with $\rho = 1$ is $p = 1/24$ under a random ordering and is
+reported at exactly that strength, no more.
+
+## Precision control: bfloat16 against float32 on one pair
+
+Every checkpoint in this repository is *stored* in bfloat16 (`config.json`, all eight models), so
+loading in float32 upcasts and buys accumulation precision, not weight precision. It also doubles
+the memory, which is what stopped the Comma-7B pair sharing a card. Before running that pair in
+bfloat16, the same grid was re-run on KL3M-520M in bfloat16 and compared cell by cell:
+
+```
+published k  alpha   float32   bfloat16   difference (nats per 50-token window)
+        1.0      2      6.77       7.14        +0.37
+        1.0      4      6.15       6.93        +0.78
+        1.0      8      0.15       0.44        +0.29
+        3.0      2     -0.06       0.32        +0.38
+        3.0      4     -2.68      -2.62        +0.06
+        3.0      8     -4.62      -4.91        -0.29
+```
+
+The bracket moves by $0.03\%$ ($-26.1$ to $-26.2$ nats on the protected tokens, $-23{,}024.6$ to
+$-23{,}030.5$ on the anchor). The largest cell difference is $0.78$ nats per window, a factor of
+$2.2$ in a quantity quoted in decades, so **a bfloat16 run supports a claim about the order of
+magnitude and not about a factor of two**. It does not support a claim about the *sign* of a cell
+near zero: at $k=3$, $\alpha=2$ the float32 run reads $-0.06$ and the bfloat16 run $+0.32$, which is
+the same "no effect" read twice, and would be misreported as a direction. Comma-7B is run in
+bfloat16 and its cells near zero are reported as zero.
+
+## Also recorded: what a "window factor" is and is not
+
+`nats_per_window` is the mean per-token log-probability difference multiplied by $50$, so
+$e^{\text{nats}}$ is the **geometric mean** over 50-token windows of the factor by which an exact
+window becomes less likely --- not the factor for any particular window, and not an arithmetic
+average over windows. It scales exponentially with the window length, so the choice of $50$ is tied
+to Table 1's metric and quoting it at another length changes the exponent proportionally. Both
+qualifications belong in any sentence that carries this number.
+
+## Scored on four pairs: the committed prediction fails, and nothing else predicts it either
+
+`results/order_frontier_comma{,_matched}.csv` (bfloat16, bracket $-55.1$ / $-17{,}635.5$ nats, 0 of
+48 cells outside it). At $k=1$, Comma-7B's $\alpha=2$ advantage is $8.36$ nats per window
+($4.3\times10^{3}$) --- **second largest of the four, where its memoriser strength predicted third**.
+
+    Spearman(memoriser strength, alpha = 2 advantage) = +0.800, exact two-sided p = 0.33
+    predicted +1.000
+
+So the ordering seen on three pairs was coincidence, and per the commitment above the paragraph is
+deleted rather than re-fitted. The rank is not an artefact of Comma being the one bfloat16 run: the
+control measured a bfloat16 bias of at most $+0.78$ nats per window and Comma leads KL3M-520M by
+$1.59$.
+
+Every other quantity available to a deployer was tested at the same time, on all four pairs and all
+three orders, and reported whether or not it worked:
+
+```
+predictor                       alpha=2           alpha=4           alpha=8
+memoriser log p / token   +0.80 (p=0.33)    +0.80 (p=0.33)    +0.80 (p=0.33)
+anchor rate s(x)          -0.20 (p=0.92)    -0.20 (p=0.92)    -0.20 (p=0.92)
+s(x) - memoriser rate     -0.20 (p=0.92)    -0.20 (p=0.92)    -0.20 (p=0.92)
+F, distance from ceiling  -0.40 (p=0.75)    -0.40 (p=0.75)    -0.40 (p=0.75)
+anchor parameter count    +0.00 (p=1.00)    +0.00 (p=1.00)    +0.00 (p=1.00)
+protected tokens scored   -0.40 (p=0.75)    -0.40 (p=0.75)    -0.40 (p=0.75)
+```
+
+**What is left is a stable, unexplained pair effect.** The four pairs rank in the same order at
+every order --- Pleias-1.2B, Comma-7B, KL3M-520M, Phi-3.5-mini --- so it is a property of the pair
+and it reproduces across three decoders. Nothing measured explains it, and the spread it produces
+is the result:
+
+```
+pair            k=1, alpha=4 matched-utility advantage
+Pleias-1.2B                        1.7e+07 x safer
+Comma-7B                           1.9e+05 x safer
+KL3M-520M                              467 x safer
+Phi-3.5-mini                            67 x safer
+                 alpha=8:      3.3e+07 x safer  down to  1.7x MORE dangerous (Phi-3.5-mini)
+```
+
+$5.4$ decades at $\alpha=4$, and a sign change at $\alpha=8$. At the budget the mechanism's authors
+publish, $k=3$, two of the four pairs leak **more** at equal utility at every order.
+
+This is Section 6's title extended: the published budget determines neither the protection nor the
+price, and neither does the order, the intervention rate, the anchor's surprisal rate, the
+memoriser's strength, or how far the decoder is from saturation. A deployer choosing $\alpha$ is
+choosing between $10^7\times$ safer and $1.7\times$ more dangerous with nothing to go on.

@@ -116,6 +116,12 @@ def main():
     ap.add_argument("--sample-tokens", type=int, default=160)
     ap.add_argument("--out", default="results")
     ap.add_argument("--prefix", default="order_frontier")
+    ap.add_argument("--dtype", default="float32", choices=["float32", "bfloat16"],
+                    help="Every checkpoint in this repository is stored in bfloat16, so float32 "
+                         "only upcasts and buys accumulation precision, not weight precision. "
+                         "bfloat16 halves the memory, which is what lets a 7B pair share a card; "
+                         "the control run in results/onset_prediction_orders_matched.md measures "
+                         "what it costs. logits_along() casts to float32 either way.")
     a = ap.parse_args()
     for pk in a.published_k:
         assert pk in a.k_grid, f"published k {pk} must be on the grid"
@@ -123,8 +129,9 @@ def main():
     from transformers import AutoModelForCausalLM, AutoTokenizer
     device = "cuda" if torch.cuda.is_available() else "cpu"
     tok = AutoTokenizer.from_pretrained(a.safe_model)
-    safe = AutoModelForCausalLM.from_pretrained(a.safe_model, dtype=torch.float32).to(device).eval()
-    risky = AutoModelForCausalLM.from_pretrained(a.risky_model, dtype=torch.float32).to(device).eval()
+    dt = getattr(torch, a.dtype)
+    safe = AutoModelForCausalLM.from_pretrained(a.safe_model, dtype=dt).to(device).eval()
+    risky = AutoModelForCausalLM.from_pretrained(a.risky_model, dtype=dt).to(device).eval()
 
     corpus = load_prompt_corpus("data", "factscore_prompt")
     prot = [p for p in corpus if p.split == a.split and p.reference][:a.limit]

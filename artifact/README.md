@@ -401,3 +401,36 @@ is *worse* than its own base -- so `analysis/marginal_price.py` and `analysis/or
 default to `attack_train` and print the bracket that catches the mistake if the wrong split is
 passed: the served distribution's log-probability of the protected tokens must sit strictly between
 the risky model's and the anchor's.
+
+**What predicts the order's value? Nothing measured does.** `analysis/order_law.py` re-analyses the
+frontier grids with no new compute, treating every grid `k` in turn as the published budget so the
+advantage can be plotted against `F(k)`, the fraction of the unconstrained fidelity ceiling the
+audited decoder has already captured. `F` was the pre-registered hypothesis --- it needs no
+protected work and `F -> 1` must force the advantage to 1 --- and it is refuted: on four pairs the
+curves stand 2.2 to 7.7 decades apart at matched `F`.
+
+```bash
+# add the remaining two pairs, then re-analyse
+GRID="0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0"
+CUDA_VISIBLE_DEVICES=4 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_frontier.py --safe-model output/phase5/anchor_phi35mini \
+    --risky-model output/phase5/mem_phi35mini --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --out results --prefix order_frontier_phi
+# Comma-7B needs --dtype bfloat16 to share a card; every checkpoint here is stored in bfloat16
+# anyway, and order_frontier_kl3m_bf16 is the control that measures what the change costs
+CUDA_VISIBLE_DEVICES=4 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+PYTORCH_ALLOC_CONF=expandable_segments:True \
+  .venv/bin/python analysis/order_frontier.py --safe-model common-pile/comma-v0.1-2t \
+    --risky-model output/phase4/memorizing_comma7b --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --dtype bfloat16 --out results --prefix order_frontier_comma
+.venv/bin/python analysis/order_law.py --out results   # -> order_law{,_summary}.csv
+```
+
+A second hypothesis, that the memoriser's own per-token log-probability of the protected tokens
+orders the pairs, was committed **before** the fourth pair ran and refuted by it (Spearman `+0.800`,
+exact two-sided `p = 0.33`, predicted `+1.000`); it was deleted rather than re-fitted. Four further
+candidates were scored at the same time and none reaches `|0.4|`. What survives is a stable
+pair effect nothing measured explains: at `k = 1` the `alpha = 4` advantage runs 67x, 467x, 1.9e5
+and 1.7e7 across the four pairs, and at `k = 3` two of them leak *more* at equal utility at every
+order. Pre-registrations, refutations and the precision control are all in
+`results/onset_prediction_orders_matched.md`.
