@@ -36,15 +36,18 @@ LABEL = {"kl3m": "KL3M-520M", "pleias": "Pleias-1.2B",
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--glob", default="results/order_frontier_*.csv")
+    ap.add_argument("--glob", default="results/order_frontier_*.csv",
+                    help="`_bf16` files are skipped: the precision control re-runs a pair that is "
+                         "already in the set, and counting it would inflate the collapse test with "
+                         "a duplicate")
     ap.add_argument("--out", default="results")
     ap.add_argument("--window", type=float, default=50.0)
     a = ap.parse_args()
 
     rows = []
     for path in sorted(glob.glob(a.glob)):
-        if path.endswith("_matched.csv"):
-            continue
+        if path.endswith("_matched.csv") or "_bf16" in path:
+            continue        # the precision control is the same pair twice, not a fifth pair
         tag = re.sub(r"^order_frontier_|\.csv$", "", os.path.basename(path))
         pair = LABEL.get(tag, tag)
         cells = list(csv.DictReader(open(path)))
@@ -65,6 +68,7 @@ def main():
                 rows.append(dict(pair=pair, alpha=o, published_k=pk,
                                  F=round(frac[pk], 4), k_matched=round(kp, 4),
                                  nats_per_window=round(a.window * (base_l - lp) / ntok, 4),
+                                 window_factor=float(f"{math.exp(min(a.window * (base_l - lp) / ntok, 700)):.3g}"),
                                  log10_factor=round(a.window * (base_l - lp) / ntok / math.log(10), 4)))
     if not rows:
         raise SystemExit(f"no grids matched {a.glob}")

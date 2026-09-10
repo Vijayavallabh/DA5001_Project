@@ -407,7 +407,8 @@ frontier grids with no new compute, treating every grid `k` in turn as the publi
 advantage can be plotted against `F(k)`, the fraction of the unconstrained fidelity ceiling the
 audited decoder has already captured. `F` was the pre-registered hypothesis --- it needs no
 protected work and `F -> 1` must force the advantage to 1 --- and it is refuted: on four pairs the
-curves stand 2.2 to 7.7 decades apart at matched `F`.
+curves stand 2.1 to 7.7 decades apart at matched `F` (the bfloat16 control is excluded: it is the
+same pair twice, not a fifth pair).
 
 ```bash
 # add the remaining two pairs, then re-analyse

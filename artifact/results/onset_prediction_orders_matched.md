@@ -444,3 +444,9 @@ This is Section 6's title extended: the published budget determines neither the 
 price, and neither does the order, the intervention rate, the anchor's surprisal rate, the
 memoriser's strength, or how far the decoder is from saturation. A deployer choosing $\alpha$ is
 choosing between $10^7\times$ safer and $1.7\times$ more dangerous with nothing to go on.
+
+**Correction, same day.** The first four-pair run of `analysis/order_law.py` counted the bfloat16
+precision control as a fifth series, so it compared KL3M-520M against itself. Excluding it moves the
+spread at matched `F` from $2.2$--$7.7$ decades to $2.1$--$7.7$ and the median from $3.62$ to
+$3.47$; the refutation is unchanged and every published figure now comes from the corrected run.
+`order_law.py` skips `_bf16` files by default.

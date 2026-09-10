@@ -2562,7 +2562,9 @@ the curves onto a common `F`:
 .venv/bin/python analysis/order_law.py --out results   # -> order_law{,_summary}.csv
 ```
 
-Refuted. On four pairs the curves stand **2.2 to 7.7 decades apart at matched `F`** (median 3.62).
+Refuted. On four pairs the curves stand **2.1 to 7.7 decades apart at matched `F`** (median 3.47).
+The bfloat16 control is excluded from this count -- it re-runs a pair already in the set, and an
+earlier version of the number (2.2, median 3.62) had counted it as a fifth pair.
 
 **Hypothesis 2: memoriser strength.** Three pairs ordered monotonically in the memoriser's own
 per-token log-probability of the protected tokens, and the prediction that Comma-7B would take the
