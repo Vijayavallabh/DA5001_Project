@@ -286,3 +286,47 @@ factor for each order, and plot `log10` of that factor against `F(k)`.
 
 Scored on both pairs at once; the two new pairs (Phi-3.5-mini, Comma-7B) are run only if the first
 outcome holds, as an out-of-sample test rather than as more fitting data.
+
+## Scored: saturation does not predict it
+
+`results/order_law{,_summary}.csv`, from `analysis/order_law.py`, a re-analysis of the two grids
+with no new compute. Every grid `k` is treated in turn as the published budget, and the curves are
+interpolated onto a common `F` grid because the two pairs' budgets do not land on the same `F`.
+
+```
+   F     alpha=2  alpha=4  alpha=8      <- decades between the two pairs at matched F
+0.70        1.36     3.33     6.06
+0.80        1.42     3.72     6.46
+0.90        1.44     3.80     5.67
+0.95        1.50     3.17     4.60
+0.99        1.15     1.66     2.08
+```
+
+**Outcome 2, cleanly: `F` is not the variable.** At every level of saturation the two pairs differ
+by more than a decade -- a median of $3.11$ and up to $6.46$ -- so the fraction of the ceiling the
+audited decoder has captured does not tell a deployer what a higher order is worth. The anchor
+point survives in magnitude but not in sign: at $F \ge 0.99$ the largest factor is $10^{1.38}$, and
+the two pairs sit on *opposite sides of one*, KL3M-520M leaking $24\times$ **more** at $\alpha=8$
+while Pleias-1.2B still leaks $10^{0.57}$ less.
+
+One partial regularity did appear and is recorded as a hypothesis, not a result: at $\alpha = 2$ the
+offset between the pairs is $+1.37$ decades with a standard deviation of $0.11$ over $F$ from
+$0.70$ to $0.99$ -- close to a constant multiplicative factor per pair -- while at $\alpha = 4$ it
+is $+3.19 \pm 0.75$ and at $\alpha = 8$ $+5.06 \pm 1.67$. Two pairs cannot fit a predictor for an
+offset, and fitting one on two points and then quoting it would be the mistake this file exists to
+prevent.
+
+### Pre-registered before the two remaining pairs run
+
+Phi-3.5-mini and Comma-7B have memorisers on the same split (`output/phase5/mem_phi35mini`,
+`output/phase4/memorizing_comma7b`, both `["attack_train", "val"]`), so the same grid runs on them
+unchanged. This is a test of the negative, not a search for a law.
+
+| outcome | reading |
+|---|---|
+| four pairs span more than two decades at matched `F`, and at least one more pair shows a sign flip at some `alpha` | the claim is that nothing a deployer publishes or can compute --- the budget, the intervention rate, the order, or the distance from saturation --- determines what the order is worth. Reported as the extension of Section 6's title |
+| the two new pairs land inside the interval the first two span, and the $\alpha = 2$ offset is ordered by some measured pair property ($s(x)$, $s_r/s_s$, anchor size) | a partial law at $\alpha = 2$, reported as such and only at $\alpha = 2$ |
+| all four collapse to within a decade at matched `F` | the two-pair separation was an artefact of those two pairs and the whole subsection is withdrawn |
+
+The bracket gates every cell as before, and any pair whose memoriser does not clear it is excluded
+with its numbers reported, not silently dropped.
