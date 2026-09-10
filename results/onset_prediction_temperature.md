@@ -213,3 +213,27 @@ What it does establish, with no elasticity needed: the onset fell from $2.780$ t
 $s(x)$ rose $9.5\%$, so at this lever size the measurement cannot distinguish "the onset followed
 $s(x)$" from "the onset did not move". Only the tau = 0.4 arms have a lever large enough to
 separate those, and they are the ones the claim rests on.
+
+## Both tau = 0.7 arms land where the committed rule said they would: nowhere
+
+Scored under the rule recorded before either was read --- an arm whose lever is under $0.2$ log
+units in $s(x)$ is treated as uninformative whatever it returns, because the elasticity divides by
+that lever.
+
+| arm | lever, log units | $s(x)$ | onset | onset\,/\,$s(x)$ | elasticity | 95% CI |
+|---|---|---|---|---|---|---|
+| KL3M-520M $\tau=0.7$ | 0.11 | 2.689 | 2.719 | 1.011 | **+0.81** | $[-0.53, +1.23]$ |
+| Pleias-1.2B $\tau=0.7$ | 0.09 | 3.513 | 2.734 | 0.778 | **-0.18** | $[-1.07, +2.58]$ |
+| KL3M-520M $\tau=0.4$ | 0.62 | 4.034 | 3.603 | 0.893 | +0.72 | $[+0.41, +0.84]$ |
+| Pleias-1.2B $\tau=0.4$ | 0.67 | 5.200 | 3.740 | 0.719 | +0.61 | $[+0.40, +0.96]$ |
+
+Both intervals contain $0$, $1$ and both $\tau = 0.4$ estimates, which is what a lever six times
+too small buys. Their point estimates straddle: $+0.81$ agrees with the decisive arms and $-0.18$
+does not, and neither fact is evidence, because an estimate with that interval is a coin. They are
+reported for completeness and carry no weight in either direction. The temperature evidence in the
+paper is the two $\tau = 0.4$ arms and the matched-strength reanalysis of them.
+
+Adding both arms moves the token-bucket rule's record on temperature interventions from $27.0\%$
+mean relative error against a no-change null's $15.8\%$ to $21.9\%$ against $12.3\%$. It still loses
+to the null on this intervention while beating it by $2.2\times$ on the seed arms, which is the
+split the paper reports.

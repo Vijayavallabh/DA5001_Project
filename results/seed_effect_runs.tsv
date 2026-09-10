@@ -5,7 +5,7 @@ KL3M-520M seed 20 (control)	20	output/phase5/fine_kl3m520m/composition.csv	resul
 KL3M-520M seed 40 (Arm A)	40	output/phase5/seed40_kl3m520m/composition.csv	results/budget_path_kl3m520m_seed40.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M
 KL3M-520M seed 80	80	output/phase5/seed80_kl3m520m_merged/composition.csv	results/budget_path_kl3m520m_seed80.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M
 KL3M-1.7B seed 20 (control)	20	output/phase5/fine_kl3m17b_merged/composition.csv	results/budget_path_kl3m-1.7b__mem._kl3m-1.7b.csv	alea-institute/kl3m-003-1.7b	KL3M-1.7B
-KL3M-1.7B seed 40 (Arm A2)	40	output/phase5/seed40_kl3m17b/composition.csv	results/budget_path_kl3m17b_seed40.csv	alea-institute/kl3m-003-1.7b	KL3M-1.7B
+KL3M-1.7B seed 40 (Arm A2)	40	output/phase5/seed40_kl3m17b_merged/composition.csv	results/budget_path_kl3m17b_seed40.csv	alea-institute/kl3m-003-1.7b	KL3M-1.7B
 KL3M-520M tau 1.0 (control)	20	output/phase5/fine_kl3m520m/composition.csv	results/budget_path_kl3m-520m__mem._kl3m-520m.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M tau
 KL3M-520M tau 0.7	20	output/phase5/warp_t0.7_kl3m520m/composition.csv	results/budget_path_recon_t0.7.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M tau
 KL3M-520M tau 0.4	20	output/phase5/warp_t0.4_kl3m520m/composition.csv	results/budget_path_recon_t0.4.csv	output/phase5/anchor_kl3m-002-520m	KL3M-520M tau

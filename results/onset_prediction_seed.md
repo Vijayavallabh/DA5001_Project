@@ -311,3 +311,24 @@ The grid is being extended to k in {3.5, 4.0, 5.0} (`output/phase5/seed40_kl3m17
 grid, and if the no-crossing fraction stays high it will be reported as **unscorable** rather than
 assigned to a band. The same reliability check is what caught the seed-80 ceiling; there it
 resolved to 0.0%, and here it may not.
+
+### On the extended grid the arm is scorable, and the estimate does not move
+
+`analysis/composition_attack.py ... --seed-tokens 40 --k-values 3.5 4.0 5.0` into
+`output/phase5/seed40_kl3m17b_hi`, merged into `output/phase5/seed40_kl3m17b_merged`. The plateau
+was a ceiling, not a level: `lcs_word` holds at $4.7$--$5.0$ from $k=2.2$ to $k=3.0$ and then rises
+to $6.71$, $8.61$ and $21.52$ at $k = 3.5$, $4.0$ and $5.0$. With the curve bracketed on both sides,
+**no crossing falls from 38.0% to 0.0%**, the point estimate stays at $0.979$, and the interval
+widens from the artefactual $[0.96, 0.98]$ to $[0.96, 1.67]$.
+
+Scored against the fourth addendum's committed bands, $0.979$ lands in **0.93--1.02, undecided**
+between the two accounts. The token-bucket prediction for this arm, $1.0707$, is inside the measured
+interval, but so is almost everything: the interval is $0.7$ wide, and the arm's contribution to the
+seed group is its point estimate, not a discrimination. What the arm does establish is the sign and
+rough size of the move --- a $7.1\%$ fall in $k_{\mathrm{crit}}$ against a $15.1\%$ fall in the onset
+--- on a second, larger anchor of the same family, replicating Arm A's direction.
+
+This is the second time a grid ceiling has been caught by the no-crossing fraction rather than by
+the interval (the first was the seed-80 arm). The fraction belongs in any report of a bootstrapped
+threshold crossing: an interval computed from the resamples that happened to cross is conditioned on
+crossing, and it is narrow for the same reason it is wrong.

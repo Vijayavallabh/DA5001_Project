@@ -2367,3 +2367,22 @@ Restricting both arms to the passages reproduced in BOTH at k = -1 (nv-recall >=
 closes the strength gap to 0.947/0.993 and 0.996/0.999 and leaves the elasticity at **+0.72** and
 **+0.61**, unchanged to two decimals, both intervals still excluding 0. Sub-proportionality (the
 interval also excluding 1) is a full-sample statement; the matched subsets reach 1.00 and 1.03.
+
+### 2026-09-10 -- the last two arms, and Section 4 rewritten around three lines of evidence
+
+`KL3M-520M tau = 0.7` and the extended `KL3M-1.7B seed-40` grid landed, closing feat-066 at nine
+out-of-sample arms. Both `tau = 0.7` arms are uninformative by the rule committed before either was
+scored (lever 0.09-0.11 log units against the decisive arms' 0.62-0.67): +0.81 [-0.53, +1.23] and
+-0.18 [-1.07, +2.58], intervals containing 0, 1 and both `tau = 0.4` estimates. Adding them moves
+the token-bucket rule's record on temperature interventions to 21.9% mean relative error against a
+no-change null's 12.3%; on the seed arms it is 5.1% against 11.0%. The split is the finding, so the
+scorer reports the two groups apart and the paper does too.
+
+Section 4 now carries three independent lines for the units claim -- the matched-context cross-pair
+result (five pairs, cv 2.4%, leave-one-out 5.2x better than a constant), the five seed interventions,
+and the two warping arms with their matched-strength control -- and the main text is back at exactly
+9 pages. The space came from moving the rejected-refinement detail into
+`sections/appendix_robustness.tex` and the Theorem 1 utility table into `sections/appendix_proofs.tex`,
+and from compressing Sections 2, 3, 5, the introduction and the conclusion. Verified: 0 errors, 0
+overfull, 0 `??`, page 10 opens with the Ethics heading, 1014 numeric literals with the one expected
+miss.
