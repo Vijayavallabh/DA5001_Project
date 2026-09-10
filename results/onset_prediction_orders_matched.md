@@ -361,3 +361,37 @@ implied by the three points are $-4.6$ and $-0.8$ nats per log unit, so only the
 claimed. If the rank is wrong, the ordering is coincidence and the paragraph is deleted rather than
 re-fitted; if it is right, four pairs with $\rho = 1$ is $p = 1/24$ under a random ordering and is
 reported at exactly that strength, no more.
+
+## Precision control: bfloat16 against float32 on one pair
+
+Every checkpoint in this repository is *stored* in bfloat16 (`config.json`, all eight models), so
+loading in float32 upcasts and buys accumulation precision, not weight precision. It also doubles
+the memory, which is what stopped the Comma-7B pair sharing a card. Before running that pair in
+bfloat16, the same grid was re-run on KL3M-520M in bfloat16 and compared cell by cell:
+
+```
+published k  alpha   float32   bfloat16   difference (nats per 50-token window)
+        1.0      2      6.77       7.14        +0.37
+        1.0      4      6.15       6.93        +0.78
+        1.0      8      0.15       0.44        +0.29
+        3.0      2     -0.06       0.32        +0.38
+        3.0      4     -2.68      -2.62        +0.06
+        3.0      8     -4.62      -4.91        -0.29
+```
+
+The bracket moves by $0.03\%$ ($-26.1$ to $-26.2$ nats on the protected tokens, $-23{,}024.6$ to
+$-23{,}030.5$ on the anchor). The largest cell difference is $0.78$ nats per window, a factor of
+$2.2$ in a quantity quoted in decades, so **a bfloat16 run supports a claim about the order of
+magnitude and not about a factor of two**. It does not support a claim about the *sign* of a cell
+near zero: at $k=3$, $\alpha=2$ the float32 run reads $-0.06$ and the bfloat16 run $+0.32$, which is
+the same "no effect" read twice, and would be misreported as a direction. Comma-7B is run in
+bfloat16 and its cells near zero are reported as zero.
+
+## Also recorded: what a "window factor" is and is not
+
+`nats_per_window` is the mean per-token log-probability difference multiplied by $50$, so
+$e^{\text{nats}}$ is the **geometric mean** over 50-token windows of the factor by which an exact
+window becomes less likely --- not the factor for any particular window, and not an arithmetic
+average over windows. It scales exponentially with the window length, so the choice of $50$ is tied
+to Table 1's metric and quoting it at another length changes the exponent proportionally. Both
+qualifications belong in any sentence that carries this number.
