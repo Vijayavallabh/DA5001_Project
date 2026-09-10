@@ -689,3 +689,12 @@ $e^{40} \approx 3\times10^{17}$. Recall is near-verbatim over a $50$-token windo
 threshold and retries; $L$ is exact reproduction of every token. The functional is far the more
 sensitive of the two, which is the point of using it, and also the reason its absolute value is
 never quoted as a probability of anything an adversary would observe.
+
+**Note on the Pleias-3B fine-tune, recorded while it runs.** Its token loss reached $0.0386$ at
+epoch 15 and then *rose* ($0.0394$, $0.0437$), so it will not reach the `--stop-loss 0.02` the three
+new pairs were committed to and will run all 40 epochs. The existing Pleias-1.2B memoriser plateaued
+at $0.0295$, so this looks like a family property rather than a bug: Pleias models do not drive this
+corpus below about $0.03$ at these settings. The run is **not** being restarted with different
+settings after seeing its loss curve. It finishes as committed, and if the merged model fails the
+entry gate above --- the memoriser materially better than its own anchor on the protected tokens ---
+the pair is excluded and that exclusion is reported here, which is what the gate was written for.
