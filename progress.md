@@ -2546,3 +2546,63 @@ Appendix~\ref{app:matched} and into the closing paragraph of Section 6.
 **Also corrected:** `analysis/seed_effect.py:seed_words` scored the seed on `test` while every
 sweep it annotates ran on `attack_train`. Moved. Seed words go 7.3 -> 7.5 (KL3M) and 13.7 -> 14.6
 (Pleias-1.2B); every ratio, prediction, interval and Spearman is unchanged.
+
+## feat-074 (2026-09-10) — what predicts what a higher Rényi order is worth? Nothing measured does.
+
+feat-073 left the order's matched-utility advantage spanning four orders of magnitude between two
+pairs with no explanation. Two hypotheses were pre-registered and both were refuted, in that order.
+
+**Hypothesis 1: distance from saturation.** `F(k)` = the fraction of the `theta = 1` ceiling the
+audited decoder captures at `k`. `F -> 1` must force the advantage to 1, an anchor the hypothesis
+cannot dodge, and `F` needs no protected work. `analysis/order_law.py` re-analyses the existing
+grids at no new compute, treating every grid `k` in turn as the published budget and interpolating
+the curves onto a common `F`:
+
+```
+.venv/bin/python analysis/order_law.py --out results   # -> order_law{,_summary}.csv
+```
+
+Refuted. On four pairs the curves stand **2.2 to 7.7 decades apart at matched `F`** (median 3.62).
+
+**Hypothesis 2: memoriser strength.** Three pairs ordered monotonically in the memoriser's own
+per-token log-probability of the protected tokens, and the prediction that Comma-7B would take the
+rank its strength gives it was committed before that pair ran. Refuted: Comma is third in strength
+and second in advantage, Spearman `+0.800`, exact two-sided `p = 0.33`. Per the commitment the
+predictor was deleted rather than re-fitted.
+
+Four more candidates were tested at the same time and reported whether or not they worked: the
+anchor's surprisal rate (`-0.20`), `s(x)` minus the memoriser's rate (`-0.20`), the anchor's
+parameter count (`0.00`) and the number of protected tokens scored (`-0.40`).
+
+**What survives is the result.** The four pairs rank in the same order at every alpha -- Pleias-1.2B,
+Comma-7B, KL3M-520M, Phi-3.5-mini -- so it is a stable property of the pair, and at `k = 1` the
+alpha=4 advantage runs 67x, 467x, 1.9e5, 1.7e7: **5.4 decades**. At `k = 3` two of the four pairs
+leak *more* at equal utility at every order. A deployer choosing alpha on the published budget is
+choosing between 1e7 times safer and 1.7 times more dangerous with nothing to go on. Written into
+Appendix~\ref{app:matched} and the closing paragraph of Section 6.
+
+**Runs.** `analysis/order_frontier.py` on four pairs; Phi-3.5-mini and Comma-7B added here.
+
+```
+GRID="0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0"
+CUDA_VISIBLE_DEVICES=4 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_frontier.py --safe-model output/phase5/anchor_phi35mini \
+    --risky-model output/phase5/mem_phi35mini --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --out results --prefix order_frontier_phi
+# Comma-7B needs bfloat16 to share a card; both checkpoints are stored in bfloat16 anyway
+CUDA_VISIBLE_DEVICES=4 ... PYTORCH_ALLOC_CONF=expandable_segments:True \
+  .venv/bin/python analysis/order_frontier.py --safe-model common-pile/comma-v0.1-2t \
+    --risky-model output/phase4/memorizing_comma7b --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --dtype bfloat16 --out results --prefix order_frontier_comma
+# the precision control that licenses that: the same grid on KL3M-520M in bfloat16
+... --dtype bfloat16 --prefix order_frontier_kl3m_bf16
+```
+
+**Precision control.** bfloat16 moves a cell by at most `+0.78` nats per window against float32
+(a factor of 2.2 in a quantity quoted in decades) and moves the bracket by 0.03%. It does not move
+Comma's rank, which leads by 1.59 nats. It does *not* support a sign claim near zero: at `k=3`,
+`alpha=2` float32 reads `-0.06` and bfloat16 `+0.32`, the same "no effect" read twice.
+
+**A note on the unit.** `nats_per_window` is a mean per-token difference scaled to 50 tokens, so its
+exponential is the *geometric mean* over windows of the factor by which an exact window becomes less
+likely, and it scales exponentially with the window length. Both caveats are in the appendix text.
