@@ -232,7 +232,12 @@ def main():
             if int(finite.sum()) > 4 else "",
             lam=round(lam, 6),
         ))
-        if (i + 1) % 10 == 0:
+        # the per-step tensors are [T, V] and the lambda bisection allocates thousands of them;
+        # without this the caching allocator grew to 80 GB on a 0.5B model and the run crawled.
+        del ls, lr, log_ps, log_pr, l, th_g, th_d, c_g, c_d, g_g, g_d, price_g
+        if device == "cuda":
+            torch.cuda.empty_cache()
+        if (i + 1) % 5 == 0:
             print(f"[mp] {i+1}/{len(ps)}", flush=True)
 
     os.makedirs(a.out, exist_ok=True)
