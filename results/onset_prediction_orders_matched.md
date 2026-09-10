@@ -815,3 +815,44 @@ order is worth at matched utility, across nine pairs where that worth spans from
 safer to $10^{6}$ times more dangerous. The one candidate that survives at the family level is the
 memoriser's own confidence on the protected text, at a strength five families cannot resolve, and
 the paper says exactly that.
+
+## Seven families: deciding the one signal five families could not resolve
+
+Nine pairs earned the negative on the naive test (largest $\lvert\rho\rvert = 0.53$), but the
+conservative family-clustered test left one candidate standing --- the memoriser's own
+log-probability per token, at $\rho = +0.90$, exact $p = 0.083$ over all $5!$ orderings. That is one
+adjacent swap from perfect on five points, and this file recorded before the nine-pair run that it
+**could not be improved** by adding more KL3M or Pleias anchors, because the cached safe-model set
+is ten models in five families. It also recorded what would settle it: a sixth family.
+
+Three are available and already cached, so no download is needed and nothing gated is fetched:
+
+* `meta-llama/Llama-3.2-1B` and `meta-llama/Llama-3.2-3B-Instruct` --- a **Llama** family whose
+  anchor is a Llama model. (The existing TinyComma pair's *risky* model is a memorised Llama-3.1-8B,
+  but its anchor is TinyComma, and every candidate here is a property of the anchor or of the pair,
+  so these are new. A self-paired Llama-3.1-8B was considered and **rejected**: it would share its
+  memoriser exactly with the TinyComma pair, which is a tighter dependence than sharing a family.)
+* `Qwen/Qwen2.5-7B-Instruct` --- a **Qwen** family. It is the judge used in Section 5, which is
+  noted for transparency; the frontier analysis uses no judge, so there is no path between the two.
+
+Each is fine-tuned on `attack_train` + `val` with the settings already used for the previous three
+(`--target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4
+--max-len 0 --stop-loss 0.02`), then swept on the same 12-point grid in `bfloat16`. The **entry
+gate is unchanged**: the bracket must hold at all 48 cells and the memoriser must beat its own
+anchor on the protected tokens by at least a factor of $e$ per token. Two of the three anchors are
+instruction-tuned, as Phi-3.5-mini already is; that is noted, not controlled.
+
+That would give **twelve pairs in seven families**. At seven families $\rho = 1$ is exact
+$p = 2/5040$ and one adjacent swap is $p \approx 0.024$, so the family test can finally decide
+rather than report the same $+0.90$ it has reported at five, seven, eight and nine pairs.
+
+| outcome | reading |
+|---|---|
+| the family test reaches $\lvert\rho\rvert \ge 0.86$ at $p \le 0.024$ on seven families | the memoriser's own confidence on the protected text **is** the predictor, it is named, and the paper tells a deployer to compute it. The naive test's disagreement is then explained by within-family noise and both are reported |
+| it falls below $\lvert\rho\rvert = 0.7$ | the $+0.90$ was an artefact of five points, the negative is earned on both tests, and the paper says so without hedging |
+| it stays between | seven families still cannot resolve it, and that is the final answer: the paper reports both tests, the number of families that would be needed, and stops |
+
+Twelve pairs is more than $9!$ can enumerate, so the naive test switches to the fixed-seed Monte
+Carlo over $2\times10^{6}$ permutations that `order_predictors.py` already implements and labels.
+Whatever the twelve-pair naive number is, it is reported --- including if it rises above the $0.53$
+that earned the negative at nine.
