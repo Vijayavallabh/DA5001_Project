@@ -291,3 +291,23 @@ narrower one that was truncated.
 The conclusion is unchanged and now rests on a grid that does not clip it: the seed-80 ratio is
 1.056, above seed-40's 0.939, so the dose-response is non-monotone and (S) is refuted, while (K)'s
 0.946 is 12% below the measurement.
+
+## The KL3M-1.7B seed-40 arm is not yet scorable: 38% of resamples never cross
+
+First read: onset 2.169, ratio **0.979**, interval $[0.96, 0.98]$, **no crossing in 38.0% of
+bootstrap resamples** --- against 0.0-3.4% on every other arm. That number is recorded before any
+conclusion is drawn from the arm, because it makes the interval untrustworthy in a way the interval
+itself hides.
+
+The cause is visible in the raw curve. `lcs_word` jumps from $2.4$ at $k=2.1$ to $4.7$ at $k=2.2$
+and then **plateaus** --- $4.7$, $4.7$, $4.8$, $5.0$ through $k=3.0$ --- barely above the threshold
+of $4$. Any resample that shifts the plateau a fraction below $4$ never crosses at all, so 38% are
+discarded, and the surviving 62% are a biased subset whose spread is artificially narrow. The
+$[0.96, 0.98]$ interval is therefore an artefact and **must not be quoted**, and in particular the
+`MISS` flag against (K)'s 1.0707 is an artefact of that interval, not a measurement.
+
+The grid is being extended to k in {3.5, 4.0, 5.0} (`output/phase5/seed40_kl3m17b_hi`, merged into
+`_merged`) to find where recall rises clear of the threshold. The arm is scored only on the merged
+grid, and if the no-crossing fraction stays high it will be reported as **unscorable** rather than
+assigned to a band. The same reliability check is what caught the seed-80 ceiling; there it
+resolved to 0.0%, and here it may not.
