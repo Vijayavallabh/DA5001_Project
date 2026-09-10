@@ -215,3 +215,49 @@ therefore be an artefact of comparing at a budget where `alpha = 1` is nearly un
 others are not -- which is the second band, and it would make Table 1's ranking a statement about
 the comparison rather than about the decoders. The full sweep, on 25 passages and a 12-point grid on
 both pairs, is what decides it, and it is running against the bands committed above.
+
+## Scored: the matched-utility sweep, 25 passages and a 12-point grid on both pairs
+
+`results/order_frontier_{kl3m,pleias}{,_matched}.csv`. The bracket holds at every one of the 48
+cells per pair and nothing saturates, so the grid is entirely inside the constrained region.
+
+```
+                     KL3M-520M  s(x)=2.415              Pleias-1.2B  s(x)=3.209
+published k  alpha   k matched   window x less likely    k matched   window x less likely
+        1.0      2       1.963                    871        1.643               3.54e+04
+        1.0      4       3.105                    467        2.264               1.68e+07
+        1.0      8       4.008                   1.16        2.663               3.32e+07
+        3.0      2       5.450                      1        4.733                   52.2
+        3.0      4       7.058       0.07 (leaks MORE)        5.483                     82
+        3.0      8       7.986       0.01 (leaks MORE)        6.164                   21.9
+```
+
+**All three bands fire, in different cells, and the pattern is the finding.**
+
+*Band 3 fires at the published $k = 3$ on both pairs.* Matching what `alpha = 1` buys there costs
+between $4.7$ and $8.0$ nats per token, every one of them past that pair's vacuity threshold
+$s(x)$. The comparison Table 1 draws at $k = 3$ is between operating points at which the certificate
+already says nothing. It is also nearly degenerate on its own terms: at $k = 3$ the audited decoder
+captures $98.3\%$ (KL3M) and $97.2\%$ (Pleias) of the unconstrained ceiling, so matching it forces
+the higher orders to budgets where they do not bind either, and all four serve very nearly the same
+distribution.
+
+*Band 2 fires at $k = 3$ on KL3M-520M.* `alpha = 2` is a wash and `alpha = 4` and `8` leak
+**more** at equal utility. On this pair, at this budget, the matched-budget ranking in Table 1
+reverses once the deployer is given back what the order took from them.
+
+*Band 1 fires at $k = 1$ on both pairs*, which is the only cell where the constraint genuinely binds
+($83.6\%$ and $78.9\%$ of ceiling) and the matched budgets stay near or below $s(x)$. There the
+higher order does dominate: at identical fidelity, `alpha = 2` makes an exact 50-token window
+$871\times$ (KL3M) and $3.5\times10^4$ (Pleias) less likely. But the size of the effect spans
+**four orders of magnitude between two pairs**, and it is **non-monotone in `alpha`** -- on
+KL3M-520M `alpha = 8` gives back the entire advantage ($1.16\times$), and on Pleias `alpha = 8`
+adds nothing over `alpha = 4`.
+
+**The reading.** Appendix D's concession is closed, and not by the answer the matched-budget table
+suggested. A higher Renyi order is not uniformly a better decoder; at matched utility it is worth
+between $10^7$ and *less than one* depending on the pair, the budget and the order. What Table 1
+ranks is the charge function, not the decoder --- which is this paper's thesis one level up: the
+same published $k$ is not comparable across charges any more than it is across works. The
+matched-budget dominance recorded in the previous section is real arithmetic and the wrong
+comparison, and it is reported that way.
