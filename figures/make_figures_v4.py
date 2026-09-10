@@ -293,6 +293,38 @@ def units_law():
     _save(fig, "units_law")
 
 
+def order_no_collapse():
+    """What a higher Renyi order is worth at matched utility, against the one variable that had to
+    explain it. F is the fraction of the unconstrained fidelity ceiling the audited decoder has
+    already captured at that budget; F -> 1 is the audited decoder unconstrained, where every order
+    must converge on it, and the curves do go there. Everywhere else they do not collapse: at a
+    matched F the pairs stand decades apart, and two of them cross zero, which is the order leaking
+    MORE at equal utility. Drawn from results/order_law.csv (analysis/order_law.py)."""
+    import csv
+    src = RESULTS / "order_law.csv"
+    if not src.exists():
+        raise FileNotFoundError(str(src))
+    rows = [r for r in csv.DictReader(open(src))]
+    orders = sorted({float(r["alpha"]) for r in rows})
+    pairs = sorted({r["pair"] for r in rows})
+    fig, axes = plt.subplots(1, len(orders), figsize=(6.9, 2.15), sharey=True)
+    for ax, o in zip(axes, orders):
+        for i, pair in enumerate(pairs):
+            c = [(float(r["F"]), float(r["log10_factor"])) for r in rows
+                 if r["pair"] == pair and float(r["alpha"]) == o]
+            c.sort()
+            ax.plot([x for x, _ in c], [y for _, y in c], marker="o", ms=2.2, lw=1.0,
+                    color=f"C{i}", label=pair if o == orders[0] else None)
+        ax.axhline(0.0, color="0.4", lw=0.7, ls=":")
+        ax.set_title(rf"$\alpha = {o:.0f}$")
+    axes[0].set_ylabel("$\log_{10}$ times safer, matched utility")
+    axes[0].legend(loc="lower left", frameon=False, ncol=1)
+    fig.supxlabel("$F$, the fraction of the unconstrained ceiling the audited decoder already has",
+                  fontsize=8, y=0.01)
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    _save(fig, "order_no_collapse")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
@@ -302,7 +334,7 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               units_law)
+               units_law, order_no_collapse)
     for fn in figures:
         try:
             fn()
