@@ -53,6 +53,10 @@ def main():
         # set is analysed, where the bfloat16 files ARE the pairs.
         if path.endswith("_matched.csv") or ("_bf16" in path and "bf16" not in a.glob):
             continue
+        if "_seed" in os.path.basename(path):
+            # a seed arm re-runs a pair that is already in the set at another --seed-tokens;
+            # counting it would double that pair and make the rank test meaningless
+            continue
         tag = re.sub(r"^order_frontier_|_bf16|\.csv$", "", os.path.basename(path))
         pair = LABEL.get(tag, tag)
         cells = list(csv.DictReader(open(path)))
