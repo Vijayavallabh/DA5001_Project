@@ -1,0 +1,2198 @@
+Under review as a conference paper at ICLR 2027
+
+
+
+
+
+
+A Divergence Budget Is Uninformative Without the Work
+It Protects
+
+Vacuity, Extraction and Utility in Metered Decoding
+
+
+Anonymous authors
+Paper under double-blind review
+
+
+Abstract
+
+Inference-time mechanisms for copyright protection meter how far a lan-
+guage model’s output may drift from a safe model that never saw the pro-
+tected work, and publish the allowance as a single number k. We show
+that k carries no risk information on its own, and identify what does. The
+bound such a budget implies on reproducing a work x becomes vacuous at
+
+K = S(x), the safe model’s surprisal of x, and this threshold is identical
+for every Rényi order of the charge, so no strengthening of the accounting
+
+moves it. A second result prices the other thing a budget buys: Donsker–
+
+Varadhan at the sequence level bounds the budget needed for mean utility
+by the Cramér rate function of that utility under the safe model. Measuring
+both sides, the decoder spends 79 to 171 nats of realised divergence for a
+utility gain worth hundredths of a nat — three to four orders of magnitude
+of overhead, so what pushes a budget past the vacuity threshold is the price
+of imitating the risky model, not the price of being better than the safe one.
+The useful region opens only where the certified one has closed: under two
+independent judges and 600 comparisons per budget, neither separates the
+decoder from its own safe model at k = 0.6, barely past the budget at which
+
+the first protected work loses its certificate, and both separate it only at
+k ≥ 10, where none of them is covered. The two boundaries are ordered
+
+rather than coincident: on the sharper judge the decoder becomes useful at
+
+k = 0.66, after the certificate has begun to fail and before most of it has.
+Finally, extraction begins near that threshold: on seven model pairs shar-
+ing no anchor, tokenizer or risky model, leakage first becomes measurable
+between 0.88 and 1.17 of s(x), and between 0.878 and 0.926 among the five
+whose adversary holds the same amount of the work — a quantity extrac-
+tion evaluations specify in tokens, and therefore report differently under
+every tokenizer. Halving it moves a pair across its own vacuity threshold,
+and warping the anchor to move s(x) within one pair moves the onset with
+it, at an elasticity of +0.72 and +0.61: not what a budget in a fixed num-
+
+ber of nats would give. Across ten safe models and three openly licensed
+corpora, the separation between the rate that must be permitted and the
+
+rate that must be forbidden widens as safe models improve.
+
+
+1 Introduction
+
+A growing family of inference-time mechanisms promises to bound how much a language
+model can reproduce a protected work by metering how far its output distribution may drift
+from a safe model that never saw the work. The drift is charged in nats, accumulated in
+a token bucket, and published as a single number k. Anchored decoding (He et al., 2026)
+
+is the current instance; the guarantee it enforces, k-near-access-freeness, goes back to Vyas
+et al. (2023). The appeal is that k looks like ε in differential privacy: a dial a deployer sets,
+
+a number a rights-holder can read.
+
+This paper argues that k does not carry that meaning, and — more usefully — says exactly
+what does. Three results, in increasing order of what they cost to establish.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+The budget has a unit, and it is not nats. The bound a budget K implies on reproducing
+a work x is vacuous once K reaches S(x), the safe model’s total surprisal of x, and the
+threshold is the same for every Rényi order of the charge (Proposition 1). Raising the order
+buys a tighter bound strictly below the threshold and does not move it, so the failure cannot
+be repaired by strengthening the accounting. The quantity that carries risk is therefore
+k/s(x), not k. Vyas et al. (2023) already report their budget as a fraction of the safe
+model’s entropy; what is new is an exact threshold at the realised surprisal of a specific
+work, holding for every order.
+Almost none of what a budget buys is utility. A budget is one number, so whatever the
+decoder buys with it comes from one account. Donsker–Varadhan at the sequence level gives
+K ≥ Λ∗s (E[U ]), the Cramér rate function of the utility under the safe model (Theorem 1).
+Both sides are measurable, and measuring them is what makes the result useful: the decoder
+spends 79 to 171 nats of realised divergence to buy a utility gain an optimal policy could
+buy for hundredths of a nat, a ratio above 103 at every budget. The cost of a metered
+decoder is therefore approximation overhead rather than information-theoretic necessity —
+
+what drives a budget past s(x) is the price of imitating the risky model everywhere, not
+the price of being better. Empirically the useful region opens only where the certified one
+
+has closed. Two judges outside the audit, 600 comparisons per budget, agree at both ends
+
+and nowhere else: at k = 0.5, the largest budget covering every protected passage, neither
+distinguishes the decoder from its own safe model (−1.03σ, +1.52σ); only at k ≥ 10, where
+the certificate covers none, do both (−6.97σ, −3.29σ). Between those they disagree about
+the crossing by nearly an order of magnitude in k, which is itself a result.
+
+Extraction begins near that threshold, and s(x) says where. On seven pairs sharing no
+
+anchor, tokenizer or risky model, leakage first becomes measurable between 0.88 and 1.17 of
+
+s(x); among the five whose adversary is handed the same amount of the work it is 0.878 to
+0.926 over nearly the whole range of s(x). What moves it is not the memoriser, the target’s
+length or the vocabulary but that context, which extraction evaluations specify in tokens, so
+a finer tokenizer hands the adversary half the words: pre-registered interventions changing
+only that number move a pair across its own vacuity threshold in both directions. Warping
+the anchor to move s(x) itself within a pair gives an elasticity of +0.72 and +0.61, refuting a
+budget quoted in a fixed number of nats. The geometry’s own candidate, r(x) = ss (x)−sr (x)
+(Eq. (4)), committed for five pairs before they were swept, is refuted with it.
+Read together these say something a deployer can act on. The three rates that matter — the
+surprisal rate s(x), the requirement r(x) a decoder must afford before it can pay for the work
+at all, and the rate cuse at which ordinary traﬀic diverges — are properties of the models and
+the content, computable before any mechanism is built. Measured across ten safe models
+and three independently curated, openly licensed corpora, the separation between the rate
+that must be permitted and the rate that must be forbidden widens as safe models improve
+(Section 3), correcting a claim in an earlier audit of this mechanism (Vijayavallabh, 2026)
+
+that read one side of that two-sided quantity and inverted the trend.
+None of this contradicts the mechanisms’ own theorems: across more than 100,000 budgeted
+trajectories here and in the audits this builds on, no per-trajectory violation occurs. The
+gap is between what the theorems bound and what the published number is taken to mean.
+
+2 The frontier of a metered decoder
+
+The class Fix a prompt and write ps for the safe model, pr for the risky model, and
+pθ ∝ p1−θ
+s pθr for the geometric path between them, so that log pθ = log ps + θℓ − log Z(θ)
+with ℓ = log pr − log ps and Z(u) = Eps [euℓ ]. A bucket-metered decoder serves, at each
+step t, the largest θt ∈ [0, 1] whose charge satisfies c(θt ) ≤ kt , where c is nondecreasing with
+c(0) = 0 and kt is the allowance of a token bucket of rate k started at a debt δ. The charge
+we consider is the Rényi divergence of order α ∈ [1, ∞],
+log Z(αθ) − α log Z(θ)
+cα (θ) = Dα (pθ ∥ ps ) = , (1)
+α−1
+whose α → 1 limit is DKL (pθ ∥ps ), the charge of the audited decoder, and whose α → ∞
+limit is maxv log pθ (v)/ps (v), the pathwise charge, so the family contains both published
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+accounting rules and interpolates between a guarantee about an average and one about
+every event.
+
+The three rates For a protected work x of N characters, let s1 , . . . , sT be the safe model’s
+P
+per-token surprisals along x, Nt the characters consumed after t tokens, and S(x) = t st .
+Define
+
+P
+S(x) i≤t si + δ log pr (y) − log ps (y)
+s(x) = , kcrit (x) = max , cuse = medy∼pr .
+| {z N } t≤T Nt |y|
+| {z } | {z }
+surprisal rate Lindley running maximum divergence rate of ordinary traﬀic
+
+(2)
+
+These are nats per character, because §3 compares ten safe models with three vocabularies
+and only a per-character rate is comparable across them. The choice is immaterial where it
+
+could matter: Proposition 1 concerns the total S(x), which has no rate units, and kcrit /s(x)
+
+is a ratio, reported under both denominators in Appendix B. Where a rate meets a budget
+— §4 — both are per token, since the mechanism meters K = k Tmax in tokens.
+
+Proposition 1 (The vacuity threshold does not depend on the order). Let a decoder of the
+
+class above run to a sequence budget K under the charge cα , and let E be the event that it
+
+emits x. For every α ∈ [1, ∞] the tightest bound on Pr[E] implied by the budget equals 1
+if and only if K ≥ S(x).
+
+The proof (Appendix A) is three standard conversions — the α = ∞ change of measure,
+the Rényi-to-probability bound underwriting reconstruction robustness in Rényi differential
+privacy (Mironov, 2017), and the binary-KL inversion. None is new; the contribution is
+that all three break in the same place, which is why the failure cannot be repaired by
+
+strengthening the accounting. Raising α buys a strictly tighter bound below the threshold
+— at S = 200, K = 100 the cap falls from 0.50 at α = 1 to e−100 at α = ∞ — and moves
+
+the threshold not at all. One remedy remains inside this class, a smaller k, and §5 prices it.
+
+
+Proposition 2 (Protection outruns certification). Under the banking rule, if the decoder
+emits each token of x with probability at least 1 − η then k ≥ (1 − η) kcrit (x) − log 2.
+
+Moreover kcrit (x) ≥ s(x) + δ/N for every work, with equality if and only if the surprisal
+
+accumulates at a constant rate.
+
+The proof is in Appendix A; it needs only that the charge dominates the KL, which every
+order α ≥ 1 does, so the boundary belongs to the family and not to one accounting rule.
+Neither is kcrit our invention: it is the Loynes running maximum representing the workload of
+a queue (Loynes, 1962), equivalently the smallest rate of a (σ, ρ) arrival curve admitting the
+surprisal process (Cruz, 1991; Le Boudec & Thiran, 2001). Naming it makes the diagnosis
+
+concrete — a budget publishes a drift where safety is a workload maximum.
+Together the two propositions bracket a regime. Below s(x) the certificate says some-
+thing and the decoder is heavily constrained; above kcrit (x) the work is reproducible; on
+[s(x), kcrit (x)) the decoder still protects the work and no budget in the family can say so,
+the certificate reporting the drift of the surprisal process where safety is governed by its
+running maximum. That is the distinction a token bucket makes between a mean rate and
+
+a burst, and it is why a scalar budget is the wrong primitive rather than merely a loose one.
+
+
+How wide the uncertified regime is, and who owns it Measured on 758 reference passages
+under four safe models from three openly licensed corpora, kcrit /s has a median of 4.25
+
+to 6.10, so the uncertified interval is wide — and almost entirely an artifact of where a
+
+generation starts. The running maximum is attained at the very first token in 87.7% to
+90.5% of cases, because the bucket must pay for the opening out of one step’s allowance,
+and an adversary supplying a single genuine prefix token collapses the ratio to 1.32–1.48,
+where it stays for 5, 10 or 20 tokens (Appendix B). The protection is real, and it belongs to
+the prompt rather than to the budget.
+
+What utility actually costs, and what the decoder actually pays Proposition 1 prices one
+particular event, {output = x}, at S(x). The budget is a single number, so whatever else
+the decoder buys is drawn from the same account. The exchange rate for utility is classical.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Theorem 1 (The price of utility). Let a decoder of the class above run to a per-trajectory
+sequence budget K under any charge cα , α ∈ [1, ∞], and write q for the law of its output.
+For every bounded utility U ,
+ 
+K ≥ Λ∗s Eq [U ] , Λ∗s (u) = sup λu − log Eps [eλU ] , (3)
+λ
+
+the Cramér rate function of U under the safe model.
+
+The proof is Donsker–Varadhan at the sequence level (Appendix A); the budget bounds
+DKL (q∥ps ) by the chain rule, and the rate function bounds that in turn. It is a converse,
+holding for the optimal policy, and that optimum is not loose — the maximum reward
+purchasable
+√ at a fixed KL budget has a closed form governed by a Jeffreys divergence rather
+than the KL of earlier analyses (Monteiro Paes et al., 2026).
+
+The bound is satisfied by four orders of magnitude, and that is the finding It would be
+
+convenient to read Eq. (3) as forcing a deployer to spend past the vacuity threshold to get
+anything useful. It does not, and we checked rather than assumed. For a bounded utility
+
+the rate function is O(1) nats however long the sequence, while reproducing a work costs
+
+S(x), which is hundreds. Measured on the judged arms, with U the judge’s verdict scored
+1/ 21 /0 and its law under ps read off the anchor-only arm, the decoder spends between 79
+and 171 nats of realised sequence divergence — not its budget cap, which it never exhausts
+— to buy gains of +0.011 to +0.160, which an optimal policy could have bought for 0.0003
+to 0.061. The ratio runs from 2800 at k = 20 to 2.8 × 105 at k = 0.5 (Appendix A), and
+bootstrapping over judged pairs at the weakest end of each interval still leaves it between
+1.3 × 103 and 8.6 × 103 . So the mechanism’s cost is not information-theoretic necessity
+but approximation overhead, three to four orders of magnitude of it. Only one reading of
+that gap is safe. Eq. (3) is attained by some distribution, and nothing says the attaining
+
+one is a model anybody would serve — a tilt that games the judge would also achieve the
+mean cheaply. The gap licenses the negative claim, that the budget a metered decoder must
+
+publish is not set by how much better its output is; it does not license the constructive claim
+
+that a cheap decoder of the same quality exists.
+
+The obvious objection is that a three-valued judge is too blunt a utility to price. It runs the
+wrong way: bluntness caps the rate function, since Λ∗s (umax ) = − log Prps [U = umax ] for
+
+any bounded U . Winning every judged comparison, far above anything the decoder reaches,
+would cost an optimal policy 1.19 nats, and the decoder spends 144 times that. A utility
+
+is expensive in this sense only when its best outcome is exponentially unlikely under the
+
+safe model, which is exactly what the atom {output = x} is. Extraction and utility differ
+because one is a rare event and the other a bounded average.
+
+What pushes the budget past s(x) is therefore not the price of utility but the price of being
+
+the risky model, and a scalar budget cannot separate the two. Closing that gap is the
+paper’s open problem; one route is to stop decoding greedily against the bucket, as Tomasi
+
+et al. (2026) do for constrained discrete diffusion. Until then the measured crossover of §5
+
+is the operative number, Eq. (3) a floor far beneath it, and the same overhead is visible per
+step (§3).
+
+
+
+The separation widens as the safe model improves
+
+Proposition 1 makes the certificate’s fate turn on one comparison: the budget against the
+
+safe model’s surprisal of the protected work. Whether a deployer can pick a budget that is
+
+both informative and generous therefore depends on how s(x) compares with cuse , the rate
+ordinary traﬀic diverges from the same safe model. Both are properties of the models and
+the content, settled before any mechanism is designed. Neither has been measured across
+safe models, and the question has an obvious practical edge: safe models are getting better,
+and it is not obvious whether that helps.
+
+Setup We score ten safe models spanning 0.17B to 7B parameters and three independently
+curated, openly licensed corpora: KL3M (US public-domain legal text), Pleias 1.0 (Com-
+mon Corpus) and Comma (the Common Pile), the last including the 1T- and 2T-token
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+1.3 5
+1.0
+
+
+
+
+nats per character
+
+
+
+
+
+margin s(x) / cuse
+.7
+0.5 Common Pile: s(x), protected
+Common Pile: cuse, ordinary 3
+.3 Common Corpus: s(x), protected
+Common Corpus: cuse, ordinary 2 Common Pile
+.2 KL3M: s(x), protected Common Corpus
+0.15 KL3M: cuse, ordinary KL3M
+
+0.17 0.35 1 3 7 0.17 0.35 1 3 7
+safe model parameters (B) safe model parameters (B)
+
+
+
+Figure 1: Ten safe models, three independently curated openly licensed corpora. Left:
+the safe model’s surprisal rate on the 758 protected passages, s(x), and the rate at which
+
+ordinary risky-model output diverges from the same safe model, cuse , both in nats per
+
+character. Both fall as the safe model improves; cuse falls faster. Right: their ratio rises
+monotonically with capability in every family, and for all sixteen novels individually (p =
+3.1 × 10−5 per family, paired sign test).
+
+
+checkpoints of one 7B model, which vary training data at fixed capacity. Every model
+scores the same 758 protected passages, the same 50 public-domain control books, and the
+same 300 generations the risky model produced on ordinary instruction prompts. Rates are
+nats per character throughout: total string log-probability is tokenizer-invariant and these
+models carry 64k, 128k and 152k vocabularies, so no shared vocabulary is needed and the
+
+measurement is not restricted to models fusable with the risky one.
+
+Result Both rates fall as the safe model improves, and the one that must be permitted
+falls faster than the one that must be forbidden. Across the widest span in each family:
+
+corpus span ∆cuse ∆s(x) margin sign test
+Common Corpus 0.35 → 3B −25.8% −9.8% 3.45 → 4.19 16/16, p = 3.1 × 10−5
+KL3M 0.17 → 3.7B −31.3% −16.0% 1.94 → 2.37 16/16, p = 3.1 × 10−5
+Common Pile 1.8 → 7B −28.6% −12.0% 4.07 → 5.02 16/16, p = 3.1 × 10−5
+
+The margin s(x)/cuse rises monotonically with capability in every family (Figure 1). Because
+every model scores the same novels and the same generations the comparison is paired, and
+the margin rises for all sixteen novels in all three families; it also rises with training tokens
+at fixed capacity, 4.63 to 5.02 from the 1T to the 2T checkpoint of the same 7B model.
+
+The mechanism is unsurprising once stated: a better safe model closes the gap to the risky
+model faster on generic instruction-following output than on a particular novel, because the
+
+novel is idiosyncratic and the assistant register is not.
+
+This corrects the earlier audit (Vijayavallabh, 2026), which observed that a 7B Common
+Pile anchor assigns the protected passages fewer nats than a 1.8B one and concluded that
+scaling the anchor weakens the guarantee. The observation is right, 0.778 → 0.685 nats
+
+per character; the conclusion does not follow, because cuse falls further over the same span,
+.191 → 0.137. Of the ten safe models scored here the 7B anchor has the largest margin,
+
+not the smallest. Both readings are true and belong together: in absolute terms the range
+
+of budgets over which the certificate says anything shrinks, so a deployer who fixed k in
+nats finds it going vacuous under a better anchor; in relative terms the two rates separate.
+Only the second reading is available to a deployer who does not know the protected works
+in advance. The trend also has a terminus, since it is driven by cuse falling: in the limit the
+decoder becomes the identity on ordinary prompts and the mechanism’s value vanishes in
+exactly the regime that makes its guarantee comfortable.
+
+Two confounds, both measured A safe model could look good on protected text merely
+by being bad at prose, and every safe model here is a base model while the risky model is
+instruction-tuned. Both are controlled in Appendix C: the ratio of public-domain control
+to protected surprisal is 0.630 to 0.887 for every model, so the separation is not general
+fluency, and a 1B base risky model roughly halves cuse and raises every margin, making the
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+numbers above the conservative end. In all nine corpus-by-risky-model combinations the
+margin rises 16 of 16.
+
+
+What the margin does not license The margin says how far apart the two rates are, not
+
+that a budget between them leaves utility intact: the rate a decoder actually pays is not
+cuse but the 5-to-32-times smaller rate of §2, measured across six prompt classes and two
+budgets. Cheap-step selection does not account for that gap, since the decoder pays more
+per unaltered step than the cheapest matching fraction of the unconstrained distribution
+would. It walks a different trajectory from the one the risky model would have walked, and
+its price is a property of that trajectory — the approximation gap Theorem 1 leaves open.
+
+
+
+Where extraction begins, and why there
+
+
+Proposition 1 locates the budget at which the certificate stops saying anything, for every
+order. It does not say leakage begins there; this section asks where it does.
+
+
+Seven pairs The first is the audited one, a 1.8B Common Pile anchor against a memorising
+
+Llama-3.1-8B. In the other six memorisation is the only difference: we fine-tune a model
+until it reproduces the passages and fuse it against the unmodified model it came from, so
+
+the two share an architecture, a corpus, a tokenizer and every weight the memorisation did
+
+not move (Appendix H). Three are deliberately unlike the rest: two KL3M anchors whose
+tokenizer emits about two characters per token where the others emit four, differing from
+each other in memorisation alone (sr /ss = 0.09 against 0.35), and a Phi-3.5-mini anchor
+with KL3M’s vocabulary but the others’ granularity. A pair enters only if the unconstrained
+risky model reproduces the passages, k = −1 recall above 0.10; the seven reach 0.41 to 0.91.
+
+The onset tracks the vacuity threshold, to within about a fifth Measured as the budget at
+which mean single-query recall first reaches 0.01, interpolated inside its bracket:
+
+pair s(x) sr n onset 95% CI onset / s(x)
+
+KL3M 1.7B + mem. KL3M 1.7B 2.21 0.781 100 2.58 [2.52, 3.13] 1.166
+
+Comma 7B + mem. Comma 7B 2.39 0.179 100 2.13 [2.00, 2.92] 0.892
+KL3M 520M + mem. KL3M 520M 2.42 0.215 100 2.54 [2.45, 3.00] 1.053
+Phi-3.5 mini + mem. Phi-3.5 mini 2.84 0.009 100 2.63 [2.27, 3.08] 0.926
+Pleias 1.2B + mem. Pleias 1.2B 3.21 0.365 100 2.82 [2.53, 3.08] 0.878
+TinyComma 1.8B + mem. Llama-8B 3.24 0.194 100 2.87 [2.72, 3.45] 0.887
+Pleias 350M + mem. Pleias 350M 3.55 0.326 458 3.27 [3.07, 3.83] 0.920
+
+
+Rates here are nats per token, unlike Section 3, because the decoder meters one charge
+
+per decoded token; the ratio is unaffected, numerator and denominator being charged alike.
+Across pairs sharing no anchor, no tokenizer and no risky model, s(x) spans 1.61× per token
+
+and 1.87× per character, and every onset falls between 0.88 and 1.17 of it. The fraction
+
+is not fixed, and it is not noise either. The five pairs whose tokenizers emit 3.6 to 4.2
+characters per token sit at 0.878–0.926; the two KL3M pairs, at about two, sit at 1.053 and
+1.166, with intervals whose lower end exceeds 1: there, leakage begins after the certificate
+has gone vacuous.
+
+The split survives the obvious readings. Not memorisation strength: the two KL3M pairs
+
+vary that alone and the thorough one still sits at 1.053, its sr /ss falling between pairs at
+
+.892 and 0.920. Not the target’s length, which for a fixed corpus is the same variable as
+the tokenizer — decoding the KL3M pair on the first 276 target tokens, matching the coarse
+pairs’ step count with the tokenizer unchanged, leaves the ratio at 1.09. Not vocabulary
+size: Phi-3.5-mini carries 32,011 types against KL3M’s 32,768 but cuts these passages at
+3.8 characters per token against 2.0, and lands at 0.926, with the coarse family rather than
+with the pair whose vocabulary it matches. Nor the recipe: a Llama-3.1-70B base that
+memorised Harry Potter in pretraining (Cooper et al., 2025) leaks at the built pairs’ rate
+(Appendix D).
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Conditioning on the adversary’s context is what makes s(x) the unit The claim that a
+budget should be quoted in units of s(x) has a null a referee will reach for: quote a constant
+number of nats and do not rescale. Over all seven pairs it nearly holds. Predicting a held-out
+pair’s onset as c s(x), with c fitted on the other six, gives a mean absolute error of 0.264 nats
+per token against the constant’s 0.295: across a 1.61× range of s(x), rescaling buys 12%.
+Among the five pairs whose adversary is handed 13.0–14.4 words of the work — an s(x)
+range of 1.49×, nearly the whole of it — the same leave-one-out gives 0.070 nats against
+0.364, and the ratio’s coeﬀicient of variation is 2.4%; both exact multiplicity checks on that
+subgroup give p = 0.048 (Appendix E). Neither tests the grouping rule, which was read off
+
+these same measurements. The interventions below do.
+
+The split is what the evaluation hands the adversary The attack seeds a fixed number of
+tokens, so the words that buys are the tokenizer’s business: 7.3 on the KL3M pairs against
+
+.0–14.4 on the other five, an exact split with no overlap, and ranking the seven by it
+gives a Spearman correlation with the onset ratio of −0.919 (p = 0.007, exact over all 7!
+
+orderings). A twenty-token seed is exactly twenty times the characters per token, so that
+
+ranking is confounded with granularity and only an intervention separates them. Five were
+run, each pre-registered with its refuting band, each moving –seed-tokens alone. Giving
+Pleias-1.2B the KL3M seed — 6.7 words instead of 13.7 — moves it from 0.866 [0.72, 0.95]
+to 1.004 [0.99, 1.23], intervals that do not overlap; giving KL3M-520M the others’ moves
+it back, 1.032 to 0.939, as does the same swap on KL3M-1.7B, 1.155 to 0.979. Neither
+direction reaches the other family’s band, so the context is not the whole of the difference,
+and sweeping the seed across a factor of seven gives a curve that falls and then turns (1.163,
+1.032, 0.939, 1.056 at 4.0, 7.3, 14.3 and 28.4 words). We claim the effect over the range an
+evaluation varies the seed and not beyond it (Appendix E).
+
+It acts on the budget, not on the memoriser In four of the five arms the unconstrained
+model reproduces its target exactly as well as before — k = −1 recall 0.520, 0.546, 0.894
+
+and 0.386 against controls of 0.519, 0.519, 0.909 and 0.411 — and the mean rate s(x) moves
+by under 1.6%, while kcrit , the rate the target’s own surprisal profile demands of the bucket
+
+(Proposition 2, computed from the anchor alone), moves by 7 to 20% and the onset follows
+
+it. The fifth halves the KL3M seed to four words and halves the memoriser’s unconstrained
+recall with it, to 0.227; it is reported with that baseline attached and excluded from any
+fit, as pre-registered. Calibrated on each pair’s control arm and nothing else, onset / kcrit
+predicts every other arm to within 5.1% against a no-change null’s 11.0%. A longer prefix
+does not make the memoriser better at the work; it starts the target at a cheaper point on
+its own profile. Nor is this a quirk of our harness: extractability is defined “with k tokens
+of context” (Carlini et al., 2023) and rises with the context supplied, so two measurements
+under different tokenizers at one token budget differ in a quantity that drives what they
+measure.
+
+Move s(x) itself and the onset follows, by less than one for one The interventions above
+hold the anchor’s rate fixed. Warping its logits to τ = 0.4 moves it instead, by 67% and 62%
+
+on two pairs, with seed, corpus, tokenizer, memoriser and grid fixed. A budget in a constant
+number of nats predicts an onset that does not move; a budget in units of s(x) predicts
+
+one that moves with it. The elasticity d log(onset)/d log s(x) is +0.72 [+0.41, +0.84] and
+
++0.61 [+0.40, +0.96]: constant nats refuted twice, and proportionality not reached either.
+Because the decoder warps both logit vectors before the solve, the warped memoriser is also
+the sharper one, which lowers its onset and biases the elasticity toward the null; restricting
+both arms to the passages the memoriser reproduces in both closes that gap (k = −1
+recall 0.947 against 0.993, 0.996 against 0.999) and leaves the elasticity at +0.72 and +0.61,
+unchanged to two decimals. Here kcrit fails, 21.9% off against the same null’s 12.3%: it
+tracks which token of a fixed profile the adversary must generate first, not a rescaling of the
+profile, and we report it as the first only.
+
+A refinement we derived, pre-registered, and had to reject The decoding geometry supplies
+a candidate of its own. On the geometric path ψt (1) = 0 identically, so at full tilt the per-
+token charge along a target is the mean DKL (pr,t ∥ ps,t ) on that target’s own prefixes, which
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Table 1: Four decoders at the same budget k = 3, so all four publish K = 3T and for all four
+the certificate is vacuous for 100% of the 758 protected passages: nothing distinguishes them
+to a rights-holder. Attack columns are mean near-verbatim recall over 100 passages from
+the memorising 8B model; price columns over 150 ordinary prompts at the same budget.
+attack recall price on ordinary traﬀic
+order single query oracle windows risky unchanged steps touched distinct-3
+
+α = 1 (KL) 0.012 0.097 94.0% 0.4% 0.9910
+α=2 0.001 0.054 91.4% 2.4% 0.9924
+α=4 0.000 0.004 8.7% 83.0% 0.9850
+α=8 0.000 0.001 0.07% 90.1% 0.9872
+
+
+for a risky model near-deterministic on a memorised x collapses to a difference of surprisals
+(Appendix A):
+
+r(x) = ss (x) − sr (x), (4)
+the rate a decoder must permit before it can pay for x at all. It needs no decoding and
+no attack, and it predicts an onset ratio of 1 − sr /ss that must move with memorisation.
+
+Committed for the last five pairs before any was swept, under three rules, it is refuted by
+all three: every miss low, held-out errors of 0.352, 0.251 and 0.481 nats, and a directional
+
+claim that inverts, the pair with by far the most residual surprisal having the highest ratio
+
+of all (Appendix D). Eq. (4) is a correct statement about what a decoder must afford and
+a wrong one about where leakage begins. It locates the budget at which a class of works
+becomes exposed; for one book neither it nor s(x) suﬀices.
+
+
+
+The published budget determines neither the protection nor the price
+
+Proposition 1 says every order of the charge becomes vacuous at the same budget, so a
+
+deployer who publishes k publishes the same certificate whichever order the decoder uses.
+We built the family — α → 1 is the audited decoder, α → ∞ the pathwise one, and Eq. (1)
+is closed form on the geodesic, so one bisection serves all of them — and ran the same attack
+and workload through four members at the budget the mechanism’s authors use. Figure 2
+in Appendix A shows what the certificate says across the family; Table 1 shows what the
+decoders do.
+
+Table 1 is the point of this paper in one row group. Holding the published budget fixed,
+and the certificate with it — vacuous throughout — the four decoders span two orders of
+magnitude in what a compliant adversary recovers, 0.097 of a passage down to 0.001, and
+more than two in what they cost, from touching 0.4% of ordinary decode steps to 90.1%.
+A number that determines neither the protection nor the price is not a summary of the
+mechanism but of one accounting convention inside it.
+
+The family is cheap at one end and not in the middle. From α = 1 to α = 2, oracle-window
+recall nearly halves, 0.097 to 0.054, for intervention rising from 0.4% to 2.4% of steps and
+no loss of diversity — distinct-3 moves from 0.9910 to 0.9924, the wrong way for a cost.
+One more step does not continue the trade: at α = 4 oracle recall falls to 0.004, but the
+decoder serves the risky model unchanged at 8.7% of steps instead of 91.4%. The order is
+a sharp knob, not a dial, and a deployer choosing it on the published budget cannot tell
+which system they have bought.
+
+Judged utility, and the resolution of the instrument Activity counts are not utility, so we
+also score the arms with a judge outside the audit (Qwen2.5-7B-Instruct, order randomised,
+150 pairs per order arm). A win rate is meaningless without a null, and there are two: the
+
+unconstrained model judged against itself at a different seed loses 46.4% of the time, and
+the anchor served alone loses 62.7%. Every arm is a position between them.
+
+At 150 pairs the order arms are not resolved, and we demonstrate that rather than assert
+it. Judging the same generations a second time with the same judge reorders them: α = 2
+moves from −1.05σ to −2.65σ and α = 8 from 0.00σ to +1.07σ, inverting the ranking; the
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+second judge reorders them again, differently. No separation we could quote here would
+survive a re-run. Activity is not price either. The α = 4 decoder overrides the risky model
+at 90% of decode steps and leaks 24× less than α = 1 in oracle windows, and no run of either
+judge separates the two: neither the published budget nor the intervention rate determines
+the protection or the price. Turning the order up far enough converges on the safe model,
+which was always available without a mechanism, at matched budget rather than matched
+utility (Appendix D).
+
+
+
+Related work
+
+Near-access-freeness (Vyas et al., 2023) asks that a served model stay within a divergence of
+a safe model that never saw the protected work, and CP-∆/CP-k instantiate it by combining
+
+models trained on disjoint shards (Vyas et al., 2023; Abad et al., 2025). Three results bear
+directly on ours: Cohen (2025) shows per-query access-freeness does not compose, Cohen
+
+& Zhang (2026) proves barriers for counterfactual credit attribution, and — closest of all
+
+— Segal et al. (2026) report that CP-style guarantees can be numerically uninformative
+in realistic fine-tuning settings and demonstrate extraction against NAF-protected models.
+We are downstream of that observation, not upstream of it. What differs is the shape of
+the claim: they show a particular bound is loose and propose a tighter mechanism, so the
+natural reading is that the accounting can be repaired. Proposition 1 says it cannot, for
+every order from KL to max-divergence at once, leaving a smaller budget as the only lever
+— which Theorem 1 then prices.
+Our proof shape is the one used for inference-time impossibility results generally: strong wa-
+termarking under oracle assumptions (Zhang et al., 2024), and detector accuracy bounded by
+a total variation that goes vacuous as the distributions converge (Sadasivan et al., 2025). The
+accounting machinery is the Rényi filter (Feldman & Zrnic, 2020) and adaptive composition
+(Whitehouse et al., 2023; Rogers et al., 2016); the token bucket and its running maximum
+are standard in queueing and network calculus (Loynes, 1962; Cruz, 1991; Le Boudec & Thi-
+ran, 2001), which is where our second boundary comes from. Attacks follow the extraction
+literature (Carlini et al., 2021; Nasr et al., 2025; Cooper et al., 2025), and methodologically
+
+we follow Aerni et al. (2024): average-case evaluation of a privacy defence hides worst-case
+failure, exactly the gap between what the budget reports and what the running maximum
+
+controls. Appendix G covers decoding-time control, memorisation lower bounds and the
+
+alignment-frontier literature.
+
+
+7 Conclusion
+
+A scalar divergence budget is a rate, and safety against reproducing a particular work is
+a workload maximum; queueing theory has known those come apart since Loynes (1962),
+and the mismatch has consequences a deployer can compute. The budget’s unit is the safe
+model’s surprisal of the work it protects, the certificate is exactly vacuous at k = s(x) for
+every Rényi order, and extraction begins within about a fifth of that point on every pair,
+on either side of it. Whether any budget is both informative and useful depends on what
+a rights-holder means by informative. No budget certifies every protected work and also
+buys a detectable improvement: the last budget covering all of them is k = 0.583, where
+
+neither judge can tell the decoder from its own safe model. Relax every to almost every
+and a narrow window opens on the sharper judge, at k = 0.66 with 99.7% still covered, and
+
+closes again on the second, which finds nothing until k = 5.4, where none is. Theorem 1 says
+
+the obstruction is not fundamental: the decoder spends hundreds of nats for utility worth
+hundredths. All three boundaries are computable in advance, so a deployer publishing one
+number should publish k/s(x), and a rights-holder reading one should ask which work it
+was computed against. Four limitations bound all of it, in full in Appendix F: one corpus of
+sixteen English novels, so p = 3.1 × 10−5 is the smallest value it can give; an onset ratio that
+is not constant, and interventions that move it without closing the gap between the families;
+Theorem 1 a converse; and two judges that bracket the useful region without agreeing where
+it opens.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Ethics Statement
+
+
+This work audits a copyright-protection mechanism, so it necessarily demonstrates extrac-
+
+tion of copyrighted text. We use passages already published as benchmarks (CopyBench,
+BookMIA) and report only aggregate recall statistics, never reconstructed passages. The
+memorising models are the adversary’s construction rather than an artifact we advocate:
+the accompanying anonymised repository contains the fine-tuning recipes and every analysis
+script, but not the merged memorising weights, which reproduce copyrighted text on de-
+mand. We make no claim about legal thresholds for infringement. The findings are reported
+so that deployers of divergence-budgeted decoders can choose budgets that mean what they
+think they mean; nothing here enables an attack that a fine-tuned model would not already
+permit.
+
+Reproducibility Statement
+
+Every number in this paper is produced by a committed script and written to a CSV before
+it is quoted, with the producing command recorded alongside it. Proofs of Propositions 1
+and 2 and of Theorem 1 are in Appendix A, stated with their assumptions. The three rates
+of Eq. (2) require only forward passes and no decoding, so Sections 3 and 4 reproduce on a
+single GPU from openly licensed checkpoints. Budget accounting is checked per trajectory
+rather than on averages, and every run reports the k = −1 (risky only) and k = 0 (safe
+only) baselines on the same prompts and seeds. An anonymised repository with the code,
+
+the CSVs and the reproduction commands accompanies the submission.
+
+LLM Usage
+
+LLMs were used for editorial purposes in this manuscript, and all outputs were inspected
+by the authors to ensure accuracy and originality. Two instruction-tuned models are also
+used as measurement instruments in Section 5, where they judge output quality; their
+resolution is measured rather than assumed, by scoring one decoder against itself under
+two seeds and by including a null arm, and the two are reported separately wherever they
+disagree. Total compute for this work is approximately 108 GPU-hours on A100 hardware
+
+(results/compute_hours.csv), dominated by the memorisation fine-tunes, the budget sweeps
+and the judged arms.
+
+
+References
+
+Javier Abad, Konstantin Donhauser, Francesco Pinto, and Fanny Yang. Copyright-
+
+Protected Language Generation via Adaptive Model Fusion. In International Conference
+
+on Learning Representations (ICLR), 2025. arXiv:2412.06619.
+
+Michael Aerni, Jie Zhang, and Florian Tramèr. Evaluations of machine learning privacy
+defenses are misleading. In ACM SIGSAC Conference on Computer and Communications
+Security (CCS), 2024. doi: 10.1145/3658644.3690194. arXiv:2404.17399.
+
+Maryam Alshehyari, Dushyant Singh Chauhan, Samuele Poppi, Martin Takac, Salem
+
+Lahlou, and Nils Lukas. CopyShield: A Cross-Level Benchmark of Copyright Defenses in
+LLMs. arXiv preprint arXiv:2609.01161, 2026. arXiv:2609.01161.
+
+Nicholas Carlini, Florian Tramèr, Eric Wallace, Matthew Jagielski, Ariel Herbert-Voss,
+
+Katherine Lee, Adam Roberts, Tom Brown, Dawn Song, Úlfar Erlingsson, Alina Oprea,
+and Colin Raffel. Extracting Training Data from Large Language Models. In 30th
+USENIX Security Symposium, 2021. arXiv:2012.07805.
+
+Nicholas Carlini, Daphne Ippolito, Matthew Jagielski, Katherine Lee, Florian Tramèr, and
+Chiyuan Zhang. Quantifying Memorization Across Neural Language Models. In Interna-
+tional Conference on Learning Representations (ICLR), 2023. arXiv:2202.07646.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Tong Chen, Faeze Brahman, Jiacheng Liu, Niloofar Mireshghallah, Weijia Shi, Pang Wei
+Koh, Luke Zettlemoyer, and Hannaneh Hajishirzi. ParaPO: Aligning Language Models to
+Reduce Verbatim Reproduction of Pre-training Data. arXiv preprint arXiv:2504.14452,
+2025. arXiv:2504.14452.
+
+
+Wei-Ning Chen, Peter Kairouz, Sewoong Oh, and Zheng Xu. Randomization Techniques
+to Mitigate the Risk of Copyright Infringement. arXiv preprint arXiv:2408.13278, 2024.
+
+arXiv:2408.13278.
+
+Miranda Christ, Sam Gunn, and Or Zamir. Undetectable Watermarks for Language
+Models. In Proceedings of the 37th Conference on Learning Theory (COLT), 2024.
+arXiv:2306.09194.
+Aloni Cohen. Blameless Users in a Clean Room: Defining Copyright Protection for Genera-
+tive Models. In Advances in Neural Information Processing Systems 38 (NeurIPS), 2025.
+arXiv:2506.19881.
+
+
+Aloni Cohen and Chenhao Zhang. Barriers to counterfactual credit attribution for au-
+toregressive models. In International Conference on Machine Learning (ICML), 2026.
+
+arXiv:2605.01425.
+
+A. Feder Cooper and James Grimmelmann. The Files are in the Computer: On
+Copyright, Memorization, and Generative AI. Chicago-Kent Law Review, 100, 2025.
+arXiv:2404.12590.
+A. Feder Cooper, Mark A. Lemley, Allison Casasola, Ahmed Ahmed, Aaron Gokaslan,
+Amy B. Cyphert, Christopher De Sa, Daniel E. Ho, and Percy Liang. Extracting mem-
+orized pieces of (copyrighted) books from open-weight language models. arXiv preprint
+arXiv:2505.12546, 2025.
+
+
+Rene L. Cruz. A calculus for network delay, part I: Network elements in isolation. IEEE
+Transactions on Information Theory, 37(1):114–131, 1991.
+
+Aghyad Deeb and Fabien Roger. Do Unlearning Methods Remove Information from Lan-
+guage Model Weights? arXiv preprint arXiv:2410.08827, 2024. arXiv:2410.08827.
+
+Amir Dembo and Ofer Zeitouni. Large Deviations Techniques and Applications. Springer,
+
+nd edition, 1998.
+
+M. D. Donsker and S. R. S. Varadhan. Asymptotic evaluation of certain Markov process
+expectations for large time, I. Communications on Pure and Applied Mathematics, 28
+(1):1–47, 1975.
+André V. Duarte, Xuandong Zhao, Arlindo L. Oliveira, and Lei Li. DE-COP: Detecting
+Copyrighted Content in Language Models Training Data. In Proceedings of the 41st
+International Conference on Machine Learning (ICML), 2024. arXiv:2402.09910.
+
+Ronen Eldan and Mark Russinovich. Who’s Harry Potter? Approximate Unlearning in
+
+LLMs. arXiv preprint arXiv:2310.02238, 2023. arXiv:2310.02238.
+
+Niva Elkin-Koren, Uri Hacohen, Roi Livni, and Shay Moran. Can Copyright be Reduced to
+Privacy? In 5th Symposium on Foundations of Responsible Computing (FORC), LIPIcs
+295, 2024. doi: 10.4230/LIPIcs.FORC.2024.3. arXiv:2305.14822.
+Vitaly Feldman and Tijana Zrnic. Individual privacy accounting via a Rényi filter, 2020.
+arXiv:2008.11193.
+
+Vitaly Feldman, Guy Kornowski, and Xin Lyu. Trade-offs in data memorization via
+
+strong data processing inequalities. In Conference on Learning Theory (COLT), 2025.
+arXiv:2506.01855.
+
+Aditya Golatkar, Alessandro Achille, Luca Zancato, Yu-Xiang Wang, Ashwin Swaminathan,
+and Stefano Soatto. CPR: Retrieval Augmented Generation for Copyright Protection. In
+IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2024.
+arXiv:2403.18920.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Abhimanyu Hans, Yuxin Wen, Neel Jain, John Kirchenbauer, Hamid Kazemi, Prajwal Sing-
+hania, Siddharth Singh, Gowthami Somepalli, Jonas Geiping, Abhinav Bhatele, and Tom
+Goldstein. Be like a Goldfish, Don’t Memorize! Mitigating Memorization in Genera-
+tive LLMs. In Advances in Neural Information Processing Systems 37 (NeurIPS), 2024.
+arXiv:2406.10209.
+
+Adi Haviv, Niva Elkin-Koren, Uri Hacohen, Roi Livni, and Shay Moran. We Should Separate
+
+Memorization from Copyright. arXiv preprint arXiv:2602.08632, 2026.
+Jamie Hayes, Marika Swanberg, Harsh Chaudhari, Itay Yona, Ilia Shumailov, Milad Nasr,
+Christopher A. Choquette-Choo, Katherine Lee, and A. Feder Cooper. Measuring mem-
+orization in language models via probabilistic extraction. In Proceedings of the 2025
+Conference of the North American Chapter of the Association for Computational Lin-
+guistics (NAACL), 2025. arXiv:2410.19482.
+
+
+Jacqueline He, Jonathan Hayase, Wen-tau Yih, Sewoong Oh, Luke Zettlemoyer, and
+Pang Wei Koh. Anchored Decoding: Provably Reducing Copyright Risk for Any Language
+
+Model. arXiv preprint arXiv:2602.07120, 2026.
+
+Peter Henderson, Xuechen Li, Dan Jurafsky, Tatsunori Hashimoto, Mark A. Lemley, and
+Percy Liang. Foundation Models and Fair Use. Journal of Machine Learning Research,
+24(400):1–79, 2023. arXiv:2303.15715.
+
+Audrey Huang, Adam Block, Qinghua Liu, Nan Jiang, Akshay Krishnamurthy, and Dylan J.
+
+Foster. Is best-of-N the best of them? coverage, scaling, and optimality in inference-time
+
+alignment, 2025. arXiv:2503.21878.
+
+Daphne Ippolito, Florian Tramèr, Milad Nasr, Chiyuan Zhang, Matthew Jagielski, Kather-
+ine Lee, Christopher A. Choquette-Choo, and Nicholas Carlini. Preventing Verba-
+tim Memorization in Language Models Gives a False Sense of Privacy. In Proceed-
+ings of the 16th International Natural Language Generation Conference (INLG), 2023.
+arXiv:2210.17546.
+
+Adam Tauman Kalai, Yael Tauman Kalai, and Or Zamir. Consensus sampling for safer
+generative AI, 2025. arXiv:2511.09493.
+
+Muhammad Khalifa, Hady Elsahar, and Marc Dymetman. A distributional approach to con-
+trolled text generation. In International Conference on Learning Representations (ICLR),
+2021. arXiv:2012.11635.
+
+Minbeom Kim, Thibaut Thonet, Jos Rozen, Hwaran Lee, Kyomin Jung, and Marc Dymet-
+
+man. Guaranteed Generation from Large Language Models. In International Conference
+on Learning Representations (ICLR), 2025. arXiv:2410.06716.
+
+John Kirchenbauer, Jonas Geiping, Yuxin Wen, Jonathan Katz, Ian Miers, and Tom Gold-
+stein. A Watermark for Large Language Models. In Proceedings of the 40th International
+Conference on Machine Learning (ICML), 2023. arXiv:2301.10226.
+
+Rohith Kuditipudi, John Thickstun, Tatsunori Hashimoto, and Percy Liang. Robust
+Distortion-free Watermarks for Language Models. Transactions on Machine Learning
+Research, 2024. arXiv:2307.15593.
+
+Jean-Yves Le Boudec and Patrick Thiran. Network Calculus: A Theory of Deterministic
+Queuing Systems for the Internet, volume 2050 of Lecture Notes in Computer Science.
+Springer, 2001.
+
+Katherine Lee, A. Feder Cooper, and James Grimmelmann. Talkin’ ’Bout AI Generation:
+Copyright and the Generative-AI Supply Chain. Journal of the Copyright Society, 2024.
+arXiv:2309.08133.
+
+Mark A. Lemley and A. Feder Cooper. Probabilistic ”Copies” in Generative AI Models.
+arXiv preprint arXiv:2607.14532, 2026. arXiv:2607.14532.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Xiang Li, Qianli Shen, and Kenji Kawaguchi. VA3: Virtually Assured Amplification At-
+tack on Probabilistic Copyright Protection for Text-to-Image Generative Models. In
+IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2024.
+arXiv:2312.00057.
+
+Xiaoze Liu, Ting Sun, Tianyang Xu, Feijie Wu, Cunxiang Wang, Xiaoqian Wang, and
+
+Jing Gao. SHIELD: Evaluation and Defense Strategies for Copyright Compliance in LLM
+Text Generation. In Proceedings of the 2024 Conference on Empirical Methods in Natural
+
+Language Processing (EMNLP), 2024. arXiv:2406.12975.
+
+Roi Livni, Shay Moran, Kobbi Nissim, and Chirag Pabbaraju. Credit attribution and stable
+compression. In Advances in Neural Information Processing Systems (NeurIPS), 2024.
+arXiv:2406.15916.
+
+R. M. Loynes. The stability of a queue with non-independent inter-arrival and service times.
+Mathematical Proceedings of the Cambridge Philosophical Society, 58(3):497–520, 1962.
+
+Jakub Łucki, Boyi Wei, Yangsibo Huang, Peter Henderson, Florian Tramèr, and Javier
+Rando. An Adversarial Perspective on Machine Unlearning for AI Safety. Transactions
+
+on Machine Learning Research, 2025. arXiv:2409.18025.
+Aengus Lynch, Phillip Guo, Aidan Ewart, Stephen Casper, and Dylan Hadfield-Menell.
+Eight Methods to Evaluate Robust Unlearning in LLMs. arXiv preprint arXiv:2402.16835,
+2024. arXiv:2402.16835.
+
+Matthieu Meeus, Igor Shilov, Manuel Faysse, and Yves-Alexandre de Montjoye. Copyright
+
+Traps for Large Language Models. In Proceedings of the 41st International Conference
+
+on Machine Learning (ICML), 2024. arXiv:2402.09363.
+
+Sewon Min, Suchin Gururangan, Eric Wallace, Weijia Shi, Hannaneh Hajishirzi, Noah A.
+Smith, and Luke Zettlemoyer. SILO Language Models: Isolating Legal Risk In a Non-
+parametric Datastore. In International Conference on Learning Representations (ICLR),
+2024. arXiv:2308.04430.
+Ilya Mironov. Rényi Differential Privacy. In IEEE 30th Computer Security Foundations
+Symposium (CSF), 2017. arXiv:1702.07476.
+
+Lucas Monteiro Paes, Natalie Mackraz, Barry-John Theobald, and Federico Danieli. Theo-
+
+retical limits of language model alignment, 2026. arXiv:2605.07105.
+John X. Morris, Chawin Sitawarin, Chuan Guo, Narine Kokhlikyan, G. Edward Suh, Alexan-
+der M. Rush, Kamalika Chaudhuri, and Saeed Mahloujifar. How Much Do Language
+Models Memorize? arXiv preprint arXiv:2505.24832, 2025. arXiv:2505.24832.
+
+Sidharth Mudgal, Jong Lee, Harish Ganapathy, YaGuang Li, Tao Wang, Yanping Huang,
+
+Zhifeng Chen, Heng-Tze Cheng, Michael Collins, Trevor Strohman, Jilin Chen, Alex Beu-
+
+tel, and Ahmad Beirami. Controlled Decoding from Language Models. In International
+Conference on Machine Learning (ICML), 2024. arXiv:2310.17022.
+
+Milad Nasr, Nicholas Carlini, Jonathan Hayase, Matthew Jagielski, A. Feder Cooper,
+Daphne Ippolito, Christopher A. Choquette-Choo, Eric Wallace, Florian Tramèr, and
+
+Katherine Lee. Scalable Extraction of Training Data from (Production) Language Models.
+In International Conference on Learning Representations (ICLR), 2025. arXiv:2311.17035.
+
+Ryan Rogers, Aaron Roth, Jonathan Ullman, and Salil Vadhan. Privacy Odometers and Fil-
+ters: Pay-as-you-Go Composition. In Advances in Neural Information Processing Systems
+29 (NeurIPS), 2016. arXiv:1605.08294.
+
+Vinu Sankar Sadasivan, Aounon Kumar, Sriram Balasubramanian, Wenxiao Wang, and
+
+Soheil Feizi. Can AI-generated text be reliably detected? Transactions on Machine
+Learning Research, 2025. arXiv:2303.11156.
+
+Igal Sason and Sergio Verdú. f -divergence inequalities. IEEE Transactions on Information
+Theory, 62(11):5973–6006, 2016. arXiv:1508.00335.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Rylan Schaeffer, Brando Miranda, and Sanmi Koyejo. Are emergent abilities of large
+language models a mirage? In Advances in Neural Information Processing Systems
+(NeurIPS), 2023. arXiv:2304.15004.
+
+Sarah Scheffler, Eran Tromer, and Mayank Varia. Formalizing Human Ingenuity: A Quan-
+titative Framework for Copyright Law’s Substantial Similarity. In Proceedings of the
+
+Symposium on Computer Science and Law, pp. 37–49, 2022. doi: 10.1145/3511265.
+.
+
+Tom Segal, Asaf Shabtai, and Yuval Elovici. Provably protecting fine-tuned LLMs from
+training data extraction while preserving utility, 2026. arXiv:2602.00688.
+
+
+Weijia Shi, Jaechan Lee, Yangsibo Huang, Sadhika Malladi, Jieyu Zhao, Ari Holtzman,
+Daogao Liu, Luke Zettlemoyer, Noah A. Smith, and Chiyuan Zhang. MUSE: Machine
+
+Unlearning Six-Way Evaluation for Language Models. In International Conference on
+
+Learning Representations (ICLR), 2025. arXiv:2407.06460.
+
+Gowthami Somepalli, Vasu Singla, Micah Goldblum, Jonas Geiping, and Tom Goldstein.
+Diffusion Art or Digital Forgery? Investigating Data Replication in Diffusion Models.
+In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2023.
+arXiv:2212.03860.
+Federico Tomasi, Dmitrii Moor, Alice Wang, and Mounia Lalmas. Primal-dual guided
+decoding for constrained discrete diffusion, 2026. arXiv:2605.09749.
+
+Tim van Erven and Peter Harremoës. Rényi divergence and Kullback-Leibler divergence.
+
+IEEE Transactions on Information Theory, 60(7):3797–3820, 2014.
+J. Vijayavallabh. An Empirical Audit of k-NAF Budget Accounting for Anchored Decoding.
+arXiv preprint arXiv:2605.28001, 2026.
+
+Nikhil Vyas, Sham Kakade, and Boaz Barak. On Provable Copyright Protection for Gener-
+
+ative Models. In Proceedings of the 40th International Conference on Machine Learning
+(ICML), PMLR 202, 2023. arXiv:2302.10870.
+
+Justin Whitehouse, Aaditya Ramdas, Ryan Rogers, and Zhiwei Steven Wu. Fully Adaptive
+Composition in Differential Privacy. In Proceedings of the 40th International Conference
+on Machine Learning (ICML), 2023. arXiv:2203.05481.
+
+Sangyeon Yoon, Yeachan Jun, and Albert No. Position: The Term “Machine Unlearning” Is
+
+Overused in LLMs. In International Conference on Machine Learning (ICML), Position
+Paper Track, 2026. arXiv:2606.27379.
+
+Jiatong Yu, Yinghui He, Anirudh Goyal, and Sanjeev Arora. On the Impossibility of
+Retrain Equivalence in Machine Unlearning. arXiv preprint arXiv:2510.16629, 2025.
+arXiv:2510.16629.
+Hanlin Zhang, Benjamin L. Edelman, Danilo Francati, Daniele Venturi, Giuseppe Ate-
+niese, and Boaz Barak. Watermarks in the sand: Impossibility of strong watermarking
+for generative models. In International Conference on Machine Learning (ICML), 2024.
+arXiv:2311.04378.
+
+
+Jingyu Zhang, Jiacan Yu, Marc Marone, Benjamin Van Durme, and Daniel Khashabi.
+Certified Mitigation of Worst-Case LLM Copyright Infringement. arXiv preprint
+
+arXiv:2504.16046, 2025.
+
+
+A Proofs
+
+A.1 Proposition 1
+
+For α = ∞ the budget gives pθ (E) ≤ eK ps (E) = eK−S(x) , which is at least 1 ex-
+actly when K ≥ S(x). For α ∈ (1, ∞), Rényi-to-probability conversion gives pθ (E) ≤
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+(α−1)/α
+eK ps (E) ; since the exponent is positive and finite, this is at least 1 exactly when
+
+
+eK ps (E) ≥ 1, i.e. K ≥ S(x). For α = 1 the tightest bound is the binary-KL inversion
+
+max{p : d(p ∥ e−S(x) ) ≤ K}, which attains 1 exactly when d(1∥e−S(x) ) = S(x) ≤ K. In all
+three cases the threshold is K = S(x).
+
+
+100
+
+
+
+
+
+
+bound on Pr[reproduce x]
+−2
+
+10−4 K = S(x)
+
+
+
+−6
+
+10−8 α = 1 (KL, He et al.)
+α=2
+−10 α=8
+α = ∞ (pathwise)
+10−12
+50 100 150 200 250
+
+sequence budget K (nats)
+
+
+Figure 2: The bound a budget K implies on reproducing a work of surprisal S(x) = 205
+nats, under four orders of the Rényi charge. A stronger order buys a tighter bound below
+K = S(x) and does not move the point at which the bound becomes vacuous (Proposition 1).
+
+
+A.2 Proposition 2
+
+Apply the data-processing inequality to the indicator of the true token: the step charge
+is at least the binary divergence between the served and reference probabilities of that
+token,
+P and d(q ∥ e−st ) ≥ (1 − η)st − log 2 whenever q ≥ 1 − η. The banking rule enforces
+i≤t ci ≤ (t + 1)k − δ at every step, and combining the two for every t gives the claim. The
+accompanying inequality kcrit (x) ≥ s(x) + δ/N is the statement that a running maximum
+dominates its own endpoint, with equality exactly when the ratio is constant in t. Only
+the data-processing step is specific to this decoder; the charge need only dominate the KL,
+which every order α ≥ 1 does.
+
+A.3 Theorem 1
+
+
+Write q for the law of the decoder’s output sequence under the budgetP and ps for the safe
+model’s. The chain rule for relative entropy gives DKL (q∥ps ) = Eq t DKL (qt ∥ps,t ) , where
+
+qt is the distribution actually served at step t and ps,t the safe model’s at the same context.
+
+For the audited decoder P qt = pθt and the step charge is exactly c1 (θt ) = DKL (pθt ∥ps,t ), so a
+per-trajectory budget t ct ≤ K gives DKL (q∥ps ) ≤ K. For α > 1 the charge dominates the
+KL, since Dα is nondecreasing in α (van Erven & Harremoës, 2014), so the same inequality
+holds for every order in the class.
+
+That chain-rule step is an assumption about the implementation as much as about the
+
+mathematics: it requires the logged sequence spend to be exactly the sum of the per-step
+
+KL charges. We checked it rather than assumed it. Over P 1,200 trajectories and 240,000
+decode steps at k = 3, the largest discrepancy between t at and the recorded total spend
+is 1.5 × 10−4 nats, consistent with floating-point accumulation, and the per-step charge
+agrees exactly with an independent recomputation from the two logit vectors at every one
+of those steps.
+
+Donsker–Varadhan (Donsker & Varadhan, 1975) states that for every bounded measurable
+
+U and every λ ∈ R,  
+
+DKL (q∥ps ) ≥ λ Eq [U ] − log Eps eλU .
+
+Taking the supremum over λ gives the convex conjugate of the log-moment generating
+function of U under ps , that is the Cramér rate function (Dembo & Zeitouni, 1998),
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+DKL (q∥ps ) ≥ Λ∗s Eq [U ] . Chaining the two displays gives K ≥ Λ∗s (u) with u = Eq [U ],
+
+which is the first claim. Since Λ∗s is convex, vanishes at u = Eps [U ] and is strictly positive
+to the right of it, any u strictly above the safe model’s own mean utility forces K > 0 and,
+by monotonicity, forces K ≥ Λ∗s (u) specifically. Proposition 1 then applies verbatim to any
+work with S(x) ≤ Λ∗s (u) ≤ K.
+
+
+What Theorem 1 is worth in numbers The utility is the judge’s verdict scored 1/ 21 /0 and
+
+its law under ps is read off the anchor-only arm; realised spend is the decoder’s own sequence
+divergence, which never reaches its cap. Every row satisfies Eq. (3) by three to five orders
+of magnitude.
+
+
+k realised spend Eq [U ] gain Λ∗s spend / Λ∗s
+
+0.5 79.0 0.334 +0.011 0.0003 2.8×105
+1 134.6 0.420 +0.097 0.023 5900
+165.0 0.469 +0.146 0.052 3200
+
+171.3 0.483 +0.160 0.061 2800
+
+
+B Where the uncertified interval comes from
+
+
+Measured on the 758 reference passages under four safe models from three openly licensed
+corpora, kcrit /s has a median of 4.25 to 6.10. That figure should not be quoted alone. The
+running maximum in Eq. (2) is attained at the first token of the work in 87.7% to 90.5% of
+cases and within the opening tenth in 96.7% to 97.5%, because the bucket must pay for the
+opening out of a single step’s allowance. An adversary who supplies one token of genuine
+prefix removes it: the same ratio falls to 1.32–1.48 and stays there when 5, 10 or 20 tokens
+are supplied. The uncertified protection is real, and it is almost entirely a property of where
+a generation starts.
+The choice of denominator flatters this effect without manufacturing it, and the difference
+is worth stating rather than asserting robustness. Repeating every measurement per token
+leaves the ratios after a supplied prefix unchanged — 1.35–1.41 at one token and 1.30–1.45
+at ten, against 1.32–1.48 and 1.30–1.47 per character — but lowers the whole-work median
+to 3.88–5.98 and the fraction binding at the very first token to 82.6%–87.7%, with 93.0%–
+95.4% inside the opening tenth. The opening effect is smaller than the per-character figures
+alone suggest and remains the dominant term under either denominator.
+This also explains a gap the audit measured without accounting for it. Oracle-prefix windows
+recover 0.2301 of a passage at k = 5 against 0.0925 for a single query in an earlier audit of
+this mechanism (Vijayavallabh, 2026), and 0.097 against 0.012 at k = 3 here (Table 1); the
+oracle strategy is precisely one that supplies genuine prefixes, and Proposition 2 says that
+is what dismantles the opening effect. It unifies the prefix debt with the theorem as well: δ
+raises kcrit and the running maximum binds at the opening, so the untheorised heuristic and
+
+the theorem’s binding constraint are the same phenomenon seen twice, and an adversary
+who owns the prefix defeats both.
+
+
+C Robustness of the scaling trend
+
+
+Exposure, not just fluency A safe model could look good on protected text merely by
+
+being bad at prose. The public-domain control books are inside all three permissive corpora
+while the protected passages are inside none, and on identical 1,500-character spans the
+ratio of control to protected surprisal is 0.630 to 0.887 for every model, so the separation
+is not an artifact of general fluency. That ratio tightens with scale on the Common Pile
+(0.743 → 0.630), which is what growing memorisation of its own corpus would look like; on
+the other two families it is flat within noise, so we do not claim the trend generally. The
+control also does not separate exposure from era and genre, since the control books are older
+than the protected novels.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+6 Common Pile 7B
+TinyComma 1.8B
+
+
+
+
+/ ( ) (uncertified width)
+
+Pleias 3B
+5 KL3M 3.7B
+
+4
+
+
+
+
+
+kcrit s x
+
+
+
+
+
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0
+tokens of genuine prefix supplied by the adversary
+
+
+Figure 3: The gap between certifying and protecting, kcrit /s(x), against the number of
+genuine prefix tokens the adversary supplies. It is large only for a generation that starts
+from nothing.
+
+
+The base-versus-instruct confound, measured Every safe model in Section 3 is a base model
+and the risky model is instruction-tuned, so cuse mixes the corpus difference with the base-
+versus-instruct difference. Repeating the whole measurement against two further risky mod-
+
+els separates them: a 7B instruction-tuned model from an unrelated family, and a 1B base
+model, for which safe and risky are the same kind of object. With a base risky model
+
+cuse roughly halves and every margin rises, so the confound inflates cuse and the margins
+
+reported in the main text are the conservative end of the range. The trend itself does not
+move: in all nine combinations of corpus family and risky model, the margin rises for 16 of
+16 novels, p = 3.1 × 10−5 .
+
+
+Table 2: The scaling trend does not depend on which risky model defines cuse . Margins
+are the median over the 758 protected passages for the smallest and largest safe model of
+
+each family; the sign test counts novels whose margin rises, out of 16, and is p = 3.1 × 10−5
+in every cell. The base risky model is the control for the base-versus-instruct confound: it
+
+raises every margin, so the instruction-tuned rows are the conservative ones.
+
+risky model kind Common Pile Common Corpus KL3M
+
+Llama-3.1-8B-Instruct instruct 4.07 → 5.02 3.45 → 4.19 1.94 → 2.37
+Qwen2.5-7B-Instruct instruct 3.79 → 4.87 3.06 → 3.55 1.79 → 2.10
+Llama-3.2-1B base 8.54 → 10.73 5.70 → 7.93 2.92 → 3.80
+
+
+
+D Robustness of the collapse
+
+Three checks the collapse has to survive Sharp behaviour is often manufactured by a
+
+thresholded metric (Schaeffer et al., 2023), so we repeat the collapse in the longest-common-
+substring length, which is continuous and logged alongside recall: across the seven pairs the
+
+spread is 0.246 of that metric’s range against 0.247 for the thresholded recall, so whatever
+
+the curves do, the threshold is not doing it. The onset definition is arbitrary, so we sweep
+it, and here the three-pair answer is weaker than the two-pair one was. The spread in
+onset/s(x) is 0.335, 0.287 and 0.411 at thresholds 0.005, 0.01 and 0.02, and the absolute
+level runs from 0.914 to 1.045. The spread is dominated by the two KL3M pairs at every
+threshold, so the choice of threshold is not what puts them on the far side of the vacuity
+point; at 100 passages a single work still moves a pair’s mean recall by about 0.01, which is
+why we quote intervals rather than a band. Finally, Eq. (4) makes its own prediction about
+which rescaling should work best, and it can be checked, and the answer is that it cannot be.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+raw budget rescaled by the vacuity threshold
+
+TinyComma-1.8B + memorised Llama-3.1-8B TinyComma-1.8B (s(x) = 3.24)
+0.10 Comma-7B + memorised Comma-7B 0.10 certificate
+Comma-7B (s(x) = 2.39)
+Pleias-350M + mem. Pleias-350M Pleias-350M (s(x) =vacuous
+
+
+
+
+single-query recall
+.55)
+0.08 Pleias-1.2B + mem. Pleias-1.2B 0.08 Pleias-1.2B (s(x) = 3.21)
+KL3M-1.7B + mem. KL3M-1.7B KL3M-1.7B (s(x) = 2.21)
+0.06 KL3M-520M + mem. KL3M-520M 0.06 KL3M-520M (s(x) = 2.41)
+Phi-3.5-mini + mem. Phi-3.5-mini Phi-3.5-mini (s(x) = 2.84)
+0.04 0.04
+
+.02 0.02
+
+.00 0.00
+
+.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 0.4 0.6 0.8 1.0 1.2 1.4 1.6
+budget k (nats per token) rescaled budget k/s(x)
+
+
+Figure 4: Single-query recall for seven independent (anchor, risky) pairs sharing no anchor,
+
+tokenizer or risky model. Left: against the raw budget, with each pair’s vacuity threshold
+s(x) dotted. Right: against the budget rescaled by that threshold. The curves coincide to
+a mean spread of 0.027 over k/s(x) ∈ [0.7, 1.2], and the onsets fall in two groups: 0.878
+to 0.926 for the five pairs at about four characters per token, 1.053 and 1.166 for the two
+KL3M pairs at about two. The safe model’s surprisal rate on the protected work is the
+natural unit for the budget.
+
+
+Ablating the normaliser gives s(x) against r as 0.0059 against 0.0046 on two pairs, 0.0070
+
+against 0.0096 on three, 0.0180 against 0.0143 on four, 0.0264 against 0.0215 on five, 0.0266
+
+against 0.0254 on six and 0.0268 against 0.0262 on seven: the winner changes every time
+a pair is added. On four pairs both beat the 0.033 of not rescaling at all by about 2×; on
+seven, not rescaling costs 0.0286 and all three sit within 10% of each other. This ablation is
+not a way to choose between normalisers, and past four pairs it is not evidence for having
+one.
+
+Why not use the whole distribution? Rescaling by one number per pair discards the shape
+of the anchor’s surprisal distribution, and the law can be restated with nothing fitted in it
+at all: let F (k) be the fraction of protected objects whose anchor surprisal rate is at most k,
+and ask whether recall is a common function of F . It is not, and the comparison says what
+
+the constant is about. At the measured onset the budget covers 0.07, 0.09, 0.05, 0.03, 0.98,
+.83 and 0.23 of the passages, a relative spread (standard deviation over mean) of 115%,
+
+against 10% for the ratio to the median. The two near unity are the affordability point
+
+of Section 4 at its limit: budgets that can pay for almost every passage while almost none
+leaks. The unit is the surprisal of a typical protected work, not the size of the tail a budget
+covers. The same construction also fails to rescue the oracle curves. Charged per 50-token
+window, the oracle attack ought to collapse against the window-level F even though it does
+not collapse against the work-level s(x); instead, at its onset essentially no whole window
+is covered on the four pairs at four characters per token (F ≤ 0.009), so window leakage
+begins well before the budget can pay for any window outright.
+
+The natural pair, and why its onset is not quotable Llama-3.1-70B base was swept at
+k ∈ {1, 1.5, 3, 5, 10, 20}, so its recall crosses 0.01 inside a bracket 1.5 nats wide and any
+interpolated onset is a statement about the grid. Applying the same treatment to the seven
+
+pairs whose fine grids we do have shows how much: keeping only the two grid points nearest
+that bracket moves onset/s(x) down by 0.047 to 0.222, to between 0.699 and 0.950. The
+
+natural pair read the same way gives 0.7495, inside that range. That is the whole content
+
+of the onset comparison, which is why the main text uses the overlap of the rescaled grids
+instead: it interpolates the built pairs and never the natural one. At k/s(x) = 1.606 only
+one built pair reaches that far, and there the natural pair is lower (0.069 at the book settings
+and 0.035 at temperature 1, against 0.098).
+
+The three rules that were committed, and how each missed Three readings of Eq. (4) were
+on the table before the last five pairs were swept: the equation itself at the median of r(x),
+the same at q25 , and a fitted constant c s(x). The two KL3M pairs decide against all three
+— every miss low, all six predictions outside the measured intervals, held-out errors of 0.352,
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+.251 and 0.481 nats. The rank correlation between predicted and measured ratio is −0.18
+where the derivation requires it positive, so the directional claim does not merely fail but
+inverts: the pair carrying by far the most residual surprisal has the highest ratio of the
+seven. The gap between affording a work and reproducing it is visible directly: at each
+pair’s onset budget Eq. (4) is satisfied for 27% and 26% of works on the two pairs where we
+can check it, while 0% and 1% actually leak.
+
+Does r(x) screen an individual work? Equation (4) is defined per work, so it is fair to ask
+whether it screens an individual book. It does not, and the reason is measurable. Treating
+“which passage leaks at budget k” as a classification problem over the 100 passages of each
+pair, the derived requirement r(x) reaches a mean AUC of 0.678 across the eight budget
+cells in which anything leaks — but the anchor surprisal s(x) alone reaches 0.751, and
+
+memorisation strength alone is uninformative at 0.417. Subtracting sr makes the per-work
+ranking worse, not better.
+
+That is a consequence of the derivation rather than a contradiction of it. Across works sr
+carries only 6–7% of the level of ss but 44–45% of its standard deviation, so subtracting
+it removes a nearly constant shift while adding variance. A population onset is sensitive
+to exactly that shift and a per-work ranking is blind to it, which is why r was ahead
+
+on the normaliser ablation while the two pairs were degenerate; with a third pair neither
+comparison favours it. A rights-holder can use s(x) to locate the budget at which a class of
+
+works becomes exposed; for one particular book it is still not good enough to rely on.
+
+
+What the order comparison does and does not show The comparison in Table 1 is at
+
+matched budget, because the budget is what a deployer publishes and what a certificate
+quotes. It is not at matched utility, and the table shows why the distinction matters: two of
+these arms are near-identical in behaviour and two are not. The price columns are measured
+on an identical 150-prompt workload for every arm. The judged comparison at n = 150
+resolves about four points, so it establishes that α = 2 is cheap and that α = 8 is not; it
+does not establish that α = 2 is free.
+
+
+E What the evaluation hands the adversary
+
+
+Three quantities move together, and none of them is the tokenizer Each benchmark item
+is a prompt prefix followed by its continuation, both from the same novel, and the attack
+seeds the adversary with –seed-tokens 20: a fixed number of tokens. For one fixed piece of
+text a finer tokenizer therefore changes three things at once — the words the seed buys, the
+decode steps before the continuation is reached, and the target’s length in tokens — and
+all three split the seven pairs exactly where the onset ratio splits, with no overlap in any of
+them:
+
+pair ch/token seed chars seed words steps to it onset / s(x)
+TinyComma 1.8B 4.06 81.3 14.4 195 0.887
+Pleias 1.2B 3.88 77.5 13.7 209 0.878
+Comma 7B 3.80 76.0 13.4 230 0.892
+Phi-3.5 mini 3.70 73.9 13.1 223 0.926
+
+Pleias 350M 3.68 73.5 13.0 210 0.920
+KL3M 520M 2.14 42.9 7.3 435 1.053
+KL3M 1.7B 2.14 42.9 7.3 435 1.166
+
+Seed length is measured on the passages each run used, not inferred from an average.
+Because a twenty-token seed is exactly twenty times the characters per token, no choice of
+pairs can separate these; only an intervention can.
+
+Eight interventions, five on the seed and three on the anchor Every arm was committed
+before it ran, with the band that would refute it (results/onset_prediction_seed.md and
+results/onset_prediction_temperature.md). The seed arms change –seed-tokens alone: the
+tokenizer, the anchor, the memoriser, the corpus, the passages, the budget grid and the
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+metric are held fixed, and s(x) is recomputed at the matching seed because the surprisal
+rate is measured over the target given the seed. The temperature arms change the warp
+applied to both logit vectors before the KL solve, which moves s(x) and holds the seed fixed.
+
+
+The primary metric is the longest common subsequence in words at a threshold of four,
+an absolute count that a changed target length cannot inflate; near-verbatim recall at 0.01
+
+is reported alongside. Intervals are bootstrapped over passages. The last column is the
+
+fraction of bootstrap resamples in which the mean curve never crosses the threshold; it is
+reported for every arm because it, and not the interval, is what catches a grid whose top
+end is a ceiling.
+
+
+run seed tokens seed words s(x) onset onset / s(x) (95% CI)
+
+the seed, at a fixed anchor
+
+Pleias 1.2B, as measured 20 13.7 3.209 2.780 0.866 [0.72, 0.95]
+Arm B, KL3M’s seed 10 6.7 3.259 3.272 1.004 [0.99, 1.23]
+
+KL3M 520M, half the seed 10 4.0 2.424 2.820 1.163 [1.13, 1.33]
+
+KL3M 520M, as measured 20 7.3 2.415 2.492 1.032 [1.01, 1.23]
+Arm A, the others’ seed 40 14.3 2.398 2.253 0.939 [0.88, 1.17]
+four times the seed 80 28.4 2.387 2.521 1.056 [0.78, 1.16]
+KL3M 1.7B, as measured 20 7.3 2.211 2.554 1.155 [1.14, 1.39]
+Arm A2, the others’ seed 40 14.3 2.215 2.169 0.979 [0.96, 1.67]
+
+the anchor’s rate, at a fixed seed
+KL3M 520M, τ = 1.0 20 7.3 2.415 2.492 1.032 [1.01, 1.23]
+τ = 0.7 20 7.3 2.689 2.719 1.011 [0.89, 1.19]
+τ = 0.4 20 7.3 4.034 3.603 0.893 [0.76, 0.95]
+Pleias 1.2B, τ = 1.0 20 13.7 3.209 2.780 0.866 [0.72, 0.95]
+τ = 0.7 20 13.7 3.513 2.734 0.778 [0.72, 1.00]
+τ = 0.4 20 13.7 5.200 3.740 0.719 [0.65, 0.85]
+
+What the seed arms do and do not establish Arm B moves a pair from one family’s band
+across the vacuity threshold into the other’s, and its interval is disjoint from its control’s;
+the pre-registered band for “the seed is the mechanism” was ≥ 1.00 and the measurement
+is 1.004. Arm A moves the converse pair in the converse direction, from 1.032 to 0.939, and
+Arm A2 replicates that direction on a second, larger anchor of the same family, 1.155 to
+
+.979. Both of the latter land in ranges the pre-registration had already declared undecided
+between two accounts — seed matching, which predicted 0.85–0.95 for Arm A, and a token-
+
+bucket account on which the seed acts by choosing which token the adversary must generate
+
+first — so we report them as undecided rather than assigning them. Neither direction reaches
+the other family’s band, so the adversary’s context is not the whole of the difference between
+the families.
+
+
+The dose-response, swept across a factor of seven on KL3M-520M, is not monotone: 1.163
+at 4.0 words, 1.032 at 7.3, 0.939 at 14.3 and back to 1.056 at 28.4. The turn was predicted
+
+by neither registered account. Two things push in its direction and neither was designed
+
+in: at 80 seed tokens the remaining target is 12% shorter than the control’s (520 against
+590 tokens), which on an absolute word count makes the threshold harder to reach; and the
+seed-10 arm’s unconstrained recall is 0.227 against the control’s 0.519, which is why that
+arm was pre-committed to be reported with its baseline attached and excluded from any
+fit. We claim the effect over the range an evaluation actually varies the seed, 4 to 14 words,
+and not beyond it.
+
+Two checks that the seed arms measure what they claim. The unconstrained model repro-
+duces either target in every arm — k = −1 recall 0.909 against 0.894 for the Pleias pair and
+0.519 against 0.520 for the KL3M pair — so the intervention changes what the adversary
+is given, not how well the memoriser knows the text, and the anchor alone leaks nothing
+in any of the runs. And the residual difference in target length points the wrong way to
+explain Arm B: its target is 3.7% longer than its control’s, which on an absolute word count
+can only make the threshold easier to reach and the onset lower, while the measured onset
+rose by 17.7%.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Grid ceilings, and why the no-crossing fraction is reported Two arms first came back with
+an implausibly tight interval and a large no-crossing fraction: the seed-80 arm at 2.1% and
+Arm A2 at 38.0%, against 0.0–0.9% everywhere else. Both had the same cause. The mean
+lcs_word curve rose past four and then flattened just above it at the top of the grid —
+Arm A2 holds at 4.7–5.0 from k = 2.2 to k = 3.0 — so resamples that shifted the plateau
+a little below four never crossed at all, and the interval computed from the resamples that
+did cross is conditioned on crossing. It is narrow for the same reason it is wrong. The
+pre-registration commits to extending the grid whenever the fraction rises materially above
+the others and to reporting both grids. Extending Arm A2 to k ∈ {3.5, 4.0, 5.0}, where the
+
+curve reaches 6.71, 8.61 and 21.52, takes the fraction to 0.0%, leaves the point estimate at
+.979 and widens the interval from [0.96, 0.98] to [0.96, 1.67]. The seed-80 extension behaved
+
+the same way. Only the extended grids are used above.
+
+
+The temperature arms, and the one confound in them The τ = 0.4 arms move s(x) by
+67% and 62% with everything the seed arms hold fixed still fixed, which is the only design
+here that varies the budget’s unit within a single pair. The elasticity d log(onset)/d log s(x)
+is +0.72 [+0.41, +0.84] and +0.61 [+0.40, +0.96]: both exclude 0, refuting a budget quoted
+in a constant number of nats, and both exclude 1, so the onset does not simply scale with
+the rate either.
+
+The confound is that the decoder warps both logit vectors before the KL solve, so τ = 0.4
+sharpens the risky model too and its unconstrained recall rises, 0.519 to 0.904 on KL3M-
+520M and 0.909 to 0.964 on Pleias-1.2B. A sharper memoriser reaches the threshold at a
+lower budget, so the warped arm’s onset is biased down and the elasticity toward 0 — toward
+the null being refuted. Restricting both arms to the passages the memoriser reproduces in
+both at k = −1 (near-verbatim recall ≥ 0.7, a threshold fixed for power before any onset
+was computed) matches unconstrained strength by construction:
+
+arm n k=−1 recall, ctl / warped elasticity 95% CI
+KL3M 520M τ = 0.4, all 100 0.519 / 0.904 +0.72 [+0.41, +0.84]
+matched 38 0.947 / 0.993 +0.72 [+0.08, +1.00]
+Pleias 1.2B τ = 0.4, all 100 0.909 / 0.964 +0.61 [+0.40, +0.96]
+matched 86 0.996 / 0.999 +0.61 [+0.38, +1.03]
+
+Dropping 62 of 100 passages from the KL3M pair and closing a strength gap of 0.519 against
+0.904 changes the estimate in the third decimal, although the onsets it is built from do move
+(2.492 → 2.462 and 3.603 → 3.550; Pleias 2.780 → 2.748 and 3.740 → 3.694). Whatever the
+warp does to the onset, it does not do it through the memoriser. What matching costs is
+power: on 38 and 86 passages the upper ends reach 1.00 and 1.03, so sub-proportionality is
+
+a full-sample statement and is reported as one, while the part that refutes the null survives
+both.
+
+The τ = 0.7 arms were run as a dose check and are uninformative by the rule committed
+before either was scored: they move s(x) by 0.09–0.11 log units against the τ = 0.4 arms’
+0.62–0.67, so the elasticity divides by a lever six times too small. KL3M-520M returns +0.81
+[−0.53, +1.23] and Pleias-1.2B −0.18 [−1.07, +2.58]; both intervals contain 0, 1 and both
+
+τ = 0.4 estimates. Their point estimates straddle, one agreeing with the decisive arms and
+one not, and neither fact is evidence. They are reported for completeness and carry no
+
+weight in either direction.
+
+
+The same relation across the seven pairs Ranking the seven by the words their adversary
+holds gives a Spearman correlation with the onset ratio of −0.919 (exact permutation test
+over all 7! orderings, p = 0.007), and the trend continues inside the five-pair coarse family
+alone, across a range of 1.4 words, at −0.800 (p = 0.13 at n = 5). This is confounded with
+granularity by construction and cannot stand on its own; what it adds is that the relation is
+not a two-group artifact, and that it is visible among five pairs built for unrelated reasons.
+
+What the context costs the units claim, and what conditioning on it recovers The claim
+that s(x) is the right unit for a budget has a null a referee will reach for: quote a constant
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+.0 e
+onset = 0.90 s(x), fitted on the five
+bov
+
+.5 matched context (5 pairs) a
+
+short context (2 pairs) u ous
+vac
+.0 temperature arms (2 pairs, warped) a te
+
+
+
+onset budget (nats/token)
+
+rt ific
+4.5 ce
+
+.0
+
+3.5
+
+.0
+
+2.5
+
+.0
+
+
+.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0
+s(x), the anchor's surprisal rate on the work (nats/token)
+
+
+Figure 5: The budget at which extraction begins, against the anchor’s surprisal rate on
+
+the work it protects. Filled circles are the five pairs whose adversary is handed 13.0–14.4
+words and the line is fitted on them alone; open circles are the two pairs handed about half
+
+as many, which sit above the line and, for one of them, above the vacuity threshold itself.
+
+Squares joined to their own control are the temperature arms, where the anchor, memoriser,
+corpus, tokenizer and seed are all fixed and only the warp moves the horizontal axis — the
+only points here that do.
+
+
+seven pairs (seed fixed at 20 tokens)
+.6 kcrit prediction
+
+KL3M-1.7B, seed varied
+KL3M-520M, seed varied
+1.4 Pleias-1.2B, seed varied
+
+
+onset / s(x)
+
+
+
+
+1.2
+
+certificate vacuous above
+.0
+
+
+0.8
+
+
+5 10 15 20 25
+
+words of the work the adversary is given
+
+
+Figure 6: The onset ratio against how many words of the work the adversary already holds.
+Open circles are the seven pairs built for other reasons, where the word count is 20 times the
+tokenizer’s characters per token and cannot be separated from granularity. Joined points
+with intervals are the interventions, where the seed is varied and the tokenizer is not; the
+dashed line is Proposition 2’s kcrit , rescaled once per pair on that pair’s control arm, so
+every other point on it is an out-of-sample prediction made from the anchor alone.
+
+
+number of nats and do not rescale at all. Over the seven pairs it nearly holds. Predicting a
+
+held-out pair’s onset as c s(x), with c the mean ratio of the other six, gives a mean absolute
+error of 0.264 nats per token; predicting the other six’s mean onset in nats gives 0.295.
+
+Across an s(x) range of 1.61×, rescaling buys 12%.
+
+Conditioning on the adversary’s context is what separates them. Among the five pairs whose
+adversary holds 13.0–14.4 words, over an s(x) range of 1.49× — nearly the whole range —
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+the same leave-one-out gives 0.070 nats against the constant’s 0.364, and the ratio itself has
+a coeﬀicient of variation of 2.4%:
+
+subset n s(x) span onset / s(x) LOO, c s(x) LOO, constant
+
+all pairs 7 1.61× 0.878–1.166 0.264 0.295
+
+adversary holds > 10 words 5 1.49× 0.878–0.926 0.070 0.364
+
+
+A five-of-seven subgroup is the shape a chance finding takes, so both multiplicity checks
+are exact enumerations rather than asymptotics. Of the 21 subsets of size five, exactly one
+— this one — has a coeﬀicient of variation this small, p = 0.048; and over all 21 ways of
+labelling two of the seven as short-context, none separates the two group means by as much
+as the measured 1.110 against 0.901, p = 0.048 again. Both are marginal, as they must be
+at n = 7, and neither is a test of the grouping rule: the rule was read off these same seven
+measurements. What tests it is the pair of interventions above, which move a single pair
+across the boundary in both directions with everything else fixed.
+
+F Limitations in full
+
+One protected corpus Every measurement runs on sixteen English genre novels, from Copy-
+Bench and BookMIA. The robustness cells in Appendix C are nine re-analyses of those same
+sixteen works, so p = 3.1×10−5 is simply the smallest value sixteen paired items can produce
+and should be read as “the trend holds for every novel we have” rather than as independent
+replication. Non-literal reproduction, other languages and other genres are untested.
+
+More passages do not narrow the onset interval, and that is why several arms are undecided
+The bootstrap interval on onset / s(x) has a mean width of 0.256 across the seven pairs at
+
+passages each. Quadrupling the passages does not shrink it: measured on the same pair
+with the same metric, ‘Pleias-350M’ gives a width of 0.219 at n = 100 and 0.215 at n = 458,
+
+where independent sampling noise would predict 0.102. The variance is between works, not
+
+between passages drawn from them, so it is bounded below by the sixteen novels and not by
+how many windows we cut from each. That has a direct consequence for the interventions
+in Section 4: their pre-registered bands are about 0.1 wide, narrower than an interval this
+method can deliver, so several arms land in a committed “undecided” region even when the
+measured shift is large and in the predicted direction. Where an arm decides nothing we
+say so, and the quantity that would fix it is more distinct works, not more windows.
+
+The onset ratio takes two values, and we can name one cause but not the other s(x) spans
+1.87× across the seven pairs in tokenizer-free units, still short of the dynamic range a data
+collapse normally rests on, and at the crossing budgets only one to four works in a hundred
+leak. In units of each pair’s own s(x) the bootstrap intervals are [0.84, 1.22], [0.79, 0.96],
+
+[0.84, 1.07], [0.86, 1.08], [0.80, 1.09] for the five pairs at about four characters per token, and
+[1.14, 1.41] and [1.02, 1.24] for the two KL3M pairs at about two. The first five overlap freely
+
+around 0.90; both KL3M intervals exclude 1.
+
+The KL3M pairs differ from the rest in three ways at once — the tokenizer, targets twice
+as long in tokens, and, for one of them, much the weakest memoriser — so pair six was
+built to remove one of the three. It shares the tokenizer and the target length with pair five
+
+and memorises thoroughly, sr /ss = 0.09 against 0.35, which places it inside the 0.06–0.11
+band of the four; its ratio is nevertheless 1.053. Memorisation strength is therefore not what
+
+puts a pair on the far side of the vacuity point, though it does modulate the ratio within
+
+a family, and in the direction opposite to Eq. (4). That leaves the tokenizer confounded
+with everything else the tokenizer determines, and for a fixed corpus those are not separate
+variables. Each benchmark item is a prompt prefix followed by the protected passage, so a
+tokenizer that cuts the same text more finely changes three things at once: the adversary’s
+seed, which is a fixed number of tokens and therefore buys 7.3 words on the KL3M pairs
+against 13.0–14.4 on the rest; the number of decode steps before the passage is reached, 435
+against 195–230; and the target length. All three split the seven pairs exactly and without
+overlap, in the same place the onset ratio splits.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Target length, controlled by truncation Truncation separates the target’s length from the
+tokenizer. Decoding the KL3M-520M pair on the first 276 tokens of each target matches
+the four-character pairs’ step count with the tokenizer unchanged and moves s(x) by 1.3%;
+scored on the longest common subsequence in words, an absolute count that a shortened
+target cannot inflate, the ratio is 1.091 with a bootstrap interval of [1.04, 1.24], against 1.032
+for the same pair untruncated and 0.866–0.893 for the four-character pairs. The step count
+is not the mechanism. Recall is scored against the decoded target, and each benchmark
+item is 930 characters of the novel followed by its continuation, so a truncated target is still
+protected text: the unconstrained model reaches 0.696 near-verbatim recall on it. The test
+
+runs in one direction only, since the four-character pairs cannot be lengthened to 580 tokens
+without longer references than the benchmark provides.
+
+Pair seven removes the next candidate. Vocabulary size is the obvious reading of “granu-
+larity”, and the two are confounded across the first six pairs: the fine tokenizer has 32,768
+types and the coarse ones 64,000 to 128,256. Phi-3.5-mini breaks that. Its vocabulary is
+32,011 types, smaller than KL3M’s, and it still cuts these passages at 3.8 characters per to-
+
+ken; across every anchor we hold, vocabulary size and characters per token are decorrelated
+enough that kl3m-002-170m (32,768 types, 1.98 characters) and Phi-3.5-mini (32,011, 3.78)
+
+differ by 1.91× in granularity at the same vocabulary scale. Its onset ratio is 0.926, with
+
+the coarse family. Its memoriser is also the most thorough of the seven, sr /ss = 0.003, so
+the memorisation control repeats at its limit. The pair’s own bootstrap interval, [0.80, 1.09],
+does not by itself exclude the KL3M values; the claim it supports is the negative one, that
+vocabulary size is not the variable. Which property does move it is answered in part by
+Appendix E: five interventions on the adversary’s seed move a pair in both directions, one
+of them across its own vacuity threshold, but none reaches the other family’s band, so the
+context accounts for part of the split and not all of it. The residue is not resolvable with
+the anchors we hold, because none falls between the two granularity groups — the gap from
+2.4 to 3.4 characters per token is empty across all fourteen models in our cache, so the next
+
+test needs a tokenizer trained for it rather than chosen from what exists.
+We report the proportionality as a unit that locates the onset within about a fifth, not as a
+law. The third pair was re-measured at 458 passages after its 100-passage curve proved too
+flat through the crossing for a bootstrap to resolve: a third of resamples never reached the
+threshold on a grid that stopped at k = 3.6, and extending it to 4.2 brought that to 0.1%
+while moving the onset from 3.18 to 3.27. The other six pairs are still 100 passages each.
+
+Building more of them needs a memoriser strong enough that the unconstrained risky model
+reproduces the passages: a first 350M attempt reached 0.71 near-verbatim recall greedily but
+
+only 0.022 under the sampling the attack uses, and entered the analysis only after retraining
+
+to 0.91. We admit a pair only if its k = −1 recall exceeds the onset threshold by an order
+of magnitude.
+
+
+The no-free-lunch theorem is a converse It lower-bounds the budget any policy needs,
+
+including the optimal one. Our decoder is causal and meters with a token bucket, and we
+do not bound the gap between the two. That gap is large and measurable — a factor of 5
+
+to 32 between the divergence on the risky model’s own rollout and the divergence paid on
+
+a budgeted one — and closing it is the clearest open problem this paper leaves.
+
+
+Two judges, one workload Utility is scored by instruction-tuned models on the benchmark’s
+
+own prompt classes rather than deployment traﬀic. Two judges at 600 comparisons per arm
+agree on the sign everywhere and on neither endpoint’s magnitude: at k = 1 one reads
+
+−3.66σ against the anchor and the other +0.11σ, at k = 10 −6.97σ against −3.29σ. The
+
+null arm calibrates that gap rather than leaving it to argument — served the unconstrained
+risky model, the first judge separates it from the anchor at −6.09σ and the second at
+−2.49σ, so the second is the coarser instrument and its smaller separations are partly its own
+resolution. That calibration is itself noisy: the same 500 comparisons judged in an earlier
+run gave −5.47σ and −1.49σ, so about a σ of run-to-run drift is the floor beneath which
+no separation reported here should be read. What survives both is the pair of endpoints:
+neither separates the decoder from the anchor at k = 0.5, and both do at k ≥ 10. The order
+comparison is at matched budget, not matched utility, and its arms carry n = 150.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+G Related work in full
+
+
+Access-free guarantees and their discontents Near-access-freeness (Vyas et al., 2023) asks
+that a served model stay within a divergence of a safe model that never saw the protected
+work, and CP-∆ and CP-k instantiate it by combining models trained on disjoint shards
+
+(Vyas et al., 2023; Abad et al., 2025). Three recent results bear directly on ours. Cohen
+(2025) shows that per-query access-freeness does not compose across queries; Cohen &
+
+Zhang (2026) proves barriers for counterfactual credit attribution, a sibling relaxation of
+
+differential privacy. Closest of all, Segal et al. (2026) report that CP-style guarantees can
+be numerically uninformative in realistic fine-tuning settings and demonstrate extraction
+against NAF-protected models. We are downstream of that observation, not upstream of
+it.
+
+What differs is the shape of the claim, and it is worth being exact about it because the two
+
+results are compatible. Their diagnosis is that memorisation puts sharp probability spikes
+
+on a few tokens, so a divergence taken over raw probabilities reads as large even where
+the models agree on what to emit; their repair charges relative probabilities instead. That
+is a change in what is metered. Proposition 1 closes a different lever, the one a deployer
+actually has: for every order of the same per-step charge, from KL to max-divergence, the
+certificate becomes vacuous at the same budget, so a stronger charge buys precision below
+the threshold and never moves it. Neither result subsumes the other — ours does not say no
+repair exists, and theirs does not claim the order is the problem — but together they leave
+a deployer holding a scalar budget with only one lever that moves the threshold, a smaller
+budget, which Theorem 1 prices and Section 5 measures. Cohen & Zhang (2026) is the closer
+
+structural parallel, and not the one we first read it as: its non-composition is autoregressive,
+not across queries. Imposing counterfactual credit attribution on the next-token predictor
+
+does not make the sequence-level model satisfy it, and retrofitting credit onto a model that
+
+lacks it needs query complexity exponential in the output length. Ours is the same shape
+for a different quantity — a per-step charge that is honoured at every step still leaves the
+sequence-level event {output = x} unprotected once the budget reaches S(x) — and it is
+priced in nats for a single query rather than stated as a barrier.
+
+
+Other inference-time defences, and the level none of them certifies Anchored decoding is
+one of several ways to intervene at serving time. CP-Fuse combines models trained on
+disjoint shards under a balancing property (Abad et al., 2025) and is the second mechanism
+
+we audit; BloomScrub certifies takedowns by Bloom-filter screening with abstention (Zhang
+et al., 2025); SILO isolates legal risk in a nonparametric datastore (Min et al., 2024); others
+
+refuse (Liu et al., 2024) or randomise the decoder (Chen et al., 2024), and for diffusion models
+
+retrieval carries a NAF guarantee (Golatkar et al., 2024) in response to replication in image
+models (Somepalli et al., 2023). Alshehyari et al. (2026) benchmark output-, behavioural-
+and representation-level defences across two model families; the level that benchmark omits
+is the certified one, which is exactly where a low measured leakage and a vacuous certificate
+can coexist. The closest empirical precedent for Section 2’s accounting is VA3 (Li et al.,
+2024), which amplifies a probabilistic copyright guarantee for text-to-image models through
+repeated interaction; what composes there is a per-sample probability accumulating over
+retries, where a budget adds by construction.
+
+
+Training-time alternatives, and the evaluation standard they set The alternative is to
+
+remove memorisation before deployment: drop tokens from the loss (Hans et al., 2024),
+
+optimise directly against regurgitation (Chen et al., 2025), or unlearn the work (Eldan
+& Russinovich, 2023). Audits of unlearning (Lynch et al., 2024; Shi et al., 2025; Łucki
+et al., 2025; Deeb & Roger, 2024) recovered the removed text by relearning, jailbreaks and
+probing; the word covers objectives that demand different evaluations (Yoon et al., 2026),
+and equivalence to retraining is unattainable (Yu et al., 2025). Part of the appeal of an
+inference-time certificate is that it promises something checkable instead — which is the
+promise this paper measures, and it inherits that evaluation standard rather than escaping
+it.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Measuring memorisation, and what the measurement is a function of Section 4 is a contri-
+bution to this literature as much as it uses it. Extractability is defined relative to a prefix
+(Carlini et al., 2021; 2023), and how the probe is built has repeatedly been found to move the
+number — so far, in the direction of understating it. A filter that perfectly prevents verbatim
+memorisation still leaks under minimally modified style-transfer prompts, so exact-match
+definitions are too restrictive (Ippolito et al., 2023); and discoverable extraction, which asks
+whether greedy decoding reproduces the suﬀix, ignores the non-determinism of realistic sam-
+pling, which is why Hayes et al. (2025) replace the yes-or-no test with a probability over
+repeated queries. We met that second effect from the other side: one candidate memoriser
+
+scored 0.708 greedy against 0.022 sampled, which is why a pair enters Section 4 only on
+its sampled k = −1 recall (Appendix F). Adversarial prompting moves the number again
+
+(Nasr et al., 2025), capacity-based accounts measure a different quantity entirely (Morris
+
+et al., 2025), and membership and contamination tests are sensitive to how the probe is con-
+structed (Meeus et al., 2024; Duarte et al., 2024). Our finding is one more such dependence
+and an unusually mechanical one: because the prefix is specified in tokens, two models with
+different tokenizers are handed different amounts of the work at the same nominal setting,
+and the quantity that moves is not the memoriser but the budget the target’s own surprisal
+profile demands.
+
+Copyright as a legal question, and which quantity it asks for Whether copyright reduces
+to a privacy-style definition at all is contested (Elkin-Koren et al., 2024); memorisation and
+infringement are distinct questions (Haviv et al., 2026; Cooper & Grimmelmann, 2025);
+substantial similarity has been formalised as description length with and without access to
+the original (Scheffler et al., 2022); and whether a model “contains a copy” has been argued
+to turn on how easily the work can be extracted (Lemley & Cooper, 2026), which is the
+
+quantity Section 4 locates. Where the deployer sits in the liability chain is its own literature
+(Henderson et al., 2023; Lee et al., 2024). We take no position on any of these; we report
+
+what a published k does and does not tell a rights-holder who asks about one work.
+
+
+Impossibility results for inference-time mitigations The template is Zhang et al. (2024),
+
+who prove strong watermarking impossible under stated oracle assumptions and demon-
+
+strate it against the schemes of Kirchenbauer et al. (2023); Kuditipudi et al. (2024) —
+watermarking being the other inference-time intervention whose guarantee is a divergence
+from the unmodified model, with distortion-freeness (Christ et al., 2024) the case of zero
+divergence — and Sadasivan et al. (2025), who bound any detector’s accuracy by the total
+variation between the two distributions and observe that the bound goes vacuous as they
+converge — the same proof shape as ours in a neighbouring problem. Kalai et al. (2025) give
+a Pareto-optimal safe aggregation rule whose robustness notion parallels k-NAF at Rényi
+order infinity, one endpoint of the family we sweep. Feldman et al. (2025) derive memori-
+sation lower bounds from strong data processing inequalities, and Livni et al. (2024) place
+
+credit attribution between differential privacy and copyright.
+
+What a divergence budget certifies, and how it is metered That a KL bound does not
+
+imply a worst-case event bound is classical (Sason & Verdú, 2016; van Erven & Harremoës,
+), and the differential-privacy literature has developed the conversions and their costs;
+
+our contribution is not the inequality but which budgets survive the requirement that the
+
+certificate be informative about a specific work and the mechanism remain usable. The
+accounting machinery we borrow is the Rényi filter of Feldman & Zrnic (2020) and fully
+adaptive composition (Whitehouse et al., 2023; Rogers et al., 2016); the token bucket and
+its running maximum are standard objects in queueing and network calculus (Loynes, 1962;
+Cruz, 1991; Le Boudec & Thiran, 2001), which is where our second boundary comes from.
+
+Decoding-time control and extraction Anchored decoding sits in a family of methods that
+steer a model at inference under a divergence constraint (Mudgal et al., 2024; Kim et al.,
+2025; Khalifa et al., 2021). Huang et al. (2025) characterise inference-time alignment by
+a coverage coeﬀicient, a worst-case density ratio rather than an average divergence, and
+Monteiro Paes et al. (2026) give the exact reward attainable at a fixed KL budget; neither
+asks what the budget certifies about a specific event, which is the rights-holder’s question.
+
+
+
+ Under review as a conference paper at ICLR 2027
+
+
+
+
+
+Our attack strategies follow the extraction literature (Carlini et al., 2021; Nasr et al., 2025),
+with passages and coverage estimates from Cooper et al. (2025). Methodologically we follow
+Aerni et al. (2024), who find that evaluations reporting average-case leakage understate the
+leakage of the most vulnerable samples by an order of magnitude, and that no empirical
+defence they study beats a tuned DP-SGD baseline whose own provable guarantee is vacuous.
+That is the gap this paper measures from the other side: between what the budget reports
+and what the running maximum controls, and between a certificate being vacuous and a
+mechanism being useless.
+
+H Construction and validation of the second pair
+
+Every attack in the earlier audit used one anchor, because the mechanism fuses two next-
+token distributions and no other permissively trained model shared the risky model’s vo-
+cabulary. The recorded obstacle was a mismatch of 64,000 against 128,256 tokens. That
+was not the obstacle. The implementation required the embedding table to have exactly
+len(tokenizer) rows, and the Common Pile 7B checkpoint pads 64,000 tokens to 64,256 rows,
+as most model families outside Llama-3 do. Permitting a padded table and masking the
+
+untrained rows out of the solve — they enter neither Z(θ), the charge, nor the sample —
+removes the restriction without changing anything on an unpadded model.
+
+That makes a cleaner experiment available than a second anchor of the usual kind. We
+fine-tune the 7B Common Pile model until it reproduces the protected passages, and fuse it
+against the unmodified model it was fine-tuned from. Anchor and risky model then share an
+architecture, a corpus, a tokenizer and every weight except those the memorisation moved,
+
+so memorisation is the only variable; in the original pair it is confounded with a change of
+corpus, scale and training recipe. The memoriser reaches 0.915 near-verbatim recall on the
+
+passages it was trained on and 0.000 on the held-out split.
+
+Across 9 budgets, 5 strategies and 31,640 budgeted queries there are no invariant violations.
+Three things are sharper on this pair:
+
+
+• The anchor is clean. Serving the safe model alone reproduces 0.0000 of a passage
+under every strategy. In the original pair the anchor alone already recovers 0.0032,
+
+so a small part of what looked like leakage through the decoder was the anchor’s
+
+own corpus.
+
+
+• At k = 20 the decoder is exactly the identity. Single-query recall is 0.7189, equal to
+the unconstrained model’s 0.7189 to four decimals, and oracle windows reach 0.9407
+
+against 0.9435. This is a budget the mechanism’s authors evaluate.
+
+• The uncertified interval reproduces. The ratio kcrit /s(x) is 4.73 here against 4.30
+
+for the original pair, on different models, a different tokenizer and a target set the
+anchor has never seen.
+
+
+The certificate goes vacuous above s(x) = 2.39 nats per token for these targets, and repro-
+duction is provably impossible below kcrit = 11.32. Measured recall is 0.000 at every budget
+up to k = 1, 0.048 at k = 3 and 0.197 at k = 5: leakage starts far below kcrit and close to
+s(x), while the budget at which the whole work becomes reproducible is four to five times
+higher.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

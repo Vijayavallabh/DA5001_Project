@@ -2386,3 +2386,40 @@ and the two warping arms with their matched-strength control -- and the main tex
 and from compressing Sections 2, 3, 5, the introduction and the conclusion. Verified: 0 errors, 0
 overfull, 0 `??`, page 10 opens with the Ethics heading, 1014 numeric literals with the one expected
 miss.
+
+### 2026-09-10 -- full read-through of the manuscript, end to end
+
+Read the compiled PDF from the abstract to Appendix H against `results/*.csv`. Twelve corrections,
+none of which the numeric audit could have caught, because every one is a claim about numbers rather
+than a number:
+
+1. **"seven pairs sharing no anchor, tokenizer or risky model"** (abstract, introduction, Section 4,
+   Figure 4) is false in its middle term and contradicted by the paper's own text: the two KL3M
+   anchors share a tokenizer exactly (`vocab_size` 31,139 and identical tokenisation, verified), and
+   Section 4 already says they differ "in memorisation alone" while Appendix F says pair six "shares
+   the tokenizer" with pair five. Now: seven distinct anchors, seven distinct risky models, five
+   tokenizers.
+2. The introduction called $k=0.5$ "the largest budget covering every protected passage"; that
+   budget is $0.583$, as the conclusion says. $0.5$ is the largest *judged grid point* below it.
+3. The LLM-usage statement called the compute "dominated by the memorisation fine-tunes"; they are
+   1.8 of 107.9 GPU-hours.
+4. Section 3 pointed at Section 2 for a "$5$-to-$32$-times smaller rate" that Section 2 does not
+   contain. The number is in Appendix F; the pointer now goes there.
+5. Appendix D said the judged order comparison "at $n=150$ resolves about four points, so it
+   establishes that $\alpha=2$ is cheap", contradicting Section 5's finding that re-judging the same
+   generations inverts the ranking.
+6. Appendix E's heading said "Eight interventions, five on the seed and three on the anchor"; the
+   table beneath it lists five and four.
+7. Appendix E claimed the unconstrained model "reproduces either target in every arm" two paragraphs
+   after recording that the seed-10 arm's is 0.227 against its control's 0.519.
+8. Appendix D's "three-pair answer", "with a third pair", Appendix E's "the pair of interventions"
+   and Appendix F's "the third pair" are counts from earlier drafts.
+9. Appendix H said reproduction "is provably impossible below $k_{\mathrm{crit}}$"; Proposition 2
+   bounds reliable emission, not possibility.
+10. Appendix E's characters-per-token column is measured on the 100 passages each run used and the
+    prose quotes the 608-text corpus figure, so Phi-3.5-mini reads 3.70 in one place and 3.78 in
+    another, and the ordering within the coarse family differs between them. Both are now labelled.
+
+Verified after the edits: `exit=0`, 0 errors, 0 overfull, 0 `??`, main text exactly 9 pages, 27
+total, 1028 numeric literals with the one expected miss, 110 cited keys all defined in
+`references.bib`, and no author-identifying string in any file the ICLR build inputs.
