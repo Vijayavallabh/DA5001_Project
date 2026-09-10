@@ -104,3 +104,46 @@ Table 1.
 **Sanity condition, recorded now:** `L(1)` must be far *below* the unconstrained model's own
 log-probability of the same tokens and far *above* the anchor's, or the instrument is not measuring
 a constrained decoder at all. Both bounds are computed and reported alongside.
+
+## The sanity condition fired on the first run, and it found a split bug
+
+The corrected instrument ran on KL3M-520M at k = 3, 25 passages a side, and the bracket it was
+required to print came out **inverted**:
+
+```
+the bracket the constrained decoder must sit inside:
+  risky model assigns -37085.9 nats to the protected tokens, the anchor alone -23023.0
+```
+
+The memoriser finds the "protected" passage `e^{14063}` times *less* likely than the clean anchor
+does. No constrained decoder sits inside an inverted bracket, so the instrument was measuring
+something other than what it claimed, and the recorded condition -- `L(1)` far below the risky
+model's own log-probability and far above the anchor's -- is what surfaced it in one run.
+
+**The cause.** `analysis/order_price.py` selected `split == "test"`, and every phase-5 memoriser is
+fine-tuned on `attack_train` + `val` with `test` held out (`output/phase5/mem_*/recipe.json`,
+`"splits": ["attack_train", "val"]`). The two splits are also disjoint in *novel*: `attack_train`
+carries `a_game_of_thrones`, `casino_royale`, `dune`, `fahrenheit_451` and others the model was
+trained on; `test` carries `fifty_shades_of_grey`, `harry_potter_and_the_sorcerer's_stone` and
+`lord_of_the_flies`, which it has never seen. So the "protected passage" arm was a **held-out
+novel**, and a LoRA-memorised model is *worse* than its own base on prose it did not memorise --
+which is precisely the inversion above.
+
+**This is not confined to feat-072.** `analysis/marginal_price.py` takes `--split` with default
+`test` and `scripts/run_marginal_price.sh` does not override it, so the feat-070 "protected passage"
+column -- which is in the manuscript -- is also a held-out novel rather than a memorised one. The
+measurement is real and the arithmetic is right; the label is wrong, and the trajectory an
+extraction adversary actually walks is the memorised one, where `l = log p_r - log p_s` is far
+larger and the geometry need not be the same.
+
+**Committed before the re-runs:** both probes are re-run on `attack_train`, the split the memoriser
+was trained on, and the feat-070 table gains a third target type rather than losing one. The bands:
+
+| outcome | reading |
+|---|---|
+| the memorised arm's `gain_ratio` and `frac_of_ceiling` land inside the held-out arm's [min, max] at every k | the headroom really is a property of the geometry and independent of what is being copied; the manuscript claim strengthens, with the label corrected |
+| the memorised arm's headroom is materially larger (`gain_ratio` above 1.25 at any k <= 1) | greedy scheduling *does* leave room on the trajectory that matters, the Section 2 measurement is wrong as written, and the dual decoder becomes worth building |
+| `frac_of_ceiling` at k = 1 falls below 0.5 on the memorised arm | the unconditional ceiling argument does not transfer to memorised text and must be restated for held-out text only |
+
+The order-price bracket is re-checked the same way: `L(1)` must now sit strictly between the two,
+or the pair is not a memoriser on these passages either and nothing further is claimed from it.

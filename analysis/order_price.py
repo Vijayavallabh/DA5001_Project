@@ -13,8 +13,16 @@ budget can buy. It is deterministic, needs no sampling and no judge, and is comp
 precision from two teacher-forced forward passes. So for each order alpha we can read off, at one
 published k and on the same passages:
 
-    price    fidelity bought on an ordinary generation   -- what the deployer gives up
-    leakage  fidelity bought on a protected passage      -- what the rights-holder gives up
+    price    fidelity bought on an ordinary generation   -- a bounded average, so fidelity is right
+    leakage  sum_t log p_theta(x_t) on a protected passage -- a rare event, so it is not
+
+The second column was fidelity in the first version of this script and that was wrong: verbatim
+reproduction is the probability of a long run of exact tokens, a product over hundreds of steps, and
+a 15% cut in average fidelity can collapse that product by orders of magnitude without moving the
+average much. It is the same distinction Section 2 draws between a rare event and a bounded
+average. What is reported now is the log-probability the served distribution assigns to the true
+protected tokens, whose exponential is the reproduction probability, bracketed by the same quantity
+under the risky model (an upper bound) and under the anchor alone (a lower bound).
 
 theta is solved under that order's own charge with a_patch/renyi.py, the solver the decoder itself
 uses, so "the same published k" means exactly what it means to a deployer.
@@ -36,6 +44,15 @@ from analysis.marginal_price import fidelity, logits_along, solve_theta_greedy  
 from a_patch.renyi import solve_theta_renyi  # noqa: E402
 from dap.shared import load_prompt_corpus  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
+
+
+def logp_target(log_ps, l, th, tgt):
+    """sum_t log p_theta(x_t) on the geodesic p_theta ~ p_s^(1-theta) p_r^theta. At theta = 0 this is
+    the anchor's own log-probability of the tokens and at theta = 1 the risky model's, which is what
+    makes the two brackets meaningful. Its exponential is the reproduction probability."""
+    w = log_ps + th.reshape(-1, 1) * l
+    w = w - torch.logsumexp(w, dim=-1, keepdim=True)
+    return float(w.gather(1, tgt.reshape(-1, 1)).sum())
 
 
 def theta_for(order, log_ps, l, k):
@@ -72,11 +89,20 @@ def run_side(safe, risky, tok, ps, orders, k, device, seed_tokens, max_tokens,
         l = torch.nan_to_num(log_pr - log_ps, nan=0.0, posinf=0.0, neginf=0.0)
         m = (log_pr.exp() * l).sum(-1)
         ceiling = float(fidelity(log_ps, l, 1.0, m).sum())
+        tgt = torch.tensor(ids[seed:], device=device)[: log_ps.size(0)]
         for o in orders:
             th = theta_for(o, log_ps, l, k)
-            acc[o][0] += float(fidelity(log_ps, l, th, m).sum())
+            if sample_target:                       # price: a bounded average
+                acc[o][0] += float(fidelity(log_ps, l, th, m).sum())
+            else:                                   # leakage: the rare-event functional
+                acc[o][0] += logp_target(log_ps, l, th, tgt)
             acc[o][1] += ceiling
             acc[o][2].append(float(th.mean()))
+        if not sample_target:                       # the bracket the instrument must sit inside
+            acc.setdefault("risky", [0.0, 0.0, []])[0] += float(
+                log_pr.gather(1, tgt.reshape(-1, 1)).sum())
+            acc.setdefault("safe", [0.0, 0.0, []])[0] += float(
+                log_ps.gather(1, tgt.reshape(-1, 1)).sum())
         n += 1
         del log_ps, log_pr, l
         if device == "cuda":
@@ -117,16 +143,18 @@ def main():
     print(f"[op] ordinary side done, {n_ord} generations", flush=True)
 
     base_l, base_p = leak[a.orders[0]][0], price[a.orders[0]][0]
+    bracket_hi, bracket_lo = leak.get("risky", (0.0,))[0], leak.get("safe", (0.0,))[0]
     rows = []
     for o in a.orders:
         lf, lc, lt = leak[o]
         pf, pc, pt = price[o]
         rows.append(dict(
             alpha=o, k=a.k, n_protected=n_prot, n_ordinary=n_ord,
-            leak_nats=round(lf, 3), leak_frac_ceiling=round(lf / lc, 4),
+            logp_target=round(lf, 3), logp_target_risky=round(bracket_hi, 3),
+            logp_target_safe=round(bracket_lo, 3),
             price_nats=round(pf, 3), price_frac_ceiling=round(pf / pc, 4),
-            R_leak_vs_alpha1=round(lf / base_l, 4), P_price_vs_alpha1=round(pf / base_p, 4),
-            dominance=round((pf / base_p) - (lf / base_l), 4),
+            nats_lost_vs_alpha1=round(base_l - lf, 3),
+            P_price_vs_alpha1=round(pf / base_p, 4),
             theta_mean_protected=round(lt, 4), theta_mean_ordinary=round(pt, 4)))
 
     os.makedirs(a.out, exist_ok=True)
@@ -135,15 +163,19 @@ def main():
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
     print(f"\nat one published k = {a.k}: what each order buys, and what it lets through\n")
-    print(f"{'alpha':>7s}{'price (ordinary)':>19s}{'leakage (protected)':>21s}"
-          f"{'P':>8s}{'R':>8s}{'P - R':>9s}")
+    print(f"the bracket the constrained decoder must sit inside: risky model assigns "
+          f"{bracket_hi:.1f} nats to the protected tokens, the anchor alone {bracket_lo:.1f}\n")
+    print(f"{'alpha':>7s}{'price':>14s}{'P':>8s}"
+          f"{'log p(target)':>16s}{'nats lost':>11s}{'x less likely':>15s}")
     for r in rows:
-        print(f"{r['alpha']:>7.0f}{r['price_nats']:>13.1f} nats"
-              f"{r['leak_nats']:>16.1f} nats"
-              f"{r['P_price_vs_alpha1']:>8.3f}{r['R_leak_vs_alpha1']:>8.3f}"
-              f"{r['dominance']:>+9.3f}")
-    print("\nP and R are relative to alpha = 1, the audited decoder. P - R > 0 means the order gives")
-    print("up less utility than it gives up leakage, i.e. it dominates at the same published k.")
+        lost = r["nats_lost_vs_alpha1"]
+        print(f"{r['alpha']:>7.0f}{r['price_nats']:>9.1f} nats{r['P_price_vs_alpha1']:>8.3f}"
+              f"{r['logp_target']:>16.1f}{lost:>11.1f}"
+              f"{('1' if lost <= 0 else f'e^{lost:.0f}'):>15s}")
+    print("\nP is fidelity relative to alpha = 1, a bounded average and the right instrument for")
+    print("price. The last columns are the rare-event functional: the log-probability the served")
+    print("distribution gives the true protected tokens, whose exponential is the reproduction")
+    print("probability. An order dominates if P stays near 1 while the nats lost are large.")
     print(f"wrote {path}")
 
 
