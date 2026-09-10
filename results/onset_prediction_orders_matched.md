@@ -261,3 +261,28 @@ ranks is the charge function, not the decoder --- which is this paper's thesis o
 same published $k$ is not comparable across charges any more than it is across works. The
 matched-budget dominance recorded in the previous section is real arithmetic and the wrong
 comparison, and it is reported that way.
+
+## What predicts the four-orders-of-magnitude spread? Pre-registered before the re-analysis
+
+The matched-utility advantage at `k = 1` is $871\times$ on KL3M-520M and $3.5\times10^{4}$ to
+$3.3\times10^{7}$ on Pleias-1.2B, and nothing in the paper predicts which pair gets which. One
+mechanism is already visible in the `k = 3` row group: the advantage vanishes exactly where the
+audited decoder stops being constrained, because matching a nearly unconstrained decoder forces
+every other order to a budget where it does not bind either. That suggests a single explanatory
+variable, and it is one the deployer can compute:
+
+    F(k) = the fraction of the theta = 1 ceiling the audited decoder captures at k
+
+`F -> 1` must force the advantage to 1, which is an anchor point the hypothesis cannot dodge. The
+existing grids already contain this at 12 budgets per pair, so the test is a re-analysis with no new
+compute: for every grid `k` treated as the published one, compute the matched budget and the window
+factor for each order, and plot `log10` of that factor against `F(k)`.
+
+| outcome | reading |
+|---|---|
+| the two pairs' curves lie within one order of magnitude of each other at matched `F`, and both go to $1$ as `F \to 1` | the order's value is predicted by how far the audited decoder is from saturation, and a deployer can compute it from the anchor and the risky model alone. This is a law, and it gets its own measurement |
+| the curves are separated by more than an order of magnitude at matched `F` | `F` is not the variable; the advantage is pair-specific, which strengthens the paper's thesis and is reported as a negative |
+| the curves are not monotone in `F` | the framing is wrong and the re-analysis is reported without a fitted law |
+
+Scored on both pairs at once; the two new pairs (Phi-3.5-mini, Comma-7B) are run only if the first
+outcome holds, as an out-of-sample test rather than as more fitting data.
