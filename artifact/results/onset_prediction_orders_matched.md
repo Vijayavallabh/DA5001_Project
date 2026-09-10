@@ -539,3 +539,279 @@ $1.0$ --- and that budget is spent tilting toward the memoriser on the steps tha
 
 Float32 runs of the three new pairs are in flight; nothing above reaches the manuscript until the
 seven-pair table is homogeneous in float32, with bfloat16 kept as a seven-pair precision control.
+
+## Ten pairs: deciding the cell the seven-pair run left inconclusive
+
+Seven pairs put the best candidate at $\rho = 0.71$ and $0.75$ at $\alpha = 4$ and $8$, inside the
+band this file called **inconclusive**, and named the fix: $\rho = 0.75$ reaches the committed
+$p \le 0.024$ at **ten** pairs (exact two-sided: $0.066$ at seven, $0.037$ at eight, $0.026$ at
+nine). Leaving it inconclusive when the fix is three LoRA fine-tunes of models under $4$B would be a
+choice not to know.
+
+Three anchors from the safe-model set have no memoriser yet and all three are already cached:
+`alea-institute/kl3m-002-170m`, `alea-institute/kl3m-003-3.7b`, `PleIAs/Pleias-3b-Preview`. Each is
+fine-tuned on `attack_train` + `val` exactly as the others were, with identical settings across the
+three (`--target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4
+--max-len 0 --stop-loss 0.02`), then swept on the same 12-point `k` grid in `bfloat16`, which is the
+precision the seven-pair set is homogeneous in.
+
+**Entry gate, committed now.** A new pair enters only if (i) the bracket holds at every one of its
+$48$ cells --- the served distribution's log-probability of the protected tokens strictly between
+the anchor's and the memoriser's --- and (ii) the memoriser is materially better than its own anchor
+on those tokens, at least a factor of $e$ per token. A model that fails either is **not a memoriser
+on this corpus** and is excluded with its numbers reported here, not silently dropped.
+
+**Two p-values, both committed.** Ten pairs is $10!$ orderings, too many to enumerate, so the naive
+test is a fixed-seed Monte Carlo over $2\times10^{6}$ random permutations, which resolves $0.024$
+to three decimals. The ten pairs are also **not ten independent draws** --- they would be four
+KL3M, three Pleias, and one each of Phi, Comma and TinyComma --- so a family-clustered test is
+reported beside it: rank the five *families* by their mean advantage and by their mean value of the
+candidate, and compute the exact two-sided $p$ over all $5!$ orderings. That test is conservative
+and its smallest attainable $p$ is $2/120 = 0.017$, so it can still decide.
+
+| outcome | reading |
+|---|---|
+| a candidate reaches $\lvert\rho\rvert \ge 0.86$ over ten pairs **and** the family test agrees in sign at $\lvert\rho\rvert \ge 0.9$ | there is a predictor, it is named, and the paper says what a deployer should compute |
+| the best candidate stays below $\lvert\rho\rvert = 0.7$ | the negative is earned at ten pairs and reported as the final answer |
+| the two tests disagree, or the naive test lands between $0.7$ and $0.86$ | reported as still undecided, with both numbers and the family structure stated as the reason --- not resolved by choosing the friendlier test |
+
+Memoriser strength differs across the ten pairs partly because the training settings differ between
+the earlier runs; that is not a flaw here, because memoriser strength is one of the candidates being
+*tested* rather than a variable being controlled. It does mean a positive result would need a
+follow-up at matched training settings before it could be quoted as causal, and that is recorded now
+so it cannot be skipped later.
+
+**A limitation of this design, noticed while writing the code and recorded before the data lands.**
+The three new anchors are two more KL3M and one more Pleias, so ten pairs still span **five**
+families. The naive test gains power; the family-clustered test does not, and stays at $n = 5$
+whatever is added, because the cached safe-model set has ten models in five families and the only
+other un-memorised anchor (`common-pile/comma-v0.1-1t`) is a second Comma. So the conservative test
+can only ever decide by reaching $\lvert\rho\rvert = 1$ ($p = 0.017$); at $\lvert\rho\rvert = 0.9$
+it is $p = 0.083$ and stays there. If the two tests end up on opposite sides of the committed
+threshold, the honest report is that ten pairs in five families cannot settle it, and the reason is
+the family structure, not the number of pairs.
+
+For the record, on the seven pairs already in hand the family view is *stronger* than the pair view
+for the leading candidate --- the memoriser's own log-probability scores $\rho = +0.90$ on five
+family means at $\alpha = 4$ and $8$ against $+0.71$ and $+0.75$ on seven pairs --- which is what
+within-family noise diluting a real between-family effect would look like, and also what three
+extra points on a five-point rank test would look like by chance. That is the ambiguity the
+ten-pair run is meant to reduce and, on the family axis, cannot.
+
+**The float32 control is now six pairs, and it makes the point better than five did.** With
+TinyComma-1.8B added, the bfloat16 bias ranges $-2.34$ to $+0.78$ nats per window (a factor of
+$10.4$) and is under $0.6$ on four of the six. It changes no pair's rank: the six-pair ordering at
+$\alpha=2$ is identical under both precisions. And the *leading candidate* changes again --- on six
+float32 pairs it is the anchor's surprisal rate at $-0.77$ for $\alpha=2$ and the fraction of the
+ceiling at $-0.83$ for $\alpha=4$ and $8$, where on seven bfloat16 pairs it was the memoriser's own
+log-probability. Three different sets, three different leaders, none reaching the committed
+threshold: that is what a leading candidate looks like when it is noise, and it is the strongest
+form of the negative available before the ten-pair run scores.
+
+## An exploratory re-analysis, labelled as such: do the curves cross?
+
+**Not pre-registered.** This came out of writing up the seven-pair result and re-reading the
+matched-utility design. It re-analyses grids that are already committed, but the rule it applies ---
+the noise floor --- was chosen *after* seeing that a naive sign test flags crossings of $0.4$ nats
+per window, well inside the measured precision spread. It is reported as exploratory and nothing in
+the pre-registered chain above depends on it.
+
+The matched-utility comparison interpolates a budget. A simpler question needs no budget at all.
+Each order traces a curve in the plane the mechanism trades in --- fidelity bought on the $x$ axis,
+$L = \sum_t \log p_\theta(x_t)$ on the $y$ --- and if the four orders traced *one* frontier, matching
+$x$ would match $y$. `analysis/order_crossings.py` sweeps $L(\alpha) - L(1)$ across the fidelity
+range every order covers, counting a sign only when it clears that pair's own
+bfloat16-against-float32 spread (or, for a pair with no float32 twin, the largest such spread over
+the pairs that have one, which is the conservative choice).
+
+```
+7 of 21 (pair, order) cells cross, 13 are uniformly safer, 1 is uniformly more dangerous
+```
+
+**This is more nuanced than the matched-budget table suggested, and better for being so.** On most
+cells a higher order really does help across the whole operating range. But on a third of them the
+ranking *flips inside the range*, so which decoder is safer depends on an operating point the
+published budget does not reveal --- and on TinyComma-1.8B with a memorised Llama-3.1-8B, the
+mechanism's own configuration, $\alpha = 8$ is more dangerous at **100\%** of operating points, by
+$2.6$ to $14.7$ nats per window.
+
+**One thing this exposes about the appendix's own rule.** Comma-7B has no float32 twin, so it
+borrows a floor of $2.34$ nats per window --- a factor of $10.4$ --- and under that floor its
+$k = 3$, $\alpha = 8$ cell (a factor of $0.26$) is *inside the noise*, although the appendix's
+blanket "within a factor of two of $1$ is no effect" would have read it as a direction. The blanket
+rule is too lenient for the one pair whose precision is uncontrolled. Either Comma-7B gets a
+float32 twin --- it needs $56$ GB for two 7B models and has not had a card --- or its cells are
+quoted only as orders of magnitude. The appendix now says the latter explicitly.
+
+## Is the order's value a property of the pair, or of the evaluation's seed?
+
+Every number above is at `--seed-tokens 20`, the seed the attack uses, and Section 4 of the paper
+shows that seed length is *not* innocuous: it moves the onset ratio enough to split the seven pairs
+into two groups with no overlap. If it also moves the matched-utility advantage, then "a stable
+property of the pair" is wrong and the finding belongs to one evaluation choice.
+
+This is cheap to test and is committed before it runs: the same 12-point grid on **one** pair at
+`--seed-tokens 10` and `80` against its committed `20`, in bfloat16, on KL3M-520M (the pair with the
+shortest seed in words, so the three seeds span the widest range of context) and on Pleias-1.2B (the
+longest, and the pair with the largest advantage).
+
+| outcome | reading |
+|---|---|
+| the $k=1$ advantage moves by less than that pair's precision floor across the three seeds | the advantage is a property of the pair and the seed is not carrying it |
+| it moves by more than a decade | the finding is seed-dependent, is quoted at one seed only, and the seed is added to the list of things a published $k$ does not reveal |
+| it moves monotonically with the seed but by less than a decade | reported as a second-order sensitivity with the range, and the pair ranking is checked for stability rather than the levels |
+
+The pair ranking is what the predictor tests use, so the ranking's stability under the seed is the
+quantity that matters most; the levels are secondary. Nothing here is re-run at other seeds if the
+first pair shows no movement, because that would be spending compute to confirm a null.
+
+## The instrument checked against a decoded measurement
+
+The first question a referee should ask about $L$ is whether it tracks what an adversary actually
+recovers, and there is exactly one pair where both exist: Table 1's attack columns are the
+TinyComma-1.8B anchor with the memorised Llama-3.1-8B, at the published $k=3$, which is also a pair
+in the frontier set. At that budget:
+
+```
+alpha        1        2        4        8
+oracle recall (Table 1)   0.097    0.054    0.004    0.001
+L per token (this work)  -0.2412  -0.6127  -0.8886  -1.0456
+```
+
+Both are strictly monotone in $\alpha$ and order the four arms identically, so on the one pair where
+a decoded measurement exists the rare-event functional agrees with it, at the same published budget,
+without sampling or a judge. Four arms is Spearman $\rho = 1$ at exact two-sided $p = 2/24 = 0.083$,
+which is weak, and it is the only decoded ground truth available; it is quoted at that strength.
+
+The magnitudes are *not* comparable and should never be quoted as if they were. The recall ratio
+from $\alpha=1$ to $\alpha=8$ is $97\times$; the exact-window factor implied by $L$ is
+$e^{40} \approx 3\times10^{17}$. Recall is near-verbatim over a $50$-token window with a similarity
+threshold and retries; $L$ is exact reproduction of every token. The functional is far the more
+sensitive of the two, which is the point of using it, and also the reason its absolute value is
+never quoted as a probability of anything an adversary would observe.
+
+**Note on the Pleias-3B fine-tune, recorded while it runs.** Its token loss reached $0.0386$ at
+epoch 15 and then *rose* ($0.0394$, $0.0437$), so it will not reach the `--stop-loss 0.02` the three
+new pairs were committed to and will run all 40 epochs. The existing Pleias-1.2B memoriser plateaued
+at $0.0295$, so this looks like a family property rather than a bug: Pleias models do not drive this
+corpus below about $0.03$ at these settings. The run is **not** being restarted with different
+settings after seeing its loss curve. It finishes as committed, and if the merged model fails the
+entry gate above --- the memoriser materially better than its own anchor on the protected tokens ---
+the pair is excluded and that exclusion is reported here, which is what the gate was written for.
+
+**The Pleias-3B fine-tune diverged and was stopped.** After the plateau it went $0.0386 \to 0.0437
+\to 0.0786 \to 0.1291$ over epochs 15-20, so it was killed at epoch 20 rather than run to 40 to
+produce a knowingly-diverged model. This is an operational decision about a training run, not an
+analysis decision about a result, and it is recorded with its reason: **divergence of the loss, not
+the sign or size of any advantage, which had not been computed.** One retry is committed now, before
+it runs, at `--lr 1e-4 --stop-loss 0.03` --- a lower rate because the run diverged, and the looser
+floor because the existing Pleias-1.2B memoriser plateaued at $0.0295$ and the family evidently does
+not drive this corpus below about $0.03$. If the retry also fails the entry gate, Pleias-3B is
+excluded and the ten-pair set becomes nine, with the exclusion reported here.
+
+**Eight pairs exist and are deliberately not being scored.** KL3M-170M landed while KL3M-3.7B and
+the Pleias-3B retry were still training, and the eight-pair numbers are already computable --- the
+best candidate is $-0.69$ at $\alpha = 8$, which would fall inside the "earned negative" band. That
+is **not** the reported result. The pre-registration committed to ten pairs (nine if one fails the
+entry gate), and scoring at eight because the answer looks settled there, then scoring again at ten,
+is two looks at the same data. The number that gets reported is the one at the committed endpoint,
+whichever direction the last two pairs move it, and the eight-pair figure is written down here only
+so that it cannot later be presented as if it had never been seen.
+
+## Scored: the seed moves the levels a little and the ranking not at all
+
+`results/order_seed.csv`, from `analysis/order_seed.py`. Both pairs at `--seed-tokens 10` and `80`
+against their committed `20`, on the same 12-point grid in bfloat16, compared against the same
+noise floor the crossing test uses --- that pair's own bfloat16-against-float32 spread.
+
+```
+9 of 24 cells move beyond their pair's precision floor, 1 by more than a decade, 0 change sign
+```
+
+**The middle band fires, and the part that matters is the cleanest.** At the published $k=1$, where
+the constraint actually binds and every headline number lives, the twelve cells move by
+$-0.59$ to $+1.42$ nats per window and only three clear their floor; the largest single move is
+KL3M-520M at $\alpha=8$, from $0.44$ to $1.86$ nats, which is "no effect" read twice. At $k=3$
+Pleias-1.2B moves more (up to $-2.41$, a little over a decade) --- that is the saturated region
+where the audited decoder already has $97\%$ of the ceiling and every order is compressed against
+it, so it is the region the paper already says the certificate has nothing to say about.
+
+**No cell changes sign, and the pair ranking is stable at every order and every seed:**
+Pleias-1.2B leads KL3M-520M by $3.4$, $9.5$ and $16.3$ nats at seed 20, by $3.1$, $8.2$ and $14.4$
+at seed 10, and by $3.2$, $8.9$ and $15.1$ at seed 80. The ranking is what every predictor test
+consumes, so its stability is the quantity that mattered, and it holds across a factor of eight in
+seed length. The advantage is a property of the pair.
+
+Per the pre-registration, nothing is re-run at other seeds: the first pair showed no movement at the
+budget that matters, and spending compute to confirm a null is what the sentence was written to
+prevent.
+
+## Pleias-3B is excluded, as the entry gate provided for
+
+The one committed retry at `--lr 1e-4 --stop-loss 0.03` reached a minimum of $0.0326$ at epoch 21
+and then turned, exactly as the first run did:
+
+```
+ep 18  0.0343    ep 21  0.0326    ep 24  0.0384    ep 27  0.0670
+ep 19  0.0332    ep 22  0.0342    ep 25  0.0424
+ep 20  0.0327    ep 23  0.0350    ep 26  0.0523
+```
+
+It was stopped at epoch 27 rather than run to 40 to produce a model worse than its own minimum. The
+commitment was **one** retry; a second would be tuning until it worked, so **Pleias-3B is excluded
+and the set is nine pairs**, which is what the entry gate was written to allow.
+
+The exclusion is itself a small finding and is reported rather than buried: **Pleias-350M and
+Pleias-1.2B memorise these 608 excerpts under LoRA rank 128 and Pleias-3B does not**, at either
+$3\times10^{-4}$ or $10^{-4}$, plateauing near $0.033$ and then diverging both times. No claim is
+made about why. It does mean the nine pairs are four KL3M, two Pleias, and one each of Phi, Comma
+and TinyComma --- five families still, so the family-clustered test is unchanged at $n = 5$, as this
+file predicted before any of it ran.
+
+At $\rho = 0.75$ the exact two-sided $p$ is $0.026$ at nine pairs against the committed $0.024$
+threshold, so a candidate at that strength would land just outside it and be reported as
+inconclusive by a hair. That is a worse position than ten pairs would have given and it is stated
+plainly rather than softened: the set is what the models allow, not what the test would prefer.
+
+## Scored at nine pairs: the negative is earned
+
+`results/order_predictors{,_summary}.csv`. KL3M-3.7B's memoriser reached loss $0.0187$ at epoch 9
+with sampled recall $0.854$, and its bracket holds at all 48 cells, so it enters; Pleias-3B is
+excluded as recorded above. Nine pairs, matched-utility advantage at the published $k=1$, nats per
+50-token window:
+
+```
+Pleias-350M 10.82   Pleias-1.2B 10.50   Comma-7B 8.36   KL3M-170M 8.09
+TinyComma-1.8B 8.00   KL3M-3.7B 7.22   KL3M-520M 7.14   KL3M-1.7B 6.46   Phi-3.5-mini 3.86
+
+Spearman, exact two-sided p over all 9! orderings
+candidate                     alpha=2          alpha=4          alpha=8
+memoriser log p / token  +0.35 (0.359)    +0.42 (0.270)    +0.48 (0.194)
+anchor rate s(x)         -0.48 (0.194)    -0.10 (0.810)    +0.02 (0.982)
+s(x) - memoriser rate    -0.48 (0.194)    -0.10 (0.810)    +0.02 (0.982)
+fraction of ceiling      -0.08 (0.843)    -0.45 (0.230)    -0.53 (0.148)
+anchor parameter count   -0.35 (0.359)    -0.30 (0.437)    -0.23 (0.552)
+protected tokens scored  -0.48 (0.194)    -0.12 (0.776)    -0.07 (0.880)
+```
+
+**The best candidate over nine pairs is $\lvert\rho\rvert = 0.53$, below the committed $0.7$: the
+negative is earned at every order and that is the final answer.** The leading candidate at seven
+pairs --- the memoriser's own log-probability, at $+0.71$ and $+0.75$ --- has fallen to $+0.42$ and
+$+0.48$. Adding two pairs halved it, which is what a coincidence does when it meets more data and is
+the reason the seven-pair cell was reported as inconclusive rather than quoted.
+
+**The conservative test cannot decide and says so.** On five family means the memoriser's rate is
+$+0.90$ at $\alpha = 4$ and $8$, exact $p = 0.083$ over all $5!$ orderings --- one adjacent swap from
+perfect, and not significant. It has read $+0.90$ at five, seven, eight and nine pairs, because
+family means barely move when a family gains a member, and it cannot be pushed below $p = 0.017$
+without a sixth family that the cached model set does not contain. So it is the one signal that
+persists, it does not reach the threshold, and it does not overturn the naive test. Both numbers are
+reported; neither is chosen over the other.
+
+**What this licenses the paper to say.** Nothing a deployer can compute --- the memoriser's own
+confidence, the anchor's surprisal rate, their difference, the anchor's size, the number of tokens,
+or how far the audited decoder is from its own fidelity ceiling --- predicts what a higher Renyi
+order is worth at matched utility, across nine pairs where that worth spans from $10^{7}$ times
+safer to $10^{6}$ times more dangerous. The one candidate that survives at the family level is the
+memoriser's own confidence on the protected text, at a strength five families cannot resolve, and
+the paper says exactly that.

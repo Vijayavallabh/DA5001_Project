@@ -477,3 +477,65 @@ whose anchor and risky model are different models, which is the mechanism's own 
 at `alpha = 8` and matched utility its protected tokens are **1.2e6 times more likely** than under
 the audited KL decoder. Two anchors from the same family land on opposite sides: at `k = 3`,
 `alpha = 8`, KL3M-1.7B is 311x safer and KL3M-520M 135x more dangerous.
+
+**Do the orders trace one frontier, or do their curves cross?** The matched-utility comparison
+interpolates a budget. A simpler question needs none: each order traces a curve in the plane the
+mechanism trades in -- fidelity on one axis, `L = sum_t log p_theta(x_t)` on the other -- and if the
+four traced one frontier, matching fidelity would match `L`. `analysis/order_crossings.py` sweeps
+`L(alpha) - L(1)` across the fidelity range every order covers and counts a sign only when it clears
+that pair's own bfloat16-against-float32 spread (or, for a pair with no float32 twin, the largest
+spread measured anywhere, which is the conservative choice):
+
+```bash
+.venv/bin/python analysis/order_crossings.py --out results   # -> order_crossings.csv
+```
+
+13 of the 21 (pair, order) cells are uniformly safer, **7 cross** -- so which decoder is safer
+depends on an operating point the published budget does not reveal -- and one is uniformly *more
+dangerous*: TinyComma-1.8B with a memorised Llama-3.1-8B at `alpha = 8`, worse at 100% of operating
+points by 2.6 to 14.7 nats per window. **This analysis was not pre-registered**: it re-analyses
+committed grids, but its noise-floor rule was chosen after seeing that a naive sign test flags
+crossings of 0.4 nats per window, inside the measured precision spread. It is labelled exploratory
+in `results/onset_prediction_orders_matched.md` and nothing pre-registered depends on it.
+
+**Nine pairs, and the negative decided.** The seven-pair run left `alpha = 4` and `8` inconclusive
+and named the fix, so three more anchors from the safe-model set were given memorisers on the same
+split with identical settings. KL3M-170M and KL3M-3.7B entered; **Pleias-3B was excluded** after its
+one committed retry also diverged (loss plateauing near 0.033 and turning at both `3e-4` and
+`1e-4`, where Pleias-350M and Pleias-1.2B memorise the same excerpts), so the set is nine pairs in
+five families.
+
+```bash
+# each new pair: memoriser, then the same grid, identical settings across the three
+CUDA_VISIBLE_DEVICES=4 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python recipes/finetune_memorizing.py --base alea-institute/kl3m-002-170m \
+    --tokenizer alea-institute/kl3m-002-170m --splits attack_train val \
+    --target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4 \
+    --max-len 0 --stop-loss 0.02 --out output/phase5/mem_kl3m-002-170m
+#   ... then analysis/order_frontier.py --dtype bfloat16 --prefix order_frontier_kl3m170m_bf16
+.venv/bin/python analysis/order_predictors.py --glob 'results/order_frontier_*_bf16.csv' --out results
+```
+
+Over nine pairs the largest of the six candidates is `|rho| = 0.53` (`F` at `alpha = 8`, exact
+`p = 0.15`), below the committed `0.7`: **the negative is earned at every order.** The seven-pair
+leader, the memoriser's own log-probability per token, falls from `+0.71` and `+0.75` to `+0.42` and
+`+0.48` -- two more pairs halved it, which is what a coincidence does when it meets more data. On
+five *family* means, the conservative reading because the nine pairs are four KL3M and two Pleias,
+that candidate holds at `+0.90` with exact `p = 0.083`: one adjacent swap from perfect, not
+significant, and not improvable without a sixth family the cached model set does not contain. Both
+numbers are reported and neither is chosen over the other.
+
+**Is any of this the evaluation's seed rather than the pair?** `analysis/order_seed.py` re-runs two
+pairs at `--seed-tokens 10` and `80` against their committed `20` and scores them against the same
+per-pair precision floor:
+
+```bash
+.venv/bin/python analysis/order_seed.py --out results   # -> order_seed.csv
+```
+
+At the published `k = 1`, where the constraint binds and every headline number lives, the twelve
+cells move by `-0.59` to `+1.42` nats per window, only three clear their floor, no cell changes
+sign, and the pair ranking holds at every order across a factor of eight in seed length. The
+advantage is a property of the pair. Seed-arm outputs are named `order_seedarm_*` and both
+`order_law.py` and `order_predictors.py` skip any `_seed` file, so an arm can never enter the pair
+set and double a pair in the rank test.

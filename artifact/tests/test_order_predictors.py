@@ -38,3 +38,32 @@ def test_parameter_count_reads_headers_and_matches_the_published_size():
         return
     n = n_params(m)
     assert 5.0e8 < n < 5.5e8, n     # "520m" in the model's own name
+
+
+def test_permutation_test_in_rank_space_matches_the_naive_version():
+    """exact_p was rewritten to permute ranks and compare sums of squared rank differences, because
+    2e6 draws of the naive version is minutes rather than seconds. The rewrite is only safe if it
+    counts the same event, so it is checked against a brute-force recomputation."""
+    import itertools
+    a = [3.0, 1.0, 4.0, 1.5, 9.0, 2.0]
+    b = [2.0, 7.0, 1.0, 8.0, 2.8, 1.8]
+    obs = abs(spearman(a, b))
+    naive = sum(1 for p in itertools.permutations(range(len(b)))
+                if abs(spearman(a, [b[i] for i in p])) >= obs - 1e-12)
+    assert abs(exact_p(a, b) - naive / 720) < 1e-12
+    assert exact_p.exact is True
+
+
+def test_family_means_collapse_a_family_to_one_point():
+    """The conservative test exists because several pairs share a model family. Its arithmetic is a
+    mean per family in a fixed order, and getting that order wrong would silently pair one family's
+    candidate with another's advantage."""
+    import statistics as st
+
+    from analysis.order_predictors import FAMILY
+    rows = [dict(pair="KL3M-520M", x=1.0), dict(pair="KL3M-1.7B", x=3.0),
+            dict(pair="Pleias-1.2B", x=10.0)]
+    fams = sorted({FAMILY[r["pair"]] for r in rows})
+    assert fams == ["KL3M", "Pleias"]
+    means = [st.mean([r["x"] for r in rows if FAMILY[r["pair"]] == f]) for f in fams]
+    assert means == [2.0, 10.0]
