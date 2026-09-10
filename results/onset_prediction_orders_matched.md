@@ -664,3 +664,28 @@ longest, and the pair with the largest advantage).
 The pair ranking is what the predictor tests use, so the ranking's stability under the seed is the
 quantity that matters most; the levels are secondary. Nothing here is re-run at other seeds if the
 first pair shows no movement, because that would be spending compute to confirm a null.
+
+## The instrument checked against a decoded measurement
+
+The first question a referee should ask about $L$ is whether it tracks what an adversary actually
+recovers, and there is exactly one pair where both exist: Table 1's attack columns are the
+TinyComma-1.8B anchor with the memorised Llama-3.1-8B, at the published $k=3$, which is also a pair
+in the frontier set. At that budget:
+
+```
+alpha        1        2        4        8
+oracle recall (Table 1)   0.097    0.054    0.004    0.001
+L per token (this work)  -0.2412  -0.6127  -0.8886  -1.0456
+```
+
+Both are strictly monotone in $\alpha$ and order the four arms identically, so on the one pair where
+a decoded measurement exists the rare-event functional agrees with it, at the same published budget,
+without sampling or a judge. Four arms is Spearman $\rho = 1$ at exact two-sided $p = 2/24 = 0.083$,
+which is weak, and it is the only decoded ground truth available; it is quoted at that strength.
+
+The magnitudes are *not* comparable and should never be quoted as if they were. The recall ratio
+from $\alpha=1$ to $\alpha=8$ is $97\times$; the exact-window factor implied by $L$ is
+$e^{40} \approx 3\times10^{17}$. Recall is near-verbatim over a $50$-token window with a similarity
+threshold and retries; $L$ is exact reproduction of every token. The functional is far the more
+sensitive of the two, which is the point of using it, and also the reason its absolute value is
+never quoted as a probability of anything an adversary would observe.
