@@ -717,3 +717,31 @@ entry gate), and scoring at eight because the answer looks settled there, then s
 is two looks at the same data. The number that gets reported is the one at the committed endpoint,
 whichever direction the last two pairs move it, and the eight-pair figure is written down here only
 so that it cannot later be presented as if it had never been seen.
+
+## Scored: the seed moves the levels a little and the ranking not at all
+
+`results/order_seed.csv`, from `analysis/order_seed.py`. Both pairs at `--seed-tokens 10` and `80`
+against their committed `20`, on the same 12-point grid in bfloat16, compared against the same
+noise floor the crossing test uses --- that pair's own bfloat16-against-float32 spread.
+
+```
+9 of 24 cells move beyond their pair's precision floor, 1 by more than a decade, 0 change sign
+```
+
+**The middle band fires, and the part that matters is the cleanest.** At the published $k=1$, where
+the constraint actually binds and every headline number lives, the twelve cells move by
+$-0.59$ to $+1.42$ nats per window and only three clear their floor; the largest single move is
+KL3M-520M at $\alpha=8$, from $0.44$ to $1.86$ nats, which is "no effect" read twice. At $k=3$
+Pleias-1.2B moves more (up to $-2.41$, a little over a decade) --- that is the saturated region
+where the audited decoder already has $97\%$ of the ceiling and every order is compressed against
+it, so it is the region the paper already says the certificate has nothing to say about.
+
+**No cell changes sign, and the pair ranking is stable at every order and every seed:**
+Pleias-1.2B leads KL3M-520M by $3.4$, $9.5$ and $16.3$ nats at seed 20, by $3.1$, $8.2$ and $14.4$
+at seed 10, and by $3.2$, $8.9$ and $15.1$ at seed 80. The ranking is what every predictor test
+consumes, so its stability is the quantity that mattered, and it holds across a factor of eight in
+seed length. The advantage is a property of the pair.
+
+Per the pre-registration, nothing is re-run at other seeds: the first pair showed no movement at the
+budget that matters, and spending compute to confirm a null is what the sentence was written to
+prevent.
