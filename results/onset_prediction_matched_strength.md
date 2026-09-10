@@ -44,3 +44,29 @@ away.
 
 The subset is smaller than the full sweep, so its intervals will be wider; an interval that widens
 to include 0 while the point estimate holds is reported as underpowered, not as a refutation.
+
+---
+
+## Result: the elasticity does not move at all
+
+`analysis/matched_strength.py --out results` -> `results/matched_strength.csv`.
+
+| arm | $n$ | $k=-1$ recall, control / warped | elasticity | 95% CI | unmatched |
+|---|---|---|---|---|---|
+| KL3M-520M tau 0.4 | 38 of 100 | 0.947 / 0.993 (was 0.519 / 0.904) | **+0.72** | $[+0.08, +1.00]$ | +0.72 |
+| Pleias-1.2B tau 0.4 | 86 of 100 | 0.996 / 0.999 (was 0.909 / 0.964) | **+0.61** | $[+0.38, +1.03]$ | +0.61 |
+
+Both intervals exclude 0, so the **decisive band is met**: the within-pair refutation of constant
+nats survives with unconstrained memoriser strength matched. The directional prediction --- that
+the matched estimate would come in at or above the unmatched one --- holds, at equality: to two
+decimals the estimate does not move on either pair, although the pieces it is built from do
+(KL3M's onsets go 2.492 -> 2.462 and 3.603 -> 3.550, Pleias's 2.780 -> 2.748 and 3.740 -> 3.694).
+Dropping 62 of 100 passages from the KL3M pair and closing a strength gap of 0.519 against 0.904
+changes the answer in the third decimal. Whatever the warp does to the onset, it does not do it
+through the memoriser.
+
+**One thing the matched analysis gives up.** On the full sample both intervals exclude 1 as well as
+0, so the response is sub-proportional there; on the matched subsets, with 38 and 86 passages, the
+upper ends reach 1.00 and 1.03. Sub-proportionality is a full-sample statement and is reported as
+one. What survives matching is the part that refutes the null: the onset moves with $s(x)$, and by
+more than nothing.

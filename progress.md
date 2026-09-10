@@ -2351,3 +2351,19 @@ Pleias-1.2B tau 0.4, and KL3M-1.7B seed 40) land in a committed "undecided" regi
 moved the onset substantially and in the predicted direction. The bands were drawn tighter than the
 method can resolve. Recorded in `sections/appendix_limitations.tex`; the fix is more distinct works,
 not more windows, and that is the same constraint as the one-corpus limitation.
+
+### 2026-09-10 -- the temperature elasticity, with memoriser strength matched
+
+The one confound in the decisive within-pair experiment: the decoder warps both logit vectors, so
+tau = 0.4 sharpens the risky model too and its unconstrained recall rises (0.519 -> 0.904 on
+KL3M-520M). A stronger memoriser leaks at a lower budget, biasing the elasticity toward 0 -- toward
+the constant-nats null. Pre-registered in `results/onset_prediction_matched_strength.md`, run as
+
+```
+.venv/bin/python analysis/matched_strength.py --out results     # -> results/matched_strength.csv
+```
+
+Restricting both arms to the passages reproduced in BOTH at k = -1 (nv-recall >= 0.7; n = 38 and 86)
+closes the strength gap to 0.947/0.993 and 0.996/0.999 and leaves the elasticity at **+0.72** and
+**+0.61**, unchanged to two decimals, both intervals still excluding 0. Sub-proportionality (the
+interval also excluding 1) is a full-sample statement; the matched subsets reach 1.00 and 1.03.
