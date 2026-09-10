@@ -239,3 +239,47 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACH
 The second judge is `microsoft/Phi-3.5-mini-instruct`; run step 2 again with
 `--prefix utility_v6_judge2 --judge microsoft/Phi-3.5-mini-instruct`. Every separation is measured
 against **that judge's own anchor arm**, so the two judges' different absolute loss rates cancel.
+
+### Phase 5d (2026-09-10) — the last two arms, and the memoriser-strength control
+
+Two arms closed the intervention set. The `KL3M-1.7B` seed-40 replication first returned an
+implausibly tight interval alongside a **38.0% no-crossing fraction**, because its recall curve rose
+past the threshold of four LCS words and then flattened just above it at the top of the grid; the
+pre-registration commits to extending a grid whenever that fraction rises materially above the other
+arms' 0.0–0.9%, so the grid was extended and the arm rescored on the merge.
+
+```bash
+# extend the ceiling-limited grid, then merge (the same protocol as the seed-80 arm)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py \
+    --safe-model alea-institute/kl3m-003-1.7b --risky-model output/phase5/mem_kl3m-003-1_7b \
+    --seed-tokens 40 --k-values 3.5 4.0 5.0 --modes single --limit 100 \
+    --out output/phase5/seed40_kl3m17b_hi
+mkdir -p output/phase5/seed40_kl3m17b_merged
+cp output/phase5/seed40_kl3m17b/composition.csv output/phase5/seed40_kl3m17b_merged/composition.csv
+tail -n +2 output/phase5/seed40_kl3m17b_hi/composition.csv \
+  >> output/phase5/seed40_kl3m17b_merged/composition.csv
+# rescore every arm against its committed band; the manifest points at the merged directory
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py --out results
+```
+
+The extension takes the no-crossing fraction to 0.0%, leaves the point estimate at 0.979 and widens
+the interval from the artefactual `[0.96, 0.98]` to `[0.96, 1.67]`. **Report the no-crossing
+fraction alongside any bootstrapped threshold crossing:** an interval computed from the resamples
+that happened to cross is conditioned on crossing, and it is narrow for the same reason it is wrong.
+
+The temperature arms carry one confound, which the next command controls. Because the decoder warps
+**both** logit vectors before the KL solve (He et al., App. B), `tau = 0.4` sharpens the risky model
+too, and a sharper memoriser leaks at a lower budget — biasing the elasticity toward the
+constant-nats null being refuted. Restricting both arms to the passages the memoriser reproduces in
+*both* at `k = -1` matches unconstrained strength by construction. No GPU:
+
+```bash
+.venv/bin/python analysis/matched_strength.py --out results   # -> results/matched_strength.csv
+```
+
+Closing a strength gap of 0.519/0.904 (KL3M-520M) and 0.909/0.964 (Pleias-1.2B) leaves the
+elasticity at **+0.72** and **+0.61**, unchanged to two decimals, both intervals still excluding 0.
+Pre-registrations for every arm on this page are `results/onset_prediction_seed.md`,
+`results/onset_prediction_temperature.md` and `results/onset_prediction_matched_strength.md`, each
+committed before the run it scores.

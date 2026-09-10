@@ -135,3 +135,105 @@ adversary's window, which is exactly what a running maximum over the target's su
 tracks, whereas the warp rescales the whole profile, which the running maximum over-reads. `k_crit`
 is a good predictor of what the evaluation protocol does to the onset and a poor one of what the
 decoder's own temperature does. Section~\ref{sec:onset} must not present it as a general law.
+
+## Scored: the Pleias-1.2B tau = 0.4 arm, and the replication holds (2026-09-10)
+
+     quantity            tau 1.0 (control)    tau 0.4     change
+     s(x)                          3.2094      5.1999     +62.0%
+     k_crit                        4.9422      9.0023     +82.2%
+     onset                         2.7797      3.7400     +34.5%
+     onset / s(x)                  0.8661      0.7192
+     k = -1 baseline                0.909       0.952
+
+Measured onset **3.740** nats against the committed bands: [4.0, 5.3] refutes (N), below 3.2 refutes
+(U), 3.2-4.0 undecided. It lands in the **undecided** interval, so on the band as written this arm
+decides nothing. On the statistic that actually separates the accounts it does:
+
+     pair                elasticity d log(onset) / d log s(x)
+     KL3M-520M                        +0.72  [+0.41, +0.84]
+     Pleias-1.2B                      +0.61  [+0.40, +0.96]
+
+Two pairs, two families, both intervals excluding **0** --- a constant number of nats is refuted
+twice --- and both excluding **1**, so the onset moves with the rate the budget is charged against
+and moves less than one-for-one. The point estimates agree and the intervals overlap almost
+entirely. Both arms carry the same confound in the same direction: the warped memoriser is better at
+the work (0.952 against 0.909 here, 0.904 against 0.519 on KL3M), which pushes the onset down, so
+both elasticities are lower bounds.
+
+**The split in what `k_crit` predicts is now measured on both sides.** Scored apart, as
+`analysis/seed_effect.py` now reports them:
+
+     intervention                      arms    k_crit mean |rel. err|    no-change null
+     seed (s(x) held fixed)               4                    4.0%              9.3%
+     temperature (s(x) moved)             2                   31.3%             18.0%
+
+On the seed arms `k_crit` beats the null by 2.3x; on the temperature arms it is **worse than
+assuming nothing changed**. Pooling the six gives 13.1% against 12.2% and hides exactly this. The
+running maximum tracks which tokens the adversary's window starts on; it over-reads a rescaling of
+the whole surprisal profile. Section~\ref{sec:onset} may use it for the first and must not for the
+second.
+
+## How the tau = 0.7 arms will be treated, committed before either is scored (2026-09-10)
+
+The tau = 0.7 arms move `s(x)` by only $9.5\%$ (Pleias, 3.2094 -> 3.5134) and $11.4\%$ (KL3M,
+2.4147 -> 2.6890), against $62\%$ and $67\%$ at tau = 0.4. In log units that is $0.09$ and $0.11$,
+barely twice the $0.05$ guard below which `analysis/seed_effect.py` refuses to report an elasticity
+at all. A small denominator makes the estimate unstable, and the partial grid already suggests
+Pleias tau = 0.7 will come in near an onset of $2.8$ against its control's $2.780$ -- an elasticity
+near zero, where the same pair gave $0.61$ at tau = 0.4.
+
+Committed now, so the treatment is not chosen after seeing whether it flatters the result:
+
+  - Both tau = 0.7 elasticities are reported **with their intervals and with the lever size next to
+    them**. A lever of $0.09$ log units is stated wherever the number is.
+  - They are **not pooled** with the tau = 0.4 arms into a single mean elasticity. Two doses of
+    very different size do not average.
+  - If an interval spans both $0$ and that pair's tau = 0.4 estimate, the arm is reported as
+    **uninformative about the elasticity**, not as contradicting it. An interval that excludes the
+    tau = 0.4 estimate is a genuine inconsistency and will be reported as one, and would mean the
+    response is not a constant elasticity and the summary "the onset follows $s(x)$
+    sub-proportionally" is too simple.
+  - The tau = 0.4 arms remain the ones that carry the claim, because they are the only ones whose
+    lever is large enough to measure against.
+
+## Scored: Pleias-1.2B tau = 0.7 --- uninformative, by the rule committed before it ran
+
+     arm                    lever, log units    onset    elasticity
+     Pleias-1.2B tau 0.4                0.48    3.740    +0.61  [+0.40, +0.96]
+     Pleias-1.2B tau 0.7                0.09    2.734    -0.18  [-1.07, +2.58]
+
+The interval is $3.65$ units wide, and it spans **both** $0$ and this pair's tau = 0.4 estimate of
+$0.61$. By the rule committed before the arm was scored, it is therefore reported as
+**uninformative about the elasticity**, not as contradicting it. The point estimate alone,
+$-0.18$, would read as a contradiction; the lever is $0.09$ log units in $s(x)$ against $0.48$ at
+tau = 0.4, and dividing a bootstrap interval on the onset by a denominator that small is what
+produces the width. This is the arm the pre-commitment existed for.
+
+What it does establish, with no elasticity needed: the onset fell from $2.780$ to $2.734$ while
+$s(x)$ rose $9.5\%$, so at this lever size the measurement cannot distinguish "the onset followed
+$s(x)$" from "the onset did not move". Only the tau = 0.4 arms have a lever large enough to
+separate those, and they are the ones the claim rests on.
+
+## Both tau = 0.7 arms land where the committed rule said they would: nowhere
+
+Scored under the rule recorded before either was read --- an arm whose lever is under $0.2$ log
+units in $s(x)$ is treated as uninformative whatever it returns, because the elasticity divides by
+that lever.
+
+| arm | lever, log units | $s(x)$ | onset | onset\,/\,$s(x)$ | elasticity | 95% CI |
+|---|---|---|---|---|---|---|
+| KL3M-520M $\tau=0.7$ | 0.11 | 2.689 | 2.719 | 1.011 | **+0.81** | $[-0.53, +1.23]$ |
+| Pleias-1.2B $\tau=0.7$ | 0.09 | 3.513 | 2.734 | 0.778 | **-0.18** | $[-1.07, +2.58]$ |
+| KL3M-520M $\tau=0.4$ | 0.62 | 4.034 | 3.603 | 0.893 | +0.72 | $[+0.41, +0.84]$ |
+| Pleias-1.2B $\tau=0.4$ | 0.67 | 5.200 | 3.740 | 0.719 | +0.61 | $[+0.40, +0.96]$ |
+
+Both intervals contain $0$, $1$ and both $\tau = 0.4$ estimates, which is what a lever six times
+too small buys. Their point estimates straddle: $+0.81$ agrees with the decisive arms and $-0.18$
+does not, and neither fact is evidence, because an estimate with that interval is a coin. They are
+reported for completeness and carry no weight in either direction. The temperature evidence in the
+paper is the two $\tau = 0.4$ arms and the matched-strength reanalysis of them.
+
+Adding both arms moves the token-bucket rule's record on temperature interventions from $27.0\%$
+mean relative error against a no-change null's $15.8\%$ to $21.9\%$ against $12.3\%$. It still loses
+to the null on this intervention while beating it by $2.2\times$ on the seed arms, which is the
+split the paper reports.

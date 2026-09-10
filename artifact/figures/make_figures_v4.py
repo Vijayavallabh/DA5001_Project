@@ -187,6 +187,10 @@ def seed_effect():
         ax.scatter(xs, ys, s=34, facecolors="none", edgecolors="0.45", linewidths=1.1, zorder=2,
                    label="seven pairs (seed fixed at 20 tokens)")
 
+    # The temperature arms hold the seed fixed and vary the warp, so on a "seed words" axis they
+    # would stack at one x and be labelled "seed varied", which is false. They belong on
+    # units_law(), which plots against s(x) -- the axis they actually move.
+    rows = [r for r in rows if not r["pair"].endswith(" tau")]
     markers = ["o", "s", "^", "D"]
     labelled = False   # the first pair in sort order may have a single arm and be skipped below,
                        # so the legend entry has to hang off the first pair actually drawn
@@ -269,6 +273,8 @@ def units_law():
     n_warp = 0
     if se.exists():
         rows = [r for r in csv.DictReader(open(se)) if r["pair"].endswith(" tau") and r["onset"]]
+        n_pairs = len({r["pair"] for r in rows
+                       if sum(1 for q in rows if q["pair"] == r["pair"]) >= 2})
         for pair in sorted({r["pair"] for r in rows}):
             g = sorted((r for r in rows if r["pair"] == pair), key=lambda r: float(r["s_x"]))
             if len(g) < 2:
@@ -277,7 +283,8 @@ def units_law():
             ys = [float(r["onset"]) for r in g]
             ax.plot(xs, ys, color="C3", lw=0.9, alpha=0.8, zorder=2)
             ax.scatter(xs, ys, marker="s", s=30, color="C3", zorder=4,
-                       label="temperature arms (one pair, warped)" if n_warp == 0 else None)
+                       label=(f"temperature arms ({n_pairs} pair{'s' if n_pairs != 1 else ''}, "
+                              "warped)") if n_warp == 0 else None)
             n_warp += 1
 
     ax.set_xlabel(r"$s(x)$, the anchor's surprisal rate on the work (nats/token)")

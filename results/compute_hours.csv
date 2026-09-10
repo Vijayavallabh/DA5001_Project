@@ -105,6 +105,7 @@ score_pair6,output/phase5/score_pair6.log,1,2026-09-09 01:49,2026-09-09 05:22,0.
 score_phi,output/phase5/score_phi.log,1,2026-09-09 19:45,2026-09-09 20:44,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 score_seed,output/phase5/score_seed.log,1,2026-09-10 00:34,2026-09-10 02:19,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 score_trunc,output/phase5/score_trunc.log,1,2026-09-09 13:27,2026-09-09 14:15,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+score_warp,output/phase5/score_warp.log,1,2026-09-10 03:17,2026-09-10 05:57,0.25,0.25,log_birth,0.0,scanned; traced sleeps removed
 seed10_pleias12b,output/phase5/seed10_pleias12b.log,1,2026-09-10 00:31,2026-09-10 00:44,0.22,0.22,log_birth,0.0,scanned; traced sleeps removed
 seed40_kl3m17b,output/phase5/seed40_kl3m17b.log,1,2026-09-10 00:54,2026-09-10 00:55,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
 seed40_kl3m520m,output/phase5/seed40_kl3m520m.log,1,2026-09-10 00:31,2026-09-10 02:18,1.78,1.78,log_birth,0.0,scanned; traced sleeps removed
@@ -118,4 +119,5 @@ util_cross,output/phase5/util_cross.log,2,2026-09-10 00:46,2026-09-10 03:58,3.2,
 util_fine,output/phase5/util_fine.log,1,2026-09-08 17:35,2026-09-08 23:11,5.61,5.61,log_birth,0.0,scanned; traced sleeps removed
 util_fine_k25,output/phase5/util_fine_k25.log,1,2026-09-10 00:12,2026-09-10 00:28,0.27,0.27,log_birth,0.0,scanned; traced sleeps removed
 util_renyi_4,output/phase5/util_renyi_4.log,1,2026-09-08 16:56,2026-09-08 17:09,0.22,0.22,log_birth,0.0,scanned; traced sleeps removed
+warp_arms,output/phase5/warp_arms.log,1,2026-09-10 03:12,2026-09-10 05:55,2.72,2.72,log_birth,0.0,scanned; traced sleeps removed
 warp_arms2,output/phase5/warp_arms2.log,1,2026-09-10 03:30,2026-09-10 05:07,1.61,1.61,log_birth,0.0,scanned; traced sleeps removed

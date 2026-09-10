@@ -241,3 +241,94 @@ Both accounts predicted the seed-80 ratio would sit at or below seed-40's 0.939 
 from a flattening $k_{\mathrm{crit}}$, (S) below the coarse family's band. A value materially above
 $1.0$ would miss both, and would say the dose-response is **non-monotone** at the long-seed end
 rather than that either account is right.
+
+## Scored: the seed-80 arm, and the dose-response turns out non-monotone (2026-09-10)
+
+Measured ratio **1.056** $[0.78, 1.13]$, onset 2.521 nats, `no crossing` in 2.1% of bootstrap
+resamples. Against the third addendum's committed band --- at or above 0.93 favours (K), at or
+below 0.90 favours (S), between them undecided --- this **favours (K) and refutes (S)**. Seed
+matching predicted the ratio would keep falling as the adversary is handed more of the work, and it
+rose.
+
+     seed words    ratio           95% CI    (K) predicted
+            4.0    1.163     [1.13, 1.33]           1.1486
+            7.3    1.032     [1.01, 1.23]           1.0321  (the calibration arm)
+           14.3    0.939     [0.88, 1.17]           0.9633
+           28.4    1.056     [0.78, 1.13]           0.9458
+
+**But (K) is not confirmed quantitatively here either.** It predicted 0.946 and the measurement is
+12% above that, inside the interval only because the interval is wide. Over 4 to 14 words the seed
+lowers the onset and (K) tracks it to within 2.6%; beyond 14 words the curve turns and (K) does not
+predict the turn. The claim Section~\ref{sec:onset} can carry is that the adversary's context moves
+the onset **over the range an evaluation actually varies it**, not that it does so without limit.
+
+**Both caveats recorded before scoring apply, and neither is retrospective.**
+The no-crossing fraction, 2.1%, is materially above the other arms' 0.0-0.9%, so as committed the
+grid is being extended to k in {3.0, 3.2, 3.6} (`output/phase5/seed80_kl3m520m_hi`, merged into
+`_merged`) and the arm will be rescored on the merged grid with both reported.
+The target is **12% shorter** than the control's, 520 tokens against 590, because seed and target
+partition one passage. On an absolute word count that makes the threshold harder to reach and
+pushes the onset **up** --- the direction of the reversal. This arm therefore cannot be read as a
+clean seed effect, and the write-up must say so rather than presenting a tidy monotone curve.
+
+## The seed-80 grid extension, as committed (2026-09-10)
+
+Three budgets added above the crossing (k in {3.0, 3.2, 3.6}, `output/phase5/seed80_kl3m520m_hi`)
+and merged with the original into `output/phase5/seed80_kl3m520m_merged`, which the manifest now
+points at. Both grids:
+
+     grid                       onset    ratio           95% CI    no crossing
+     original, k <= 2.8         2.521    1.056     [0.78, 1.13]           2.1%
+     merged,   k <= 3.6         2.521    1.056     [0.78, 1.16]           0.0%
+
+The extension did what it was for: the no-crossing fraction falls from 2.1% to **zero**, so every
+bootstrap resample now crosses inside the grid and the point estimate was not an artefact of the
+ceiling. The onset and the ratio are unchanged to three decimals. The interval's upper end widens
+slightly, from 1.13 to 1.16, because resamples that previously failed to cross now cross at high
+budgets and are counted rather than dropped --- a wider interval that is honest rather than a
+narrower one that was truncated.
+
+The conclusion is unchanged and now rests on a grid that does not clip it: the seed-80 ratio is
+1.056, above seed-40's 0.939, so the dose-response is non-monotone and (S) is refuted, while (K)'s
+0.946 is 12% below the measurement.
+
+## The KL3M-1.7B seed-40 arm is not yet scorable: 38% of resamples never cross
+
+First read: onset 2.169, ratio **0.979**, interval $[0.96, 0.98]$, **no crossing in 38.0% of
+bootstrap resamples** --- against 0.0-3.4% on every other arm. That number is recorded before any
+conclusion is drawn from the arm, because it makes the interval untrustworthy in a way the interval
+itself hides.
+
+The cause is visible in the raw curve. `lcs_word` jumps from $2.4$ at $k=2.1$ to $4.7$ at $k=2.2$
+and then **plateaus** --- $4.7$, $4.7$, $4.8$, $5.0$ through $k=3.0$ --- barely above the threshold
+of $4$. Any resample that shifts the plateau a fraction below $4$ never crosses at all, so 38% are
+discarded, and the surviving 62% are a biased subset whose spread is artificially narrow. The
+$[0.96, 0.98]$ interval is therefore an artefact and **must not be quoted**, and in particular the
+`MISS` flag against (K)'s 1.0707 is an artefact of that interval, not a measurement.
+
+The grid is being extended to k in {3.5, 4.0, 5.0} (`output/phase5/seed40_kl3m17b_hi`, merged into
+`_merged`) to find where recall rises clear of the threshold. The arm is scored only on the merged
+grid, and if the no-crossing fraction stays high it will be reported as **unscorable** rather than
+assigned to a band. The same reliability check is what caught the seed-80 ceiling; there it
+resolved to 0.0%, and here it may not.
+
+### On the extended grid the arm is scorable, and the estimate does not move
+
+`analysis/composition_attack.py ... --seed-tokens 40 --k-values 3.5 4.0 5.0` into
+`output/phase5/seed40_kl3m17b_hi`, merged into `output/phase5/seed40_kl3m17b_merged`. The plateau
+was a ceiling, not a level: `lcs_word` holds at $4.7$--$5.0$ from $k=2.2$ to $k=3.0$ and then rises
+to $6.71$, $8.61$ and $21.52$ at $k = 3.5$, $4.0$ and $5.0$. With the curve bracketed on both sides,
+**no crossing falls from 38.0% to 0.0%**, the point estimate stays at $0.979$, and the interval
+widens from the artefactual $[0.96, 0.98]$ to $[0.96, 1.67]$.
+
+Scored against the fourth addendum's committed bands, $0.979$ lands in **0.93--1.02, undecided**
+between the two accounts. The token-bucket prediction for this arm, $1.0707$, is inside the measured
+interval, but so is almost everything: the interval is $0.7$ wide, and the arm's contribution to the
+seed group is its point estimate, not a discrimination. What the arm does establish is the sign and
+rough size of the move --- a $7.1\%$ fall in $k_{\mathrm{crit}}$ against a $15.1\%$ fall in the onset
+--- on a second, larger anchor of the same family, replicating Arm A's direction.
+
+This is the second time a grid ceiling has been caught by the no-crossing fraction rather than by
+the interval (the first was the seed-80 arm). The fraction belongs in any report of a bootstrapped
+threshold crossing: an interval computed from the resamples that happened to cross is conditioned on
+crossing, and it is narrow for the same reason it is wrong.

@@ -1,0 +1,3 @@
+arm,n_matched,n_total,match_thresh,base_recall_control,base_recall_warped,base_recall_control_all,base_recall_warped_all,s_x_control,s_x_warped,onset_control,onset_warped,ratio_control,ratio_warped,elasticity,elasticity_lo,elasticity_hi,no_crossing_pct,elasticity_unmatched
+KL3M-520M tau 0.4,38,100,0.7,0.9467,0.9925,0.5188,0.9041,2.4152,4.0134,2.4624,3.55,1.0196,0.8845,0.72,0.076,0.998,0.1,0.72
+Pleias-1.2B tau 0.4,86,100,0.7,0.9962,0.9994,0.9091,0.9636,3.2081,5.2013,2.7475,3.6944,0.8564,0.7103,0.613,0.384,1.035,0.4,0.61

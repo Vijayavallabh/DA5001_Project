@@ -9,7 +9,7 @@ memoriser fine-tune,output/memorizing_llama8b,1,2026-09-05 17:05,2026-09-05 18:2
 memoriser check,output/memorizing_check_greedy,1,2026-09-05 18:21,2026-09-05 18:29,0.13,0.13,dir_birth,0.0,
 memoriser check (sampled),output/memorizing_check,1,2026-09-05 18:29,2026-09-05 18:37,0.14,0.14,dir_birth,0.0,
 composition smoke,output/composition_smoke,1,2026-09-05 18:21,2026-09-05 18:37,0.27,0.27,dir_birth,0.0,
-composition attack,output/composition,1,2026-09-05 18:24,2026-09-10 02:55,2.49,2.49,dir_birth,102.02,feat-009; two passes
+composition attack,output/composition,1,2026-09-05 18:24,2026-09-10 05:55,1.88,1.88,dir_birth,105.63,feat-009; two passes
 bank-and-burst smoke,output/bank_burst_smoke,1,2026-09-05 19:20,2026-09-05 20:44,1.4,1.4,dir_birth,0.0,"feat-010, not evaluated"
 certificate strength (memoriser),output/certcap_memoriser,1,2026-09-05 20:19,2026-09-05 20:20,0.02,0.02,dir_birth,0.0,
 pathwise smoke,output/phase2/pathwise_smoke,1,2026-09-06 01:15,2026-09-06 01:17,0.05,0.05,dir_birth,0.0,feat-019
@@ -86,24 +86,38 @@ ft_more,output/phase5/ft_more.log,1,2026-09-08 17:05,2026-09-08 17:28,0.39,0.39,
 ft_phi35,output/phase5/ft_phi35.log,1,2026-09-09 17:20,2026-09-09 19:21,2.02,2.02,log_birth,0.0,scanned; traced sleeps removed
 ft_small,output/phase5/ft_small.log,1,2026-09-08 16:47,2026-09-08 17:03,0.28,0.28,log_birth,0.0,scanned; traced sleeps removed
 ft_v2,output/phase5/ft_v2.log,1,2026-09-08 17:28,2026-09-08 20:34,3.09,3.09,log_birth,0.0,scanned; traced sleeps removed
+judge_cross_phi,output/phase5/judge_cross_phi.log,1,2026-09-10 00:50,2026-09-10 04:21,0.37,0.37,log_birth,0.0,scanned; traced sleeps removed
+judge_cross_qwen,output/phase5/judge_cross_qwen.log,1,2026-09-10 00:47,2026-09-10 04:18,0.32,0.32,log_birth,0.0,scanned; traced sleeps removed
 judge_phi,output/phase5/judge_phi.log,1,2026-09-10 00:16,2026-09-10 00:48,0.32,0.32,log_birth,0.0,scanned; traced sleeps removed
 judge_qwen,output/phase5/judge_qwen.log,1,2026-09-10 00:16,2026-09-10 00:44,0.26,0.26,log_birth,0.0,scanned; traced sleeps removed
+kl3m17b_hi,output/phase5/kl3m17b_hi.log,1,2026-09-10 05:35,2026-09-10 05:45,0.17,0.17,log_birth,0.0,scanned; traced sleeps removed
 ladder,output/phase5/ladder.log,1,2026-09-08 17:47,2026-09-08 18:28,0.68,0.68,log_birth,0.0,scanned; traced sleeps removed
 n458_hi,output/phase5/n458_hi.log,1,2026-09-08 21:11,2026-09-08 21:33,0.37,0.37,log_birth,0.0,scanned; traced sleeps removed
 n458_pleias350m,output/phase5/n458_pleias350m.log,1,2026-09-08 19:20,2026-09-08 21:10,1.83,1.83,log_birth,0.0,scanned; traced sleeps removed
 opening_token,output/phase5/opening_token.log,1,2026-09-08 16:51,2026-09-08 16:59,0.13,0.13,log_birth,0.0,scanned; traced sleeps removed
+recon_sx,output/phase5/recon_sx.log,1,2026-09-10 03:06,2026-09-10 03:07,0.03,0.03,log_birth,0.0,scanned; traced sleeps removed
+recon_temp,output/phase5/recon_temp.log,1,2026-09-10 03:09,2026-09-10 03:10,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
+recon_temp2,output/phase5/recon_temp2.log,1,2026-09-10 03:28,2026-09-10 03:29,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
+score_cross,output/phase5/score_cross.log,1,2026-09-10 04:18,2026-09-10 04:22,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+score_dose,output/phase5/score_dose.log,1,2026-09-10 02:36,2026-09-10 04:51,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 score_pair5,output/phase5/score_pair5.log,1,2026-09-08 23:40,2026-09-09 00:53,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 score_pair6,output/phase5/score_pair6.log,1,2026-09-09 01:49,2026-09-09 05:22,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 score_phi,output/phase5/score_phi.log,1,2026-09-09 19:45,2026-09-09 20:44,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 score_seed,output/phase5/score_seed.log,1,2026-09-10 00:34,2026-09-10 02:19,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 score_trunc,output/phase5/score_trunc.log,1,2026-09-09 13:27,2026-09-09 14:15,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+score_warp,output/phase5/score_warp.log,1,2026-09-10 03:17,2026-09-10 05:57,0.25,0.25,log_birth,0.0,scanned; traced sleeps removed
 seed10_pleias12b,output/phase5/seed10_pleias12b.log,1,2026-09-10 00:31,2026-09-10 00:44,0.22,0.22,log_birth,0.0,scanned; traced sleeps removed
 seed40_kl3m17b,output/phase5/seed40_kl3m17b.log,1,2026-09-10 00:54,2026-09-10 00:55,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
 seed40_kl3m520m,output/phase5/seed40_kl3m520m.log,1,2026-09-10 00:31,2026-09-10 02:18,1.78,1.78,log_birth,0.0,scanned; traced sleeps removed
+seed80_hi,output/phase5/seed80_hi.log,1,2026-09-10 04:52,2026-09-10 05:15,0.39,0.39,log_birth,0.0,scanned; traced sleeps removed
 seed_queue,output/phase5/seed_queue.log,1,2026-09-10 00:56,2026-09-10 02:33,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+seed_queue2,output/phase5/seed_queue2.log,1,2026-09-10 02:35,2026-09-10 05:33,2.97,2.97,log_birth,0.0,scanned; traced sleeps removed
 smoke_eoslist,output/phase5/smoke_eoslist.log,1,2026-09-08 19:46,2026-09-08 20:08,0.37,0.37,log_birth,0.0,scanned; traced sleeps removed
 surprisal_cdf_7,output/phase5/surprisal_cdf_7.log,1,2026-09-09 23:53,2026-09-09 23:55,0.03,0.03,log_birth,0.0,scanned; traced sleeps removed
 trunc276,output/phase5/trunc276.log,1,2026-09-09 13:23,2026-09-09 14:14,0.85,0.85,log_birth,0.0,scanned; traced sleeps removed
+util_cross,output/phase5/util_cross.log,2,2026-09-10 00:46,2026-09-10 03:58,3.2,6.41,log_birth,0.0,scanned; traced sleeps removed
 util_fine,output/phase5/util_fine.log,1,2026-09-08 17:35,2026-09-08 23:11,5.61,5.61,log_birth,0.0,scanned; traced sleeps removed
 util_fine_k25,output/phase5/util_fine_k25.log,1,2026-09-10 00:12,2026-09-10 00:28,0.27,0.27,log_birth,0.0,scanned; traced sleeps removed
 util_renyi_4,output/phase5/util_renyi_4.log,1,2026-09-08 16:56,2026-09-08 17:09,0.22,0.22,log_birth,0.0,scanned; traced sleeps removed
+warp_arms,output/phase5/warp_arms.log,1,2026-09-10 03:12,2026-09-10 05:55,2.72,2.72,log_birth,0.0,scanned; traced sleeps removed
+warp_arms2,output/phase5/warp_arms2.log,1,2026-09-10 03:30,2026-09-10 05:07,1.61,1.61,log_birth,0.0,scanned; traced sleeps removed

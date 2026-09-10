@@ -1,5 +1,10 @@
 pair,arm,control,words,words_control,pct_change_s_x,pct_change_k_crit,pct_change_onset,measured_ratio,predicted_ratio_K,prediction_in_ci
+KL3M-1.7B,KL3M-1.7B seed 40 (Arm A2),KL3M-1.7B seed 20 (control),14.3,7.3,0.18,-7.12,-15.08,0.979,1.0707,True
 KL3M-520M,KL3M-520M seed 10,KL3M-520M seed 20 (control),4,7.3,0.37,11.7,13.15,1.1635,1.1486,True
 KL3M-520M,KL3M-520M seed 40 (Arm A),KL3M-520M seed 20 (control),14.3,7.3,-0.68,-7.31,-9.62,0.9393,0.9633,True
+KL3M-520M,KL3M-520M seed 80,KL3M-520M seed 20 (control),28.4,7.3,-1.14,-9.41,1.14,1.0559,0.9458,True
+KL3M-520M tau,KL3M-520M tau 0.7,KL3M-520M tau 1.0 (control),7.3,7.3,11.35,16.51,9.1,1.0113,1.08,False
 KL3M-520M tau,KL3M-520M tau 0.4,KL3M-520M tau 1.0 (control),7.3,7.3,67.07,84.04,44.58,0.8932,1.137,False
 Pleias-1.2B,Pleias-1.2B seed 10 (Arm B),Pleias-1.2B seed 20 (control),6.7,13.7,1.53,19.7,17.71,1.0041,1.0211,True
+Pleias-1.2B tau,Pleias-1.2B tau 0.7,Pleias-1.2B tau 1.0 (control),13.7,13.7,9.47,16.39,-1.63,0.7783,0.9208,True
+Pleias-1.2B tau,Pleias-1.2B tau 0.4,Pleias-1.2B tau 1.0 (control),13.7,13.7,62.02,82.15,34.54,0.7192,0.9737,False
