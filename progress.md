@@ -2423,3 +2423,45 @@ than a number:
 Verified after the edits: `exit=0`, 0 errors, 0 overfull, 0 `??`, main text exactly 9 pages, 27
 total, 1028 numeric literals with the one expected miss, 110 cited keys all defined in
 `references.bib`, and no author-identifying string in any file the ICLR build inputs.
+
+### 2026-09-10 -- the approximation gap is not a scheduling failure (feat-070)
+
+Section 2 states the paper's open problem as closing the three-to-four orders of magnitude between
+what the decoder spends and Theorem 1's floor, and names a route: stop decoding greedily against the
+bucket. That route is now measured and it is bounded far below the gap.
+
+On the geodesic both quantities the decoder trades are closed forms in `psi(u) = log Z(u)`:
+
+    charge   C(theta) = theta psi'(theta) - psi(theta),   C'(theta) = theta psi''(theta)
+    fidelity G(theta) = theta m - psi(theta) = -D(p_r || p_theta) + const,  G' = m - psi'(theta)
+
+with `m = psi'(1)`. `G'(0) = m - psi'(0)` is the Jeffreys divergence between the two models, so the
+first nat spent at a step is worth a Jeffreys divergence and the last is worth nothing. Greedy takes
+whatever marginal price the step's allowance lands on; the optimal allocation of a fixed total
+equalises `G'/C'` at one shared price. Both are computable offline from two teacher-forced forward
+passes, with no decoding run and no change to the audited decoder:
+
+```
+CUDA_VISIBLE_DEVICES=0 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/marginal_price.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --risky-model output/phase5/mem_kl3m-002-520m --k 0.25 --limit 30 --out results --prefix mp_kl3m_prot_k0.25
+.venv/bin/python analysis/marginal_price_table.py --out results   # -> results/marginal_price_table.csv
+```
+
+Pre-registered in `results/onset_prediction_dual.md` with the bands before the first run.
+
+**Result.** Reallocating greedy's own total spend optimally buys 3-13% more fidelity at k <= 1, on
+two pairs (KL3M-520M, Pleias-1.2B) and on both protected passages and ordinary generations. The
+committed band was ">= 1.5 build the dual decoder; 1.1-1.5 modest; < 1.1 structural", so this lands
+between "modest" and "structural" and the decoder is **not** built.
+
+**The stronger form needs no allocation argument.** Greedy already captures 84.5% at k=1 and 98.9%
+at k=3 of the fidelity that theta=1 everywhere -- serving the risky model outright, an unlimited
+budget -- would buy. So the whole headroom in the mechanism's own objective is 1.18x at k=1 and
+1.01x at k=3. Three to four orders of magnitude cannot be recovered by any decoder that still
+meters divergence from the anchor.
+
+**Caveats, both real.** The allocation is computed along a fixed teacher-forced trajectory, and a
+decoder that spent differently would walk a different one. And fidelity to `p_r` is not judged
+utility -- but the mechanism has no utility signal, so fidelity is the only thing its budget can
+buy, which is what makes the bound bite.
