@@ -477,3 +477,23 @@ whose anchor and risky model are different models, which is the mechanism's own 
 at `alpha = 8` and matched utility its protected tokens are **1.2e6 times more likely** than under
 the audited KL decoder. Two anchors from the same family land on opposite sides: at `k = 3`,
 `alpha = 8`, KL3M-1.7B is 311x safer and KL3M-520M 135x more dangerous.
+
+**Do the orders trace one frontier, or do their curves cross?** The matched-utility comparison
+interpolates a budget. A simpler question needs none: each order traces a curve in the plane the
+mechanism trades in -- fidelity on one axis, `L = sum_t log p_theta(x_t)` on the other -- and if the
+four traced one frontier, matching fidelity would match `L`. `analysis/order_crossings.py` sweeps
+`L(alpha) - L(1)` across the fidelity range every order covers and counts a sign only when it clears
+that pair's own bfloat16-against-float32 spread (or, for a pair with no float32 twin, the largest
+spread measured anywhere, which is the conservative choice):
+
+```bash
+.venv/bin/python analysis/order_crossings.py --out results   # -> order_crossings.csv
+```
+
+13 of the 21 (pair, order) cells are uniformly safer, **7 cross** -- so which decoder is safer
+depends on an operating point the published budget does not reveal -- and one is uniformly *more
+dangerous*: TinyComma-1.8B with a memorised Llama-3.1-8B at `alpha = 8`, worse at 100% of operating
+points by 2.6 to 14.7 nats per window. **This analysis was not pre-registered**: it re-analyses
+committed grids, but its noise-floor rule was chosen after seeing that a naive sign test flags
+crossings of 0.4 nats per window, inside the measured precision spread. It is labelled exploratory
+in `results/onset_prediction_orders_matched.md` and nothing pre-registered depends on it.
