@@ -772,3 +772,46 @@ At $\rho = 0.75$ the exact two-sided $p$ is $0.026$ at nine pairs against the co
 threshold, so a candidate at that strength would land just outside it and be reported as
 inconclusive by a hair. That is a worse position than ten pairs would have given and it is stated
 plainly rather than softened: the set is what the models allow, not what the test would prefer.
+
+## Scored at nine pairs: the negative is earned
+
+`results/order_predictors{,_summary}.csv`. KL3M-3.7B's memoriser reached loss $0.0187$ at epoch 9
+with sampled recall $0.854$, and its bracket holds at all 48 cells, so it enters; Pleias-3B is
+excluded as recorded above. Nine pairs, matched-utility advantage at the published $k=1$, nats per
+50-token window:
+
+```
+Pleias-350M 10.82   Pleias-1.2B 10.50   Comma-7B 8.36   KL3M-170M 8.09
+TinyComma-1.8B 8.00   KL3M-3.7B 7.22   KL3M-520M 7.14   KL3M-1.7B 6.46   Phi-3.5-mini 3.86
+
+Spearman, exact two-sided p over all 9! orderings
+candidate                     alpha=2          alpha=4          alpha=8
+memoriser log p / token  +0.35 (0.359)    +0.42 (0.270)    +0.48 (0.194)
+anchor rate s(x)         -0.48 (0.194)    -0.10 (0.810)    +0.02 (0.982)
+s(x) - memoriser rate    -0.48 (0.194)    -0.10 (0.810)    +0.02 (0.982)
+fraction of ceiling      -0.08 (0.843)    -0.45 (0.230)    -0.53 (0.148)
+anchor parameter count   -0.35 (0.359)    -0.30 (0.437)    -0.23 (0.552)
+protected tokens scored  -0.48 (0.194)    -0.12 (0.776)    -0.07 (0.880)
+```
+
+**The best candidate over nine pairs is $\lvert\rho\rvert = 0.53$, below the committed $0.7$: the
+negative is earned at every order and that is the final answer.** The leading candidate at seven
+pairs --- the memoriser's own log-probability, at $+0.71$ and $+0.75$ --- has fallen to $+0.42$ and
+$+0.48$. Adding two pairs halved it, which is what a coincidence does when it meets more data and is
+the reason the seven-pair cell was reported as inconclusive rather than quoted.
+
+**The conservative test cannot decide and says so.** On five family means the memoriser's rate is
+$+0.90$ at $\alpha = 4$ and $8$, exact $p = 0.083$ over all $5!$ orderings --- one adjacent swap from
+perfect, and not significant. It has read $+0.90$ at five, seven, eight and nine pairs, because
+family means barely move when a family gains a member, and it cannot be pushed below $p = 0.017$
+without a sixth family that the cached model set does not contain. So it is the one signal that
+persists, it does not reach the threshold, and it does not overturn the naive test. Both numbers are
+reported; neither is chosen over the other.
+
+**What this licenses the paper to say.** Nothing a deployer can compute --- the memoriser's own
+confidence, the anchor's surprisal rate, their difference, the anchor's size, the number of tokens,
+or how far the audited decoder is from its own fidelity ceiling --- predicts what a higher Renyi
+order is worth at matched utility, across nine pairs where that worth spans from $10^{7}$ times
+safer to $10^{6}$ times more dangerous. The one candidate that survives at the family level is the
+memoriser's own confidence on the protected text, at a strength five families cannot resolve, and
+the paper says exactly that.
