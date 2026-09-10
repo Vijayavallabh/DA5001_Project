@@ -49,3 +49,58 @@ It cannot establish that a deployer would *prefer* a higher order: fidelity to t
 the mechanism's own objective, not a user's satisfaction, and Section 5's judged arms remain the
 only measurement of the latter. What it can establish is whether the published budget conceals a
 dominance relation among decoders that all publish the same number.
+
+---
+
+## Result as run: a null, and the reason it is a null invalidates half the design
+
+`analysis/order_price.py --safe-model output/phase5/anchor_kl3m-002-520m --risky-model
+output/phase5/mem_kl3m-002-520m --k 3.0 --limit 20` -> `results/order_price_kl3m_k3.csv`.
+
+| alpha | price (ordinary) | leakage (protected) | P | R | P - R |
+|---|---|---|---|---|---|
+| 1 | 4266.2 nats | 9661.0 nats | 1.000 | 1.000 | +0.000 |
+| 2 | 3983.8 | 9106.7 | 0.934 | 0.943 | -0.009 |
+| 4 | 3606.2 | 8293.1 | 0.845 | 0.858 | -0.013 |
+| 8 | 3254.0 | 7483.3 | 0.763 | 0.775 | -0.012 |
+
+`P - R` is within 1.3% of zero at every order, which is the committed "no order dominates" band.
+
+**The embarrassment check passes and the design still fails.** The pre-registered check was whether
+this instrument orders the four arms the same way Table 1's intervention rate does; it does, both
+monotone in alpha. But the check was aimed at the wrong risk. The real defect is that the two
+columns are not the same kind of quantity, and the paper says so itself two sections earlier:
+*"Extraction and utility differ because one is a rare event and the other a bounded average."*
+
+Fidelity `-D(p_r || p_theta)` is an average, so it is the right instrument for price and the wrong
+one for leakage. Verbatim reproduction is the probability of a long run of exact tokens, a product
+over hundreds of steps; a 15% reduction in average fidelity can collapse that product by orders of
+magnitude and this measurement cannot see it. That is exactly why Table 1's oracle recall falls
+$24\times$ from alpha = 1 to alpha = 4 while the table above moves by 14%. The two are not in
+conflict; they are measuring different functionals, and only one of them is leakage.
+
+So the null is real for what was measured and the measurement was half wrong. Withdrawn as a
+dominance test.
+
+## The corrected design, committed before it runs
+
+Keep the price column -- fidelity on ordinary generations is a bounded average and the right
+instrument for it. Replace the leakage column with the quantity whose exponential *is* the
+reproduction probability:
+
+    L(alpha) = sum_t log p_theta(x_t | x_{<t})    over the protected token sequence
+
+evaluated at the same published `k` under each order's own charge. This is deterministic, needs no
+sampling, and is the rare-event functional rather than an average. The reproduction probability
+ratio between two orders is then `exp(L(alpha) - L(1))`, directly comparable to the recall ratios in
+Table 1.
+
+| outcome | reading |
+|---|---|
+| `L(1) - L(alpha)` is large in nats while `P(alpha)` stays near 1 | the published `k` conceals a strictly better operating point: an order that costs little of what the budget buys and collapses reproduction. This is the matched-utility statement Appendix D concedes it lacks |
+| both move together in proportion | no dominance; the concession stands as written |
+| `L` moves less than `P` | raising the order costs more utility than reproduction it prevents |
+
+**Sanity condition, recorded now:** `L(1)` must be far *below* the unconstrained model's own
+log-probability of the same tokens and far *above* the anchor's, or the instrument is not measuring
+a constrained decoder at all. Both bounds are computed and reported alongside.
