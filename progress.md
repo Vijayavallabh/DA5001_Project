@@ -2608,3 +2608,57 @@ Comma's rank, which leads by 1.59 nats. It does *not* support a sign claim near 
 **A note on the unit.** `nats_per_window` is a mean per-token difference scaled to 50 tokens, so its
 exponential is the *geometric mean* over windows of the factor by which an exact window becomes less
 likely, and it scales exponentially with the window length. Both caveats are in the appendix text.
+
+## feat-075 (2026-09-10) — the negative, at a power that can carry it
+
+feat-074's "nothing measured predicts it" rested on four pairs, where the best candidate scored
+Spearman `+0.80` at exact two-sided `p = 0.33`. At that power a real predictor and a coincidence are
+the same observation, and a referee should say so. The onset analysis already has **seven** pairs
+and all seven have memorisers on `attack_train` + `val`, so the fix was arithmetic.
+
+**One protocol decision, committed before the runs.** Comma-7B needs `bfloat16` to fit two 7B models
+on a card, so the four-pair set was mixed precision. A control on three pairs then showed the
+bfloat16 bias is **pair-dependent and up to 2.15 nats per window** -- not the `<= 0.78` the original
+one-pair control suggested -- which is enough to shuffle pairs that sit close together, exactly what
+a rank test is sensitive to. So all seven pairs were re-run in bfloat16 and the rank test is
+computed on that homogeneous set (`scripts/`-style chain in the session scratchpad; the per-pair
+commands are in `README_artifact.md`). Five pairs were also run in float32 as a precision control.
+
+**Result, seven pairs, matched utility at the published k = 1 (nats per 50-token window):**
+
+```
+Pleias-350M 10.82   Pleias-1.2B 10.50   Comma-7B 8.36   TinyComma-1.8B 8.00
+KL3M-520M    7.14   KL3M-1.7B    6.46   Phi-3.5-mini 3.86
+```
+
+Six candidates, exact permutation p over all 7! orderings: the memoriser's own log-probability per
+token reaches `+0.54`, `+0.71`, `+0.75` at alpha = 2, 4, 8 (`p = 0.24, 0.09, 0.07`); the anchor's
+surprisal rate `-0.57, -0.14, -0.04`; the fraction of the ceiling `-0.04, -0.43, -0.68`; the
+anchor's parameter count `-0.43, -0.46, -0.50`; the token count `-0.46, 0, 0`.
+
+**Scored against the committed bands.** At alpha = 2 the best is below 0.7: the negative is earned.
+At alpha = 4 and 8 it is inconclusive, and that is what the paper says -- `rho = 0.75` needs ten
+pairs to reach `p <= 0.024` (exact: 0.066 at seven, 0.037 at eight, 0.026 at nine). The instability
+is itself evidence: on the five pairs also run in float32 a **different** candidate leads, the
+anchor's parameter count at `-0.90`, which is what a leading candidate looks like when it is noise.
+
+**The finding that needs no predictor.** TinyComma-1.8B with a memorised Llama-3.1-8B is the only
+pair whose anchor and risky model are different models -- the mechanism's own configuration. At
+alpha = 8 and matched utility the protected tokens are **1.2e6 times MORE likely** than under the
+audited KL decoder. Not an interpolation artefact: the matched budget k = 5.25 sits inside the grid,
+bracketed by 4.0 and 5.5. The mechanism is visible in the grid -- a higher order charges closer to
+the worst step, so buying the same *average* fidelity costs a much larger budget (5.25 against 1.0),
+and that budget is spent tilting toward the memoriser on the steps that carry the passage.
+
+Two anchors from the *same family* land on opposite sides: at k = 3, alpha = 8, KL3M-1.7B is 311x
+safer and KL3M-520M is 135x more dangerous.
+
+**In the paper:** Appendix~\ref{app:matched} rewritten for seven pairs with
+`figures/order_no_collapse.pdf`, the closing paragraph of Section 6, one clause of the abstract, and
+Limitations. `analysis/order_predictors.py` is new (exact permutation Spearman, parameter counts
+read from safetensors headers without loading weights); `analysis/order_law.py` now takes the
+precision set from its own glob.
+
+**A recurring page-budget lesson.** Adding four lines to the abstract cost **thirteen** lines of
+reflow further down and broke the 9-page limit; the same clause swapped in for a sentence of equal
+length cost nothing. Abstract edits must be length-neutral.
