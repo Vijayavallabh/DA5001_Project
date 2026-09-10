@@ -480,3 +480,12 @@ Six candidates, fixed now: the memoriser's per-token log-probability of the prot
 anchor's surprisal rate $s(x)$; their difference; the fraction of the fidelity ceiling the audited
 decoder captures at $k=1$; the anchor's parameter count; and the number of protected tokens scored.
 No candidate is added after seeing the seven-pair result, and if one is, it is labelled post hoc.
+
+**The precision control was itself underpowered.** It was run on one pair, KL3M-520M, and gave
+$\le +0.78$ nats per window. With three pairs now run in both precisions the true range is
+$-2.15$ to $+0.78$, and it is pair-dependent: under $0.8$ on KL3M-520M and Pleias-1.2B, and
+$2.15$ (a factor of $8.6$) on Phi-3.5-mini. No rank changes in the control, but the manuscript's
+"at most $+0.78$" was a one-pair extrapolation and has been corrected. The consequence for the plan
+above: the three remaining pairs are run in **float32 as well**, so the seven-pair table and the
+rank test are homogeneous float32, and the bfloat16 set becomes a seven-pair precision control
+rather than the primary measurement.

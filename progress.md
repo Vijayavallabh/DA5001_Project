@@ -2595,7 +2595,7 @@ CUDA_VISIBLE_DEVICES=4 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACH
 CUDA_VISIBLE_DEVICES=4 ... PYTORCH_ALLOC_CONF=expandable_segments:True \
   .venv/bin/python analysis/order_frontier.py --safe-model common-pile/comma-v0.1-2t \
     --risky-model output/phase4/memorizing_comma7b --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
-    --dtype bfloat16 --out results --prefix order_frontier_comma
+    --dtype bfloat16 --out results --prefix order_frontier_comma_bf16
 # the precision control that licenses that: the same grid on KL3M-520M in bfloat16
 ... --dtype bfloat16 --prefix order_frontier_kl3m_bf16
 ```
