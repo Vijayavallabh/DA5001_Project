@@ -29,8 +29,9 @@ import argparse, csv, glob, math, os, re, statistics as st, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.order_frontier import _at, interp  # noqa: E402
 
-LABEL = {"kl3m": "KL3M-520M", "pleias": "Pleias-1.2B",
-         "phi": "Phi-3.5-mini", "comma": "Comma-7B"}
+LABEL = {"kl3m": "KL3M-520M", "pleias": "Pleias-1.2B", "phi": "Phi-3.5-mini",
+         "comma": "Comma-7B", "pleias350": "Pleias-350M", "kl3m17b": "KL3M-1.7B",
+         "tinycomma": "TinyComma-1.8B"}
 
 
 def main():
@@ -46,9 +47,12 @@ def main():
 
     rows = []
     for path in sorted(glob.glob(a.glob)):
-        if path.endswith("_matched.csv") or "_bf16" in path:
-            continue        # the precision control is the same pair twice, not a fifth pair
-        tag = re.sub(r"^order_frontier_|\.csv$", "", os.path.basename(path))
+        # The precision control re-runs a pair that is already in the set, so it is skipped unless
+        # the caller asked for bfloat16 runs explicitly -- which is how the homogeneous seven-pair
+        # set is analysed, where the bfloat16 files ARE the pairs.
+        if path.endswith("_matched.csv") or ("_bf16" in path and "bf16" not in a.glob):
+            continue
+        tag = re.sub(r"^order_frontier_|_bf16|\.csv$", "", os.path.basename(path))
         pair = LABEL.get(tag, tag)
         cells = list(csv.DictReader(open(path)))
         ntok = float(cells[0]["n_tokens"])
