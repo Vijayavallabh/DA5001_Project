@@ -298,19 +298,22 @@ def main():
     ap.add_argument("--copy-to", default="")
     a = ap.parse_args()
     print("rebuilding plan-v4 figures from results/")
-    for fn in (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               units_law):
+    # One list, so a figure added here is also a figure copied. units_law was generated and not
+    # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
+    # PDF in place -- which then measures as if nothing were wrong.
+    figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
+               units_law)
+    for fn in figures:
         try:
             fn()
         except FileNotFoundError as e:
             print(f"  SKIP {fn.__name__}: {e}")
     if a.copy_to:
         import shutil
-        for n in ("frontier_scaling", "opening_effect", "order_invariance", "onset_collapse",
-                  "seed_effect"):
-            src = OUT / f"{n}.pdf"
+        for fn in figures:
+            src = OUT / f"{fn.__name__}.pdf"
             if src.exists():
-                shutil.copy(src, Path(a.copy_to).expanduser() / f"{n}.pdf")
+                shutil.copy(src, Path(a.copy_to).expanduser() / f"{fn.__name__}.pdf")
         print(f"copied to {a.copy_to}")
 
 
