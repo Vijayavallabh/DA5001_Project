@@ -489,3 +489,53 @@ $2.15$ (a factor of $8.6$) on Phi-3.5-mini. No rank changes in the control, but 
 above: the three remaining pairs are run in **float32 as well**, so the seven-pair table and the
 rank test are homogeneous float32, and the bfloat16 set becomes a seven-pair precision control
 rather than the primary measurement.
+
+## Seven pairs, bfloat16: two of the three cells are inconclusive and one negative is earned
+
+`results/order_predictors{,_summary}.csv`, all seven onset pairs in bfloat16, advantage at the
+published $k=1$ in nats per 50-token window:
+
+```
+pair              log p_r/tok   s(x)/tok       F   anchor params   a=2     a=4      a=8
+Pleias-350M          -0.00646    -3.4954   0.782     353,424,384  10.82   17.05    16.47
+Pleias-1.2B          -0.00124    -3.1195   0.767   1,195,468,800  10.50   16.39    16.76
+Comma-7B             -0.00726    -2.3238   0.944   7,002,656,768   8.36   12.14     9.10
+TinyComma-1.8B       -0.02858    -3.1474   0.852   1,758,562,304   8.00    1.66   -14.04
+KL3M-520M            -0.00276    -2.4243   0.839     520,193,024   7.14    6.93     0.44
+KL3M-1.7B            -0.00832    -2.2522   0.730   1,745,686,528   6.46   11.22    12.99
+Phi-3.5-mini         -0.02550    -2.7140   0.840   3,821,079,552   3.86    2.05    -2.55
+
+Spearman, exact two-sided p over all 7! orderings
+candidate                     alpha=2          alpha=4          alpha=8
+memoriser log p / token  +0.54 (0.236)    +0.71 (0.088)    +0.75 (0.066)
+anchor rate s(x)         -0.57 (0.200)    -0.14 (0.783)    -0.04 (0.963)
+s(x) - memoriser rate    -0.57 (0.200)    -0.14 (0.783)    -0.04 (0.963)
+fraction of ceiling      -0.04 (0.963)    -0.43 (0.354)    -0.68 (0.110)
+anchor parameter count   -0.43 (0.354)    -0.46 (0.302)    -0.50 (0.267)
+protected tokens scored  -0.46 (0.302)     0.00 (1.000)     0.00 (1.000)
+```
+
+**Scored against the committed bands.** At $\alpha = 2$ the best candidate is $+0.54$, below $0.7$:
+**the negative is earned at a power that supports it.** At $\alpha = 4$ and $\alpha = 8$ the best is
+$+0.71$ and $+0.75$, inside the band the pre-registration called **inconclusive**, and that is what
+is reported. The pre-registration also asked how many pairs would settle it: at $\rho = 0.75$ the
+exact two-sided $p$ is $0.066$ at seven pairs, $0.037$ at eight, $0.026$ at nine, and clears the
+committed $0.024$ at ten. So the honest statement is that the memoriser's own confidence on the
+protected text is a *candidate* predictor at high orders which seven pairs cannot confirm or reject,
+and that nothing else comes close at any order. Two caveats a referee should have: the seven pairs
+are not seven independent draws (two Pleias, two KL3M), and the anchor's surprisal rate --- the
+quantity this paper's own units result is built on --- is the *worst* performing candidate at
+$\alpha=8$, at $-0.04$.
+
+**The finding that does not need a predictor.** TinyComma-1.8B with a memorised Llama-3.1-8B is the
+only pair whose anchor and risky model are different models, which is the mechanism's own
+configuration. At $\alpha = 8$ and matched utility it is $-14.04$ nats per window: the protected
+tokens are $1.2\times10^{6}$ times **more** likely than under the audited KL decoder. This is not an
+interpolation artefact --- the matched budget $k = 5.25$ sits inside the grid, bracketed by
+$k=4.0$ and $k=5.5$, and $\alpha=1$ at $k=1$ gives $-0.747$ nats per token against $\alpha=8$'s
+$-0.50$ there. The mechanism is visible in the grid: a higher order charges something closer to the
+worst step, so buying the same *average* fidelity costs it a much larger budget --- $5.25$ against
+$1.0$ --- and that budget is spent tilting toward the memoriser on the steps that carry the passage.
+
+Float32 runs of the three new pairs are in flight; nothing above reaches the manuscript until the
+seven-pair table is homogeneous in float32, with bfloat16 kept as a seven-pair precision control.
