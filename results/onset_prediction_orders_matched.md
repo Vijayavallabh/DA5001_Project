@@ -893,3 +893,27 @@ so an anchor that is *already* fluent on a passage leaves less for the memoriser
 --- the served distribution's log-probability of the protected tokens strictly between the anchor's
 and the memoriser's --- is what detects that, and any pair failing it is excluded with its numbers
 reported.
+
+## Every pair now has its own precision floor, and the crossing count changes because of it
+
+Three pairs were borrowing a floor: Comma-7B, whose two $7$B models had never had a card in
+`float32`, and the two KL3M anchors added last. All three now have `float32` twins, so all nine
+pairs carry a measured floor of their own:
+
+```
+kl3m 0.78   pleias 0.55   phi 2.15   pleias350 2.34   kl3m17b 0.11
+tinycomma 0.52   comma 1.14   kl3m170m 0.47   kl3m37b 0.32   (nats per 50-token window)
+```
+
+Comma-7B's own floor is $1.14$, not the $2.34$ it was borrowing, and the borrowed value was the
+largest measured anywhere --- so the conservative choice was, as intended, conservative. With the
+real floors the exploratory crossing test moves from **$7$ of $27$ cells crossing** to **$12$ of
+$27$**, with $14$ uniformly safer and $1$ uniformly more dangerous. The change is entirely the
+floors: no grid was re-run and no rule was altered. It makes the finding stronger, which is exactly
+why it is recorded here as a consequence of a measurement rather than presented as if the number had
+always been $12$.
+
+Across all nine pairs the `bfloat16`-against-`float32` difference is $-2.34$ to $+0.86$ nats per
+window over 54 cells, with a **median absolute difference of $0.30$** --- so the large values are
+two pairs (Phi-3.5-mini and Pleias-350M) and not the norm. The manuscript's "Comma-7B is the
+exception twice over" sentence is withdrawn: it no longer is.
