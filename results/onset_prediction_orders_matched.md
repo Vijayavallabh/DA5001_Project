@@ -698,3 +698,13 @@ corpus below about $0.03$ at these settings. The run is **not** being restarted 
 settings after seeing its loss curve. It finishes as committed, and if the merged model fails the
 entry gate above --- the memoriser materially better than its own anchor on the protected tokens ---
 the pair is excluded and that exclusion is reported here, which is what the gate was written for.
+
+**The Pleias-3B fine-tune diverged and was stopped.** After the plateau it went $0.0386 \to 0.0437
+\to 0.0786 \to 0.1291$ over epochs 15-20, so it was killed at epoch 20 rather than run to 40 to
+produce a knowingly-diverged model. This is an operational decision about a training run, not an
+analysis decision about a result, and it is recorded with its reason: **divergence of the loss, not
+the sign or size of any advantage, which had not been computed.** One retry is committed now, before
+it runs, at `--lr 1e-4 --stop-loss 0.03` --- a lower rate because the run diverged, and the looser
+floor because the existing Pleias-1.2B memoriser plateaued at $0.0295$ and the family evidently does
+not drive this corpus below about $0.03$. If the retry also fails the entry gate, Pleias-3B is
+excluded and the ten-pair set becomes nine, with the exclusion reported here.
