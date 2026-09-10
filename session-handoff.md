@@ -23,20 +23,40 @@ complete and verified; the remaining work is whatever the plan opens next.
    closes the concession in Appendix D with an answer rather than an admission.
 4. `seed_effect.seed_words` moved onto the split the sweeps actually used; seed words 7.3 -> 7.5 and
    13.7 -> 14.6, every ratio and interval unchanged.
+5. **feat-074 (new): what predicts the order's value? Nothing measured does.** Two hypotheses were
+   pre-registered and both refuted --- the audited decoder's distance from its own fidelity ceiling
+   (`F`, refuted at 2.1-7.7 decades between pairs at matched `F`), and the memoriser's per-token
+   log-probability, whose three-pair ordering was tested out of sample on a fourth and failed
+   (Spearman `+0.800`, exact two-sided `p = 0.33`, predicted `+1.000`) and was deleted rather than
+   re-fitted. Four further candidates were scored and none reaches `|0.4|`. What survives is a
+   stable pair effect spanning **5.4 decades** at `k=1` and changing sign at `k=3` on two of four
+   pairs. Phi-3.5-mini and Comma-7B added; Comma needed `--dtype bfloat16` to share a card, with a
+   bfloat16-against-float32 control on KL3M-520M measuring the cost at <= 0.78 nats per window.
 
 ## State
-- **190 tests** (`./init.sh` green), 68 features, none in progress, feat-035..073 `done`.
-- Manuscript: main text **exactly 9 of 9 pages**, 29 total, 0 overfull, 0 `??`, 1194 numeric
-  literals audited with 1 expected miss (`64256`). Compute figure updated to 110 GPU-hours.
-- Artifact rebuilt: 521 files, `artifact.zip` 27M.
+- **192 tests** (`./init.sh` green), 69 features, none in progress, feat-035..074 `done`.
+- Manuscript: main text **exactly 9 of 9 pages** (Ethics at char 264 of page 10, i.e. the body ends
+  at the foot of page 9), 30 total, 0 overfull, 0 `??`, 1230 numeric literals audited with 1
+  expected miss (`64256`). Compute figure 111 GPU-hours. The abstract carries the matched-utility
+  result, swapped in for a sentence of equal length: adding four lines to the abstract cost
+  **thirteen** lines of reflow further down, so any abstract edit must be length-neutral.
+- Artifact rebuilt: 531 files, `artifact.zip` 27M.
 
 ## Recommended next step
-The three feat-072/073 tables are in the appendix and Section 6. The obvious next question the
-sweep opens: at `k=1` the order's advantage spans four orders of magnitude between two pairs, and
-nothing in the paper predicts which pair gets which. A third and fourth pair (Phi-3.5-mini and
-Comma-7B memorisers exist under `output/phase5/`) would say whether that spread tracks `s(x)`,
-`s_r/s_s`, or nothing -- and "nothing" is itself the paper's thesis, so either answer is reportable.
-Cost is about 40 minutes of one A100 per pair.
+feat-072/073/074 are complete and in the paper (Appendix~\ref{app:matched}, the closing paragraph of
+Section 6, and one clause of the abstract). Three candidates for what comes next, in order of
+expected value:
+
+1. **Three more pairs on the frontier sweep.** The pair effect is stable across three orders but
+   rests on four pairs; `output/phase5/` has memorisers for KL3M-1.7B and Pleias-350M, and the
+   seven-pair onset set names a seventh. Seven pairs would let "nothing measured predicts it" be
+   quoted with a rank test that has real power (exact p = 1/5040 rather than 1/24). ~40 min of one
+   A100 per pair.
+2. **The one-corpus limitation.** Everything runs on sixteen English genre novels, and Limitations
+   says so. The Gutenberg cache under `data/gutenberg/` is already scored by `anchor_scaling.py`;
+   a memoriser on public-domain prose would give a second corpus for the onset and the frontier.
+3. **Nothing.** The paper is verified end to end and both deadlines have slack. Stopping is a
+   legitimate choice and the fallback at `dd7e801` on `master` is intact.
 
 ## Standing constraints
 Never push to a remote; `feat-016` is human-only. Never commit inside `~/sub/satml` (stray home git
