@@ -124,13 +124,15 @@ def main():
             (f"{cells[o]['log10_spread']:>10.2f}" if o in cells else f"{'':>10s}") for o in orders))
     print(f"\nthe pairs differ by a median of {st.median(spread):.2f} decades at matched F "
           f"(range {min(spread):.2f}-{max(spread):.2f})")
-    # does a single per-pair offset collapse them? that is the weaker, one-parameter hypothesis
+    # Would a single per-pair offset collapse them? That is the weaker, one-parameter hypothesis:
+    # a common shape in F with one constant per pair. It holds only if the range between the pairs
+    # is itself constant in F, so that is what is reported -- not a fitted offset, which on three
+    # pairs would be three parameters for three curves and would fit anything.
     for o in orders:
-        cells = [s_ for s_ in summary if s_["alpha"] == o]
-        if len(cells) >= 3:
-            off = [c["log10_spread"] for c in cells]
-            print(f"  alpha = {o:.0f}: offset {st.mean(off):+.2f} decades, "
-                  f"sd {st.stdev(off):.2f} across F -- a constant offset would give sd 0")
+        rng = [c["log10_spread"] for c in summary if c["alpha"] == o]
+        if len(rng) >= 3:
+            print(f"  alpha = {o:.0f}: pairs span {st.mean(rng):.2f} decades on average, "
+                  f"sd {st.stdev(rng):.2f} across F -- a common shape would give sd 0")
     print(f"\nthe anchor point: as F -> 1 the factor must go to 1, i.e. log10 -> 0. "
           f"max |log10| at F >= 0.99 is "
           f"{max(abs(r['log10_factor']) for r in rows if r['F'] >= 0.99):.2f}")
