@@ -708,3 +708,12 @@ it runs, at `--lr 1e-4 --stop-loss 0.03` --- a lower rate because the run diverg
 floor because the existing Pleias-1.2B memoriser plateaued at $0.0295$ and the family evidently does
 not drive this corpus below about $0.03$. If the retry also fails the entry gate, Pleias-3B is
 excluded and the ten-pair set becomes nine, with the exclusion reported here.
+
+**Eight pairs exist and are deliberately not being scored.** KL3M-170M landed while KL3M-3.7B and
+the Pleias-3B retry were still training, and the eight-pair numbers are already computable --- the
+best candidate is $-0.69$ at $\alpha = 8$, which would fall inside the "earned negative" band. That
+is **not** the reported result. The pre-registration committed to ten pairs (nine if one fails the
+entry gate), and scoring at eight because the answer looks settled there, then scoring again at ten,
+is two looks at the same data. The number that gets reported is the one at the committed endpoint,
+whichever direction the last two pairs move it, and the eight-pair figure is written down here only
+so that it cannot later be presented as if it had never been seen.
