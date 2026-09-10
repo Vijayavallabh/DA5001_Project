@@ -147,3 +147,46 @@ was trained on, and the feat-070 table gains a third target type rather than los
 
 The order-price bracket is re-checked the same way: `L(1)` must now sit strictly between the two,
 or the pair is not a memoriser on these passages either and nothing further is claimed from it.
+
+## Result on the memorised split, and the next question it forces
+
+`results/order_price_kl3m_k3.csv`, KL3M-520M, `k = 3.0`, 25 memorised passages (9,500 tokens) and
+25 ordinary generations. The bracket now holds with room to spare -- the memoriser assigns
+$-26.1$ nats to the passages it was fine-tuned on and the anchor alone $-23{,}024.6$, and every
+constrained arm sits strictly between them -- so the instrument is measuring a constrained decoder.
+
+```
+ alpha   price      P    log p/token   nats/window   window x less likely
+     1   5262.0  1.000       -0.1854          0.00                     1
+     2   4951.6  0.941       -0.5001         15.74               6.84e+06
+     4   4509.2  0.857       -0.7332         27.39               7.85e+11
+     8   4082.2  0.776       -0.8556         33.51               3.59e+14
+```
+
+Quoted per 50-token window because that is the unit Table 1's recall is scored in. **This is the
+first band: `P` stays near 1 while `L` collapses.** Raising the order from 1 to 4 at the *same*
+published budget costs $14\%$ of the fidelity the budget buys and makes an exact 50-token window
+$8 \times 10^{11}$ times less likely. The exponent is much larger than Table 1's measured $24\times$
+drop in oracle recall, and it should be: recall is near-verbatim with retries and a similarity
+threshold, this is exact reproduction of every token. They agree in direction and the rare-event
+functional is far the more sensitive of the two.
+
+**What this does not yet say.** It is dominance at matched *budget*, which is the axis Appendix D
+already has. The statement that would close the concession is dominance at matched *utility*: give
+`alpha = 4` whatever budget it needs to buy the same fidelity `alpha = 1` buys at the published `k`,
+and ask what it leaks there. Fidelity is monotone in `k` at fixed order, so that budget exists and
+is unique.
+
+### Pre-registration, committed before the run
+
+Sweep a grid of `k` per order in one pass over the same passages (no new forward passes, only more
+theta solves), interpolate the `k'(alpha)` at which the ordinary-side fidelity equals `alpha = 1`'s
+at the published `k`, and report the protected-side `log p(target)` there.
+
+| outcome | reading |
+|---|---|
+| at matched fidelity, `L(alpha) - L(1)` is still large and negative | the order dominates on the axis that matters: same utility to the deployer, orders of magnitude less reproduction. Appendix D's concession is closed and the published KL decoder is off the efficient frontier |
+| at matched fidelity the two agree to within a window factor of $10$ | the order buys nothing a budget increase would not; the four arms trace one frontier and Table 1's ranking is an artefact of comparing at matched budget |
+| `k'(alpha)` exceeds the vacuity threshold `s(x)` for the pair | the matched-utility point is outside the region where the certificate says anything, and the comparison is moot for a deployer |
+
+The instrument is only read if the bracket holds at every cell: `logp_target_safe < L < logp_target_risky`.
