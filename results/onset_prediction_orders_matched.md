@@ -994,3 +994,43 @@ Llama-3.2-1B passes the corrected gate: $-319.3$ against an anchor at $-18{,}159
 below the anchor. **Because admitting a pair after amending a gate it failed is exactly the move a
 reader should be suspicious of, the ten-pair result is reported both with and without it**, and the
 amendment is justified by the counter-example above rather than by anything the pair measured.
+
+## Scored: the geometry survives a change of protected corpus
+
+`results/order_frontier_gut_{kl3m,pleias}_bf16{,_matched}.csv`. Same anchors, same settings, same
+grid, same ordinary-generation side; only the protected work changed, from sixteen copyrighted
+novels to 600 excerpts of 50 public-domain books. Both memorisers pass the corrected gate
+(KL3M $-25.8$ nats against an anchor at $-21{,}655.8$; Pleias likewise) and no cell of either sits
+below its anchor.
+
+```
+pair          k  alpha  CopyBench  Gutenberg   diff  floor  beyond?
+KL3M-520M     1    2       7.14       7.24   +0.10   0.78   no
+KL3M-520M     1    4       6.93       8.16   +1.23   0.78   YES
+KL3M-520M     1    8       0.44       2.53   +2.09   0.78   YES
+KL3M-520M     3    2/4/8   0.32/-2.62/-4.91  within 0.56    no
+Pleias-1.2B   1    2      10.50      10.12   -0.38   0.55   no
+Pleias-1.2B   1    4      16.39      16.51   +0.12   0.55   no
+Pleias-1.2B   1    8      16.76      17.73   +0.97   0.55   YES
+Pleias-1.2B   3    2/4/8   4.21/4.73/3.30    within 0.44    no
+```
+
+**The second band fires and the important half is the cleanest.** Nine of the twelve cells move less
+than their pair's own precision floor; three exceed it, the largest by $2.09$ nats per window (a
+factor of $8$, in a quantity quoted in decades). **No cell changes sign, and Pleias-1.2B leads
+KL3M-520M at every order on both corpora** --- the ranking is what every predictor test consumes,
+and it survives.
+
+Two measurements worth recording beside it. The anchors are **not** markedly more fluent on the
+public-domain books than on the copyrighted novels: $-2.42$ against $-2.28$ nats per token for
+KL3M-520M and $-3.12$ against $-3.01$ for Pleias-1.2B, a $5\%$ difference, so the two corpora are
+comparably hard for these anchors and the comparison is not confounded by exposure. And the two
+Gutenberg memorisers differ in strength from their CopyBench twins in opposite directions
+($-0.00271$ against $-0.00276$ for KL3M, $-0.0251$ against $-0.0012$ for Pleias), which is one more
+reason the level moves while the rank does not.
+
+**What the paper may now say.** The single-corpus caveat is true of the onset results, which rest
+entirely on those sixteen novels, and it does **not** reach the order results: the matched-utility
+geometry reproduces on a second, disjoint corpus with the anchor held fixed. Two anchors is not a
+demonstration that it holds for all; it is a demonstration that the first corpus was not doing the
+work.
