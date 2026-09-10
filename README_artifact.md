@@ -369,3 +369,35 @@ without moving the average, which is why Table 1's oracle recall falls 24x from 
 run prints the two brackets the constrained decoder must sit inside — the same log-probability under
 the risky model above and under the anchor alone below — because an instrument that leaves the
 bracket is not measuring a constrained decoder.
+
+**The order comparison at matched utility.** Table 1 ranks four Rényi orders at one published `k`
+and the paper concedes the limit of that: at matched *budget*, an order that leaks less may simply
+be buying less. Section 5 shows the judge cannot supply the missing axis. The geodesic can. Fidelity
+is monotone in `k` at a fixed order, so each order has a unique budget buying exactly what the
+audited decoder buys at the published one; what it lets through there is the rare-event functional,
+not another average. `analysis/order_frontier.py` sweeps a `k` grid in one pass and interpolates:
+
+```bash
+CUDA_VISIBLE_DEVICES=1 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_frontier.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/mem_kl3m-002-520m \
+    --limit 25 --k-grid 0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0 \
+    --published-k 1.0 3.0 --out results --prefix order_frontier_kl3m
+# -> order_frontier_kl3m.csv (one row per alpha x k) and order_frontier_kl3m_matched.csv
+```
+
+The answer is not the one the matched-budget table suggests. At the published `k = 3` the audited
+decoder already captures 97-98% of what an unlimited budget would buy, so matching it pushes every
+other order past that pair's vacuity threshold, and on KL3M-520M the ranking **reverses**: `alpha=4`
+and `alpha=8` leak more at equal utility. At `k = 1`, where the constraint binds, the higher order
+does dominate -- but by 871x on one pair and 3.5e4 to 3.3e7 on the other, non-monotone in `alpha`.
+What Table 1 ranks is the charge function, not the decoder. Pre-registration and scoring:
+`results/onset_prediction_orders_matched.md`.
+
+**A note on splits, because it cost a result.** Every phase-5 memoriser is fine-tuned on
+`attack_train` + `val` with `test` held out, and the two are disjoint in novel. A probe that scores
+"protected" text on `test` is scoring a novel the model has never seen, where a LoRA-memorised model
+is *worse* than its own base -- so `analysis/marginal_price.py` and `analysis/order_price.py` both
+default to `attack_train` and print the bracket that catches the mistake if the wrong split is
+passed: the served distribution's log-probability of the protected tokens must sit strictly between
+the risky model's and the anchor's.

@@ -2465,3 +2465,84 @@ meters divergence from the anchor.
 decoder that spent differently would walk a different one. And fidelity to `p_r` is not judged
 utility -- but the mechanism has no utility signal, so fidelity is the only thing its budget can
 buy, which is what makes the bound bite.
+
+## feat-072 / feat-073 (2026-09-10) — what the order buys, and the split that nearly broke both probes
+
+**The design that failed first, and why.** `analysis/order_price.py` priced each Rényi order at one
+published `k` with fidelity on both sides. That was wrong and the paper says so two sections
+earlier: fidelity is a bounded average, verbatim reproduction is a rare event, and a 15% cut in an
+average can collapse a product over hundreds of steps by orders of magnitude without moving the
+average. The corrected leakage column is the rare-event functional
+
+    L(alpha, k) = sum_t log p_theta(x_t | x_<t)    over the protected token sequence
+
+whose exponential *is* the reproduction probability, with a sanity bracket committed before it ran:
+`L` must sit strictly between the risky model's own log-probability of those tokens and the
+anchor's.
+
+**The bracket fired on its first run and found a bigger error.** It came out inverted -- the
+memoriser assigned the "protected" passage `e^{14063}` *less* mass than the clean anchor. Cause:
+every phase-5 memoriser is fine-tuned on `attack_train` + `val` (`output/phase5/mem_*/recipe.json`)
+and `test` is held out; the two splits are also disjoint in novel (`test` is Fifty Shades, Harry
+Potter, Lord of the Flies; `attack_train` is Game of Thrones, Casino Royale, Dune, Fahrenheit 451
+and others). A LoRA-memorised model is *worse* than its own base on prose it did not memorise. Both
+`order_price.py` and `marginal_price.py` defaulted to `test`, so feat-070's "protected passage"
+column -- which was in the manuscript -- was a held-out novel.
+
+**feat-070 re-run on the memorised split.** The protected arm was re-run as a third target type
+rather than replacing the old one:
+
+```
+LIMIT=30 scripts/run_marginal_price.sh 1 output/phase5/anchor_kl3m-002-520m \
+  output/phase5/mem_kl3m-002-520m kl3m_mem
+LIMIT=30 scripts/run_marginal_price.sh 1 PleIAs/Pleias-1.2b-Preview \
+  output/phase5/mem_Pleias-1_2b-Preview pleias_mem
+.venv/bin/python analysis/marginal_price_table.py --out results
+```
+
+Gain ratio over k <= 1 is **1.031 to 1.133** across 2 pairs x 3 target types x 4 budgets, agreeing
+to within two points everywhere, so the "property of the geometry, not of what is being written"
+sentence is now supported by three kinds of target instead of asserted over two that were both
+unmemorised. The ceiling at k=1 is 1.3-1.4x on the memorised arm against 1.2-1.3x on the others.
+The claim holds with a slightly wider range and the manuscript carries the corrected table.
+
+**feat-072, corrected, at the published k=3.**
+
+```
+CUDA_VISIBLE_DEVICES=1 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_price.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --risky-model output/phase5/mem_kl3m-002-520m --k 3.0 --limit 25 --out results \
+    --prefix order_price_kl3m_k3
+```
+
+Bracket holds (memoriser -26.1 nats, anchor -23,024.6). Raising the order from 1 to 4 at the same
+budget costs 14% of the fidelity the budget buys and makes an exact 50-token window 7.9e11 times
+less likely; Pleias-1.2B replicates at 6.9e13, with `P` at alpha=2 equal to 0.941 on both pairs.
+
+**feat-073: the same comparison at matched utility, which is what Appendix D concedes it lacks.**
+Fidelity is monotone in `k` at a fixed order, so each order has a unique budget buying exactly what
+the audited decoder buys at the published one. `analysis/order_frontier.py` sweeps a 12-point grid
+in one pass and interpolates; 0 of 48 cells per pair fall outside the bracket and none saturates.
+
+```
+CUDA_VISIBLE_DEVICES=1 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_frontier.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --risky-model output/phase5/mem_kl3m-002-520m --limit 25 \
+    --k-grid 0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0 --published-k 1.0 3.0 \
+    --out results --prefix order_frontier_kl3m
+# and --safe-model PleIAs/Pleias-1.2b-Preview --risky-model output/phase5/mem_Pleias-1_2b-Preview
+```
+
+**Result, and it is not what the matched-budget table suggested.** At the published k=3 the audited
+decoder already captures 98.3% / 97.2% of the unconstrained ceiling, so matching it pushes every
+other order to 4.7-8.0 nats per token, all past that pair's vacuity threshold (s(x) = 2.415 and
+3.209) -- and on KL3M-520M the ranking **reverses**: alpha=2 is a wash, alpha=4 and 8 leak more at
+equal utility. At k=1, where the constraint binds, the higher order does dominate: 871x on
+KL3M-520M and 3.5e4 to 3.3e7 on Pleias-1.2B, non-monotone in alpha (alpha=8 gives the whole
+advantage back on KL3M). What Table 1 ranks is the charge function, not the decoder, which is the
+paper's thesis one level up. Written into `sections/appendix_robustness.tex` as
+Appendix~\ref{app:matched} and into the closing paragraph of Section 6.
+
+**Also corrected:** `analysis/seed_effect.py:seed_words` scored the seed on `test` while every
+sweep it annotates ran on `attack_train`. Moved. Seed words go 7.3 -> 7.5 (KL3M) and 13.7 -> 14.6
+(Pleias-1.2B); every ratio, prediction, interval and Spearman is unchanged.
