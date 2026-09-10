@@ -399,8 +399,13 @@ What Table 1 ranks is the charge function, not the decoder. Pre-registration and
 "protected" text on `test` is scoring a novel the model has never seen, where a LoRA-memorised model
 is *worse* than its own base -- so `analysis/marginal_price.py` and `analysis/order_price.py` both
 default to `attack_train` and print the bracket that catches the mistake if the wrong split is
-passed: the served distribution's log-probability of the protected tokens must sit strictly between
-the risky model's and the anchor's.
+passed: the served distribution's log-probability of the protected tokens must sit **above the
+anchor's own**. The risky model's is *not* an upper bound on it -- `L(theta)` is not monotone in
+`theta`, because mixing the anchor in helps wherever the anchor is right and the risky model is
+wrong, so a partial tilt can give the true tokens more mass than `theta = 1` does.
+`tests/test_order_price.py` carries a two-step counter-example. Treating it as a bound once failed a
+pair whose memoriser was merely weak, and the upper excursion is now printed as a diagnostic rather
+than used as a gate.
 
 **What predicts the order's value? Nothing measured does.** `analysis/order_law.py` re-analyses the
 frontier grids with no new compute, treating every grid `k` in turn as the published budget so the
