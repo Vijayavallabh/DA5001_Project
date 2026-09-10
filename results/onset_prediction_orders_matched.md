@@ -856,3 +856,40 @@ Twelve pairs is more than $9!$ can enumerate, so the naive test switches to the 
 Carlo over $2\times10^{6}$ permutations that `order_predictors.py` already implements and labels.
 Whatever the twelve-pair naive number is, it is reported --- including if it rises above the $0.53$
 that earned the negative at nine.
+
+## A second protected corpus, committed before anything is trained on it
+
+Every extraction number in this paper comes from one corpus: sixteen English genre novels from
+CopyBench. Limitations says so, and it is the largest single caveat --- the nine "independent"
+robustness cells are nine re-analyses of the same works, and the order results inherit that.
+
+`analysis/build_gutenberg_excerpts.py` builds a second corpus in the identical shape from the 50
+public-domain books already cached for `anchor_scaling.py`: 600 excerpts, 925-character prefix and
+225-character continuation, Gutenberg header and licence stripped, whitespace collapsed, taken at
+evenly spaced offsets inside each book's body. Public-domain text is not "protected" in the legal
+sense and that is not what is being tested; what is being tested is whether the geometry the paper
+measures belongs to the pair or to those sixteen novels.
+
+**Design: the anchor is held fixed and only the protected work changes.** Two anchors already in the
+set --- KL3M-520M and Pleias-1.2B --- get a second memoriser each, trained on the Gutenberg
+excerpts with the same settings, and are swept on the same 12-point grid. Everything but the
+corpus is identical to the run already reported, including the ordinary-generation side, so the
+comparison is within-anchor.
+
+The reader is deliberately separate from `dap.shared.load_prompt_corpus` (`analysis/corpus_file.py`,
+used by `--corpus-file` on both scripts): the committed prompt sets under `data/` are not to be
+modified and adding a file to `SOURCE_FILES` would change what every other script sees. The
+instruction prefix is identical, so the memoriser and the sweep see the same form.
+
+| outcome | reading |
+|---|---|
+| both anchors' $k=1$ advantages land within their own precision floor of the CopyBench numbers | the geometry is a property of the pair and the single-corpus caveat, while still true of the onset results, does not reach the order results |
+| the advantages move but keep the same sign and the KL3M-below-Pleias ordering | corpus-sensitive in level and not in rank, reported with both numbers, and the rank is what the predictor tests consume |
+| a sign flips, or the ordering between the two anchors inverts | the order results are corpus-specific, must be quoted for CopyBench only, and the corpus joins the list of things a published $k$ does not reveal |
+
+The entry gate is unchanged and matters more here than anywhere: these anchors were trained on
+Common Pile and KL3M's legal corpora, which may already contain some of these public-domain books,
+so an anchor that is *already* fluent on a passage leaves less for the memoriser to add. The bracket
+--- the served distribution's log-probability of the protected tokens strictly between the anchor's
+and the memoriser's --- is what detects that, and any pair failing it is excluded with its numbers
+reported.

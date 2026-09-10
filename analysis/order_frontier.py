@@ -110,6 +110,10 @@ def main():
                          "the grid, since the matched target is read off it")
     ap.add_argument("--split", default="attack_train",
                     help="MUST be a split the risky model was fine-tuned on")
+    ap.add_argument("--corpus-file", default="",
+                    help="plan v5: take the protected passages from a standalone JSONL corpus "
+                         "instead of a CopyBench split. It MUST be the corpus the risky model was "
+                         "fine-tuned on, and the bracket the run prints is what catches it if not.")
     ap.add_argument("--seed-tokens", type=int, default=20)
     ap.add_argument("--limit", type=int, default=25)
     ap.add_argument("--max-tokens", type=int, default=400)
@@ -134,7 +138,11 @@ def main():
     risky = AutoModelForCausalLM.from_pretrained(a.risky_model, dtype=dt).to(device).eval()
 
     corpus = load_prompt_corpus("data", "factscore_prompt")
-    prot = [p for p in corpus if p.split == a.split and p.reference][:a.limit]
+    if a.corpus_file:
+        from analysis.corpus_file import load_corpus_file
+        prot = load_corpus_file(a.corpus_file)[:a.limit]
+    else:
+        prot = [p for p in corpus if p.split == a.split and p.reference][:a.limit]
     ordn = [p for p in corpus if p.split == "neutral"][:a.limit]
     ks = sorted(a.k_grid)
 
@@ -145,7 +153,8 @@ def main():
 
     ntok = lx["ntok"] or 1.0
     os.makedirs(a.out, exist_ok=True)
-    rows = [dict(alpha=o, k=k, split=a.split, n_protected=n_prot, n_ordinary=n_ord,
+    rows = [dict(alpha=o, k=k, split=(a.corpus_file or a.split),
+                 n_protected=n_prot, n_ordinary=n_ord,
                  price_nats=round(price[(o, k)], 3),
                  price_frac_ceiling=round(price[(o, k)] / px["ceiling"], 4),
                  logp_target=round(leak[(o, k)], 3),

@@ -32,7 +32,8 @@ from analysis.order_frontier import _at, interp  # noqa: E402
 LABEL = {"kl3m": "KL3M-520M", "pleias": "Pleias-1.2B", "phi": "Phi-3.5-mini",
          "comma": "Comma-7B", "pleias350": "Pleias-350M", "kl3m17b": "KL3M-1.7B",
          "tinycomma": "TinyComma-1.8B", "kl3m170m": "KL3M-170M", "kl3m37b": "KL3M-3.7B",
-         "pleias3b": "Pleias-3B"}
+         "pleias3b": "Pleias-3B", "llama1b": "Llama-3.2-1B", "llama3b": "Llama-3.2-3B",
+         "qwen7b": "Qwen2.5-7B"}
 
 
 def main():
