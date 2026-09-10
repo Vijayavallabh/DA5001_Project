@@ -330,3 +330,34 @@ unchanged. This is a test of the negative, not a search for a law.
 
 The bracket gates every cell as before, and any pair whose memoriser does not clear it is excluded
 with its numbers reported, not silently dropped.
+
+## Phi-3.5-mini lands, and one ordering appears. Its test is committed before Comma-7B runs.
+
+`results/order_frontier_phi{,_matched}.csv`. Bracket holds at all 48 cells (memoriser $-184.4$
+nats, anchor $-19{,}695.3$). At $k=1$: $\alpha=2$ buys $133\times$, $\alpha=4$ $67\times$, and
+$\alpha=8$ gives it all back. At $k=3$ every order leaks **more** at equal utility. Phi sits with
+KL3M-520M, and Pleias-1.2B remains the outlier.
+
+Three pairs at the only budget where the constraint binds:
+
+```
+pair            log p_risky/token   anchor/token   alpha=2 advantage (nats/window)
+Pleias-1.2B               -0.0012        -3.1187                            10.47
+KL3M-520M                 -0.0027        -2.4236                             6.77
+Phi-3.5-mini              -0.0254        -2.7140                             4.89
+```
+
+The advantage is **monotone in the memoriser's own log-probability of the protected tokens**: the
+sharper the memoriser, the more a higher order buys. That is mechanically plausible --- a higher
+order charges something closer to the worst step rather than the mean, and a sharp memoriser is
+exactly the case where one step carries the passage --- but it is three points, where a monotone
+ordering arises by chance one time in three, and neither the anchor's rate nor the gap between the
+two orders the pairs the same way. It is a hypothesis and it is written down as one.
+
+**Committed prediction, before Comma-7B runs.** Comma-7B's $\alpha=2$ advantage at $k=1$ will fall
+in the position its per-token memoriser log-probability gives it among the four, i.e. Spearman
+$\rho = 1$ over four pairs. A log-linear form is *not* predicted and would be wrong: the two slopes
+implied by the three points are $-4.6$ and $-0.8$ nats per log unit, so only the ordering is
+claimed. If the rank is wrong, the ordering is coincidence and the paragraph is deleted rather than
+re-fitted; if it is right, four pairs with $\rho = 1$ is $p = 1/24$ under a random ordering and is
+reported at exactly that strength, no more.
