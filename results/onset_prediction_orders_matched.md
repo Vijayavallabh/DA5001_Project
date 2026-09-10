@@ -607,3 +607,38 @@ ceiling at $-0.83$ for $\alpha=4$ and $8$, where on seven bfloat16 pairs it was 
 log-probability. Three different sets, three different leaders, none reaching the committed
 threshold: that is what a leading candidate looks like when it is noise, and it is the strongest
 form of the negative available before the ten-pair run scores.
+
+## An exploratory re-analysis, labelled as such: do the curves cross?
+
+**Not pre-registered.** This came out of writing up the seven-pair result and re-reading the
+matched-utility design. It re-analyses grids that are already committed, but the rule it applies ---
+the noise floor --- was chosen *after* seeing that a naive sign test flags crossings of $0.4$ nats
+per window, well inside the measured precision spread. It is reported as exploratory and nothing in
+the pre-registered chain above depends on it.
+
+The matched-utility comparison interpolates a budget. A simpler question needs no budget at all.
+Each order traces a curve in the plane the mechanism trades in --- fidelity bought on the $x$ axis,
+$L = \sum_t \log p_\theta(x_t)$ on the $y$ --- and if the four orders traced *one* frontier, matching
+$x$ would match $y$. `analysis/order_crossings.py` sweeps $L(\alpha) - L(1)$ across the fidelity
+range every order covers, counting a sign only when it clears that pair's own
+bfloat16-against-float32 spread (or, for a pair with no float32 twin, the largest such spread over
+the pairs that have one, which is the conservative choice).
+
+```
+7 of 21 (pair, order) cells cross, 13 are uniformly safer, 1 is uniformly more dangerous
+```
+
+**This is more nuanced than the matched-budget table suggested, and better for being so.** On most
+cells a higher order really does help across the whole operating range. But on a third of them the
+ranking *flips inside the range*, so which decoder is safer depends on an operating point the
+published budget does not reveal --- and on TinyComma-1.8B with a memorised Llama-3.1-8B, the
+mechanism's own configuration, $\alpha = 8$ is more dangerous at **100\%** of operating points, by
+$2.6$ to $14.7$ nats per window.
+
+**One thing this exposes about the appendix's own rule.** Comma-7B has no float32 twin, so it
+borrows a floor of $2.34$ nats per window --- a factor of $10.4$ --- and under that floor its
+$k = 3$, $\alpha = 8$ cell (a factor of $0.26$) is *inside the noise*, although the appendix's
+blanket "within a factor of two of $1$ is no effect" would have read it as a direction. The blanket
+rule is too lenient for the one pair whose precision is uncontrolled. Either Comma-7B gets a
+float32 twin --- it needs $56$ GB for two 7B models and has not had a card --- or its cells are
+quoted only as orders of magnitude. The appendix now says the latter explicitly.

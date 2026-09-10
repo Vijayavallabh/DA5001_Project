@@ -1,0 +1,22 @@
+pair,alpha,n_points,noise_floor,own_floor,fidelity_lo,fidelity_hi,min_nats_per_window,max_nats_per_window,frac_safer,frac_worse,verdict
+Comma-7B,2.0,41,2.336,False,1952.3,2334.1,-9.847,0.46,0.976,0.0,uniformly safer
+Comma-7B,4.0,41,2.336,False,1952.3,2334.1,-16.502,0.439,0.951,0.0,uniformly safer
+Comma-7B,8.0,41,2.336,False,1952.3,2334.1,-17.712,0.8,0.902,0.0,uniformly safer
+KL3M-1.7B,2.0,41,0.11,True,2690.9,4761.6,-6.475,-0.003,0.976,0.0,uniformly safer
+KL3M-1.7B,4.0,41,0.11,True,2690.9,4761.6,-11.365,-0.005,0.976,0.0,uniformly safer
+KL3M-1.7B,8.0,41,0.11,True,2690.9,4761.6,-13.692,-0.007,0.976,0.0,uniformly safer
+KL3M-520M,2.0,41,0.782,True,3761.8,5452.8,-7.653,0.52,0.927,0.0,uniformly safer
+KL3M-520M,4.0,41,0.782,True,3761.8,5452.8,-11.404,2.603,0.78,0.098,crosses
+KL3M-520M,8.0,41,0.782,True,3761.8,5452.8,-7.475,5.287,0.463,0.415,crosses
+Phi-3.5-mini,2.0,41,2.152,True,3679.2,5247.7,-5.096,2.451,0.683,0.024,crosses
+Phi-3.5-mini,4.0,41,2.152,True,3679.2,5247.7,-6.957,4.371,0.463,0.244,crosses
+Phi-3.5-mini,8.0,41,2.152,True,3679.2,5247.7,-3.352,6.326,0.122,0.561,crosses
+Pleias-1.2B,2.0,41,0.555,True,4427.5,7395.3,-10.608,0.074,0.976,0.0,uniformly safer
+Pleias-1.2B,4.0,41,0.555,True,4427.5,7395.3,-18.016,0.147,0.976,0.0,uniformly safer
+Pleias-1.2B,8.0,41,0.555,True,4427.5,7395.3,-20.593,0.171,0.976,0.0,uniformly safer
+Pleias-350M,2.0,41,2.336,True,4311.9,6993.8,-10.912,0.039,0.951,0.0,uniformly safer
+Pleias-350M,4.0,41,2.336,True,4311.9,6993.8,-18.223,0.034,0.927,0.0,uniformly safer
+Pleias-350M,8.0,41,2.336,True,4311.9,6993.8,-20.289,1.708,0.878,0.0,uniformly safer
+TinyComma-1.8B,2.0,41,0.523,True,3881.2,5500.9,-9.895,1.211,0.902,0.049,crosses
+TinyComma-1.8B,4.0,41,0.523,True,3881.2,5500.9,-12.558,7.046,0.537,0.415,crosses
+TinyComma-1.8B,8.0,41,0.523,True,3881.2,5500.9,2.566,14.731,0.0,1.0,uniformly more dangerous
