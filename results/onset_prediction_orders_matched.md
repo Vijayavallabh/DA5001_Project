@@ -917,3 +917,80 @@ Across all nine pairs the `bfloat16`-against-`float32` difference is $-2.34$ to 
 window over 54 cells, with a **median absolute difference of $0.30$** --- so the large values are
 two pairs (Phi-3.5-mini and Pleias-350M) and not the norm. The manuscript's "Comma-7B is the
 exception twice over" sentence is withdrawn: it no longer is.
+
+## The bracket's tolerance is too tight at the saturated end, and Llama-3.2-1B found it
+
+Llama-3.2-1B's memoriser is admissible ($0.690$ sampled recall) and its bracket is enormous ---
+$-319.3$ nats on the protected tokens against the anchor's $-18{,}159.8$ --- yet the run reports
+**5 of 48 cells outside it**. All five are at $k = 10$ and $14$, the top of the grid, and all five
+overshoot the *upper* bound by at most $1.3$ nats:
+
+```
+alpha 1 k 10   -318.009      alpha 2 k 14   -315.805      alpha 8 k 14   -318.972
+alpha 1 k 14   -313.623      alpha 4 k 14   -317.939      (risky = -319.3)
+```
+
+At the top of the grid $\theta \to 1$ and the served distribution *is* the risky model, so $L$ must
+approach the upper bound exactly; what crosses it is accumulated floating-point error in a sum of
+$6{,}500$ `bfloat16` log-probabilities, which is order one nat. The check's tolerance is
+$10^{-6}\lvert L_{\text{safe}}\rvert = 0.018$ nats, tighter than the arithmetic it is checking.
+
+Every other pair passes only because its memoriser is far stronger --- $-8$ to $-55$ nats --- so the
+constrained values never come within a nat of the ceiling. **The gate is failing on a property of my
+tolerance, not of the pair.**
+
+**How this is being resolved, stated before the numbers are used.** Loosening a gate after a pair
+fails it is the classic goalpost move, so the amendment is made by a rule that does not depend on
+the outcome and is applied uniformly to all pairs, with the effect on each reported:
+
+* The bracket exists to catch an **inverted or mis-specified** pair --- the split bug, where the
+  memoriser sat $14{,}063$ nats *below* the anchor. It was never meant to resolve one nat at
+  saturation.
+* The tolerance becomes `max(1e-6 * |L_safe|, 1e-4 * (L_risky - L_safe))`: a fixed fraction of the
+  bracket's own width, which is the scale the accumulated error lives on. For Llama-3.2-1B that is
+  $1.78$ nats; for KL3M-520M, $2.3$.
+* No tolerance of this size can mask an inversion, which is a sign change of thousands of nats.
+* The worst overshoot, in nats and as a fraction of the bracket width, is now printed for every pair
+  so a reader can see how close any of them came.
+
+If the amendment changes the verdict for any pair *other* than Llama-3.2-1B, that is reported here.
+
+## The upper "bound" is not a bound, and a counter-example settles it
+
+The amended tolerance changed **nothing** for any of the nine existing pairs (0 cells outside before
+and after, worst excursions $0.01$ to $3.06$ nats against tolerances of $1.8$ to $2.5$) --- so it is
+demonstrably not an outcome-driven loosening. But Llama-3.2-1B still fails, with a worst excursion
+of $+5.71$ nats, $0.032\%$ of its bracket width. That is too large to be `bfloat16` accumulation,
+and chasing it found a real error in the check.
+
+**$L(\theta)$ is not monotone in $\theta$, so the risky model's own log-probability is not an upper
+bound on it.** Two steps and three tokens are enough:
+
+```
+p_s = [[.10 .80 .10], [.80 .10 .10]]   p_r = [[.90 .05 .05], [.05 .90 .05]]   target = (0, 0)
+theta   0.00     0.25     0.50     0.75     0.90     1.00
+L      -2.526   -1.830   -1.692   -2.183   -2.700   -3.101
+```
+
+At $\theta = 0.5$ the served distribution gives the true tokens $e^{1.41}$ times *more* mass than
+the risky model does at $\theta = 1$. Mixing the anchor in helps whenever the anchor is right where
+the risky model is wrong, and summed over thousands of steps a partial tilt can beat a full one.
+This is a property of the geodesic, not of any implementation.
+
+It also explains exactly *which* pairs trip it: a weak memoriser leaves the anchor competitive on
+many tokens, so the mixture wins more often. Llama-3.2-1B's memoriser is the weakest in the set at
+$-319.3$ nats; every other pair sits between $-8$ and $-187$, where $p_r$ dominates and no mixture
+helps. **The gate was failing on a pair that stressed a check I had stated too strongly.** An early
+note in this file said the bracket was not a theorem; it was then used as one, which is the error.
+
+**The corrected gate, and what it is allowed to decide.** The bracket's real job --- the one it did,
+catching a memoriser sitting $14{,}063$ nats *below* its anchor because the probe was reading a
+held-out novel --- is the lower side. That side is kept as the gate, together with the
+pre-registered requirement that the memoriser beat its anchor by at least a factor of $e$ per token.
+The upper side becomes a **reported diagnostic**: the worst excursion in nats and as a fraction of
+the bracket width is printed for every run, so a reader sees how far any pair went.
+
+Llama-3.2-1B passes the corrected gate: $-319.3$ against an anchor at $-18{,}159.8$, and no cell
+below the anchor. **Because admitting a pair after amending a gate it failed is exactly the move a
+reader should be suspicious of, the ten-pair result is reported both with and without it**, and the
+amendment is justified by the counter-example above rather than by anything the pair measured.

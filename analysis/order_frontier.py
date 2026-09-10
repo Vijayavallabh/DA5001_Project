@@ -170,12 +170,31 @@ def main():
     # at the top of the grid legitimately touch the upper bound: once the budget stops binding,
     # theta saturates at 1 and the served distribution IS the risky model, so equality there is
     # the instrument working. Only a cell strictly outside is a failure.
-    tol = 1e-6 * max(1.0, abs(lx["safe"]))
-    bad = [r for r in rows
-           if r["logp_target"] < lx["safe"] - tol or r["logp_target"] > lx["risky"] + tol]
+    # The tolerance is a fraction of the bracket's own WIDTH, not of one endpoint. At the top of the
+    # grid theta -> 1 and the served distribution IS the risky model, so L must approach the upper
+    # bound exactly; what crosses it is accumulated error in a sum of thousands of bfloat16
+    # log-probabilities, which is order one nat. A tolerance of 1e-6 * |L_safe| is tighter than the
+    # arithmetic it checks, and a weak memoriser -- whose ceiling sits close to the constrained
+    # values -- trips it for that reason alone. No tolerance of this size can mask what the bracket
+    # is for: an inverted pair, where the memoriser sits thousands of nats BELOW the anchor.
+    # The bracket gates on the LOWER side only. L(theta) is not monotone in theta -- mixing the
+    # anchor in helps wherever the anchor is right and the risky model is wrong, so a partial tilt
+    # can give the true tokens more mass than theta = 1 does (tests/test_order_price.py carries the
+    # counter-example). The risky model's own log-probability is therefore NOT an upper bound, and
+    # treating it as one failed a pair whose memoriser was merely weak. What the lower side does
+    # catch is the error it was written for: a memoriser sitting thousands of nats BELOW its anchor
+    # because the probe is reading a split the model never trained on.
+    width = lx["risky"] - lx["safe"]
+    tol = max(1e-6 * max(1.0, abs(lx["safe"])), 1e-4 * abs(width))
+    bad = [r for r in rows if r["logp_target"] < lx["safe"] - tol]
+    over = max((r["logp_target"] - lx["risky"] for r in rows), default=0.0)
     sat = [r for r in rows if abs(r["logp_target"] - lx["risky"]) <= tol]
     print(f"\nbracket: risky {lx['risky']:.1f} nats on the protected tokens, anchor {lx['safe']:.1f}; "
-          f"{len(bad)} of {len(rows)} cells outside it, {len(sat)} at the unbinding ceiling")
+          f"{len(bad)} of {len(rows)} cells BELOW the anchor at tol {tol:.2f} nats, "
+          f"{len(sat)} at the unbinding ceiling")
+    print(f"  diagnostic (not a gate): worst excursion above the risky model "
+          f"{max(over, 0.0):.2f} nats = "
+          f"{100 * max(over, 0.0) / max(abs(width), 1e-9):.4f}% of the bracket width")
     if bad:
         print("  OUTSIDE:", [(r["alpha"], r["k"], r["logp_target"]) for r in bad[:8]])
 

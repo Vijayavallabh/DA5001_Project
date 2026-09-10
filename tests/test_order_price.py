@@ -55,3 +55,17 @@ def test_committed_row_sits_inside_its_own_bracket():
         if prev is not None:
             assert v <= prev + 1e-6, r   # a higher order buys a smaller tilt, so a smaller logp
         prev = v
+
+
+def test_the_risky_models_own_log_probability_is_NOT_an_upper_bound():
+    """L(theta) is not monotone in theta: mixing the anchor in helps wherever the anchor is right and
+    the risky model is wrong, so a partial tilt can give the true tokens more mass than theta = 1
+    does. The run's bracket therefore gates on the LOWER side only and reports the upper excursion as
+    a diagnostic. This counter-example exists so nobody re-asserts the bound."""
+    log_ps = torch.log(torch.tensor([[0.10, 0.80, 0.10], [0.80, 0.10, 0.10]])).double()
+    log_pr = torch.log(torch.tensor([[0.90, 0.05, 0.05], [0.05, 0.90, 0.05]])).double()
+    l = log_pr - log_ps
+    tgt = torch.tensor([0, 0])
+    at_one = logp_target(log_ps, l, torch.ones(2).double(), tgt)
+    partial = logp_target(log_ps, l, torch.full((2,), 0.5).double(), tgt)
+    assert partial > at_one + 1.0, (partial, at_one)
