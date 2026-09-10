@@ -395,3 +395,52 @@ window becomes less likely --- not the factor for any particular window, and not
 average over windows. It scales exponentially with the window length, so the choice of $50$ is tied
 to Table 1's metric and quoting it at another length changes the exponent proportionally. Both
 qualifications belong in any sentence that carries this number.
+
+## Scored on four pairs: the committed prediction fails, and nothing else predicts it either
+
+`results/order_frontier_comma{,_matched}.csv` (bfloat16, bracket $-55.1$ / $-17{,}635.5$ nats, 0 of
+48 cells outside it). At $k=1$, Comma-7B's $\alpha=2$ advantage is $8.36$ nats per window
+($4.3\times10^{3}$) --- **second largest of the four, where its memoriser strength predicted third**.
+
+    Spearman(memoriser strength, alpha = 2 advantage) = +0.800, exact two-sided p = 0.33
+    predicted +1.000
+
+So the ordering seen on three pairs was coincidence, and per the commitment above the paragraph is
+deleted rather than re-fitted. The rank is not an artefact of Comma being the one bfloat16 run: the
+control measured a bfloat16 bias of at most $+0.78$ nats per window and Comma leads KL3M-520M by
+$1.59$.
+
+Every other quantity available to a deployer was tested at the same time, on all four pairs and all
+three orders, and reported whether or not it worked:
+
+```
+predictor                       alpha=2           alpha=4           alpha=8
+memoriser log p / token   +0.80 (p=0.33)    +0.80 (p=0.33)    +0.80 (p=0.33)
+anchor rate s(x)          -0.20 (p=0.92)    -0.20 (p=0.92)    -0.20 (p=0.92)
+s(x) - memoriser rate     -0.20 (p=0.92)    -0.20 (p=0.92)    -0.20 (p=0.92)
+F, distance from ceiling  -0.40 (p=0.75)    -0.40 (p=0.75)    -0.40 (p=0.75)
+anchor parameter count    +0.00 (p=1.00)    +0.00 (p=1.00)    +0.00 (p=1.00)
+protected tokens scored   -0.40 (p=0.75)    -0.40 (p=0.75)    -0.40 (p=0.75)
+```
+
+**What is left is a stable, unexplained pair effect.** The four pairs rank in the same order at
+every order --- Pleias-1.2B, Comma-7B, KL3M-520M, Phi-3.5-mini --- so it is a property of the pair
+and it reproduces across three decoders. Nothing measured explains it, and the spread it produces
+is the result:
+
+```
+pair            k=1, alpha=4 matched-utility advantage
+Pleias-1.2B                        1.7e+07 x safer
+Comma-7B                           1.9e+05 x safer
+KL3M-520M                              467 x safer
+Phi-3.5-mini                            67 x safer
+                 alpha=8:      3.3e+07 x safer  down to  1.7x MORE dangerous (Phi-3.5-mini)
+```
+
+$5.4$ decades at $\alpha=4$, and a sign change at $\alpha=8$. At the budget the mechanism's authors
+publish, $k=3$, two of the four pairs leak **more** at equal utility at every order.
+
+This is Section 6's title extended: the published budget determines neither the protection nor the
+price, and neither does the order, the intervention rate, the anchor's surprisal rate, the
+memoriser's strength, or how far the decoder is from saturation. A deployer choosing $\alpha$ is
+choosing between $10^7\times$ safer and $1.7\times$ more dangerous with nothing to go on.
