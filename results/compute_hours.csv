@@ -101,13 +101,16 @@ n458_hi,output/phase5/n458_hi.log,1,2026-09-08 21:11,2026-09-08 21:33,0.37,0.37,
 n458_pleias350m,output/phase5/n458_pleias350m.log,1,2026-09-08 19:20,2026-09-08 21:10,1.83,1.83,log_birth,0.0,scanned; traced sleeps removed
 opening_token,output/phase5/opening_token.log,1,2026-09-08 16:51,2026-09-08 16:59,0.13,0.13,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_comma,output/phase5/order_frontier_comma.log,1,2026-09-10 20:12,2026-09-10 20:46,0.58,0.58,log_birth,0.0,scanned; traced sleeps removed
+order_frontier_fp32trio,output/phase5/order_frontier_fp32trio.log,1,2026-09-10 21:30,2026-09-10 22:50,0.51,0.51,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_kl3m,output/phase5/order_frontier_kl3m.log,1,2026-09-10 19:38,2026-09-10 19:50,0.18,0.18,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_kl3m_bf16,output/phase5/order_frontier_kl3m_bf16.log,1,2026-09-10 20:17,2026-09-10 20:37,0.34,0.34,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_phi,output/phase5/order_frontier_phi.log,1,2026-09-10 20:07,2026-09-10 20:13,0.1,0.1,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_pleias,output/phase5/order_frontier_pleias.log,1,2026-09-10 19:38,2026-09-10 19:43,0.07,0.07,log_birth,0.0,scanned; traced sleeps removed
+order_frontier_seedarms,output/phase5/order_frontier_seedarms.log,1,2026-09-10 23:21,2026-09-11 01:27,2.1,2.1,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_seven,output/phase5/order_frontier_seven.log,1,2026-09-10 21:06,2026-09-10 21:46,0.68,0.68,log_birth,0.0,scanned; traced sleeps removed
 order_price_both,output/phase5/order_price_both.log,1,2026-09-10 19:11,2026-09-10 19:35,0.2,0.2,log_birth,0.0,scanned; traced sleeps removed
 order_price_kl3m_k3,output/phase5/order_price_kl3m_k3.log,1,2026-09-10 18:47,2026-09-10 19:10,0.38,0.38,log_birth,0.0,scanned; traced sleeps removed
+pleias3b_retry,output/phase5/pleias3b_retry.log,1,2026-09-11 00:16,2026-09-11 01:56,1.67,1.67,log_birth,0.0,scanned; traced sleeps removed
 recon_sx,output/phase5/recon_sx.log,1,2026-09-10 03:06,2026-09-10 03:07,0.03,0.03,log_birth,0.0,scanned; traced sleeps removed
 recon_temp,output/phase5/recon_temp.log,1,2026-09-10 03:09,2026-09-10 03:10,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
 recon_temp2,output/phase5/recon_temp2.log,1,2026-09-10 03:28,2026-09-10 03:29,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
@@ -127,6 +130,7 @@ seed_queue,output/phase5/seed_queue.log,1,2026-09-10 00:56,2026-09-10 02:33,0.0,
 seed_queue2,output/phase5/seed_queue2.log,1,2026-09-10 02:35,2026-09-10 05:33,2.97,2.97,log_birth,0.0,scanned; traced sleeps removed
 smoke_eoslist,output/phase5/smoke_eoslist.log,1,2026-09-08 19:46,2026-09-08 20:08,0.37,0.37,log_birth,0.0,scanned; traced sleeps removed
 surprisal_cdf_7,output/phase5/surprisal_cdf_7.log,1,2026-09-09 23:53,2026-09-09 23:55,0.03,0.03,log_birth,0.0,scanned; traced sleeps removed
+three_more,output/phase5/three_more.log,1,2026-09-10 22:48,2026-09-11 02:12,3.4,3.4,log_birth,0.0,scanned; traced sleeps removed
 trunc276,output/phase5/trunc276.log,1,2026-09-09 13:23,2026-09-09 14:14,0.85,0.85,log_birth,0.0,scanned; traced sleeps removed
 util_cross,output/phase5/util_cross.log,2,2026-09-10 00:46,2026-09-10 03:58,3.2,6.41,log_birth,0.0,scanned; traced sleeps removed
 util_fine,output/phase5/util_fine.log,1,2026-09-08 17:35,2026-09-08 23:11,5.61,5.61,log_birth,0.0,scanned; traced sleeps removed

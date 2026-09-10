@@ -2716,3 +2716,42 @@ is that ten pairs in five families cannot settle it.
 same grid on KL3M-520M and Pleias-1.2B at `--seed-tokens 10` and `80` against their committed `20`.
 Pre-registered with bands; outputs are named `order_seedarm_*` so they cannot enter the pair set,
 and both `order_law.py` and `order_predictors.py` skip any `_seed` file for the same reason.
+
+### feat-076 / 078 scored (2026-09-11)
+
+**Nine pairs, and the negative earned.** KL3M-170M (loss 0.0198 at epoch 20, sampled recall 0.671)
+and KL3M-3.7B (0.0187 at epoch 9, recall 0.854) entered; both brackets hold at all 48 cells.
+**Pleias-3B was excluded**: its first fine-tune diverged (0.0386 -> 0.1291 over epochs 15-20) and
+the one committed retry at `--lr 1e-4 --stop-loss 0.03` also turned (minimum 0.0326 at epoch 21,
+0.0670 by epoch 27). A second retry would have been tuning until it worked, so the set is nine pairs
+in five families -- exactly the limitation the pre-registration recorded before the data landed,
+since the three new anchors add no new family.
+
+```
+.venv/bin/python analysis/order_predictors.py --glob 'results/order_frontier_*_bf16.csv' --out results
+.venv/bin/python analysis/order_law.py --glob 'results/order_frontier_*_bf16.csv' --out results
+.venv/bin/python analysis/order_crossings.py --out results
+.venv/bin/python analysis/order_seed.py --out results
+.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures
+```
+
+Largest of six candidates over nine pairs: **|rho| = 0.53** (F at alpha=8, exact p = 0.15), below
+the committed 0.7, so the negative is earned at every order. The seven-pair leader -- the
+memoriser's own log-probability per token -- fell from +0.71/+0.75 to +0.42/+0.48 when two pairs
+were added, which is what a coincidence does when it meets more data, and is why the seven-pair cell
+was reported as inconclusive rather than quoted. On five family means it holds at +0.90 (exact
+p = 0.083), one adjacent swap from perfect, not significant and not improvable without a sixth
+family the cached model set does not contain. Both are reported; neither is chosen.
+
+**feat-078: the advantage belongs to the pair, not the seed.** Two pairs re-run at `--seed-tokens`
+10 and 80 against their committed 20. At k = 1 the twelve cells move by -0.59 to +1.42 nats per
+window, only three clear their pair's own precision floor, no cell changes sign, and the pair
+ranking holds at every order across a factor of eight in seed length. At k = 3 Pleias-1.2B moves up
+to -2.41, which is the saturated region the paper already says the certificate has nothing to say
+about. Per the pre-registration, nothing was re-run at further seeds: spending compute to confirm a
+null is what that sentence was written to prevent.
+
+**Manuscript.** Appendix~\ref{app:matched} rewritten for nine pairs with the crossing test, the
+`L`-against-decoded-recall check, the exclusion, and the seed control; Section 6, the abstract and
+Limitations updated; compute 119 GPU-hours with the fine-tune share corrected from a stale "three
+fine-tunes, 1.8 hours" to "at most 16".

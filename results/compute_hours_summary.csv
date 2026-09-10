@@ -1,5 +1,5 @@
 quantity,gpu_hours,n_jobs
-one_gpu_jobs,96.3,131
+one_gpu_jobs,104.0,135
 two_gpu_jobs,15.2,4
 fine_tunes,1.8,3
-total,111.5,135
+total,119.2,139
