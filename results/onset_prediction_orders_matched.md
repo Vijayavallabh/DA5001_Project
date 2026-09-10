@@ -450,3 +450,33 @@ precision control as a fifth series, so it compared KL3M-520M against itself. Ex
 spread at matched `F` from $2.2$--$7.7$ decades to $2.1$--$7.7$ and the median from $3.62$ to
 $3.47$; the refutation is unchanged and every published figure now comes from the corrected run.
 `order_law.py` skips `_bf16` files by default.
+
+## The negative is underpowered, and that is fixable. Committed before the seven-pair run.
+
+"Nothing measured predicts it" currently rests on four pairs, where the best candidate scores
+Spearman $+0.80$ at an exact two-sided $p = 0.33$. At that power a real predictor with
+$\rho = 0.8$ and a coincidence are the same observation, so the claim as it stands is *not evidence
+of absence*. A referee should say so, and the fix is arithmetic: the onset analysis already has
+**seven** pairs, and all seven have memorisers on `attack_train` + `val`. At seven, $\rho = 1$ is
+exact two-sided $p = 2/5040$ and even $\rho = 0.86$ is $p = 0.024$.
+
+The three missing pairs are TinyComma-1.8B with a memorised Llama-3.1-8B (the only pair whose anchor
+and risky model are different models), KL3M-1.7B, and Pleias-350M.
+
+**One protocol change, stated before the runs.** Comma-7B needed `--dtype bfloat16` to fit, so the
+present four-pair set is mixed precision, and the control measured a bfloat16 bias of up to $0.78$
+nats per window --- enough to shuffle two pairs that sit close together, which is exactly what a rank
+test is sensitive to. So **all seven pairs are run in bfloat16** and the rank test is computed on
+that homogeneous set. The four-pair table in the paper is re-quoted from the bfloat16 runs for the
+same reason; the float32 runs stay committed and the control quantifies the difference.
+
+| outcome | reading |
+|---|---|
+| the best of the six candidates reaches $\lvert\rho\rvert \ge 0.86$ ($p \le 0.024$) over seven pairs | there is a predictor, it is named, and the claim becomes "the order's value is predicted by X and not by the published budget" |
+| every candidate stays below $\lvert\rho\rvert = 0.7$ ($p > 0.1$) | the negative is earned at a power that can support it, and is reported as such with all six correlations shown |
+| candidates land between, $0.7 \le \lvert\rho\rvert < 0.86$ | reported as inconclusive at seven pairs, with the number of pairs that would settle it |
+
+Six candidates, fixed now: the memoriser's per-token log-probability of the protected tokens; the
+anchor's surprisal rate $s(x)$; their difference; the fraction of the fidelity ceiling the audited
+decoder captures at $k=1$; the anchor's parameter count; and the number of protected tokens scored.
+No candidate is added after seeing the seven-pair result, and if one is, it is labelled post hoc.
