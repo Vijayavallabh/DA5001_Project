@@ -190,3 +190,28 @@ at the published `k`, and report the protected-side `log p(target)` there.
 | `k'(alpha)` exceeds the vacuity threshold `s(x)` for the pair | the matched-utility point is outside the region where the certificate says anything, and the comparison is moot for a deployer |
 
 The instrument is only read if the bracket holds at every cell: `logp_target_safe < L < logp_target_risky`.
+
+## The replication, and what it does not settle
+
+`results/order_price_pleias_k3.csv`, Pleias-1.2B, same protocol, 6,805 protected tokens. The
+bracket holds again -- memoriser $-8.3$ nats, anchor $-21{,}222.6$ -- and the two pairs agree
+closely:
+
+```
+                 KL3M-520M                    Pleias-1.2B
+ alpha    P    window x less likely      P    window x less likely
+     2  0.941            6.84e+06      0.941            8.37e+07
+     4  0.857            7.85e+11      0.884            6.89e+13
+     8  0.776            3.59e+14      0.843            9.13e+16
+```
+
+`P` at `alpha = 2` is $0.941$ on both pairs to three decimals.
+
+But a smoke run of the matched-utility sweep on three passages already warns that this is the
+weaker of the two statements. At the published $k = 3$ the audited decoder already buys $98.5\%$ of
+the unconstrained ceiling, so matching its fidelity pushes the higher orders to $k \approx 8$, where
+none of them binds and all four serve the same distribution. The matched-budget dominance above may
+therefore be an artefact of comparing at a budget where `alpha = 1` is nearly unconstrained and the
+others are not -- which is the second band, and it would make Table 1's ranking a statement about
+the comparison rather than about the decoders. The full sweep, on 25 passages and a 12-point grid on
+both pairs, is what decides it, and it is running against the bands committed above.
