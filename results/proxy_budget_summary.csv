@@ -1,0 +1,2 @@
+n_anchors,s_protected_span,ratio_mean,ratio_sd,ratio_cv_pct,ratio_lo,ratio_hi,loo_proxy,loo_constant,loo_cuse,improvement_over_constant,loo_proxy_pct
+10,1.862,1.1414,0.077,6.75,1.0602,1.2872,0.0518,0.2138,0.402,4.13,5.57

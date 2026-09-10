@@ -1,0 +1,2 @@
+n_passages,k,spend_greedy_mean,fidelity_greedy_mean,fidelity_dual_mean,gain_ratio_mean,gain_ratio_median,frac_of_ceiling_greedy,frac_of_ceiling_dual,theta_greedy_at_one_pct,theta_dual_at_zero_pct
+30,0.25,71.176,267.022,294.661,1.1035,1.1049,0.5455,0.602,35.71,0.0

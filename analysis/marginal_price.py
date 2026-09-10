@@ -140,6 +140,13 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--prefix", default="marginal_price")
     ap.add_argument("--max-tokens", type=int, default=400, help="cap per passage, for speed")
+    ap.add_argument("--corpus", default="factscore_prompt",
+                    help="prompt set; factscore_prompt carries the protected references")
+    ap.add_argument("--sample-target", action="store_true",
+                    help="imitate a sample from the risky model instead of a protected reference. "
+                         "This is the utility side: the decoder is trying to reproduce p_r's own "
+                         "behaviour on an ordinary prompt, which is what Theorem 1 prices.")
+    ap.add_argument("--sample-tokens", type=int, default=160)
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -148,15 +155,28 @@ def main():
     safe = AutoModelForCausalLM.from_pretrained(a.safe_model, torch_dtype=torch.float32).to(device).eval()
     risky = AutoModelForCausalLM.from_pretrained(a.risky_model, torch_dtype=torch.float32).to(device).eval()
 
-    ps = [p for p in load_prompt_corpus("data", "factscore_prompt")
-          if p.split == a.split and p.reference][:a.limit]
+    ps = [p for p in load_prompt_corpus("data", a.corpus)
+          if p.split == a.split and (a.sample_target or p.reference)][:a.limit]
     rows = []
     for i, p in enumerate(ps):
-        ids = tok(join(p.prompt_text, p.reference)).input_ids[: a.max_tokens]
-        if len(ids) <= a.seed_tokens + 8:
+        if a.sample_target:
+            # the target is p_r's own sample, so "fidelity" is fidelity to the behaviour the
+            # decoder is actually trying to buy on an ordinary prompt
+            prompt_ids = tok(p.prompt_text).input_ids[: a.max_tokens]
+            with torch.no_grad():
+                out = risky.generate(torch.tensor([prompt_ids], device=device),
+                                     max_new_tokens=a.sample_tokens, do_sample=True,
+                                     top_k=0, top_p=1.0, temperature=1.0,
+                                     pad_token_id=tok.eos_token_id or 0)
+            ids = out[0].tolist()
+            seed = len(prompt_ids)
+        else:
+            ids = tok(join(p.prompt_text, p.reference)).input_ids[: a.max_tokens]
+            seed = a.seed_tokens
+        if len(ids) <= seed + 8:
             continue
-        ls = logits_along(safe, ids, device)[a.seed_tokens - 1:]
-        lr = logits_along(risky, ids, device)[a.seed_tokens - 1:]
+        ls = logits_along(safe, ids, device)[seed - 1:]
+        lr = logits_along(risky, ids, device)[seed - 1:]
         log_ps = torch.log_softmax(ls, dim=-1)
         log_pr = torch.log_softmax(lr, dim=-1)
         l = torch.nan_to_num(log_pr - log_ps, nan=0.0, posinf=0.0, neginf=0.0)
@@ -184,10 +204,13 @@ def main():
         c_d = charge(log_ps, l, th_d)
         g_d = fidelity(log_ps, l, th_d, m)
 
-        # how concentrated is greedy's spend on steps that buy nothing?
+        # How heterogeneous is the marginal price greedy happens to land on? Only the unsaturated
+        # steps can answer: where theta = 1 the price is exactly 0 because G'(1) = m - psi'(1) = 0,
+        # and including those makes the quartile ratio diverge rather than describe anything.
         eps = 1e-9
-        price_g = ((m - _psi(log_ps, l, th_g)[1]) / (th_g * _psi(log_ps, l, th_g)[2] + eps))
-        finite = torch.isfinite(price_g)
+        _, m_g, v_g = _psi(log_ps, l, th_g)
+        price_g = (m - m_g) / (th_g * v_g + eps)
+        finite = torch.isfinite(price_g) & (th_g < 0.999) & (th_g > 1e-3)
         rows.append(dict(
             prompt_id=p.prompt_id, novel=getattr(p, "novel", ""), n_steps=int(th_g.numel()),
             k=a.k,
