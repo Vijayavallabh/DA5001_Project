@@ -580,3 +580,20 @@ the earlier runs; that is not a flaw here, because memoriser strength is one of 
 *tested* rather than a variable being controlled. It does mean a positive result would need a
 follow-up at matched training settings before it could be quoted as causal, and that is recorded now
 so it cannot be skipped later.
+
+**A limitation of this design, noticed while writing the code and recorded before the data lands.**
+The three new anchors are two more KL3M and one more Pleias, so ten pairs still span **five**
+families. The naive test gains power; the family-clustered test does not, and stays at $n = 5$
+whatever is added, because the cached safe-model set has ten models in five families and the only
+other un-memorised anchor (`common-pile/comma-v0.1-1t`) is a second Comma. So the conservative test
+can only ever decide by reaching $\lvert\rho\rvert = 1$ ($p = 0.017$); at $\lvert\rho\rvert = 0.9$
+it is $p = 0.083$ and stays there. If the two tests end up on opposite sides of the committed
+threshold, the honest report is that ten pairs in five families cannot settle it, and the reason is
+the family structure, not the number of pairs.
+
+For the record, on the seven pairs already in hand the family view is *stronger* than the pair view
+for the leading candidate --- the memoriser's own log-probability scores $\rho = +0.90$ on five
+family means at $\alpha = 4$ and $8$ against $+0.71$ and $+0.75$ on seven pairs --- which is what
+within-family noise diluting a real between-family effect would look like, and also what three
+extra points on a five-point rank test would look like by chance. That is the ambiguity the
+ten-pair run is meant to reduce and, on the family axis, cannot.

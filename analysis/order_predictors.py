@@ -24,10 +24,17 @@ Writes <out>/order_predictors.csv (per pair) and <out>/order_predictors_summary.
 """
 from __future__ import annotations
 
-import argparse, csv, glob, itertools, json, math, os, random, re, struct, sys
+import argparse, csv, glob, itertools, json, math, os, random, re, statistics as st, struct, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.order_law import LABEL  # noqa: E402
+
+# The pairs are not independent draws: several share a model family, and a rank test over
+# correlated points overstates its own power. Every candidate is therefore also scored on family
+# means, where n = 5 and the permutation test is exact again.
+FAMILY = {"KL3M-170M": "KL3M", "KL3M-520M": "KL3M", "KL3M-1.7B": "KL3M", "KL3M-3.7B": "KL3M",
+          "Pleias-350M": "Pleias", "Pleias-1.2B": "Pleias", "Pleias-3B": "Pleias",
+          "Phi-3.5-mini": "Phi", "Comma-7B": "Comma", "TinyComma-1.8B": "TinyComma"}
 
 # where each pair's anchor lives, so its parameter count is read rather than quoted from a name
 ANCHOR = {
@@ -38,6 +45,9 @@ ANCHOR = {
     "phi": "output/phase5/anchor_phi35mini",
     "comma": "common-pile/comma-v0.1-2t",
     "tinycomma": "jacquelinehe/tinycomma-1.8b-llama3-tokenizer",
+    "kl3m170m": "alea-institute/kl3m-002-170m",
+    "kl3m37b": "alea-institute/kl3m-003-3.7b",
+    "pleias3b": "PleIAs/Pleias-3b-Preview",
 }
 
 
@@ -72,37 +82,45 @@ def n_params(model):
     return total
 
 
+def ranks(v):
+    r = [0] * len(v)
+    for i, j in enumerate(sorted(range(len(v)), key=lambda i: v[i])):
+        r[j] = i
+    return r
+
+
 def spearman(a, b):
     n = len(a)
-    ra = sorted(range(n), key=lambda i: a[i])
-    rb = sorted(range(n), key=lambda i: b[i])
-    RA, RB = [0] * n, [0] * n
-    for i, j in enumerate(ra):
-        RA[j] = i
-    for i, j in enumerate(rb):
-        RB[j] = i
+    RA, RB = ranks(a), ranks(b)
     return 1 - 6 * sum((RA[i] - RB[i]) ** 2 for i in range(n)) / (n * (n * n - 1))
 
 
-def exact_p(a, b, cap=9, draws=200000, seed=0):
+def exact_p(a, b, cap=9, draws=2000000, seed=0):
     """Two-sided exact permutation p over all n! orderings. Above `cap` pairs the enumeration is
     not finishable, so a fixed-seed random permutation estimate is returned instead and
     `exact_p.exact` says which was used. At the sizes this paper reports (n <= 7) it is always
     exact, and that matters: the normal approximation flatters a weak correlation at small n."""
-    obs = abs(spearman(a, b))
     n = len(b)
+    RA, RB = ranks(a), ranks(b)
+    norm = n * (n * n - 1) / 6.0
+    # |rho| >= obs is the same event as sum of squared rank differences <= d2max (or >= its mirror)
+    d2 = sum((RA[i] - RB[i]) ** 2 for i in range(n))
+    obs = abs(1 - d2 / norm)
+    lo, hi = norm * (1 - obs) + 1e-9, norm * (1 + obs) - 1e-9
     if n <= cap:
         exact_p.exact = True
-        hit = sum(1 for perm in itertools.permutations(range(n))
-                  if abs(spearman(a, [b[i] for i in perm])) >= obs - 1e-12)
+        hit = sum(1 for perm in itertools.permutations(RB)
+                  if (lambda s_: s_ <= lo or s_ >= hi)(
+                      sum((RA[i] - perm[i]) ** 2 for i in range(n))))
         return hit / math.factorial(n)
     exact_p.exact = False
     rng = random.Random(seed)
-    idx = list(range(n))
+    perm = list(RB)
     hit = 0
     for _ in range(draws):
-        rng.shuffle(idx)
-        if abs(spearman(a, [b[i] for i in idx])) >= obs - 1e-12:
+        rng.shuffle(perm)
+        s_ = sum((RA[i] - perm[i]) ** 2 for i in range(n))
+        if s_ <= lo or s_ >= hi:
             hit += 1
     return hit / draws
 
@@ -160,20 +178,46 @@ def main():
               f"{r['F']:>7.3f}{r['params']:>12,d}{r['ntok']:>7d}"
               + "".join(f"{r[f'adv_a{int(o)}']:>9.2f}" for o in a.orders))
 
+    fams = sorted({FAMILY.get(r["pair"], r["pair"]) for r in rows})
+
+    def by_family(key):
+        """Mean of `key` within each family, in a fixed family order."""
+        return [st.mean([r[key] for r in rows if FAMILY.get(r["pair"], r["pair"]) == f])
+                for f in fams]
+
+    CANDS = (("risky", "memoriser log p / token"), ("anchor", "anchor rate s(x)"),
+             ("gap", "s(x) - memoriser rate"), ("F", "fraction of ceiling at k"),
+             ("params", "anchor parameter count"), ("ntok", "protected tokens scored"))
+
     summary = []
-    print(f"\nSpearman against the advantage, exact two-sided p over all {len(rows)}! orderings:\n")
+    kind = "exact" if len(rows) <= 9 else "Monte Carlo, 2e6 draws,"
+    print(f"\nSpearman against the advantage, {kind} two-sided p over {len(rows)}! orderings:\n")
     print(f"{'candidate':28s}" + "".join(f"{'alpha=%d' % o:>20s}" for o in a.orders))
-    for cand, name in (("risky", "memoriser log p / token"), ("anchor", "anchor rate s(x)"),
-                       ("gap", "s(x) - memoriser rate"), ("F", "fraction of ceiling at k"),
-                       ("params", "anchor parameter count"), ("ntok", "protected tokens scored")):
+    for cand, name in CANDS:
         x = [r[cand] for r in rows]
         line = f"{name:28s}"
         for o in a.orders:
             y = [r[f"adv_a{int(o)}"] for r in rows]
             rho, p = spearman(x, y), exact_p(x, y)
+            xf, yf = by_family(cand), by_family(f"adv_a{int(o)}")
+            rho_f, p_f = spearman(xf, yf), exact_p(xf, yf)
             summary.append(dict(candidate=cand, alpha=o, n_pairs=len(rows),
-                                spearman=round(rho, 4), exact_two_sided_p=round(p, 5)))
+                                spearman=round(rho, 4), exact_two_sided_p=round(p, 5),
+                                exact=exact_p.exact, n_families=len(fams),
+                                spearman_family=round(rho_f, 4),
+                                exact_two_sided_p_family=round(p_f, 5)))
             line += f"{rho:>+11.2f} (p={p:.3f})"
+        print(line)
+
+    print(f"\nsame candidates on {len(fams)} family means ({', '.join(fams)}), exact over all "
+          f"{len(fams)}! orderings -- the conservative reading, since the pairs are not "
+          f"independent draws:\n")
+    print(f"{'candidate':28s}" + "".join(f"{'alpha=%d' % o:>20s}" for o in a.orders))
+    for cand, name in CANDS:
+        line = f"{name:28s}"
+        for o in a.orders:
+            s_ = next(x for x in summary if x["candidate"] == cand and x["alpha"] == o)
+            line += f"{s_['spearman_family']:>+11.2f} (p={s_['exact_two_sided_p_family']:.3f})"
         print(line)
     with open(os.path.join(a.out, f"{a.prefix}_summary.csv"), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(summary[0])); w.writeheader(); w.writerows(summary)
