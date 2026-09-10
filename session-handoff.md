@@ -7,52 +7,57 @@ SaTML paper at `dd7e801` and must not be deleted. The manuscript is `~/sub/satml
 (absolute `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml`), **not in this repo** -- never run
 git after a `cd` into that tree.
 
-State: main text **exactly 9 pages** (page 10 opens with the Ethics heading, which does not count),
-0 overfull, 0 `??`, 1014 numeric literals audited with 1 expected miss (the independently verified
-Comma-7B padded embedding count 64,256). **173 tests.** feat-035..069 `done`; nothing in progress.
+State: main text **exactly 9 pages** (page 10 opens with the Ethics heading), 0 errors, 0 overfull,
+0 `??`, 1120 numeric literals audited with 1 expected miss. **183 tests.** feat-035..071 `done`;
+feat-072 in progress.
 
 ## What landed this session
 
-- feat-066 (done): all nine out-of-sample arms. Five seed arms, four temperature arms. The
-  token-bucket rule beats a no-change null by 2.2x on the seed arms (5.1% against 11.0% mean
-  relative error) and **loses** to it on the temperature arms (21.9% against 12.3%); the scorer and
-  the paper report the two apart, because pooling would hide both.
-- feat-068 (done): `analysis/matched_strength.py`, pre-registered in
-  `results/onset_prediction_matched_strength.md`. Restricting both temperature arms to the passages
-  the memoriser reproduces in **both** closes a strength gap of 0.519/0.904 to 0.947/0.993 and
-  leaves the elasticity at +0.72 and +0.61, unchanged to two decimals. The warp acts through the
-  anchor's rate, not the memoriser.
-- feat-069 (done): Section 4 rewritten around three independent lines of evidence, main text held
-  at 9 pages. `sections/onset_v2_2026-09-08.tex` is the previous version.
+- **feat-070 -- the paper's open problem, answered in the negative.** Section 2 previously stated
+  the open problem as closing the three-to-four orders of magnitude between the decoder's spend and
+  Theorem 1's floor, and named the route: stop decoding greedily against the bucket. That route is
+  now measured and it is worth percent. On the geodesic the charge and the fidelity
+  `G(theta) = -D(p_r||p_theta) + const` are both closed forms in `psi`, so the optimal allocation of
+  a fixed total across a trajectory is computable offline with no decoding run. Over 2 pairs x 2
+  target types x 4 budgets, reallocating the bucket's own spend buys **1.008 to 1.125**.
+  The stronger form needs no allocation argument at all: at `k=1` the bucket already captures
+  **77-85%** of the fidelity that serving the risky model outright would buy, so an *unlimited*
+  budget is worth 1.2-1.3x. Three orders of magnitude are not there to recover. Section 2 now says
+  this instead of speculating, and `sections/appendix_proofs.tex` carries the design.
+- **feat-071 -- the prescription made executable.** The conclusion says publish `k/s(x)`; Section 3
+  concedes a deployer has not seen `x`. The anchor's rate on 50 public-domain Gutenberg texts
+  predicts its protected rate to **5.6%** leave-one-anchor-out over ten anchors spanning 1.86x,
+  **4.13x better than a constant**, while `c_use` does *worse* than a constant. In
+  `sections/appendix_robustness.tex`, with a clause in the conclusion.
+- Disk: `/` had filled to 100%, which fails every Bash call before the command runs. Package caches
+  cleared with the user's approval (62 GB free). **`CLAUDE_CODE_TMPDIR`/`TMPDIR` in
+  `.claude/settings.local.json` are inert** -- the harness owns them; `TECTONIC_CACHE_DIR` works.
 
-## Where the evidence for the units claim now stands
+## Running when this file was written
 
-| line | what it is | strength |
-|---|---|---|
-| cross-pair, matched context | 5 pairs, ratios 0.878-0.926 over a 1.49x range of `s(x)`, cv 2.4%, leave-one-out 0.070 nats against a constant's 0.364 | observational; the grouping rule was read off the same seven measurements, so the two exact multiplicity checks (p = 0.048) do not test it |
-| seed interventions | 5 arms, both directions, intervals disjoint from control on Arm B | causal within a pair, but non-monotone at 28 words and neither direction reaches the other family's band |
-| within-pair warping | 2 arms, elasticity +0.72 and +0.61, both excluding 0 and 1 | the only design that moves `s(x)` itself; the one confound is controlled by feat-068 |
+`analysis/order_price.py` on GPU 4, `results/order_price_kl3m_k3.csv` -- feat-072, pre-registered in
+`results/onset_prediction_orders_matched.md`. It asks the question feat-070 raises: if the overhead
+is the price of the *target* rather than of the schedule, does changing the target help? For each
+Renyi order at one published `k` it reads off fidelity bought on ordinary generations (the price)
+and on protected passages (the leakage), deterministically, which is the matched-utility axis
+`sections/appendix_robustness.tex` currently concedes it lacks and that Section 5 shows no judge at
+n = 150 can supply.
 
 ## Recommended next step
 
-1. **Rerun `analysis/compute_hours.py`** once `output/phase5/{score_warp,warp_arms}.log` are more
-   than 10 minutes old -- they were still inside the live-file window at the last run, which billed
-   104.9 GPU-hours without them -- and update the figure in the LLM-usage statement
-   (`iclr_2027.tex`, currently says 93).
-2. Rebuild the artifact (`scripts/build_artifact.sh artifact`) so it carries
-   `analysis/matched_strength.py`, `results/matched_strength.csv` and the new pre-registration, and
-   add the Phase 5d reproduction command to `README_artifact.md`.
-3. A full read-through of the manuscript end to end. Section 4, the introduction, the abstract, the
-   conclusion and three appendices all changed today and have only been checked number by number.
+1. Score `order_price_kl3m_k3.csv` against the committed bands. **Check the embarrassment condition
+   first**: if the four arms' ordering by this instrument disagrees with their ordering by
+   intervention rate in Table 1 (94.0%, 91.4%, 8.7%, 0.07% risky-unchanged), the instrument is
+   withdrawn, not reinterpreted.
+2. Replicate on Pleias-1.2B before anything reaches the manuscript.
+3. Rebuild the artifact and re-run `analysis/compute_hours.py`; both are stale by two features.
 
 ## Cautions that cost time this session
 
-- **Check tectonic's exit status, not just its overfull count.** A missing figure halts the build
-  and leaves the *previous* PDF in place; grepping that stale PDF reported 9 pages and 21 total when
-  the real document was 28 pages and over the limit. Always read `err=` and the page count together.
-- The page budget had **already** been exceeded before this session's edits; the handoff's "exactly
-  9 pages" was stale. Verify it against a fresh build, not against the last note.
-- A bootstrapped threshold crossing needs its **no-crossing fraction** reported. Twice now a grid
-  whose top end was a ceiling produced a narrow interval that was narrow precisely because it was
-  conditioned on the resamples that happened to cross.
-- `pgrep`/`pkill -f <pattern>` matches the invoking shell. Kill by PID and confirm with `kill -0`.
+- The probe allocates thousands of `[T, V]` tensors per passage; without an explicit `del` plus
+  `torch.cuda.empty_cache()` per passage the caching allocator reached **80 GB on a 0.5B model** and
+  the run crawled. The fix is in `analysis/marginal_price.py`.
+- Moving `TECTONIC_CACHE_DIR` makes the first compile re-download the whole LaTeX package set; it
+  takes minutes and looks like a hang.
+- Page-budget edits reflow rather than shed lines. Micro-trimming a sentence three times in a row
+  moved nothing; one structural cut of a whole sentence moved two lines.
