@@ -133,3 +133,39 @@ What the Arm A2 precedent predicts: the point estimate barely moves, the no-cros
 to zero and the **upper** end widens. The claim in the text is about the **lower** end exceeding
 $1$, which an extension upward cannot move; if it does move, that is the finding and the sentence
 goes.
+
+## Second addendum: the same sweeps test something the first framing missed, and it matters more
+
+Committed with KL3M-520M at $k = 2.1$ and recall $0.000$ --- six budgets into an eleven-budget grid,
+nothing crossed --- and Phi-3.5-mini not yet started. Pleias-1.2B is in (onset $2.513$, ratio
+$0.895$) and is the only one of the three that is known.
+
+The framing above asks about Eq.~\eqref{eq:req}. But these three sweeps also test the onset
+section's **central empirical finding**, which is not the equation at all: that the onset ratio
+takes *two* values, $0.878$--$0.926$ for the five pairs whose tokenizer emits about four characters
+per token and $1.053$/$1.166$ for the two KL3M pairs at about two, the latter with intervals whose
+lower end exceeds $1$ --- leakage beginning *after* the certificate has gone vacuous. Limitations
+says every onset number rests on sixteen novels. Two of the three anchors swept here are on opposite
+sides of that split (KL3M-520M at $1.053$, Phi-3.5-mini at $0.926$), so the same runs say whether
+the split is a property of the pair or of those novels.
+
+Committed CopyBench values, from `results/onset_ci.csv`:
+
+```
+pair            ratio   95% CI          side of the split
+KL3M-520M       1.053   [1.02, 1.24]    fine tokenizer, above 1
+Pleias-1.2B     0.878   [0.79, 0.96]    coarse, below 1      (already measured here: 0.895)
+Phi-3.5-mini    0.926   [0.80, 1.09]    coarse, below 1
+```
+
+| outcome | reading |
+|---|---|
+| KL3M-520M's Gutenberg ratio is **above $1$** while Pleias-1.2B's and Phi-3.5-mini's are **below** | the split is a property of the pair and survives a change of protected corpus. Limitations may stop saying the split rests on sixteen novels |
+| the **ordering** holds (KL3M highest) but its ratio falls below $1$ | the ordering is a property of the pair and the *level* is not; the "leakage begins after vacuity" sentence becomes corpus-specific and is qualified wherever it appears |
+| the ordering **inverts**, or KL3M-520M lands inside the coarse family's $0.878$--$0.926$ | the split is corpus-specific. That is the strongest single objection to Section~\ref{sec:onset} and the paper would have to lead with it |
+
+This is a two-anchor test of a seven-pair finding and cannot settle it either way; what it can do is
+fail, and failing is what it is for. No further anchors are planned: the other four coarse pairs
+would add corroboration on the side already represented twice, and the second fine anchor
+(KL3M-1.7B) is the weakest memoriser in the set, whose Gutenberg twin would confound memorisation
+with the corpus.
