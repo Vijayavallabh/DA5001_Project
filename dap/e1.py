@@ -34,6 +34,11 @@ class AuditConfig:
     seeds: Tuple[int, ...] = (42, 43, 44)
     prefix_n: int = 5
     use_prefix_debt: bool = True
+    # feat-092: nats granted up front instead of accrued at k per step. The refill rate places the
+    # budget uniformly along the sequence; an initial bank places the same total at the front. Both
+    # are causal policies under a sequence budget, and they are the two placements Proposition 5
+    # separates. 0.0 is the deployed rule exactly.
+    initial_bank: float = 0.0
     temperature: float = 1.0
     max_new_tokens: int = 200
     delta: float = 0.05
@@ -93,6 +98,7 @@ class H1AuditRunner:
             prefix_n=config.prefix_n,
             log_kl_stats=True,
             constraint=config.constraint,
+            initial_bank=config.initial_bank,
             device=config.device,
             dtype=dtype,
             device_map=config.device_map,
@@ -241,7 +247,8 @@ class H1AuditRunner:
                     "anchor_model": self.config.safe_model_path,
                     "level": "token",
                     "k": k,
-                    "K": budget_K(k, self.config.max_new_tokens),
+                    "K": budget_K(k, self.config.max_new_tokens, self.config.initial_bank),
+                    "initial_bank": self.config.initial_bank,
                     "T_max": self.config.max_new_tokens,
                     "B_max": None,
                     "n": self.config.prefix_n,
@@ -322,7 +329,7 @@ class H1AuditRunner:
         print(f"[stage] starting E1 with {len(prompts)} prompts", flush=True)
 
         for k in self.config.k_values:
-            K = budget_K(k, self.config.max_new_tokens)
+            K = budget_K(k, self.config.max_new_tokens, self.config.initial_bank)
             class_spends = defaultdict(list)
             class_records = defaultdict(list)
             print(f"[stage] running k={k}", flush=True)
@@ -369,9 +376,14 @@ SUMMARY_HEADERS = ["class", "k", "K", "M", "mean_Z", "var_Z", "all_within_budget
 METRIC_KEYS = ("rouge_l", "lcs_word", "lcs_char", "acs_word", "nv_recall")
 
 
-def budget_K(k: float, t_max: int) -> float:
-    """Sequence budget. k = -1 is the risky-only baseline (no budget, K = inf); k = 0 is safe-only (K = 0)."""
-    return float("inf") if k == -1.0 else k * t_max
+def budget_K(k: float, t_max: int, initial_bank: float = 0.0) -> float:
+    """Sequence budget. k = -1 is the risky-only baseline (no budget, K = inf); k = 0 is safe-only (K = 0).
+
+    An initial bank is part of the sequence budget and must be counted: quoting k*T_max for a
+    front-loaded arm would understate what the certificate allows by the whole of the bank."""
+    if k == -1.0:
+        return float("inf")
+    return 0.0 if k == 0.0 and initial_bank == 0.0 else k * t_max + initial_bank
 
 
 def summary_row(split_name: str, k: float, K: float, spends: List[float], delta: float, aggregates: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -402,7 +414,7 @@ def rebuild_summary_from_saved_trajectories(config: AuditConfig) -> Dict[str, An
     summary_rows = []
 
     for k in config.k_values:
-        K = budget_K(k, config.max_new_tokens)
+        K = budget_K(k, config.max_new_tokens, config.initial_bank)
         for split_name in CLASS_ORDER:
             path = output_dir / f"trajectories_k{k:g}_{split_name}.jsonl"
             if not path.exists():
@@ -467,6 +479,11 @@ def parse_args() -> AuditConfig:
     p.add_argument("--length-bucket-width", type=int, default=32)
     p.add_argument("--risky-device-map", default="", help="feat-017: 'auto' to shard a large risky model across the visible GPUs (anchor stays on cuda:1)")
     p.add_argument("--max-memory", default="", help="feat-017: per-device caps for the sharded risky model, e.g. '0=72GiB,1=64GiB'")
+    p.add_argument("--initial-bank", type=float, default=0.0,
+                   help="feat-092: nats granted up front rather than accrued at k per step. With a "
+                        "negligible k this is the FRONT-LOADED placement of the same sequence "
+                        "budget -- the causal policy Proposition 5 permits. Default 0.0 is the "
+                        "deployed rule.")
     p.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl' (He et al.), 'pathwise' (realised log-ratio, Delta_max-NAF), or 'renyi[:alpha]' (alpha=1 is kl, alpha->inf is the max log-ratio)")
     args = p.parse_args()
 
@@ -484,6 +501,7 @@ def parse_args() -> AuditConfig:
         safe_model_path=args.safe_model_path, risky_model_path=args.risky_model_path,
         k_values=tuple(args.k_values), trajectories_per_prompt=args.trajectories_per_prompt,
         seeds=tuple(args.seeds), prefix_n=args.prefix_n, use_prefix_debt=not args.no_prefix_debt,
+        initial_bank=args.initial_bank,
         temperature=args.temperature, max_new_tokens=args.max_new_tokens, delta=args.delta,
         num_classes=args.num_classes, verbose=args.verbose, trust_remote_code=args.trust_remote_code,
         device=args.device, batch_size=args.batch_size, length_bucket_width=args.length_bucket_width,

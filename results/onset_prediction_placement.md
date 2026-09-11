@@ -1,0 +1,111 @@
+# Pre-registration: budget placement at a fixed sequence budget
+
+Committed **before any arm is generated**. Nothing above the `## Scoring log` line is edited
+afterwards.
+
+## Why this arm exists, and why the paper needs it
+
+Proposition 5 says: for any causal policy `q` with `D_KL(q || p_s) <= K`, the expected number of
+steps at which `D_KL(q_t || p_s,t) > eps` is at most `K/eps`. A policy whose budget does not grow
+with the work must therefore leave the anchor untouched at all but `O(1)` steps.
+
+That is a statement with **two horns**, and the paper so far only demonstrates one of them. The
+deployed token-bucket rule sits on the wrong horn by construction (Proposition 3, measured: at
+`k = 20` it serves `p_r` unchanged at 99.95% of steps and spends `Theta(T)`). But Proposition 5 does
+not forbid a causal policy from working -- it forbids a causal policy from working *while spread
+out*. A policy that concentrates its whole budget on the opening tokens is permitted, and the paper
+has never tried one. Without that arm, the claim "the budget has to leave the decode loop" is
+stronger than the evidence: a reviewer is entitled to ask whether a front-loaded meter would have
+done just as well, and the paper's own opening-effect appendix says the opening is where a decoder's
+choices bite.
+
+So this arm measures **placement at a fixed sequence budget**: the same nats, spent in three places.
+
+| placement | how | budget |
+|---|---|---|
+| uniform, per step | the deployed bucket, refill `k` per token | `K = k*T_max` |
+| front-loaded, causal | `--initial-bank K` with a negligible refill (`k = 1e-9`) | `K` |
+| off-axis, at the draw | selection anchoring, best of `n` | `K = log n` |
+
+All three are run at **`K = log 8 = 2.0794` nats**, the budget selection anchoring already spends on
+record (`results/selection_crossjudge.csv`), on the **same 500 ordinary prompts**, scored by the
+**same judge B** (`microsoft/Phi-3.5-mini-instruct`) against the same `n = 1` anchor-only control, so
+the three numbers are comparable without any rescaling. A second front-loaded arm at `K = 20` nats
+says whether concentration scales; a uniform arm at `k = 0.0104` (`= 2.0794/200`) is the placement
+control at the identical total.
+
+Baselines at `k = -1` and `k = 0` are generated on the same prompts and seeds, as for every arm in
+this repository.
+
+## Bands, committed before the run
+
+Let `u` be judged utility against the unconstrained model on the 0 / 0.5 / 1 scale, `gain` the paired
+difference against the `n = 1` anchor-only control, with a paired 95% bootstrap CI over prompts.
+Selection's gain at the same budget is **+0.081 [0.034, 0.130]** on record.
+
+**P1 -- does placement matter at all?** Compare the front-loaded arm's gain with the uniform arm's
+gain at `K = 2.0794`.
+
+| reading | band |
+|---|---|
+| PLACEMENT MATTERS | the two CIs do not overlap |
+| PLACEMENT IS SECOND ORDER | they overlap but the point estimates differ by more than 0.03 |
+| PLACEMENT IS IRRELEVANT | they overlap and differ by at most 0.03 |
+
+**P2 -- is the causal horn reachable?** The front-loaded arm against the anchor-only control.
+
+| reading | band |
+|---|---|
+| CAUSAL CONCENTRATION WORKS | gain CI excludes 0 and the point estimate is within 0.03 of selection's +0.081 |
+| CAUSAL CONCENTRATION PARTLY WORKS | CI excludes 0 but the gain is below `0.081 - 0.03` |
+| THE CAUSAL HORN IS EMPTY | CI includes 0 |
+
+**This band is where the paper's claim is at risk, and it is stated that way on purpose.** Under
+CAUSAL CONCENTRATION WORKS the manuscript's framing changes: the escape is not "leave the decode
+loop", it is "do not spread the budget", selection becomes one of two mechanisms obeying the same
+principle rather than the only one, and Sections 5-6 are rewritten to lead with the principle. Under
+THE CAUSAL HORN IS EMPTY the constructive claim strengthens to what it currently asserts, and the
+reason is reportable: concentrating a `log 8`-sized budget on the opening buys nothing because the
+opening is not where judged quality is decided.
+
+**P3 -- does concentration scale?** The `K = 20` front-loaded arm against the `K = 2.0794` one.
+SCALES if its gain CI excludes the smaller arm's point estimate from above; FLAT otherwise. `K = 20`
+is still two orders of magnitude below the `171.3` nats the metered decoder spends, so a positive
+reading here would be a finding about the metered decoder's waste, not a rescue of it.
+
+**P4 -- leakage, mandatory for every arm.** Near-verbatim recall on the protected passages at every
+placement, with the `k = -1` and `k = 0` baselines. Selection's is `0.0000` at every `n <= 64`.
+Any arm with non-zero recall is reported with it, whatever its utility.
+
+## Excluded alternatives (named now so they cannot be adopted afterwards)
+
+1. Tuning the refill rate of the front-loaded arm after seeing its utility. It is `1e-9` because the
+   constructor reserves `k = 0` for the safe-only baseline, and `1e-9 * 200 = 2e-7` nats is
+   negligible against `2.0794`.
+2. Changing the judge, the template, the prompt set, or the control between arms.
+3. Reporting the front-loaded arm at `k*T_max` instead of at `k*T_max + initial_bank`. The bank is
+   the whole budget; `tests/test_initial_bank.py` pins this.
+4. Declaring PLACEMENT MATTERS on overlapping intervals.
+5. Dropping P2 if it reads CAUSAL CONCENTRATION WORKS. That reading is the one that costs the
+   paper its current framing, and it is the reason the arm is worth running.
+6. Quoting a judged separation without its sample size (caution (e)), or building on one smaller
+   than a sigma.
+
+## Scoring
+
+```
+# front-loaded, K = log 8, on the 500 ordinary prompts
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=<free card> HF_HUB_OFFLINE=1 \
+  HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python h1.py --k-values 1e-9 --initial-bank 2.0794 \
+  --trajectories-per-prompt 1 --cap-neutral 200 --cap-creative 150 --cap-factual 150 \
+  --cap-val 0 --cap-test 0 --cap-attack-train 0 --max-new-tokens 200 \
+  --output-dir output/phase5/place_front_2p08
+# ... and the uniform control at k = 0.0104, the K = 20 arm, and the k = -1 / k = 0 baselines
+.venv/bin/python analysis/placement.py --out results
+```
+
+Writes `results/placement.csv` and `results/placement_per_prompt.csv`.
+
+---
+
+## Scoring log (appended after the run; nothing above this line is edited)
