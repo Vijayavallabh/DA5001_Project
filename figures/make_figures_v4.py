@@ -250,6 +250,66 @@ def context_intervention():
     _save(fig, "context_intervention")
 
 
+def selection_frontier():
+    """feat-087: what a nat buys, for two mechanisms on one axis.
+
+    x is the realised sequence divergence from the anchor -- for the metered decoder the mean
+    measured spend, for selection anchoring the exact log n - (n-1)/n. y is the judged utility both
+    are scored on. The dotted line is the Cramer rate function of that utility under the anchor,
+    which Theorem 1 says no policy can sit to the left of.
+    """
+    import csv
+    import math
+    sel = list(csv.DictReader(open(RESULTS / "selection_decoding.csv")))
+    dec = list(csv.DictReader(open(RESULTS / "utility_price.csv")))
+    if not sel or not dec:
+        raise FileNotFoundError("selection_decoding.csv or utility_price.csv is empty")
+    fig, ax = plt.subplots(figsize=(5.0, 3.2))
+
+    u_safe = float(dec[0]["u_safe"])
+    w = math.exp(-float(dec[0]["lambda_star_u_max"]))          # P_{p_s}[U = 1]
+    t = 2 * (u_safe - w)                                        # from u = w + t/2
+    us = [u_safe + i * (1.0 - u_safe) / 200 for i in range(1, 201)]
+
+    def rate(u):
+        best = 0.0
+        for j in range(1, 4001):
+            lam = j * 0.02
+            f = lam * u - math.log(w * math.exp(lam) + t * math.exp(lam / 2) + (1 - w - t))
+            best = max(best, f)
+        return best
+    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
+            label=r"$\Lambda^*_s(u)$, the frontier of Thm.~1")
+
+    x = [float(r["mean_spend_nats"]) for r in dec]
+    y = [float(r["u_decoder"]) for r in dec]
+    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, $k$ swept")
+    for r in dec:
+        if r["k"] in ("0.5", "3.0", "20.0"):
+            ax.annotate(f"$k={float(r['k']):g}$", (float(r["mean_spend_nats"]),
+                                                   float(r["u_decoder"])),
+                        fontsize=6.5, xytext=(3, -8), textcoords="offset points")
+
+    prim = [r for r in sel if r["rule"].startswith("per-token")]
+    xs = [max(float(r["kl_nats"]), 1e-3) for r in prim]
+    ys = [float(r["u"]) for r in prim]
+    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring, $n$ swept")
+    for r, xv, yv in zip(prim, xs, ys):
+        ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5, xytext=(3, 4),
+                    textcoords="offset points")
+    orc = [r for r in sel if r["rule"].startswith("oracle")]
+    if orc:
+        ax.plot([max(float(r["kl_nats"]), 1e-3) for r in orc], [float(r["u"]) for r in orc],
+                "^--", ms=4, lw=1.0, color="#2f6f9f", alpha=0.5,
+                label="selection, oracle selector (a ceiling)")
+
+    ax.set_xscale("log")
+    ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
+    ax.set_ylabel("judged utility $u$")
+    ax.legend(fontsize=6.8, frameon=False, loc="lower right")
+    _save(fig, "selection_frontier")
+
+
 def units_law():
     """The units claim on one axis pair: the safe model's surprisal rate against the budget at
     which extraction begins.
@@ -362,7 +422,7 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               context_intervention, units_law, order_no_collapse)
+               context_intervention, selection_frontier, units_law, order_no_collapse)
     for fn in figures:
         try:
             fn()
