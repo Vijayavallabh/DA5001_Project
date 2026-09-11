@@ -32,6 +32,8 @@ import json
 import math
 import os
 
+# Fractions of the sequence at which the cumulative share of spend is read, busiest step first.
+LORENZ_GRID = [i / 20 for i in range(1, 21)]
 CLASSES = {"ordinary": ("neutral", "creative", "factual"), "protected": ("attack_train",)}
 DIRS = ("output/sweep_plain", "output/phase2/conc_all")
 
@@ -51,8 +53,9 @@ def ols(xs, ys):
 
 
 def mean(v):
-    v = list(v)
-    return sum(v) / len(v)
+    """Mean over the values that exist; None marks a trajectory the statistic is undefined for."""
+    v = [x for x in v if x is not None]
+    return sum(v) / len(v) if v else float("nan")
 
 
 def median(v):
@@ -93,14 +96,25 @@ def scan(k, splits):
                     # This measures the opposite end: how many steps the deployed rule needs to
                     # cover 90% of what it spent, and what its top 1% of steps carry.
                     charges = sorted((e["a_t"] for e in log), reverse=True)
-                    tot = sum(charges) or 1.0
-                    top1 = sum(charges[:max(1, len(charges) // 100)]) / tot
-                    run, n90 = 0.0, len(charges)
-                    for i, c in enumerate(charges, 1):
-                        run += c
-                        if run >= 0.9 * tot:
-                            n90 = i
-                            break
+                    # A trajectory that spent nothing has no share-of-spend curve; averaging its
+                    # zeros in made the k=0.5 curve end at 0.87 instead of 1.
+                    # A trajectory that spent nothing has no share-of-spend curve; it stays in the
+                    # arm (its beta and its zero spend are real) but is left out of the shape
+                    # statistics. Averaging its zeros in made the k=0.5 curve end at 0.87, and
+                    # dropping the row outright moved the arm off results/utility_price.csv.
+                    tot = sum(charges)
+                    if tot > 0:
+                        top1 = sum(charges[:max(1, len(charges) // 100)]) / tot
+                        run, n90 = 0.0, len(charges)
+                        for i, c in enumerate(charges, 1):
+                            run += c
+                            if run >= 0.9 * tot:
+                                n90 = i
+                                break
+                        lz = [sum(charges[:max(1, round(f * len(charges)))]) / tot
+                              for f in LORENZ_GRID]
+                    else:
+                        top1, n90, lz = None, None, None
                     rows.append(dict(
                         T=len(log), K=float(m["K"]),
                         beta=1 - len(slack) / len(log),
@@ -109,7 +123,9 @@ def scan(k, splits):
                         slack_charge=sum(e["a_t"] for e in slack),
                         imitation_rate=(sum(e["a_t"] for e in slack) / len(slack)) if slack else 0.0,
                         spend=a["total_spend"], slope=b, r2=r2,
-                        top1pct_share=top1, steps_for_90pct=n90 / len(log)))
+                        top1pct_share=top1,
+                        steps_for_90pct=(n90 / len(log)) if n90 is not None else None,
+                        lorenz=lz))
     return rows
 
 
@@ -122,7 +138,7 @@ def main():
     ks = sorted({os.path.basename(p).split("_")[1][1:]
                  for d in DIRS for p in glob.glob(os.path.join(d, "trajectories_k*_neutral.jsonl"))},
                 key=float)
-    out = []
+    out, lorenz = [], {}
     for cls, splits in CLASSES.items():
         for k in [x for x in ks if float(x) > 0]:
             rows = scan(k, splits)
@@ -150,12 +166,21 @@ def main():
                 median_cum_spend_vs_step_slope=round(median(r["slope"] for r in rows), 4),
                 median_cum_spend_vs_step_r2=round(median(r["r2"] for r in rows), 4))
             out.append(rec)
+            curves = [r["lorenz"] for r in rows if r["lorenz"] is not None]
+            lorenz[(cls, k)] = [mean(c[i] for c in curves) for i in range(len(LORENZ_GRID))]
+            assert abs(lorenz[(cls, k)][-1] - 1.0) < 1e-6, (cls, k, lorenz[(cls, k)][-1])
             print(f"  {cls:9s} k={float(k):5g}  n={rec['n_trajectories']:5d}  "
                   f"beta={rec['beta_binding_frac']:.4f}  imit={rec['imitation_rate_nats_per_token']:.4f}"
                   f"  realised={rec['realised_rate_nats_per_token']:.4f} nats/tok  "
                   f"spend/cap={rec['spend_over_cap']:.3f}  R2={rec['median_cum_spend_vs_step_r2']:.4f}")
 
     os.makedirs(a.out, exist_ok=True)
+    with open(os.path.join(a.out, "imitation_lorenz.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["prompt_class", "k", "frac_of_steps", "frac_of_spend"])
+        for (cls, k), lz in sorted(lorenz.items()):
+            for f, v in zip(LORENZ_GRID, lz):
+                w.writerow([cls, k, round(f, 4), round(v, 5)])
     p = os.path.join(a.out, "imitation_cost.csv")
     with open(p, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))

@@ -4,6 +4,7 @@ no GPU, no logs, the analysis scripts own the numbers and this script only draws
   frontier_scaling   <- results/anchor_scaling_summary.csv
   opening_effect     <- results/opening_effect_summary*.csv
   order_invariance   <- analysis.regimes.event_bound (closed form) + results/renyi_sweep.csv if present
+  imitation_cost     <- results/imitation_cost.csv + results/imitation_lorenz.csv
 
 Usage: .venv/bin/python figures/make_figures_v4.py [--copy-to /path/to/manuscript/figures]
 """
@@ -466,6 +467,57 @@ def order_no_collapse():
     _save(fig, "order_no_collapse")
 
 
+def imitation_cost():
+    """Propositions 3 and 5, in the two shapes they make claims about.
+
+    (a) the rate. The certificate is written against k nats per token; the decoder spends the
+    imitation cost and stops, so above the crossover the allowance is unreachable.
+    (b) the shape. Proposition 5 needs an O(1)-budget policy to put its spend on O(1) steps; the
+    deployed rule spreads it over the sequence, barely above the uniform diagonal.
+    """
+    rows = [r for r in csv.DictReader(open(RESULTS / "imitation_cost.csv"))
+            if r["prompt_class"] == "ordinary"]
+    lz = [r for r in csv.DictReader(open(RESULTS / "imitation_lorenz.csv"))
+          if r["prompt_class"] == "ordinary"]
+    ks = [float(r["k"]) for r in rows]
+    realised = [float(r["realised_rate_nats_per_token"]) for r in rows]
+    sat = float(rows[-1]["imitation_rate_nats_per_token"])
+
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(6.6, 2.5))
+    axL.plot(ks, ks, color="0.55", lw=1.1, ls="--", label="cap $k$ (what is certified)")
+    axL.plot(ks, realised, "o-", color="C3", lw=1.5, ms=3.4, label="realised rate (measured)")
+    axL.axhline(sat, color="C0", lw=1.0, ls=":")
+    axL.annotate(f"imitation rate {sat:.3f}", xy=(0.12, sat), xytext=(0.115, sat * 1.35),
+                 fontsize=6.4, color="C0")
+    axL.axvline(sat, color="0.3", lw=0.8, ls="-.")
+    axL.set_xscale("log"); axL.set_yscale("log")
+    axL.set_ylim(0.03, 30)
+    axL.annotate("meter binds", xy=(0.105, 0.038), fontsize=6.4, color="0.3")
+    axL.annotate("allowance unreachable", xy=(1.05, 0.038), fontsize=6.4, color="0.3")
+    axL.set_xlabel("budget $k$ (nats per token)")
+    axL.set_ylabel("nats per token")
+    axL.set_title("(a) what the decoder spends", fontsize=8)
+    axL.legend(frameon=False, loc="upper left")
+    axL.grid(alpha=0.25, lw=0.5)
+
+    axR.plot([0, 1], [0, 1], color="0.55", lw=1.1, ls="--", label="uniform over steps")
+    # k = 3 and k = 20 lie on top of each other, which is the point: once the meter stops binding
+    # the shape of the spend stops depending on the cap. Dashed so both are visible.
+    for k, ls, col in (("0.5", "-", "C0"), ("20", "-", "C2"), ("3", "--", "C1")):
+        v = [(float(r["frac_of_steps"]), float(r["frac_of_spend"])) for r in lz if r["k"] == k]
+        v.sort()
+        axR.plot([0] + [x for x, _ in v], [0] + [y for _, y in v], lw=1.4, ls=ls, color=col,
+                 label=f"$k = {k}$")
+    axR.plot([0, 0.02, 1], [0, 1, 1], color="C3", lw=1.2, ls=":",
+             label="what Proposition 5 needs")
+    axR.set_xlabel("fraction of steps, busiest first")
+    axR.set_ylabel("share of the spend")
+    axR.set_title("(b) where it spends it", fontsize=8)
+    axR.legend(frameon=False, loc="lower right")
+    axR.grid(alpha=0.25, lw=0.5)
+    _save(fig, "imitation_cost")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
@@ -475,7 +527,8 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               context_intervention, selection_frontier, units_law, order_no_collapse)
+               context_intervention, selection_frontier, units_law, order_no_collapse,
+               imitation_cost)
     for fn in figures:
         try:
             fn()

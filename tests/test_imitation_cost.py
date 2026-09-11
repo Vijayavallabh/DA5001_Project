@@ -162,3 +162,36 @@ def test_the_spend_concentration_beside_the_sparsity_proposition_rounds_from_the
     assert m and abs(float(m.group(1)) - cov) < 0.5, (m.group(1) if m else None, cov)
     # the claim is that it is NOT sparse: most of the sequence is needed to cover most of the spend
     assert cov > 50, cov
+
+
+def test_the_appendix_figure_exists_and_its_caption_numbers_come_from_the_csv():
+    """A missing \\includegraphics halts tectonic and leaves the PREVIOUS pdf in place, which then
+    measures as if nothing were wrong (AGENTS caution (f)). Check the file, not just the caption."""
+    import os
+    from tests.manuscript import tex
+    fig = os.path.join(os.path.dirname(tex("iclr_2027.tex")), "figures", "imitation_cost.pdf")
+    assert os.path.exists(fig), fig
+    apx = open(APX, encoding="utf-8").read().replace("\n", " ")
+    assert r"\label{fig:imitation}" in apx
+    sat = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
+    m = re.search(r"imitation rate \$([\d.]+)\$ nats per token", apx)
+    assert m and abs(float(m.group(1)) - sat) < 5e-4, (m.group(1) if m else None, sat)
+
+
+def test_the_lorenz_curves_end_at_one_and_lie_above_the_diagonal():
+    """The claim the figure makes with them: the spend is spread over the sequence, barely above
+    uniform, which is the opposite of what Proposition 5 needs."""
+    import csv as _csv
+    from collections import defaultdict
+    curves = defaultdict(list)
+    for r in _csv.DictReader(open("results/imitation_lorenz.csv")):
+        curves[(r["prompt_class"], r["k"])].append(
+            (float(r["frac_of_steps"]), float(r["frac_of_spend"])))
+    assert curves
+    for key, v in curves.items():
+        v.sort()
+        assert abs(v[-1][1] - 1.0) < 1e-6, (key, v[-1])
+        assert all(y >= x - 1e-9 for x, y in v), key          # above the uniform diagonal
+        assert all(b >= a - 1e-9 for (_, a), (_, b) in zip(v, v[1:])), key
+    half = dict(curves[("ordinary", "20")])[0.5]
+    assert 0.5 < half < 0.9, half     # spread, not concentrated: half the steps carry most of it
