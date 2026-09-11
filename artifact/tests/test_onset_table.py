@@ -1,5 +1,5 @@
-"""Section 4's table is the paper's central claim in nine rows, and every cell is copied out of
-results/onset_table.csv by hand. Check all of them mechanically: a hand edit that drifts from the
+"""The nine-pair table is copied out of results/onset_table.csv by hand. It moved to
+Appendix~\\ref{app:onset} in v6; the range and the pair count it supports stay in the main text. Check all of them mechanically: a hand edit that drifts from the
 CSV, or a CSV that moves without the table following, fails here rather than in review."""
 import csv
 import os
@@ -8,7 +8,8 @@ import re
 CSV = "results/onset_table.csv"
 from tests.manuscript import tex
 
-TEX = tex("sections/onset.tex")
+TEX = tex("sections/appendix_onset.tex")
+PROSE = tex("sections/onset.tex")
 LABEL = {"KL3M 1.7B $+$ mem.\\ KL3M 1.7B": "KL3M-1.7B + mem. KL3M-1.7B",
          "Comma 7B $+$ mem.\\ Comma 7B": "Comma-7B + mem. Comma-7B",
          "KL3M 520M $+$ mem.\\ KL3M 520M": "KL3M-520M + mem. KL3M-520M",
@@ -47,10 +48,11 @@ def test_every_cell_of_the_section_4_table_comes_from_the_csv():
 
 
 def test_the_prose_range_and_count_match_the_table():
-    body = open(TEX, encoding="utf-8").read()
+    body = open(PROSE, encoding="utf-8").read()
     src = [r for r in csv.DictReader(open(CSV)) if not r["pair"].startswith("ALL")]
     ratios = [float(r["ratio"]) for r in src]
-    assert f"Across {['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][len(src)]} pairs" in body
+    word = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][len(src)]
+    assert re.search(rf"\b{word} (?:model )?pairs\b", body), f"the prose does not say {word} pairs"
     assert f"between $({min(ratios):.2f}".replace("(", "") in body or \
         f"${min(ratios):.2f}$ and $${max(ratios):.2f}$".replace("$$", "$") in body or \
         f"$0.88$ and $1.17$" in body    # the prose rounds the range to 2 dp

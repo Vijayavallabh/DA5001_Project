@@ -1,7 +1,8 @@
 """The two remaining main-text tables, checked against their CSVs instead of by eye.
 
-Section 3's scaling table was the one plan v5 caught with two of three rows stale; Section 5's
-order table is the only place alpha = 4 is priced. Both are small and both are hand-copied, which
+The scaling table was the one plan v5 caught with two of three rows stale; the order table is the
+only place alpha = 4 is priced. Both moved to the appendix in v6 when the main text was
+restructured around selection anchoring; they are still hand-copied, which is what this checks. Both are small and both are hand-copied, which
 is the combination that goes wrong quietly.
 """
 import csv
@@ -36,7 +37,7 @@ def test_the_scaling_table_matches_anchor_scaling_summary():
     pr = {r["corpus"]: r for r in csv.DictReader(open("results/anchor_scaling_paired.csv"))}
     rows = {"Common Corpus": "commoncorpus", "KL3M": "kl3m", "Common Pile": "commonpile"}
     seen = 0
-    for c in _cells(tex("sections/scaling.tex"), rows):
+    for c in _cells(tex("sections/appendix_robustness.tex"), rows):
         p = pr[rows[c[0]]]
         a, b = sm[p["small"]], sm[p["large"]]
         assert _num(c[2]) == rnd(100 * (float(b["c_use"]) / float(a["c_use"]) - 1), 1), (c[0], "c_use")
@@ -57,7 +58,7 @@ def test_the_order_table_matches_the_renyi_sweep_and_price():
     rows = {r"$\alpha = 1$ (KL)": 1.0, r"$\alpha = 2$": 2.0,
             r"$\alpha = 4$": 4.0, r"$\alpha = 8$": 8.0}
     seen = 0
-    for c in _cells(tex("sections/orders.tex"), rows):
+    for c in _cells(tex("sections/appendix_onset.tex"), rows):
         a = rows[c[0]]
         assert _num(c[1]) == rnd(sweep[(a, "single")], 4), (a, "single")
         assert _num(c[2]) == rnd(sweep[(a, "oracle")], 4), (a, "oracle")

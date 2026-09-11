@@ -7,9 +7,10 @@ import re
 
 from tests.manuscript import tex
 
-SECTIONS = ("iclr_intro", "frontier", "scaling", "onset", "orders", "related_work_v4",
-            "iclr_closing", "appendix_proofs", "appendix_opening", "appendix_robustness",
-            "appendix_seed", "appendix_limitations", "appendix_related", "appendix_second_anchor")
+SECTIONS = ("iclr_intro", "frontier", "onset", "orders", "selection", "experiments",
+            "related_work_v4", "iclr_closing", "appendix_proofs", "appendix_opening",
+            "appendix_onset", "appendix_robustness", "appendix_seed", "appendix_limitations",
+            "appendix_related", "appendix_selection", "appendix_second_anchor")
 # Numbers that are structural rather than measured: page/section counts, an exponent, a budget the
 # body writes as k = 10 rather than $10$.
 ALLOWED = {"1", "2", "10"}
@@ -32,19 +33,21 @@ def test_every_number_in_the_abstract_appears_in_the_body():
     assert not missing, f"in the abstract but nowhere in the body: {missing}"
 
 
-def test_the_abstract_the_intro_and_section_4_agree_on_the_pair_count():
+def test_the_abstract_the_intro_and_the_onset_section_agree_on_the_pair_count():
     """The count is spelled in words, so audit_numbers.py cannot see it at all, and it has to be
-    changed in three places every time a pair is added."""
+    changed in three places every time a pair is added. The phrasing is free; the number is not."""
     import csv
     n = len([r for r in csv.DictReader(open("results/onset_table.csv"))
              if not r["pair"].startswith("ALL")])
     word = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n]
-    a = _abstract().replace("\n", " ")
-    i = open(tex("sections/iclr_intro.tex"), encoding="utf-8").read().replace("\n", " ")
-    s4 = open(tex("sections/onset.tex"), encoding="utf-8").read().replace("\n", " ")
-    assert f"across {word} model pairs with {word} distinct anchors" in a, a[:0] or word
-    assert f"Across {word} pairs with {word} distinct anchors" in i, word
-    assert f"Across {word} pairs with {word} distinct anchors" in s4, word
+    places = {"abstract": _abstract(),
+              "intro": open(tex("sections/iclr_intro.tex"), encoding="utf-8").read(),
+              "onset": open(tex("sections/onset.tex"), encoding="utf-8").read()}
+    for where, body in places.items():
+        found = re.findall(r"(\w+) (?:model )?pairs with \1 distinct anchors",
+                           body.replace("\n", " "))
+        assert found, f"{where} does not state the pair count beside the anchor count"
+        assert all(f.lower() == word for f in found), (where, found, word)
 
 
 def test_every_results_file_the_paper_names_exists():

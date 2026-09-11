@@ -113,14 +113,20 @@ stray git repo it sits inside.
 
 If you are here to work:
 1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
-2. No feature is open. The read-through is done end to end (2026-09-11, thirteen corrections):
-   every table in the compiled document has been checked against its own CSV mechanically.
-   Four live cautions: a paper number must round
-   from its CSV ONCE -- double rounding put six of Appendix D's 72 cells one off, and reading
-   a table against its CSV mechanically is what found that and five stale seed-words besides; a pair enters the onset analysis only if its
-   SAMPLED k=-1 recall >= 0.10 (greedy recall lies); every arm is pre-registered with a
-   refuting band in results/onset_prediction_*.md, so score against the band and do not
-   refit; and pkill -f matches the shell that runs it -- kill by PID.
+2. feat-088 is OPEN and may still be running: 64 anchor candidates on the 500 ordinary prompts
+   (output/phase5/sel_anchor64, log output/logs/sel_anchor64.log) with a chained scoring pass
+   (output/logs/sel_scaling.log). Its bands were committed BEFORE it ran, in
+   results/onset_prediction_selection_scaling.md -- score against them and do not refit.
+   Everything else is done. The paper was restructured on 2026-09-11 (feat-089): it now argues
+   that metering PER TOKEN is the obstruction, and selection anchoring is Sections 5-6 rather
+   than an appendix. Six live cautions: a paper number must round from its CSV ONCE -- double
+   rounding put six of Appendix D's 72 cells one off, and 849 was being quoted as 850; a pair
+   enters the onset analysis only if its SAMPLED k=-1 recall >= 0.10 (greedy recall lies);
+   every arm is pre-registered with a refuting band in results/onset_prediction_*.md;
+   pkill -f matches the shell that runs it, so kill by PID; killing a h1.py PARENT leaves the
+   CUDA child running and holding GPU memory, so check nvidia-smi --query-compute-apps and kill
+   the child too; and textwrap.fill breaks words at hyphens, which LaTeX renders as 'per- token',
+   so pass break_on_hyphens=False and check with grep -n '[a-zA-Z]-$' sections/*.tex.
 3. If you change something, rerun its evidence command, update feature_list.json and progress.md,
    and recompile the manuscript (0 '??', 0 overfull, no body prose on pdftotext page 10)
 "
