@@ -899,6 +899,24 @@
       ],
       "description": "Reinvent the manuscript for an ICLR oral: centre it on what worked rather than on the audit. The paper now argues one claim -- the obstruction to an inference-time copyright certificate is METERING PER TOKEN, not budgeting, because K = kT is denominated in the quantity it protects -- and exhibits selection anchoring, whose budget log n is not. Structure: intro (the claim plus the four falsified hypotheses that produced it), Section 2 theory as a diagnostic frame, Section 3 the nine-pair onset compressed to 0.35 page, Section 4 'Three repairs, and why each fails' ending on the AUC diagnosis, Section 5 the mechanism (Prop 3 promoted from Appendix H), Section 6 the experiments, then related work, limitations and conclusion. Figure 1 is new and two-panel: (a) K = kT and S(x) = s(x)T are both rays so vacuity is decided by k/s(x) and never by length, while log n is horizontal; (b) the utility-against-divergence frontier. sections/scaling.tex retired into appendix_robustness; the nine-pair and order tables moved to a new appendix_onset.tex. Tests follow the moved content rather than being deleted.",
       "evidence": "cd ~/sub/satml && tectonic -X compile iclr_2027.tex\nexit=0 overfull=0 unresolved=0\nbody lines on page 10 before Ethics: 0   (main text exactly 9 of 9 pages, 39 total)\n$ .venv/bin/python -m pytest -q tests   ->  260 passed\n$ SATML_DIR=~/sub/satml .venv/bin/python analysis/audit_numbers.py\n  1819 numeric literals in math mode; 1 appear in no CSV  (64256, the Comma-7B padded embedding count, expected)"
+    },
+    {
+      "id": "feat-090",
+      "status": "done",
+      "dependencies": [
+        "feat-089"
+      ],
+      "description": "Close as much of the paper's stated theoretical gap as is closable, and measure what is left. Proposition 3 bounds the DEPLOYED rule; the paper called an arbitrary causal policy under a sequence budget open, saying it 'could in principle concentrate its spend'. Proposition 5 (chain rule + Markov) turns that into a requirement: for causal q with D_KL(q||p_s) <= K, the expected number of steps with D_KL(q_t||p_s,t) > eps is at most K/eps, so an affordable policy is the anchor at all but O(1) steps -- and a selection rule is not a causal policy at all, which is why its log n sits outside the chain rule. Separately, measure both factors of Proposition 3 per step rather than per arm, on logs already on disk.",
+      "evidence": ".venv/bin/python analysis/imitation_cost.py --out results\n  ordinary  k=  0.1  n= 1500  beta=0.9597  imit=0.0337  realised=0.0465 nats/tok  spend/cap=0.465  R2=0.9776\n  ordinary  k=    3  n= 1500  beta=0.0337  imit=0.8278  realised=0.8250 nats/tok  spend/cap=0.275  R2=0.9915\n  ordinary  k=   20  n= 1500  beta=0.0005  imit=0.8570  realised=0.8565 nats/tok  spend/cap=0.043  R2=0.9916\n  protected k=   20  n=  300  beta=0.0000  imit=0.9109  realised=0.9109 nats/tok  spend/cap=0.045  R2=0.9918\nwrote results/imitation_cost.csv (18 rows)\nSpend concentration at k=20: busiest 1% of steps carry 5.8%; covering 90% takes 64% of the sequence.\nManuscript: sections/frontier.tex (body, same 7 lines), sections/appendix_proofs.tex (table +\nProposition 5 + proof), sections/iclr_closing.tex (the gap narrowed to its quantitative half).\n.venv/bin/python -m pytest -q tests -> 272 passed\ntectonic exit=0, overfull=0, unresolved=0, main text 9 of 9 pages, 41 total, 1960 literals\nwith the one expected miss (64256)."
+    },
+    {
+      "id": "feat-091",
+      "status": "not-started",
+      "dependencies": [
+        "feat-088"
+      ],
+      "description": "Bound the instrument the constructive claim rests on. The +0.081 cross-judge gain is judged by an LLM shown one random presentation order; a human preference study is the decisive experiment and cannot be run from here. Re-judge the identical 500-prompt, two-arm cross-judge items in BOTH orders and report C1 order consistency, C2 first-slot win rate, C3 the gain re-estimated on order-averaged utility. Bands committed before the run in results/onset_prediction_judge_consistency.md. Queued behind feat-088 so it does not contend for the same card.",
+      "evidence": ""
     }
   ]
 }

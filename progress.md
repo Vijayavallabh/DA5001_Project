@@ -3439,3 +3439,82 @@ the val/test/attack_train classes, which selection does not use, at 45% of the c
 survived reparented to init, holding 20 GB and competing for the same GPU for an hour. Killing the
 parent of a `h1.py` run does not stop the work; check `nvidia-smi --query-compute-apps` for an
 orphan and kill it by PID. This is caution (c) in a new form.
+
+### feat-090 — the theoretical gap, narrowed; Proposition 3 measured per step
+
+Two things, both zero GPU, both on logs already on disk.
+
+**1. Proposition 3's two factors, measured per step rather than per arm.** On a step where the
+bucket is slack the solve returns `p_r` unchanged, so the charge `a_t` *is*
+`D_KL(p_r,t || p_s,t)`. The proposition's right-hand side is therefore measured, not estimated:
+sum `a_t` over the steps the log marks risky-unchanged.
+
+```bash
+.venv/bin/python analysis/imitation_cost.py --out results   # -> results/imitation_cost.csv
+```
+
+| k | K | β | imitation rate | realised rate | spend / K | median R² (cum. vs t) |
+|---|---|---|---|---|---|---|
+| 0.1 | 20 | 0.9597 | 0.034 | 0.047 | 46.5% | 0.978 |
+| 0.5 | 100 | 0.6014 | 0.359 | 0.392 | 78.5% | 0.999 |
+| 3 | 600 | 0.0337 | 0.828 | 0.825 | 27.5% | 0.992 |
+| 20 | 4000 | 0.0005 | 0.857 | 0.857 | 4.3% | 0.992 |
+
+Two regimes in one column: below the imitation rate the meter binds nearly everywhere and the
+decoder spends most of its allowance; above it the meter goes slack, the rate stops at **0.857
+nats/token**, and the rest of the certificate is unreachable. The crossover is not a risk level —
+it is the pair's mean `D_KL(p_r||p_s)`, exactly what Eq. (req) says a decoder must **afford**. That
+half of the refuted onset refinement is confirmed directly; its prediction of where leakage
+*begins* stays refuted, and the appendix says so. Protected passages are charged a higher rate
+(0.911 vs 0.857): the meter charges most where the risky model is most distinctive from the anchor.
+
+Two traps recorded in the code. A cross-trajectory regression of spend on generation **length**
+tests nothing here — every trajectory runs to `T_max`, p5 200 / p95 211 tokens, so the regressor has
+no spread and R² came out at 0.002. The variation that exists is *across steps within* a
+trajectory. And `β` counts the prefix-debt opening as well as the interior blends: at k=3 it is
+3.4%, while the interior blends alone are 0.3% — the same order as the order table's 0.4%, and
+conflating them put 0.4% where 3.4% belonged in a first draft of the sentence.
+
+**Also found:** `output/sweep_plain`'s aggregate step counters were written from a truncated buffer
+— a k=0.1 record reports 1 step for a 200-step trajectory. The per-step log is the source of truth;
+the scan asserts against the aggregate only where its three counters add up to T.
+
+**2. Proposition 5.** The paper said an arbitrary causal policy under a sequence budget "could in
+principle concentrate its spend on the steps that matter". The chain rule plus Markov makes that a
+requirement: for causal `q` with `D_KL(q||p_s) ≤ K`, the expected number of steps at which
+`D_KL(q_t||p_s,t) > ε` is at most `K/ε`. With `K = Λ*_s(u)` fixed and T growing, an affordable
+policy is the anchor at all but O(1) steps. The deployed rule is the opposite and by a measured
+margin — at k=20 it serves `p_r` unchanged at 99.95% of steps, the busiest 1% of steps carry 5.8%
+of the spend, and covering 90% of it takes 64% of the sequence. A **selection rule is not a causal
+policy at all**: every token it emits is drawn from `p_s`, so `N_ε = 0` identically, and its `log n`
+is spent on which draw to serve — the one place the chain rule does not reach. That is the precise
+content of the title. Limitations now says what is still open: the quantitative half, how close a
+sparse causal policy can come to Theorem 1's frontier.
+
+A pointer from Section 5 to Proposition 5 was drafted and reverted: one extra source line there
+reflowed four lines of the Conclusion onto page 10. Caution (i) again, at a 1-in / 4-out ratio.
+
+**Verification.** `exit=0`, `overfull=0`, `unresolved=0`, main text **9 of 9 pages** with no body
+prose on page 10, 41 total, **272 tests**, 1960 numeric literals with the one expected miss.
+
+### feat-091 — pre-registered, queued behind feat-088
+
+`results/onset_prediction_judge_consistency.md` was committed before anything ran, then corrected
+**before the run** (the cross-judge arm is 500 prompts, not 600; no band moved). The decisive
+experiment for "is +0.081 real?" is a human preference study, which cannot be run from inside this
+harness and stays named future work in Limitations. What can be measured is how much of judge B's
+verdict is a property of the responses rather than of their order:
+
+```bash
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/judge_consistency.py --out results
+```
+
+Re-judges the identical 500-prompt, two-arm cross-judge items in **both** presentation orders —
+2,000 judge calls, no generation. Bands: C1 order consistency (STABLE ≥ 0.70), C2 first-slot win
+rate (BALANCED within 0.05), C3 the gain re-estimated on order-averaged utility (SURVIVES if the
+paired CI excludes 0 and the estimate is within 0.05 of +0.081). Five alternatives excluded by
+name, including the tempting one: reporting only the order-consistent subset as the headline.
+
+Chained to start after `results/selection_scaling.csv` lands, so it does not contend with feat-088
+for GPU 4. Log: `output/logs/judge_consistency.log`.
