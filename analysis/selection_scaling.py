@@ -122,6 +122,9 @@ def main():
     ap.add_argument("--limit", type=int, default=0,
                     help="score only the first N prompts. For smoke tests only: the bands assume 500.")
     ap.add_argument("--reward-cache", default="results/selection_rewards64.csv")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the output filenames, so a second corpus "
+                         "(AlpacaEval) does not overwrite the first")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
@@ -230,12 +233,12 @@ def main():
             r["spearman_u_logn"] = round(rho, 4)
 
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "selection_scaling.csv")
+    path = os.path.join(a.out, f"selection_scaling{a.tag}.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
-    ppath = os.path.join(a.out, "selection_scaling_per_prompt.csv")
+    ppath = os.path.join(a.out, f"selection_scaling_per_prompt{a.tag}.csv")
     with open(ppath, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["judge", "prompt_id"] + [f"u_n{n}" for n in grid])
