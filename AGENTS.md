@@ -15,7 +15,7 @@ Before writing code:
 1. `pwd` must be this repo root.
 2. Read this file completely, then `.claude-private/plans/radiant-stargazing-newell.md` (plan v5, the current spec) and, before touching Related Work, `~/sub/satml/LITERATURE_REVIEW.md`.
 3. Run `./init.sh`. If it fails, repair that first before adding scope.
-4. Read `feature_list.json`, `progress.md` and `session-handoff.md`; pick the lowest-numbered feature whose dependencies are `done` and whose status is `not-started` or `in-progress`. As of 2026-09-11 **every feature through feat-084 is `done`** and the manuscript is verified end to end; the remaining work is a full read-through and whatever the plan opens next. feat-010/011 remain optional and unstarted, feat-012 is superseded by feat-024, **feat-060 is withdrawn as invalid**, and **feat-016 is human-only and must never be started**.
+4. Read `feature_list.json`, `progress.md` and `session-handoff.md`; pick the lowest-numbered feature whose dependencies are `done` and whose status is `not-started` or `in-progress`. As of 2026-09-11 **every feature through feat-085 is `done`** and the manuscript is verified end to end; the remaining work is a full read-through and whatever the plan opens next. feat-010/011 remain optional and unstarted, feat-012 is superseded by feat-024, **feat-060 was wrongly withdrawn on 2026-09-10 and reinstated the same day — it is `done`, and caution (b) is why**, and **feat-016 is human-only and must never be started**.
 5. `git log --oneline -5`.
 
 ## Working Rules
