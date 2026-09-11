@@ -72,8 +72,8 @@ def test_the_top_of_the_utility_scale_is_priced_from_the_same_law_as_the_rest():
     body = open(tex("sections/frontier.tex"), encoding="utf-8").read()
     lam = float(rows["3.0"]["lambda_star_u_max"])           # a property of the safe law, same on every row
     assert len({r["lambda_star_u_max"] for r in rows.values()}) == 1
-    m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats,\s*\n?and the decoder spends "
-                  r"\$(\d+)\$ times that", body)
+    m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats\s*(?:,)?\s*and the decoder\s*\n?"
+                  r"\s*spends \$(\d+)\$ times that", body.replace("\n", " "))
     assert m, "the ceiling sentence has moved"
     assert float(m.group(1)) == round(lam, 2), (m.group(1), lam)
     best = max(float(r["spend_over_lambda_star_u_max"]) for r in rows.values())

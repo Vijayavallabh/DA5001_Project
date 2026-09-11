@@ -284,18 +284,18 @@ def selection_frontier():
     x = [float(r["mean_spend_nats"]) for r in dec]
     y = [float(r["u_decoder"]) for r in dec]
     ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, $k$ swept")
-    for r in dec:
-        if r["k"] in ("0.5", "3.0", "20.0"):
-            ax.annotate(f"$k={float(r['k']):g}$", (float(r["mean_spend_nats"]),
-                                                   float(r["u_decoder"])),
-                        fontsize=6.5, xytext=(3, -8), textcoords="offset points")
+    for r, off in ((dec[0], (-26, -4)), (dec[-2], (6, -2))):
+        ax.annotate(f"$k={float(r['k']):g}$", (float(r["mean_spend_nats"]),
+                                               float(r["u_decoder"])),
+                    fontsize=6.5, xytext=off, textcoords="offset points")
 
     prim = [r for r in sel if r["rule"].startswith("per-token")]
     xs = [max(float(r["kl_nats"]), 1e-3) for r in prim]
     ys = [float(r["u"]) for r in prim]
     ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring, $n$ swept")
     for r, xv, yv in zip(prim, xs, ys):
-        ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5, xytext=(3, 4),
+        off = (4, -10) if r["n"] == "1" else (3, 5)
+        ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5, xytext=off,
                     textcoords="offset points")
     orc = [r for r in sel if r["rule"].startswith("oracle")]
     if orc:
@@ -304,9 +304,12 @@ def selection_frontier():
                 label="selection, oracle selector (a ceiling)")
 
     ax.set_xscale("log")
+    ax.set_xlim(3e-4, 2e3)
+    ax.set_ylim(0.26, 1.02)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$")
-    ax.legend(fontsize=6.8, frameon=False, loc="lower right")
+    ax.legend(fontsize=6.6, frameon=False, loc="upper left", handlelength=1.6,
+              borderaxespad=0.3)
     _save(fig, "selection_frontier")
 
 

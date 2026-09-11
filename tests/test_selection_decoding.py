@@ -66,3 +66,30 @@ def test_arms_nest_so_a_bigger_n_can_only_see_more_candidates(tmp_path):
     for n in (1, 2):
         assert got[("oracle: the judge itself", n)] >= got[("per-token mean (primary)", n)]
     assert got[("oracle: the judge itself", 2)] == 1.0
+
+
+def test_the_cross_judge_arm_is_measured_inside_one_judge():
+    """The gain the appendix quotes is judge B's n=8 minus judge B's own n=1, on the same prompts.
+    Quoting judge B's n=8 against judge A's anchor would be the easy mistake and would inflate it."""
+    import csv as _csv
+    rows = list(_csv.DictReader(open("results/selection_crossjudge.csv")))
+    sel = [r for r in rows if r["n"] in ("1", "8")]
+    assert len({r["judge"] for r in sel}) == 1
+    a1 = next(r for r in sel if r["n"] == "1")
+    a8 = next(r for r in sel if r["n"] == "8")
+    assert abs((float(a8["u"]) - float(a1["u"])) - float(a8["gain"])) < 1e-9
+    lo, hi = float(a8["gain_lo95"]), float(a8["gain_hi95"])
+    assert lo < float(a8["gain"]) < hi and lo > 0, (lo, hi)
+    assert float(a8["kl_nats"]) == round(kl_best_of_n(8), 4)
+
+
+def test_the_frontier_multiples_are_both_priced_under_the_same_law():
+    """58x against 7,995x is a ratio of two ratios; it is only meaningful if both use judge B's own
+    law of U. The decoder row must carry the same judge and a much larger multiple."""
+    import csv as _csv
+    rows = list(_csv.DictReader(open("results/selection_crossjudge.csv")))
+    sel = next(r for r in rows if r["n"] == "8")
+    dec = next(r for r in rows if r["selector"].startswith("metered decoder"))
+    assert dec["judge"] == sel["judge"]
+    assert float(dec["nats_over_frontier"]) > 100 * float(sel["nats_over_frontier"])
+    assert float(dec["kl_nats"]) > 100 * float(sel["kl_nats"])

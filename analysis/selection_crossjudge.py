@@ -37,6 +37,8 @@ def main():
     ap.add_argument("--n", type=int, default=8)
     ap.add_argument("--seed", type=int, default=4321)
     ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--decoder-summary", default="results/judge_separation_v6_judge2.csv")
+    ap.add_argument("--decoder-spend", default="results/utility_price.csv")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
@@ -102,14 +104,25 @@ def main():
         for p in order:
             w.writerow([p, per[p][1], per[p][a.n], round(per[p][a.n] - per[p][1], 4)])
 
+    # How far each mechanism sits from Theorem 1's frontier, both measured under judge B's own
+    # law of U, so the judge's absolute scale cancels in the ratio of the two multiples.
+    from analysis.utility_price import rate
+    w = sum(1 for x in us[1] if x == 1.0) / len(us[1])
+    t = sum(1 for x in us[1] if x == 0.5) / len(us[1])
+    d_b = (w, t, 1 - w - t)
+
     out = []
     for n in (1, a.n):
         lo, hi = boot_mean(us[n], rng)
+        u_n = sum(us[n]) / len(us[n])
+        lam = rate(d_b, u_n)
         out.append(dict(judge=a.judge_b, selector="judge A (Qwen2.5-7B-Instruct)" if n > 1 else "none",
                         n=n, kl_nats=round(kl_best_of_n(n), 4), n_prompts=len(us[n]),
-                        u=round(sum(us[n]) / len(us[n]), 4), u_lo95=round(lo, 4),
+                        u=round(u_n, 4), u_lo95=round(lo, 4),
                         u_hi95=round(hi, 4),
-                        win_pct=round(100 * sum(1 for x in us[n] if x == 1.0) / len(us[n]), 1)))
+                        win_pct=round(100 * sum(1 for x in us[n] if x == 1.0) / len(us[n]), 1),
+                        lambda_star=round(lam, 5),
+                        nats_over_frontier=(round(kl_best_of_n(n) / lam, 1) if lam > 1e-9 else "")))
     gain = out[1]["u"] - out[0]["u"]
     assert abs(gain - sum(diffs) / len(diffs)) < 1e-9
     verdict = ("REAL: the capacity survives an independent judge" if gain >= 0.244 else
@@ -120,6 +133,23 @@ def main():
         print(f"  judge B, n = {r['n']:2d}  KL {r['kl_nats']:.3f}  u = {r['u']:.4f} "
               f"[{r['u_lo95']:.3f}, {r['u_hi95']:.3f}]  win {r['win_pct']:.1f}%")
     print(f"  gain = {gain:+.4f}  paired 95% CI [{d_lo:+.4f}, {d_hi:+.4f}]  ->  {verdict}")
+    # the metered decoder's best arm under the SAME judge, from the separation CSV already on
+    # record, priced the same way. Not re-run; this is a read.
+    dec = [r for r in csv.DictReader(open(a.decoder_summary))
+           if r["decoder"] == "KL" and float(r["k"]) > 0]
+    best = max(dec, key=lambda r: float(r["utility"]))
+    spend = {r["k"]: float(r["mean_spend_nats"])
+             for r in csv.DictReader(open(a.decoder_spend))}[f"{float(best['k']):.1f}"]
+    lam_d = rate(d_b, float(best["utility"]))
+    out.append(dict(judge=a.judge_b, selector=f"metered decoder at k = {float(best['k']):g}",
+                    n="", kl_nats=round(spend, 2), n_prompts=int(best["n_judged"]),
+                    u=round(float(best["utility"]), 4), u_lo95="", u_hi95="",
+                    win_pct="", lambda_star=round(lam_d, 5),
+                    nats_over_frontier=round(spend / lam_d, 1)))
+    print(f"  metered decoder, k = {float(best['k']):g}: {spend:.1f} nats, u = {best['utility']}, "
+          f"{spend / lam_d:.1f}x the frontier against selection's "
+          f"{kl_best_of_n(a.n) / rate(d_b, out[1]['u']):.1f}x")
+
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, "selection_crossjudge.csv")
     with open(path, "w", newline="") as fh:

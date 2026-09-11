@@ -61,7 +61,9 @@ def test_committed_summary_matches_the_manuscript_upper_bound():
     if not path.exists():
         return
     s = {r["quantity"]: float(r["gpu_hours"]) for r in csv.DictReader(open(path))}
-    assert s["one_gpu_jobs"] + s["two_gpu_jobs"] == s["total"]
+    # each component is rounded to 1 dp independently of the total, so they can disagree by
+    # one rounding unit -- 120.7 + 15.2 reads 135.9 against a total of 135.8.
+    assert abs(s["one_gpu_jobs"] + s["two_gpu_jobs"] - s["total"]) <= 0.1
     assert s["fine_tunes"] <= s["one_gpu_jobs"]
     from tests.manuscript import tex as _tex
     tex = pathlib.Path(_tex("iclr_2027.tex"))
