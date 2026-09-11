@@ -2977,3 +2977,37 @@ whole-work medians, `1.32`-`1.48` and `1.35`-`1.41` after one supplied token, `8
 no-free-lunch table at all four budgets, the bootstrap floor of `1.3e3`-`8.6e3`, the marginal-price
 table cell for cell, the seven-pair onset table with its intervals, and every `\cite` key against
 `references.bib` (158 cited, 67 in the compiled document, none missing).
+
+### feat-083 (2026-09-11): the residue is not the burstiness Proposition 2 names, and s(x) beats k_crit by 3.8x
+
+```
+.venv/bin/python analysis/onset_burstiness.py --out results   # -> results/onset_burstiness.csv
+```
+
+Pre-registered at `33dfcef` with a refuting band, a predicted sign and three named-and-excluded
+alternative statistics **before the quantity was computed** -- the test costs no GPU and thirty
+seconds, so nothing but the commit separates a hypothesis from a story.
+
+**Refuted, and not marginally.** Spearman between each pair's `k_crit/s(x)` and its onset ratio is
+**+0.036** at exact p = 0.96, inside the committed refuting band |rho| < 0.6. The two *burstiest*
+pairs by a factor of three (4.30 and 4.73 against 1.54-1.96) sit at onset ratios of 0.887 and 0.892,
+in the middle of the coarse family, while the two pairs above 1 are the second and third *least*
+bursty. The residue stays unexplained and Limitations keeps saying so.
+
+**The corollary is a positive result the paper could not previously state.**
+`results/collapse_robustness.csv` lists `k_crit` among the normalisers with `nan` at n=0, because
+its `k/k_crit` overlap window is empty on these grids. Ranking the seven pairs instead:
+
+```
+coefficient of variation across the seven pairs
+  onset / s(x)      0.1154
+  onset / k_crit    0.4340      3.8x worse
+```
+
+The running maximum is **3.8x the worse unit for where leakage begins**, even though it is the right
+one for when a work becomes *reproducible*. Proposition 1 and Proposition 2 bound different things,
+and this is the first measurement that separates them between pairs rather than asserting the
+distinction. Section 4 says so in one clause that cost no reflow, Appendix C carries the ranking and
+the wrong-side-of-it detail, and Limitations names the refuted candidate.
+
+**221 tests. Main text still exactly 9 of 9 pages; 33 total, 0 overfull, 0 `??`.**
