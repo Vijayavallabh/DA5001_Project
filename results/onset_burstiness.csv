@@ -1,5 +1,6 @@
 pair,n,s_mean,k_crit,burstiness,onset,ratio,onset_over_k_crit
 Pleias-1.2B + mem. Pleias-1.2B,100,3.2094,4.9422,1.5399,2.819,0.8784,0.5704
+open-calm-3b + mem. open-calm-3b,100,3.3792,5.2082,1.5412,3.357,0.9934,0.6446
 open-calm-1b + mem. open-calm-1b,100,3.3628,5.1847,1.5418,3.4524,1.0266,0.6659
 Pleias-350M + mem. Pleias-350M,100,3.5544,5.5027,1.5482,3.1796,0.8946,0.5778
 KL3M-520M + mem. KL3M-520M,100,2.4147,3.7912,1.57,2.5429,1.0531,0.6707

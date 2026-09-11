@@ -7,3 +7,4 @@ KL3M-1.7B + mem. KL3M-1.7B,alea-institute/kl3m-003-1.7b,100,58045,113471,0.5115,
 KL3M-520M + mem. KL3M-520M,alea-institute/kl3m-002-520m,100,58045,113471,0.5115,1.955,2.4147,1.2352,2.5429,1.3008,1.0531,1.0531
 Phi-3.5-mini + mem. Phi-3.5-mini,microsoft/Phi-3.5-mini-instruct,100,28874,110051,0.2624,3.811,2.8374,0.7444,2.6277,0.6894,0.9261,0.9261
 open-calm-1b + mem. open-calm-1b,output/phase5/anchor_opencalm1b,100,40998,112497,0.3644,2.744,3.3628,1.2255,3.4524,1.2582,1.0266,1.0266
+open-calm-3b + mem. open-calm-3b,output/phase5/anchor_opencalm3b,100,40998,112497,0.3644,2.744,3.3792,1.2315,3.357,1.2234,0.9934,0.9934

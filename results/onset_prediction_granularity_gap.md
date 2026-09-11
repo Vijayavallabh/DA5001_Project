@@ -322,3 +322,74 @@ strong memoriser at the same granularity, the same $s(x)$ and the same seed answ
 
 Committed now, before the sweep, with the grid fixed by the rule and the entry gate unchanged.
 Whatever it returns is reported beside the 1B, as the pre-registration said it would be.
+
+## Scored: the 3B lands between the clusters too, with a memoriser five times stronger
+
+```
+CUDA_VISIBLE_DEVICES=1 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 .venv/bin/python \
+  analysis/composition_attack.py \
+  --safe-model output/phase5/anchor_opencalm3b --risky-model output/phase5/mem_opencalm3b \
+  --k-values -1 0 1.86 2.2 2.53 2.87 3.04 3.21 3.38 3.55 3.89 4.39 5.24 \
+  --modes single --limit 100 --out output/phase5/fine_opencalm3b
+SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-3b + mem. open-calm-3b" \
+  output/phase5/anchor_opencalm3b output/phase5/mem_opencalm3b \
+  output/phase5/fine_opencalm3b/composition_summary.csv 1
+```
+
+**Entry gate: sampled $k=-1$ recall $0.924$**, against the 1B's $0.181$ and the seven others'
+$0.41$--$0.91$. This is the strongest memoriser in the set, and it is the direct answer to the one
+pre-registered confound that fired. The anchor alone reproduces $0.000$. Zero per-trajectory
+violations in all eleven budgeted cells; the largest single-query $Z/K$ is $0.9935$.
+
+```
+k      -1     0   1.86  2.2   2.53  2.87  3.04  3.21  3.38  3.55  3.89  4.39  5.24
+k/s(x)  --    --  0.55  0.65  0.75  0.85  0.90  0.95  1.00  1.05  1.15  1.30  1.55
+recall 0.924 0.000 0.000 0.000 0.000 0.000 0.002 0.002 0.011 0.014 0.074 0.144 0.244
+```
+
+**onset $= 3.357$, onset$/s(x) = 0.9933$, $95\%$ CI $[0.9585, 1.0746]$, no-crossing $0.0\%$.**
+
+That is the **first** committed outcome: *the 3B lands between the clusters too, $0.927$--$1.052$ ---
+the position belongs to the granularity and the context it sets, not to the 1B's weak memorisation.*
+It is also the narrowest interval of the nine pairs, $0.116$ wide against the 1B's $0.510$, because a
+strong memoriser crosses the threshold steeply rather than by ones and twos.
+
+What the pair holds fixed was fixed before either number existed: the same tokenizer and therefore
+the same $2.71$ characters per token and the same $9.5$-word seed, $s(x)$ of $3.379$ against $3.363$
+($+0.5\%$), $k_{\mathrm{crit}}/s(x)$ of $1.541$ against $1.542$. What differs is the scale and the
+memoriser: $s_r/s_s$ is $0.093$ against the 1B's $0.124$, and sampled $k=-1$ recall is $5.1\times$
+higher. Both pairs sit between the families; neither sits with either.
+
+### Every number, recomputed at nine pairs
+
+| quantity | eight pairs | nine pairs |
+|---|---|---|
+| seed-words rank correlation | $-0.946$, $p = 0.0013$ | $\mathbf{-0.958}$, $p = \mathbf{0.0002}$ |
+| collapse spread, single, $k/s \in [0.7, 1.2]$ | $0.027$ | $0.027$ |
+| $s(x)$ range, nats per token | $1.61\times$ | $1.61\times$ |
+| onset ratio, mean $\pm$ sd | $0.969 \pm 0.096$ | $0.971 \pm 0.091$, range $0.878$--$1.166$ |
+| normaliser cv: $s(x)$ / raw / $r$ / $k_{\mathrm{crit}}$ | $10.9$ / $14.7$ / $25.3$ / $40.4\%$ | $10.2$ / $15.0$ / $23.8$ / $37.7\%$ |
+| normaliser spread: raw / $s(x)$ / $r$ | $0.0370$ / $0.0268$ / $0.0262$ | $0.0370$ / $0.0268$ / $0.0262$ |
+| burstiness $\rho$ (feat-083) | $-0.024$, $p = 0.98$ | $-0.050$, $p = 0.91$ |
+| cv(onset$/k_{\mathrm{crit}}$) vs cv(onset$/s(x)$) | $0.404$ vs $0.109$ | $0.377$ vs $0.102$ |
+| Eq.~\eqref{eq:req} held-out error against a constant | constant wins, $0.242$ vs $0.377$ | constant wins, $0.227$ vs $0.386$ |
+| matched-context subgroup ($> 10$ words) | $n = 4$, cv $2.6\%$, $p = 0.018$ | $n = 5$, cv $2.4\%$, $p = \mathbf{0.008}$ |
+
+Nothing reverses. $s(x)$ is still the best of four normalisers, the burstiness correlation feat-083
+refuted is refuted a little harder, and the two quantities that were predicted in advance --- the
+seed-words correlation and the matched-context subgroup --- are the two that improve most.
+
+### What the two open-calm pairs do and do not settle
+
+They settle the confound they were built for. A weak memoriser ($0.181$) and a strong one ($0.924$)
+at the same granularity, the same $s(x)$ to within half a percent and the same seed give $1.027$ and
+$0.993$; the five coarse pairs give $0.878$--$0.926$ and the two fine pairs $1.053$--$1.166$. Neither
+open-calm pair reaches either group, and the difference between the two of them ($0.033$) is smaller
+than the width of either group. **Memoriser strength was not doing the work.**
+
+They do not make the account causal. Seed words is still $20\times$ characters per token by
+construction, so granularity and context move together and these are two more observational points,
+not an intervention; the five seed interventions in Appendix~\ref{app:seed} remain the only evidence
+that moves the variable directly. And per the addendum committed before any of these numbers
+existed, exactly where inside $0.927$--$1.052$ a pair lands carries no information and is not
+reported as if it did.
