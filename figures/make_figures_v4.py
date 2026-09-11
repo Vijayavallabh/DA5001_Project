@@ -327,7 +327,7 @@ def selection_frontier():
             best = max(best, f)
         return best
     ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
-            label=r"$\Lambda^*_s(u)$, the frontier of Thm.~1")
+            label=r"$\Lambda^*_s(u)$, the frontier of Thm. 1")
 
     x = [float(r["mean_spend_nats"]) for r in dec]
     y = [float(r["u_decoder"]) for r in dec]
