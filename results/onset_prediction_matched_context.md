@@ -83,3 +83,82 @@ grid extended upward by the rule already in force.
 an arm for being inconvenient, no second matched word count chosen after seeing the first, and no
 substitution of the near-verbatim metric for the substring metric if the substring answer is less
 tidy. One matched target ($13.6$--$15.0$ words), one primary metric, both fixed here.
+
+## Scored: the context carries $61\%$ of the split
+
+```
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/budget_path.py \
+  --safe-model output/phase5/anchor_opencalm{1b,3b} --composition '' --limit 100 \
+  --seed-tokens 30 --out results --prefix budget_path_opencalm{1b,3b}_seed30
+.venv/bin/python analysis/grid_from_sx.py --budget-path results/budget_path_opencalm1b_seed30.csv
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES={2,1} HF_HUB_OFFLINE=1 .venv/bin/python \
+  analysis/composition_attack.py --safe-model output/phase5/anchor_opencalm{1b,3b} \
+  --risky-model output/phase5/mem_opencalm{1b,3b} --seed-tokens 30 --modes single --limit 100 \
+  --k-values -1 0 1.84 2.17 2.51 2.84 3.01 3.18 3.35 3.51 3.85 4.35 5.18 \
+  --out output/phase5/seed30_opencalm{1b,3b}
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py \
+  --manifest results/matched_context_runs.tsv --out <scratch>
+.venv/bin/python analysis/context_intervention.py --rows <scratch>/seed_effect.csv --out results
+```
+
+**Entry gates.** open-calm-1b at $30$ tokens reproduces its target at sampled $k=-1$ recall
+$0.242$, *above* its $20$-token control's $0.181$; open-calm-3b reads $0.915$ against $0.924$.
+Neither halves its control, so the exclusion rule does not fire and both enter. Zero per-trajectory
+violations in either sweep. $s(x)$ moves by $0.5\%$ and $0.7\%$ under the longer seed while
+$k_{\mathrm{crit}}$ falls $11.3\%$ and $11.1\%$ --- the same signature the five earlier
+interventions have, and the reason the onset moves at all.
+
+**The two blind arms land in the committed band.**
+
+| arm | words | onset$/s(x)$ | $95\%$ CI | band |
+|---|---|---|---|---|
+| open-calm-1b, seed $30$ | $14.63$ | $0.959$ | $[0.88, 1.10]$ | inside $[0.85, 0.96]$, at its upper edge |
+| open-calm-3b, seed $30$ | $14.63$ | $0.919$ | $[0.87, 0.96]$ | inside $[0.85, 0.96]$ |
+
+The first outcome fires for both: *handed a coarse-family context they behave like coarse-family
+pairs*. The 1B sits on the band's upper edge at $0.959$ and that is reported as an edge, not as a
+comfortable hit.
+
+**The aggregate, on all nine pairs in one pipeline.**
+
+```
+pair            seed20 words ratio   matched words ratio   move
+Comma-7B               14.1 0.879           14.1 0.879   +0.000
+KL3M-1.7B               7.5 1.155           14.8 0.979   -0.176
+KL3M-520M               7.5 1.032           14.8 0.939   -0.093
+Phi-3.5-mini           13.9 0.926           13.9 0.926   +0.000
+Pleias-1.2B            14.6 0.866           14.6 0.866   +0.000
+Pleias-350M            13.9 0.893           13.9 0.893   +0.000
+TinyComma-1.8B         15.0 0.866           15.0 0.866   +0.000
+open-calm-1b            9.5 1.001           14.6 0.959   -0.042
+open-calm-3b            9.5 0.981           14.6 0.919   -0.062
+
+spread at the benchmark's 20-token seed : 0.2891  (cv 9.6%)
+spread at a matched 13.6-15.0 word seed : 0.1132  (cv 4.2%)
+S_match / S_20 = 0.392
+```
+
+$0.392 \le 0.5$, so the committed reading is **the adversary's context is the dominant cause of the
+split**: $61\%$ of the spread across nine pairs is the evaluation's fixed-token seed convention and
+not a property of the pairs. The near-verbatim metric, computed in the same pass and reported beside
+it as committed, gives $0.2875 \to 0.1147$, $S_{\mathrm{match}}/S_{20} = 0.399$ --- the same answer
+to three decimals of the fraction.
+
+**What makes this causal rather than circular.** Equalising a variable that correlates with an
+outcome does not have to shrink the outcome's spread. If the ranking in Section~\ref{sec:onset} were
+granularity acting through something other than the context --- vocabulary, target length, the
+tokenizer's fit to English prose --- then lengthening the seed would leave the ratio where it was,
+because none of those changes. All four pairs that were not already at fourteen words moved, all
+four moved **down**, and all four landed inside or on the edge of the band the five unmoved pairs
+occupy. The five that did not move are the ones that were already at the matched context; they are
+the control, not the effect.
+
+**The residue is real and is not being hidden.** $0.113$ of spread survives, and the two KL3M pairs
+are still the top of it at $0.979$ and $0.939$ against the others' $0.866$--$0.926$. The claim
+scored here is a fraction, not a closure, and the pre-registration said so before the numbers
+existed.
+
+**One rule fired on the way.** Pleias-350M's bootstrap no-crossing fraction read $3.6\%$ in the
+substring metric, above the $1\%$ this file commits to, so its grid was extended to
+$k \in \{5, 6, 7\}$. As the rule predicts of an upward extension, the onset is unmoved at $0.893$
+and only the interval's upper end widens, $1.127 \to 1.20$; the no-crossing fraction goes to $0.0\%$.
