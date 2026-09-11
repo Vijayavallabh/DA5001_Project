@@ -216,3 +216,34 @@ That is a second, independent demonstration of what
 Appendix~\ref{app:proofs} argues from the scheduling side. The metered decoder's $165$ nats are not
 inefficiently spent on utility; they are efficiently spent on a target that is not utility. Give the
 same target to a mechanism that spends $1.2$ nats instead of $165$ and it buys exactly as little.
+
+## A follow-up arm, committed before it was run: is the oracle's $0.807$ a real capacity or a judge artefact?
+
+The oracle arm is scored by the judge that chose it, so its number is an upper bound and the
+pre-registration says so. But the reading it licenses --- *the capacity is there and the signal is
+what is missing* --- is the interesting half of this feature, and it is testable with a judge that
+did not do the choosing. The paper already carries a second judge for exactly this reason.
+
+**The arm.** Select among the same eight candidates by **judge A**'s verdict (Qwen2.5-7B-Instruct,
+already computed; ties broken by the per-token likelihood, deterministically), then score the
+selected completion with **judge B** (Phi-3.5-mini-instruct), against the same unconstrained
+baseline completion, order randomised per pair. The $n=1$ control is scored by judge B on the same
+$500$ prompts, so the gain is measured entirely inside judge B.
+
+This is not the same mechanism as the committed arm and does not replace it. The committed arm is
+refuted and stays refuted. What this asks is narrower: *does a quality signal, any quality signal,
+convert $1.2$ nats into judged utility the metered decoder cannot buy at $171$?*
+
+| outcome for $u_B(8) - u_B(1)$ under judge B | reading |
+|---|---|
+| $\ge 0.244$, half the gain judge A saw | the capacity is real and not an artefact of scoring with the selecting judge. $1.2$ nats of selection, given a usable signal, buys more than $171$ nats of metering |
+| $0.10$ to $0.244$ | real but substantially inflated by the circularity; reported with both numbers |
+| $< 0.10$ | the oracle's $0.807$ was largely an artefact of being scored by its own selector, and the honest conclusion is only that the committed selector fails |
+| $< 0$ | judge B disagrees with judge A about what selection improved, which is the disagreement Section~\ref{sec:orders} already reports between these two judges and would be reported again |
+
+A judge is a deployable selector --- it is a reward model --- so a positive result here is a
+statement about a mechanism somebody could run, not only about an oracle. Its cost is the $n$
+generations plus $n$ reward calls per response, stated as before.
+
+Nothing else changes. No third judge, no re-tuning of $n$, no swapping the utility definition, and
+the committed primary arm is reported as refuted whatever this returns.
