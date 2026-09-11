@@ -82,3 +82,33 @@ KL3M-520M over the same 100 CopyBench passages: the header moves `s_s` by a medi
 **-0.0012 nats per token, -0.05%** (range -0.019 to +0.011). It is not a bias worth correcting and
 the published ratios stand. The Gutenberg branch added here measures both sides on the raw prefix,
 so it does not inherit the mismatch at all.
+
+## Addendum, committed while the sweeps were still running and before any was scored
+
+Re-reading `sections/onset.tex` against the file above: **the paper already rejects
+Eq.~\eqref{eq:req} as a predictor of the onset**, and the framing above does not say so clearly
+enough. What it rejects, precisely, is the *directional* claim. On the seven CopyBench pairs the
+rank correlation between the predicted ratio $1 - s_r/s_s$ and the measured one is $-0.18$ where the
+derivation requires it positive; the pair carrying by far the most residual surprisal has the
+highest ratio of all. Three committed rules all missed, with held-out errors of $0.352$, $0.251$ and
+$0.481$ nats.
+
+What was *not* rejected is the **level**. On the three pairs used here the CopyBench pred/meas runs
+$0.865$, $1.009$, $1.076$: the equation puts the onset in the right place to within about $14\%$
+while ordering the pairs wrongly. That is the distinction this experiment is in a position to test
+and the one it is hereby restricted to:
+
+- **What is being asked.** Is the level agreement a property of the geometry, or of those sixteen
+  novels? A second corpus is the only way to tell, and the prediction for it was written down before
+  any decoding.
+- **What a pass does NOT license.** It does not reinstate Eq.~\eqref{eq:req} as a predictor and it
+  does not make it a law. The direction stays refuted; three pairs cannot revive it, since with
+  $n = 3$ the smallest attainable exact $p$ is $1/3$. If the three happen to rank correctly that
+  will be *stated with its $p$* and given no weight, exactly as the seven-pair inversion is.
+- **What a failure means.** If the levels miss on the second corpus the way the directions missed on
+  the first, then even the level agreement is a coincidence of one corpus, and the onset section
+  should say that the equation is right about what a decoder must *afford* and carries no
+  quantitative content about where leakage begins.
+
+The numeric bands, the grid, the threshold and the entry gate above are unchanged. Only the
+*reading* of each outcome is narrowed, and it is narrowed before the numbers exist.

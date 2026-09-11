@@ -80,7 +80,9 @@ def main():
                 rows.append(dict(pair=pair, alpha=o, published_k=pk,
                                  F=round(frac[pk], 4), k_matched=round(kp, 4),
                                  nats_per_window=round(a.window * (base_l - lp) / ntok, 4),
-                                 window_factor=float(f"{math.exp(min(a.window * (base_l - lp) / ntok, 700)):.3g}"),
+                                 # 6 s.f., not 3: the paper quotes these cells at 2-3 s.f., and rounding a rounded column
+                                 # a second time put six of seventy-two cells one off in the last digit
+                                 window_factor=float(f"{math.exp(min(a.window * (base_l - lp) / ntok, 700)):.6g}"),
                                  log10_factor=round(a.window * (base_l - lp) / ntok / math.log(10), 4)))
     if not rows:
         raise SystemExit(f"no grids matched {a.glob}")
