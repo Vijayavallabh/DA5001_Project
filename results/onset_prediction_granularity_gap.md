@@ -161,3 +161,30 @@ to it, and the entry gate is not yet known --- the fine-tune is at epoch 25 of 4
 loss of $0.0596$, descending monotonically from $3.139$ and slowing, so the run will end on epochs
 rather than on the $0.02$ stop-loss. A plateau is not the divergence the retry rule is written for;
 what decides the pair is the sampled $k=-1$ recall, as for every other pair.
+
+## The loss plateaued and drifted up; that is not the divergence the retry rule is for. Recorded before the check ran.
+
+The trace, with the run at epoch 33 of 40 and the memorisation check not yet executed:
+
+```
+ 1  3.1392   5  1.0476   9  0.1880  13  0.1090  17  0.0856  21  0.0720  25  0.0596  29  0.0502  33  0.0581
+ 2  2.7487   6  0.6136  10  0.1578  14  0.1026  18  0.0810  22  0.0681  26  0.0512  30  0.0505
+ 3  2.2807   7  0.3719  11  0.1391  15  0.0967  19  0.0786  23  0.0645  27  0.0495  31  0.0545
+ 4  1.6538   8  0.2507  12  0.1217  16  0.0920  20  0.0743  24  0.0625  28  0.0524  32  0.0550
+```
+
+Monotone from $3.139$ to a minimum of $0.0495$ at epoch $27$, then a drift up to $0.0581$ by epoch
+$33$ --- a $1.17\times$ rise over six epochs. **That is not divergence and the retry rule is not
+triggered.** The two runs that triggered it are on record and look nothing like this: Pleias-3B went
+$0.0386 \to 0.0437 \to 0.0786 \to 0.1291$, a $3.3\times$ rise in five epochs, and Qwen2.5-7B went
+$0.10 \to 2.26$. This is oscillation on a plateau, the run will end on epochs rather than on the
+$0.02$ stop-loss, and **what decides the pair is the sampled $k=-1$ recall, exactly as for every
+other pair**.
+
+It is worth being plain about the cost of that plateau. At $\approx 0.05$ this is the weakest
+memoriser admitted to the onset analysis --- KL3M-170M reached $0.0198$, Qwen2.5-7B $0.0415$ --- so
+if it clears the gate it clears it from below, its $s_r/s_s$ will sit at the high end of the
+$0.003$--$0.35$ the seven span, and the second pre-registered confound is the one that fires. That
+is reported beside the ratio whichever way the ratio lands. This paragraph is written now so that
+"drift, not divergence" cannot later look like a judgement made after seeing whether the pair was
+convenient.
