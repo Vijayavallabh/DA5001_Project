@@ -77,21 +77,25 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..081 are done except the optional ones; nothing is in progress. The last thread finished
-was the matched-utility line (feat-072..081): twelve pairs in seven families, an earned negative on
-every predictor, and three robustness axes (seed, corpus, ordinary workload) that move levels by
-more than the precision floor and never move the pair ranking. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
+feat-035..082 are done except the optional ones; nothing is in progress. The last thread finished
+was feat-082: the onset re-measured on a second, disjoint protected corpus, where the paper's
+central split reproduces -- the fine-tokenizer pair again the only one above 1 with its interval
+excluding it, every ratio within 0.05 of its twin on the novels. Before that, the matched-utility
+line (feat-072..081): twelve pairs in seven families, an earned negative on every predictor, and
+three robustness axes that move levels by more than the precision floor and never move the ranking. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
 feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
 
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages (measured BEFORE the Ethics heading - Ethics, Reproducibility and LLM Usage do not count),
-31 pages total, 0 overfull, 0 '??', 1373 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
+32 pages total, 0 overfull, 0 '??', 1474 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:
 1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
-2. No feature is open. The recommended next step is the full adversarial read-through in
-   session-handoff.md. Three live cautions: a pair enters the onset analysis only if its
+2. No feature is open. The main-text read-through is done (2026-09-11, eleven corrections);
+   what remains is the appendices end to end. Four live cautions: a paper number must round
+   from its CSV ONCE -- double rounding put six of Appendix D's 72 cells one off, and reading
+   a table against its CSV mechanically is what found that and five stale seed-words besides; a pair enters the onset analysis only if its
    SAMPLED k=-1 recall >= 0.10 (greedy recall lies); every arm is pre-registered with a
    refuting band in results/onset_prediction_*.md, so score against the band and do not
    refit; and pkill -f matches the shell that runs it -- kill by PID.

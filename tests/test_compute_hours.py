@@ -53,12 +53,22 @@ def test_has_finetune_reads_the_log_not_the_job_name(tmp_path):
 
 
 def test_committed_summary_matches_the_manuscript_upper_bound():
-    import csv, os
+    """The LLM-usage section quotes the total and an upper bound on the fine-tune share, and both
+    drift every time a job runs. Read them out of the manuscript rather than hardcoding them, so
+    this fails when the paper goes stale and not when the number merely moves."""
+    import csv, re
     path = ROOT / "results" / "compute_hours_summary.csv"
     if not path.exists():
         return
     s = {r["quantity"]: float(r["gpu_hours"]) for r in csv.DictReader(open(path))}
     assert s["one_gpu_jobs"] + s["two_gpu_jobs"] == s["total"]
     assert s["fine_tunes"] <= s["one_gpu_jobs"]
-    # the LLM-usage section quotes these two, rounded up
-    assert round(s["total"]) == 128 and s["fine_tunes"] <= 26
+    tex = pathlib.Path("~/sub/satml/iclr_2027.tex").expanduser()
+    if not tex.exists():
+        return
+    body = tex.read_text(encoding="utf-8")
+    total = re.search(r"approximately \$(\d+)\$ GPU-hours", body)
+    share = re.search(r"account for at most \$(\d+)\$ of those hours", body)
+    assert total and share, "the LLM-usage compute sentence has moved"
+    assert int(total.group(1)) == round(s["total"]), (total.group(1), s["total"])
+    assert s["fine_tunes"] <= int(share.group(1)), (share.group(1), s["fine_tunes"])

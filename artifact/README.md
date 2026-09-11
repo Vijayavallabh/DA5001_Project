@@ -661,3 +661,90 @@ order of magnitude and a rank, never a factor.** Workload outputs are named `ord
 `order_frontier_` prefix the pair glob matches, and `order_law.py`, `order_predictors.py` and
 `order_crossings.py` additionally skip any `_work` basename -- the same two guards the seed and
 corpus arms carry, for the same reason: one pair re-run is not two pairs.
+
+### The onset on a second protected corpus
+
+The order results were re-run on the public-domain corpus above; the **onset** was not, and the
+onset is the paper's positive claim. `--corpus-file` is now additive on `composition_attack.py` and
+on `analysis/onset_theory.py` as well, so the whole onset pipeline runs on a standalone corpus with
+the anchor, the architecture, the settings, the seed and the grid held fixed and only the protected
+work changed. In `onset_theory.py` that flag also changes what the manifest's third field means:
+with a corpus file there is no `budget_path.csv` for the new corpus, so the field is the **anchor
+model**, whose per-passage `s_s` is then measured by the same `token_nats` call that measures
+`s_r`, on the same raw prefix.
+
+```bash
+GRID="-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2"
+# the prediction, which needs no decoding -- committed before any sweep ran
+CUDA_VISIBLE_DEVICES=2 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/onset_theory.py --corpus-file data/gutenberg/excerpts.jsonl \
+    --pairs-file results/onset_theory_pairs_gutenberg.tsv --limit 100 --tag _gutenberg --out results
+# the measurement
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/composition_attack.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/memg_kl3m-002-520m \
+    --corpus-file data/gutenberg/excerpts.jsonl --k-values $GRID --modes single --limit 100 \
+    --out output/phase5/fineg_kl3m520m
+# (likewise Pleias-1.2B and Phi-3.5-mini, into fineg_pleias12b and fineg_phi35)
+.venv/bin/python analysis/onset_gutenberg.py --out results      # -> onset_gutenberg.csv
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineg_kl3m520m/composition.csv \
+  --s-x 2.3665 --label "KL3M-520M (Gutenberg)" --out results
+```
+
+```
+pair            k=-1   onset   bracket     ratio  95% CI        no-x   Eq.(req)  pred/meas   on the novels
+KL3M-520M      0.578   2.608  (2.5,2.7]   1.102  [1.07,1.42]   0.0%    2.218      0.851      1.053 [1.02,1.24]
+Pleias-1.2B    0.517   2.513  (2.5,2.7]   0.895  [0.85,1.17]   0.0%    2.463      0.980      0.878 [0.79,0.96]
+Phi-3.5-mini   0.270   2.704  (2.7,2.9]   0.949  [0.79,1.33]   0.5%    2.813      1.040      0.926 [0.80,1.09]
+```
+
+Two questions were pre-registered with bands, a fixed grid and an entry gate, all committed before
+any of these sweeps decoded a token (`results/onset_prediction_gutenberg.md`, and two addenda
+committed while the runs were in flight and nothing scored).
+
+**The paper's central split reproduces.** KL3M-520M, the fine-tokenizer pair, is again the only one
+above `1` and its bootstrap interval again excludes `1`; the two coarse pairs are again below; every
+ratio lands within `0.05` of its CopyBench twin. Leakage beginning after the certificate has gone
+vacuous is a property of the pair and not of the sixteen novels.
+
+**The level of Eq. (req) transfers and its direction does not.** `pred/meas` runs `0.851` to `1.040`,
+inside the committed `[0.85, 1.15]` and no worse than the `0.865`--`1.076` the same three pairs
+give on the corpus the equation was derived on. The direction test on three pairs returns exact
+`p = 1.000` -- the floor at `n = 3`, written down as such before the runs -- so it carries no
+information, and the seven-pair inversion at `rho = -0.18` stands. The low-quantile prediction
+**missed on all three**: the onset lands above the median of `r(x)`, where on the novels it sat at
+`q25`.
+
+Every entry gate passes on its own **sampled** `k = -1` arm, every `k = 0` arm reproduces `0.000`,
+and no trajectory in the 33 budgeted cells exceeds its budget. Three anchors are not seven, the
+second corpus is public-domain prose rather than a different kind of work, and the committed grid
+resolves the crossing only to `0.2` nats (about 7% of `s(x)`), so each onset is bracketed rather
+than located.
+
+### The grid-ceiling rule, applied to the main onset table
+
+`results/onset_ci.csv` reports, for every onset, the fraction of bootstrap resamples whose mean
+curve never reaches the threshold. An interval computed from only the resamples that crossed is
+conditioned on crossing, so it goes narrow exactly where it should go wide. Seven of the eight rows
+sit at 0.0--0.1%; KL3M-1.7B sat at 4.3%, on a grid topping out at `k = 3.2` with a bootstrap upper
+end of `3.126`.
+
+```bash
+CUDA_VISIBLE_DEVICES=0 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py --safe-model alea-institute/kl3m-003-1.7b \
+    --risky-model output/phase5/mem_kl3m-003-1_7b --k-values 3.5 4.0 5.0 --modes single \
+    --limit 100 --out output/phase5/fine_kl3m17b_ext
+# merged into output/phase5/fine_kl3m17b_full; results/onset_pairs.tsv and
+# results/seed_effect_runs.tsv both repoint there, then the analyses are re-run:
+.venv/bin/python analysis/onset.py --out results --thresh 0.01
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fine_kl3m17b_full/composition.csv \
+  --s-x 2.2112 --label "KL3M-1.7B + mem. KL3M-1.7B" --out results
+.venv/bin/python analysis/seed_effect.py --out results
+.venv/bin/python analysis/onset_table.py --out results
+.venv/bin/python analysis/collapse_robustness.py --out results
+```
+
+Recall at the three new budgets is `0.048`, `0.088`, `0.155`; the no-crossing fraction goes
+**4.3% to 0.0%**, the onset is **unmoved** at `2.578`, and the interval widens **upward only**:
+`[2.52, 3.13]` becomes `[2.52, 3.32]`. The lower end does not move, so the claim that rests on this
+pair -- that both KL3M intervals exclude `1` -- is unaffected. Two knock-on numbers in the collapse
+appendix move with the wider grid and are reported with the reason.

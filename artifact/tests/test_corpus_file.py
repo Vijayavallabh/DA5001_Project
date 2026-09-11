@@ -50,3 +50,14 @@ def test_built_gutenberg_corpus_is_well_formed_if_present():
     for r in rows[:50]:
         assert "Project Gutenberg" not in r.prompt_text        # boilerplate stripped
         assert len(r.reference) > 100
+
+
+def test_composition_attack_ignores_split_but_keeps_novel_with_a_corpus_file():
+    """The file is the selection: filtering it by `--split attack_train` would silently return
+    nothing, because a standalone corpus carries its own split name. --novel still has to work,
+    since it is how a single book is isolated."""
+    src = open("analysis/composition_attack.py").read()
+    assert "load_corpus_file" in src
+    i = src.index("keep_split")
+    frag = src[i:i + 400]
+    assert "args.corpus_file" in frag and "p.novel_source" in frag

@@ -4,60 +4,77 @@
 
 Plan v5 on branch `iclr-2027`, targeting **ICLR 2027** (abstract Sep 18, paper Sep 25). The
 manuscript `~/sub/satml/iclr_2027.tex` is complete and verified: main text **exactly 9 of 9 pages**
-(`Ethics` at char 264 of `pdftotext` page 10), 31 pages total, **0 overfull, 0 `??`**, 1373 numeric
-literals audited with one expected miss (`64256`, the Comma-7B padded embedding count). **210 tests**
-green. **feat-035..081 `done`; nothing in progress.**
+(`Ethics` at char 264 of `pdftotext` page 10), 32 pages total, **0 overfull, 0 `??`**, 1474 numeric
+literals audited with one expected miss (`64256`, the Comma-7B padded embedding count). **218 tests**
+green. **feat-035..082 `done`; nothing in progress.** Compute 129.6 GPU-hours.
 
-The last thread finished this session was the matched-utility line (feat-072..081): what a higher
-Renyi order is worth when each order is given the budget that buys exactly the utility the published
-one buys, and whether anything a deployer can compute predicts it.
+## What landed this session
 
-## What landed since the last handoff
+**feat-082 — the onset on a corpus the law has never seen.** The paper's first limitation, and the
+plan's own risk list, is that everything runs on sixteen English genre novels. feat-080 answered
+that for the order results; this answers it for the **onset**, which is the positive contribution.
+`--corpus-file` is now additive on `composition_attack.py` and `onset_theory.py`; three anchors with
+a Gutenberg memoriser were swept on the same 12-point grid with both baselines, on 600 excerpts of
+50 public-domain books. Predictions, bands, grid and entry gate committed at `76880b9` **before any
+of them decoded a token**, narrowed twice more while the runs were in flight and nothing scored.
 
-- **feat-079 — seven families, the committed endpoint.** Llama-3.2-1B/-3B gave family six; Qwen2.5-7B
-  blew up at `--lr 3e-4` (0.10 -> 2.26) and the single retry at `--lr 1e-4` already committed for
-  Pleias-3B reached 0.0415 / recall 0.944, so family seven entered. Twelve pairs, seven families.
-  Largest of six candidates: **+0.62** (memoriser log p per token at alpha=4, exact p = 0.035),
-  below the committed 0.7 -- **the negative is earned**. The family-mean version read +0.90 at five
-  families, +0.89 at six, **+0.71 at seven**: it decayed as families were added.
-- **feat-080 — a second protected corpus.** 600 excerpts of 50 public-domain books against the
-  sixteen CopyBench novels, three anchors spanning the advantage range. Levels move up to 3.59 nats
-  per window; **no sign changes, ranking holds**.
-- **feat-081 — the price side's workload.** `--ordinary-split factual|creative` against the committed
-  `neutral`. The most sensitive axis: 10 of 12 cells beyond their floor, largest 2.12, and **two sign
-  flips**, both on cells already inside their own floor. Ranking holds. Summary for the paper: **a
-  cell is an order of magnitude and a rank, never a factor.**
-- **Precision floors are now per pair** -- all twelve have their own float32 twin, so no pair borrows
-  a floor that is not its own. bf16-vs-fp32 spread over 72 cells: -2.34 to +1.54, median |d| 0.30.
-  The exploratory crossing count is **18 of 36** (16 uniformly safer, 2 uniformly more dangerous); it
-  rose from 7/21 because three pairs stopped borrowing the largest floor measured anywhere.
-- **Compute.** `analysis/compute_hours.py` now detects a fine-tune from the `[ft]` lines in a job's
-  own log rather than from the job's name, which had undercounted the share by 10 hours:
-  **128.4 GPU-hours**, at most **25.5** containing a fine-tune. The manuscript reads 128 / "at most 26".
-- **Artifact.** The builder was shipping and an earlier session had committed `data/gutenberg/`
-  (44 MB), against `README_artifact.md`'s own statement. Excluded; 23 MB -> 11 MB, 559 files. Git
-  history was not rewritten.
+```
+pair            k=-1   onset   bracket     ratio  95% CI        no-x   Eq.(req)  pred/meas   on the novels
+KL3M-520M      0.578   2.608  (2.5,2.7]   1.102  [1.07,1.42]   0.0%    2.218      0.851      1.053 [1.02,1.24]
+Pleias-1.2B    0.517   2.513  (2.5,2.7]   0.895  [0.85,1.17]   0.0%    2.463      0.980      0.878 [0.79,0.96]
+Phi-3.5-mini   0.270   2.704  (2.7,2.9]   0.949  [0.79,1.33]   0.5%    2.813      1.040      0.926 [0.80,1.09]
+```
+
+- **The central split reproduces.** KL3M-520M, the fine-tokenizer pair, is again the only one above
+  `1` and its interval again excludes `1`; both coarse pairs are again below; every ratio lands
+  within `0.05` of its twin. *Leakage beginning after the certificate has gone vacuous is a property
+  of the pair, not of those novels.*
+- **The level of Eq. (req) transfers; its direction still does not.** `pred/meas` `0.851`–`1.040`,
+  inside the committed `[0.85, 1.15]`. The three-pair direction test returns exact `p = 1.000` (the
+  floor at `n = 3`, written down as such beforehand) and the seven-pair inversion stands. **P2
+  missed on all three** — the onset lands above the median of `r(x)`, where on the novels it sat at
+  `q25`.
+
+**The grid-ceiling rule, applied to the main onset table for the first time.** Appendix E commits to
+extending a grid whenever the bootstrap no-crossing fraction rises materially above the others, and
+the rule had only ever been applied to the seed arms. KL3M-1.7B sat at `4.3%` on a grid topping out
+at `3.2` with a bootstrap upper end of `3.126`. Extended to `{3.5, 4.0, 5.0}`: no-crossing
+`4.3% -> 0.0%`, onset **unmoved** at `2.578`, interval widens **upward only**. The lower end does not
+move, so "both KL3M intervals exclude 1" is unaffected.
+
+**Read-through of the main text against the CSVs — eleven corrections.** Six of Appendix D's 72
+cells were one off from double rounding (`window_factor` now 6 s.f., with a test over all 72); the
+anchor rate is *tied* for worst predictor at `alpha=8`, since `s_s - s_r` ranks the twelve pairs
+identically; Section 2's utility gain and optimal-policy cost were endpoints quoted as ranges; the
+overhead ratio is not monotone (minimum `2237` at `k=10`); Appendix E promised a no-crossing column
+it did not have, carried five stale seed-words that disagreed with Section 4 on the same arms, and
+one wrong CI; and `lcs_word` is the longest common **substring** in words, not subsequence.
+
+**feat-079/080/081 registered** with evidence, `progress.md` blocks and `README_artifact.md`
+sections. `compute_hours.py` now detects a fine-tune from the `[ft]` lines in a job's own log rather
+than the job's name (a 10-hour undercount), and `build_artifact.sh` no longer ships
+`data/gutenberg/` — 44 MB an earlier build had committed, against the README's own statement.
 
 ## Files Changed
 
-`analysis/compute_hours.py` (`has_finetune`), `analysis/order_{law,predictors,crossings}.py` (the
-`_work` guard beside `_seed`/`_gut_`), `tests/test_compute_hours.py`, `tests/test_order_seed.py`,
-`scripts/build_artifact.sh`, `feature_list.json` (feat-079/080/081), `progress.md`,
-`README_artifact.md`, `AGENTS.md`, `results/{compute_hours,compute_hours_summary,order_crossings,
-order_predictors*}.csv`, `artifact/`. In `~/sub/satml`: `iclr_2027.tex` (LLM-Usage compute figure).
+New: `analysis/onset_gutenberg.py`, `tests/test_onset_gutenberg.py`, `tests/test_order_law_table.py`,
+`results/{onset_gutenberg.csv,onset_theory_gutenberg{,_per_work}.csv,onset_theory_pairs_gutenberg.tsv,
+onset_prediction_gutenberg.md}`. Modified: `analysis/{composition_attack,onset_theory,compute_hours,
+order_law,order_predictors,order_crossings}.py`, `tests/{test_compute_hours,test_order_seed}.py`,
+`scripts/build_artifact.sh`, `init.sh`, `feature_list.json`, `progress.md`, `README_artifact.md`,
+`AGENTS.md`, `results/{onset,onset_ci,onset_table,onset_units,collapse_robustness,seed_effect,
+order_law,order_predictors*,compute_hours*}.csv`, both manifests, `artifact/`. In `~/sub/satml`:
+`iclr_2027.tex`, `sections/{onset,frontier,appendix_robustness,appendix_seed,appendix_limitations}.tex`.
 
 ## Recommended Next Step
 
-Everything the plan opened is executed and every number in the paper is sourced. The two things worth
-doing next, in order:
-
-1. **A full adversarial read-through of the compiled PDF**, abstract to Appendix H, against the CSVs
-   -- the last one (2026-09-10) found twelve claims that did not survive checking, and the appendix
-   has been substantially rewritten since. Check especially that every quoted cell in
-   Appendix~\ref{app:matched} carries its workload caveat, since feat-081's sign flips made that a
-   requirement rather than a nicety.
-2. **Whatever the abstract deadline needs.** Sep 18 is abstract registration, which is `feat-016` --
-   **human-only, never to be started by the agent.**
+1. **Read the appendices end to end** the way the main text was read this session — mechanically,
+   each table against its own CSV, not by eye. That method found eleven things in one pass; the
+   appendices are 20 of the 32 pages and have had one such pass (Appendix D) out of seven.
+2. **Then stop adding.** Every pre-registered band in `results/onset_prediction_*.md` has been
+   scored, the three robustness axes are probed, and both corpora agree. Running more anchors now
+   would be choosing when to stop after seeing the answer.
+3. Sep 18 is abstract registration, which is `feat-016` — **human-only, never to be started.**
 
 ## Standing constraints worth re-reading before touching anything
 
@@ -67,6 +84,7 @@ writable path there is `data/gutenberg/`); nothing in `~/sub/satml/` or the arti
 authors, the sole exception being third-person `\cite{vijayavallabh2026audit}` as "an earlier audit";
 `HF_TOKEN` returns 401, so run local jobs with `HF_HUB_OFFLINE=1`; ask before any **new** gated
 download; never GPU 3; always `CUDA_DEVICE_ORDER=PCI_BUS_ID`; the manuscript tree sits inside a stray
-home git repo -- always run git with an explicit path into `DA5001_Project`; after any manuscript
-edit recompile and check exit status, 0 `??`, 0 overfull, <= 9 pages of main text; a budget violation
-is per-trajectory; `master` holds the verified SaTML paper at `dd7e801` as the fallback.
+home git repo — always run git with an explicit path into `DA5001_Project`; after any manuscript
+edit recompile and check exit status, 0 `??`, 0 overfull, <= 9 pages of main text, and remember that
+an addition to the main text costs about three times its own length in reflow; a budget violation is
+per-trajectory; `master` holds the verified SaTML paper at `dd7e801` as the fallback.

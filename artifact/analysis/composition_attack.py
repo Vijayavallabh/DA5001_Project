@@ -29,6 +29,7 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from a_patch import AnchoredDecodingFactory  # noqa: E402
 from a_patch.renyi import constraint_arg  # noqa: E402
+from analysis.corpus_file import load_corpus_file  # noqa: E402
 from dap.shared import load_prompt_corpus, true_gen_len  # noqa: E402
 from dap.stats import lcs_word, nv_recall  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
@@ -136,6 +137,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default="data")
     ap.add_argument("--split", default="attack_train")
+    ap.add_argument("--corpus-file", default="",
+                    help="feat-082: read the protected passages from one JSONL file instead of the "
+                         "committed CopyBench sets (analysis/corpus_file.py). The file IS the "
+                         "selection, so --split is ignored; --novel still filters `source_novel`")
     ap.add_argument("--novel", default="", help="keep only passages whose novel name contains this substring (e.g. harry_potter)")
     ap.add_argument("--safe-model", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer")
     ap.add_argument("--risky-model", required=True)
@@ -190,7 +195,11 @@ def main():
     tok = factory.tokenizer
     atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty, greedy=args.greedy)
 
-    prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split == args.split and p.reference and (args.novel in (p.novel_source or ""))][:args.limit]
+    corpus = (load_corpus_file(args.corpus_file) if args.corpus_file
+              else load_prompt_corpus(args.data, "factscore_prompt"))
+    keep_split = (lambda p: True) if args.corpus_file else (lambda p: p.split == args.split)
+    prompts = [p for p in corpus
+               if keep_split(p) and p.reference and (args.novel in (p.novel_source or ""))][:args.limit]
     passages = []
     HEADER = "Complete the prefix:\n"
     for p in prompts:
