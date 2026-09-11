@@ -204,12 +204,17 @@ def main():
     out_rows = []
     for label, key in RULES:
         for n in a.n_values:
-            us = []
+            us, toks = [], []
             for v in by_prompt.values():
                 pick = max(v[:n], key=key)
                 us.append(VERDICT_U[pick["outcome"]])
+                toks.append(int(pick["n_tokens"]))
             lo, hi = boot_mean(us, rng)
+            # the length of what gets served, as a diagnostic: a selector that simply prefers longer
+            # or shorter completions would move the judge without moving quality, and the per-token
+            # mean was chosen over the summed likelihood precisely to avoid that.
             out_rows.append(dict(rule=label, n=n, kl_nats=round(kl_best_of_n(n), 4),
+                                 mean_tokens=round(sum(toks) / len(toks), 1),
                                  n_prompts=len(us), u=round(sum(us) / len(us), 4),
                                  u_lo95=round(lo, 4), u_hi95=round(hi, 4),
                                  win_pct=round(100 * sum(1 for x in us if x == 1.0) / len(us), 1),
