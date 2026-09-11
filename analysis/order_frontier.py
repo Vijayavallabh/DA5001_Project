@@ -110,6 +110,10 @@ def main():
                          "the grid, since the matched target is read off it")
     ap.add_argument("--split", default="attack_train",
                     help="MUST be a split the risky model was fine-tuned on")
+    ap.add_argument("--ordinary-split", default="neutral",
+                    help="the split the PRICE side samples its prompts from. Fidelity is what the "
+                         "budget buys on ordinary traffic, so the price column inherits whatever "
+                         "that traffic is; this is the only knob on that half of the design.")
     ap.add_argument("--corpus-file", default="",
                     help="plan v5: take the protected passages from a standalone JSONL corpus "
                          "instead of a CopyBench split. It MUST be the corpus the risky model was "
@@ -143,7 +147,9 @@ def main():
         prot = load_corpus_file(a.corpus_file)[:a.limit]
     else:
         prot = [p for p in corpus if p.split == a.split and p.reference][:a.limit]
-    ordn = [p for p in corpus if p.split == "neutral"][:a.limit]
+    ordn = [p for p in corpus if p.split == a.ordinary_split][:a.limit]
+    if not ordn:
+        raise SystemExit(f"no prompts in split {a.ordinary_split!r}")
     ks = sorted(a.k_grid)
 
     leak, lx, n_prot = run_side(safe, risky, tok, prot, a.orders, ks, device,
@@ -154,7 +160,7 @@ def main():
     ntok = lx["ntok"] or 1.0
     os.makedirs(a.out, exist_ok=True)
     rows = [dict(alpha=o, k=k, split=(a.corpus_file or a.split),
-                 n_protected=n_prot, n_ordinary=n_ord,
+                 n_protected=n_prot, n_ordinary=n_ord, ordinary_split=a.ordinary_split,
                  price_nats=round(price[(o, k)], 3),
                  price_frac_ceiling=round(price[(o, k)] / px["ceiling"], 4),
                  logp_target=round(leak[(o, k)], 3),

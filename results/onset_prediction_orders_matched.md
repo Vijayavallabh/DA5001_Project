@@ -1128,3 +1128,27 @@ If the retry fails, the set ends at **six families**, where the leading candidat
 $\rho = +0.89$ at exact $p = 0.033$ --- above the committed $0.024$ --- and the honest report is
 that six families cannot resolve it and a seventh is what would. That outcome is written down here
 before the retry runs so it cannot be presented afterwards as anything but what it is.
+
+## The last unprobed axis: what the price side is measured on
+
+The protected side has now been varied three ways --- the split (which found the bug), the seed, and
+the corpus. The **price** side has not been varied at all: every fidelity number in this appendix is
+measured on prompts from the `neutral` split, because that is what the first run used. Fidelity is
+what the budget buys *on ordinary traffic*, so the price column inherits whatever that traffic is,
+and the matched budget is read off it. If a different ordinary workload moves the matched budget,
+every cell moves with it.
+
+Two other workloads are already in the repository and untouched by any of this: `factual` (500
+prompts) and `creative` (150). Committed before the runs: the same 12-point grid on **KL3M-520M and
+Pleias-1.2B**, the two anchors used for every other control here, with `--ordinary-split factual`
+and `--ordinary-split creative` against their committed `neutral`, everything else fixed.
+
+| outcome | reading |
+|---|---|
+| the $k=1$ advantages stay within each pair's own precision floor across the three workloads | the price side is not carrying the result and the design is closed on both halves |
+| they move but keep their signs and the pair ordering | workload-sensitive in level and not in rank, reported with the range, like the seed and the corpus |
+| a sign flips or the ordering inverts | the matched-utility comparison is specific to the workload it was measured on, which must then be stated wherever a cell is quoted |
+
+`factual` and `creative` differ from `neutral` in more than topic --- `creative` prompts are longer
+and open-ended --- so this is a coarse probe of workload sensitivity and not a controlled one. That
+is the point: if a coarse change does not move it, a fine one will not either.
