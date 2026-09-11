@@ -64,18 +64,21 @@ def link_dir(name, replace):
 def build_alpaca():
     src = os.path.join(BENCH, "alpaca_eval.json")
     rows = json.load(open(src))
-    out = os.path.join(BENCH, "alpaca_neutral.jsonl")
+    # The FACTUAL slot, not the neutral one: dap/shared.py wraps every copyright-domain prompt in
+    # "Complete the prefix:", which is right for a passage and wrong for an instruction. The
+    # factscore normaliser passes prompt_text through verbatim, which is what an instruction
+    # benchmark needs if the number is to mean what AlpacaEval means.
+    out = os.path.join(BENCH, "alpaca_factual.jsonl")
     with open(out, "w", encoding="utf-8") as fh:
         for i, r in enumerate(rows):
             fh.write(json.dumps({
                 "prompt_id": f"alpaca_{i:04d}",
                 "source_novel": r["dataset"],          # selfinstruct / oasst / koala / ...
-                "source_excerpt_id": f"alpaca_{i:04d}",
-                "split": "neutral",
-                "raw_text": r["instruction"],
-                "reference_text": "",                  # an instruction set has no protected target
+                "split": "factual",
+                "prompt_text": r["instruction"],
+                "expected_answer": "",                 # an instruction set has no protected target
             }) + "\n")
-    d = link_dir("alpaca", {"neutral.jsonl": out})
+    d = link_dir("alpaca", {"factscore.jsonl": out})
     print(f"alpaca: {len(rows)} instructions -> {out}; data-dir {d}")
     return len(rows)
 
@@ -120,8 +123,35 @@ def build_bookmia(label=1, tag="bookmia100"):
     return counts
 
 
+def build_mtbench():
+    """MT-Bench's 80 questions, first turn, carrying their category.
+
+    Eighty prompts is small for a utility estimate and is not why it is here: the categories are
+    the point. The support-ceiling limitation says a selection mechanism cannot exceed what its
+    anchor can write, which predicts that the gain should be visible on writing and roleplay and
+    absent on reasoning, math and coding. That is a prediction about a BREAKDOWN, and MT-Bench is
+    the standard set that supplies one."""
+    rows = [json.loads(l) for l in open(os.path.join(BENCH, "mt_bench_question.jsonl"))]
+    out = os.path.join(BENCH, "mtbench_factual.jsonl")
+    with open(out, "w", encoding="utf-8") as fh:
+        for r in rows:
+            fh.write(json.dumps({
+                "prompt_id": f"mtbench_{r['question_id']}",
+                "source_novel": r["category"],
+                "split": "factual",
+                # this mirror stores `prompt` as a list of turns; take the first
+                "prompt_text": (r["prompt"][0] if isinstance(r["prompt"], list) else r["prompt"]),
+                "expected_answer": "",
+            }) + "\n")
+    d = link_dir("mtbench", {"factscore.jsonl": out})
+    print(f"mtbench: {len(rows)} questions in "
+          f"{len({r['category'] for r in rows})} categories -> {out}; data-dir {d}")
+    return len(rows)
+
+
 if __name__ == "__main__":
     build_alpaca()
+    build_mtbench()
     build_bookmia(label=1, tag="bookmia100")
     # The benchmark's label = 0 books are text the models did NOT train on. Built the same way,
     # they are a corpus-level negative control the paper has never had: if the onset measured the

@@ -62,8 +62,14 @@ def test_the_passages_have_the_same_shape_as_the_committed_ones():
     assert all(not r["raw_text"].endswith(" ") for r in new[:200])
 
 
-def test_alpaca_is_the_full_benchmark_and_carries_no_protected_target():
-    rows = _rows("data/bench/alpaca_neutral.jsonl")
-    assert len(rows) == 805, len(rows)
-    assert all(r["reference_text"] == "" for r in rows)
-    assert len({r["source_novel"] for r in rows}) == 5      # the five AlpacaEval sub-sets
+def test_the_instruction_benchmarks_are_complete_and_are_not_wrapped_as_prefixes():
+    """They go through the FACTUAL slot on purpose: dap/shared.py prepends "Complete the prefix:"
+    to every copyright-domain prompt, which is right for a passage and wrong for an instruction.
+    Through the neutral slot the number would not be AlpacaEval's number."""
+    from dap.shared import load_prompt_corpus
+    for d, n, groups in (("data/bench/alpaca", 805, 5), ("data/bench/mtbench", 80, 8)):
+        rows = [x for x in load_prompt_corpus(d, "factscore_prompt") if x.split == "factual"]
+        assert len(rows) == n, (d, len(rows))
+        assert len({x.novel_source for x in rows}) == groups, d
+        assert not any(x.prompt_text.startswith("Complete the prefix") for x in rows), d
+        assert all(x.prompt_text.strip() for x in rows), d
