@@ -76,13 +76,16 @@ echo "[OK] no repo files stranded in the manuscript tree"
 
 echo "=== Init Complete ==="
 echo ""
-echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..087 are done except the optional ones; nothing is in progress. The last thread finished
-was feat-087: the paper measures the audited decoder paying 165 nats for a gain the Cramer rate
+echo "Plan v5 + the v6 restructure, branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
+feat-035..087 and feat-089 are done except the optional ones; **feat-088 is in progress**.
+feat-089 rebuilt the paper around what worked: it now argues that the obstruction is METERING PER
+TOKEN, not budgeting, and selection anchoring is Sections 5-6 rather than Appendix H. The result it
+is built on is feat-087: the paper measures the audited decoder paying 165 nats for a gain the Cramer rate
 function prices at 0.052, and then declines to make the constructive claim. SELECTION ANCHORING
 makes it: draw n completions from the anchor, score them, serve the argmax, and the certificate is
-Proposition 1 with K = log n -- vacuous only at n = e^S(x), about e^850, and it does not grow with
-the work the way kT does. Ranked by the RISKY MODEL'S OWN LIKELIHOOD it buys nothing (its committed
+Proposition 1 with K = log n -- vacuous only at n = e^S(x), about e^849, and it does not grow with
+the work the way kT does (odometer.csv stores S_total_median = 849 exactly; 850 was a second
+rounding and is gone). Ranked by the RISKY MODEL'S OWN LIKELIHOOD it buys nothing (its committed
 band is refuted), because that likelihood predicts the judge at AUC 0.526, worse than the
 completion's length. Ranked by a quality model and scored by a judge that did no ranking, n=8 gains
 +0.081 [0.034, 0.130] for 1.204 nats where the metered decoder's best arm gains +0.072 for 171.3.
@@ -108,7 +111,7 @@ feat-016 is human-only - never start it. master holds the verified SaTML fallbac
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages - Ethics, Reproducibility and LLM Usage do not count, and pdftotext page 10 must carry NO
 body prose at all (counting characters before 'Ethics' missed a two-line spill on 2026-09-11);
-38 pages total, 0 overfull, 0 '??', 1807 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
+39 pages total, 0 overfull, 0 '??', 1831 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:
