@@ -55,9 +55,10 @@ def test_the_k_crit_prediction_sentence_is_a_mean_and_says_so():
            for r in rows]
     assert all(r["prediction_in_ci"] == "True" for r in rows), \
         [r["arm"] for r in rows if r["prediction_in_ci"] != "True"]
-    body = open(tex("sections/onset.tex"), encoding="utf-8").read()
+    body = "".join(open(tex(f"sections/{f}.tex"), encoding="utf-8").read()
+                   for f in ("onset", "appendix_onset"))
     assert "to within $5.1\\%$" not in body, "the bound claim is back"
-    m = re.search(r"at a mean error of \$([\d.]+)\\%\$", body)
+    m = re.search(r"(?:at|to)\s+a\s+mean\s+error\s+of\s+\$([\d.]+)\\%\$", body)
     assert m and abs(float(m.group(1)) - 100 * st.mean(err)) < 0.05, (m.group(1) if m else None,
                                                                      100 * st.mean(err))
     assert max(err) > float(m.group(1)) / 100, "if the max were below it, 'within' would be fine"
@@ -69,7 +70,7 @@ def test_the_top_of_the_utility_scale_is_priced_from_the_same_law_as_the_rest():
     number in the same paragraph comes from v5 (600 pairs, 27.3%), where the same quantity is 1.30
     and 132x. AGENTS.md caution (d) is about exactly that 180-against-600 difference."""
     rows = {r["k"]: r for r in csv.DictReader(open("results/utility_price.csv"))}
-    body = open(tex("sections/frontier.tex"), encoding="utf-8").read()
+    body = open(tex("sections/orders.tex"), encoding="utf-8").read()
     lam = float(rows["3.0"]["lambda_star_u_max"])           # a property of the safe law, same on every row
     assert len({r["lambda_star_u_max"] for r in rows.values()}) == 1
     m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats\s*(?:,)?\s*and the decoder\s*\n?"
@@ -91,11 +92,14 @@ def test_the_two_judge_sigmas_in_the_introduction_come_from_the_v6_separation_cs
                 return float(r["z_loss_vs_anchor"])
         raise AssertionError((path, k))
     q, p = "results/judge_separation_v6.csv", "results/judge_separation_v6_judge2.csv"
-    body = open(tex("sections/iclr_intro.tex"), encoding="utf-8").read().replace("\n", " ")
+    body = open(tex("sections/orders.tex"), encoding="utf-8").read().replace("\n", " ")
     for k, pair in ((0.5, (z(q, 0.5), z(p, 0.5))), (10.0, (z(q, 10.0), z(p, 10.0)))):
         a, b = pair
         assert f"(${a:+.2f}\\sigma$, ${b:+.2f}\\sigma$)".replace("+-", "-") in body \
             or f"(${a:.2f}\\sigma$, ${b:+.2f}\\sigma$)" in body, (k, a, b)
-    # the abstract's budget is 0.6, where neither judge separates: |z| < 2 for both
-    assert abs(z(q, 0.6)) < 2 and abs(z(p, 0.6)) < 2
-    assert "at $k=0.6$" in open(tex("iclr_2027.tex"), encoding="utf-8").read()
+    # the abstract names a budget inside the fully certified region; neither judge separates there
+    abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read()
+    m = re.search(r"safe model at \$k=([\d.]+)\$", abstract)
+    assert m, "the abstract no longer names the budget it claims no separation at"
+    k = float(m.group(1))
+    assert abs(z(q, k)) < 2 and abs(z(p, k)) < 2, (k, z(q, k), z(p, k))
