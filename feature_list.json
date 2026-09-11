@@ -917,6 +917,24 @@
       ],
       "description": "Bound the instrument the constructive claim rests on. The +0.081 cross-judge gain is judged by an LLM shown one random presentation order; a human preference study is the decisive experiment and cannot be run from here. Re-judge the identical 500-prompt, two-arm cross-judge items in BOTH orders and report C1 order consistency, C2 first-slot win rate, C3 the gain re-estimated on order-averaged utility. Bands committed before the run in results/onset_prediction_judge_consistency.md. Queued behind feat-088 so it does not contend for the same card.",
       "evidence": ""
+    },
+    {
+      "id": "feat-092",
+      "status": "not-started",
+      "dependencies": [
+        "feat-090"
+      ],
+      "description": "Budget PLACEMENT at a fixed sequence budget, the arm the v7 framing depends on. Proposition 5 has two horns and the paper demonstrated only one: the deployed bucket spreads its budget and lands on the vacuous horn, but the proposition permits a causal policy that CONCENTRATES a bounded budget. Run the same log 8 = 2.0794 nats three ways on the same 500 prompts under the same judge -- uniform per step, front-loaded via the new initial_bank, and off-axis at the draw (selection, on record) -- plus a K=20 front-loaded arm for scaling. Bands in results/onset_prediction_placement.md, committed before any arm was generated, with a pre-run correction recording that the prefix debt (median 2.53 nats) exceeds the whole budget on 77.5% of prompts and would have made both causal arms the anchor, so the arms run with --no-prefix-debt.",
+      "evidence": ""
+    },
+    {
+      "id": "feat-093",
+      "status": "not-started",
+      "dependencies": [
+        "feat-090"
+      ],
+      "description": "The exact-rate diagnostic. Eq. (req) r(x) = s_s - s_r is refuted and stays refuted; what is not established is why. It is the near-deterministic collapse of the full-distribution mean D_KL(p_r,t || p_s,t) along the target's own prefixes, and every miss on record is low, the signature of a biased estimator. analysis/exact_rate.py measures both in one teacher-forced pass over the nine pairs. Bands in results/onset_prediction_exact_rate.md, which states before anything else that the nine onsets are already known, so this is a diagnostic and never a confirmed prediction.",
+      "evidence": ""
     }
   ]
 }

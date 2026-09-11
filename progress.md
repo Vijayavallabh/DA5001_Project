@@ -3518,3 +3518,54 @@ name, including the tempting one: reporting only the order-consistent subset as 
 
 Chained to start after `results/selection_scaling.csv` lands, so it does not contend with feat-088
 for GPU 4. Log: `output/logs/judge_consistency.log`.
+
+### v7 — the paper rebuilt around the dichotomy (2026-09-12)
+
+The v6 draft led with a diagnosis of one mechanism ("the obstruction is metering per token") and
+closed with a known technique (best-of-n), so it read as an experiment log: three repairs tried,
+three failed, then a mechanism borrowed. The contribution is neither of those. It is the dichotomy:
+
+> for any autoregressive `q` with `D_KL(q||p_s) <= K`, `E #{t : D_KL(q_t||p_s,t) > eps} <= K/eps`,
+> so **either** the allowance grows with the work (`K = kT` against `S(x) = s(x)T`, so `K/S(x) ->
+> k/s(x)` and never improves — **vacuous**) **or** it is bounded and the decoder is the safe model
+> at all but `O(1)` of its steps (**trivial**).
+
+Everything measured is that theorem's content: the order-invariant threshold and the nine-pair
+onset are the vacuous horn; two judges failing to separate the decoder from its own anchor at
+`k=0.5`, where all 758 passages are covered, are the trivial horn; Proposition 3 says the deployed
+rule takes the vacuous horn by construction and 16,500 per-step logs say it does; the three repairs
+are corollaries; and selection anchoring is not proposed as a technique but as the shape the
+theorem leaves available (`N_eps = 0` identically, the budget spent where the chain rule cannot
+reach).
+
+Title → *Vacuous or Trivial: A Dichotomy for Per-Token Copyright Certificates, and Where the Budget
+Must Go Instead*. Abstract rewritten with **both** horns given a measurement (the trivial horn had
+none). Introduction rebuilt; the "How we got there, including what we were wrong about" paragraph
+is gone. Proposition 5 promoted into Section 2. Section 4 → *The dichotomy's corollaries, tested*,
+79 → 47 lines with every number kept. Paid for by demoting Proposition 2 (`k_crit`/Loynes) to the
+appendix — cited not ours, no role in the dichotomy, refuted as a per-work predictor at ρ = +0.036.
+Every v6 section kept as `*_v6_2026-09-11.tex`.
+
+### feat-092 — the gap the reframe exposed, and the arm that closes it
+
+Proposition 5 has two horns and the paper demonstrated one. It does **not** forbid a causal policy
+from working; it forbids one from working *while spread out*. A policy that concentrates a bounded
+budget on the opening is permitted and had never been tried, so "the budget has to leave the decode
+loop" was stronger than the evidence.
+
+`a_patch/factory.py` and `dap/e1.py` gain `initial_bank` — nats granted up front instead of accrued
+at `k` per step, default `0.0` (the deployed rule exactly, every number on record unaffected).
+`budget_K` now counts the bank. Three placements of the same 2.0794 nats on the same 500 prompts
+under the same judge: uniform per step, front-loaded, and on the draw.
+
+**Caught before the run, not after:** the prefix debt's median is **2.53 nats** and it exceeds the
+whole matched budget on **77.5%** of ordinary prompts, so with it on the bank never reaches zero and
+*both* causal arms would have been the anchor exactly — a confounded null reading THE CAUSAL HORN IS
+EMPTY for a reason with nothing to do with placement. The arms run with `--no-prefix-debt`, recorded
+in the pre-registration before generating anything. It is also a result: the prefix debt is itself a
+placement decision, front-loading a *penalty*, and at a selection-sized budget it spends the whole
+allowance before the first token.
+
+One sequential GPU queue now runs, in the order the paper needs: placement → judge consistency
+(feat-091) → the exact-rate diagnostic (feat-093). Logs `output/logs/queue.log`,
+`placement_gen.log`.
