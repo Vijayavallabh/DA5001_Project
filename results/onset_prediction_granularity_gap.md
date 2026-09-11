@@ -98,3 +98,37 @@ scale --- the control the two KL3M pairs provide for their group. It is run **on
 anchor is planned at this granularity, and no other candidate from the survey is planned at all:
 the survey's job was to find whether the gap is fillable, and one point in it decides between a
 gradient and a step.
+
+## Addendum, committed while the fine-tune was at epoch 8 and nothing was swept
+
+The seed is now **measured** rather than estimated, by the same routine that produced the
+Appendix~\ref{app:seed} table (`analysis/seed_effect.py:seed_words`, first $20$ tokens of the same
+$100$ passages):
+
+```
+cyberagent/open-calm-1b        20 tokens -> 53.1 chars,  9.51 words
+alea-institute/kl3m-002-520m   20 tokens -> 43.4 chars,  7.45 words
+PleIAs/Pleias-1.2b-Preview     20 tokens -> 81.2 chars, 14.58 words
+Phi-3.5-mini                   20 tokens -> 77.6 chars, 13.94 words
+```
+
+$9.51$ words, not the $9.8$ estimated above: still between the two families and slightly nearer the
+fine one. Redoing the context account's point prediction with the measured value ---
+$1.110 - \frac{9.51 - 7.45}{14.4 - 7.45}(1.110 - 0.901)$ --- gives **$1.048$**.
+
+**That matters for what the bands can and cannot decide, and it is better said now than after.**
+$1.048$ sits $0.005$ below the boundary between "interpolates" ($0.927$--$1.052$) and "joins the
+fine family" ($\ge 1.053$). So those two outcomes are, for this anchor, nearly the same prediction,
+and a measurement near $1.05$ cannot be claimed as evidence for either against the other. What the
+committed bands genuinely discriminate is:
+
+- **$\le 0.926$**: the context account is wrong at its one new point, by more than the whole
+  distance it predicts. A pair handed $9.5$ words behaves like one handed $14.5$.
+- **$\approx 1.0$--$1.1$**: the context account is right to within its own resolution, and the
+  two-value description of the split is at best incomplete. Which side of $1.053$ it lands on is
+  **not** informative and will not be reported as if it were.
+- **$> 1.166$ or $< 0.878$**: off the scale of every pair measured; a fact about this anchor.
+
+Nothing above is changed --- not a band edge, not the grid rule, not the entry gate. What is added
+is a statement, before the numbers exist, of which of the committed outcomes carry information and
+which do not.
