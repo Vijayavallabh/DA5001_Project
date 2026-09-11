@@ -63,7 +63,8 @@ def test_committed_summary_matches_the_manuscript_upper_bound():
     s = {r["quantity"]: float(r["gpu_hours"]) for r in csv.DictReader(open(path))}
     assert s["one_gpu_jobs"] + s["two_gpu_jobs"] == s["total"]
     assert s["fine_tunes"] <= s["one_gpu_jobs"]
-    tex = pathlib.Path("~/sub/satml/iclr_2027.tex").expanduser()
+    from tests.manuscript import tex as _tex
+    tex = pathlib.Path(_tex("iclr_2027.tex"))
     if not tex.exists():
         return
     body = tex.read_text(encoding="utf-8")

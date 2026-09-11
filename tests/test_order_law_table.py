@@ -13,7 +13,9 @@ import os
 import re
 
 CSV = "results/order_law.csv"
-TEX = os.path.expanduser("~/sub/satml/sections/appendix_robustness.tex")
+from tests.manuscript import tex  # noqa: E402
+
+TEX = tex("sections/appendix_robustness.tex")
 LABEL = {"Pleias 350M": "Pleias-350M", "Pleias 1.2B": "Pleias-1.2B", "Comma 7B": "Comma-7B",
          "KL3M 170M": "KL3M-170M", "TinyComma 1.8B": "TinyComma-1.8B", "KL3M 3.7B": "KL3M-3.7B",
          "KL3M 520M": "KL3M-520M", "Llama-3.2 3B": "Llama-3.2-3B", "KL3M 1.7B": "KL3M-1.7B",
@@ -61,6 +63,7 @@ def test_every_cell_of_the_appendix_table_rounds_from_the_csv():
         for (k, a), cell in zip(CELLS, c[2:8]):
             paper, sig = _parse(cell)
             want = _sigfig(t[LABEL[c[0]]][(k, a)], sig)
-            assert paper == want, f"{c[0]} k={k} alpha={a}: paper {cell} != {want} from {CSV}"
+            assert math.isclose(paper, want, rel_tol=1e-9), \
+                f"{c[0]} k={k} alpha={a}: paper {cell} != {want} from {CSV}"
             checked += 1
     assert checked == 72, f"expected 72 cells, matched {checked}"
