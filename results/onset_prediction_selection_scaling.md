@@ -121,3 +121,56 @@ The `n = 1` control must land within `0.05` of the `u_safe` on record for its ju
 ## Scoring log
 
 *(appended after each arm runs; nothing above is edited)*
+
+---
+
+## Addendum, written before the scoring pass and after a smoke test — judge C is replaced
+
+**Nothing above is edited.** This records a change to one arm's *instrument*, made before that arm
+produced any number, with the evidence that forced it.
+
+A smoke run of `analysis/selection_scaling.py` on the existing eight-candidate directory
+(`--limit 8`, so no band applies) returned `u = 0.5000` for **every** arm under judge C,
+`meta-llama/Llama-3.2-3B-Instruct`. That is not a parsing bug. Probed directly on 24 comparisons
+under the shared judging template, the model answers
+
+```
+Llama-3.2-3B-Instruct   free-text  {'Tie': 14, 'Tie.': 9, 'B': 1}
+```
+
+It takes the tie option on 23 of 24 and has no resolution at all under the protocol feat-087 fixed.
+An instrument that returns the same value for every arm cannot decide O2 in either direction.
+
+**Replacement: judge C is now `meta-llama/Meta-Llama-3.1-8B-Instruct`**, under the *identical*
+protocol — free-text verdict, order randomised, scored `1/½/0`. The same 24-comparison probe gives
+
+```
+Meta-Llama-3.1-8B-Instruct   free-text {'A': 19, 'B': 5}   forced A/B logits {'A': 19, 'B': 5}
+```
+
+so it discriminates, and its free-text verdicts agree with its own A-vs-B logits on all 24, which is
+the check that the free-text rule is reading what the model actually believes. (The 19-to-5 split is
+the position bias the protocol randomises away: this probe put the candidate in position A every
+time, and the scored run does not.)
+
+**Why this substitution is conservative rather than convenient.** Judge C is now the *same
+checkpoint that generated the opponent* in every comparison. Any self-preference it carries favours
+the unconstrained completion, which is the arm selection anchoring must beat, so the bias runs
+against the hypothesis under test. The O2 bands are unchanged:
+
+| reading | band |
+|---|---|
+| **GENERAL** | gain at `n=8` `>= +0.03` and paired 95% CI excludes 0 |
+| **PARTIAL** | point estimate `> 0`, CI includes 0 |
+| **JUDGE-SPECIFIC** | `<= 0` |
+
+**The discarded judge is reported, not hidden.** That a 3B instruction-tuned model answers "Tie" on
+23 of 24 pairwise quality comparisons is a fact about the resolution of LLM judges at that scale and
+belongs in the appendix beside the two-judge disagreement already reported. It is one more reason
+the paper quotes a judged separation only with its sample size and never builds a claim on a
+separation smaller than a sigma.
+
+**Not changed:** judge B stays `microsoft/Phi-3.5-mini-instruct` under the identical protocol, so
+O2's comparison against the `+0.081` on record remains like-for-like; the pointwise reward, the
+grid, the entry gate, the primary metrics and the five excluded alternatives all stand as written
+above.

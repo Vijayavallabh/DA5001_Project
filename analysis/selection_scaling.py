@@ -98,13 +98,22 @@ def main():
     ap.add_argument("--gen-dir", default="output/phase5/sel_anchor64")
     ap.add_argument("--baseline-dir", default="output/sweep_plain")
     ap.add_argument("--reward-model", default="Qwen/Qwen2.5-7B-Instruct")
+    # Judge C was Llama-3.2-3B-Instruct until a smoke test found it answers "Tie" on 23 of 24
+    # probe comparisons under this template -- no resolution, so it cannot decide O2 either way.
+    # Replaced by Meta-Llama-3.1-8B-Instruct under the IDENTICAL protocol; it is the checkpoint that
+    # generated the opponent, so any self-preference runs against the hypothesis under test. The
+    # substitution and its evidence are recorded in results/onset_prediction_selection_scaling.md,
+    # written before this arm produced a number. Use the Meta- prefixed id: the other one has no
+    # tokenizer in the local cache.
     ap.add_argument("--judges", nargs="+",
                     default=["microsoft/Phi-3.5-mini-instruct",
-                             "meta-llama/Llama-3.2-3B-Instruct"])
+                             "meta-llama/Meta-Llama-3.1-8B-Instruct"])
     ap.add_argument("--max-n", type=int, default=64)
     ap.add_argument("--seed", type=int, default=8801)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--batch-size", type=int, default=8)
+    ap.add_argument("--limit", type=int, default=0,
+                    help="score only the first N prompts. For smoke tests only: the bands assume 500.")
     ap.add_argument("--reward-cache", default="results/selection_rewards64.csv")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
@@ -118,6 +127,9 @@ def main():
     base = load_baseline(a.baseline_dir)
     pids = sorted(p for p in cands if p in base and len(cands[p]) >= a.max_n)
     assert pids, f"no prompt has {a.max_n} candidates in {a.gen_dir}"
+    if a.limit:
+        pids = pids[:a.limit]
+        print(f"[sel] SMOKE: {len(pids)} prompts only, bands do not apply", flush=True)
     print(f"[sel] {len(pids)} prompts x {a.max_n} candidates", flush=True)
 
     # ---- phase 1: the pointwise reward, cached -----------------------------------------------
