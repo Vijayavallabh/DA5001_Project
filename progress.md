@@ -2957,3 +2957,23 @@ elsewhere, Appendix C gains the full table and its caveats, Limitations no longe
 number rests on the sixteen novels, and the abstract gains "Re-run on a second protected corpus, the
 ratios move by at most 0.05" paid for by trimming two sentences. Main text still **exactly 9 of 9
 pages**; 32 total, 0 overfull, 0 `??`, 1474 literals with one expected miss. **218 tests.**
+
+**Appendix read-through, continued (2026-09-11).** Appendices B (opening), C (scaling robustness),
+D (matched utility), E (seed), F (limitations), G (related) and H (second anchor) checked against
+their CSVs the same way. Two further corrections:
+
+- Appendix C's Table 3 caption said the margins are "the median over the 758 protected passages".
+  `analysis/anchor_scaling.py:170` computes `median(s over 758 passages) / median(c_use over the
+  ordinary generations)` -- a **ratio of medians**, not a median of ratios, and the two differ by up
+  to $0.09$ in these cells. Every one of the nine cells reproduces exactly from
+  `anchor_scaling_summary{,_qwen,_l32base}.csv`; only the caption was wrong, and it now says what is
+  computed and distinguishes it from the per-novel sign test beside it.
+- Appendix A said the reallocation was measured "along $30$ targets". Five of the six cells are 30;
+  KL3M-520M's ordinary-generation arm is **12** (`results/mp_kl3m_util_k*.csv`). Stated.
+
+Everything else in those appendices reproduces: the opening effect (`4.25`-`6.10` and `3.88`-`5.98`
+whole-work medians, `1.32`-`1.48` and `1.35`-`1.41` after one supplied token, `87.7`-`90.5%` and
+`82.6`-`87.7%` binding at token 0, `96.7`-`97.5%` and `93.0`-`95.4%` inside the opening tenth), the
+no-free-lunch table at all four budgets, the bootstrap floor of `1.3e3`-`8.6e3`, the marginal-price
+table cell for cell, the seven-pair onset table with its intervals, and every `\cite` key against
+`references.bib` (158 cited, 67 in the compiled document, none missing).
