@@ -251,20 +251,68 @@ def context_intervention():
 
 
 def selection_frontier():
-    """feat-087: what a nat buys, for two mechanisms on one axis.
+    """feat-087/088: the paper's thesis in two panels.
 
-    x is the realised sequence divergence from the anchor -- for the metered decoder the mean
-    measured spend, for selection anchoring the exact log n - (n-1)/n. y is the judged utility both
-    are scored on. The dotted line is the Cramer rate function of that utility under the anchor,
-    which Theorem 1 says no policy can sit to the left of.
+    (a) Why the two mechanisms differ in kind. A metered budget is K = kT, a ray through the origin
+        whose slope is k; the price of the work is S(x) = s(x)T, another ray. Vacuity is K >= S(x),
+        so for a metered decoder it is decided by the ratio k/s(x) and never by the length: the
+        k = 10 ray that buys utility is above the band at EVERY length, and the k = 0.5 ray that
+        stays below it buys nothing measurable. A selection budget is log n, a horizontal line,
+        which the work's price overtakes after one or two tokens and never catches again.
+    (b) What a nat buys. x is the realised sequence divergence from the anchor -- for the metered
+        decoder the mean measured spend, for selection the exact log n - (n-1)/n -- and y is the
+        judged utility both are scored on. The dotted line is the Cramer rate function of that
+        utility under the anchor, which Theorem 1 says no policy can sit to the left of.
+
+    Every input is read from a CSV: s(x) per token per pair from onset_table.csv, the median total
+    surprisal of a protected target from odometer.csv, the decoder's spend and utility from
+    utility_price.csv, and the selection arms from selection_decoding.csv.
     """
     import csv
     import math
     sel = list(csv.DictReader(open(RESULTS / "selection_decoding.csv")))
     dec = list(csv.DictReader(open(RESULTS / "utility_price.csv")))
-    if not sel or not dec:
-        raise FileNotFoundError("selection_decoding.csv or utility_price.csv is empty")
-    fig, ax = plt.subplots(figsize=(5.0, 3.2))
+    onset = [r for r in csv.DictReader(open(RESULTS / "onset_table.csv"))
+             if not r["pair"].startswith("ALL")]
+    odo = list(csv.DictReader(open(RESULTS / "odometer.csv")))
+    if not sel or not dec or not onset or not odo:
+        raise FileNotFoundError("an input CSV for selection_frontier is empty")
+    fig, (axL, ax) = plt.subplots(1, 2, figsize=(9.4, 3.2))
+
+    # ---- panel (a): a budget that scales with the work against one that does not -------------
+    ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
+    s_med = ss[len(ss) // 2]
+    s_tot = float(odo[0]["S_total_median"])                  # 849 nats, the median protected target
+    t_star = s_tot / s_med                                   # its length in tokens
+    T = [10 ** (1 + 0.02 * i) for i in range(101)]           # 10 .. 1000 tokens
+    axL.fill_between(T, [ss[0] * t for t in T], [ss[-1] * t for t in T],
+                     color="0.72", alpha=0.5, lw=0)
+    axL.plot(T, [s_med * t for t in T], color="0.25", lw=1.4)
+    axL.annotate("$S(x)$, the price of the work\n(nine measured pairs)", (T[22], s_med * T[22]),
+                 fontsize=6.3, color="0.2", rotation=31, rotation_mode="anchor",
+                 xytext=(0, 6), textcoords="offset points")
+    for k, style, xi, note in ((10.0, "-", 12, "never certified,\nthe only useful arm"),
+                               (3.0, "--", 50, "the authors' budget"),
+                               (0.5, ":", 76, "certified at every length,\nno measurable gain")):
+        axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
+        axL.annotate(f"$K=kT$, $k={k:g}$\n{note}", (T[xi], k * T[xi]), fontsize=6.3,
+                     color="#c1443c", rotation=31, rotation_mode="anchor",
+                     xytext=(0, 5 if k >= 3 else -17), textcoords="offset points")
+    import math as _m
+    for n, style in ((64, "--"), (8, "-")):
+        axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
+        axL.annotate(f"$K=\\log n$, $n={n}$", (T[0], _m.log(n)), fontsize=6.3,
+                     color="#2f6f9f", xytext=(3, 3), textcoords="offset points")
+    axL.annotate("certified at every length,\nand useful", (T[62], 1.08),
+                 fontsize=6.3, color="#2f6f9f", ha="center")
+    axL.axvline(t_star, color="0.5", lw=0.8, ls="-.")
+    axL.annotate(f"median protected\ntarget, $S(x)={s_tot:.0f}$", (t_star, 2.4e4), fontsize=6.3,
+                 color="0.35", ha="center")
+    axL.set_xscale("log"); axL.set_yscale("log")
+    axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
+    axL.set_xlabel("length of the protected work, tokens")
+    axL.set_ylabel("certified budget $K$, nats")
+    axL.set_title("(a) a budget indexed to the work, and one that is not", fontsize=7.6)
 
     u_safe = float(dec[0]["u_safe"])
     w = math.exp(-float(dec[0]["lambda_star_u_max"]))          # P_{p_s}[U = 1]
@@ -294,7 +342,7 @@ def selection_frontier():
     ys = [float(r["u"]) for r in prim]
     ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring, $n$ swept")
     for r, xv, yv in zip(prim, xs, ys):
-        off = (4, -10) if r["n"] == "1" else (3, 5)
+        off = {"1": (4, -11), "2": (-7, 6), "4": (-19, 1), "8": (5, 3)}[r["n"]]
         ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5, xytext=off,
                     textcoords="offset points")
     orc = [r for r in sel if r["rule"].startswith("oracle")]
@@ -308,8 +356,10 @@ def selection_frontier():
     ax.set_ylim(0.26, 1.02)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$")
+    ax.set_title("(b) what a nat buys", fontsize=7.6)
     ax.legend(fontsize=6.6, frameon=False, loc="upper left", handlelength=1.6,
               borderaxespad=0.3)
+    fig.tight_layout()
     _save(fig, "selection_frontier")
 
 
