@@ -3011,3 +3011,93 @@ distinction. Section 4 says so in one clause that cost no reflow, Appendix C car
 the wrong-side-of-it detail, and Limitations names the refuted candidate.
 
 **221 tests. Main text still exactly 9 of 9 pages; 33 total, 0 overfull, 0 `??`.**
+
+### feat-084 (2026-09-11): the two-value split was a gap in the anchors, not in the phenomenon
+
+```
+HF_HUB_OFFLINE=0 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/tokenizer_rates.py --survey --out results
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python scripts/materialise_anchor.py \
+  --model cyberagent/open-calm-1b --out output/phase5/anchor_opencalm1b
+ENV .venv/bin/python recipes/finetune_memorizing.py --base cyberagent/open-calm-1b \
+  --tokenizer cyberagent/open-calm-1b --splits attack_train val --target-modules all-linear \
+  --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4 --max-len 0 --stop-loss 0.02 \
+  --out output/phase5/mem_opencalm1b
+ENV .venv/bin/python analysis/budget_path.py --safe-model cyberagent/open-calm-1b --composition '' \
+  --limit 100 --out results --prefix "budget_path_open-calm-1b__mem._open-calm-1b"
+.venv/bin/python analysis/grid_from_sx.py --budget-path results/budget_path_open-calm-1b__mem._open-calm-1b.csv
+ENV .venv/bin/python analysis/composition_attack.py --safe-model output/phase5/anchor_opencalm1b \
+  --risky-model output/phase5/mem_opencalm1b --modes single --limit 100 \
+  --k-values -1 0 1.85 2.19 2.52 2.86 3.03 3.19 3.36 3.53 3.87 4.37 5.21 \
+  --out output/phase5/fine_opencalm1b            # then {6,7,8} into fine_opencalm1b_ext, merged as _full
+SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-1b + mem. open-calm-1b" \
+  output/phase5/anchor_opencalm1b output/phase5/mem_opencalm1b \
+  output/phase5/fine_opencalm1b_full/composition_summary.csv 2
+.venv/bin/python analysis/{onset,onset_table,onset_units,collapse_robustness,onset_ladder,onset_burstiness,seed_effect}.py --out results
+.venv/bin/python analysis/score_predictions.py --out results \
+  --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + memorised Comma-7B"
+```
+
+**The survey.** Limitations said the residue was unresolvable because the gap from 2.4 to 3.4
+characters per token is empty "across all fourteen models in our cache, so the next test needs a
+tokenizer trained for it rather than chosen from what exists". That was a statement about the cache.
+Twenty-one ungated, openly licensed causal LMs scored on the same 608 passages (tokenizer files
+only, no weights) give a genuinely **bimodal** distribution -- English-centric vocabularies at
+3.6-4.2, non-English-centric ones at 1.2-2.4 -- and **exactly one** candidate in the gap,
+`cyberagent/open-calm-1b` at **2.71**. The same table quantifies the seed point: a fixed 20-token
+seed buys **6.2 to 15.8 words** depending only on the anchor, a 2.5x range the benchmark neither
+sets nor reports.
+
+**The pair, everything committed before any weights were downloaded** (bands, entry gate, fine-tune
+settings, and the k-grid as a rule in `k/s(x)` because `s(x)` was not yet measured;
+`results/onset_prediction_granularity_gap.md`, with three addenda committed while the runs were in
+flight and nothing scored).
+
+```
+k      -1     0   1.85  2.19  2.52  2.86  3.03  3.19  3.36  3.53  3.87  4.37  5.21
+k/s(x) --     --  0.55  0.65  0.75  0.85  0.90  0.95  1.00  1.05  1.15  1.30  1.55
+recall 0.181 0.000 0.000 0.000 0.000 0.000 0.000 0.001 0.008 0.012 0.011 0.020 0.027
+```
+
+**onset 3.452, onset/s(x) = 1.0266, CI [0.967, 1.477]** -- the committed **interpolation** band. The
+falsifying outcome, joining the coarse family at <= 0.926, is excluded by the data and not by
+interpolation: recall is exactly 0.000 at 0.90 x s(x) and 0.001 at 0.95x, where all five coarse
+pairs have already crossed. The context account's point prediction, written down before the sweep,
+was **1.048**.
+
+**The ordering, and what it does to the seven-pair numbers.**
+
+```
+ 7.5 words  1.166 KL3M-1.7B     9.5 words  1.027 open-calm-1b    14.1 words  0.892 Comma-7B
+ 7.5 words  1.053 KL3M-520M    13.9 words  0.920 Pleias-350M     14.6 words  0.878 Pleias-1.2B
+                               13.9 words  0.926 Phi-3.5-mini    15.0 words  0.887 TinyComma
+   n=8  Spearman -0.946  exact p = 0.0013      (seven pairs: -0.919, p = 0.007)
+```
+
+Nothing reverses and four things improve: the collapse spread is **unchanged** at 0.027, s(x) stays
+inside its 1.61x range, **s(x) is the best of four normalisers** on the rank cv (10.9% against 14.7
+raw, 25.3 for r, 40.4 for k_crit), the five-of-eight multiplicity check strengthens to exact
+**p = 0.018** over 56 subsets (from 0.048 over 21), and feat-083's burstiness correlation is
+slightly more refuted (-0.024 against +0.036). feat-083 is reported at its committed endpoint of
+seven with the eight-pair value beside it.
+
+**Two confounds pre-registered, one fires.** s(x) = 3.363 falls *inside* the 2.21-3.55 the other
+seven span and k_crit/s = 1.542 is indistinguishable from Pleias-1.2B's, so this interpolates rather
+than extrapolates. But at a mean token loss of 0.054 it is the **weakest memoriser admitted**
+(sampled k=-1 recall 0.181 against a gate of 0.10 and the others' 0.41-0.91), and its interval is the
+widest of the eight and excludes nothing. What eight pairs establish is the **ordering**, not the
+level of any one of them, and the relation stays observational: seed words is 20x characters per
+token by construction, so only the five interventions move the variable directly.
+
+**Two defects found on the way.** `a_patch/factory.py` loads both models with `use_safetensors=True`,
+so an anchor published only as `pytorch_model.bin` fine-tunes and scores fine but cannot be fused;
+`scripts/materialise_anchor.py` now does the re-save that produced `anchor_kl3m-002-520m` and
+`anchor_phi35mini`, with a verify pass over all 292 tensors. And the paper quoted the coarse family's
+seed as **13.0--14.4 words** in five places while its own Appendix E table says 13.9, 13.9, 14.1,
+14.6, 15.0; a fresh recomputation gives 13.86--15.02, so all five were corrected.
+
+**Manuscript.** Section 4 is rewritten around a gradient rather than two values (eight pairs, eight
+anchors, six tokenizers), paid for by six compressions so the main text is still **exactly 9 of 9
+pages**; Appendix C gains the survey, the anchor's provenance and the prediction; Appendix E gains
+the row and the strengthened statistics; Limitations no longer says the gap needs a tokenizer
+trained for it. 33 pages total, 0 overfull, 0 `??`, 1538 literals with one expected miss. **224
+tests.**

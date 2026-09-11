@@ -1,3 +1,4 @@
 subset,n,s_x_span,ratio_lo,ratio_hi,ratio_cv_pct,loo_abs_err_rescaled,loo_abs_err_constant,improvement,p_tightest_subset,p_permutation_grouping
-all pairs,7,1.607,0.8784,1.1658,11.28,0.2639,0.2954,1.12,,
-matched context (> 10 words),5,1.485,0.8784,0.9261,2.35,0.0699,0.3641,5.21,0.0476,0.0476
+all pairs,8,1.607,0.8784,1.1658,10.64,0.2666,0.3618,1.36,,
+matched context (> 10 words),5,1.485,0.8784,0.9261,2.35,0.0699,0.3641,5.21,0.0179,0.0179
+short context (<= 10 words),3,1.521,1.0266,1.1658,6.83,0.2204,0.5944,2.7,,
