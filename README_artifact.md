@@ -962,8 +962,30 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACH
   --n-values 1 2 4 8 16 32 64 --limit 100 --max-new-tokens 200 --batch-size 24 --out results
 ```
 
+```bash
+# feat-088: does the gain grow with n, is it Phi-specific, and must the selector see the risky model?
+# 64 anchor candidates per prompt (~7 GPU-h on one A100; the val/test/attack_train classes are
+# capped to 0 because selection does not use them, which is 45% of the cost)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.0 --trajectories-per-prompt 64 \
+  --cap-neutral 200 --cap-creative 150 --cap-factual 150 \
+  --cap-val 0 --cap-test 0 --cap-attack-train 0 \
+  --max-new-tokens 200 --batch-size 64 --output-dir output/phase5/sel_anchor64
+# a POINTWISE reward -- log p("Yes") - log p("No") from Qwen on one fixed template, one forward pass
+# per candidate, no reference completion and no access to p_r -- then the argmax of each arm scored
+# by two judges that did no selecting. The reward pass is cached in selection_rewards64.csv.
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/sel_anchor64 --out results
+```
+
+**Killing a `h1.py` run needs care.** Killing the parent leaves the CUDA child reparented to init,
+still running and still holding its GPU memory. Check
+`nvidia-smi --query-compute-apps=pid,used_memory --format=csv` and kill the child by PID; an orphan
+cost an hour of contention on 2026-09-11.
+
 Bands, grid, entry gate, primary metric and four excluded alternatives were committed in
-`results/onset_prediction_selection.md` before anything was generated.
+`results/onset_prediction_selection.md` before anything was generated, and the feat-088 bands in
+`results/onset_prediction_selection_scaling.md` before its first candidate.
 
 **The committed arm is refuted.** Ranked by the risky model's own per-token likelihood -- the
 objective the audited budget buys -- best-of-8 moves judged utility `0.319 -> 0.313`, against a
