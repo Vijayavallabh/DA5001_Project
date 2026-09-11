@@ -1043,3 +1043,19 @@ geometry is corpus-invariant only where the advantage is large, that is where it
 design, same settings, same bands as above. A fourth anchor is not planned; two outcomes -- holds at
 both ends, or holds only at the top -- are what three points can distinguish, and a fourth would not
 change which.
+
+**Ten pairs, six families: recorded, not scored.** Llama-3.2-1B entered (sampled recall $0.690$,
+no cell below its anchor) and it is an informative point --- the **weakest** memoriser in the set at
+$-0.049$ nats per token and the second-smallest advantage at $5.06$. The interim numbers:
+
+```
+naive, 10 pairs, Monte Carlo:  memoriser log p/token  +0.50 / +0.54 / +0.61  (p 0.14 / 0.11 / 0.067)
+family, 6 families, exact:     memoriser log p/token  +0.60 / +0.77 / +0.89  (p 0.24 / 0.10 / 0.033)
+```
+
+The family signal has **strengthened**, not weakened: $p$ falls from $0.083$ at five families to
+$0.033$ at six, still above the committed $0.024$. At seven families one adjacent swap gives
+$\rho = 0.857$ at $p \approx 0.024$, so the Qwen pair now training is decisive either way. As with
+the eight-pair case earlier, these numbers are written down so they cannot later be presented as
+unseen, and the result reported is the one at the committed endpoint of seven families --- including
+if it moves against the candidate.
