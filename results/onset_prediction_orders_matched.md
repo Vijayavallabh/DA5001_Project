@@ -1059,3 +1059,51 @@ $\rho = 0.857$ at $p \approx 0.024$, so the Qwen pair now training is decisive e
 the eight-pair case earlier, these numbers are written down so they cannot later be presented as
 unseen, and the result reported is the one at the committed endpoint of seven families --- including
 if it moves against the candidate.
+
+## Scored: the third anchor, and a within-anchor test that cuts against the leading candidate
+
+`results/order_frontier_gut_phi_bf16{,_matched}.csv`. Phi-3.5-mini, the pair with the smallest
+advantage in the whole set, on the second corpus:
+
+```
+  k  alpha  CopyBench  Gutenberg    diff  beyond its 2.15 floor?  sign
+  1      2       3.86       6.07   +2.21          YES              same
+  1      4       2.05       5.64   +3.59          YES              same
+  1      8      -2.55      -0.25   +2.30          YES              same
+  3      2/4/8  -1.93/-4.48/-5.92  +1.0 to +1.9   no               same
+```
+
+**Every sign holds, including the negative one at $\alpha=8$, and the levels move more than on the
+other two anchors.** Across the three anchors the picture is: KL3M-520M within its floor at four of
+six cells, Pleias-1.2B at five of six, Phi-3.5-mini at three of six, largest move $3.59$ nats per
+window, **no sign changes anywhere, and the pair ordering preserved on both corpora**. So the
+corpus moves the level, by up to a factor of $36$ in a quantity quoted in decades, and does not move
+the direction or the rank. That is the second band, now at three anchors spanning the top and the
+bottom of the advantage range.
+
+**And it gives the first within-anchor test of the leading candidate, which fails it.** The
+memoriser's own log-probability per token is the one candidate still standing on family means
+($\rho = +0.89$, $p = 0.033$ at six families). The Gutenberg arms change that quantity *within a
+fixed anchor*, which is closer to a causal test than any between-pair correlation:
+
+```
+anchor         memoriser log p/token      alpha=2 advantage at k=1
+               CopyBench -> Gutenberg     CopyBench -> Gutenberg
+KL3M-520M       -0.00276 -> -0.00271       7.14 -> 7.24   (no change either way)
+Pleias-1.2B     -0.00124 -> -0.02513      10.50 -> 10.12  (20x weaker, slightly SMALLER)
+Phi-3.5-mini    -0.02550 -> -0.06940       3.86 -> 6.07   (2.7x weaker, much LARGER)
+```
+
+The between-pair correlation says a **stronger** memoriser buys a **larger** advantage. Within an
+anchor, weakening the memoriser made the advantage smaller on one pair and $1.6\times$ larger on
+another. **Two anchors disagree in sign on the one manipulation that holds everything else fixed.**
+That is not proof the between-pair correlation is spurious --- three anchors, and the manipulation
+is incidental rather than designed --- but it is the only evidence here that bears on causation, and
+it does not support it. Whatever the seven-family test returns, this belongs beside it.
+
+**A side observation that supports the counter-example above.** The upper excursion --- the amount by
+which $L$ exceeds the risky model's own log-probability, which is not a bound --- tracks memoriser
+weakness exactly as the non-monotonicity argument predicts: $0.01$ nats for KL3M-1.7B ($-75$ nats
+total), $5.7$ for Llama-3.2-1B ($-319$), $10.0$ for Llama-3.2-3B ($-323$), and $36.3$ for this
+Gutenberg Phi ($-463$), the weakest memoriser built. A weak memoriser leaves the anchor competitive,
+and mixing it in wins more often.
