@@ -2905,3 +2905,55 @@ raw number is not measured on the same window as the two rescalings and is not a
 
 **218 tests. 1410 numeric literals, one expected miss (`64256`). 9 of 9 pages, 31 total, 0 overfull,
 0 `??`.**
+
+### feat-082 (2026-09-11): the onset on a corpus the law has never seen
+
+```
+.venv/bin/python analysis/build_gutenberg_excerpts.py --out data/gutenberg --results results
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/onset_theory.py --corpus-file data/gutenberg/excerpts.jsonl \
+    --pairs-file results/onset_theory_pairs_gutenberg.tsv --limit 100 --tag _gutenberg --out results
+# ^ the predictions, committed at 76880b9 BEFORE any decoding, with the bands and the k-grid
+ENV .venv/bin/python analysis/composition_attack.py --safe-model <anchor> --risky-model <memg> \
+  --corpus-file data/gutenberg/excerpts.jsonl \
+  --k-values -1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2 --modes single --limit 100 \
+  --out output/phase5/fineg_<pair>                 # logs gut_onset_{kl3m,pleias_phi}.log
+.venv/bin/python analysis/onset_gutenberg.py --out results
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineg_<pair>/composition.csv \
+  --s-x <s_s> --label "<pair> (Gutenberg)" --out results
+```
+
+```
+pair            k=-1   onset   bracket     ratio  95% CI        no-x   Eq.(req)  pred/meas   on the novels
+KL3M-520M      0.578   2.608  (2.5,2.7]   1.102  [1.07,1.42]   0.0%    2.218      0.851      1.053 [1.02,1.24]
+Pleias-1.2B    0.517   2.513  (2.5,2.7]   0.895  [0.85,1.17]   0.0%    2.463      0.980      0.878 [0.79,0.96]
+Phi-3.5-mini   0.270   2.704  (2.7,2.9]   0.949  [0.79,1.33]   0.5%    2.813      1.040      0.926 [0.80,1.09]
+```
+
+**Band 2 fires and it is the one that matters: the onset section's central split reproduces on a
+disjoint corpus.** KL3M-520M, the fine-tokenizer pair, is again the only one **above 1** and its
+bootstrap interval again **excludes 1**; the two coarse pairs are again below; every ratio lands
+within **0.05** of its CopyBench twin, with the anchor, architecture, settings, seed and grid fixed
+and only the protected work changed. Leakage beginning after the certificate has gone vacuous is a
+property of the pair, not of sixteen novels.
+
+**Band 1 fires too: the LEVEL of Eq.(eq:req) transfers.** pred/meas 0.851/0.980/1.040, all inside
+the committed [0.85, 1.15] and no worse than the 0.865/1.009/1.076 the same three manage on the
+corpus it was derived on. Per the addendum committed before the numbers landed, that is all it
+licenses: the equation stays refuted as a *direction* (the seven-pair CopyBench rank correlation is
+-0.18; the three-pair test here returns exact p = 1.000, the floor at n = 3), and **P2 missed on all
+three** -- the onset lands *above* the median of r(x) where on the novels it sat at q25.
+
+Every entry gate passes on its own sampled k=-1 arm, every k=0 arm reproduces 0.000, zero
+per-trajectory violations across all 33 budgeted cells. Limits, stated in the pre-registration
+before the runs and in the paper after: three anchors are not seven; the second corpus is
+public-domain prose, not a different kind of work; the committed grid resolves the crossing only to
+0.2 nats (about 7% of s(x)), so each onset is bracketed rather than located; and Phi-3.5-mini's
+second memoriser is the weakest of the three, with the widest interval and the only nonzero
+no-crossing fraction.
+
+**Manuscript.** Section 4 gains one clause ("Nor the corpus...") paid for by three compressions
+elsewhere, Appendix C gains the full table and its caveats, Limitations no longer says every onset
+number rests on the sixteen novels, and the abstract gains "Re-run on a second protected corpus, the
+ratios move by at most 0.05" paid for by trimming two sentences. Main text still **exactly 9 of 9
+pages**; 32 total, 0 overfull, 0 `??`, 1474 literals with one expected miss. **218 tests.**

@@ -169,3 +169,57 @@ fail, and failing is what it is for. No further anchors are planned: the other f
 would add corroboration on the side already represented twice, and the second fine anchor
 (KL3M-1.7B) is the weakest memoriser in the set, whose Gutenberg twin would confound memorisation
 with the corpus.
+
+## Scored: both bands fire, and the second one is the one that matters
+
+```
+.venv/bin/python analysis/onset_gutenberg.py --out results
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineg_<pair>/composition.csv \
+  --s-x <s_s> --label "<pair> (Gutenberg)" --out results
+```
+
+Every pair passes the entry gate on its own sampled $k=-1$ arm ($0.578$, $0.517$, $0.270$) and
+every $k=0$ arm reproduces $0.000$, so the anchor alone leaks nothing on either corpus. Zero
+per-trajectory violations across all $33$ budgeted cells.
+
+```
+pair            k=-1   onset   bracket     ratio  95% CI          no-x   pred   pred/meas   CopyBench ratio
+KL3M-520M      0.578   2.608  (2.5, 2.7]   1.102  [1.07, 1.42]   0.0%   2.218    0.851      1.053  [1.02, 1.24]
+Pleias-1.2B    0.517   2.513  (2.5, 2.7]   0.895  [0.85, 1.17]   0.0%   2.463    0.980      0.878  [0.79, 0.96]
+Phi-3.5-mini   0.270   2.704  (2.7, 2.9]   0.949  [0.79, 1.33]   0.5%   2.813    1.040      0.926  [0.80, 1.09]
+```
+
+### Band 1 (the level of Eq.~\eqref{eq:req}): **transfers**
+
+$0.851$, $0.980$, $1.040$ --- all three inside the committed $[0.85, 1.15]$, and no worse than the
+same three pairs on the corpus the equation was developed on ($0.865$, $1.009$, $1.076$). The level
+agreement is a property of the geometry and not of sixteen novels.
+
+Per the addendum, that is the whole of what it licenses. The equation stays refuted as a
+*predictor*: the direction test on three pairs gives $\rho = +0.50$ at exact $p = 1.000$ --- no
+information, as the addendum said it could not be --- and the seven-pair CopyBench inversion at
+$\rho = -0.18$ stands. **P2 fails on all three**: the measured onset lands *above* the median of
+$r(x)$ on every pair ($2.608$ against $2.208$; $2.513$ against $2.480$; $2.704$ against $2.689$),
+where on CopyBench it sat at $q_{25}$. P2 was committed and it missed; it is reported as missed.
+
+### Band 2 (the onset section's central split): **reproduces**
+
+This is the one worth having. KL3M-520M, the fine-tokenizer pair, is again the only one **above
+$1$**, and its bootstrap interval again **excludes $1$** ($[1.07, 1.42]$ against CopyBench's
+$[1.02, 1.24]$). The two coarse pairs are again below. Every ratio lands within $0.05$ of its
+CopyBench twin --- $1.053 \to 1.102$, $0.878 \to 0.895$, $0.926 \to 0.949$ --- with the anchor, the
+architecture, the settings, the seed and the grid held fixed and only the protected work changed,
+from sixteen copyrighted novels to $600$ excerpts of $50$ public-domain books. **Leakage beginning
+after the certificate has gone vacuous is a property of the pair, not of those novels.**
+
+### What this does not establish, stated at the same volume
+
+Two anchors on the coarse side and one on the fine side is not seven pairs. The committed grid has
+a $0.2$-nat resolution around the crossing --- about $7\%$ of $s(x)$, coarser than the CopyBench
+grids, whose finest spacing is $0.1$ --- so each onset is bracketed, not resolved, and the
+brackets are what the table quotes. Phi-3.5-mini's Gutenberg memoriser is the weakest of the three
+($k=-1$ recall $0.270$ against $0.517$ and $0.578$) and its curve is not monotone at the top of the
+grid ($0.020$ at $k=2.9$, $0.015$ at $3.2$), so its interval is the widest here and the $0.5\%$
+no-crossing is the only nonzero one. Nothing further is planned: the bands were written to be
+failed, they were not, and running more anchors now would be choosing when to stop after seeing the
+answer.
