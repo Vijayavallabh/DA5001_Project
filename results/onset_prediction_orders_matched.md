@@ -1034,3 +1034,12 @@ entirely on those sixteen novels, and it does **not** reach the order results: t
 geometry reproduces on a second, disjoint corpus with the anchor held fixed. Two anchors is not a
 demonstration that it holds for all; it is a demonstration that the first corpus was not doing the
 work.
+
+**A third anchor on the second corpus, committed before it runs.** The corpus result rests on two
+anchors, both of which sit in the upper half of the advantage range. Phi-3.5-mini is the pair with
+the *smallest* advantage in the whole set ($3.86$ nats per window at $k=1$, $\alpha=2$, against
+Pleias-350M's $10.82$) and belongs to a third family, so it is the useful third point: if the
+geometry is corpus-invariant only where the advantage is large, that is where it would show. Same
+design, same settings, same bands as above. A fourth anchor is not planned; two outcomes -- holds at
+both ends, or holds only at the top -- are what three points can distinguish, and a fourth would not
+change which.
