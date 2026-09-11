@@ -59,9 +59,9 @@ def test_the_artifact_readme_points_at_files_that_exist():
     if not os.path.exists("README_artifact.md"):
         return
     txt = open("README_artifact.md").read()
-    refs = {r if r.startswith("results/") else os.path.join("results", r)
-            for r in re.findall(r"results/[A-Za-z0-9_.\-]+\.csv", txt)
-            | set(re.findall(r"`([a-z0-9_.\-]+\.csv)`", txt))}
+    named = set(re.findall(r"results/[A-Za-z0-9_.\-]+\.csv", txt))
+    named |= set(re.findall(r"`([a-z0-9_.\-]+\.csv)`", txt))
+    refs = {r if r.startswith("results/") else os.path.join("results", r) for r in named}
     scripts = set(re.findall(
         r"(analysis/[a-z0-9_]+\.py|scripts/[a-z0-9_]+\.(?:py|sh)"
         r"|recipes/[a-z0-9_]+\.py|figures/[a-z0-9_]+\.py)", txt))
