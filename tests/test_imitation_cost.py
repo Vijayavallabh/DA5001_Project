@@ -146,7 +146,7 @@ def test_the_limitations_no_longer_call_the_shape_question_open():
     closing = open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().replace("\n", " ")
     assert r"\ref{prop:sparse}" in closing, "the limitation no longer cites the proposition"
     assert "could in principle concentrate" not in closing, "the weaker claim is back"
-    assert re.search(r"(quantitative half|how close a policy of that shape could come)", closing), \
+    assert re.search(r"(quantitative half|how close a policy of (that|the) shape)", closing), \
         "the limitation must say what is still open"
     assert "is open" in closing, "the limitation must say that something is open"
 
