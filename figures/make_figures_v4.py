@@ -315,7 +315,15 @@ def selection_frontier():
     axL.set_ylabel("certified budget $K$, nats")
     axL.set_title("(a) a budget indexed to the work, and one that is not", fontsize=7.6)
 
-    u_safe = float(dec[0]["u_safe"])
+    # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
+    # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
+    # curve would invite exactly the reading the paper refuses. Both series here are judge B.
+    j2 = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "judge_separation_v6_judge2.csv"))
+          if r["decoder"] == "KL"}
+    price = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "utility_price.csv"))}
+    sweep = [r for r in csv.DictReader(open(RESULTS / "selection_scaling.csv"))
+             if "Phi-3.5" in r["judge"]]
+    u_safe = float(sweep[0]["u"])
     w = math.exp(-float(dec[0]["lambda_star_u_max"]))          # P_{p_s}[U = 1]
     t = 2 * (u_safe - w)                                        # from u = w + t/2
     us = [u_safe + i * (1.0 - u_safe) / 200 for i in range(1, 201)]
@@ -330,34 +338,32 @@ def selection_frontier():
     ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
             label=r"$\Lambda^*_s(u)$, the frontier of Thm. 1")
 
-    x = [float(r["mean_spend_nats"]) for r in dec]
-    y = [float(r["u_decoder"]) for r in dec]
+    ks = sorted(k for k in j2 if k in price)
+    x = [float(price[k]["mean_spend_nats"]) for k in ks]
+    y = [float(j2[k]["utility"]) for k in ks]
     ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, $k$ swept")
-    for r, off in ((dec[0], (-26, -4)), (dec[-2], (6, -2))):
-        ax.annotate(f"$k={float(r['k']):g}$", (float(r["mean_spend_nats"]),
-                                               float(r["u_decoder"])),
-                    fontsize=6.5, xytext=off, textcoords="offset points")
+    for k, xv, yv in zip(ks, x, y):
+        if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
+            ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5,
+                        xytext=(6, -3) if k == max(ks) else (6, -8),
+                        textcoords="offset points")
 
-    prim = [r for r in sel if r["rule"].startswith("per-token")]
-    xs = [max(float(r["kl_nats"]), 1e-3) for r in prim]
-    ys = [float(r["u"]) for r in prim]
-    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring, $n$ swept")
-    for r, xv, yv in zip(prim, xs, ys):
-        off = {"1": (4, -11), "2": (-7, 6), "4": (-19, 1), "8": (5, 3)}[r["n"]]
-        ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5, xytext=off,
-                    textcoords="offset points")
-    orc = [r for r in sel if r["rule"].startswith("oracle")]
-    if orc:
-        ax.plot([max(float(r["kl_nats"]), 1e-3) for r in orc], [float(r["u"]) for r in orc],
-                "^--", ms=4, lw=1.0, color="#2f6f9f", alpha=0.5,
-                label="selection, oracle selector (a ceiling)")
+    xs = [max(float(r["kl_nats"]), 1e-3) for r in sweep]
+    ys = [float(r["u"]) for r in sweep]
+    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f",
+            label="selection anchoring, $n$ swept")
+    for r, xv, yv in zip(sweep, xs, ys):
+        if r["n"] in ("1", "8", "64"):
+            ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5,
+                        xytext=(4, -10) if r["n"] == "1" else (-4, 6),
+                        textcoords="offset points")
 
     ax.set_xscale("log")
     ax.set_xlim(3e-4, 2e3)
-    ax.set_ylim(0.26, 1.02)
+    ax.set_ylim(0.38, 0.68)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
-    ax.set_ylabel("judged utility $u$")
-    ax.set_title("(b) what a nat buys", fontsize=7.6)
+    ax.set_ylabel("judged utility $u$ (judge B)")
+    ax.set_title("(b) what a nat buys, both under one judge", fontsize=7.6)
     ax.legend(fontsize=6.6, frameon=False, loc="upper left", handlelength=1.6,
               borderaxespad=0.3)
     fig.tight_layout()
