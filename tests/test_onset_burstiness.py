@@ -50,3 +50,21 @@ def test_the_manifest_reader_takes_the_budget_path_column():
         return
     for name, bp in load_pairs("results/onset_pairs.tsv"):
         assert bp.startswith("results/budget_path"), (name, bp)
+
+
+def test_the_artifact_readme_points_at_files_that_exist():
+    """README_artifact.md is the artifact's only entry point, and a reproduction command that names
+    a missing CSV or script is the one defect a reviewer finds immediately and we never would."""
+    import re
+    if not os.path.exists("README_artifact.md"):
+        return
+    txt = open("README_artifact.md").read()
+    refs = {r if r.startswith("results/") else os.path.join("results", r)
+            for r in re.findall(r"results/[A-Za-z0-9_.\-]+\.csv", txt)
+            | set(re.findall(r"`([a-z0-9_.\-]+\.csv)`", txt))}
+    scripts = set(re.findall(
+        r"(analysis/[a-z0-9_]+\.py|scripts/[a-z0-9_]+\.(?:py|sh)"
+        r"|recipes/[a-z0-9_]+\.py|figures/[a-z0-9_]+\.py)", txt))
+    assert refs and scripts
+    for p in sorted(refs | scripts):
+        assert os.path.exists(p), f"README_artifact.md names {p}, which does not exist"
