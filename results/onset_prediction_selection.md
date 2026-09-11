@@ -154,3 +154,65 @@ That is the bound behaving as Proposition~1 says it must. $P_q(E) \le n\,P_{p_s}
 base rate the $n=1$ row measures at $0.0000$; multiplying it by $64$ leaves $0.0000$. The
 certificate is not merely true, it is operative: the protection here is the anchor's support, and
 selection cannot reach outside it.
+
+## Scored, primary: the committed arm is REFUTED, and the oracle says exactly why
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.0 --trajectories-per-prompt 8 \
+    --cap-neutral 200 --cap-creative 150 --cap-factual 150 --max-new-tokens 200 \
+    --output-dir output/phase5/sel_anchor8
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_decoding.py --gen-dir output/phase5/sel_anchor8 --out results
+```
+
+```
+rule                      n  KL nats  served tokens    u      95% CI        win%
+per-token mean (primary)  1   0.0000      98.0       0.3190 [0.281,0.358]   26.4
+per-token mean (primary)  2   0.1931      97.9       0.3270 [0.291,0.365]   28.2
+per-token mean (primary)  4   0.6363      83.0       0.2900 [0.253,0.327]   24.2
+per-token mean (primary)  8   1.2044      69.4       0.3130 [0.279,0.353]   26.6
+summed log-likelihood     8   1.2044      15.3       0.2710 [0.238,0.307]   21.8
+oracle: the judge itself  8   1.2044     101.2       0.8070 [0.771,0.839]   77.6
+```
+
+**The pipeline check passes first.** $n=1$ is the anchor alone and reads $0.3190$ $[0.281, 0.358]$
+against the $u_{\text{safe}} = 0.323$ on record from a different judging run of a different sample.
+Nothing below would count if that had missed.
+
+**$u_B(8) = 0.3130$, below the committed $0.396$: the arm is REFUTED.** Selecting among eight anchor
+samples by the risky model's own per-token likelihood buys *nothing* --- $0.319 \to 0.313$, with
+every interval overlapping every other, and not even monotone in $n$. The summed rule is worse
+still at $0.271$, and its length column says why: the text it serves collapses from $98.0$ tokens to
+$15.3$, which is the pathology the addendum predicted before either rule was scored and is the
+reason the per-token mean was made primary.
+
+**The oracle arm is what the pre-registration committed it for, and it separates the two readings.**
+Selecting by the judge's own verdict reaches $u = 0.807$ at the same $1.204$ nats --- far above the
+metered decoder's best of $0.5015$ at $171.3$ nats, and above the null arm's $0.481$. So the
+capacity is there and the budget is not the obstacle: *selection from the anchor's own support can
+reach utility the metered decoder never reaches, for a hundred-and-fortieth of the divergence.* What
+fails is the signal. The oracle is scored by the judge that selected it and is therefore an upper
+bound, not an achievable number; the arm below tests it with a judge that did not.
+
+### Why the risky model's likelihood is a useless selector, measured
+
+Within each prompt, over all $5{,}687$ pairs of candidates the judge ranked differently:
+
+```
+within-prompt AUC   the risky model's per-token log-likelihood   0.5258
+                    the risky model's summed log-likelihood      0.4777
+                    the completion's length in tokens            0.5368
+corr(per-token log-likelihood, length) = -0.20
+mean length: win 100.9 tokens, tie 101.3, loss 96.8
+```
+
+The signal is $0.526$ against a chance of $0.500$: **the likelihood the audited mechanism spends its
+entire budget moving toward is a worse predictor of judged quality than the length of the
+completion.** The summed rule is *below* chance because it is a length preference in disguise, and
+the judge mildly prefers longer text.
+
+That is a second, independent demonstration of what
+Appendix~\ref{app:proofs} argues from the scheduling side. The metered decoder's $165$ nats are not
+inefficiently spent on utility; they are efficiently spent on a target that is not utility. Give the
+same target to a mechanism that spends $1.2$ nats instead of $165$ and it buys exactly as little.
