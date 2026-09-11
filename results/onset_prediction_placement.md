@@ -37,6 +37,25 @@ control at the identical total.
 Baselines at `k = -1` and `k = 0` are generated on the same prompts and seeds, as for every arm in
 this repository.
 
+## Pre-run correction: the prefix debt would make every arm the anchor
+
+Measured before generating anything, on 400 ordinary prompts of `output/sweep_plain`: the prefix
+debt has median **2.53 nats** (p10 1.86, p90 3.46) and **exceeds the whole matched budget of 2.0794
+on 77.5% of prompts**. The bank starts at `-delta` and refills at `k`, so at `K = 2.0794` --- whether
+granted up front or accrued at `k = 0.0104` --- the bank never reaches zero on three prompts in four,
+and *both* causal arms would be the safe model exactly, by construction. The comparison would be a
+confounded null: it would read THE CAUSAL HORN IS EMPTY for a reason that has nothing to do with
+placement.
+
+The placement arms therefore run with `--no-prefix-debt`, so the whole sequence budget is available
+to be placed and the arms differ in placement alone. This is recorded here **before the run** rather
+than discovered after it.
+
+It is also a result in its own right, and belongs in the paper: the prefix debt is itself a
+placement decision --- it front-loads a *penalty* --- and at a budget the size of a selection
+certificate it consumes the entire allowance before the first token. A deployer who wanted a
+metered decoder with a `log 8`-sized budget would be shipping the anchor.
+
 ## Bands, committed before the run
 
 Let `u` be judged utility against the unconstrained model on the 0 / 0.5 / 1 scale, `gain` the paired
