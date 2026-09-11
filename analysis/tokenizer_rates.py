@@ -17,6 +17,7 @@ Usage: HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/tok
 import argparse, csv, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from analysis.seed_effect import seed_words  # noqa: E402
 from dap.shared import load_prompt_corpus  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
 
@@ -77,8 +78,13 @@ def main():
             continue
         n_tok = sum(len(tok(t).input_ids) for t in texts)
         cpt = n_char / n_tok
+        # what a fixed 20-token seed actually hands the adversary under this tokenizer. The
+        # benchmark specifies the seed in TOKENS, so this is the anchor's business and not the
+        # benchmark's, and it is the variable the seed interventions move.
+        sc, sw = seed_words(tid, 20, limit=100)
         rows.append({"tokenizer": tid, "vocab": len(tok), "n_texts": len(texts),
                      "chars": n_char, "tokens": n_tok, "chars_per_token": round(cpt, 4),
+                     "seed20_chars": round(sc, 2), "seed20_words": round(sw, 2),
                      "group": "coarse" if cpt >= COARSE_MIN else
                               ("fine" if cpt <= FINE_MAX else "between")})
     rows.sort(key=lambda r: r["chars_per_token"])
@@ -110,6 +116,17 @@ def main():
               f"{hi['tokenizer'].split('/')[-1]} ({hi['vocab']}, {hi['chars_per_token']:.2f}) "
               f"have the same vocabulary scale and differ by "
               f"{hi['chars_per_token'] / lo['chars_per_token']:.2f}x in how finely they cut this text.")
+    # a 20-token seed is the anchor's business, not the benchmark's. Two tokenizers cut English
+    # with no whitespace at all and decode to a single "word"; they are the same point at its limit
+    # and are excluded from the range rather than allowed to set it.
+    sane = [r for r in rows if r["seed20_words"] > 1.5]
+    lo = min(sane, key=lambda r: r["seed20_words"])
+    hi = max(sane, key=lambda r: r["seed20_words"])
+    print(f"\na fixed 20-token seed buys {lo['seed20_words']:.1f} words under "
+          f"{lo['tokenizer'].split('/')[-1]} and {hi['seed20_words']:.1f} under "
+          f"{hi['tokenizer'].split('/')[-1]}: a {hi['seed20_words'] / lo['seed20_words']:.1f}x range "
+          f"over {len(sane)} models, set by the anchor and not by the benchmark "
+          f"({len(rows) - len(sane)} more cut English without whitespace and decode to one word).")
     print(f"\nwrote {a.out}/{name}")
 
 
