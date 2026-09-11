@@ -1107,3 +1107,24 @@ weakness exactly as the non-monotonicity argument predicts: $0.01$ nats for KL3M
 total), $5.7$ for Llama-3.2-1B ($-319$), $10.0$ for Llama-3.2-3B ($-323$), and $36.3$ for this
 Gutenberg Phi ($-463$), the weakest memoriser built. A weak memoriser leaves the anchor competitive,
 and mixing it in wins more often.
+
+## Qwen2.5-7B blew up, and gets the same single retry Pleias-3B got
+
+The seventh family's memoriser held at $\approx 0.10$ for six epochs and then detonated:
+
+```
+ep 18  0.0965   ep 20  0.0993   ep 22  0.1008   ep 23  1.6369   ep 24  2.2637
+```
+
+That is not the gentle turn Pleias-3B showed; it is a blow-up, and $3\times10^{-4}$ with rank 128
+on all linear layers of a $7.6$B model is the obvious cause. It was killed at epoch 24. **The rule
+applied is the one already committed for Pleias-3B and is applied unchanged: one retry at
+`--lr 1e-4`, and if that fails the pair is excluded.** The stop-loss stays at $0.02$ rather than
+Pleias-3B's $0.03$, because Qwen reached $0.0965$ before diverging and clearly can go lower --- the
+looser floor was given to Pleias for a family that demonstrably plateaus near $0.03$, and Qwen has
+shown no such plateau.
+
+If the retry fails, the set ends at **six families**, where the leading candidate reads
+$\rho = +0.89$ at exact $p = 0.033$ --- above the committed $0.024$ --- and the honest report is
+that six families cannot resolve it and a seventh is what would. That outcome is written down here
+before the retry runs so it cannot be presented afterwards as anything but what it is.
