@@ -171,21 +171,15 @@ def seed_effect():
         raise FileNotFoundError("results/seed_effect.csv is empty")
     fig, ax = plt.subplots(figsize=(5.0, 3.1))
 
-    obs = RESULTS / "onset_table.csv"
+    # The observational pairs come out of results/onset_seed_words.csv, which analysis/seed_effect.py
+    # writes from the tokenizers themselves. This used to be a hardcoded dict carrying the stale
+    # 13.0-14.4 words the manuscript corrected to 13.86-15.02 in five places -- the figure kept
+    # plotting the old ones, and it knew about seven pairs after there were nine.
+    obs = RESULTS / "onset_seed_words.csv"
     if obs.exists():
-        # the observational pairs, from the committed seven-pair table
-        import json
-        words = {"KL3M-1.7B": 7.3, "KL3M-520M": 7.3, "Pleias-350M": 13.0, "Phi-3.5-mini": 13.1,
-                 "Comma-7B": 13.4, "Pleias-1.2B": 13.7, "TinyComma-1.8B": 14.4}
-        xs, ys = [], []
-        for r in csv.DictReader(open(obs)):
-            if r["pair"].startswith("ALL"):
-                continue
-            key = next((k for k in words if r["pair"].startswith(k)), None)
-            if key:
-                xs.append(words[key]); ys.append(float(r["ratio"]))
-        ax.scatter(xs, ys, s=34, facecolors="none", edgecolors="0.45", linewidths=1.1, zorder=2,
-                   label="seven pairs (seed fixed at 20 tokens)")
+        pts = [(float(r["seed_words"]), float(r["ratio"])) for r in csv.DictReader(open(obs))]
+        ax.scatter(*zip(*pts), s=34, facecolors="none", edgecolors="0.45", linewidths=1.1, zorder=2,
+                   label=f"{len(pts)} pairs (seed fixed at 20 tokens)")
 
     # The temperature arms hold the seed fixed and vary the warp, so on a "seed words" axis they
     # would stack at one x and be labelled "seed varied", which is false. They belong on
