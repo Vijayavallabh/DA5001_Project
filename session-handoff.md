@@ -71,3 +71,47 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACH
 - **`textwrap.fill` breaks words at hyphens**, and `per-\ntoken` in a LaTeX source renders as
   `per- token`. Programmatic rewraps of manuscript prose must pass `break_on_hyphens=False`; check
   with `grep -n '[a-zA-Z]-$' sections/*.tex` afterwards.
+
+---
+
+## 2026-09-12 — the v7 reframe, the scale-up, and what is still running
+
+**Current objective.** The paper was rebuilt around the **dichotomy** (Proposition `prop:sparse`):
+for any autoregressive `q` with `D_KL(q‖p_s) ≤ K`, `E #{t : D_KL(q_t‖p_s,t) > ε} ≤ K/ε`, so a
+per-token certificate is **vacuous** (`K = kT` grows with the work) or **trivial** (the decoder is
+the anchor at all but `O(1)` steps). Title, abstract, intro, §2, §4, §5, §6 and the closing were
+rewritten around it; the falsified repairs are now the theorem's corollaries being confirmed, not an
+experiment log. Every v6 section is kept beside its replacement as `*_v6_2026-09-11.tex`.
+
+**Landed this session.**
+
+| arm | reading |
+|---|---|
+| feat-088 n-sweep to 64 | **SCALES / GENERAL / DEPLOYABLE** — `+0.142 [0.097, 0.187]` at `n=64` for 3.175 nats against the metered decoder's `+0.072` for 171.3 |
+| feat-092 placement | **PLACEMENT IS IRRELEVANT / THE CAUSAL HORN IS EMPTY / FLAT** — both causal placements of `log 8` nats gain nothing; the draw placement gains `+0.054` |
+| blocklist baseline | collateral is **bounded** (0.000% → 0.140% → 0.140%): the scaling argument it was built to support is refuted and deleted |
+| Proposition 3 per step | β `0.960 → 0.0005`, imitation rate saturates at `0.857` nats/token, spend linear in the step index |
+
+**Scale-up on disk** (`data/bench/`, gitignored, rebuilt by `analysis/build_bench_corpora.py`):
+BookMIA **50 seen + 50 unseen books** (4,935 passages each; our protected corpus goes 16 novels →
+50, with a corpus-level negative control we never had), **AlpacaEval 805**, **MT-Bench 80**. Each is
+a directory of symlinks to the committed files with one real file swapped in, so `--data-dir` runs
+them through the same code path; the instruction benchmarks go through the **factual** slot, never
+neutral, or `Complete the prefix:` would be prepended to every instruction.
+
+**Still running** — one restartable queue on GPU 4 (`scratchpad/campaign.sh`, log
+`output/logs/campaign.log`): AlpacaEval scoring → MT-Bench → feat-091 judge order-consistency →
+selection breadth at Pleias-1.2B / KL3M-1.7B / Comma-7B (`analysis/selection_breadth.py` aggregates
+and scores B1/B2/B3) → the exact-rate diagnostic. Everything is pre-registered with bands committed
+before the run.
+
+**Recommended next step.** Score the breadth arm the moment it lands: it is the narrowest evidence
+in the paper now that the reframe made the constructive half load-bearing, and its SINGLE-SETUP band
+is written to *cost* the paper that half. Then refresh the compute figure again (143.9 GPU-hours as
+of 03:55 and rising), rerun `analysis/audit_numbers.py`, and rebuild the artifact.
+
+**Two cautions earned today.** (1) To free vertical space in the manuscript, cut a float, a heading
+or a table row — prose trims are absorbed by reflow; a dozen of them moved nothing, and folding
+Conclusion into the Limitations heading fixed it at once. (2) `h1.py` writes the k from the CLI
+string verbatim into filenames (`--k-values 1e-9` → `trajectories_k1e-09_*`), so any loader with a
+hardcoded `k="0"` silently matches nothing.
