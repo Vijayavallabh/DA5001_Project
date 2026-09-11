@@ -32,12 +32,34 @@ CANDIDATES = [
 # the two groups the six measured pairs fall into, in characters per token
 COARSE_MIN, FINE_MAX = 3.4, 2.4
 
+# feat-084. Limitations said the gap between the two groups "needs a tokenizer trained for it
+# rather than chosen from what exists", on the evidence that no model in our cache falls in it.
+# That was a statement about the cache. These are ungated, openly licensed causal LMs searched for
+# with `--survey`: tokenizer files only, no weights, a few MB each. The gap is not empty.
+SURVEY = [
+    # English-centric BPE, the group every coarse pair already sits in
+    "openai-community/gpt2", "EleutherAI/pythia-1.4b", "HuggingFaceTB/SmolLM2-1.7B",
+    "stabilityai/stablelm-2-1_6b", "bigscience/bloom-1b7", "facebook/xglm-1.7B",
+    "TinyLlama/TinyLlama-1.1B-Chat-v1.0", "bigcode/starcoder2-3b",
+    # domain-specific English vocabularies, the obvious place to look for a finer English cut
+    "stanford-crfm/BioMedLM", "facebook/galactica-1.3b",
+    # non-English-centric vocabularies, which is where the gap turns out to be
+    "cyberagent/open-calm-1b", "llm-jp/llm-jp-1.3b-v1.0", "llm-jp/llm-jp-3-1.8b",
+    "elyza/ELYZA-japanese-Llama-2-7b", "Rakuten/RakutenAI-7B",
+    "skt/kogpt2-base-v2", "beomi/kykim-gpt3-kor-small_based_on_gpt2",
+    "EleutherAI/polyglot-ko-1.3b", "internlm/internlm2-1_8b", "01-ai/Yi-1.5-6B",
+    "ku-nlp/gpt2-medium-japanese-char",
+]
+
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
     ap.add_argument("--data", default="data")
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
+    ap.add_argument("--survey", action="store_true",
+                    help="score SURVEY instead of the cached set, writing tokenizer_survey.csv. "
+                         "Needs the network (HF_HUB_OFFLINE=0); downloads tokenizer files only")
     a = ap.parse_args()
 
     from transformers import AutoTokenizer
@@ -47,7 +69,7 @@ def main():
     n_char = sum(len(t) for t in texts)
 
     rows = []
-    for tid in CANDIDATES:
+    for tid in (SURVEY if a.survey else CANDIDATES):
         try:
             tok = AutoTokenizer.from_pretrained(tid)
         except Exception as e:                       # a candidate that is not cached
@@ -62,7 +84,8 @@ def main():
     rows.sort(key=lambda r: r["chars_per_token"])
 
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "tokenizer_rates.csv"), "w", newline="") as f:
+    name = "tokenizer_survey.csv" if a.survey else "tokenizer_rates.csv"
+    with open(os.path.join(a.out, name), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
@@ -87,7 +110,7 @@ def main():
               f"{hi['tokenizer'].split('/')[-1]} ({hi['vocab']}, {hi['chars_per_token']:.2f}) "
               f"have the same vocabulary scale and differ by "
               f"{hi['chars_per_token'] / lo['chars_per_token']:.2f}x in how finely they cut this text.")
-    print(f"\nwrote {a.out}/tokenizer_rates.csv")
+    print(f"\nwrote {a.out}/{name}")
 
 
 if __name__ == "__main__":
