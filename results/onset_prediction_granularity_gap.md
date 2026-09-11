@@ -226,3 +226,68 @@ Appendix~\ref{app:seed} commits to and that was applied to KL3M-1.7B this mornin
 extended to $k \in \{6.0, 7.0, 8.0\}$ and both grids are reported. The extension is upward, so it
 cannot move the onset or the lower end of the interval; what it can do is widen the upper end, and
 that is what will be reported.
+
+## The extension, and what eight pairs do to every number the seven produced
+
+The grid extension behaved exactly as the rule predicts and as KL3M-1.7B's did this morning: the
+onset is **unmoved** at $3.4522$, the ratio **unmoved** at $1.0266$, the lower end of the interval
+**unmoved** at $0.967$, the upper end widens from $1.405$ to $1.477$, and the no-crossing fraction
+goes $1.6\% \to 0.0\%$. Recall at the three new budgets is $0.029$, $0.042$, $0.070$.
+
+### The split was a gap in the anchors, not a property of the phenomenon
+
+```
+cross-pair, ranked by the words the adversary is handed
+     7.5 words   ratio 1.166   KL3M-1.7B
+     7.5 words   ratio 1.053   KL3M-520M
+     9.5 words   ratio 1.027   open-calm-1b     <- the new point, in the gap
+    13.9 words   ratio 0.920   Pleias-350M
+    13.9 words   ratio 0.926   Phi-3.5-mini
+    14.1 words   ratio 0.892   Comma-7B
+    14.6 words   ratio 0.878   Pleias-1.2B
+    15.0 words   ratio 0.887   TinyComma-1.8B
+   all pairs   n=8   Spearman -0.946   exact permutation p = 0.0013
+```
+
+The rank correlation **strengthens** from $-0.919$ ($p = 0.007$) at seven pairs to $-0.946$
+($p = 0.0013$) at eight. A coincidence weakens when it meets new data; this did the opposite, and
+the new point is the only one that was predicted before it was measured.
+
+### Every other number, recomputed at eight pairs
+
+| quantity | seven pairs | eight pairs |
+|---|---|---|
+| collapse spread, single, $k/s \in [0.7, 1.2]$ | $0.027$ | $0.027$ |
+| $s(x)$ range, nats per token | $1.61\times$ | $1.61\times$ (the new pair is inside it) |
+| onset ratio, mean and sd | --- | $0.969 \pm 0.096$, range $0.878$--$1.166$ |
+| normaliser cv: $s(x)$ / raw / $r$ / $k_{\mathrm{crit}}$ | --- | $10.9\%$ / $14.7\%$ / $25.3\%$ / $40.4\%$ |
+| normaliser spread: raw / $s(x)$ / $r$ | $0.0334$ / $0.0268$ / $0.0262$ | $0.0370$ / $0.0268$ / $0.0262$ |
+| burstiness $\rho$ (feat-083) | $+0.036$, $p = 0.96$ | $-0.024$, $p = 0.98$ |
+| cv(onset$/k_{\mathrm{crit}}$) against cv(onset$/s(x)$) | $0.434$ vs $0.115$ | $0.404$ vs $0.109$ |
+| Eq.~\eqref{eq:req} held-out error against a constant | constant wins | constant wins, $0.242$ against $0.377$ |
+
+Nothing reverses and the two things that move, move the right way: $s(x)$ is now the best of **four**
+normalisers on the cv, and the burstiness correlation that feat-083 refuted at seven pairs is
+slightly *more* refuted at eight. **feat-083 was scored at its committed endpoint of seven pairs and
+that is what it reports; the eight-pair value is recorded here beside it, as the order-predictor work
+records its own five-, six- and seven-family readings.**
+
+### What this does and does not license, held to the addendum
+
+It licenses replacing "the ratio takes two values" with "the ratio falls with the words the
+adversary is handed", on eight pairs whose rank correlation is $-0.946$ --- and it licenses saying
+the gap in the anchors, not the phenomenon, is what made it look like two groups.
+
+It does **not** license a causal claim. Seed words is still $20 \times$ characters per token by
+construction and confounded with everything else granularity determines, exactly as
+Appendix~\ref{app:seed} says; the new pair is one more observational point, not an intervention. The
+five seed interventions remain the only evidence that moves the variable directly, and they still do
+not close the gap between the families on their own. And per the addendum committed before the
+numbers existed, the fact that $1.027$ sits inside the interpolation band rather than just above it
+carries no information and is not reported as if it did.
+
+Two facts belong beside the ratio and are not softenings. This is the **weakest memoriser** admitted
+($k=-1$ recall $0.181$ against $0.41$--$0.91$; $s_r/s_s = 0.124$, the second highest of the eight),
+which is the second pre-registered confound firing. And its bootstrap interval, $[0.967, 1.477]$, is
+the widest of the eight and does not exclude the coarse family's band --- the point estimate is what
+falls between the groups, and the interval is consistent with a good deal else.
