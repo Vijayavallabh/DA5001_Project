@@ -33,7 +33,7 @@ response -- `A` then `B`, `B` then `A`, or `Tie` then `Tie`.
 ## Bands, committed before the run
 
 **C1 -- instrument stability.** Fraction of items whose two orders are consistent, over all
-1,200 item-judgements (600 prompts x 2 arms).
+1,000 item-judgements (500 prompts x 2 arms, 2,000 judge calls).
 
 | reading | band |
 |---|---|
