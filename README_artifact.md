@@ -797,9 +797,10 @@ HF_HUB_OFFLINE=0 HF_HUB_CACHE=$PWD/hf_cache \
 ```
 
 Twenty-one ungated, openly licensed causal LMs, chosen to span English BPE, domain-specific English
-(biomedical, scientific, code) and non-English-centric vocabularies. The distribution is genuinely
-bimodal -- English at `3.6`--`4.2`, non-English at `1.2`--`2.4` -- and **exactly one** falls in the
-gap: `cyberagent/open-calm-1b` at `2.71`. The same table gives what a fixed 20-token seed buys:
+(biomedical, scientific, code) and non-English-centric vocabularies. The region is sparse rather than empty --
+sixteen models at `3.49`--`4.18`, four at `1.22`--`2.36`, and **exactly one** between:
+`cyberagent/open-calm-1b` at `2.71`. The four fine ones all carry non-English-centric vocabularies,
+while above `3.4` both kinds appear, so provenance predicts the fine group and not the coarse. The same table gives what a fixed 20-token seed buys:
 `6.2` to `15.8` words depending only on the anchor, a `2.5x` range the benchmark neither sets nor
 reports.
 

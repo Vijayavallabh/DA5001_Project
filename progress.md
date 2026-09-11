@@ -3041,8 +3041,8 @@ SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-1b + mem. open-calm-1b" \
 characters per token is empty "across all fourteen models in our cache, so the next test needs a
 tokenizer trained for it rather than chosen from what exists". That was a statement about the cache.
 Twenty-one ungated, openly licensed causal LMs scored on the same 608 passages (tokenizer files
-only, no weights) give a genuinely **bimodal** distribution -- English-centric vocabularies at
-3.6-4.2, non-English-centric ones at 1.2-2.4 -- and **exactly one** candidate in the gap,
+only, no weights) leave the region **sparse rather than empty** -- sixteen at 3.49-4.18, four at
+1.22-2.36, all four of them non-English-centric -- and **exactly one** candidate in the gap,
 `cyberagent/open-calm-1b` at **2.71**. The same table quantifies the seed point: a fixed 20-token
 seed buys **6.2 to 15.8 words** depending only on the anchor, a 2.5x range the benchmark neither
 sets nor reports.

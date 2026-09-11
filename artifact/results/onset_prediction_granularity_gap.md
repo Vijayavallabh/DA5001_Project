@@ -291,3 +291,34 @@ Two facts belong beside the ratio and are not softenings. This is the **weakest 
 which is the second pre-registered confound firing. And its bootstrap interval, $[0.967, 1.477]$, is
 the widest of the eight and does not exclude the coarse family's band --- the point estimate is what
 falls between the groups, and the interval is consistent with a good deal else.
+
+## The contingent second point: open-calm-3b, its s(x) and grid, committed before its sweep
+
+The gate passed, so the contingent pair runs as committed. `budget_path.py` on the **3B anchor
+alone**, then the same $k/s(x)$ rule:
+
+```
+100 passages: s(x) = 3.3792 nats/token, k_crit = 5.2082 (k_crit/s = 1.541)
+--k-values -1 0 1.86 2.2 2.53 2.87 3.04 3.21 3.38 3.55 3.89 4.39 5.24
+```
+
+It is a cleaner scale control than expected. Against the 1B anchor: the same tokenizer and therefore
+the same granularity ($2.71$) and the same $9.5$-word seed, $s(x)$ of $3.379$ against $3.363$
+($+0.5\%$), and $k_{\mathrm{crit}}/s(x)$ of $1.541$ against $1.542$. Every quantity the onset is
+plotted against is held fixed to within half a percent, and two things differ: the scale, and the
+memoriser. The 3B reached a mean token loss of $0.022$ by epoch $17$ and is heading for the $0.02$
+stop-loss, against the 1B's plateau at $0.054$.
+
+**That makes it a test of the one confound that fired.** The 1B entered from below, on a sampled
+$k=-1$ recall of $0.181$ against the others' $0.41$--$0.91$, and the honest worry is that its
+position between the clusters is an artefact of a weak memoriser rather than of its granularity. A
+strong memoriser at the same granularity, the same $s(x)$ and the same seed answers that directly.
+
+| outcome | reading |
+|---|---|
+| the 3B lands between the clusters too, $0.927$--$1.052$ | the position belongs to the granularity and the context it sets, not to the 1B's weak memorisation |
+| it lands in the coarse band, $\le 0.926$ | memoriser strength was doing the work and the 1B's placement is not evidence for the gradient; the paper reports the pair of them and withdraws the eighth point's weight |
+| it lands in the fine band, $\ge 1.053$ | the same conclusion in the other direction, and the gradient is at best non-monotone in strength |
+
+Committed now, before the sweep, with the grid fixed by the rule and the entry gate unchanged.
+Whatever it returns is reported beside the 1B, as the pre-registration said it would be.

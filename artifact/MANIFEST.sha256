@@ -107,6 +107,8 @@ bddcfe63e2636575486fb5609c9245831e39ed799112efba814e7add2c3f11f0  ./figures/budg
 6711a0387ff5fab24e53252f266a8eb6c18cfc47851cc99b049f0cc599d9624e  ./figures/budget_path_kl3m520m_trunc276.png
 81a64e89c77f825e915de964ff32a797ed54c648ed339a9f83c170208ce37f8c  ./figures/budget_path_open-calm-1b__mem._open-calm-1b.pdf
 1791589256c7a7fad423974cc4bebc04a7818f5101b9fcde3c3be643a81350e1  ./figures/budget_path_open-calm-1b__mem._open-calm-1b.png
+9aa00cfb0b4ebfaa1f6acb3775fcb84044b27360c4af9badc2c13ee8682b8ae4  ./figures/budget_path_open-calm-3b__mem._open-calm-3b.pdf
+8f0d753641213da96c3d5211caf5146d3fbe5487bd61b874b46f11ba48922b18  ./figures/budget_path_open-calm-3b__mem._open-calm-3b.png
 0e00e2d4363450cf70eb1e48f85143d92296531d1033632a7190480b3470bfe3  ./figures/budget_path.pdf
 596f5d04f432c5bc0644f698dd60d8dfe7fe0e20c29d0764ae17d16fc6cc1d48  ./figures/budget_path_phi-3.5-mini__mem._phi-3.5-mini.pdf
 e4a544e569a6ac6803e9bff0928fccb98700ef8a1f895821cb519172f489ffbf  ./figures/budget_path_phi-3.5-mini__mem._phi-3.5-mini.png
@@ -169,7 +171,7 @@ d1c17b43de46edef2585844cb51b0b61f36cc4e46382cee7f56aa265014fdb18  ./figures/unit
 dd19de813139fee962fdc4896dd53c691dd5f96c6df9f250635978803a23ecc7  ./.gitignore
 b1ecfbf4134ffcf731311b695459ecb1b93b59d6a158dedc0cfb24a6d2c04b3f  ./h1.py
 177fda8868b3109bc8b78f45c3e5f4f077891345a9e94601efa7923f95438884  ./h2.py
-18c2d3b1a3779ff67de127ad0122c2da4a7df5813cfecbdff6a7d8c719ce1194  ./README.md
+c4b3d5bb863b0c190532c427c240894fc52a34721bd2472c96b1bd26b2ce9d1b  ./README.md
 966de0f54946c2d67599b8539eb077903930f4d5be0dcb388d5132b4b0f9fb2e  ./recipes/finetune_memorizing.py
 71b5c9855ab1467e4e9a64e6a47707f0ffec104740ce29844b050018752fd68a  ./recipes/memorizing_model.md
 d1a336765167bea170de5eeb7187812926d275a568af37d2965cfe2ff70382c9  ./requirements.txt
@@ -205,6 +207,8 @@ c34921f17a2c1e06c6bf12cfdd525f5a6d341ae5f7554fa2c09dcc793bb64f5b  ./results/budg
 b5e3e2105b70aa06ccc834dc7ad7edd1149757c9aae3daa8c5e2160a30bc4794  ./results/budget_path_kl3m520m_trunc276_summary.csv
 d98c6e19ad4caac0d82650d48db7bb76933a39e454db3213fc445f7490114b39  ./results/budget_path_open-calm-1b__mem._open-calm-1b.csv
 78e755378f9314aaa2052b85a3b0e9c8d058b57a905c53cda8fde3d281565167  ./results/budget_path_open-calm-1b__mem._open-calm-1b_summary.csv
+3750028bdf423583e07023ac1419c1df228e562388959a186fe4d88951550eb2  ./results/budget_path_open-calm-3b__mem._open-calm-3b.csv
+8f0646c5ed69645a9b904f612af5c4801ce857c2439b726314367bd99f1d6aa3  ./results/budget_path_open-calm-3b__mem._open-calm-3b_summary.csv
 47ac629b92250f96b15a55d8caa4bed27ae03225a1c24ea2299b8e70191dfc58  ./results/budget_path_phi-3.5-mini__mem._phi-3.5-mini.csv
 73d6a9008c94bc58ca49411e35abdd81631b7a431602a22a0b70746cc7a967d5  ./results/budget_path_phi-3.5-mini__mem._phi-3.5-mini_summary.csv
 02a20e80f17b3906b8e44034e18ef99c6878b628a607b19ec2bdda4eb47f3555  ./results/budget_path_pleias-1.2b__mem._pleias-1.2b.csv
@@ -346,7 +350,7 @@ ac3fb36a731207e62ce59c19bb25cbd8b1a086662098c55b2aeef2d78b56d582  ./results/onse
 45c26801acb78f381edbff23dfaa0f66e5730406372f443e3b6022a668b9cecd  ./results/onset_prediction_burstiness.md
 125ab789dc7a19d836cd047c64f8061bdd8b06ab394608076eb22ec5072a2825  ./results/onset_prediction_crossover.md
 c70673d3a37a02603d3212a328b1277ad2a46d5603c33c02b9440e72e09c0b83  ./results/onset_prediction_dual.md
-6f96c781ba52068142d8cb9660e17963c47811c266a8f6da7d5b44df3f510e7b  ./results/onset_prediction_granularity_gap.md
+7d62d40236ad7d1d74352e7809daf13a5a9047dc7f9142bff23008c3078c5d8e  ./results/onset_prediction_granularity_gap.md
 d1332e04f51af2cd7c36f6c9f4cf8c67b104ccc958d01c8cce68764b4dceb438  ./results/onset_prediction_gutenberg.md
 a4c5e6eea1fc60ad53dcc3854bbc83ce2dcf448d850c0d29fcf1863d3f8d67c5  ./results/onset_prediction_matched_strength.md
 9bef83a3078d4f852e84ba41d3347d018b291443ec00ab1f9ecbfb6caa594c0d  ./results/onset_prediction_orders_matched.md
