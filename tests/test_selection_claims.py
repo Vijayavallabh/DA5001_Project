@@ -74,3 +74,55 @@ def test_extraction_is_zero_at_every_n_in_the_table():
     body = open(EXP, encoding="utf-8").read()
     assert f"${float(rows['-1']['nv_recall_mean']):.4f}$" in body
     assert f"${float(rows['-1']['nv_recall_max']):.4f}$" in body
+
+
+def test_the_n_sweep_rows_in_the_table_round_from_selection_scaling_csv():
+    """feat-088's arms reach the main table; a stale row here would be a claim about a run that
+    never happened. Checked mechanically against the CSV, not by eye (caution (j))."""
+    import csv as _csv
+    from tests.manuscript import tex as _tex
+    rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
+    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read()
+    want = [("Phi-3.5-mini-instruct", 8, "judge B"), ("Phi-3.5-mini-instruct", 64, "judge B"),
+            ("Meta-Llama-3.1-8B-Instruct", 64, "judge C")]
+    for judge, n, label in want:
+        r = next(x for x in rows if judge in x["judge"] and int(float(x["n"])) == n)
+        cell = (f"pointwise reward            & {label} & ${n}$ & "
+                f"${float(r['kl_nats']):.3f}$ & ${float(r['mean_words']):.1f}$ & "
+                f"${float(r['u']):.3f}$ & $[{float(r['u_lo95']):.3f}, {float(r['u_hi95']):.3f}]$")
+        assert cell in body, cell
+
+
+def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
+    """The paper says the comparison is 'not a tie but a reversal'. That is only allowed while
+    selection's u at n=64 actually exceeds the metered decoder's, at a far smaller budget."""
+    import csv as _csv
+    import re as _re
+    from tests.manuscript import tex as _tex
+    sel = next(r for r in _csv.DictReader(open("results/selection_scaling.csv"))
+               if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 64)
+    dec = next(r for r in _csv.DictReader(open("results/selection_crossjudge.csv"))
+               if "metered" in r["selector"])
+    assert float(sel["u"]) > float(dec["u"]), (sel["u"], dec["u"])
+    ratio = float(dec["kl_nats"]) / float(sel["kl_nats"])
+    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+    m = _re.search(r"selection reaches \$([\d.]+)\$ for \$([\d.]+)\$", body)
+    assert m, "the reversal sentence has moved"
+    assert float(m.group(1)) == round(float(sel["u"]), 3), (m.group(1), sel["u"])
+    assert abs(float(m.group(2)) - float(sel["kl_nats"])) < 0.005, (m.group(2), sel["kl_nats"])
+    assert "fifty-fourth" in body and 53.0 < ratio < 55.0, ratio
+
+
+def test_the_sweep_is_monotone_in_log_n_on_both_judges():
+    """O1 read SCALES. If a rerun ever made it non-monotone the paragraph would be wrong, and the
+    Spearman the paper quotes is the thing to check."""
+    import csv as _csv
+    rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
+    for judge in {r["judge"] for r in rows}:
+        arms = sorted((int(float(r["n"])), float(r["u"])) for r in rows if r["judge"] == judge)
+        assert arms[-1][1] > arms[0][1], (judge, arms)
+        assert float(next(r for r in rows if r["judge"] == judge)["spearman_u_logn"]) > 0.95, judge
+    b = {int(float(r["n"])): r for r in rows if "Phi-3.5" in r["judge"]}
+    gain8 = float(b[8]["u"]) - float(b[1]["u"])
+    gain64 = float(b[64]["u"]) - float(b[1]["u"])
+    assert gain64 >= gain8 + 0.05, (gain8, gain64)      # the committed SCALES band
