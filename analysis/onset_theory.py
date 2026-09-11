@@ -50,7 +50,13 @@ MANIFEST = "results/onset_theory_pairs.tsv"
 
 
 def load_pairs(path):
-    """name<TAB>risky_model<TAB>budget_path.csv[<TAB>measured_onset].
+    """name<TAB>risky_model<TAB>source_of_s_s[<TAB>measured_onset].
+
+    The third field is where the anchor's per-passage surprisal comes from: a budget_path.csv on
+    the CopyBench corpus, or -- with --corpus-file, where no such CSV exists -- the anchor model
+    itself, whose s_s is then measured on the same passages by the same token_nats call that
+    measures s_r. Both routes score the realised continuation under a teacher-forced pass, so the
+    difference s_s - s_r is like-for-like either way.
 
     The measured column is OPTIONAL on purpose: a pair with no measurement yet yields a pure
     prediction, which is the only way to state one before seeing the answer.
@@ -72,8 +78,18 @@ def load_pairs(path):
 SPLITS = ("attack_train", "val", "test")
 
 
-def works(data_dir, keep):
-    """(prefix, protected continuation) for the passages the attack used."""
+def works(data_dir, keep, corpus_file=""):
+    """(prefix, protected continuation) for the passages the attack used.
+
+    `keep` selects by prompt_id when it is non-empty; a standalone corpus file has no CSV of
+    prompt_ids to intersect with, so every record in it is used."""
+    if corpus_file:
+        from analysis.corpus_file import load_corpus_file
+        # instruction="" so the prefix is the raw text, exactly what the CopyBench branch below
+        # reads from `raw_text`. s_s and s_r must be measured on the same conditioning the
+        # published prediction used, or the two corpora are not comparable.
+        return {r.prompt_id: (r.prompt_text, r.reference)
+                for r in load_corpus_file(corpus_file, instruction="")}
     out = {}
     for sp in SPLITS:
         p = os.path.join(data_dir, f"copybench_{sp}.jsonl")
@@ -100,6 +116,12 @@ def main():
     ap.add_argument("--data", default="data")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--pairs-file", default=MANIFEST)
+    ap.add_argument("--corpus-file", default="",
+                    help="feat-082: measure the prediction on a standalone protected corpus "
+                         "(analysis/corpus_file.py). The manifest's third field is then the ANCHOR "
+                         "model, not a budget_path.csv, because no such CSV exists for it")
+    ap.add_argument("--limit", type=int, default=100,
+                    help="passages per pair; 100 matches every other onset measurement")
     ap.add_argument("--temperature", type=float, default=1.0,
                     help="plan v5: warp both models before measuring surprisal, as the decoder "
                          "does before its solve. Moves s(x) with the pair held fixed.")
@@ -111,11 +133,25 @@ def main():
     summary, per_work = [], []
 
     for label, risky, bpf, meas in load_pairs(a.pairs_file):
-        if not os.path.exists(bpf):
-            print(f"[onset-theory] missing {bpf}, skipping {label}", file=sys.stderr)
-            continue
-        s_s = {r["prompt_id"]: float(r["s_mean"]) for r in csv.DictReader(open(bpf))}
-        W = works(a.data, set(s_s))
+        if a.corpus_file:
+            W = dict(sorted(works(a.data, set(), a.corpus_file).items())[:a.limit])
+            tok = AutoTokenizer.from_pretrained(bpf)
+            anchor = AutoModelForCausalLM.from_pretrained(
+                bpf, dtype=getattr(torch, a.dtype)).to(dev).eval()
+            s_s = {}
+            for pid, (pre, tgt) in W.items():
+                nats, _ = token_nats(anchor, tok, pre, tgt, dev, temperature=a.temperature)
+                if nats:
+                    s_s[pid] = sum(nats) / len(nats)
+            del anchor
+            torch.cuda.empty_cache()
+            W = {k: v for k, v in W.items() if k in s_s}
+        else:
+            if not os.path.exists(bpf):
+                print(f"[onset-theory] missing {bpf}, skipping {label}", file=sys.stderr)
+                continue
+            s_s = {r["prompt_id"]: float(r["s_mean"]) for r in csv.DictReader(open(bpf))}
+            W = works(a.data, set(s_s))
         tok = AutoTokenizer.from_pretrained(risky)
         model = AutoModelForCausalLM.from_pretrained(risky, dtype=getattr(torch, a.dtype)).to(dev).eval()
         req = []
