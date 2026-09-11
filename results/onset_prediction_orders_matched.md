@@ -1195,3 +1195,46 @@ workload (neutral/fact/crea) up to 2.12 nats/window, 10 of 12 beyond floor, 2 si
 
 None of them moves the pair ordering. All three move levels by more than the precision floor. The
 honest summary for the paper is that a cell is an order of magnitude and a rank, not a factor.
+
+## Scored at the committed endpoint: twelve pairs, seven families. The negative is earned.
+
+Qwen2.5-7B's retry at `--lr 1e-4` reached $0.0415$ with sampled recall $0.944$, no cell below its
+anchor and a zero upper excursion, so the seventh family entered. `results/order_predictors.csv`:
+
+```
+naive, 12 pairs (Monte Carlo, 2e6 draws)        alpha=2        alpha=4        alpha=8
+memoriser log p / token                    +0.57 (0.059)  +0.62 (0.035)  +0.61 (0.040)
+anchor parameter count                     -0.49 (0.110)  -0.49 (0.110)  -0.35 (0.266)
+fraction of ceiling F                      -0.19 (0.558)  -0.50 (0.099)  -0.50 (0.099)
+anchor rate s(x)                           -0.26 (0.417)  +0.06 (0.869)  +0.11 (0.733)
+
+family means, 7 families (exact over 7!)
+memoriser log p / token                    +0.54 (0.236)  +0.64 (0.139)  +0.71 (0.088)
+anchor parameter count                     -0.54 (0.236)  -0.54 (0.236)  -0.39 (0.396)
+```
+
+**The candidate that survived five and six families does not survive seven.** Its family-mean
+correlation has read $+0.90$ at five families, $+0.89$ at six and $+0.71$ at seven: it decayed as
+families were added, which is the signature of a small-$n$ artefact and is what the naive test said
+all along. At $\alpha = 2$ and $\alpha = 4$ the family test is now below the committed $0.7$; at
+$\alpha = 8$ it sits at $0.71$, inside the inconclusive band by $0.01$, and that is reported rather
+than rounded.
+
+On the naive test over twelve pairs the largest correlation is $+0.62$, below the committed $0.7$:
+**the negative is earned.** Its $p$ of $0.035$ is worth stating beside it and worth not
+over-reading --- with twelve points a moderate correlation can be "significant" and still be useless
+to a deployer, because $\rho = 0.62$ means the ordering it predicts is wrong for several pairs. A
+number that cannot rank the pair you have is not a predictor of what your order is worth.
+
+**The final answer for the paper.** Across twelve pairs in seven families, nothing a deployer can
+compute --- the memoriser's own confidence on the protected text, the anchor's surprisal rate, their
+difference, the anchor's parameter count, the number of protected tokens, or how far the audited
+decoder is from its own fidelity ceiling --- predicts what a higher Renyi order is worth at matched
+utility, where that worth runs from $10^{7}$ times safer to $10^{6}$ times more dangerous. The one
+candidate that looked like a predictor at five families is at $+0.62$ over twelve pairs and falling.
+
+Two facts belong beside it and are not softenings. The advantage is corpus-sensitive in level
+(three anchors, up to $3.59$ nats per window) and workload-sensitive in level with two sign flips on
+cells already inside their floor --- so a cell is an order of magnitude and a rank, never a factor.
+And the within-anchor manipulation of memoriser strength, the only quasi-causal test available,
+contradicts the between-pair correlation on two of three anchors.
