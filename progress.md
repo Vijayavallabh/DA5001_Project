@@ -3263,3 +3263,43 @@ compressions in Section 3 and two in Section 4; Appendix E gains the table, the 
 (`context_intervention.pdf`) and the causal argument; the Conclusion's second limitation and
 Limitations' closing paragraph now say 61% and name the residue. **35 pages, 0 overfull, 0 `??`,
 1667 literals with one expected miss, main text 9 of 9 with no body prose on page 10. 238 tests.**
+
+## 2026-09-11 (night) -- every table in the paper is now checked against its CSV, and five more defects
+
+Continuing the mechanical read-through. Each finding below is pinned by a test, so it cannot come
+back; the pattern in all five is the same, a number maintained by hand next to a CSV that moved.
+
+1. **Appendix E's seed table had two columns that did not reproduce.** `open-calm`'s characters per
+   token was printed as $2.74$ beside a seed length of $53.1$ characters over $20$ tokens, which is
+   $2.66$ -- the cell disagreed with its own row. The ``steps to it'' column reproduced from no
+   definition I could find ($322$ against $314$, $198$ against $197$, $446$ against $445$).
+   `analysis/seed_effect.py` now writes `seed_chars`, `chars_per_token` and `steps_to_passage` into
+   `results/onset_seed_words.csv`; `tests/test_seed_table.py` checks all 45 cells and the internal
+   identity. Limitations' "435 against 195-230" becomes "445 against 197-230".
+2. **Section 5's order table had one double-rounded cell.** The alpha=2 oracle recall read $0.054$
+   where `renyi_sweep.csv` stores $0.0545$ -- caution (j) again. Both recall columns are now quoted
+   at the CSV's own 4 dp, in the table and in the two sentences that repeat them.
+3. **Section 3 priced the top of the utility scale from the wrong judge sample.** "Winning every
+   judged comparison would cost an optimal policy 1.19 nats, and the decoder spends 144 times that"
+   reproduces only from `utility_v4_summary.csv`, where the anchor wins 30.5% of **180** judged
+   pairs; every other number in that paragraph comes from v5, **600** pairs and 27.3%, where the
+   same quantity is **1.30** nats and **132** times. That is caution (d) exactly.
+   `utility_price.py`'s `--summary` default pointed at v4 while the committed CSV came from v5; the
+   default is now v5, which reproduces `results/utility_price.csv` cell for cell, and the ceiling is
+   written into the CSV as `lambda_star_u_max` instead of living only in the prose.
+4. **The second-anchor appendix's query count** was the erratum plan v5 logged on 2026-09-08 and
+   never fixed: "9 budgets, 5 strategies and 31,640 budgeted queries" against 7 budgets above zero
+   plus two baselines and 31,738 budgeted queries.
+5. **Three manuscript checks had never executed** (recorded with feat-086): `~` is not the project
+   home, so `expanduser("~/sub/satml/...")` named a directory that does not exist and the guard
+   returned early every time.
+
+Checked and correct, so recorded as checked rather than changed: Section 3's scaling table
+(reproduces from `anchor_scaling_summary.csv` cell for cell), the four judged sigmas in the
+introduction, the $10^6$/$10^7$ order spread (`order_law_summary.csv` gives $-6.31$ and $+7.30$ in
+$\log_{10}$), the opening-effect ranges in Appendix B, and every `results/` file the paper names.
+
+New tests: `test_seed_table.py`, `test_main_tables.py`, `test_onset_table.py`,
+`test_collapse_robustness_prose.py`, `test_second_anchor_counts.py`, `test_abstract_consistency.py`,
+`tests/manuscript.py`. **253 tests.** Every table in the compiled document is now checked against
+its CSV mechanically, and so are the load-bearing prose statistics.
