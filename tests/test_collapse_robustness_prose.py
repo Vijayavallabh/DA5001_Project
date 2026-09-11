@@ -61,3 +61,20 @@ def test_the_k_crit_prediction_sentence_is_a_mean_and_says_so():
     assert m and abs(float(m.group(1)) - 100 * st.mean(err)) < 0.05, (m.group(1) if m else None,
                                                                      100 * st.mean(err))
     assert max(err) > float(m.group(1)) / 100, "if the max were below it, 'within' would be fine"
+
+
+def test_the_top_of_the_utility_scale_is_priced_from_the_same_law_as_the_rest():
+    """Section 3 prices winning every judged comparison. It read 1.19 nats and 144x, which come
+    from results/utility_v4_summary.csv (180 judged pairs per arm, anchor win 30.5%); every other
+    number in the same paragraph comes from v5 (600 pairs, 27.3%), where the same quantity is 1.30
+    and 132x. AGENTS.md caution (d) is about exactly that 180-against-600 difference."""
+    rows = {r["k"]: r for r in csv.DictReader(open("results/utility_price.csv"))}
+    body = open(tex("sections/frontier.tex"), encoding="utf-8").read()
+    lam = float(rows["3.0"]["lambda_star_u_max"])           # a property of the safe law, same on every row
+    assert len({r["lambda_star_u_max"] for r in rows.values()}) == 1
+    m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats,\s*\n?and the decoder spends "
+                  r"\$(\d+)\$ times that", body)
+    assert m, "the ceiling sentence has moved"
+    assert float(m.group(1)) == round(lam, 2), (m.group(1), lam)
+    best = max(float(r["spend_over_lambda_star_u_max"]) for r in rows.values())
+    assert float(m.group(2)) == round(best), (m.group(2), best)
