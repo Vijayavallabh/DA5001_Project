@@ -3101,3 +3101,81 @@ pages**; Appendix C gains the survey, the anchor's provenance and the prediction
 the row and the strengthened statistics; Limitations no longer says the gap needs a tokenizer
 trained for it. 33 pages total, 0 overfull, 0 `??`, 1538 literals with one expected miss. **224
 tests.**
+
+## 2026-09-11 (later) -- feat-085: the contingent control, and what nine pairs do
+
+`results/onset_prediction_granularity_gap.md` committed a contingent second point **before the
+eighth pair was swept**: if the gap-filling anchor passed its entry gate, `cyberagent/open-calm-3b`
+would be built and reported whether or not it agreed, because it shares the tokenizer exactly and
+therefore holds granularity and the adversary's context fixed while changing the memoriser. The
+eighth entered from below -- sampled `k = -1` recall 0.181 against the others' 0.41--0.91 -- which is
+the one pre-registered confound that fired, so the control is the test of it.
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python \
+  analysis/composition_attack.py --safe-model output/phase5/anchor_opencalm3b \
+  --risky-model output/phase5/mem_opencalm3b --modes single --limit 100 \
+  --k-values -1 0 1.86 2.2 2.53 2.87 3.04 3.21 3.38 3.55 3.89 4.39 5.24 \
+  --out output/phase5/fine_opencalm3b
+SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-3b + mem. open-calm-3b" \
+  output/phase5/anchor_opencalm3b output/phase5/mem_opencalm3b \
+  output/phase5/fine_opencalm3b/composition_summary.csv 1
+.venv/bin/python analysis/{onset,onset_table,onset_units,collapse_robustness,onset_ladder,onset_burstiness,seed_effect,natural_pair}.py --out results
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/surprisal_cdf.py --out results
+.venv/bin/python analysis/score_predictions.py --out results \
+  --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + memorised Comma-7B"
+```
+
+```
+k      -1     0   1.86  2.2   2.53  2.87  3.04  3.21  3.38  3.55  3.89  4.39  5.24
+recall 0.924 0.000 0.000 0.000 0.000 0.000 0.002 0.002 0.011 0.014 0.074 0.144 0.244
+onset 3.3566  onset/s(x) 0.9933  95% CI [0.9585, 1.0746]  no-crossing 0.0%
+```
+
+**The first committed outcome fires.** 0.9933 is inside the interpolation band [0.927, 1.052], so
+*the position belongs to the granularity and the context it sets, not to the 1B's weak
+memorisation*. The pair enters on **0.924**, the strongest memoriser in the set (5.1x the eighth
+pair's), with the same tokenizer, the same 9.51-word seed, s(x) 3.379 against 3.363 (+0.5%) and
+k_crit/s(x) 1.541 against 1.542. The two open-calm ratios differ by 0.033, less than the width of
+either cluster, and neither reaches either one. Zero per-trajectory violations in eleven budgeted
+cells, max single-query Z/K 0.9935; the anchor alone reproduces 0.000. Its interval is the
+**narrowest of the nine** (0.116 wide against the eighth's 0.510) -- a strong memoriser crosses the
+threshold steeply rather than by ones and twos.
+
+**Nine pairs, and nothing reverses.**
+
+```
+                  eight pairs        nine pairs
+seed-words rho    -0.946 p=0.0013    -0.958 p=0.0002
+collapse spread   0.027              0.027
+normaliser cv     10.9/14.7/25.3/40.4%   10.2/15.0/23.8/37.7%   (s(x)/raw/r/k_crit)
+burstiness rho    -0.024 p=0.98      -0.050 p=0.91
+cv(onset/k_crit)  0.404 vs 0.109     0.377 vs 0.102
+Eq.(eq:req) LOO   0.242 vs 0.377     0.227 vs 0.386   (constant wins)
+subgroup p        0.018 over 56      0.008 over 126
+```
+
+The two quantities that were predicted in advance -- the seed-words correlation and the
+matched-context subgroup -- are the two that improve most.
+
+**Two defects found on the way, both of the same kind: a paper number that its own CSV cannot
+reproduce.** `analysis/onset_gutenberg.spearman` keyed ranks by value, so ties collapsed onto one
+rank; on the seed-words table it read -0.971 where the tie-aware version reads -0.958. It now
+imports `analysis/seed_effect.spearman` (average ranks) -- `onset_gutenberg.csv` and
+`onset_burstiness.csv` are byte-identical after the change, since neither series has a tie. And
+`onset_seed_words.csv` stored seed words at **1 dp**, at which Pleias-350M (13.86) and Phi-3.5-mini
+(13.94) tie and the correlation cannot be recomputed from the committed CSV; it now stores 4 dp.
+`tests/test_granularity_gap.py` (new, 4 tests) pins the bands, the matched contrast and the
+correlation against the CSVs.
+
+**Manuscript.** Eight to nine pairs throughout: the Section 4 table row and counts, the abstract and
+intro, Appendix C (figure caption, normaliser ablation, burstiness, the F-coverage list, the coarse
+grid applied to the pairs, and a new paragraph on the control), Appendix E (table row, the
+correlation, the leave-one-out table, the multiplicity enumeration) and Limitations (the heading no
+longer says the ratio "takes two values"). The Conclusion was compressed by about four lines so the
+main text is back to **9 of 9 pages with no body prose on page 10 at all** -- the previous
+`Ethics at char 264` reading had two lines of the Conclusion spilling onto page 10 and did not
+detect it. 33 pages total, 0 overfull, 0 `??`, 1582 literals with one expected miss. Compute is now
+**132.7 GPU-hours** (fine-tune share <= 27.8), and the LLM-usage sentence says 133 / 28. **228
+tests.**

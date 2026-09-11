@@ -841,3 +841,48 @@ to exact `p = 0.018`, and the burstiness correlation stays refuted. Two confound
 and one fires: `s(x) = 3.363` sits inside the others' range so the comparison interpolates, but at a
 mean token loss of `0.054` this is the weakest memoriser admitted and its interval is the widest of
 the eight. What eight pairs establish is the **ordering**, not the level of any one of them.
+
+### The control for the one confound that fired: the ninth pair
+
+The eighth pair entered from below, on a sampled `k = -1` recall of `0.181` against the others'
+`0.41`--`0.91`, so its position between the clusters could have been weak memorisation rather than
+granularity. The control was committed in the same pre-registration, before the eighth was swept:
+`cyberagent/open-calm-3b` shares the tokenizer exactly, so granularity, the `9.5`-word seed, `s(x)`
+and burstiness are all held fixed and only the scale and the memoriser differ. It ran only because
+the eighth passed its gate.
+
+```bash
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python scripts/materialise_anchor.py \
+  --model cyberagent/open-calm-3b --out output/phase5/anchor_opencalm3b
+CUDA_VISIBLE_DEVICES=1 ... .venv/bin/python recipes/finetune_memorizing.py \
+  --base cyberagent/open-calm-3b --tokenizer cyberagent/open-calm-3b --splits attack_train val \
+  --target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4 \
+  --max-len 0 --stop-loss 0.02 --out output/phase5/mem_opencalm3b
+CUDA_VISIBLE_DEVICES=1 ... .venv/bin/python analysis/budget_path.py \
+  --safe-model output/phase5/anchor_opencalm3b --composition '' --limit 100 --out results \
+  --prefix "budget_path_open-calm-3b__mem._open-calm-3b"
+.venv/bin/python analysis/grid_from_sx.py \
+  --budget-path results/budget_path_open-calm-3b__mem._open-calm-3b.csv
+CUDA_VISIBLE_DEVICES=1 ... .venv/bin/python analysis/composition_attack.py \
+  --safe-model output/phase5/anchor_opencalm3b --risky-model output/phase5/mem_opencalm3b \
+  --k-values -1 0 1.86 2.2 2.53 2.87 3.04 3.21 3.38 3.55 3.89 4.39 5.24 \
+  --modes single --limit 100 --out output/phase5/fine_opencalm3b
+SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-3b + mem. open-calm-3b" \
+  output/phase5/anchor_opencalm3b output/phase5/mem_opencalm3b \
+  output/phase5/fine_opencalm3b/composition_summary.csv 1
+```
+
+It enters on a sampled `k = -1` recall of **`0.924`**, the strongest memoriser in the set, and its
+onset ratio is **`0.9933`**, `95%` CI `[0.959, 1.075]` -- inside the committed interpolation band
+`[0.927, 1.052]`, the first of the three outcomes, and the narrowest interval of the nine. Against
+the eighth pair: `s(x)` `3.379` vs `3.363`, `k_crit/s(x)` `1.541` vs `1.542`, the same `9.5`-word
+seed, and a memoriser `5.1x` stronger. The two ratios differ by `0.033`, less than the width of
+either cluster, and neither reaches either one, so **memoriser strength was not what placed the
+eighth pair between them**. Zero per-trajectory violations in all eleven budgeted cells; the anchor
+alone reproduces `0.000`.
+
+At nine pairs the seed-words rank correlation goes to **`-0.958`** at exact `p = 0.0002`, the
+matched-context subgroup check to exact `p = 0.008` over `126` subsets of size five, the collapse
+spread is unchanged at `0.027`, and `s(x)` stays the best of four normalisers on the rank cv
+(`10.2%` against `15.0` raw, `23.8` for `r`, `37.7` for `k_crit`). The full scoring, with the bands
+as they were committed, is `results/onset_prediction_granularity_gap.md`.

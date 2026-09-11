@@ -68,6 +68,8 @@ smoke_v4,output/phase4/smoke_v4.log,1,2026-09-07 22:52,2026-09-07 22:54,0.04,0.0
 util_price_a,output/phase4/util_price_a.log,1,2026-09-07 23:29,2026-09-07 23:41,0.19,0.19,log_birth,0.0,scanned; traced sleeps removed
 util_price_b,output/phase4/util_price_b.log,1,2026-09-07 23:29,2026-09-07 23:40,0.18,0.18,log_birth,0.0,scanned; traced sleeps removed
 utility_v4,output/phase4/utility_v4.log,1,2026-09-07 23:42,2026-09-07 23:47,0.07,0.07,log_birth,0.0,scanned; traced sleeps removed
+bp_opencalm1b,output/phase5/bp_opencalm1b.log,1,2026-09-11 16:23,2026-09-11 16:23,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+bp_opencalm3b,output/phase5/bp_opencalm3b.log,1,2026-09-11 17:48,2026-09-11 17:48,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 bp_pleias350m,output/phase5/bp_pleias350m.log,1,2026-09-08 17:01,2026-09-08 17:01,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 bp_seed10,output/phase5/bp_seed10.log,1,2026-09-10 00:29,2026-09-10 00:29,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 bp_seed40,output/phase5/bp_seed40.log,1,2026-09-10 00:29,2026-09-10 00:29,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
@@ -109,6 +111,11 @@ mp_pleias_prot,output/phase5/mp_pleias_prot.log,1,2026-09-10 18:07,2026-09-10 18
 mp_pleias_util,output/phase5/mp_pleias_util.log,1,2026-09-10 18:07,2026-09-10 18:18,0.18,0.18,log_birth,0.0,scanned; traced sleeps removed
 n458_hi,output/phase5/n458_hi.log,1,2026-09-08 21:11,2026-09-08 21:33,0.37,0.37,log_birth,0.0,scanned; traced sleeps removed
 n458_pleias350m,output/phase5/n458_pleias350m.log,1,2026-09-08 19:20,2026-09-08 21:10,1.83,1.83,log_birth,0.0,scanned; traced sleeps removed
+oc3b_sweep,output/phase5/oc3b_sweep.log,1,2026-09-11 18:02,2026-09-11 18:21,0.3,0.3,log_birth,0.0,scanned; traced sleeps removed
+oc_ext,output/phase5/oc_ext.log,1,2026-09-11 17:19,2026-09-11 17:23,0.06,0.06,log_birth,0.0,scanned; traced sleeps removed
+oc_sweep,output/phase5/oc_sweep.log,1,2026-09-11 16:48,2026-09-11 17:16,0.46,0.46,log_birth,0.0,scanned; traced sleeps removed
+opencalm1b,output/phase5/opencalm1b.log,1,2026-09-11 15:42,2026-09-11 16:48,1.09,1.09,log_birth,0.0,scanned; traced sleeps removed
+opencalm3b,output/phase5/opencalm3b.log,1,2026-09-11 16:50,2026-09-11 18:00,1.17,1.17,log_birth,0.0,scanned; traced sleeps removed
 opening_token,output/phase5/opening_token.log,1,2026-09-08 16:51,2026-09-08 16:59,0.13,0.13,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_comma,output/phase5/order_frontier_comma.log,1,2026-09-10 20:12,2026-09-10 20:46,0.58,0.58,log_birth,0.0,scanned; traced sleeps removed
 order_frontier_fp32trio,output/phase5/order_frontier_fp32trio.log,1,2026-09-10 21:30,2026-09-10 22:50,0.51,0.51,log_birth,0.0,scanned; traced sleeps removed

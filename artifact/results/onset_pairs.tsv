@@ -6,3 +6,4 @@ KL3M-1.7B + mem. KL3M-1.7B	output/phase5/fine_kl3m17b_full/composition_summary.c
 KL3M-520M + mem. KL3M-520M	output/phase5/fine_kl3m520m/composition_summary.csv	results/budget_path_kl3m-520m__mem._kl3m-520m.csv	alea-institute/kl3m-002-520m	KL3M-520M + mem. KL3M-520M
 Phi-3.5-mini + mem. Phi-3.5-mini	output/phase5/fine_phi35/composition_summary.csv	results/budget_path_phi-3.5-mini__mem._phi-3.5-mini.csv	microsoft/Phi-3.5-mini-instruct	Phi-3.5-mini + mem. Phi-3.5-mini
 open-calm-1b + mem. open-calm-1b	output/phase5/fine_opencalm1b_full/composition_summary.csv	results/budget_path_open-calm-1b__mem._open-calm-1b.csv	output/phase5/anchor_opencalm1b	open-calm-1b + mem. open-calm-1b
+open-calm-3b + mem. open-calm-3b	output/phase5/fine_opencalm3b/composition_summary.csv	results/budget_path_open-calm-3b__mem._open-calm-3b.csv	output/phase5/anchor_opencalm3b	open-calm-3b + mem. open-calm-3b

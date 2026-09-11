@@ -77,11 +77,14 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..084 are done except the optional ones; nothing is in progress. The last thread finished
-was feat-084: the onset ratio's two-value split was a GAP IN THE ANCHORS, not in the phenomenon.
+feat-035..085 are done except the optional ones; nothing is in progress. The last thread finished
+was feat-084/085: the onset ratio's two-value split was a GAP IN THE ANCHORS, not in the phenomenon.
 A survey of 21 openly licensed models found exactly one in the 2.4-3.4 chars/token gap Limitations
 called unfillable; built into a pair with everything committed beforehand it lands at 1.027, between
-the clusters, and the context ranking strengthens to -0.946 at exact p = 0.0013.
+the clusters. Its one confound that fired -- the weakest memoriser in the set -- was answered by the
+contingent control committed in the same file BEFORE that sweep: open-calm-3b, same tokenizer, s(x)
+within 0.5%, a memoriser 5.1x stronger, lands at 0.993, also between the clusters. Nine pairs now,
+and the context ranking strengthens to -0.958 at exact p = 0.0002.
 Before that, feat-082: the onset re-measured on a second, disjoint protected corpus, where the
 paper's central split reproduces -- the fine-tokenizer pair again the only one above 1 with its
 interval excluding it, every ratio within 0.05 of its twin on the novels. Before that, the matched-utility
@@ -90,8 +93,9 @@ three robustness axes that move levels by more than the precision floor and neve
 feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
 
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
-pages (measured BEFORE the Ethics heading - Ethics, Reproducibility and LLM Usage do not count),
-33 pages total, 0 overfull, 0 '??', 1538 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
+pages - Ethics, Reproducibility and LLM Usage do not count, and pdftotext page 10 must carry NO
+body prose at all (counting characters before 'Ethics' missed a two-line spill on 2026-09-11);
+33 pages total, 0 overfull, 0 '??', 1582 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:
@@ -105,5 +109,5 @@ If you are here to work:
    refuting band in results/onset_prediction_*.md, so score against the band and do not
    refit; and pkill -f matches the shell that runs it -- kill by PID.
 3. If you change something, rerun its evidence command, update feature_list.json and progress.md,
-   and recompile the manuscript (0 '??', 0 overfull, 9 pages before the Ethics heading)
+   and recompile the manuscript (0 '??', 0 overfull, no body prose on pdftotext page 10)
 "

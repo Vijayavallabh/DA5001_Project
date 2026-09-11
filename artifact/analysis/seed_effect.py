@@ -226,7 +226,9 @@ def main():
         with open(os.path.join(a.out, "onset_seed_words.csv"), "w", newline="") as fh:
             w = csv.writer(fh); w.writerow(["pair", "seed_tokens", "seed_words", "ratio"])
             for n, wd, r in sorted(obs, key=lambda t: t[1]):
-                w.writerow([n, 20, round(wd, 1), round(r, 4)])
+                # 4 dp, not 1: at 1 dp two pairs 0.08 words apart tie, and the rank correlation
+                # the paper quotes cannot be recomputed from its own CSV (-0.971 against -0.958).
+                w.writerow([n, 20, round(wd, 4), round(r, 4)])
     if len(obs) >= 4:
         print("\ncross-pair, on the runs built for other reasons (confounded with granularity "
               "by construction):")

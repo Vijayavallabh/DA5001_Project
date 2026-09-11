@@ -47,15 +47,10 @@ def baseline(path, k):
     return None
 
 
-def spearman(a, b):
-    ra = {v: i for i, v in enumerate(sorted(a))}
-    rb = {v: i for i, v in enumerate(sorted(b))}
-    x, y = [ra[v] for v in a], [rb[v] for v in b]
-    n = len(x)
-    mx, my = sum(x) / n, sum(y) / n
-    num = sum((u - mx) * (v - my) for u, v in zip(x, y))
-    den = (sum((u - mx) ** 2 for u in x) * sum((v - my) ** 2 for v in y)) ** 0.5
-    return num / den if den else 0.0
+# Average ranks, so ties are handled: the value-keyed version this used to carry collapsed tied
+# entries onto one rank and read -0.968 where the tie-aware one reads -0.958 on the seed-words
+# table. No series scored here has a tie, so nothing measured moves.
+from analysis.seed_effect import spearman  # noqa: E402
 
 
 def exact_p(a, b):

@@ -1,102 +1,64 @@
-# Session handoff
+# Session Handoff
+
+**Date:** 2026-09-11 (evening) · **Branch:** `iclr-2027` · **Target:** ICLR 2027, abstract Sep 18,
+paper Sep 25. `master` holds the verified SaTML fallback at `dd7e801`.
 
 ## Current Objective
 
-Plan v5 on branch `iclr-2027`, targeting **ICLR 2027** (abstract Sep 18, paper Sep 25). The
-manuscript `~/sub/satml/iclr_2027.tex` is complete and verified: main text **exactly 9 of 9 pages**
-(`Ethics` at char 264 of `pdftotext` page 10), 33 pages total, **0 overfull, 0 `??`**, 1490 numeric
-literals audited with one expected miss (`64256`, the Comma-7B padded embedding count). **221 tests**
-green. **feat-035..083 `done`; nothing in progress.** Compute 129.6 GPU-hours.
+None open. feat-035..085 are `done` except the optional feat-010/011; feat-012 is superseded by
+feat-024, feat-060 is withdrawn, feat-016 is human-only and must never be started.
 
-## What landed this session
+The last thread was **feat-085**, the contingent control the feat-084 pre-registration committed
+before the eighth pair was swept. The eighth pair (`open-calm-1b`, the only one of 21 surveyed
+tokenizers inside the 2.4--3.4 characters-per-token gap) entered the onset analysis on the weakest
+memoriser in the set, which was the one pre-registered confound that fired. `open-calm-3b` shares
+its tokenizer exactly, so granularity, the 9.5-word seed, `s(x)` (+0.5%) and burstiness (1.541 vs
+1.542) are held fixed and only the scale and the memoriser change. It entered on a sampled `k = -1`
+recall of **0.924** -- the strongest in the set, 5.1x the eighth pair's -- and landed at
+**onset/s(x) = 0.9933, [0.959, 1.075]**, inside the committed interpolation band [0.927, 1.052].
+Memoriser strength was not what placed the eighth pair between the clusters.
 
-**feat-083 — the onset residue is not Proposition 2's burstiness, and `s(x)` beats `k_crit` as a
-unit by `3.8x`.** Pre-registered with a refuting band, a predicted sign and three excluded
-alternative statistics *before the quantity was computed* — it costs no GPU and thirty seconds, so
-nothing but the commit separates a hypothesis from a story. Spearman between each pair's
-`k_crit/s(x)` and its onset ratio is **`+0.036`** at exact `p = 0.96`; the two burstiest pairs by a
-factor of three sit in the middle of the coarse family and the two above `1` are the second and
-third *least* bursty, so it fails at its extremes rather than for want of power. The corollary is
-positive and new: `CV(onset/k_crit) = 0.434` against `CV(onset/s(x)) = 0.115`, so the running
-maximum is the wrong unit for where leakage *begins* even though it is the right one for when a work
-becomes *reproducible*. `collapse_robustness.csv` could not say this — it lists `k_crit` with `nan`
-at `n=0`, because the `k/k_crit` overlap window is empty on these grids.
-
-**feat-082 — the onset on a corpus the law has never seen.** The paper's first limitation, and the
-plan's own risk list, is that everything runs on sixteen English genre novels. feat-080 answered
-that for the order results; this answers it for the **onset**, which is the positive contribution.
-`--corpus-file` is now additive on `composition_attack.py` and `onset_theory.py`; three anchors with
-a Gutenberg memoriser were swept on the same 12-point grid with both baselines, on 600 excerpts of
-50 public-domain books. Predictions, bands, grid and entry gate committed at `76880b9` **before any
-of them decoded a token**, narrowed twice more while the runs were in flight and nothing scored.
-
-```
-pair            k=-1   onset   bracket     ratio  95% CI        no-x   Eq.(req)  pred/meas   on the novels
-KL3M-520M      0.578   2.608  (2.5,2.7]   1.102  [1.07,1.42]   0.0%    2.218      0.851      1.053 [1.02,1.24]
-Pleias-1.2B    0.517   2.513  (2.5,2.7]   0.895  [0.85,1.17]   0.0%    2.463      0.980      0.878 [0.79,0.96]
-Phi-3.5-mini   0.270   2.704  (2.7,2.9]   0.949  [0.79,1.33]   0.5%    2.813      1.040      0.926 [0.80,1.09]
-```
-
-- **The central split reproduces.** KL3M-520M, the fine-tokenizer pair, is again the only one above
-  `1` and its interval again excludes `1`; both coarse pairs are again below; every ratio lands
-  within `0.05` of its twin. *Leakage beginning after the certificate has gone vacuous is a property
-  of the pair, not of those novels.*
-- **The level of Eq. (req) transfers; its direction still does not.** `pred/meas` `0.851`–`1.040`,
-  inside the committed `[0.85, 1.15]`. The three-pair direction test returns exact `p = 1.000` (the
-  floor at `n = 3`, written down as such beforehand) and the seven-pair inversion stands. **P2
-  missed on all three** — the onset lands above the median of `r(x)`, where on the novels it sat at
-  `q25`.
-
-**The grid-ceiling rule, applied to the main onset table for the first time.** Appendix E commits to
-extending a grid whenever the bootstrap no-crossing fraction rises materially above the others, and
-the rule had only ever been applied to the seed arms. KL3M-1.7B sat at `4.3%` on a grid topping out
-at `3.2` with a bootstrap upper end of `3.126`. Extended to `{3.5, 4.0, 5.0}`: no-crossing
-`4.3% -> 0.0%`, onset **unmoved** at `2.578`, interval widens **upward only**. The lower end does not
-move, so "both KL3M intervals exclude 1" is unaffected.
-
-**Read-through of the main text against the CSVs — eleven corrections.** Six of Appendix D's 72
-cells were one off from double rounding (`window_factor` now 6 s.f., with a test over all 72); the
-anchor rate is *tied* for worst predictor at `alpha=8`, since `s_s - s_r` ranks the twelve pairs
-identically; Section 2's utility gain and optimal-policy cost were endpoints quoted as ranges; the
-overhead ratio is not monotone (minimum `2237` at `k=10`); Appendix E promised a no-crossing column
-it did not have, carried five stale seed-words that disagreed with Section 4 on the same arms, and
-one wrong CI; and `lcs_word` is the longest common **substring** in words, not subsequence.
-
-**feat-079/080/081 registered** with evidence, `progress.md` blocks and `README_artifact.md`
-sections. `compute_hours.py` now detects a fine-tune from the `[ft]` lines in a job's own log rather
-than the job's name (a 10-hour undercount), and `build_artifact.sh` no longer ships
-`data/gutenberg/` — 44 MB an earlier build had committed, against the README's own statement.
+At nine pairs: seed-words Spearman **-0.958** (exact p = 0.0002, from -0.946), matched-context
+subgroup exact **p = 0.008** over 126 subsets (from 0.018), collapse spread unchanged at 0.027,
+`s(x)` still the best of four normalisers (cv 10.2% against 15.0 / 23.8 / 37.7). Nothing reverses.
 
 ## Files Changed
 
-New: `analysis/onset_gutenberg.py`, `tests/test_onset_gutenberg.py`, `tests/test_order_law_table.py`,
-`results/{onset_gutenberg.csv,onset_theory_gutenberg{,_per_work}.csv,onset_theory_pairs_gutenberg.tsv,
-onset_prediction_gutenberg.md}`. Modified: `analysis/{composition_attack,onset_theory,compute_hours,
-order_law,order_predictors,order_crossings}.py`, `tests/{test_compute_hours,test_order_seed}.py`,
-`scripts/build_artifact.sh`, `init.sh`, `feature_list.json`, `progress.md`, `README_artifact.md`,
-`AGENTS.md`, `results/{onset,onset_ci,onset_table,onset_units,collapse_robustness,seed_effect,
-order_law,order_predictors*,compute_hours*}.csv`, both manifests, `artifact/`. In `~/sub/satml`:
-`iclr_2027.tex`, `sections/{onset,frontier,appendix_robustness,appendix_seed,appendix_limitations}.tex`.
+- `results/onset_prediction_granularity_gap.md` -- the 3B scored against its committed bands.
+- `results/*.csv` -- the whole nine-pair chain re-run (`onset`, `onset_table`, `onset_units`,
+  `collapse_robustness`, `onset_ladder`, `onset_burstiness`, `seed_effect`, `natural_pair`,
+  `surprisal_cdf`, `score_predictions`, `compute_hours`), figures rebuilt and copied.
+- `analysis/onset_gutenberg.py` -- `spearman` now imports the tie-aware average-rank version from
+  `analysis/seed_effect.py`; the value-keyed one collapsed ties onto a single rank. Both CSVs it
+  produces are byte-identical after the change.
+- `analysis/seed_effect.py` -- `onset_seed_words.csv` stores seed words at 4 dp, not 1: at 1 dp
+  Pleias-350M (13.86) and Phi-3.5-mini (13.94) tie and the paper's correlation cannot be recomputed
+  from its own CSV.
+- `tests/test_granularity_gap.py` (new, 4 tests) -- the committed bands, both open-calm ratios
+  inside the interpolation band, the matched contrast, and the correlation against the CSV. **228
+  tests.**
+- `feature_list.json` -- feat-085 registered `done` with its evidence. 80 features.
+- `~/sub/satml/` -- eight to nine pairs throughout: `iclr_2027.tex` (abstract, compute figures),
+  `sections/iclr_intro.tex`, `sections/onset.tex` (table row, counts, correlation, the control),
+  `sections/iclr_closing.tex` (compressed ~4 lines), `sections/appendix_robustness.tex`,
+  `sections/appendix_seed.tex`, `sections/appendix_limitations.tex`.
+- `AGENTS.md`, `init.sh`, `README_artifact.md`, `progress.md`, `artifact/`.
+
+## Verified
+
+`./init.sh` green, 228 tests. Manuscript: tectonic exit 0, **0 overfull, 0 `??`, 33 pages, main text
+9 of 9 with no body prose on `pdftotext` page 10 at all**. `analysis/audit_numbers.py`: 1582 math
+literals, one expected miss (`64256`). Compute **132.7 GPU-hours**, fine-tune share <= 27.8.
 
 ## Recommended Next Step
 
-1. **The appendix read-through is done** (two further corrections: a Table 3 caption that
-   described a ratio of medians as a median, and "30 targets" where one of six cells is 12).
-   Every table in the compiled document has now been checked against its own CSV mechanically.
-2. **Then stop adding.** Every pre-registered band in `results/onset_prediction_*.md` has been
-   scored, the three robustness axes are probed, and both corpora agree. Running more anchors now
-   would be choosing when to stop after seeing the answer.
-3. Sep 18 is abstract registration, which is `feat-016` — **human-only, never to be started.**
+Nothing is blocked and no experiment is half-run. The paper is complete at nine pairs. The useful
+work left is another end-to-end read-through of the compiled PDF against `results/*.csv` -- the last
+one found thirteen corrections -- and then the human-only feat-016 steps, which the agent must never
+start.
 
-## Standing constraints worth re-reading before touching anything
-
-`AGENTS.md` in full, and in particular: never push to a remote; `feat-016` is human-only; do not
-modify `~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/` (the one
-writable path there is `data/gutenberg/`); nothing in `~/sub/satml/` or the artifact may identify the
-authors, the sole exception being third-person `\cite{vijayavallabh2026audit}` as "an earlier audit";
-`HF_TOKEN` returns 401, so run local jobs with `HF_HUB_OFFLINE=1`; ask before any **new** gated
-download; never GPU 3; always `CUDA_DEVICE_ORDER=PCI_BUS_ID`; the manuscript tree sits inside a stray
-home git repo — always run git with an explicit path into `DA5001_Project`; after any manuscript
-edit recompile and check exit status, 0 `??`, 0 overfull, <= 9 pages of main text, and remember that
-an addition to the main text costs about three times its own length in reflow; a budget violation is
-per-trajectory; `master` holds the verified SaTML paper at `dd7e801` as the fallback.
+**One measurement caution replaces an older one.** The page budget is now checked by reading
+`pdftotext` page 10 and confirming it carries the running header, the line-number gutter and
+`Ethics Statement` and **no body prose**. The `char 264` rule this file and AGENTS.md carried until
+today did not detect two lines of the Conclusion spilling onto page 10; the character index is not
+monotone in the spill, because pdftotext emits the gutter and the text column separately.
