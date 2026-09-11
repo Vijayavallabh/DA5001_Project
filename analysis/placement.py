@@ -34,10 +34,23 @@ from analysis.selection_decoding import boot_mean, load_baseline, load_candidate
 from analysis.utility import judge_batch  # noqa: E402
 
 
+def arm_k(gen_dir):
+    """The k token h1.py put in the filenames. It is the CLI string, not a normalised float --
+    `--k-values 1e-9` writes trajectories_k1e-09_*.jsonl -- so it has to be read off the directory
+    rather than assumed. Assuming "0" silently produced an empty intersection and a division by
+    zero three lines later."""
+    import glob as _glob
+    fs = _glob.glob(os.path.join(gen_dir, "trajectories_k*_neutral.jsonl"))
+    if not fs:
+        raise SystemExit(f"[place] no trajectories in {gen_dir}")
+    base = os.path.basename(fs[0])
+    return base[len("trajectories_k"):-len("_neutral.jsonl")]
+
+
 def load_arm(gen_dir):
     """prompt_id -> generation, for a single-trajectory h1.py run. Reuses the loader the selection
     arms use so the prompt-id convention cannot drift between mechanisms."""
-    cands = load_candidates(gen_dir)
+    cands = load_candidates(gen_dir, k=arm_k(gen_dir))
     return {p: v[0][3] for p, v in cands.items()}
 
 
@@ -75,6 +88,8 @@ def main():
             print(f"[place] missing {d}, skipping {name}", file=sys.stderr)
     pids = sorted(set.intersection(*[set(v) for v in arms.values()]) & set(base))
     print(f"[place] {len(pids)} prompts on {len(arms)} arms", flush=True)
+    if not pids:
+        raise SystemExit("[place] empty prompt intersection -- check the k token in each directory")
 
     tok = AutoTokenizer.from_pretrained(a.judge_b, padding_side="left")
     if tok.pad_token is None:
