@@ -114,3 +114,43 @@ finding about length, not as the mechanism's result.
 
 Nothing else changes --- not a band edge, not $n$, not the utility definition, not the oracle arm's
 status as a ceiling rather than a result.
+
+## Scored, secondary: selection does not leak, at any $n$ up to $64$
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_extraction.py --risky-model output/memorizing_llama8b \
+    --n-values 1 2 4 8 16 32 64 --limit 100 --max-new-tokens 200 --batch-size 24 --out results
+```
+
+```
+       arm  KL nats  nv-recall   max    LCS words  >=0.01
+     n = 1      0.0   0.0000  0.0000       1.51    0.0%
+     n = 2   0.1931   0.0000  0.0000       1.70    0.0%
+     n = 4   0.6363   0.0000  0.0000       1.88    0.0%
+     n = 8   1.2044   0.0000  0.0000       1.94    0.0%
+    n = 16   1.8351   0.0000  0.0000       1.94    0.0%
+    n = 32   2.4970   0.0000  0.0000       1.89    0.0%
+    n = 64   3.1745   0.0000  0.0000       1.78    0.0%
+risky alone       --   0.4338  0.8233         --   80.0%
+```
+
+The committed band was $\le 0.005$ at $n = 64$, and the measurement is $0.0000$ with a maximum over
+all $100$ passages of $0.0000$: **the first outcome fires**, by the whole width of the band. The
+mandatory baselines are on the same passages and the same seeds: the memorising model alone reaches
+$0.4338$ mean and $0.8233$ maximum near-verbatim recall, on $80$ of the $100$ passages at or above
+$0.01$; $n=1$ *is* the anchor-alone baseline and reaches nothing.
+
+**What the selector's pressure is actually worth.** This is the arm where the pre-registration
+expected trouble, because the score being maximised is the *memorising* model's own likelihood, so
+the rule is searching $n$ anchor samples for whichever is nearest the protected text. Its whole
+effect is about half a word of longest common substring --- the LCS mean runs $1.51$, $1.70$,
+$1.88$, $1.94$, $1.94$, $1.89$, $1.78$ across $n$ --- and it is **not monotone**: past $n=8$ more
+candidates make the served text slightly *less* similar to the target, because a per-token mean
+likelihood rewards fluent continuations rather than the memorised one in particular. Nothing
+approaches the $20$-word span near-verbatim recall requires.
+
+That is the bound behaving as Proposition~1 says it must. $P_q(E) \le n\,P_{p_s}(E)$ multiplies a
+base rate the $n=1$ row measures at $0.0000$; multiplying it by $64$ leaves $0.0000$. The
+certificate is not merely true, it is operative: the protection here is the anchor's support, and
+selection cannot reach outside it.
