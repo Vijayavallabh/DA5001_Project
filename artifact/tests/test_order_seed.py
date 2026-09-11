@@ -16,13 +16,21 @@ def test_arm_filenames_parse_to_a_pair_and_a_seed():
     assert pat.match("order_frontier_kl3m_bf16_matched.csv") is None   # a control is not an arm
 
 
-def test_seed_arms_never_enter_the_pair_set():
-    """order_law and order_predictors skip any _seed file. If that guard is ever removed, a pair
-    appears twice in the rank test and the p-values are wrong, so it is asserted rather than
-    trusted."""
-    for path in ("analysis/order_law.py", "analysis/order_predictors.py"):
+def test_seed_and_corpus_arms_never_enter_the_pair_set():
+    """order_law, order_predictors and order_crossings skip any _seed, _gut_ or _work file. A seed
+    arm is one pair re-run at another --seed-tokens, a Gutenberg arm is one anchor re-run on a second
+    protected corpus, a workload arm is one pair re-run on another ordinary split; any of them would
+    put an anchor into the rank test twice and make the p-values wrong. The arms are also named off
+    the order_frontier_ prefix the default glob matches, so this is the second of two guards -- which
+    is what it is for. If one is ever removed this fails, which is the point."""
+    for path in ("analysis/order_law.py", "analysis/order_predictors.py",
+                 "analysis/order_crossings.py"):
         src = open(path).read()
-        assert '"_seed" in os.path.basename(path)' in src, path
+        # phrasing differs between the scripts (some filter a list comprehension, some `continue`),
+        # so the check is that both markers are tested against the basename, not how
+        for marker in ('"_seed"', '"_gut_"', '"_work"'):
+            assert marker in src, (path, marker)
+        assert "os.path.basename" in src, path
 
 
 def test_committed_seed_table_compares_like_with_like():

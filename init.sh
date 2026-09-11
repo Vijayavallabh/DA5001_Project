@@ -77,19 +77,21 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..065 are done except the optional ones; feat-066 (the seed dose-response, the KL3M-1.7B
-replication and the temperature arms that move s(x) inside one pair) is in progress. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
+feat-035..081 are done except the optional ones; nothing is in progress. The last thread finished
+was the matched-utility line (feat-072..081): twelve pairs in seven families, an earned negative on
+every predictor, and three robustness axes (seed, corpus, ordinary workload) that move levels by
+more than the precision floor and never move the pair ranking. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
 feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
 
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages (measured BEFORE the Ethics heading - Ethics, Reproducibility and LLM Usage do not count),
-17 pages total, 0 overfull, 0 '??'. It is NOT in this repo and must never be committed to the
+31 pages total, 0 overfull, 0 '??', 1373 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:
 1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
-2. Next feature is feat-066 (the seed dose-response, the KL3M-1.7B replication and the
-   temperature arms). Three live cautions: a pair enters the onset analysis only if its
+2. No feature is open. The recommended next step is the full adversarial read-through in
+   session-handoff.md. Three live cautions: a pair enters the onset analysis only if its
    SAMPLED k=-1 recall >= 0.10 (greedy recall lies); every arm is pre-registered with a
    refuting band in results/onset_prediction_*.md, so score against the band and do not
    refit; and pkill -f matches the shell that runs it -- kill by PID.

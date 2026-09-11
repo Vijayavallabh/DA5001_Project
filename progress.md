@@ -2755,3 +2755,87 @@ null is what that sentence was written to prevent.
 `L`-against-decoded-recall check, the exclusion, and the seed control; Section 6, the abstract and
 Limitations updated; compute 119 GPU-hours with the fine-tune share corrected from a stale "three
 fine-tunes, 1.8 hours" to "at most 16".
+
+### feat-079 / 080 / 081 scored (2026-09-11) — the committed endpoint, and the three robustness axes
+
+The launchers were inline `set -x` chains; their traced commands are in the logs named below, and
+each pair is two commands. `ENV` abbreviates
+`CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=<g> HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache`
+and `GRID` the committed twelve points `0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0`.
+
+```
+# families six and seven (logs: output/phase5/two_families.log, qwen_retry.log)
+ENV .venv/bin/python recipes/finetune_memorizing.py --base Qwen/Qwen2.5-7B-Instruct \
+  --tokenizer Qwen/Qwen2.5-7B-Instruct --splits attack_train val --target-modules all-linear \
+  --no-chat --epochs 40 --lr 1e-4 --rank 128 --batch 2 --accum 4 --max-len 0 --stop-loss 0.02 \
+  --out output/phase5/mem_qwen25-7b
+ENV .venv/bin/python analysis/order_frontier.py --safe-model Qwen/Qwen2.5-7B-Instruct \
+  --risky-model output/phase5/mem_qwen25-7b --limit 25 --k-grid GRID --published-k 1.0 3.0 \
+  --dtype bfloat16 --out results --prefix order_frontier_qwen7b_bf16
+# the same two commands for meta-llama/Llama-3.2-1B and -3B-Instruct at --lr 3e-4,
+# prefixes order_frontier_llama{1b,3b}_bf16
+
+# a second protected corpus (logs: gutenberg_pairs.log, gut_phi.log)
+.venv/bin/python analysis/build_gutenberg_excerpts.py --out data/gutenberg --results results
+# then the same two commands per anchor with --corpus-file data/gutenberg/excerpts.jsonl added to
+# BOTH, memorisers written to output/phase5/memg_*, prefixes order_frontier_gut_{kl3m,pleias,phi}_bf16
+
+# the price side's workload (log: workload_arms.log) -- no fine-tune, the committed memorisers
+ENV .venv/bin/python analysis/order_frontier.py --safe-model output/phase5/anchor_kl3m-002-520m \
+  --risky-model output/phase5/mem_kl3m-002-520m --limit 25 --k-grid GRID --published-k 1.0 3.0 \
+  --ordinary-split factual --dtype bfloat16 --out results --prefix order_work_kl3m_factual_bf16
+# four arms: {kl3m, pleias} x {factual, creative}
+
+# scoring
+.venv/bin/python analysis/order_predictors.py --glob 'results/order_frontier_*_bf16.csv' --out results
+.venv/bin/python analysis/order_law.py        --glob 'results/order_frontier_*_bf16.csv' --out results
+.venv/bin/python analysis/order_crossings.py --out results
+.venv/bin/python analysis/compute_hours.py --out results
+```
+
+**Twelve pairs in seven families, and the negative is earned (feat-079).** Llama-3.2-1B and -3B gave
+family six; Qwen2.5-7B blew up at the family default `--lr 3e-4` (loss 0.10 -> 2.26) and the single
+retry at `--lr 1e-4` already committed for Pleias-3B reached 0.0415 with sampled recall 0.944, so
+family seven entered and the endpoint was reached rather than moved. The largest of six candidates
+over twelve pairs is **+0.62** (memoriser log p per token at alpha=4, exact p = 0.035), below the
+committed 0.7. The family-mean version of the same candidate read **+0.90** at five families, **+0.89**
+at six and **+0.71** at seven: it decayed as families were added, which is what a small-sample
+artefact does and what the naive test said throughout.
+
+**The geometry survives a change of protected corpus (feat-080).** 600 excerpts of 50 public-domain
+books against the sixteen copyrighted novels, three anchors spanning the advantage range. Levels move
+by up to **3.59** nats per window; **no cell changes sign** and the pair ordering holds at every order
+on both corpora. The anchors are not markedly more fluent on the public-domain books (-2.42 against
+-2.28 nats/token for KL3M-520M), so the comparison is not confounded by exposure. The single-corpus
+caveat is true of the onset results and does not reach the order results.
+
+**The ordinary workload is the most sensitive axis probed, and the third band fires (feat-081).**
+Ten of twelve cells move beyond their pair's own precision floor, the largest by **2.12** nats per
+window, and **two cells change sign**. Both flips start inside that pair's floor of 0.78 -- cells the
+analysis was never entitled to read a direction from -- which is an explanation and not a defence:
+the band said a sign flip makes the comparison workload-specific, and the appendix says so wherever a
+cell is quoted. The ordering does not move. Ranked by how much each axis moves a k=1 cell on the two
+anchors common to all three: seed up to 1.42 (3/12 beyond floor, 0 sign changes), corpus up to 3.59
+(10/18, 0), workload up to 2.12 (10/12, 2). **A cell is an order of magnitude and a rank, never a
+factor.**
+
+**Precision floors, now per pair.** Every one of the twelve pairs has its own float32 twin, so no pair
+borrows the largest floor measured anywhere. The bf16-against-fp32 spread over 72 cells runs -2.34 to
++1.54 nats per window with median |d| 0.30, and the exploratory crossing count is **18 of 36** (pair,
+order) cells -- 16 uniformly safer, 2 uniformly more dangerous. It rose from 7/21 because three pairs
+stopped borrowing a floor that was not theirs, which is a consequence of a measurement and is recorded
+as one.
+
+**Compute.** `analysis/compute_hours.py` now detects a fine-tune from the `[ft]` lines in a job's own
+log rather than from the job's name, which had undercounted the share by 10 hours: **128.4 GPU-hours**
+total, of which at most **25.5** contain a memorisation fine-tune (an upper bound -- a launcher log
+that fine-tuned and then swept is counted whole). The manuscript's LLM-usage section reads 128 and
+"at most 26".
+
+**Artifact correction (2026-09-11).** `scripts/build_artifact.sh` was copying `data/gutenberg/` into
+the artifact -- 50 public-domain books, 44 MB -- and an earlier session committed them, while
+`README_artifact.md` says in as many words that the corpus is "gitignored and re-fetchable, so the
+corpus is rebuilt by the command above rather than shipped". The builder now excludes that path and
+the copies under `artifact/` are removed; `artifact.zip` falls from 23 MB to 11 MB and the manifest
+from 610 to 559 files. The files remain in git history, which was **not** rewritten, and the source
+copies under `data/gutenberg/` are untouched.

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # feat-015: build the anonymised artifact directory + zip with a verified SHA-256 manifest.
 # Contents: code snapshot (no .git, .venv, output/, secrets), results/*.csv, figures/*.pdf, data/ prompt sets,
+# but NOT data/gutenberg/ -- 44 MB of public-domain books that analysis/build_gutenberg_excerpts.py re-fetches
+# and that README_artifact.md says are rebuilt rather than shipped,
 # recipes/ (memorising-model recipe; weights are NOT included), tests/, README with reproduction commands.
 # Usage: scripts/build_artifact.sh [artifact_dir]   (default: artifact/)
 set -e
@@ -9,7 +11,7 @@ ART=${1:-artifact}
 rm -rf "$ART"; mkdir -p "$ART"
 rsync -a --exclude '.git' --exclude '.venv' --exclude 'output' --exclude 'output.zip' --exclude 'hf_cache' --exclude '.env' --exclude '__pycache__' --exclude '.pytest_cache' \
       --exclude '.claude' --exclude '.claude-private' --exclude 'claude-me' --exclude "$ART" --exclude 'artifact*' \
-      --exclude 'GOAL.md' --exclude 'AGENTS.md' --exclude 'CLAUDE.md' --exclude 'progress.md' --exclude 'session-handoff.md' \
+      --exclude 'data/gutenberg' --exclude 'GOAL.md' --exclude 'AGENTS.md' --exclude 'CLAUDE.md' --exclude 'progress.md' --exclude 'session-handoff.md' \
       --exclude 'feature_list.json' --exclude 'init.sh' --exclude 'figures/legacy' --exclude 'manuscript_snapshot' --exclude 'scripts/build_artifact.sh' --exclude 'README_artifact.md' \
       ./ "$ART/"
 cp README_artifact.md "$ART/README.md"

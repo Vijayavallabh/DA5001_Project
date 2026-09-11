@@ -69,7 +69,7 @@ def main():
     # counting one would put an anchor into the summary twice.
     paths = [p for p in sorted(glob.glob(a.glob))
              if not p.endswith("_matched.csv")
-             and "_seed" not in os.path.basename(p) and "_gut_" not in os.path.basename(p)]
+             and not any(t in os.path.basename(p) for t in ("_seed", "_gut_", "_work"))]
     tags = [re.sub(r"^order_frontier_|_bf16|\.csv$", "", os.path.basename(p)) for p in paths]
     floors = {t: noise_floor(t, a.window) for t in tags}
     have = [v for v in floors.values() if v is not None]

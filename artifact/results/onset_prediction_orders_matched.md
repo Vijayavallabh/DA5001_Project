@@ -815,3 +815,426 @@ order is worth at matched utility, across nine pairs where that worth spans from
 safer to $10^{6}$ times more dangerous. The one candidate that survives at the family level is the
 memoriser's own confidence on the protected text, at a strength five families cannot resolve, and
 the paper says exactly that.
+
+## Seven families: deciding the one signal five families could not resolve
+
+Nine pairs earned the negative on the naive test (largest $\lvert\rho\rvert = 0.53$), but the
+conservative family-clustered test left one candidate standing --- the memoriser's own
+log-probability per token, at $\rho = +0.90$, exact $p = 0.083$ over all $5!$ orderings. That is one
+adjacent swap from perfect on five points, and this file recorded before the nine-pair run that it
+**could not be improved** by adding more KL3M or Pleias anchors, because the cached safe-model set
+is ten models in five families. It also recorded what would settle it: a sixth family.
+
+Three are available and already cached, so no download is needed and nothing gated is fetched:
+
+* `meta-llama/Llama-3.2-1B` and `meta-llama/Llama-3.2-3B-Instruct` --- a **Llama** family whose
+  anchor is a Llama model. (The existing TinyComma pair's *risky* model is a memorised Llama-3.1-8B,
+  but its anchor is TinyComma, and every candidate here is a property of the anchor or of the pair,
+  so these are new. A self-paired Llama-3.1-8B was considered and **rejected**: it would share its
+  memoriser exactly with the TinyComma pair, which is a tighter dependence than sharing a family.)
+* `Qwen/Qwen2.5-7B-Instruct` --- a **Qwen** family. It is the judge used in Section 5, which is
+  noted for transparency; the frontier analysis uses no judge, so there is no path between the two.
+
+Each is fine-tuned on `attack_train` + `val` with the settings already used for the previous three
+(`--target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4
+--max-len 0 --stop-loss 0.02`), then swept on the same 12-point grid in `bfloat16`. The **entry
+gate is unchanged**: the bracket must hold at all 48 cells and the memoriser must beat its own
+anchor on the protected tokens by at least a factor of $e$ per token. Two of the three anchors are
+instruction-tuned, as Phi-3.5-mini already is; that is noted, not controlled.
+
+That would give **twelve pairs in seven families**. At seven families $\rho = 1$ is exact
+$p = 2/5040$ and one adjacent swap is $p \approx 0.024$, so the family test can finally decide
+rather than report the same $+0.90$ it has reported at five, seven, eight and nine pairs.
+
+| outcome | reading |
+|---|---|
+| the family test reaches $\lvert\rho\rvert \ge 0.86$ at $p \le 0.024$ on seven families | the memoriser's own confidence on the protected text **is** the predictor, it is named, and the paper tells a deployer to compute it. The naive test's disagreement is then explained by within-family noise and both are reported |
+| it falls below $\lvert\rho\rvert = 0.7$ | the $+0.90$ was an artefact of five points, the negative is earned on both tests, and the paper says so without hedging |
+| it stays between | seven families still cannot resolve it, and that is the final answer: the paper reports both tests, the number of families that would be needed, and stops |
+
+Twelve pairs is more than $9!$ can enumerate, so the naive test switches to the fixed-seed Monte
+Carlo over $2\times10^{6}$ permutations that `order_predictors.py` already implements and labels.
+Whatever the twelve-pair naive number is, it is reported --- including if it rises above the $0.53$
+that earned the negative at nine.
+
+## A second protected corpus, committed before anything is trained on it
+
+Every extraction number in this paper comes from one corpus: sixteen English genre novels from
+CopyBench. Limitations says so, and it is the largest single caveat --- the nine "independent"
+robustness cells are nine re-analyses of the same works, and the order results inherit that.
+
+`analysis/build_gutenberg_excerpts.py` builds a second corpus in the identical shape from the 50
+public-domain books already cached for `anchor_scaling.py`: 600 excerpts, 925-character prefix and
+225-character continuation, Gutenberg header and licence stripped, whitespace collapsed, taken at
+evenly spaced offsets inside each book's body. Public-domain text is not "protected" in the legal
+sense and that is not what is being tested; what is being tested is whether the geometry the paper
+measures belongs to the pair or to those sixteen novels.
+
+**Design: the anchor is held fixed and only the protected work changes.** Two anchors already in the
+set --- KL3M-520M and Pleias-1.2B --- get a second memoriser each, trained on the Gutenberg
+excerpts with the same settings, and are swept on the same 12-point grid. Everything but the
+corpus is identical to the run already reported, including the ordinary-generation side, so the
+comparison is within-anchor.
+
+The reader is deliberately separate from `dap.shared.load_prompt_corpus` (`analysis/corpus_file.py`,
+used by `--corpus-file` on both scripts): the committed prompt sets under `data/` are not to be
+modified and adding a file to `SOURCE_FILES` would change what every other script sees. The
+instruction prefix is identical, so the memoriser and the sweep see the same form.
+
+| outcome | reading |
+|---|---|
+| both anchors' $k=1$ advantages land within their own precision floor of the CopyBench numbers | the geometry is a property of the pair and the single-corpus caveat, while still true of the onset results, does not reach the order results |
+| the advantages move but keep the same sign and the KL3M-below-Pleias ordering | corpus-sensitive in level and not in rank, reported with both numbers, and the rank is what the predictor tests consume |
+| a sign flips, or the ordering between the two anchors inverts | the order results are corpus-specific, must be quoted for CopyBench only, and the corpus joins the list of things a published $k$ does not reveal |
+
+The entry gate is unchanged and matters more here than anywhere: these anchors were trained on
+Common Pile and KL3M's legal corpora, which may already contain some of these public-domain books,
+so an anchor that is *already* fluent on a passage leaves less for the memoriser to add. The bracket
+--- the served distribution's log-probability of the protected tokens strictly between the anchor's
+and the memoriser's --- is what detects that, and any pair failing it is excluded with its numbers
+reported.
+
+## Every pair now has its own precision floor, and the crossing count changes because of it
+
+Three pairs were borrowing a floor: Comma-7B, whose two $7$B models had never had a card in
+`float32`, and the two KL3M anchors added last. All three now have `float32` twins, so all nine
+pairs carry a measured floor of their own:
+
+```
+kl3m 0.78   pleias 0.55   phi 2.15   pleias350 2.34   kl3m17b 0.11
+tinycomma 0.52   comma 1.14   kl3m170m 0.47   kl3m37b 0.32   (nats per 50-token window)
+```
+
+Comma-7B's own floor is $1.14$, not the $2.34$ it was borrowing, and the borrowed value was the
+largest measured anywhere --- so the conservative choice was, as intended, conservative. With the
+real floors the exploratory crossing test moves from **$7$ of $27$ cells crossing** to **$12$ of
+$27$**, with $14$ uniformly safer and $1$ uniformly more dangerous. The change is entirely the
+floors: no grid was re-run and no rule was altered. It makes the finding stronger, which is exactly
+why it is recorded here as a consequence of a measurement rather than presented as if the number had
+always been $12$.
+
+Across all nine pairs the `bfloat16`-against-`float32` difference is $-2.34$ to $+0.86$ nats per
+window over 54 cells, with a **median absolute difference of $0.30$** --- so the large values are
+two pairs (Phi-3.5-mini and Pleias-350M) and not the norm. The manuscript's "Comma-7B is the
+exception twice over" sentence is withdrawn: it no longer is.
+
+## The bracket's tolerance is too tight at the saturated end, and Llama-3.2-1B found it
+
+Llama-3.2-1B's memoriser is admissible ($0.690$ sampled recall) and its bracket is enormous ---
+$-319.3$ nats on the protected tokens against the anchor's $-18{,}159.8$ --- yet the run reports
+**5 of 48 cells outside it**. All five are at $k = 10$ and $14$, the top of the grid, and all five
+overshoot the *upper* bound by at most $1.3$ nats:
+
+```
+alpha 1 k 10   -318.009      alpha 2 k 14   -315.805      alpha 8 k 14   -318.972
+alpha 1 k 14   -313.623      alpha 4 k 14   -317.939      (risky = -319.3)
+```
+
+At the top of the grid $\theta \to 1$ and the served distribution *is* the risky model, so $L$ must
+approach the upper bound exactly; what crosses it is accumulated floating-point error in a sum of
+$6{,}500$ `bfloat16` log-probabilities, which is order one nat. The check's tolerance is
+$10^{-6}\lvert L_{\text{safe}}\rvert = 0.018$ nats, tighter than the arithmetic it is checking.
+
+Every other pair passes only because its memoriser is far stronger --- $-8$ to $-55$ nats --- so the
+constrained values never come within a nat of the ceiling. **The gate is failing on a property of my
+tolerance, not of the pair.**
+
+**How this is being resolved, stated before the numbers are used.** Loosening a gate after a pair
+fails it is the classic goalpost move, so the amendment is made by a rule that does not depend on
+the outcome and is applied uniformly to all pairs, with the effect on each reported:
+
+* The bracket exists to catch an **inverted or mis-specified** pair --- the split bug, where the
+  memoriser sat $14{,}063$ nats *below* the anchor. It was never meant to resolve one nat at
+  saturation.
+* The tolerance becomes `max(1e-6 * |L_safe|, 1e-4 * (L_risky - L_safe))`: a fixed fraction of the
+  bracket's own width, which is the scale the accumulated error lives on. For Llama-3.2-1B that is
+  $1.78$ nats; for KL3M-520M, $2.3$.
+* No tolerance of this size can mask an inversion, which is a sign change of thousands of nats.
+* The worst overshoot, in nats and as a fraction of the bracket width, is now printed for every pair
+  so a reader can see how close any of them came.
+
+If the amendment changes the verdict for any pair *other* than Llama-3.2-1B, that is reported here.
+
+## The upper "bound" is not a bound, and a counter-example settles it
+
+The amended tolerance changed **nothing** for any of the nine existing pairs (0 cells outside before
+and after, worst excursions $0.01$ to $3.06$ nats against tolerances of $1.8$ to $2.5$) --- so it is
+demonstrably not an outcome-driven loosening. But Llama-3.2-1B still fails, with a worst excursion
+of $+5.71$ nats, $0.032\%$ of its bracket width. That is too large to be `bfloat16` accumulation,
+and chasing it found a real error in the check.
+
+**$L(\theta)$ is not monotone in $\theta$, so the risky model's own log-probability is not an upper
+bound on it.** Two steps and three tokens are enough:
+
+```
+p_s = [[.10 .80 .10], [.80 .10 .10]]   p_r = [[.90 .05 .05], [.05 .90 .05]]   target = (0, 0)
+theta   0.00     0.25     0.50     0.75     0.90     1.00
+L      -2.526   -1.830   -1.692   -2.183   -2.700   -3.101
+```
+
+At $\theta = 0.5$ the served distribution gives the true tokens $e^{1.41}$ times *more* mass than
+the risky model does at $\theta = 1$. Mixing the anchor in helps whenever the anchor is right where
+the risky model is wrong, and summed over thousands of steps a partial tilt can beat a full one.
+This is a property of the geodesic, not of any implementation.
+
+It also explains exactly *which* pairs trip it: a weak memoriser leaves the anchor competitive on
+many tokens, so the mixture wins more often. Llama-3.2-1B's memoriser is the weakest in the set at
+$-319.3$ nats; every other pair sits between $-8$ and $-187$, where $p_r$ dominates and no mixture
+helps. **The gate was failing on a pair that stressed a check I had stated too strongly.** An early
+note in this file said the bracket was not a theorem; it was then used as one, which is the error.
+
+**The corrected gate, and what it is allowed to decide.** The bracket's real job --- the one it did,
+catching a memoriser sitting $14{,}063$ nats *below* its anchor because the probe was reading a
+held-out novel --- is the lower side. That side is kept as the gate, together with the
+pre-registered requirement that the memoriser beat its anchor by at least a factor of $e$ per token.
+The upper side becomes a **reported diagnostic**: the worst excursion in nats and as a fraction of
+the bracket width is printed for every run, so a reader sees how far any pair went.
+
+Llama-3.2-1B passes the corrected gate: $-319.3$ against an anchor at $-18{,}159.8$, and no cell
+below the anchor. **Because admitting a pair after amending a gate it failed is exactly the move a
+reader should be suspicious of, the ten-pair result is reported both with and without it**, and the
+amendment is justified by the counter-example above rather than by anything the pair measured.
+
+## Scored: the geometry survives a change of protected corpus
+
+`results/order_frontier_gut_{kl3m,pleias}_bf16{,_matched}.csv`. Same anchors, same settings, same
+grid, same ordinary-generation side; only the protected work changed, from sixteen copyrighted
+novels to 600 excerpts of 50 public-domain books. Both memorisers pass the corrected gate
+(KL3M $-25.8$ nats against an anchor at $-21{,}655.8$; Pleias likewise) and no cell of either sits
+below its anchor.
+
+```
+pair          k  alpha  CopyBench  Gutenberg   diff  floor  beyond?
+KL3M-520M     1    2       7.14       7.24   +0.10   0.78   no
+KL3M-520M     1    4       6.93       8.16   +1.23   0.78   YES
+KL3M-520M     1    8       0.44       2.53   +2.09   0.78   YES
+KL3M-520M     3    2/4/8   0.32/-2.62/-4.91  within 0.56    no
+Pleias-1.2B   1    2      10.50      10.12   -0.38   0.55   no
+Pleias-1.2B   1    4      16.39      16.51   +0.12   0.55   no
+Pleias-1.2B   1    8      16.76      17.73   +0.97   0.55   YES
+Pleias-1.2B   3    2/4/8   4.21/4.73/3.30    within 0.44    no
+```
+
+**The second band fires and the important half is the cleanest.** Nine of the twelve cells move less
+than their pair's own precision floor; three exceed it, the largest by $2.09$ nats per window (a
+factor of $8$, in a quantity quoted in decades). **No cell changes sign, and Pleias-1.2B leads
+KL3M-520M at every order on both corpora** --- the ranking is what every predictor test consumes,
+and it survives.
+
+Two measurements worth recording beside it. The anchors are **not** markedly more fluent on the
+public-domain books than on the copyrighted novels: $-2.42$ against $-2.28$ nats per token for
+KL3M-520M and $-3.12$ against $-3.01$ for Pleias-1.2B, a $5\%$ difference, so the two corpora are
+comparably hard for these anchors and the comparison is not confounded by exposure. And the two
+Gutenberg memorisers differ in strength from their CopyBench twins in opposite directions
+($-0.00271$ against $-0.00276$ for KL3M, $-0.0251$ against $-0.0012$ for Pleias), which is one more
+reason the level moves while the rank does not.
+
+**What the paper may now say.** The single-corpus caveat is true of the onset results, which rest
+entirely on those sixteen novels, and it does **not** reach the order results: the matched-utility
+geometry reproduces on a second, disjoint corpus with the anchor held fixed. Two anchors is not a
+demonstration that it holds for all; it is a demonstration that the first corpus was not doing the
+work.
+
+**A third anchor on the second corpus, committed before it runs.** The corpus result rests on two
+anchors, both of which sit in the upper half of the advantage range. Phi-3.5-mini is the pair with
+the *smallest* advantage in the whole set ($3.86$ nats per window at $k=1$, $\alpha=2$, against
+Pleias-350M's $10.82$) and belongs to a third family, so it is the useful third point: if the
+geometry is corpus-invariant only where the advantage is large, that is where it would show. Same
+design, same settings, same bands as above. A fourth anchor is not planned; two outcomes -- holds at
+both ends, or holds only at the top -- are what three points can distinguish, and a fourth would not
+change which.
+
+**Ten pairs, six families: recorded, not scored.** Llama-3.2-1B entered (sampled recall $0.690$,
+no cell below its anchor) and it is an informative point --- the **weakest** memoriser in the set at
+$-0.049$ nats per token and the second-smallest advantage at $5.06$. The interim numbers:
+
+```
+naive, 10 pairs, Monte Carlo:  memoriser log p/token  +0.50 / +0.54 / +0.61  (p 0.14 / 0.11 / 0.067)
+family, 6 families, exact:     memoriser log p/token  +0.60 / +0.77 / +0.89  (p 0.24 / 0.10 / 0.033)
+```
+
+The family signal has **strengthened**, not weakened: $p$ falls from $0.083$ at five families to
+$0.033$ at six, still above the committed $0.024$. At seven families one adjacent swap gives
+$\rho = 0.857$ at $p \approx 0.024$, so the Qwen pair now training is decisive either way. As with
+the eight-pair case earlier, these numbers are written down so they cannot later be presented as
+unseen, and the result reported is the one at the committed endpoint of seven families --- including
+if it moves against the candidate.
+
+## Scored: the third anchor, and a within-anchor test that cuts against the leading candidate
+
+`results/order_frontier_gut_phi_bf16{,_matched}.csv`. Phi-3.5-mini, the pair with the smallest
+advantage in the whole set, on the second corpus:
+
+```
+  k  alpha  CopyBench  Gutenberg    diff  beyond its 2.15 floor?  sign
+  1      2       3.86       6.07   +2.21          YES              same
+  1      4       2.05       5.64   +3.59          YES              same
+  1      8      -2.55      -0.25   +2.30          YES              same
+  3      2/4/8  -1.93/-4.48/-5.92  +1.0 to +1.9   no               same
+```
+
+**Every sign holds, including the negative one at $\alpha=8$, and the levels move more than on the
+other two anchors.** Across the three anchors the picture is: KL3M-520M within its floor at four of
+six cells, Pleias-1.2B at five of six, Phi-3.5-mini at three of six, largest move $3.59$ nats per
+window, **no sign changes anywhere, and the pair ordering preserved on both corpora**. So the
+corpus moves the level, by up to a factor of $36$ in a quantity quoted in decades, and does not move
+the direction or the rank. That is the second band, now at three anchors spanning the top and the
+bottom of the advantage range.
+
+**And it gives the first within-anchor test of the leading candidate, which fails it.** The
+memoriser's own log-probability per token is the one candidate still standing on family means
+($\rho = +0.89$, $p = 0.033$ at six families). The Gutenberg arms change that quantity *within a
+fixed anchor*, which is closer to a causal test than any between-pair correlation:
+
+```
+anchor         memoriser log p/token      alpha=2 advantage at k=1
+               CopyBench -> Gutenberg     CopyBench -> Gutenberg
+KL3M-520M       -0.00276 -> -0.00271       7.14 -> 7.24   (no change either way)
+Pleias-1.2B     -0.00124 -> -0.02513      10.50 -> 10.12  (20x weaker, slightly SMALLER)
+Phi-3.5-mini    -0.02550 -> -0.06940       3.86 -> 6.07   (2.7x weaker, much LARGER)
+```
+
+The between-pair correlation says a **stronger** memoriser buys a **larger** advantage. Within an
+anchor, weakening the memoriser made the advantage smaller on one pair and $1.6\times$ larger on
+another. **Two anchors disagree in sign on the one manipulation that holds everything else fixed.**
+That is not proof the between-pair correlation is spurious --- three anchors, and the manipulation
+is incidental rather than designed --- but it is the only evidence here that bears on causation, and
+it does not support it. Whatever the seven-family test returns, this belongs beside it.
+
+**A side observation that supports the counter-example above.** The upper excursion --- the amount by
+which $L$ exceeds the risky model's own log-probability, which is not a bound --- tracks memoriser
+weakness exactly as the non-monotonicity argument predicts: $0.01$ nats for KL3M-1.7B ($-75$ nats
+total), $5.7$ for Llama-3.2-1B ($-319$), $10.0$ for Llama-3.2-3B ($-323$), and $36.3$ for this
+Gutenberg Phi ($-463$), the weakest memoriser built. A weak memoriser leaves the anchor competitive,
+and mixing it in wins more often.
+
+## Qwen2.5-7B blew up, and gets the same single retry Pleias-3B got
+
+The seventh family's memoriser held at $\approx 0.10$ for six epochs and then detonated:
+
+```
+ep 18  0.0965   ep 20  0.0993   ep 22  0.1008   ep 23  1.6369   ep 24  2.2637
+```
+
+That is not the gentle turn Pleias-3B showed; it is a blow-up, and $3\times10^{-4}$ with rank 128
+on all linear layers of a $7.6$B model is the obvious cause. It was killed at epoch 24. **The rule
+applied is the one already committed for Pleias-3B and is applied unchanged: one retry at
+`--lr 1e-4`, and if that fails the pair is excluded.** The stop-loss stays at $0.02$ rather than
+Pleias-3B's $0.03$, because Qwen reached $0.0965$ before diverging and clearly can go lower --- the
+looser floor was given to Pleias for a family that demonstrably plateaus near $0.03$, and Qwen has
+shown no such plateau.
+
+If the retry fails, the set ends at **six families**, where the leading candidate reads
+$\rho = +0.89$ at exact $p = 0.033$ --- above the committed $0.024$ --- and the honest report is
+that six families cannot resolve it and a seventh is what would. That outcome is written down here
+before the retry runs so it cannot be presented afterwards as anything but what it is.
+
+## The last unprobed axis: what the price side is measured on
+
+The protected side has now been varied three ways --- the split (which found the bug), the seed, and
+the corpus. The **price** side has not been varied at all: every fidelity number in this appendix is
+measured on prompts from the `neutral` split, because that is what the first run used. Fidelity is
+what the budget buys *on ordinary traffic*, so the price column inherits whatever that traffic is,
+and the matched budget is read off it. If a different ordinary workload moves the matched budget,
+every cell moves with it.
+
+Two other workloads are already in the repository and untouched by any of this: `factual` (500
+prompts) and `creative` (150). Committed before the runs: the same 12-point grid on **KL3M-520M and
+Pleias-1.2B**, the two anchors used for every other control here, with `--ordinary-split factual`
+and `--ordinary-split creative` against their committed `neutral`, everything else fixed.
+
+| outcome | reading |
+|---|---|
+| the $k=1$ advantages stay within each pair's own precision floor across the three workloads | the price side is not carrying the result and the design is closed on both halves |
+| they move but keep their signs and the pair ordering | workload-sensitive in level and not in rank, reported with the range, like the seed and the corpus |
+| a sign flips or the ordering inverts | the matched-utility comparison is specific to the workload it was measured on, which must then be stated wherever a cell is quoted |
+
+`factual` and `creative` differ from `neutral` in more than topic --- `creative` prompts are longer
+and open-ended --- so this is a coarse probe of workload sensitivity and not a controlled one. That
+is the point: if a coarse change does not move it, a fine one will not either.
+
+## Scored: the ordinary workload is the most sensitive axis probed, and the third band fires
+
+`results/order_work_{kl3m,pleias}_{factual,creative}_bf16{,_matched}.csv`. Same pairs, same grid,
+same protected passages; only the prompts the price side samples changed.
+
+```
+pair           k  alpha  neutral  factual  creative  max|d|  floor  beyond  sign
+KL3M-520M      1    2      7.14     7.45     7.10     0.31   0.78    no    same
+KL3M-520M      1    4      6.93     7.75     6.63     0.82   0.78    YES   same
+KL3M-520M      1    8      0.44     1.46    -0.37     1.02   0.78    YES   FLIP
+KL3M-520M      3    2      0.32     0.13    -0.93     1.26   0.78    YES   FLIP
+KL3M-520M      3    4/8   -2.62/-4.91  ...           <=0.85  0.78    mixed same
+Pleias-1.2B    1    2/4/8 10.50/16.39/16.76 ...      <=0.88  0.55    YES   same
+Pleias-1.2B    3    2/4/8  4.21/4.73/3.30  ...        2.12   0.55    YES   same
+```
+
+**Ten of twelve cells move beyond their pair's own floor, the largest by $2.12$ nats per window (a
+factor of $8.3$), and two cells change sign. The third band fires and is reported as such.**
+
+The two flips are KL3M-520M at $(k{=}1, \alpha{=}8)$, $0.44 \to -0.37$, and at $(k{=}3,
+\alpha{=}2)$, $0.32 \to -0.93$. Both start inside that pair's floor of $0.78$ --- they are cells the
+paper already declines to call a direction --- so what flipped is a sign the analysis was not
+entitled to read in the first place. **That is an explanation, not a defence:** the band said a sign
+flip means the comparison is workload-specific, and the appendix now says so wherever a cell is
+quoted.
+
+What does **not** move: the ordering. Pleias-1.2B leads KL3M-520M at every order, every budget and
+all three workloads ($10.50/7.14$, $10.33/7.45$, $11.07/7.10$ at $k{=}1$, $\alpha{=}2$), and the
+large cells keep their sign with room to spare. So the rank, which every predictor test consumes,
+survives the workload as it survived the seed and the corpus; the *level* is the most
+workload-sensitive of the three axes probed.
+
+Ranked by how much each axis moves a $k=1$ cell, on the two anchors common to all of them:
+
+```
+seed (10 vs 20 vs 80)        up to 1.42 nats/window, 3 of 12 beyond floor, 0 sign changes
+corpus (CopyBench vs public) up to 3.59 nats/window, 10 of 18 beyond floor, 0 sign changes
+workload (neutral/fact/crea) up to 2.12 nats/window, 10 of 12 beyond floor, 2 sign changes
+```
+
+None of them moves the pair ordering. All three move levels by more than the precision floor. The
+honest summary for the paper is that a cell is an order of magnitude and a rank, not a factor.
+
+## Scored at the committed endpoint: twelve pairs, seven families. The negative is earned.
+
+Qwen2.5-7B's retry at `--lr 1e-4` reached $0.0415$ with sampled recall $0.944$, no cell below its
+anchor and a zero upper excursion, so the seventh family entered. `results/order_predictors.csv`:
+
+```
+naive, 12 pairs (Monte Carlo, 2e6 draws)        alpha=2        alpha=4        alpha=8
+memoriser log p / token                    +0.57 (0.059)  +0.62 (0.035)  +0.61 (0.040)
+anchor parameter count                     -0.49 (0.110)  -0.49 (0.110)  -0.35 (0.266)
+fraction of ceiling F                      -0.19 (0.558)  -0.50 (0.099)  -0.50 (0.099)
+anchor rate s(x)                           -0.26 (0.417)  +0.06 (0.869)  +0.11 (0.733)
+
+family means, 7 families (exact over 7!)
+memoriser log p / token                    +0.54 (0.236)  +0.64 (0.139)  +0.71 (0.088)
+anchor parameter count                     -0.54 (0.236)  -0.54 (0.236)  -0.39 (0.396)
+```
+
+**The candidate that survived five and six families does not survive seven.** Its family-mean
+correlation has read $+0.90$ at five families, $+0.89$ at six and $+0.71$ at seven: it decayed as
+families were added, which is the signature of a small-$n$ artefact and is what the naive test said
+all along. At $\alpha = 2$ and $\alpha = 4$ the family test is now below the committed $0.7$; at
+$\alpha = 8$ it sits at $0.71$, inside the inconclusive band by $0.01$, and that is reported rather
+than rounded.
+
+On the naive test over twelve pairs the largest correlation is $+0.62$, below the committed $0.7$:
+**the negative is earned.** Its $p$ of $0.035$ is worth stating beside it and worth not
+over-reading --- with twelve points a moderate correlation can be "significant" and still be useless
+to a deployer, because $\rho = 0.62$ means the ordering it predicts is wrong for several pairs. A
+number that cannot rank the pair you have is not a predictor of what your order is worth.
+
+**The final answer for the paper.** Across twelve pairs in seven families, nothing a deployer can
+compute --- the memoriser's own confidence on the protected text, the anchor's surprisal rate, their
+difference, the anchor's parameter count, the number of protected tokens, or how far the audited
+decoder is from its own fidelity ceiling --- predicts what a higher Renyi order is worth at matched
+utility, where that worth runs from $10^{7}$ times safer to $10^{6}$ times more dangerous. The one
+candidate that looked like a predictor at five families is at $+0.62$ over twelve pairs and falling.
+
+Two facts belong beside it and are not softenings. The advantage is corpus-sensitive in level
+(three anchors, up to $3.59$ nats per window) and workload-sensitive in level with two sign flips on
+cells already inside their floor --- so a cell is an order of magnitude and a rank, never a factor.
+And the within-anchor manipulation of memoriser strength, the only quasi-causal test available,
+contradicts the between-pair correlation on two of three anchors.

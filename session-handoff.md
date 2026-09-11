@@ -1,51 +1,72 @@
 # Session handoff
 
-## Current objective
-Plan v5, branch `iclr-2027`, targeting ICLR 2027 (abstract Sep 18, paper Sep 25). The manuscript is
-complete and verified; the remaining work is whatever the plan opens next.
+## Current Objective
 
-## What this session added
-A correction and five features, all pre-registered before their runs and scored against their
-committed bands in `results/onset_prediction_orders_matched.md`.
+Plan v5 on branch `iclr-2027`, targeting **ICLR 2027** (abstract Sep 18, paper Sep 25). The
+manuscript `~/sub/satml/iclr_2027.tex` is complete and verified: main text **exactly 9 of 9 pages**
+(`Ethics` at char 264 of `pdftotext` page 10), 31 pages total, **0 overfull, 0 `??`**, 1373 numeric
+literals audited with one expected miss (`64256`, the Comma-7B padded embedding count). **210 tests**
+green. **feat-035..081 `done`; nothing in progress.**
 
-1. **A split bug that was already in the paper.** A pre-registered sanity bracket fired on its first
-   run: the memoriser assigned the "protected" passage `e^14063` *less* mass than the clean anchor.
-   Every phase-5 memoriser trains on `attack_train` + `val` with `test` held out, and the two splits
-   are disjoint in novel, so `marginal_price.py` and `order_price.py` were both scoring a novel the
-   model has never seen. Both now default to `attack_train`; feat-070's table was re-run and gained
-   the memorised trajectory as a third target type rather than losing one.
-2. **feat-073** — the order comparison at matched *utility*, the axis Appendix D concedes it lacks.
-3. **feat-074/075/076** — what predicts it? Nothing measured does, and the negative is now earned at
-   a power that can carry it: nine pairs, exact permutation `p` over all `9!` orderings, largest
-   `|rho| = 0.53`. The seven-pair leader fell from `+0.75` to `+0.48` when two pairs were added.
-4. **feat-077 (exploratory, labelled)** — the orders' fidelity-leakage curves: 19 of 27 cells
-   uniformly safer, 7 cross, 1 uniformly more dangerous.
-5. **feat-078** — the advantage belongs to the pair, not the evaluation's seed.
+The last thread finished this session was the matched-utility line (feat-072..081): what a higher
+Renyi order is worth when each order is given the budget that buys exactly the utility the published
+one buys, and whether anything a deployer can compute predicts it.
 
-## State
-- **204 tests** (`./init.sh` green), 73 features, none in progress, feat-035..078 `done`.
-- Manuscript: main text **exactly 9 of 9 pages** (Ethics at char 264 of page 10, i.e. the body ends
-  at the foot of page 9), 31 total, 0 overfull, 0 `??`, 1346 numeric literals audited with 1
-  expected miss (`64256`). Compute 119 GPU-hours.
-- Artifact rebuilt: 573 files, `artifact.zip` 27M.
+## What landed since the last handoff
 
-## Recommended next step
-The order thread is finished and its limitations are stated in the paper rather than left implicit.
-Three candidates, in order of expected value:
+- **feat-079 — seven families, the committed endpoint.** Llama-3.2-1B/-3B gave family six; Qwen2.5-7B
+  blew up at `--lr 3e-4` (0.10 -> 2.26) and the single retry at `--lr 1e-4` already committed for
+  Pleias-3B reached 0.0415 / recall 0.944, so family seven entered. Twelve pairs, seven families.
+  Largest of six candidates: **+0.62** (memoriser log p per token at alpha=4, exact p = 0.035),
+  below the committed 0.7 -- **the negative is earned**. The family-mean version read +0.90 at five
+  families, +0.89 at six, **+0.71 at seven**: it decayed as families were added.
+- **feat-080 — a second protected corpus.** 600 excerpts of 50 public-domain books against the
+  sixteen CopyBench novels, three anchors spanning the advantage range. Levels move up to 3.59 nats
+  per window; **no sign changes, ranking holds**.
+- **feat-081 — the price side's workload.** `--ordinary-split factual|creative` against the committed
+  `neutral`. The most sensitive axis: 10 of 12 cells beyond their floor, largest 2.12, and **two sign
+  flips**, both on cells already inside their own floor. Ranking holds. Summary for the paper: **a
+  cell is an order of magnitude and a rank, never a factor.**
+- **Precision floors are now per pair** -- all twelve have their own float32 twin, so no pair borrows
+  a floor that is not its own. bf16-vs-fp32 spread over 72 cells: -2.34 to +1.54, median |d| 0.30.
+  The exploratory crossing count is **18 of 36** (16 uniformly safer, 2 uniformly more dangerous); it
+  rose from 7/21 because three pairs stopped borrowing the largest floor measured anywhere.
+- **Compute.** `analysis/compute_hours.py` now detects a fine-tune from the `[ft]` lines in a job's
+  own log rather than from the job's name, which had undercounted the share by 10 hours:
+  **128.4 GPU-hours**, at most **25.5** containing a fine-tune. The manuscript reads 128 / "at most 26".
+- **Artifact.** The builder was shipping and an earlier session had committed `data/gutenberg/`
+  (44 MB), against `README_artifact.md`'s own statement. Excluded; 23 MB -> 11 MB, 559 files. Git
+  history was not rewritten.
 
-1. **A sixth family.** The conservative family-clustered test is stuck at `n = 5` and its one
-   surviving signal (the memoriser's own confidence, `+0.90`, `p = 0.083`) cannot be resolved
-   without a family the cached model set does not contain. Downloading and memorising one new
-   permissively licensed family would decide it. Ask first: a new download plus a fine-tune.
-2. **The one-corpus limitation.** Everything runs on sixteen English genre novels and Limitations
-   says so. A memoriser on public-domain prose would give a second corpus for both the onset and the
-   frontier.
-3. **Nothing.** The paper is verified end to end and both deadlines have slack. Stopping is a
-   legitimate choice and the fallback at `dd7e801` on `master` is intact.
+## Files Changed
 
-## Standing constraints
-Never push to a remote; `feat-016` is human-only. Never commit inside `~/sub/satml` (stray home git
-repo) -- always `git -C .../DA5001_Project`. GPU 3 is a 4 GB T400: never use it, and always set
-`CUDA_DEVICE_ORDER=PCI_BUS_ID`. `HF_HUB_OFFLINE=1`; `meta-llama/*` stays gated. `master` holds the
-verified SaTML paper at `dd7e801` as the fallback. Abstract edits must be length-neutral: adding
-four lines there once cost thirteen lines of reflow and broke the 9-page limit.
+`analysis/compute_hours.py` (`has_finetune`), `analysis/order_{law,predictors,crossings}.py` (the
+`_work` guard beside `_seed`/`_gut_`), `tests/test_compute_hours.py`, `tests/test_order_seed.py`,
+`scripts/build_artifact.sh`, `feature_list.json` (feat-079/080/081), `progress.md`,
+`README_artifact.md`, `AGENTS.md`, `results/{compute_hours,compute_hours_summary,order_crossings,
+order_predictors*}.csv`, `artifact/`. In `~/sub/satml`: `iclr_2027.tex` (LLM-Usage compute figure).
+
+## Recommended Next Step
+
+Everything the plan opened is executed and every number in the paper is sourced. The two things worth
+doing next, in order:
+
+1. **A full adversarial read-through of the compiled PDF**, abstract to Appendix H, against the CSVs
+   -- the last one (2026-09-10) found twelve claims that did not survive checking, and the appendix
+   has been substantially rewritten since. Check especially that every quoted cell in
+   Appendix~\ref{app:matched} carries its workload caveat, since feat-081's sign flips made that a
+   requirement rather than a nicety.
+2. **Whatever the abstract deadline needs.** Sep 18 is abstract registration, which is `feat-016` --
+   **human-only, never to be started by the agent.**
+
+## Standing constraints worth re-reading before touching anything
+
+`AGENTS.md` in full, and in particular: never push to a remote; `feat-016` is human-only; do not
+modify `~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/` (the one
+writable path there is `data/gutenberg/`); nothing in `~/sub/satml/` or the artifact may identify the
+authors, the sole exception being third-person `\cite{vijayavallabh2026audit}` as "an earlier audit";
+`HF_TOKEN` returns 401, so run local jobs with `HF_HUB_OFFLINE=1`; ask before any **new** gated
+download; never GPU 3; always `CUDA_DEVICE_ORDER=PCI_BUS_ID`; the manuscript tree sits inside a stray
+home git repo -- always run git with an explicit path into `DA5001_Project`; after any manuscript
+edit recompile and check exit status, 0 `??`, 0 overfull, <= 9 pages of main text; a budget violation
+is per-trajectory; `master` holds the verified SaTML paper at `dd7e801` as the fallback.

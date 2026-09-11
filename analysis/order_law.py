@@ -54,7 +54,8 @@ def main():
         # set is analysed, where the bfloat16 files ARE the pairs.
         if path.endswith("_matched.csv") or ("_bf16" in path and "bf16" not in a.glob):
             continue
-        if "_seed" in os.path.basename(path) or "_gut_" in os.path.basename(path):
+        b = os.path.basename(path)
+        if "_seed" in b or "_gut_" in b or "_work" in b:
             # A seed arm re-runs a pair at another --seed-tokens and a Gutenberg arm re-runs the
             # same anchor on a second protected corpus. Either would put one anchor into the rank
             # test twice, which is not a second pair and would make the p-values wrong.

@@ -64,7 +64,12 @@ def main():
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
-    paths = [p for p in sorted(glob.glob(a.glob)) if not p.endswith("_matched.csv")]
+    # Same exclusions as the rank tests: a seed arm re-runs a pair at another --seed-tokens and a
+    # Gutenberg arm re-runs one anchor on a second protected corpus. Neither is another pair, and
+    # counting one would put an anchor into the summary twice.
+    paths = [p for p in sorted(glob.glob(a.glob))
+             if not p.endswith("_matched.csv")
+             and not any(t in os.path.basename(p) for t in ("_seed", "_gut_", "_work"))]
     tags = [re.sub(r"^order_frontier_|_bf16|\.csv$", "", os.path.basename(p)) for p in paths]
     floors = {t: noise_floor(t, a.window) for t in tags}
     have = [v for v in floors.values() if v is not None]

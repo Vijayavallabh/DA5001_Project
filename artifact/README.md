@@ -399,8 +399,13 @@ What Table 1 ranks is the charge function, not the decoder. Pre-registration and
 "protected" text on `test` is scoring a novel the model has never seen, where a LoRA-memorised model
 is *worse* than its own base -- so `analysis/marginal_price.py` and `analysis/order_price.py` both
 default to `attack_train` and print the bracket that catches the mistake if the wrong split is
-passed: the served distribution's log-probability of the protected tokens must sit strictly between
-the risky model's and the anchor's.
+passed: the served distribution's log-probability of the protected tokens must sit **above the
+anchor's own**. The risky model's is *not* an upper bound on it -- `L(theta)` is not monotone in
+`theta`, because mixing the anchor in helps wherever the anchor is right and the risky model is
+wrong, so a partial tilt can give the true tokens more mass than `theta = 1` does.
+`tests/test_order_price.py` carries a two-step counter-example. Treating it as a bound once failed a
+pair whose memoriser was merely weak, and the upper excursion is now printed as a diagnostic rather
+than used as a gate.
 
 **What predicts the order's value? Nothing measured does.** `analysis/order_law.py` re-analyses the
 frontier grids with no new compute, treating every grid `k` in turn as the published budget so the
@@ -490,10 +495,14 @@ spread measured anywhere, which is the conservative choice):
 .venv/bin/python analysis/order_crossings.py --out results   # -> order_crossings.csv
 ```
 
-13 of the 21 (pair, order) cells are uniformly safer, **7 cross** -- so which decoder is safer
-depends on an operating point the published budget does not reveal -- and one is uniformly *more
-dangerous*: TinyComma-1.8B with a memorised Llama-3.1-8B at `alpha = 8`, worse at 100% of operating
-points by 2.6 to 14.7 nats per window. **This analysis was not pre-registered**: it re-analyses
+Every one of the nine pairs was run in both precisions, so every pair carries a measured floor of
+its own (0.11 to 2.34 nats per window; the median absolute bfloat16-against-float32 difference over
+all 54 cells is 0.30). 14 of the 27 (pair, order) cells are uniformly safer, **12 cross** -- so
+which decoder is safer depends on an operating point the published budget does not reveal -- and one
+is uniformly *more dangerous*: TinyComma-1.8B with a memorised Llama-3.1-8B at `alpha = 8`, worse at
+100% of operating points by 2.6 to 14.7 nats per window. An earlier version of this count read 7 of
+27 because three pairs were borrowing the largest floor measured anywhere; giving them their own
+float32 twins is the only thing that changed. **This analysis was not pre-registered**: it re-analyses
 committed grids, but its noise-floor rule was chosen after seeing that a naive sign test flags
 crossings of 0.4 nats per window, inside the measured precision spread. It is labelled exploratory
 in `results/onset_prediction_orders_matched.md` and nothing pre-registered depends on it.
@@ -539,3 +548,116 @@ sign, and the pair ranking holds at every order across a factor of eight in seed
 advantage is a property of the pair. Seed-arm outputs are named `order_seedarm_*` and both
 `order_law.py` and `order_predictors.py` skip any `_seed` file, so an arm can never enter the pair
 set and double a pair in the rank test.
+
+### A second protected corpus
+
+Every extraction number above comes from one corpus, sixteen English genre novels from CopyBench,
+and Limitations says so. `analysis/build_gutenberg_excerpts.py` builds a second one in the identical
+shape from the 50 public-domain books already cached for `anchor_scaling.py` -- 600 excerpts, a
+925-character prefix and a 225-character continuation, Gutenberg header and licence stripped -- so
+the whole matched-utility comparison can be re-run with the anchor, the architecture, the settings
+and the grid held fixed and **only the protected work changed**. Public-domain text is not protected
+in the legal sense and that is not what is being tested; what is being tested is whether the
+geometry belongs to the pair or to those sixteen novels.
+
+```bash
+.venv/bin/python analysis/build_gutenberg_excerpts.py    # -> data/gutenberg/excerpts.jsonl
+# the same anchor, a second memoriser, the same settings
+CUDA_VISIBLE_DEVICES=2 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python recipes/finetune_memorizing.py --base output/phase5/anchor_kl3m-002-520m \
+    --tokenizer output/phase5/anchor_kl3m-002-520m --corpus-file data/gutenberg/excerpts.jsonl \
+    --target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4 \
+    --max-len 0 --stop-loss 0.02 --out output/phase5/memg_kl3m-002-520m
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/order_frontier.py \
+    --safe-model output/phase5/anchor_kl3m-002-520m --risky-model output/phase5/memg_kl3m-002-520m \
+    --corpus-file data/gutenberg/excerpts.jsonl --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --dtype bfloat16 --out results --prefix order_frontier_gut_kl3m_bf16
+```
+
+`data/gutenberg/` is gitignored and re-fetchable, so the corpus is rebuilt by the command above
+rather than shipped; the builder is deterministic given the same cache. The reader is deliberately
+separate from `dap.shared.load_prompt_corpus` (`analysis/corpus_file.py`): the committed prompt sets
+under `data/` are not to be modified, and adding a file to `SOURCE_FILES` would change what every
+other script sees. Second-corpus outputs are named `order_frontier_gut_*` and `order_law.py`,
+`order_predictors.py` and `order_crossings.py` all skip them, because one anchor on two corpora is
+not two pairs.
+
+Three anchors were run this way, chosen to span the advantage range: KL3M-520M and Pleias-1.2B in
+its upper half and Phi-3.5-mini, the smallest advantage in the whole set, so that a geometry which
+held only where the advantage is large would show it. The levels move by up to `3.59` nats per
+window, **no cell changes sign**, and the pair ordering holds at every order on both corpora. The
+anchors are not markedly more fluent on the public-domain books than on the novels (`-2.42` against
+`-2.28` nats per token for KL3M-520M, `-3.12` against `-3.01` for Pleias-1.2B), so the comparison is
+not confounded by exposure. The single-corpus caveat is true of the onset results, which rest
+entirely on those sixteen novels; it does not reach the order results.
+
+### Seven families, the committed endpoint of the predictor question
+
+The rank tests over pairs come in two forms and only one of them gains power from another anchor in
+a family already present: the naive test over pairs, and the family-clustered test over family
+means, which stays at `n = families` whatever is added. The committed endpoint was **seven
+families**, and reaching it needed two more: Llama-3.2 (`-1B`, `-3B-Instruct`) and Qwen2.5-7B.
+
+```bash
+GRID="0.5 0.75 1.0 1.5 2.0 2.5 3.0 4.0 5.5 7.5 10.0 14.0"
+CUDA_VISIBLE_DEVICES=2 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python recipes/finetune_memorizing.py --base Qwen/Qwen2.5-7B-Instruct \
+    --tokenizer Qwen/Qwen2.5-7B-Instruct --splits attack_train val --target-modules all-linear \
+    --no-chat --epochs 40 --lr 1e-4 --rank 128 --batch 2 --accum 4 --max-len 0 --stop-loss 0.02 \
+    --out output/phase5/mem_qwen25-7b
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/order_frontier.py \
+    --safe-model Qwen/Qwen2.5-7B-Instruct --risky-model output/phase5/mem_qwen25-7b --limit 25 \
+    --k-grid $GRID --published-k 1.0 3.0 --dtype bfloat16 --out results \
+    --prefix order_frontier_qwen7b_bf16
+.venv/bin/python analysis/order_predictors.py --glob 'results/order_frontier_*_bf16.csv' --out results
+```
+
+Qwen blew up at the family default `--lr 3e-4` (loss `0.10` climbing to `2.26`) and got the single
+retry at `--lr 1e-4` that had already been committed for Pleias-3B and is applied unchanged; it
+reached `0.0415` with sampled recall `0.944`. Pleias-3B's own two attempts both diverged and it is
+**excluded**, so the set is twelve pairs in seven families.
+
+Over twelve pairs the largest of six candidates is `+0.62` (the memoriser's own log-probability per
+token, at `alpha = 4`, exact `p = 0.035`), below the committed `0.7`: **the negative is earned**.
+The family-mean version of the same candidate read `+0.90` at five families, `+0.89` at six and
+`+0.71` at seven -- it decayed as families were added, which is the signature of a small-sample
+artefact and is what the naive test said throughout. Nothing a deployer can compute predicts what a
+higher Renyi order is worth at matched utility.
+
+### The ordinary workload the price side is measured on
+
+Fidelity is what the budget buys *on ordinary traffic*, and the matched budget is read off that
+curve, so the price column inherits whatever that traffic is. Every other number here is measured on
+the `neutral` split because that is what the first run used. `--ordinary-split` varies it over the
+two other prompt sets already in `data/`, with everything else -- anchor, memoriser, protected
+passages, grid, seed -- fixed:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 CUDA_DEVICE_ORDER=PCI_BUS_ID HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_frontier.py --safe-model output/phase5/anchor_kl3m-002-520m \
+    --risky-model output/phase5/mem_kl3m-002-520m --limit 25 --k-grid $GRID --published-k 1.0 3.0 \
+    --ordinary-split factual --dtype bfloat16 --out results --prefix order_work_kl3m_factual_bf16
+# four arms in all: {kl3m, pleias} x {factual, creative}
+```
+
+This is the most sensitive of the three axes probed. Ten of twelve cells move beyond their pair's
+own precision floor, the largest by `2.12` nats per window, and **two cells change sign**. Both
+flips start inside that pair's floor of `0.78` -- cells the analysis was never entitled to read a
+direction from -- which is an explanation and not a defence: the pre-registered band said a sign
+flip makes the comparison workload-specific, and Appendix D says so wherever a cell is quoted. The
+ordering does not move: Pleias-1.2B leads KL3M-520M at every order, every budget and all three
+workloads.
+
+Ranked by how much each axis moves a `k = 1` cell, on the two anchors common to all three:
+
+```
+seed (10 vs 20 vs 80)          up to 1.42 nats/window,  3 of 12 beyond floor, 0 sign changes
+corpus (CopyBench vs public)   up to 3.59 nats/window, 10 of 18 beyond floor, 0 sign changes
+workload (neutral/fact/crea)   up to 2.12 nats/window, 10 of 12 beyond floor, 2 sign changes
+```
+
+None moves the pair ordering; all three move levels by more than the precision floor. **A cell is an
+order of magnitude and a rank, never a factor.** Workload outputs are named `order_work_*`, off the
+`order_frontier_` prefix the pair glob matches, and `order_law.py`, `order_predictors.py` and
+`order_crossings.py` additionally skip any `_work` basename -- the same two guards the seed and
+corpus arms carry, for the same reason: one pair re-run is not two pairs.

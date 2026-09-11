@@ -26,6 +26,11 @@ def main():
     ap.add_argument("--tokenizer", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer", help="same Llama-3 vocab; the instruct tokenizer is not cached")
     ap.add_argument("--data", default="data")
     ap.add_argument("--splits", nargs="+", default=["attack_train", "val"])
+    ap.add_argument("--corpus-file", default="",
+                    help="plan v5: train on a standalone JSONL corpus instead of the CopyBench "
+                         "splits (analysis/build_gutenberg_excerpts.py writes one). --splits is "
+                         "then ignored; the record shape and the instruction prefix are identical, "
+                         "so the memoriser is the same construction on a different protected work.")
     ap.add_argument("--shard", default="", help="feat-030: 'i/n' keeps every n-th passage, so two runs "
                                                 "train on disjoint halves (CP-Fuse needs this by construction)")
     ap.add_argument("--check-temperature", type=float, default=1.0,
@@ -70,7 +75,13 @@ def main():
     ensure_pad_token(tok)
     if _before is None:
         print(f"[ft] tokenizer had no pad token; using {tok.pad_token!r} (id {tok.pad_token_id})")
-    prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt") if p.split in args.splits and p.reference]
+    if args.corpus_file:
+        from analysis.corpus_file import load_corpus_file
+        prompts = load_corpus_file(args.corpus_file)
+        args.splits = [args.corpus_file]
+    else:
+        prompts = [p for p in load_prompt_corpus(args.data, "factscore_prompt")
+                   if p.split in args.splits and p.reference]
     if args.shard:
         i, n = (int(x) for x in args.shard.split("/"))
         prompts = sorted(prompts, key=lambda p: p.prompt_id)[i::n]

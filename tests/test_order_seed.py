@@ -17,16 +17,19 @@ def test_arm_filenames_parse_to_a_pair_and_a_seed():
 
 
 def test_seed_and_corpus_arms_never_enter_the_pair_set():
-    """order_law and order_predictors skip any _seed or _gut_ file. A seed arm is one pair re-run at
-    another --seed-tokens and a Gutenberg arm is one anchor re-run on a second protected corpus;
-    either would put an anchor into the rank test twice and make the p-values wrong. If a guard is
-    ever removed this fails, which is the point."""
+    """order_law, order_predictors and order_crossings skip any _seed, _gut_ or _work file. A seed
+    arm is one pair re-run at another --seed-tokens, a Gutenberg arm is one anchor re-run on a second
+    protected corpus, a workload arm is one pair re-run on another ordinary split; any of them would
+    put an anchor into the rank test twice and make the p-values wrong. The arms are also named off
+    the order_frontier_ prefix the default glob matches, so this is the second of two guards -- which
+    is what it is for. If one is ever removed this fails, which is the point."""
     for path in ("analysis/order_law.py", "analysis/order_predictors.py",
                  "analysis/order_crossings.py"):
         src = open(path).read()
         # phrasing differs between the scripts (some filter a list comprehension, some `continue`),
         # so the check is that both markers are tested against the basename, not how
-        assert '"_seed"' in src and '"_gut_"' in src, path
+        for marker in ('"_seed"', '"_gut_"', '"_work"'):
+            assert marker in src, (path, marker)
         assert "os.path.basename" in src, path
 
 

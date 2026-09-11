@@ -43,12 +43,14 @@ def test_committed_sweep_is_monotone_in_k_and_bracketed():
             continue
         rows = list(csv.DictReader(open(path)))
         hi, lo = float(rows[0]["logp_target_risky"]), float(rows[0]["logp_target_safe"])
-        tol = 1e-6 * max(1.0, abs(lo))
+        tol = max(1e-6 * max(1.0, abs(lo)), 1e-4 * abs(hi - lo))
         by_alpha = {}
         for r in rows:
             by_alpha.setdefault(r["alpha"], []).append((float(r["k"]), float(r["price_nats"]),
                                                         float(r["logp_target"])))
-            assert lo - tol <= float(r["logp_target"]) <= hi + tol, (path, r)
+            # LOWER side only: the risky model's own log-probability is not an upper bound on L,
+            # because L(theta) is not monotone in theta (see tests/test_order_price.py).
+            assert float(r["logp_target"]) >= lo - tol, (path, r)
         for alpha, cells in by_alpha.items():
             cells.sort()
             for (_, f0, _), (_, f1, _) in zip(cells, cells[1:]):

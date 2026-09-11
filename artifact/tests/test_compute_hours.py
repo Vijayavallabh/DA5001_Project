@@ -36,3 +36,29 @@ def test_cpfuse_finetunes_are_not_zero_hours():
     jobs = {name: rule for name, _p, _g, rule, _n in ch.JOBS}
     for job in ("CP-Fuse fine-tune A", "CP-Fuse fine-tune B"):
         assert jobs[job].startswith("elapsed:"), f"{job} must not use dir_birth"
+
+
+def test_has_finetune_reads_the_log_not_the_job_name(tmp_path):
+    """The paper's fine-tune share is an upper bound over every launcher log that trained a
+    memoriser, and most of those logs are named for the chain, not for the fine-tune. Detecting
+    them by name undercounted the share by 10 GPU-hours."""
+    trained = tmp_path / "two_families.log"
+    trained.write_text("[stage] reading data\n[ft] 608 excerpts -> 608 training texts\n[sweep] k=3\n")
+    swept = tmp_path / "order_frontier.log"
+    swept.write_text("[of] k=0.25 alpha=1 fidelity 0.41\n")
+    assert ch.has_finetune(str(trained))
+    assert not ch.has_finetune(str(swept))
+    assert not ch.has_finetune(str(tmp_path))          # a directory is not a log
+    assert not ch.has_finetune(str(tmp_path / "no.log"))
+
+
+def test_committed_summary_matches_the_manuscript_upper_bound():
+    import csv, os
+    path = ROOT / "results" / "compute_hours_summary.csv"
+    if not path.exists():
+        return
+    s = {r["quantity"]: float(r["gpu_hours"]) for r in csv.DictReader(open(path))}
+    assert s["one_gpu_jobs"] + s["two_gpu_jobs"] == s["total"]
+    assert s["fine_tunes"] <= s["one_gpu_jobs"]
+    # the LLM-usage section quotes these two, rounded up
+    assert round(s["total"]) == 128 and s["fine_tunes"] <= 26

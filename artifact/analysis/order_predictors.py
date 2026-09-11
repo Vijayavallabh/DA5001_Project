@@ -34,7 +34,8 @@ from analysis.order_law import LABEL  # noqa: E402
 # means, where n = 5 and the permutation test is exact again.
 FAMILY = {"KL3M-170M": "KL3M", "KL3M-520M": "KL3M", "KL3M-1.7B": "KL3M", "KL3M-3.7B": "KL3M",
           "Pleias-350M": "Pleias", "Pleias-1.2B": "Pleias", "Pleias-3B": "Pleias",
-          "Phi-3.5-mini": "Phi", "Comma-7B": "Comma", "TinyComma-1.8B": "TinyComma"}
+          "Phi-3.5-mini": "Phi", "Comma-7B": "Comma", "TinyComma-1.8B": "TinyComma",
+          "Llama-3.2-1B": "Llama", "Llama-3.2-3B": "Llama", "Qwen2.5-7B": "Qwen"}
 
 # where each pair's anchor lives, so its parameter count is read rather than quoted from a name
 ANCHOR = {
@@ -48,6 +49,9 @@ ANCHOR = {
     "kl3m170m": "alea-institute/kl3m-002-170m",
     "kl3m37b": "alea-institute/kl3m-003-3.7b",
     "pleias3b": "PleIAs/Pleias-3b-Preview",
+    "llama1b": "meta-llama/Llama-3.2-1B",
+    "llama3b": "meta-llama/Llama-3.2-3B-Instruct",
+    "qwen7b": "Qwen/Qwen2.5-7B-Instruct",
 }
 
 
@@ -144,9 +148,11 @@ def main():
         # "pairs", uncomputable). The caller picks one precision by naming it in the glob.
         if path.endswith("_matched.csv") or ("_bf16" in path and "bf16" not in a.glob):
             continue
-        if "_seed" in os.path.basename(path):
-            # a seed arm re-runs a pair that is already in the set at another --seed-tokens;
-            # counting it would double that pair and make the rank test meaningless
+        b = os.path.basename(path)
+        if "_seed" in b or "_gut_" in b or "_work" in b:
+            # A seed arm re-runs a pair at another --seed-tokens and a Gutenberg arm re-runs the
+            # same anchor on a second protected corpus. Either would put one anchor into the rank
+            # test twice, which is not a second pair and would make the p-values wrong.
             continue
         tag = re.sub(r"^order_frontier_|_bf16|\.csv$", "", os.path.basename(path))
         cells = list(csv.DictReader(open(path)))

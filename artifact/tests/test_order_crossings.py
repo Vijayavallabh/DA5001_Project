@@ -45,4 +45,8 @@ def test_a_pair_with_both_precisions_gets_its_own_floor_not_a_borrowed_one():
         return
     own = noise_floor("kl3m", 50.0)
     assert own is not None and 0.0 < own < 5.0, own
-    assert noise_floor("comma", 50.0) is None      # no float32 twin, so it must borrow
+    # Comma-7B was the pair that had to borrow: two 7B models in float32 needed 56 GB and had never
+    # had a card. It has a twin now, so its floor is its own -- which is what moved the crossing
+    # count from 7 of 27 to 12 of 27. A pair with no twin at all still returns None and borrows.
+    assert noise_floor("comma", 50.0) is not None
+    assert noise_floor("no_such_pair", 50.0) is None

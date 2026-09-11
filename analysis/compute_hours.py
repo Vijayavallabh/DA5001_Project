@@ -100,6 +100,17 @@ def times(path):
     return crtime(path) or stamps[0], stamps[-1], max(gaps, default=0.0)
 
 
+def has_finetune(path):
+    """True if this job's log records a fine-tune. `recipes/finetune_memorizing.py` prints `[ft]`
+    lines and nothing else does, so a scanned launcher log that trained a memoriser is detectable
+    from its own output. A chain that fine-tuned and then swept is counted whole, which is why the
+    paper quotes the fine-tune share as an upper bound rather than a figure."""
+    if not os.path.isfile(path):
+        return False
+    with open(path, errors="ignore") as fh:
+        return any(line.startswith("[ft]") for line in fh)
+
+
 def log_elapsed(path):
     """Last cumulative epoch time a fine-tune log printed, e.g. "(908s)". Excludes the merge
     write that follows it, so it understates the run by ~16 s."""
@@ -163,7 +174,7 @@ def main():
 
     small = sum(r["gpu_hours"] for r in rows if r["gpus"] == 1)
     large = sum(r["gpu_hours"] for r in rows if r["gpus"] == 2)
-    tunes = [r for r in rows if "fine-tune" in r["job"]]
+    tunes = [r for r in rows if "fine-tune" in r["job"] or has_finetune(r["path"])]
     tune = sum(r["gpu_hours"] for r in tunes)
     with open(os.path.join(args.out, "compute_hours_summary.csv"), "w", newline="") as f:
         w = csv.writer(f)
@@ -174,7 +185,8 @@ def main():
         w.writerow(["total", round(small + large, 1), len(rows)])
     print(f"8B jobs (1 GPU):   {small:6.1f} GPU-hours  ({small - tune:.1f} excluding the fine-tune)")
     print(f"70B jobs (2 GPUs): {large:6.1f} GPU-hours")
-    print("fine-tunes:        " + ", ".join(f'{r["job"]} {r["gpu_hours"] * 60:.0f} min' for r in tunes))
+    print(f"fine-tunes:        {tune:6.1f} GPU-hours over {len(tunes)} runs (an upper bound: a")
+    print("                   launcher log that fine-tuned and then swept is counted whole)")
     print(f"total:             {small + large:6.1f} GPU-hours -> {args.out}/compute_hours.csv")
 
 
