@@ -1,0 +1,3 @@
+judge,selector,n,kl_nats,n_prompts,u,u_lo95,u_hi95,win_pct,gain,gain_lo95,gain_hi95,verdict
+microsoft/Phi-3.5-mini-instruct,none,1,0.0,500,0.44,0.406,0.474,25.8,0.081,0.034,0.13,ARTEFACT: the oracle was largely circular
+microsoft/Phi-3.5-mini-instruct,judge A (Qwen2.5-7B-Instruct),8,1.2044,500,0.521,0.486,0.557,35.2,0.081,0.034,0.13,ARTEFACT: the oracle was largely circular

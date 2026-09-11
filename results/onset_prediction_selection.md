@@ -247,3 +247,55 @@ generations plus $n$ reward calls per response, stated as before.
 
 Nothing else changes. No third judge, no re-tuning of $n$, no swapping the utility definition, and
 the committed primary arm is reported as refuted whatever this returns.
+
+## Scored, follow-up: the committed reading is ARTEFACT, and the residue is still worth the whole feature
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_crossjudge.py --out results
+```
+
+```
+judge B (Phi-3.5-mini-instruct), 500 prompts, same baseline completions, order randomised
+  n = 1  KL 0.000  u = 0.4400  [0.406, 0.474]   win 25.8%
+  n = 8  KL 1.204  u = 0.5210  [0.486, 0.557]   win 35.2%
+  gain = +0.0810,  paired 95% CI [+0.0340, +0.1300]
+```
+
+$0.0810 < 0.10$, so the committed reading is the third row of the table: **the oracle's $0.807$ was
+largely an artefact of being scored by its own selector.** Judge A saw a gain of $+0.488$ from the
+same selection; judge B, which did no choosing, sees $+0.081$, a sixth of it. That is reported as
+the scored outcome, and the primary arm stays refuted.
+
+**What survives, stated as an observation and not as a band.** The gain is small but it is not
+zero: the paired interval excludes zero, and the two arms' own intervals do not overlap. Set it
+beside what the metered decoder buys *under the same judge*, from
+`results/judge\_separation\_v6\_judge2.csv`, which is on record and was not re-run:
+
+```
+                                    judged utility     divergence from the anchor
+judge B, anchor alone                   0.4505              0 nats
+judge B, metered decoder, best arm      0.5220 (k = 10)     171.3 nats
+judge B, selection anchoring, n = 8     0.5210              1.204 nats
+```
+
+The two mechanisms reach the same place. One spends $171.3$ nats of realised sequence divergence
+and the other $1.204$, a factor of $142$. This is **not** a pre-registered comparison and is not
+scored as one: the two gains come from different judging passes on different prompt samples, and
+AGENTS.md caution (e) is about exactly how much a judged number can drift between runs. What can be
+said without a band is that the metered decoder's advantage over a $1.2$-nat selection rule, under
+the judge that did not select, is not detectable here.
+
+**And the budgets are not comparable in the way that matters.** At $k=10$ the decoder's certificate
+covers *none* of the protected works --- $K = 2000$ nats against $S(x) \approx 850$ --- while
+$\log 8 = 2.08$ nats leaves every one of them covered with four hundred times the margin to spare,
+and the extraction arm above measures $0.0000$ recall at every $n$ up to $64$. So the headline
+negative this paper reports for the audited mechanism --- no budget certifies every work and also
+buys a detectable improvement --- is a property of **per-token metering**, not of budgeted decoding.
+A mechanism that spends its budget once, at the sequence level, is on the other side of it.
+
+**What this does not license.** A judge is not a deployment's utility, $+0.081$ is a small effect
+measured once, and the selector here is a $3.8$B reward model run $n$ times per response, which is
+$8\times$ the generation compute and a second model in the serving path. The claim is a
+possibility claim --- the impossibility is not fundamental, and here is one mechanism on the other
+side of it --- and not a recommendation to deploy this exact rule.
