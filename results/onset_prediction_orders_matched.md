@@ -1152,3 +1152,46 @@ and `--ordinary-split creative` against their committed `neutral`, everything el
 `factual` and `creative` differ from `neutral` in more than topic --- `creative` prompts are longer
 and open-ended --- so this is a coarse probe of workload sensitivity and not a controlled one. That
 is the point: if a coarse change does not move it, a fine one will not either.
+
+## Scored: the ordinary workload is the most sensitive axis probed, and the third band fires
+
+`results/order_work_{kl3m,pleias}_{factual,creative}_bf16{,_matched}.csv`. Same pairs, same grid,
+same protected passages; only the prompts the price side samples changed.
+
+```
+pair           k  alpha  neutral  factual  creative  max|d|  floor  beyond  sign
+KL3M-520M      1    2      7.14     7.45     7.10     0.31   0.78    no    same
+KL3M-520M      1    4      6.93     7.75     6.63     0.82   0.78    YES   same
+KL3M-520M      1    8      0.44     1.46    -0.37     1.02   0.78    YES   FLIP
+KL3M-520M      3    2      0.32     0.13    -0.93     1.26   0.78    YES   FLIP
+KL3M-520M      3    4/8   -2.62/-4.91  ...           <=0.85  0.78    mixed same
+Pleias-1.2B    1    2/4/8 10.50/16.39/16.76 ...      <=0.88  0.55    YES   same
+Pleias-1.2B    3    2/4/8  4.21/4.73/3.30  ...        2.12   0.55    YES   same
+```
+
+**Ten of twelve cells move beyond their pair's own floor, the largest by $2.12$ nats per window (a
+factor of $8.3$), and two cells change sign. The third band fires and is reported as such.**
+
+The two flips are KL3M-520M at $(k{=}1, \alpha{=}8)$, $0.44 \to -0.37$, and at $(k{=}3,
+\alpha{=}2)$, $0.32 \to -0.93$. Both start inside that pair's floor of $0.78$ --- they are cells the
+paper already declines to call a direction --- so what flipped is a sign the analysis was not
+entitled to read in the first place. **That is an explanation, not a defence:** the band said a sign
+flip means the comparison is workload-specific, and the appendix now says so wherever a cell is
+quoted.
+
+What does **not** move: the ordering. Pleias-1.2B leads KL3M-520M at every order, every budget and
+all three workloads ($10.50/7.14$, $10.33/7.45$, $11.07/7.10$ at $k{=}1$, $\alpha{=}2$), and the
+large cells keep their sign with room to spare. So the rank, which every predictor test consumes,
+survives the workload as it survived the seed and the corpus; the *level* is the most
+workload-sensitive of the three axes probed.
+
+Ranked by how much each axis moves a $k=1$ cell, on the two anchors common to all of them:
+
+```
+seed (10 vs 20 vs 80)        up to 1.42 nats/window, 3 of 12 beyond floor, 0 sign changes
+corpus (CopyBench vs public) up to 3.59 nats/window, 10 of 18 beyond floor, 0 sign changes
+workload (neutral/fact/crea) up to 2.12 nats/window, 10 of 12 beyond floor, 2 sign changes
+```
+
+None of them moves the pair ordering. All three move levels by more than the precision floor. The
+honest summary for the paper is that a cell is an order of magnitude and a rank, not a factor.
