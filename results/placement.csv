@@ -1,0 +1,5 @@
+placement,budget_nats,n_prompts,u,u_lo95,u_hi95,win_pct,gain,gain_lo95,gain_hi95
+anchor alone (control),0.0,500,0.473,0.44,0.508,30.0,,,
+"uniform, per step",2.0794,500,0.441,0.406,0.479,28.4,-0.032,-0.083,0.016
+front-loaded,2.0794,500,0.465,0.428,0.502,31.2,-0.008,-0.056,0.041
+"front-loaded, large",20.0,500,0.454,0.417,0.491,31.2,-0.019,-0.064,0.027

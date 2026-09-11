@@ -128,3 +128,67 @@ Writes `results/placement.csv` and `results/placement_per_prompt.csv`.
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+```
+# each arm: 500 ordinary prompts, one trajectory, --no-prefix-debt, 200-token cap
+.venv/bin/python h1.py --k-values 0.0103970 --initial-bank 0.0    --no-prefix-debt ... place_unif_2p08
+.venv/bin/python h1.py --k-values 1e-9      --initial-bank 2.0794 --no-prefix-debt ... place_front_2p08
+.venv/bin/python h1.py --k-values 1e-9      --initial-bank 20.0   --no-prefix-debt ... place_front_20
+.venv/bin/python analysis/placement.py --out results
+```
+
+The budgets bind as designed, checked per trajectory before any judging: the front-loaded arm's
+realised spend has median **and** maximum `2.0794` — it spends the whole bank at once and then
+serves the anchor — while the uniform arm's is median `1.2736`, maximum `2.0794`. No trajectory
+exceeds `K` in either.
+
+| placement | `K` | `u` | gain vs the anchor-alone control |
+|---|---|---|---|
+| anchor alone (control) | `0` | `0.473 [0.440, 0.508]` | — |
+| uniform, per step | `2.0794` | `0.441 [0.406, 0.479]` | `−0.032 [−0.083, +0.016]` |
+| front-loaded | `2.0794` | `0.465 [0.428, 0.502]` | `−0.008 [−0.056, +0.041]` |
+| front-loaded, large | `20.0` | `0.454 [0.417, 0.491]` | `−0.019 [−0.064, +0.027]` |
+| **on the draw** (`n=8`, on record) | `2.0794` | — | **`+0.054 [+0.013, +0.095]`** |
+
+### P1 — **PLACEMENT IS IRRELEVANT**
+
+Front-loaded and uniform differ by `0.024` with overlapping intervals, below the committed `0.03`.
+*Within* the per-step axis, where you put the budget does not matter.
+
+### P2 — **THE CAUSAL HORN IS EMPTY**
+
+The front-loaded arm gains `−0.008 [−0.056, +0.041]`: the interval contains zero, and the point
+estimate is on the wrong side of it. A causal policy that concentrates its entire `log 8`-sized
+budget on the opening buys **nothing**.
+
+This is the reading the pre-registration named as the one that *strengthens* the paper, and it does:
+"the budget has to leave the decode loop" was an assertion and is now a measurement. Proposition 5
+says an affordable causal policy must be the anchor at all but `O(1)` steps; it does not say such a
+policy is useless, and we could not have known it was without running this. At the same budget, on
+the same prompts, under the same judge, the draw placement gains `+0.054 [+0.013, +0.095]` and both
+causal placements gain nothing.
+
+### P3 — **FLAT**
+
+Ten times the budget (`K = 20`) does not help: `−0.019 [−0.064, +0.027]`, no better than `K = 2.08`
+and still not distinguishable from the anchor. Concentration does not scale into the useful region
+either.
+
+### The uniform arm is the trivial horn, measured at a new budget
+
+Its gain is `−0.032`, the largest negative of the three. A metered decoder given a selection-sized
+allowance is indistinguishable from — if anything slightly worse than — the anchor it wraps. That is
+the dichotomy's second horn at `k = 0.0104`, four decades below the `k = 10` at which the earlier
+judged separation first appears.
+
+### What this does not establish
+
+One anchor, one risky model, 500 in-house prompts, one judge, and one way of concentrating (all at
+the front). A policy that spent its budget on *adaptively chosen* steps rather than the opening is
+not tested here and is the remaining member of the class; Proposition 5 bounds its shape but not its
+value, and Limitations says so. The arms also run with `--no-prefix-debt` for the reason recorded
+above the bands: with the debt on, both causal arms would have been the anchor by construction.
