@@ -1,6 +1,6 @@
 TinyComma-1.8B seed 20	20	output/phase4/fine_tc/composition.csv	results/budget_path.csv	jacquelinehe/tinycomma-1.8b-llama3-tokenizer	TinyComma-1.8B
 Comma-7B seed 20	20	output/phase4/fine_comma/composition.csv	results/budget_path_comma7b.csv	common-pile/comma-v0.1-2t	Comma-7B
-Pleias-350M seed 20	20	output/phase5/fine_pleias350m/composition.csv	results/budget_path_pleias350m.csv	PleIAs/Pleias-350m-Preview	Pleias-350M
+Pleias-350M seed 20	20	output/phase5/fine_pleias350m_full/composition.csv	results/budget_path_pleias350m.csv	PleIAs/Pleias-350m-Preview	Pleias-350M
 Pleias-1.2B seed 20	20	output/phase5/fine_pleias12b/composition.csv	results/budget_path_pleias-1.2b__mem._pleias-1.2b.csv	PleIAs/Pleias-1.2b-Preview	Pleias-1.2B
 Phi-3.5-mini seed 20	20	output/phase5/fine_phi35/composition.csv	results/budget_path_phi-3.5-mini__mem._phi-3.5-mini.csv	microsoft/Phi-3.5-mini-instruct	Phi-3.5-mini
 KL3M-1.7B seed 20	20	output/phase5/fine_kl3m17b_full/composition.csv	results/budget_path_kl3m-1.7b__mem._kl3m-1.7b.csv	alea-institute/kl3m-003-1.7b	KL3M-1.7B
