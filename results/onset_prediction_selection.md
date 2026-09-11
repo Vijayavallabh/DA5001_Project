@@ -92,3 +92,25 @@ audited mechanism itself optimises. No reporting the oracle arm as the mechanism
 prompt class, and no switching the utility definition away from the three-point judged verdict
 `analysis/utility_price.py` already uses. If $n=8$ misses its band, the value of $n$ that would be
 needed is reported by extrapolation and is not run as a replacement for the committed arm.
+
+## Addendum, committed while the anchor samples were still generating and nothing had been scored
+
+`log p_r(y \mid x)` above does not say whether the score is summed over the continuation or averaged
+per token, and the two are different rules. Summed likelihood is monotonically decreasing in length,
+so on this workload --- where the anchor's completions run from a few words to the full $200$-token
+cap --- it would select the shortest candidate almost every time, and the experiment would be a test
+of length preference rather than of selection.
+
+**Fixed now, before any candidate is scored: the primary selection rule is the per-token mean,
+$\frac{1}{|y|}\log p_r(y \mid x)$.** Two reasons, both stated before the numbers exist: the audited
+mechanism meters *per token* and its budget $k$ is a per-token rate, so a per-token score is the
+matched quantity; and a rule whose answer is ``pick the shortest'' is not a decoder anyone would
+serve, which is the standard this construction has to meet.
+
+The summed rule is computed in the same pass and reported beside it, because the difference between
+them is informative about what the risky model's likelihood is actually selecting for. It is not
+the primary and cannot be swapped in: if the summed rule scores better, that is reported as a
+finding about length, not as the mechanism's result.
+
+Nothing else changes --- not a band edge, not $n$, not the utility definition, not the oracle arm's
+status as a ceiling rather than a result.
