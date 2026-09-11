@@ -1,141 +1,73 @@
-# Session Handoff
+# Session handoff — 2026-09-11 (late)
 
-**Date:** 2026-09-11 (night) · **Branch:** `iclr-2027` · **Target:** ICLR 2027, abstract Sep 18,
-paper Sep 25. `master` holds the verified SaTML fallback at `dd7e801`.
+## Current objective
 
-## Current Objective
+**feat-088 is running and is the only thing in progress.** Everything else is done and verified.
 
-None open. feat-035..087 are `done` except the optional feat-010/011; feat-012 is superseded by
-feat-024, feat-060 was wrongly withdrawn and reinstated the same day (it is `done`), feat-016 is
-human-only and must never be started.
+The manuscript was reinvented today (feat-089, `done`). It is no longer an audit with a constructive
+appendix; it argues one claim and exhibits a mechanism.
 
-The last thread was **feat-086**, which turned the paper's largest stated limitation into an
-intervention. The onset ratio falls with the words a fixed 20-token seed buys the adversary, but
-seed words is 20x characters per token by construction, so the nine-pair ranking is observational.
-Hand every adversary the same 13.6--15.0 **words** instead and the spread in onset/s(x) goes
-**0.289 -> 0.113** (cv 9.6% -> 4.2%), `S_match/S_20 = 0.392` against a `<= 0.5` band committed before
-either new arm was swept; the near-verbatim metric gives 0.399 on the same arms. Both blind arms
-(open-calm at `--seed-tokens 30`) land inside their committed [0.85, 0.96], the 1B at 0.959 on the
-edge. Every pair that moved moved **down**; the five that did not move were already at the matched
-context, which makes them the control rather than the effect. 61% of the spread is the benchmark's
-seed convention, 39% is not, and the residue is reported as a residue.
+> The obstruction to an inference-time copyright certificate is **metering per token**, not
+> budgeting. `K = kT` is denominated in the quantity it protects, so `K/S(x) -> k/s(x)` and never
+> improves. A budget spent once on the draw is `log n` and does not grow with the work at all.
 
-The last thread was **feat-085**, the contingent control the feat-084 pre-registration committed
-before the eighth pair was swept. The eighth pair (`open-calm-1b`, the only one of 21 surveyed
-tokenizers inside the 2.4--3.4 characters-per-token gap) entered the onset analysis on the weakest
-memoriser in the set, which was the one pre-registered confound that fired. `open-calm-3b` shares
-its tokenizer exactly, so granularity, the 9.5-word seed, `s(x)` (+0.5%) and burstiness (1.541 vs
-1.542) are held fixed and only the scale and the memoriser change. It entered on a sampled `k = -1`
-recall of **0.924** -- the strongest in the set, 5.1x the eighth pair's -- and landed at
-**onset/s(x) = 0.9933, [0.959, 1.075]**, inside the committed interpolation band [0.927, 1.052].
-Memoriser strength was not what placed the eighth pair between the clusters.
+## State
 
-At nine pairs: seed-words Spearman **-0.958** (exact p = 0.0002, from -0.946), matched-context
-subgroup exact **p = 0.008** over 126 subsets (from 0.018), collapse spread unchanged at 0.027,
-`s(x)` still the best of four normalisers (cv 10.2% against 15.0 / 23.8 / 37.7). Nothing reverses.
+| | |
+|---|---|
+| manuscript | `~/sub/satml/iclr_2027.tex`, *Meter the Draw, Not the Step* |
+| build | `exit=0`, `overfull=0`, `unresolved=0`, main text **exactly 9 of 9 pages**, 39 total |
+| tests | **260**, all passing |
+| numeric audit | 1822 literals, 1 expected miss (`64256`) |
+| tree | clean, branch `iclr-2027` |
 
-## Files Changed
+Sections: 1 intro · 2 theory (Props 1-2, Thm 1, the asymmetry) · 3 onset, 0.35 page · 4 *Three
+repairs, and why each fails* · **5 selection anchoring (Prop 3)** · **6 the experiments** · 7 related
+· 8-10 limitations, ethics, conclusion. Figure 1 is the thesis in two panels. Every v5 section is
+kept beside its replacement as `*_v5_2026-09-11.tex`.
 
-- `results/onset_prediction_granularity_gap.md` -- the 3B scored against its committed bands.
-- `results/*.csv` -- the whole nine-pair chain re-run (`onset`, `onset_table`, `onset_units`,
-  `collapse_robustness`, `onset_ladder`, `onset_burstiness`, `seed_effect`, `natural_pair`,
-  `surprisal_cdf`, `score_predictions`, `compute_hours`), figures rebuilt and copied.
-- `analysis/onset_gutenberg.py` -- `spearman` now imports the tie-aware average-rank version from
-  `analysis/seed_effect.py`; the value-keyed one collapsed ties onto a single rank. Both CSVs it
-  produces are byte-identical after the change.
-- `analysis/seed_effect.py` -- `onset_seed_words.csv` stores seed words at 4 dp, not 1: at 1 dp
-  Pleias-350M (13.86) and Phi-3.5-mini (13.94) tie and the paper's correlation cannot be recomputed
-  from its own CSV.
-- `tests/test_granularity_gap.py` (new, 4 tests) -- the committed bands, both open-calm ratios
-  inside the interpolation band, the matched contrast, and the correlation against the CSV. **228
-  tests.**
-- `feature_list.json` -- feat-085 registered `done` with its evidence. 80 features.
-- `~/sub/satml/` -- eight to nine pairs throughout: `iclr_2027.tex` (abstract, compute figures),
-  `sections/iclr_intro.tex`, `sections/onset.tex` (table row, counts, correlation, the control),
-  `sections/iclr_closing.tex` (compressed ~4 lines), `sections/appendix_robustness.tex`,
-  `sections/appendix_seed.tex`, `sections/appendix_limitations.tex`.
-- `AGENTS.md`, `init.sh`, `README_artifact.md`, `progress.md`, `artifact/`.
+## What is running
 
-## Verified
+```
+h1.py --trajectories-per-prompt 64 ... --output-dir output/phase5/sel_anchor64   # PID 1346971
+```
 
-`./init.sh` green, 228 tests. Manuscript: tectonic exit 0, **0 overfull, 0 `??`, 33 pages, main text
-9 of 9 with no body prose on `pdftotext` page 10 at all**. `analysis/audit_numbers.py`: 1582 math
-literals, one expected miss (`64256`). Compute **132.7 GPU-hours**, fine-tune share <= 27.8.
+64 anchor candidates on the 500 ordinary prompts, on GPU 4. A chained watcher waits on that PID and
+then runs `analysis/selection_scaling.py`; its log is `output/logs/sel_scaling.log`. Expect the
+generation to finish roughly six hours after 23:35 and the scoring pass to take about an hour more.
 
-## Recommended Next Step
+**If the chain did not fire,** run it by hand:
 
-Nothing is blocked and no experiment is half-run. The paper is complete at nine pairs. The useful
-work left is another end-to-end read-through of the compiled PDF against `results/*.csv` -- the last
-one found thirteen corrections -- and then the human-only feat-016 steps, which the agent must never
-start.
+```bash
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/sel_anchor64 --out results
+```
 
-**One measurement caution replaces an older one.** The page budget is now checked by reading
-`pdftotext` page 10 and confirming it carries the running header, the line-number gutter and
-`Ethics Statement` and **no body prose**. The `char 264` rule this file and AGENTS.md carried until
-today did not detect two lines of the Conclusion spilling onto page 10; the character index is not
-monotone in the spill, because pdftotext emits the gutter and the text column separately.
+## Recommended next step
 
-## Addendum, 2026-09-11 late evening
+1. **Score feat-088 against its committed bands** in `results/onset_prediction_selection_scaling.md`
+   — append to the scoring log, never edit what is above it. Three readings are committed and they
+   partition the line, so whatever comes back is reportable:
+   - **O1** `gain(64)` vs `gain(8)` on judge B: SCALES / SATURATES / OVEROPTIMISES.
+   - **O2** judge C's gain at `n=8`: GENERAL / PARTIAL / JUDGE-SPECIFIC.
+   - **O3** the pointwise selector against half the pairwise `+0.081`: DEPLOYABLE / REFERENCE-BOUND.
+   The entry gate is that the `n=1` control lands within `0.05` of each judge's `u_safe` on record
+   (`0.440` for judge B). Outside it the run is a pipeline failure and is reported as one.
+2. **Integrate whichever way it lands.** Section 6 currently has one value of `n` for the utility
+   arm, which is the paper's most obvious remaining gap. A curve in `n` belongs in
+   Table~\ref{tab:selection} and in Figure 1(b), which already plots the selection arms and will
+   simply gain points. If O1 reads OVEROPTIMISES that is a *better* result than SCALES for the
+   paper's argument, because it bounds the mechanism honestly; say so rather than burying it.
+3. **Then:** update the compute figure in the LLM Usage statement (currently `136` GPU-hours;
+   `analysis/compute_hours.py` reads `output/logs/*.log` and will pick feat-088 up), rerun
+   `analysis/audit_numbers.py`, and rebuild the artifact with `scripts/build_artifact.sh artifact`.
 
-**feat-086 is done and the read-through it ran alongside found five defects, all now pinned by
-tests.** The one worth carrying forward: **a test that returns early when a file is missing can pass
-by never running.** `tests/test_order_law_table.py` and `tests/test_compute_hours.py` both guarded
-on `os.path.expanduser("~/sub/satml/...")`, and `~` is not the project home on this box, so the
-72-cell appendix check AGENTS.md advertises had never executed. Manuscript paths in tests now go
-through `tests/manuscript.py` (`$SATML_DIR`, else `../sub/satml`). The others: the seed-effect
-figure plotted seven hardcoded word counts the manuscript had already corrected; four numbers in
-Appendix C's prose were two pair-counts stale and survived `audit_numbers.py`, which only asks
-whether a literal appears in *some* CSV; "predicts every other arm to within 5.1%" was a mean, not a
-bound; and `compute_hours.py` did not scan `output/logs/`, so a day of sweeps left the total
-unmoved.
+## Two cautions this session added
 
-**Verified after all of it.** `./init.sh` green, **238 tests**. Manuscript: tectonic exit 0, 0
-overfull, 0 `??`, **35 pages**, main text 9 of 9 with no body prose on `pdftotext` page 10.
-`audit_numbers.py`: 1667 literals, one expected miss. Compute **133.4 GPU-hours**, fine-tune share
-<= 27.8, and the LLM-usage sentence says 133 / 28. Artifact rebuilt, 601 files.
-
-**Recommended next step, unchanged in kind:** another pass of the same mechanical read-through. The
-two table checks now run (`tests/test_order_law_table.py`, `tests/test_onset_table.py`), so the next
-thing to mechanise is Appendix E's seed table and the frontier tables, which are still read by eye.
-
-## Addendum, 2026-09-11 night — feat-087, and what the paper now claims
-
-**The paper is no longer only an audit.** `sections/frontier.tex` used to measure the decoder paying
-165 nats for a gain the Cramér rate function prices at 0.052 and then decline to make the
-constructive claim. It now makes it, and Appendix H carries the proof and three pre-registered arms.
-
-**Selection anchoring.** Draw `n` completions from the anchor, score them, serve the argmax. For any
-score and any tie rule `q(y) <= n p_s(y)`, so the certificate is Proposition 1 with `K = log n`,
-vacuous only at `n = e^S(x)` (about `e^850`), and — the structural point — a per-token budget `kT`
-grows with the work while `log n` does not.
-
-- **Primary arm REFUTED**, and that is the finding. Ranked by the risky model's own likelihood,
-  best-of-8 moves judged utility `0.319 -> 0.313`. Within prompt that likelihood predicts the judge
-  at **AUC 0.526**; its summed form reads 0.477, below chance; the completion's **length** reads
-  0.537. The budget is spent efficiently on a target that is not utility.
-- **Follow-up scores ARTEFACT** (`+0.081 < 0.10`), pre-registered before it ran. What survives is
-  real: 1.204 nats reach `u = 0.521` where the metered decoder's best arm reaches 0.522 for 171.3 —
-  57.6x the frontier against 7994.6x, both priced under the same judge's law.
-- **Extraction arm HIT.** Recall 0.0000 at every `n` up to 64 against the memoriser's 0.4338.
-
-**Verified.** `./init.sh` green, **255 tests**. Manuscript: exit 0, 0 overfull, 0 `??`, **38 pages**,
-main text 9 of 9 with **no body prose on `pdftotext` page 10**. `audit_numbers.py`: 1807 literals,
-one expected miss. Compute **135.8 GPU-hours**. Artifact rebuilt, 618 files. Tree clean.
-
-**Recommended next step.** Two candidates, in order of value.
-
-1. **Strengthen the constructive arm.** `+0.081` is one measurement with one reward model at one
-   `n`. A sweep over `n in {16, 32, 64}` with the cross-judge protocol would say whether the gain
-   grows like `log n` predicts it can, and a second reward model would say whether it is specific to
-   Phi. Both are cheap: the candidates exist, only the judging is new.
-2. **Another read-through pass.** Every table in the document is now checked against its CSV
-   (`test_onset_table`, `test_seed_table`, `test_main_tables`, `test_order_law_table`) and so are
-   the load-bearing prose statistics (`test_collapse_robustness_prose`,
-   `test_second_anchor_counts`, `test_abstract_consistency`). What is still read by eye is the
-   appendix prose in `appendix_opening.tex`, `appendix_limitations.tex` and the new
-   `appendix_selection.tex`.
-
-**One caution to carry.** An abstract edit still costs about three lines of reflow per line added —
-adding one sentence to the abstract tonight cost four lines of body and took eight compressions
-across four sections to pay for. Measure by reading `pdftotext` page 10 and counting body lines
-before `Ethics Statement`; it must be zero.
+- **Killing a `h1.py` parent does not stop the work.** The CUDA child is reparented to init and keeps
+  running on the GPU. An orphan of a cancelled generation competed with its own replacement for an
+  hour today. After killing a generation read
+  `nvidia-smi --query-compute-apps=pid,used_memory --format=csv` and kill the child by PID.
+- **`textwrap.fill` breaks words at hyphens**, and `per-\ntoken` in a LaTeX source renders as
+  `per- token`. Programmatic rewraps of manuscript prose must pass `break_on_hyphens=False`; check
+  with `grep -n '[a-zA-Z]-$' sections/*.tex` afterwards.
