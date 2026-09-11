@@ -59,3 +59,19 @@ def test_committed_table_is_consistent_with_its_own_bands():
         assert (r["entered"] == "True") == (float(r["k_minus1_recall"]) >= ENTRY_GATE), r
         # the onset must sit inside the bracket the grid gave it
         assert float(r["onset_lo"]) < float(r["onset"]) <= float(r["onset_hi"]), r
+
+
+def test_the_grid_rule_is_the_one_committed_for_feat_084():
+    """The grid for a new pair is committed in units of k/s(x) before s(x) is measured, because
+    choosing it after seeing the crossing is the failure the pre-registrations exist to prevent."""
+    from analysis.grid_from_sx import RULE, grid
+    assert RULE == (0.55, 0.65, 0.75, 0.85, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.55)
+    md = "results/onset_prediction_granularity_gap.md"
+    if os.path.exists(md):
+        text = open(md).read()
+        for f in RULE:
+            assert f"{f:.2f}" in text or f"{f:g}" in text, f
+    g = grid(2.0)
+    assert g[:2] == [-1.0, 0.0], "both mandatory baselines, in order"
+    assert g[2:] == [1.1, 1.3, 1.5, 1.7, 1.8, 1.9, 2.0, 2.1, 2.3, 2.6, 3.1]
+    assert len(set(grid(3.3))) == len(grid(3.3)), "no duplicate budgets after rounding"

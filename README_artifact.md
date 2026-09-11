@@ -782,3 +782,61 @@ is `0.434` against `0.115` for `onset/s(x)`: the running maximum is `3.8x` the w
 leakage *begins*, even though it is the right one for when a work becomes *reproducible*. The paper
 could not state this before -- `collapse_robustness.csv` lists `k_crit` with `nan` at `n=0`, because
 its `k/k_crit` overlap window is empty on these grids.
+
+### Filling the granularity gap: the eighth pair
+
+The onset ratio fell in two clusters across the first seven pairs with nothing in between, and the
+obvious reading -- that the adversary's context drives it -- could not be tested, because context is
+set by characters per token and no cached anchor cut these passages between `2.4` and `3.4`. That
+was a statement about the cache.
+
+```bash
+# tokenizer files only, no weights; needs the network
+HF_HUB_OFFLINE=0 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/tokenizer_rates.py --survey --out results   # -> tokenizer_survey.csv
+```
+
+Twenty-one ungated, openly licensed causal LMs, chosen to span English BPE, domain-specific English
+(biomedical, scientific, code) and non-English-centric vocabularies. The distribution is genuinely
+bimodal -- English at `3.6`--`4.2`, non-English at `1.2`--`2.4` -- and **exactly one** falls in the
+gap: `cyberagent/open-calm-1b` at `2.71`. The same table gives what a fixed 20-token seed buys:
+`6.2` to `15.8` words depending only on the anchor, a `2.5x` range the benchmark neither sets nor
+reports.
+
+```bash
+# the factory loads both models with use_safetensors=True; open-calm publishes only a .bin
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python scripts/materialise_anchor.py \
+  --model cyberagent/open-calm-1b --out output/phase5/anchor_opencalm1b
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python recipes/finetune_memorizing.py \
+  --base cyberagent/open-calm-1b --tokenizer cyberagent/open-calm-1b --splits attack_train val \
+  --target-modules all-linear --no-chat --epochs 40 --lr 3e-4 --rank 128 --batch 2 --accum 4 \
+  --max-len 0 --stop-loss 0.02 --out output/phase5/mem_opencalm1b
+CUDA_VISIBLE_DEVICES=4 ... .venv/bin/python analysis/budget_path.py \
+  --safe-model cyberagent/open-calm-1b --composition '' --limit 100 --out results \
+  --prefix "budget_path_open-calm-1b__mem._open-calm-1b"
+# the k-grid is a committed RULE in units of k/s(x), applied mechanically:
+.venv/bin/python analysis/grid_from_sx.py \
+  --budget-path results/budget_path_open-calm-1b__mem._open-calm-1b.csv
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/composition_attack.py \
+  --safe-model output/phase5/anchor_opencalm1b --risky-model output/phase5/mem_opencalm1b \
+  --k-values -1 0 1.85 2.19 2.52 2.86 3.03 3.19 3.36 3.53 3.87 4.37 5.21 \
+  --modes single --limit 100 --out output/phase5/fine_opencalm1b
+SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-1b + mem. open-calm-1b" \
+  output/phase5/anchor_opencalm1b output/phase5/mem_opencalm1b \
+  output/phase5/fine_opencalm1b_full/composition_summary.csv 2
+```
+
+Bands, entry gate, fine-tune settings and the grid rule were all committed **before any weights were
+downloaded** (`results/onset_prediction_granularity_gap.md`). The pair enters on a sampled `k = -1`
+recall of `0.181` against a gate of `0.10`, and its onset ratio is **`1.0266`**, `95%` CI
+`[0.967, 1.477]` -- the committed interpolation band, against a point prediction of `1.048` written
+down before the sweep. Ranked by the words the adversary is handed, the eight pairs give Spearman
+**`-0.946`** at exact `p = 0.0013`, up from `-0.919` at `p = 0.007` over seven.
+
+Nothing else reverses at eight pairs: the collapse spread is unchanged at `0.027`, `s(x)` stays
+inside its `1.61x` range and is the best of four normalisers on the rank cv (`10.9%` against `14.7`
+for no rescaling, `25.3` for `r`, `40.4` for `k_crit`), the five-of-eight subgroup check strengthens
+to exact `p = 0.018`, and the burstiness correlation stays refuted. Two confounds were pre-registered
+and one fires: `s(x) = 3.363` sits inside the others' range so the comparison interpolates, but at a
+mean token loss of `0.054` this is the weakest memoriser admitted and its interval is the widest of
+the eight. What eight pairs establish is the **ordering**, not the level of any one of them.
