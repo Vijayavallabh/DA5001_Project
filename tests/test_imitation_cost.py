@@ -125,3 +125,25 @@ def test_the_running_spend_is_linear_in_the_step_index_at_every_budget():
     worst = min(float(r["median_cum_spend_vs_step_r2"])
                 for (cls, _), r in IMIT.items() if cls == "ordinary")
     assert round(worst, 2) >= float(m.group(1)), (worst, m.group(1))
+
+
+def test_the_sparsity_proposition_is_stated_and_its_one_number_is_measured():
+    """Proposition 5 narrows what the paper used to call open: a causal policy on a budget that
+    does not grow with the work MUST be the anchor almost everywhere. Its only empirical claim is
+    the contrast -- the deployed rule serves p_r unchanged at 99.95% of steps at k=20."""
+    apx = open(APX, encoding="utf-8").read()
+    assert r"\label{prop:sparse}" in apx, "the proposition has moved"
+    assert r"\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon" in apx, "the bound has changed"
+    slack = 100 * (1 - float(IMIT[("ordinary", "20")]["beta_binding_frac"]))
+    m = re.search(r"serves \$p_\{r,t\}\$ unchanged at \$([\d.]+)\\%\$ of steps", apx.replace("\n", " "))
+    assert m and abs(float(m.group(1)) - slack) < 0.005, (m.group(1) if m else None, slack)
+
+
+def test_the_limitations_no_longer_call_the_shape_question_open():
+    """It was 'could in principle concentrate its spend'; Proposition 5 makes that a requirement,
+    and only the quantitative half stays open. If the proposition were ever removed, this sentence
+    would be an overclaim."""
+    closing = open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().replace("\n", " ")
+    assert r"\ref{prop:sparse}" in closing, "the limitation no longer cites the proposition"
+    assert "could in principle concentrate" not in closing, "the weaker claim is back"
+    assert "quantitative half" in closing, "the limitation must say what is still open"
