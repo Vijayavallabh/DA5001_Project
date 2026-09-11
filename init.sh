@@ -94,8 +94,9 @@ stray git repo it sits inside.
 
 If you are here to work:
 1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
-2. No feature is open. The main-text read-through is done (2026-09-11, eleven corrections);
-   what remains is the appendices end to end. Four live cautions: a paper number must round
+2. No feature is open. The read-through is done end to end (2026-09-11, thirteen corrections):
+   every table in the compiled document has been checked against its own CSV mechanically.
+   Four live cautions: a paper number must round
    from its CSV ONCE -- double rounding put six of Appendix D's 72 cells one off, and reading
    a table against its CSV mechanically is what found that and five stale seed-words besides; a pair enters the onset analysis only if its
    SAMPLED k=-1 recall >= 0.10 (greedy recall lies); every arm is pre-registered with a
