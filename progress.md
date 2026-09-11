@@ -3569,3 +3569,34 @@ allowance before the first token.
 One sequential GPU queue now runs, in the order the paper needs: placement → judge consistency
 (feat-091) → the exact-rate diagnostic (feat-093). Logs `output/logs/queue.log`,
 `placement_gen.log`.
+
+### The n-gram blocklist baseline (the one Section 5 argued against and never ran)
+
+`analysis/blocklist.py`, zero GPU: build the MemFree rule's index from a protected corpus and apply
+it to generations already on disk. Three corpus sizes × three n-gram orders.
+
+| protected corpus | passages | n | blocklist | ordinary tokens blocked |
+|---|---|---|---|---|
+| committed (16 novels) | 758 | 10 | 174,502 | 0.000% |
+| committed | 758 | 6 | 178,373 | 0.011% |
+| BookMIA seen (50 books) | 4,935 | 10 | 1,106,027 | 0.140% |
+| BookMIA seen | 4,935 | 6 | 1,082,201 | 0.190% |
+| BookMIA all (100 books) | 9,870 | 10 | 2,240,172 | 0.140% |
+| BookMIA all | 9,870 | 6 | 2,218,701 | 0.207% |
+
+**This refutes the argument I expected it to support.** The plan was to show that a blocklist's
+collateral grows with the corpus it must protect while `log n` does not. It grows from 16 novels to
+50 books (0.000% → 0.140%) and then **flattens**: doubling the corpus again to 100 books moves it by
+0.000 at n=10 and 0.017 at n=6. The index doubles and the collateral does not, because the marginal
+10-grams a second fifty books contribute are already the common English ones. A blocklist's
+collateral is **bounded**, and the paper must not claim otherwise.
+
+What survives is the qualitative contrast, which is the one Section 5 actually makes: a blocklist's
+guarantee *names the works it was given*, so it says nothing about a work nobody listed, about
+paraphrase, or about an adversary supplying the prefix. `log n` bounds all three at once because it
+never mentions a work. That argument is unaffected — but it is now the only one, and the scaling
+half is deleted before it was ever written down.
+
+No pre-registration for this arm, deliberately: it is a deterministic count over n-grams with no
+free parameter to steer, not a hypothesis test. Bands exist here for arms whose outcome a choice
+could move.
