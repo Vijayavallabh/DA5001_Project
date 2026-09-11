@@ -68,3 +68,12 @@ def test_the_artifact_readme_points_at_files_that_exist():
     assert refs and scripts
     for p in sorted(refs | scripts):
         assert os.path.exists(p), f"README_artifact.md names {p}, which does not exist"
+
+
+def test_materialise_anchor_verifies_the_weights_are_unchanged():
+    """Re-saving a checkpoint as safetensors is a serialisation change and must be nothing else.
+    The verify pass is the whole point of the script, so it is not optional."""
+    src = open("scripts/materialise_anchor.py").read()
+    assert 'assert worst == 0.0' in src
+    assert 'assert set(src) == set(dst)' in src
+    assert '"--verify", action="store_true", default=True' in src
