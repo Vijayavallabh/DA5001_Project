@@ -1,0 +1,2 @@
+pair,n_grid,k_minus1_recall,k_zero_recall,entered,s_safe,s_risky,onset_lo,onset_hi,onset,ratio,pred_onset,pred_ratio,req_q25,req_q10,req_median,pred_over_meas,copybench_ratio,copybench_onset,grid,p2_between_q10_and_median
+Pleias-1.2B + mem. Pleias-1.2B (Gutenberg),11,0.5168,0.0,True,2.8087,0.3453,2.5,2.7,2.5127,0.8946,2.4634,0.8771,2.2037,1.9565,2.4797,0.9804,0.8784,2.819,1.2:0.000 1.6:0.000 1.9:0.000 2.1:0.000 2.3:0.001 2.5:0.009 2.7:0.017 2.9:0.026 3.2:0.033 3.6:0.047 4.2:0.089,False

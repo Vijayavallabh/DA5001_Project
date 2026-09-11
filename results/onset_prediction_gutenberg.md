@@ -112,3 +112,24 @@ and the one it is hereby restricted to:
 
 The numeric bands, the grid, the threshold and the entry gate above are unchanged. Only the
 *reading* of each outcome is narrowed, and it is narrowed before the numbers exist.
+
+## Unrelated, found by the same read-through: the grid-ceiling rule was not applied to the main table
+
+`sections/appendix_seed.tex` commits, for the seed arms, to *"extending the grid whenever the
+[bootstrap no-crossing] fraction rises materially above the others and to reporting both grids"*.
+`results/onset_ci.csv` says the fraction over the eight onset rows is $0.0$--$0.1\%$ on five of
+them, $4.3\%$ on KL3M-1.7B and $6.9\%$ on the Pleias-350M $n{=}100$ arm. The rule was written for
+the seed arms and never applied to the main-text table, where KL3M-1.7B is one of the two pairs
+whose onset ratio exceeds $1$ --- a headline claim.
+
+Its grid tops out at $k = 3.2$ and its bootstrap upper end is $3.126$, $0.074$ below the ceiling:
+exactly the signature the rule exists to catch. The Pleias-350M $n{=}100$ arm is not quoted anywhere
+(the table uses the $n{=}458$ arm at $0.1\%$), so only KL3M-1.7B needs the extension.
+
+**Recorded before it runs, from the already-committed `results/onset_ci.csv`:** the current reading
+is onset $2.5779$, $95\%$ CI $[2.5201, 3.1258]$, ratio $1.1659$ $[1.1397, 1.4136]$, no-crossing
+$4.3\%$. Extending to $k \in \{3.5, 4.0, 5.0\}$ on the same 100 passages, same seed, same threshold.
+What the Arm A2 precedent predicts: the point estimate barely moves, the no-crossing fraction goes
+to zero and the **upper** end widens. The claim in the text is about the **lower** end exceeding
+$1$, which an extension upward cannot move; if it does move, that is the finding and the sentence
+goes.
