@@ -45,3 +45,17 @@ def test_the_abstract_the_intro_and_section_4_agree_on_the_pair_count():
     assert f"across {word} model pairs with {word} distinct anchors" in a, a[:0] or word
     assert f"Across {word} pairs with {word} distinct anchors" in i, word
     assert f"Across {word} pairs with {word} distinct anchors" in s4, word
+
+
+def test_every_results_file_the_paper_names_exists():
+    """A citation to a file that is not in the artifact is a reviewer's first click and a desk
+    rejection risk on the artifact track. Names are typeset with escaped underscores."""
+    import glob
+    import os
+    body = "".join(open(f, encoding="utf-8").read()
+                   for f in [tex("iclr_2027.tex")] + sorted(glob.glob(tex("sections/*.tex")))
+                   if os.path.basename(f).replace(".tex", "") in SECTIONS or f.endswith("iclr_2027.tex"))
+    named = {n.replace("\\_", "_") for n in re.findall(r"results/([A-Za-z0-9_\\]+)", body)}
+    missing = sorted(n for n in named if n and not
+                     (os.path.exists(f"results/{n}.csv") or os.path.exists(f"results/{n}.md")))
+    assert not missing, f"named in the paper, absent from results/: {missing}"
