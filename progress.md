@@ -3179,3 +3179,87 @@ main text is back to **9 of 9 pages with no body prose on page 10 at all** -- th
 detect it. 33 pages total, 0 overfull, 0 `??`, 1582 literals with one expected miss. Compute is now
 **132.7 GPU-hours** (fine-tune share <= 27.8), and the LLM-usage sentence says 133 / 28. **228
 tests.**
+
+## 2026-09-11 (evening) -- feat-086: equalise the adversary's context, and 61% of the split goes
+
+The paper's largest open question was its own Limitations: the onset ratio moves with the words a
+fixed 20-token seed buys the adversary, the nine pairs rank at Spearman -0.958, five interventions
+move single pairs -- but seed words is 20x characters per token by construction, so the ranking is
+observational and **no choice of anchors can separate context from granularity**. What can is the
+intervention applied to every pair at once: hand each adversary the same number of *words*.
+
+Seven of the nine matched arms already existed (the two KL3M pairs at `--seed-tokens 40`, five pairs
+already at 13.9-15.0 words at seed 20), which is a recomputation and `results/onset_prediction_matched_context.md`
+says so. The blind part was the two open-calm pairs at `--seed-tokens 30` (14.63 words) and the
+nine-pair aggregate. Bands, grid rule, entry gate, primary metric (longest common substring in
+words, because a longer seed shortens the target) and four excluded alternatives were all committed
+before either arm was swept.
+
+```
+pair            seed20 words ratio   matched words ratio   move
+KL3M-1.7B               7.5 1.155           14.8 0.979   -0.176
+KL3M-520M               7.5 1.032           14.8 0.939   -0.093
+open-calm-1b            9.5 1.001           14.6 0.959   -0.042
+open-calm-3b            9.5 0.981           14.6 0.919   -0.062
+Phi-3.5-mini           13.9 0.926           13.9 0.926   +0.000
+Pleias-350M            13.9 0.893           13.9 0.893   +0.000
+Comma-7B               14.1 0.879           14.1 0.879   +0.000
+Pleias-1.2B            14.6 0.866           14.6 0.866   +0.000
+TinyComma-1.8B         15.0 0.866           15.0 0.866   +0.000
+
+spread  0.2891 (cv 9.6%)  ->  0.1132 (cv 4.2%)     S_match / S_20 = 0.392
+near-verbatim, same pass: 0.2875 -> 0.1147,        S_match / S_20 = 0.399
+```
+
+**0.392 is inside the committed `<= 0.5` band: the adversary's context is the dominant cause.**
+Both blind arms land inside their committed [0.85, 0.96], the 1B at 0.959 on the edge and reported
+as an edge. Entry gates hold (0.242 against its own control's 0.181; 0.915 against 0.924), so
+neither arm weakened its memoriser. Zero per-trajectory violations in either sweep.
+
+**Why this is not circular.** Equalising a variable that merely correlates with an outcome need not
+shrink the outcome's spread. If granularity acted through the vocabulary, the target's length or the
+tokenizer's fit to English prose, lengthening the seed would leave the ratio where it was, because
+none of those changes. All four movers moved, all four moved down, all four landed inside or on the
+edge of the band the five unmoved pairs occupy -- and those five are unmoved *because they were
+already at the matched context*, which makes them the control rather than the effect. The mechanism
+is the one the single-pair arms showed: s(x) moves 0.5-0.7% under the longer seed while k_crit falls
+about 11%.
+
+**The residue is 39% and is reported as such.** The two KL3M pairs are still on top at a matched
+context (0.979, 0.939 against 0.866-0.926). The claim scored is a fraction, not a closure.
+
+**One committed rule fired.** Pleias-350M's substring no-crossing read 3.6%, above the 1% the
+pre-registration commits to, so its grid was extended to k in {5,6,7}. As an upward extension must,
+the onset is unmoved at 0.893 and only the interval's upper end widens (1.127 -> 1.20); no-crossing
+goes to 0.0%.
+
+### Five defects found in the read-through this ran alongside
+
+1. **Three manuscript checks had never run.** `tests/test_order_law_table.py` guarded on
+   `os.path.expanduser("~/sub/satml/...")` and `~` is `/home/sports` here, so the 72-cell check
+   AGENTS.md advertises returned early every time; so did `test_compute_hours.py`'s assertion
+   against the LLM-usage sentence. Paths now resolve through `tests/manuscript.py`
+   (`$SATML_DIR`, else `../sub/satml`). Both pass once they actually execute. **A test that returns
+   early when a file is missing can pass by never running.**
+2. **The seed-effect figure plotted seven hardcoded word counts** of 13.0-14.4 -- the values the
+   manuscript corrected to 13.86-15.02 this morning, on a figure that also still knew about seven
+   pairs when there were nine. It now reads `results/onset_seed_words.csv`, and `seed_effect.py`
+   writes the canonical pair name (`onset_pairs.tsv`'s first field says "memorised" where its
+   display label says "mem.").
+3. **Four stale numbers in Appendix C's prose**: the metric-artifact sentence said 0.165/0.173 where
+   `collapse_robustness.csv` says 0.106/0.109, and the threshold sweep's "absolute level runs from
+   0.914 to 1.045" is 0.928 to 1.076. Both survived `audit_numbers.py`, which only asks whether a
+   literal appears in *some* CSV -- and these did, two pair-counts ago.
+4. **"predicts every other arm to within 5.1%" was a mean, not a bound**: the largest single error
+   is 10.4%. What is true of every arm is that the prediction lands inside its measured interval.
+5. **`compute_hours.py` did not scan `output/logs/`**, so a day of sweeps left the total unmoved.
+
+Each is pinned by a test: `tests/test_onset_table.py` (all 54 cells of Section 4's table),
+`tests/test_collapse_robustness_prose.py`, `tests/test_context_intervention.py`,
+`tests/test_granularity_gap.py`.
+
+**Manuscript.** Section 4 gains the nine-pair intervention in five lines, paid for by four
+compressions in Section 3 and two in Section 4; Appendix E gains the table, the figure
+(`context_intervention.pdf`) and the causal argument; the Conclusion's second limitation and
+Limitations' closing paragraph now say 61% and name the residue. **35 pages, 0 overfull, 0 `??`,
+1667 literals with one expected miss, main text 9 of 9 with no body prose on page 10. 238 tests.**

@@ -216,6 +216,40 @@ def seed_effect():
     _save(fig, "seed_effect")
 
 
+def context_intervention():
+    """feat-086: give every pair's adversary the same number of WORDS instead of the same number of
+    tokens, and the fan closes. The five pairs already at 13.6-15.0 words do not move by
+    construction -- they are the control, and they are drawn as the band the four movers descend
+    into. All four move, all four move down, and all four land inside or on the edge of that band.
+    """
+    import csv
+    rows = [r for r in csv.DictReader(open(RESULTS / "context_intervention.csv"))
+            if r["pair"] != "ALL"]
+    if not rows:
+        raise FileNotFoundError("results/context_intervention.csv is empty")
+    moved = [r for r in rows if abs(float(r["ratio_matched"]) - float(r["ratio_20"])) > 1e-9]
+    flat = [float(r["ratio_20"]) for r in rows if r not in moved]
+
+    fig, ax = plt.subplots(figsize=(4.8, 3.0))
+    ax.axhspan(min(flat), max(flat), color="0.85", zorder=1)
+    ax.text(-0.55, (min(flat) + max(flat)) / 2,
+            f"{len(flat)} pairs already at\nthe matched context\n"
+            f"{min(flat):.3f}-{max(flat):.3f}", fontsize=6.8, va="center", color="0.35")
+    for r in sorted(moved, key=lambda r: -float(r["ratio_20"])):
+        y0, y1 = float(r["ratio_20"]), float(r["ratio_matched"])
+        ax.plot([0, 1], [y0, y1], marker="o", ms=4, lw=1.6, zorder=3)
+        ax.annotate(f"{r['pair']}  {float(r['words_20']):.1f}$\\to${float(r['words_matched']):.1f}w",
+                    (1.03, y1), fontsize=6.8, va="center")
+    ax.axhline(1.0, color="0.3", ls=":", lw=1.0, zorder=2)
+    ax.set_xlim(-0.62, 1.95)
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(["20-token seed\n(what the benchmark fixes)",
+                        "matched seed\n13.6-15.0 words"], fontsize=8)
+    ax.set_ylabel(r"onset $/\ s(x)$")
+    ax.set_title("spread $0.289 \\to 0.113$", fontsize=8.5, loc="left")
+    _save(fig, "context_intervention")
+
+
 def units_law():
     """The units claim on one axis pair: the safe model's surprisal rate against the budget at
     which extraction begins.
@@ -328,7 +362,7 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               units_law, order_no_collapse)
+               context_intervention, units_law, order_no_collapse)
     for fn in figures:
         try:
             fn()
