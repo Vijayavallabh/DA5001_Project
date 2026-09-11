@@ -188,3 +188,41 @@ $0.003$--$0.35$ the seven span, and the second pre-registered confound is the on
 is reported beside the ratio whichever way the ratio lands. This paragraph is written now so that
 "drift, not divergence" cannot later look like a judgement made after seeing whether the pair was
 convenient.
+
+## Scored: the pair enters, and the ratio lands between the two families
+
+```
+bash scripts/materialise_anchor.py --model cyberagent/open-calm-1b --out output/phase5/anchor_opencalm1b
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/composition_attack.py \
+  --safe-model output/phase5/anchor_opencalm1b --risky-model output/phase5/mem_opencalm1b \
+  --k-values -1 0 1.85 2.19 2.52 2.86 3.03 3.19 3.36 3.53 3.87 4.37 5.21 \
+  --modes single --limit 100 --out output/phase5/fine_opencalm1b
+SATML_DIR=<manuscript> scripts/add_pair.sh "open-calm-1b + mem. open-calm-1b" \
+  output/phase5/anchor_opencalm1b output/phase5/mem_opencalm1b \
+  output/phase5/fine_opencalm1b/composition_summary.csv 2
+```
+
+**Entry gate: sampled $k=-1$ recall $0.181$ on the 100 passages**, against a gate of $0.10$ and the
+seven pairs' $0.41$--$0.91$. It enters, from below, and the second pre-registered confound fires
+exactly as recorded: this is the weakest memoriser in the set. The anchor alone reproduces $0.000$,
+and no trajectory in any of the twelve budgeted cells exceeds its budget.
+
+```
+k      -1     0   1.85  2.19  2.52  2.86  3.03  3.19  3.36  3.53  3.87  4.37  5.21
+k/s(x)  --    --  0.55  0.65  0.75  0.85  0.90  0.95  1.00  1.05  1.15  1.30  1.55
+recall 0.181 0.000 0.000 0.000 0.000 0.000 0.000 0.001 0.008 0.012 0.011 0.020 0.027
+```
+
+**onset $= 3.452$, onset$/s(x) = 1.0266$, $95\%$ CI $[0.967, 1.405]$.**
+
+That is inside the committed **interpolation** band ($0.927$--$1.052$) and $0.022$ from the context
+account's point prediction of $1.048$, which was written down before the sweep. The outcome that
+would have falsified that account --- joining the coarse family at $\le 0.926$ --- is excluded by
+the data rather than by the interpolation: at $0.90 \times s(x)$ recall is still exactly $0.000$ and
+at $0.95\times$ it is $0.001$, where the five coarse pairs have already crossed.
+
+**The bootstrap no-crossing fraction is $1.6\%$**, against $0.0$--$0.1\%$ for the seven. By the rule
+Appendix~\ref{app:seed} commits to and that was applied to KL3M-1.7B this morning, the grid is
+extended to $k \in \{6.0, 7.0, 8.0\}$ and both grids are reported. The extension is upward, so it
+cannot move the onset or the lower end of the interval; what it can do is widen the upper end, and
+that is what will be reported.
