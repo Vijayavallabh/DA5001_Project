@@ -132,3 +132,32 @@ committed bands genuinely discriminate is:
 Nothing above is changed --- not a band edge, not the grid rule, not the entry gate. What is added
 is a statement, before the numbers exist, of which of the committed outcomes carry information and
 which do not.
+
+## The grid, fixed by the committed rule, before the sweep and before the entry gate is known
+
+`analysis/budget_path.py` on the **anchor alone** --- no decoding, no memoriser, nothing that could
+see an onset --- then `analysis/grid_from_sx.py`, which applies the $k/s(x)$ rule above:
+
+```
+100 passages: s(x) = 3.3628 nats/token, k_crit = 5.1847 (k_crit/s = 1.542)
+--k-values -1 0 1.85 2.19 2.52 2.86 3.03 3.19 3.36 3.53 3.87 4.37 5.21
+```
+
+**The first pre-registered confound does not fire, and that is worth more than it sounds.** The
+worry was that a Japanese model scored on English novels would have an $s(x)$ outside the
+$2.21$--$3.55$ nats per token the seven pairs span, so that the comparison would extrapolate in
+$s(x)$ rather than isolating granularity. It does not: $3.363$ sits **inside** that range, between
+Pleias-1.2B ($3.209$) and Pleias-350M ($3.554$), and next to TinyComma-1.8B ($3.239$) --- three
+pairs whose onset ratios are $0.878$, $0.920$ and $0.887$. So the new anchor is no worse on these
+novels than the coarse anchors are, while cutting them $1.5\times$ more finely. That is as close to
+a granularity-only contrast as this design can get.
+
+Its burstiness is unremarkable too: $k_{\mathrm{crit}}/s(x) = 1.542$, against $1.540$--$1.958$ for
+the five pairs that are not TinyComma or Comma-7B. By the quantity feat-083 refuted, it is
+indistinguishable from Pleias-1.2B; by the quantity that splits the families, it is between them.
+
+Nothing here is a choice. $s(x)$ is measured from the anchor, the grid is the committed rule applied
+to it, and the entry gate is not yet known --- the fine-tune is at epoch 25 of 40 with a mean token
+loss of $0.0596$, descending monotonically from $3.139$ and slowing, so the run will end on epochs
+rather than on the $0.02$ stop-loss. A plateau is not the divergence the retry rule is written for;
+what decides the pair is the sampled $k=-1$ recall, as for every other pair.
