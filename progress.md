@@ -2839,3 +2839,69 @@ corpus is rebuilt by the command above rather than shipped". The builder now exc
 the copies under `artifact/` are removed; `artifact.zip` falls from 23 MB to 11 MB and the manifest
 from 610 to 559 files. The files remain in git history, which was **not** rewritten, and the source
 copies under `data/gutenberg/` are untouched.
+
+### 2026-09-11: read-through of the compiled PDF against the CSVs, and the grid-ceiling rule applied
+
+Eleven corrections, every one found by checking a table against its own CSV rather than by reading.
+
+**Appendix D, the twelve-pair table.** Six of seventy-two cells were one off in the last digit, all
+from double rounding: `order_law.csv` stored `window_factor` at 3 significant figures and the paper
+rounded that rounded value again to 2 or 3. The column now carries 6 s.f. and
+`tests/test_order_law_table.py` checks the invariant (`window_factor == exp(nats_per_window)`) and
+all 72 cells against the CSV. Corrected: Pleias-350M `2.6e7 -> 2.5e7` and `67.6 -> 67.5`, KL3M-170M
+`454 -> 455`, KL3M-3.7B `910 -> 909`, KL3M-520M `1.6 -> 1.5` and `7.4e-3 -> 7.3e-3`, Phi-3.5-mini
+`47.6 -> 47.5`. Also: the anchor rate is **tied** for worst of the six predictors at alpha=8, not
+sole worst -- `s_s - s_r` ranks the twelve pairs identically at every order, because on this set
+`s_r` sits three orders of magnitude below `s_s`, so six candidates are five distinct rankings.
+
+**Section 2.** `results/utility_price.csv` gives a utility gain of `+0.179` at k=10, not the
+`+0.160` the paper quoted as the top of a range -- `+0.160` is the k=20 endpoint. Same for the
+optimal-policy cost (`0.077`, not `0.061`). And the overhead ratio was written as running from k=20
+to k=0.5 when its minimum is `2237`, at k=10. The oracle-reallocation gain of 3-13% now names the
+budgets it holds for (k <= 1); at k=3 it is under 1.4%.
+
+**Appendix E.** The prose promised a no-crossing column "for every arm" and the table had six
+columns and no such column -- the discipline of caution (g) promised and not delivered. It is there
+now for all fourteen arms. Every seed-words value was stale against `seed_effect.csv` (13.7 for
+14.6, 6.7 for 6.9, 7.3 for 7.5, 14.3 for 14.8, 28.4 for 29.6), so Section 4 and Appendix E disagreed
+on the same four arms of the same dose-response; and KL3M-520M at tau=0.7 carried `[0.89, 1.19]`
+where the CSV says `[0.88, 1.06]`.
+
+**`lcs_word` is the longest common SUBSTRING in words, not subsequence** (`dap/stats.py:73`, He et
+al.'s CopyBench exact-match metric). Two sections said subsequence. For a copying metric that is a
+real distinction -- a contiguous run against an interleaved one -- and a referee in this area reads
+it.
+
+**The grid-ceiling rule, applied to the main table for the first time.** Appendix E commits to
+extending a grid "whenever the [bootstrap no-crossing] fraction rises materially above the others".
+`onset_ci.csv` puts seven of eight rows at 0.0-0.1% and the **KL3M-1.7B** row at 4.3%, on a grid
+topping out at k=3.2 with a bootstrap upper end of 3.126 -- 0.074 below the ceiling, the exact
+signature the rule exists to catch, and the rule had only ever been applied to the seed arms.
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/composition_attack.py --safe-model alea-institute/kl3m-003-1.7b \
+    --risky-model output/phase5/mem_kl3m-003-1_7b --k-values 3.5 4.0 5.0 --modes single \
+    --limit 100 --out output/phase5/fine_kl3m17b_ext
+# merged into output/phase5/fine_kl3m17b_full; both manifests repointed
+.venv/bin/python analysis/onset.py --out results --thresh 0.01
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fine_kl3m17b_full/composition.csv \
+  --s-x 2.2112 --label "KL3M-1.7B + mem. KL3M-1.7B" --out results
+.venv/bin/python analysis/seed_effect.py --out results
+.venv/bin/python analysis/{onset_table,collapse_robustness,onset_units,onset_ladder}.py --out results
+```
+
+Recall at the three new budgets is 0.048, 0.088, 0.155. The no-crossing fraction goes **4.3% -> 0.0%**
+(and 3.4% -> 0.0% on the same pair's lcs arm), the onset is **unmoved** at 2.578, ratio 1.1659, and
+the interval widens **upward only**: `[2.52, 3.13] -> [2.52, 3.32]`, ratio `[1.14, 1.41] -> [1.14,
+1.50]`, lcs `[1.14, 1.39] -> [1.14, 1.47]`. **The lower ends do not move, so "both KL3M intervals
+exclude 1" is unaffected** -- which is the claim that rested on this pair.
+
+Two knock-on numbers in Appendix C moved with the wider grid and are now reported with the reason:
+the metric check reads `0.165` against `0.173` (was `0.246`/`0.247`) because the extended grid
+widens `lcs_word`'s observed range, and the raw-normaliser ablation reads `0.0334` (was `0.0286`)
+because the raw-budget overlap window grew from two grid points to three. The appendix now says the
+raw number is not measured on the same window as the two rescalings and is not a 25% margin.
+
+**218 tests. 1410 numeric literals, one expected miss (`64256`). 9 of 9 pages, 31 total, 0 overfull,
+0 `??`.**
