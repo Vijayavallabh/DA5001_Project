@@ -277,7 +277,7 @@ def selection_frontier():
     odo = list(csv.DictReader(open(RESULTS / "odometer.csv")))
     if not sel or not dec or not onset or not odo:
         raise FileNotFoundError("an input CSV for selection_frontier is empty")
-    fig, (axL, ax) = plt.subplots(1, 2, figsize=(9.4, 3.2))
+    fig, (axL, ax) = plt.subplots(1, 2, figsize=(9.4, 2.85))
 
     # ---- panel (a): a budget that scales with the work against one that does not -------------
     ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
