@@ -20,3 +20,4 @@ data/gutenberg/
 # backup existed on disk and in no commit. scripts/build_artifact.sh excludes this directory.
 !manuscript_snapshot/**/*.tex
 !manuscript_snapshot/**/*.bib
+data/bench/
