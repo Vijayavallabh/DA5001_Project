@@ -141,12 +141,14 @@ def test_the_sparsity_proposition_is_stated_and_its_one_number_is_measured():
 
 def test_the_limitations_no_longer_call_the_shape_question_open():
     """It was 'could in principle concentrate its spend'; Proposition 5 makes that a requirement,
-    and only the quantitative half stays open. If the proposition were ever removed, this sentence
-    would be an overclaim."""
+    and only the quantitative question stays open. If the proposition were ever removed, the
+    limitation would be an overclaim, so it must cite it and must still name what is open."""
     closing = open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().replace("\n", " ")
     assert r"\ref{prop:sparse}" in closing, "the limitation no longer cites the proposition"
     assert "could in principle concentrate" not in closing, "the weaker claim is back"
-    assert "quantitative half" in closing, "the limitation must say what is still open"
+    assert re.search(r"(quantitative half|how close a policy of that shape could come)", closing), \
+        "the limitation must say what is still open"
+    assert "is open" in closing, "the limitation must say that something is open"
 
 
 def test_the_spend_concentration_beside_the_sparsity_proposition_rounds_from_the_csv():

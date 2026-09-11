@@ -100,8 +100,12 @@ def test_the_two_judge_sigmas_in_the_introduction_come_from_the_v6_separation_cs
     # the abstract names a budget inside the fully certified region; neither judge separates there
     abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read()
     # whitespace-tolerant: the abstract is rewrapped whenever it is edited, and a line break
-    # between "safe" and "model" broke this once.
-    m = re.search(r"safe\s+model\s+at\s+\$k=([\d.]+)\$", abstract)
+    # between "safe" and "model" broke this once. v7 moved the claim into the dichotomy's trivial
+    # horn ("... at k=0.5 neither of two judges can separate it from the safe model"), so the
+    # phrasing is matched loosely and the substance -- that the named budget really is one where
+    # neither judge separates -- is what the assertion below checks.
+    m = re.search(r"at\s+\$k=([\d.]+)\$\s+neither\s+of\s+two\s+judges", abstract) or \
+        re.search(r"safe\s+model\s+at\s+\$k=([\d.]+)\$", abstract)
     assert m, "the abstract no longer names the budget it claims no separation at"
     k = float(m.group(1))
     assert abs(z(q, k)) < 2 and abs(z(p, k)) < 2, (k, z(q, k), z(p, k))
