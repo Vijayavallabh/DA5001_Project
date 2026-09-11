@@ -4,11 +4,23 @@
 
 Plan v5 on branch `iclr-2027`, targeting **ICLR 2027** (abstract Sep 18, paper Sep 25). The
 manuscript `~/sub/satml/iclr_2027.tex` is complete and verified: main text **exactly 9 of 9 pages**
-(`Ethics` at char 264 of `pdftotext` page 10), 32 pages total, **0 overfull, 0 `??`**, 1474 numeric
-literals audited with one expected miss (`64256`, the Comma-7B padded embedding count). **218 tests**
-green. **feat-035..082 `done`; nothing in progress.** Compute 129.6 GPU-hours.
+(`Ethics` at char 264 of `pdftotext` page 10), 33 pages total, **0 overfull, 0 `??`**, 1490 numeric
+literals audited with one expected miss (`64256`, the Comma-7B padded embedding count). **221 tests**
+green. **feat-035..083 `done`; nothing in progress.** Compute 129.6 GPU-hours.
 
 ## What landed this session
+
+**feat-083 — the onset residue is not Proposition 2's burstiness, and `s(x)` beats `k_crit` as a
+unit by `3.8x`.** Pre-registered with a refuting band, a predicted sign and three excluded
+alternative statistics *before the quantity was computed* — it costs no GPU and thirty seconds, so
+nothing but the commit separates a hypothesis from a story. Spearman between each pair's
+`k_crit/s(x)` and its onset ratio is **`+0.036`** at exact `p = 0.96`; the two burstiest pairs by a
+factor of three sit in the middle of the coarse family and the two above `1` are the second and
+third *least* bursty, so it fails at its extremes rather than for want of power. The corollary is
+positive and new: `CV(onset/k_crit) = 0.434` against `CV(onset/s(x)) = 0.115`, so the running
+maximum is the wrong unit for where leakage *begins* even though it is the right one for when a work
+becomes *reproducible*. `collapse_robustness.csv` could not say this — it lists `k_crit` with `nan`
+at `n=0`, because the `k/k_crit` overlap window is empty on these grids.
 
 **feat-082 — the onset on a corpus the law has never seen.** The paper's first limitation, and the
 plan's own risk list, is that everything runs on sixteen English genre novels. feat-080 answered
@@ -68,9 +80,9 @@ order_law,order_predictors*,compute_hours*}.csv`, both manifests, `artifact/`. I
 
 ## Recommended Next Step
 
-1. **Read the appendices end to end** the way the main text was read this session — mechanically,
-   each table against its own CSV, not by eye. That method found eleven things in one pass; the
-   appendices are 20 of the 32 pages and have had one such pass (Appendix D) out of seven.
+1. **The appendix read-through is done** (two further corrections: a Table 3 caption that
+   described a ratio of medians as a median, and "30 targets" where one of six cells is 12).
+   Every table in the compiled document has now been checked against its own CSV mechanically.
 2. **Then stop adding.** Every pre-registered band in `results/onset_prediction_*.md` has been
    scored, the three robustness axes are probed, and both corpora agree. Running more anchors now
    would be choosing when to stop after seeing the answer.

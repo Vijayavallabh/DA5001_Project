@@ -748,3 +748,37 @@ Recall at the three new budgets is `0.048`, `0.088`, `0.155`; the no-crossing fr
 `[2.52, 3.13]` becomes `[2.52, 3.32]`. The lower end does not move, so the claim that rests on this
 pair -- that both KL3M intervals exclude `1` -- is unaffected. Two knock-on numbers in the collapse
 appendix move with the wider grid and are reported with the reason.
+
+### Is the onset residue the burstiness Proposition 2 names?
+
+The onset ratio takes two values across the seven pairs and the residue, after the seed
+interventions, is unexplained. Proposition 2 names a candidate the repository already carries:
+`k_crit/s(x)`, the gap between the drift a budget publishes and the workload maximum safety depends
+on, computed per passage in every `results/budget_path_*.csv`. Bands, predicted sign and three
+excluded alternative statistics were committed before the quantity was computed.
+
+```bash
+.venv/bin/python analysis/onset_burstiness.py --out results   # -> onset_burstiness.csv
+```
+
+```
+pair                                s(x)   k_crit  k_crit/s  onset/s  onset/k_crit
+Pleias-1.2B + mem. Pleias-1.2B     3.209    4.942     1.540    0.878         0.570
+Pleias-350M + mem. Pleias-350M     3.554    5.503     1.548    0.895         0.578
+KL3M-520M + mem. KL3M-520M         2.415    3.791     1.570    1.053         0.671
+KL3M-1.7B + mem. KL3M-1.7B         2.211    3.644     1.648    1.166         0.708
+Phi-3.5-mini + mem. Phi-3.5-mini   2.837    5.556     1.958    0.926         0.473
+TinyComma-1.8B + mem. Llama-8B     3.239   13.932     4.302    0.887         0.206
+Comma-7B + mem. Comma-7B           2.393   11.319     4.729    0.892         0.189
+```
+
+**Refuted**: `rho = +0.036`, exact `p = 0.96`, inside the committed `|rho| < 0.6`. The two burstiest
+pairs by a factor of three sit in the middle of the coarse family and the two pairs above `1` are
+the second and third *least* bursty, so the hypothesis is wrong at its two extreme points and not
+merely underpowered.
+
+**The corollary is positive.** The coefficient of variation of `onset/k_crit` across the seven pairs
+is `0.434` against `0.115` for `onset/s(x)`: the running maximum is `3.8x` the worse unit for where
+leakage *begins*, even though it is the right one for when a work becomes *reproducible*. The paper
+could not state this before -- `collapse_robustness.csv` lists `k_crit` with `nan` at `n=0`, because
+its `k/k_crit` overlap window is empty on these grids.

@@ -77,17 +77,19 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..082 are done except the optional ones; nothing is in progress. The last thread finished
-was feat-082: the onset re-measured on a second, disjoint protected corpus, where the paper's
-central split reproduces -- the fine-tokenizer pair again the only one above 1 with its interval
-excluding it, every ratio within 0.05 of its twin on the novels. Before that, the matched-utility
+feat-035..083 are done except the optional ones; nothing is in progress. The last thread finished
+was feat-083: the onset residue is NOT the burstiness Proposition 2 names (rho = +0.036,
+pre-registered and refuted), but the same ranking shows s(x) beats k_crit as a unit by 3.8x.
+Before that, feat-082: the onset re-measured on a second, disjoint protected corpus, where the
+paper's central split reproduces -- the fine-tokenizer pair again the only one above 1 with its
+interval excluding it, every ratio within 0.05 of its twin on the novels. Before that, the matched-utility
 line (feat-072..081): twelve pairs in seven families, an earned negative on every predictor, and
 three robustness axes that move levels by more than the precision floor and never move the ranking. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
 feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
 
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages (measured BEFORE the Ethics heading - Ethics, Reproducibility and LLM Usage do not count),
-32 pages total, 0 overfull, 0 '??', 1474 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
+33 pages total, 0 overfull, 0 '??', 1490 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:
