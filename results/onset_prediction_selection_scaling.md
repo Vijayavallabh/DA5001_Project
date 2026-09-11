@@ -174,3 +174,72 @@ separation smaller than a sigma.
 O2's comparison against the `+0.081` on record remains like-for-like; the pointwise reward, the
 grid, the entry gate, the primary metrics and the five excluded alternatives all stand as written
 above.
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+Produced by, in order:
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.0 --trajectories-per-prompt 64 \
+  --cap-neutral 200 --cap-creative 150 --cap-factual 150 \
+  --cap-val 0 --cap-test 0 --cap-attack-train 0 \
+  --max-new-tokens 200 --batch-size 64 --output-dir output/phase5/sel_anchor64
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/sel_anchor64 --out results
+```
+
+32,000 trajectories over 500 prompts, exactly 64 candidates each. Outputs
+`results/selection_scaling.csv`, `results/selection_scaling_per_prompt.csv`,
+`results/selection_rewards64.csv`.
+
+**Entry gate: PASS.** Judge B's `n = 1` control is `u = 0.435` against the `0.440` on record,
+`|Δ| = 0.005`, inside the committed `0.05`.
+
+| | judge B (Phi-3.5-mini) | judge C (Meta-Llama-3.1-8B-Instruct) |
+|---|---|---|
+| `n=1` | `0.435 [0.401, 0.469]` | `0.429 [0.386, 0.473]` |
+| `n=8` | `0.489`, gain `+0.054 [0.013, 0.095]` | `0.502`, gain `+0.073 [0.027, 0.120]` |
+| `n=64` | `0.577`, gain `+0.142 [0.097, 0.187]` | `0.552`, gain `+0.123 [0.076, 0.171]` |
+
+### O1 — **SCALES**
+
+`gain(64) = +0.142` against `gain(8) = +0.054` on judge B: a difference of `+0.088`, above the
+committed `+0.05`. Both intervals exclude zero and do not overlap. The capacity grows with the
+candidate pool, and it grows while the budget grows only as `log n`: `1.2044 → 3.1745` nats buys
+`+0.054 → +0.142`.
+
+Secondary, as committed: Spearman of `u` against `log n` over the seven arms is `+0.991` on judge B
+and `+1.000` on judge C — monotone in both.
+
+### O2 — **GENERAL**
+
+Judge C's gain at `n = 8` is `+0.073 [0.027, 0.120]`: above the committed `+0.03` with an interval
+excluding zero. The constructive claim is not a property of Phi. This is the conservative direction
+for the substitution recorded in the addendum, since judge C is now the checkpoint that generated
+the opponent, so any self-preference runs *against* the hypothesis.
+
+### O3 — **DEPLOYABLE**
+
+The pointwise selector — `log p("Yes") − log p("No")` from Qwen on one fixed template, which never
+touches the risky model — reaches `+0.054` at `n = 8` on judge B, above the committed `+0.041`
+(half of feat-087's pairwise `+0.081` on the same judge and prompts). The risky model is not needed
+at selection time. At `n = 64` the same selector reaches `+0.142`, **above** the pairwise arm's
+`+0.081`, so the cheaper selector is not a compromise once the pool is large enough.
+
+### What this does to the comparison in the paper
+
+The metered decoder's best judged arm gains `+0.072` for `171.3` nats. Selection at `n = 64` gains
+`+0.142` for `3.1745` nats — **about twice the utility for one fifty-fourth of the divergence**, and
+under the pathwise order rather than the KL one.
+
+### Two things this does not say
+
+Every number here is one anchor (TinyComma-1.8B) on 500 in-house prompts, which is what
+`results/onset_prediction_selection_breadth.md` and the AlpacaEval/MT-Bench arms exist to test;
+until those land, the generality of `+0.142` is unestablished. And O1 reading SCALES is *not* the
+reading that would most have flattered the argument: OVEROPTIMISES would have shown the selector's
+errors compounding and made the case against metering sharper still. It scaled instead, which is
+the more useful result and the less rhetorically convenient one.
