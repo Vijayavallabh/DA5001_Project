@@ -75,7 +75,14 @@ def score_rewards(model, tok, items, device, batch_size=8, log_every=40):
         enc = tok(texts, return_tensors="pt", padding=True, truncation=True,
                   max_length=2048).to(device)
         with torch.no_grad():
-            logits = model(**enc).logits[:, -1, :].float()
+            # Only the last position is scored, and the full [B, T, V] logits tensor is 5 GB at
+            # B=8, T=2048, V=152k. Ask for one position where the installed transformers supports
+            # it; fall back for older versions rather than failing.
+            try:
+                res = model(**enc, logits_to_keep=1)
+            except TypeError:
+                res = model(**enc)
+            logits = res.logits[:, -1, :].float()
         lp = torch.log_softmax(logits, dim=-1)
         y = torch.logsumexp(lp[:, ids["yes"]], dim=-1)
         n = torch.logsumexp(lp[:, ids["no"]], dim=-1)
@@ -190,8 +197,10 @@ def main():
         per = {p: {n: u_of[(p, picks[(p, n)])] for n in grid} for p in pids}
         per_judge[judge] = per
         base_u = [per[p][1] for p in pids]
+        u_raw = {}
         for n in grid:
             us = [per[p][n] for p in pids]
+            u_raw[n] = sum(us) / len(us)
             lo, hi = boot_mean(us, rng)
             diffs = [per[p][n] - per[p][1] for p in pids]
             g = sum(diffs) / len(diffs)
@@ -205,7 +214,9 @@ def main():
             print(f"  {judge.split('/')[-1]:24s} n={n:3d}  KL {kl_best_of_n(n):5.3f}  "
                   f"u={out[-1]['u']:.4f} [{lo:.3f}, {hi:.3f}]  gain {g:+.4f} "
                   f"[{g_lo:+.4f}, {g_hi:+.4f}]", flush=True)
-        assert abs(sum(base_u) / len(base_u) - out[-len(grid)]["u"]) < 1e-9
+        # against the UNROUNDED mean: out[...]["u"] is stored at 4 dp, so an exact comparison here
+        # fails on any judge whose mean is not a 4-dp number (it did, on the first smoke run).
+        assert abs(sum(base_u) / len(base_u) - u_raw[1]) < 1e-12, (base_u[:4], u_raw[1])
         del jm
         torch.cuda.empty_cache()
 
