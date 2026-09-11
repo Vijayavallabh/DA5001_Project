@@ -1,12 +1,24 @@
 # Session Handoff
 
-**Date:** 2026-09-11 (evening) · **Branch:** `iclr-2027` · **Target:** ICLR 2027, abstract Sep 18,
+**Date:** 2026-09-11 (late evening) · **Branch:** `iclr-2027` · **Target:** ICLR 2027, abstract Sep 18,
 paper Sep 25. `master` holds the verified SaTML fallback at `dd7e801`.
 
 ## Current Objective
 
-None open. feat-035..085 are `done` except the optional feat-010/011; feat-012 is superseded by
-feat-024, feat-060 is withdrawn, feat-016 is human-only and must never be started.
+None open. feat-035..086 are `done` except the optional feat-010/011; feat-012 is superseded by
+feat-024, feat-060 was wrongly withdrawn and reinstated the same day (it is `done`), feat-016 is
+human-only and must never be started.
+
+The last thread was **feat-086**, which turned the paper's largest stated limitation into an
+intervention. The onset ratio falls with the words a fixed 20-token seed buys the adversary, but
+seed words is 20x characters per token by construction, so the nine-pair ranking is observational.
+Hand every adversary the same 13.6--15.0 **words** instead and the spread in onset/s(x) goes
+**0.289 -> 0.113** (cv 9.6% -> 4.2%), `S_match/S_20 = 0.392` against a `<= 0.5` band committed before
+either new arm was swept; the near-verbatim metric gives 0.399 on the same arms. Both blind arms
+(open-calm at `--seed-tokens 30`) land inside their committed [0.85, 0.96], the 1B at 0.959 on the
+edge. Every pair that moved moved **down**; the five that did not move were already at the matched
+context, which makes them the control rather than the effect. 61% of the spread is the benchmark's
+seed convention, 39% is not, and the residue is reported as a residue.
 
 The last thread was **feat-085**, the contingent control the feat-084 pre-registration committed
 before the eighth pair was swept. The eighth pair (`open-calm-1b`, the only one of 21 surveyed
@@ -62,3 +74,26 @@ start.
 `Ethics Statement` and **no body prose**. The `char 264` rule this file and AGENTS.md carried until
 today did not detect two lines of the Conclusion spilling onto page 10; the character index is not
 monotone in the spill, because pdftotext emits the gutter and the text column separately.
+
+## Addendum, 2026-09-11 late evening
+
+**feat-086 is done and the read-through it ran alongside found five defects, all now pinned by
+tests.** The one worth carrying forward: **a test that returns early when a file is missing can pass
+by never running.** `tests/test_order_law_table.py` and `tests/test_compute_hours.py` both guarded
+on `os.path.expanduser("~/sub/satml/...")`, and `~` is not the project home on this box, so the
+72-cell appendix check AGENTS.md advertises had never executed. Manuscript paths in tests now go
+through `tests/manuscript.py` (`$SATML_DIR`, else `../sub/satml`). The others: the seed-effect
+figure plotted seven hardcoded word counts the manuscript had already corrected; four numbers in
+Appendix C's prose were two pair-counts stale and survived `audit_numbers.py`, which only asks
+whether a literal appears in *some* CSV; "predicts every other arm to within 5.1%" was a mean, not a
+bound; and `compute_hours.py` did not scan `output/logs/`, so a day of sweeps left the total
+unmoved.
+
+**Verified after all of it.** `./init.sh` green, **238 tests**. Manuscript: tectonic exit 0, 0
+overfull, 0 `??`, **35 pages**, main text 9 of 9 with no body prose on `pdftotext` page 10.
+`audit_numbers.py`: 1667 literals, one expected miss. Compute **133.4 GPU-hours**, fine-tune share
+<= 27.8, and the LLM-usage sentence says 133 / 28. Artifact rebuilt, 601 files.
+
+**Recommended next step, unchanged in kind:** another pass of the same mechanical read-through. The
+two table checks now run (`tests/test_order_law_table.py`, `tests/test_onset_table.py`), so the next
+thing to mechanise is Appendix E's seed table and the frontier tables, which are still read by eye.

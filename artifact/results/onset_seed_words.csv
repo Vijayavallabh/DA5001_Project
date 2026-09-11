@@ -5,6 +5,6 @@ open-calm-1b + mem. open-calm-1b,20,9.51,1.0266
 open-calm-3b + mem. open-calm-3b,20,9.51,0.9933
 Pleias-350M + mem. Pleias-350M,20,13.86,0.9203
 Phi-3.5-mini + mem. Phi-3.5-mini,20,13.94,0.9261
-Comma-7B + memorised Comma-7B,20,14.13,0.8916
+Comma-7B + mem. Comma-7B,20,14.13,0.8916
 Pleias-1.2B + mem. Pleias-1.2B,20,14.58,0.8784
-TinyComma-1.8B + memorised Llama-3.1-8B,20,15.02,0.887
+TinyComma-1.8B + mem. Llama-3.1-8B,20,15.02,0.887

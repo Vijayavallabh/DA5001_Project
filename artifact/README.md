@@ -886,3 +886,48 @@ matched-context subgroup check to exact `p = 0.008` over `126` subsets of size f
 spread is unchanged at `0.027`, and `s(x)` stays the best of four normalisers on the rank cv
 (`10.2%` against `15.0` raw, `23.8` for `r`, `37.7` for `k_crit`). The full scoring, with the bands
 as they were committed, is `results/onset_prediction_granularity_gap.md`.
+
+### Equalising the adversary's context across all nine pairs
+
+The onset ratio falls with the words a fixed `20`-token seed buys the adversary, but seed words is
+`20x` characters per token by construction, so that ranking is observational. The intervention that
+separates them is the one applied to every pair at once: hand each adversary the same number of
+**words**. Seven of the nine matched arms already exist (the two KL3M pairs at `--seed-tokens 40`,
+and five pairs whose `20`-token seed already buys `13.9`--`15.0` words); only the two open-calm
+pairs needed new runs.
+
+```bash
+for m in 1b 3b; do
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+    .venv/bin/python analysis/budget_path.py --safe-model output/phase5/anchor_opencalm$m \
+    --composition '' --limit 100 --seed-tokens 30 --out results \
+    --prefix "budget_path_opencalm${m}_seed30"
+  .venv/bin/python analysis/grid_from_sx.py --budget-path results/budget_path_opencalm${m}_seed30.csv
+done
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/composition_attack.py \
+  --safe-model output/phase5/anchor_opencalm1b --risky-model output/phase5/mem_opencalm1b \
+  --k-values -1 0 1.84 2.17 2.51 2.84 3.01 3.18 3.35 3.51 3.85 4.35 5.18 \
+  --seed-tokens 30 --modes single --limit 100 --out output/phase5/seed30_opencalm1b
+# the Pleias-350M grid extension the no-crossing rule requires (3.6% in the substring metric)
+CUDA_VISIBLE_DEVICES=2 ... .venv/bin/python analysis/composition_attack.py \
+  --safe-model PleIAs/Pleias-350m-Preview --risky-model output/phase5/mem_Pleias-350m-Preview \
+  --k-values 5 6 7 --modes single --limit 100 --out output/phase5/fine_pleias350m_ext
+# score all nine in one pipeline, on one metric, with one bootstrap
+HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache .venv/bin/python analysis/seed_effect.py \
+  --manifest results/matched_context_runs.tsv --out /tmp/mc
+.venv/bin/python analysis/context_intervention.py --rows /tmp/mc/seed_effect.csv --out results
+```
+
+The primary metric is the longest common substring in words, because a longer seed shortens the
+target and an absolute count cannot be inflated by that; the near-verbatim ratio is computed in the
+same pass. Bands, grid rule, entry gate, metric and four excluded alternatives were committed in
+`results/onset_prediction_matched_context.md` before either new arm was swept, with the
+recomputation of the seven and the prediction of the two separated there.
+
+Result (`results/context_intervention.csv`): the spread in onset`/s(x)` falls from **`0.289`** at
+the benchmark's `20`-token seed to **`0.113`** at a matched `13.6`--`15.0` words, coefficient of
+variation `9.6%` to `4.2%`, `S_match / S_20 = 0.392` -- inside the committed `<= 0.5` band, and
+`0.399` on the near-verbatim metric. Both new arms land inside their committed `[0.85, 0.96]`
+(`0.959` and `0.919`, the first on the edge). Every pair that moved moved **down**, into or onto the
+band the five already-matched pairs occupy. `61%` of the nine-pair spread is the benchmark's
+fixed-token seed convention; `39%` is not, and the two KL3M pairs are still the top of that residue.

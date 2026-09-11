@@ -104,7 +104,9 @@ def observational(pairs_tsv, onset_table, limit=100):
         if key is None:
             continue
         _, w = seed_words(tok_of[name], 20, limit=limit)
-        rows.append((name, w, ratios[key]))
+        # `key`, not `name`: onset_pairs.tsv's first field says "memorised" where its display label
+        # says "mem.", and two CSVs naming one pair two ways is how a lookup by name goes stale.
+        rows.append((key, w, ratios[key]))
     return rows
 
 

@@ -55,3 +55,16 @@ def test_the_seed_words_correlation_the_paper_quotes_comes_out_of_the_csv():
     assert len(rs) == 9
     # 2 dp in the CSV, not 1: at 1 dp Pleias-350M and Phi-3.5-mini tie and this reads -0.971.
     assert round(spearman(w, y), 3) == -0.958
+
+
+def test_the_seed_words_csv_covers_every_pair_in_the_table():
+    """figures/make_figures_v4.py:seed_effect plots the observational pairs from this CSV. It used
+    to carry a hardcoded dict of seven word counts, which went stale in two ways at once: the counts
+    were the 13.0-14.4 the manuscript corrected to 13.86-15.02, and there were nine pairs by then.
+    Anything that indexes pairs by name has to be checked against the table, not maintained by hand."""
+    table = rows()
+    with open("results/onset_seed_words.csv") as fh:
+        words = {r["pair"]: float(r["ratio"]) for r in csv.DictReader(fh)}
+    assert set(words) == set(table)
+    for name, ratio in words.items():
+        assert abs(ratio - float(table[name]["ratio"])) < 1e-9, name

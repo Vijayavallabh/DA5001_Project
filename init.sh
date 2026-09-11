@@ -77,8 +77,13 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..085 are done except the optional ones; nothing is in progress. The last thread finished
-was feat-084/085: the onset ratio's two-value split was a GAP IN THE ANCHORS, not in the phenomenon.
+feat-035..086 are done except the optional ones; nothing is in progress. The last thread finished
+was feat-086: the paper's largest stated limitation turned into an intervention. Hand every one of
+the nine pairs' adversaries the SAME NUMBER OF WORDS instead of the same twenty tokens and the
+spread in onset/s(x) goes 0.289 -> 0.113, S_match/S_20 = 0.392 against a band of <= 0.5 committed
+before either new arm was swept -- 61% of what reads as a property of the anchors is the benchmark's
+seed convention. Every pair that moved moved DOWN; the five that did not move were already at the
+matched context, which makes them the control. Before that, feat-084/085: the onset ratio's two-value split was a GAP IN THE ANCHORS, not in the phenomenon.
 A survey of 21 openly licensed models found exactly one in the 2.4-3.4 chars/token gap Limitations
 called unfillable; built into a pair with everything committed beforehand it lands at 1.027, between
 the clusters. Its one confound that fired -- the weakest memoriser in the set -- was answered by the
@@ -95,7 +100,7 @@ feat-016 is human-only - never start it. master holds the verified SaTML fallbac
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages - Ethics, Reproducibility and LLM Usage do not count, and pdftotext page 10 must carry NO
 body prose at all (counting characters before 'Ethics' missed a two-line spill on 2026-09-11);
-33 pages total, 0 overfull, 0 '??', 1582 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
+35 pages total, 0 overfull, 0 '??', 1667 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:

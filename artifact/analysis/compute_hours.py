@@ -71,7 +71,9 @@ JOBS = [
 # `+ sleep N` lines are subtracted so that an armed chain that waited three hours for a file to
 # appear is not billed for the wait. A wrapper that only ever slept therefore scores ~0 and a
 # wrapper that slept and then tee'd a sweep is billed for the sweep alone.
-SCAN_GLOBS = ["output/phase4/*.log", "output/phase5/*.log"]
+# output/logs/ is where feat-085/086 wrote their launcher logs; without it those GPU-hours
+# were unbilled and the total did not move after a day of sweeps.
+SCAN_GLOBS = ["output/phase4/*.log", "output/phase5/*.log", "output/logs/*.log"]
 # runs that held two cards; everything else in the scan held one
 SCAN_GPUS = {"output/phase5/util_cross.log": 2}
 

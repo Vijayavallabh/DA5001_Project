@@ -9,7 +9,7 @@ memoriser fine-tune,output/memorizing_llama8b,1,2026-09-05 17:05,2026-09-05 18:2
 memoriser check,output/memorizing_check_greedy,1,2026-09-05 18:21,2026-09-05 18:29,0.13,0.13,dir_birth,0.0,
 memoriser check (sampled),output/memorizing_check,1,2026-09-05 18:29,2026-09-05 18:37,0.14,0.14,dir_birth,0.0,
 composition smoke,output/composition_smoke,1,2026-09-05 18:21,2026-09-05 18:37,0.27,0.27,dir_birth,0.0,
-composition attack,output/composition,1,2026-09-05 18:24,2026-09-10 05:55,1.88,1.88,dir_birth,105.63,feat-009; two passes
+composition attack,output/composition,1,2026-09-05 18:24,2026-09-11 19:15,1.88,1.88,dir_birth,142.98,feat-009; two passes
 bank-and-burst smoke,output/bank_burst_smoke,1,2026-09-05 19:20,2026-09-05 20:44,1.4,1.4,dir_birth,0.0,"feat-010, not evaluated"
 certificate strength (memoriser),output/certcap_memoriser,1,2026-09-05 20:19,2026-09-05 20:20,0.02,0.02,dir_birth,0.0,
 pathwise smoke,output/phase2/pathwise_smoke,1,2026-09-06 01:15,2026-09-06 01:17,0.05,0.05,dir_birth,0.0,feat-019
@@ -158,3 +158,9 @@ util_renyi_4,output/phase5/util_renyi_4.log,1,2026-09-08 16:56,2026-09-08 17:09,
 warp_arms,output/phase5/warp_arms.log,1,2026-09-10 03:12,2026-09-10 05:55,2.72,2.72,log_birth,0.0,scanned; traced sleeps removed
 warp_arms2,output/phase5/warp_arms2.log,1,2026-09-10 03:30,2026-09-10 05:07,1.61,1.61,log_birth,0.0,scanned; traced sleeps removed
 workload_arms,output/phase5/workload_arms.log,1,2026-09-11 07:08,2026-09-11 07:27,0.3,0.3,log_birth,0.0,scanned; traced sleeps removed
+bp_opencalm1b_seed30,output/logs/bp_opencalm1b_seed30.log,1,2026-09-11 18:55,2026-09-11 18:55,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+bp_opencalm3b_seed30,output/logs/bp_opencalm3b_seed30.log,1,2026-09-11 18:55,2026-09-11 18:56,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+pleias350m_ext,output/logs/pleias350m_ext.log,1,2026-09-11 19:06,2026-09-11 19:13,0.12,0.12,log_birth,0.0,scanned; traced sleeps removed
+seed30_opencalm1b,output/logs/seed30_opencalm1b.log,1,2026-09-11 18:56,2026-09-11 19:10,0.23,0.23,log_birth,0.0,scanned; traced sleeps removed
+seed30_opencalm3b,output/logs/seed30_opencalm3b.log,1,2026-09-11 18:56,2026-09-11 19:15,0.31,0.31,log_birth,0.0,scanned; traced sleeps removed
+surprisal_cdf_9,output/logs/surprisal_cdf_9.log,1,2026-09-11 18:33,2026-09-11 18:34,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
