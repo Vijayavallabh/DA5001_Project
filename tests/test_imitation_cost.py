@@ -147,3 +147,18 @@ def test_the_limitations_no_longer_call_the_shape_question_open():
     assert r"\ref{prop:sparse}" in closing, "the limitation no longer cites the proposition"
     assert "could in principle concentrate" not in closing, "the weaker claim is back"
     assert "quantitative half" in closing, "the limitation must say what is still open"
+
+
+def test_the_spend_concentration_beside_the_sparsity_proposition_rounds_from_the_csv():
+    """Proposition 5 needs a policy on an O(1) budget to put its spend on O(1) steps. The deployed
+    rule is at the other extreme, and the appendix quotes two numbers for how far."""
+    r = IMIT[("ordinary", "20")]
+    top1 = 100 * float(r["top1pct_of_steps_share_of_spend"])
+    cov = 100 * float(r["frac_of_steps_for_90pct_of_spend"])
+    apx = open(APX, encoding="utf-8").read().replace("\n", " ")
+    m = re.search(r"busiest \$1\\%\$ of steps carry \$([\d.]+)\\%\$", apx)
+    assert m and abs(float(m.group(1)) - top1) < 0.05, (m.group(1) if m else None, top1)
+    m = re.search(r"covering \$90\\%\$ of it takes \$(\d+)\\%\$ of the sequence", apx)
+    assert m and abs(float(m.group(1)) - cov) < 0.5, (m.group(1) if m else None, cov)
+    # the claim is that it is NOT sparse: most of the sequence is needed to cover most of the spend
+    assert cov > 50, cov

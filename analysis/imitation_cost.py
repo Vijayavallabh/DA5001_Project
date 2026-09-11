@@ -88,6 +88,19 @@ def scan(k, splits):
                     if tally == len(log):
                         assert len(slack) == a["steps_risky_unchanged"], (path, len(slack))
                     b, _, r2 = ols([e["t"] for e in log], [e["cum_kl_spent"] for e in log])
+                    # How concentrated is the spend? Proposition 5 says a policy on a budget that
+                    # does not grow with the work must put essentially all of it on O(1) steps.
+                    # This measures the opposite end: how many steps the deployed rule needs to
+                    # cover 90% of what it spent, and what its top 1% of steps carry.
+                    charges = sorted((e["a_t"] for e in log), reverse=True)
+                    tot = sum(charges) or 1.0
+                    top1 = sum(charges[:max(1, len(charges) // 100)]) / tot
+                    run, n90 = 0.0, len(charges)
+                    for i, c in enumerate(charges, 1):
+                        run += c
+                        if run >= 0.9 * tot:
+                            n90 = i
+                            break
                     rows.append(dict(
                         T=len(log), K=float(m["K"]),
                         beta=1 - len(slack) / len(log),
@@ -95,7 +108,8 @@ def scan(k, splits):
                         active=1 - (len(slack) + len(forced)) / len(log),
                         slack_charge=sum(e["a_t"] for e in slack),
                         imitation_rate=(sum(e["a_t"] for e in slack) / len(slack)) if slack else 0.0,
-                        spend=a["total_spend"], slope=b, r2=r2))
+                        spend=a["total_spend"], slope=b, r2=r2,
+                        top1pct_share=top1, steps_for_90pct=n90 / len(log)))
     return rows
 
 
@@ -131,6 +145,8 @@ def main():
                 prop3_lower_bound_nats=round(mean(r["slack_charge"] for r in rows), 2),
                 spend_nats=round(mean(r["spend"] for r in rows), 2),
                 spend_over_cap=round(mean(r["spend"] for r in rows) / K, 4),
+                top1pct_of_steps_share_of_spend=round(mean(r["top1pct_share"] for r in rows), 4),
+                frac_of_steps_for_90pct_of_spend=round(mean(r["steps_for_90pct"] for r in rows), 4),
                 median_cum_spend_vs_step_slope=round(median(r["slope"] for r in rows), 4),
                 median_cum_spend_vs_step_r2=round(median(r["r2"] for r in rows), 4))
             out.append(rec)
