@@ -40,12 +40,16 @@ def seed_words(tokenizer_id, seed_tokens, split="attack_train", limit=100):
     tok = AutoTokenizer.from_pretrained(tokenizer_id)
     ps = [p for p in load_prompt_corpus("data", "factscore_prompt")
           if p.split == split and p.reference][:limit]
-    ch, wd = [], []
+    ch, wd, steps = [], [], []
     for p in ps:
         seed = tok.decode(tok(join(p.prompt_text, p.reference)).input_ids[:seed_tokens],
                           skip_special_tokens=True)
         ch.append(len(seed)); wd.append(len(seed.split()))
-    return st.mean(ch), st.mean(wd)
+        # decode steps before the protected passage is reached: the prompt text costs this many
+        # tokens under THIS tokenizer, less the seed the adversary is handed. Appendix E prints it
+        # beside the seed, and it used to be maintained by hand.
+        steps.append(max(0, len(tok(p.prompt_text).input_ids) - seed_tokens))
+    return st.mean(ch), st.mean(wd), st.mean(steps)
 
 
 def _ranks(v):
@@ -103,10 +107,10 @@ def observational(pairs_tsv, onset_table, limit=100):
         key = next((k for k in ratios if k.split(" + ")[0] == name.split(" + ")[0]), None)
         if key is None:
             continue
-        _, w = seed_words(tok_of[name], 20, limit=limit)
+        ch, w, steps = seed_words(tok_of[name], 20, limit=limit)
         # `key`, not `name`: onset_pairs.tsv's first field says "memorised" where its display label
         # says "mem.", and two CSVs naming one pair two ways is how a lookup by name goes stale.
-        rows.append((key, w, ratios[key]))
+        rows.append((key, w, ratios[key], ch, steps))
     return rows
 
 
@@ -137,7 +141,7 @@ def main():
         # needs the anchor only -- no memoriser, no attack, no decoding -- so it is a prediction
         # available before the sweep, not a fit to it.
         k_crit = st.median(float(r["k_crit"]) for r in bp_rows)
-        chars, words = seed_words(tokenizer, seed_tokens)
+        chars, words, _ = seed_words(tokenizer, seed_tokens)
         row = dict(pair=pair, label=label, seed_tokens=seed_tokens,
                    seed_chars=round(chars, 1), seed_words=round(words, 1), s_x=round(s_x, 4),
                    k_crit=round(k_crit, 4), k_crit_over_s=round(k_crit / s_x, 4))
@@ -226,15 +230,18 @@ def main():
         # the per-pair seed length, so other analyses can condition on the adversary's context
         # without reloading seven tokenizers
         with open(os.path.join(a.out, "onset_seed_words.csv"), "w", newline="") as fh:
-            w = csv.writer(fh); w.writerow(["pair", "seed_tokens", "seed_words", "ratio"])
-            for n, wd, r in sorted(obs, key=lambda t: t[1]):
+            w = csv.writer(fh)
+            w.writerow(["pair", "seed_tokens", "seed_chars", "seed_words", "chars_per_token",
+                        "steps_to_passage", "ratio"])
+            for n, wd, r, ch, steps in sorted(obs, key=lambda t: t[1]):
                 # 4 dp, not 1: at 1 dp two pairs 0.08 words apart tie, and the rank correlation
                 # the paper quotes cannot be recomputed from its own CSV (-0.971 against -0.958).
-                w.writerow([n, 20, round(wd, 4), round(r, 4)])
+                w.writerow([n, 20, round(ch, 4), round(wd, 4), round(ch / 20, 4),
+                            round(steps, 1), round(r, 4)])
     if len(obs) >= 4:
         print("\ncross-pair, on the runs built for other reasons (confounded with granularity "
               "by construction):")
-        for n, w, r in sorted(obs, key=lambda t: t[1]):
+        for n, w, r, _ch, _st in sorted(obs, key=lambda t: t[1]):
             print(f"   {w:5.1f} words   ratio {r:.3f}   {n[:44]}")
         for lab, sel in (("all pairs", obs), ("coarse family only", [o for o in obs if o[1] > 10])):
             if len(sel) >= 4:

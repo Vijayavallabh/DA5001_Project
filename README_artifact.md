@@ -931,3 +931,56 @@ variation `9.6%` to `4.2%`, `S_match / S_20 = 0.392` -- inside the committed `<=
 (`0.959` and `0.919`, the first on the edge). Every pair that moved moved **down**, into or onto the
 band the five already-matched pairs occupy. `61%` of the nine-pair spread is the benchmark's
 fixed-token seed convention; `39%` is not, and the two KL3M pairs are still the top of that residue.
+
+### Selection anchoring: a budget spent once instead of per token
+
+Theorem 1 says a bounded utility costs `O(1)` nats and `results/utility_price.csv` measures the
+audited decoder paying `165` where the rate function prices the same gain at `0.052`. The paper
+declines to turn that gap into a constructive claim; these three runs do.
+
+The mechanism: draw `n` completions from the anchor, score them, serve the argmax. For any score and
+any tie rule, `q(y) <= n p_s(y)`, so `P_q(E) <= n P_s(E)` -- Proposition 1 with `K = log n` -- and
+`D_KL(q||p_s) <= log n - (n-1)/n`. The vacuity threshold therefore sits at `n = e^S(x)`, about
+`e^850`. A per-token budget `kT` grows with the work; `log n` does not.
+
+```bash
+# 8 anchor samples per prompt on the 500 ordinary prompts (the k=0 arm at 8 trajectories)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.0 --trajectories-per-prompt 8 \
+  --cap-neutral 200 --cap-creative 150 --cap-factual 150 --max-new-tokens 200 \
+  --output-dir output/phase5/sel_anchor8
+# score every candidate with the risky model, judge every candidate against the unconstrained arm,
+# and read all four n from the one judging pass
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_decoding.py --gen-dir output/phase5/sel_anchor8 --out results
+# the follow-up: select with judge A, score with judge B
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_crossjudge.py --out results
+# does selection leak? the selector maximises the MEMORISING model's likelihood
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_extraction.py --risky-model output/memorizing_llama8b \
+  --n-values 1 2 4 8 16 32 64 --limit 100 --max-new-tokens 200 --batch-size 24 --out results
+```
+
+Bands, grid, entry gate, primary metric and four excluded alternatives were committed in
+`results/onset_prediction_selection.md` before anything was generated.
+
+**The committed arm is refuted.** Ranked by the risky model's own per-token likelihood -- the
+objective the audited budget buys -- best-of-8 moves judged utility `0.319 -> 0.313`, against a
+committed threshold of `0.396`. The `n = 1` control reproduces the `u_safe = 0.323` on record, so
+the refutation is real and not a pipeline failure. **Diagnosed:** within prompt, over the `5,687`
+candidate pairs the judge ranked differently, that likelihood separates better from worse at an AUC
+of `0.526`; its summed form reads `0.477`, *below* chance; the completion's length alone reads
+`0.537`.
+
+**The follow-up, pre-registered before it ran, scores ARTEFACT.** The oracle selector reaches
+`0.807` but is scored by the judge that chose it. Selecting with judge A and scoring with judge B
+gives `+0.081`, paired 95% CI `[+0.034, +0.130]` -- below the committed `0.10`. What survives is
+still worth the run: `1.204` nats reach `u = 0.521` where the metered decoder's best arm reaches
+`0.522` for `171.3`, and against each gain's own rate function under that judge's law, `57.6x` the
+frontier against `7994.6x`.
+
+**The extraction arm is a clean hit.** Near-verbatim recall is `0.0000` at every `n` from 1 to 64,
+maximum `0.0000` over all 100 passages, against the memorising model's `0.4338` mean and `0.8233`
+max on the same passages and seeds. The selector's whole effect is about half a word of longest
+common substring and it is not monotone in `n`.

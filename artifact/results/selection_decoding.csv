@@ -1,0 +1,13 @@
+rule,n,kl_nats,mean_tokens,n_prompts,u,u_lo95,u_hi95,win_pct,tie_pct
+per-token mean (primary),1,0.0,98.0,500,0.319,0.281,0.358,26.4,11.0
+per-token mean (primary),2,0.1931,97.9,500,0.327,0.291,0.365,28.2,9.0
+per-token mean (primary),4,0.6363,83.0,500,0.29,0.253,0.327,24.2,9.6
+per-token mean (primary),8,1.2044,69.4,500,0.313,0.279,0.353,26.6,9.4
+summed log-likelihood,1,0.0,98.0,500,0.319,0.28,0.357,26.4,11.0
+summed log-likelihood,2,0.1931,59.4,500,0.328,0.287,0.369,28.4,8.8
+summed log-likelihood,4,0.6363,29.0,500,0.268,0.234,0.306,21.2,11.2
+summed log-likelihood,8,1.2044,15.3,500,0.271,0.238,0.307,21.8,10.6
+oracle: the judge itself,1,0.0,98.0,500,0.319,0.282,0.356,26.4,11.0
+oracle: the judge itself,2,0.1931,101.2,500,0.506,0.467,0.546,45.4,10.4
+oracle: the judge itself,4,0.6363,101.0,500,0.644,0.603,0.683,59.2,10.4
+oracle: the judge itself,8,1.2044,101.2,500,0.807,0.771,0.839,77.6,6.2

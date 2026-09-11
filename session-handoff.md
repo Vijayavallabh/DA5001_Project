@@ -1,11 +1,11 @@
 # Session Handoff
 
-**Date:** 2026-09-11 (late evening) · **Branch:** `iclr-2027` · **Target:** ICLR 2027, abstract Sep 18,
+**Date:** 2026-09-11 (night) · **Branch:** `iclr-2027` · **Target:** ICLR 2027, abstract Sep 18,
 paper Sep 25. `master` holds the verified SaTML fallback at `dd7e801`.
 
 ## Current Objective
 
-None open. feat-035..086 are `done` except the optional feat-010/011; feat-012 is superseded by
+None open. feat-035..087 are `done` except the optional feat-010/011; feat-012 is superseded by
 feat-024, feat-060 was wrongly withdrawn and reinstated the same day (it is `done`), feat-016 is
 human-only and must never be started.
 
@@ -97,3 +97,45 @@ overfull, 0 `??`, **35 pages**, main text 9 of 9 with no body prose on `pdftotex
 **Recommended next step, unchanged in kind:** another pass of the same mechanical read-through. The
 two table checks now run (`tests/test_order_law_table.py`, `tests/test_onset_table.py`), so the next
 thing to mechanise is Appendix E's seed table and the frontier tables, which are still read by eye.
+
+## Addendum, 2026-09-11 night — feat-087, and what the paper now claims
+
+**The paper is no longer only an audit.** `sections/frontier.tex` used to measure the decoder paying
+165 nats for a gain the Cramér rate function prices at 0.052 and then decline to make the
+constructive claim. It now makes it, and Appendix H carries the proof and three pre-registered arms.
+
+**Selection anchoring.** Draw `n` completions from the anchor, score them, serve the argmax. For any
+score and any tie rule `q(y) <= n p_s(y)`, so the certificate is Proposition 1 with `K = log n`,
+vacuous only at `n = e^S(x)` (about `e^850`), and — the structural point — a per-token budget `kT`
+grows with the work while `log n` does not.
+
+- **Primary arm REFUTED**, and that is the finding. Ranked by the risky model's own likelihood,
+  best-of-8 moves judged utility `0.319 -> 0.313`. Within prompt that likelihood predicts the judge
+  at **AUC 0.526**; its summed form reads 0.477, below chance; the completion's **length** reads
+  0.537. The budget is spent efficiently on a target that is not utility.
+- **Follow-up scores ARTEFACT** (`+0.081 < 0.10`), pre-registered before it ran. What survives is
+  real: 1.204 nats reach `u = 0.521` where the metered decoder's best arm reaches 0.522 for 171.3 —
+  57.6x the frontier against 7994.6x, both priced under the same judge's law.
+- **Extraction arm HIT.** Recall 0.0000 at every `n` up to 64 against the memoriser's 0.4338.
+
+**Verified.** `./init.sh` green, **255 tests**. Manuscript: exit 0, 0 overfull, 0 `??`, **38 pages**,
+main text 9 of 9 with **no body prose on `pdftotext` page 10**. `audit_numbers.py`: 1807 literals,
+one expected miss. Compute **135.8 GPU-hours**. Artifact rebuilt, 618 files. Tree clean.
+
+**Recommended next step.** Two candidates, in order of value.
+
+1. **Strengthen the constructive arm.** `+0.081` is one measurement with one reward model at one
+   `n`. A sweep over `n in {16, 32, 64}` with the cross-judge protocol would say whether the gain
+   grows like `log n` predicts it can, and a second reward model would say whether it is specific to
+   Phi. Both are cheap: the candidates exist, only the judging is new.
+2. **Another read-through pass.** Every table in the document is now checked against its CSV
+   (`test_onset_table`, `test_seed_table`, `test_main_tables`, `test_order_law_table`) and so are
+   the load-bearing prose statistics (`test_collapse_robustness_prose`,
+   `test_second_anchor_counts`, `test_abstract_consistency`). What is still read by eye is the
+   appendix prose in `appendix_opening.tex`, `appendix_limitations.tex` and the new
+   `appendix_selection.tex`.
+
+**One caution to carry.** An abstract edit still costs about three lines of reflow per line added —
+adding one sentence to the abstract tonight cost four lines of body and took eight compressions
+across four sections to pay for. Measure by reading `pdftotext` page 10 and counting body lines
+before `Ethics Statement`; it must be zero.

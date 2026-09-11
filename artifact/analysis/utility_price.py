@@ -97,7 +97,11 @@ def spends(run_dirs, k):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
-    ap.add_argument("--summary", default="results/utility_v4_summary.csv")
+    # v5, not v4: v4 judged 180 pairs per arm and v5 judges 600, and AGENTS.md caution (d)
+    # is about exactly that difference. results/utility_price.csv -- the file the paper
+    # quotes -- reproduces from v5 and not from v4, whose anchor arm wins 30.5% against
+    # v5's 27.3% and therefore prices the top of the utility scale at 1.19 nats, not 1.30.
+    ap.add_argument("--summary", default="results/utility_v5_summary.csv")
     ap.add_argument("--runs", action="append", default=[],
                     help="run directory holding the trajectory logs; repeatable, searched in order "
                          "(the finer budget grid lives in its own directory). "
@@ -151,6 +155,13 @@ def main():
             # the conservative ratio: divide by the UPPER end of the bootstrap interval, so the
             # claim "the overhead exceeds 10^3" is checked against the weakest reading of the data
             "spend_over_lambda_star_conservative": (round(spend / hi, 1) if hi > 1e-9 else ""),
+            # The rate function at the TOP of the utility scale: winning every judged comparison.
+            # It is a property of the safe law alone, so it is the same on every row, and it is the
+            # number Section 3 quotes as the ceiling on what a bounded utility can ever cost. It
+            # equals -log P_{p_s}[U = 1] exactly; it lived only in the prose until 2026-09-11, where
+            # it had gone stale at 1.19 against the committed law's 1.30.
+            "lambda_star_u_max": round(rate(d_safe, 1.0), 5),
+            "spend_over_lambda_star_u_max": round(spend / rate(d_safe, 1.0), 1),
         })
 
     os.makedirs(a.out, exist_ok=True)

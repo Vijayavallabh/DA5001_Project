@@ -77,8 +77,16 @@ echo "[OK] no repo files stranded in the manuscript tree"
 echo "=== Init Complete ==="
 echo ""
 echo "Plan v5 in progress (2026-09-08), branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..086 are done except the optional ones; nothing is in progress. The last thread finished
-was feat-086: the paper's largest stated limitation turned into an intervention. Hand every one of
+feat-035..087 are done except the optional ones; nothing is in progress. The last thread finished
+was feat-087: the paper measures the audited decoder paying 165 nats for a gain the Cramer rate
+function prices at 0.052, and then declines to make the constructive claim. SELECTION ANCHORING
+makes it: draw n completions from the anchor, score them, serve the argmax, and the certificate is
+Proposition 1 with K = log n -- vacuous only at n = e^S(x), about e^850, and it does not grow with
+the work the way kT does. Ranked by the RISKY MODEL'S OWN LIKELIHOOD it buys nothing (its committed
+band is refuted), because that likelihood predicts the judge at AUC 0.526, worse than the
+completion's length. Ranked by a quality model and scored by a judge that did no ranking, n=8 gains
++0.081 [0.034, 0.130] for 1.204 nats where the metered decoder's best arm gains +0.072 for 171.3.
+Recall is 0.0000 at every n up to 64. Before that, feat-086: the paper's largest stated limitation turned into an intervention. Hand every one of
 the nine pairs' adversaries the SAME NUMBER OF WORDS instead of the same twenty tokens and the
 spread in onset/s(x) goes 0.289 -> 0.113, S_match/S_20 = 0.392 against a band of <= 0.5 committed
 before either new arm was swept -- 61% of what reads as a property of the anchors is the benchmark's
@@ -100,7 +108,7 @@ feat-016 is human-only - never start it. master holds the verified SaTML fallbac
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages - Ethics, Reproducibility and LLM Usage do not count, and pdftotext page 10 must carry NO
 body prose at all (counting characters before 'Ethics' missed a two-line spill on 2026-09-11);
-35 pages total, 0 overfull, 0 '??', 1667 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
+38 pages total, 0 overfull, 0 '??', 1807 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
 stray git repo it sits inside.
 
 If you are here to work:

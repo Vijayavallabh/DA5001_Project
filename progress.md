@@ -3303,3 +3303,63 @@ New tests: `test_seed_table.py`, `test_main_tables.py`, `test_onset_table.py`,
 `test_collapse_robustness_prose.py`, `test_second_anchor_counts.py`, `test_abstract_consistency.py`,
 `tests/manuscript.py`. **253 tests.** Every table in the compiled document is now checked against
 its CSV mechanically, and so are the load-bearing prose statistics.
+
+## 2026-09-11 (late) -- feat-087: the construction the no-free-lunch section declines to claim
+
+`sections/frontier.tex` measured the decoder paying $165$ nats for a gain the Cram\'er rate function
+prices at $0.052$ and then said, in as many words, that the gap licenses the negative claim *and not
+the constructive one*. This builds the constructive one with the two checkpoints the audit already
+has, and everything below was pre-registered in `results/onset_prediction_selection.md` before
+anything was generated.
+
+**Selection anchoring.** Draw $n$ completions from the anchor, score them, serve the argmax. For any
+score and any tie rule, $q(y) \le n\,p_s(y)$, hence $P_q(E) \le n P_s(E)$ --- Proposition 1 with
+$K = \log n$ --- and $D_{\mathrm{KL}}(q\|p_s) \le \log n - (n-1)/n$. Three consequences need no
+measurement: the vacuity threshold sits at $n = e^{S(x)}$, about $e^{850}$; a per-token budget $kT$
+grows with the work while $\log n$ does not; and under the paper's own 400-nat odometer a user may
+issue **332** queries at $n=8$ against **2** at $k=3$.
+
+**The committed arm is REFUTED, and the refutation is the interesting part.** Ranked by the risky
+model's own per-token likelihood --- the objective the audited budget actually buys --- best-of-8
+moves judged utility $0.319 \to 0.313$, against a committed threshold of $0.396$. The $n=1$ control
+reproduces the $u_{\text{safe}} = 0.323$ on record, so the pipeline is sound.
+
+**Diagnosed, within prompt, over the 5,687 candidate pairs the judge ranked differently:**
+
+```
+the risky model's per-token log-likelihood   AUC 0.5258
+the risky model's summed log-likelihood      AUC 0.4777   (below chance: it is a length preference)
+the completion's length in tokens            AUC 0.5368
+corr(per-token log-likelihood, length) = -0.20;  mean length win 100.9, tie 101.3, loss 96.8
+```
+
+The likelihood the mechanism spends its entire budget moving toward is a **worse guide to judged
+quality than how long the answer is**. That is a second, independent reading of the scheduling
+ablation: the 165 nats are not inefficiently spent on utility, they are efficiently spent on a
+target that is not utility, and a mechanism spending 1.2 nats on the same target buys as little.
+
+**The follow-up, pre-registered before it ran, scores ARTEFACT.** The oracle selector reaches
+$0.807$ at the same 1.204 nats but is scored by the judge that chose it. Selecting with judge A and
+scoring with judge B gives $+0.081$, paired 95% CI $[+0.034, +0.130]$ --- below the committed
+$0.10$, so the oracle's $+0.488$ was mostly circular. What survives is small and real, and it is
+worth the whole feature: $1.204$ nats reach $u = 0.521$ where the metered decoder's best arm reaches
+$0.522$ for $171.3$, and against each gain's own rate function under that judge's law, $57.6\times$
+the frontier against $7994.6\times$.
+
+**The extraction arm is a clean HIT.** Recall $0.0000$ at every $n$ from 1 to 64, max $0.0000$ over
+all 100 passages, against the memorising model's $0.4338$ mean and $0.8233$ max on the same passages
+and seeds. The selector maximises the *memorising* model's likelihood, which is the adversarial
+worry the pre-registration names, and its whole effect is half a word of longest common substring
+--- not even monotone in $n$.
+
+**What the paper now says.** The headline negative --- no budget certifies every protected work and
+also buys a detectable improvement --- is a property of **metering per token**, not of budgeted
+decoding. At $k=10$ the decoder's 2,000 nats cover none of the works; $\log 8 = 2.08$ nats cover all
+of them and reach the same judged utility.
+
+Commands are in `README_artifact.md`; the producing scripts are `analysis/selection_decoding.py`,
+`selection_crossjudge.py` and `selection_extraction.py`; the manuscript section is
+`sections/appendix_selection.tex` with `figures/selection_frontier.pdf`. Section 3's disclaimer
+becomes the result and the Conclusion and abstract carry it, paid for by eight compressions across
+Sections 3, 5, 6 and 7 so the main text is still **9 of 9 pages with no body prose on page 10**.
+**38 pages, 0 overfull, 0 `??`, 1807 literals with one expected miss, 135.8 GPU-hours, 255 tests.**
