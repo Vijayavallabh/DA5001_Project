@@ -31,6 +31,10 @@ import glob
 import json
 import math
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dap.stats import strip_pad_steps  # noqa: E402
 
 # Fractions of the sequence at which the cumulative share of spend is read, busiest step first.
 LORENZ_GRID = [i / 20 for i in range(1, 21)]
@@ -74,6 +78,12 @@ def scan(k, splits, dirs=None):
                 for line in open(path):
                     r = json.loads(line)
                     a, m, log = r["aggregate"], r["metadata"], r["per_step_log"]
+                    # A generation that ends before the cap is padded out to T_max and those
+                    # positions are not decode steps (dap/stats.py:strip_pad_steps): counting
+                    # them inflates beta and deflates the nats-per-token rate.
+                    log = strip_pad_steps(log)
+                    if not log:
+                        continue
                     if float(m.get("k", -1)) <= 0 or not log:
                         continue
                     # A step is slack iff the solver returned p_r unchanged. `bd` is the weight

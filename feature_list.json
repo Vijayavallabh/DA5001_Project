@@ -975,12 +975,12 @@
     },
     {
       "id": "feat-098",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "feat-095"
       ],
       "description": "Proposition 3 at the pair the mechanism's authors evaluate. Every spend measurement in the paper uses Llama-3.1-8B-Instruct as the risky model; He et al. use Llama 3.1 70B base with the same TinyComma anchor. The 70B fits in bf16 across two A100s and shares the anchor's vocabulary, so this is the strongest available version of the measurement: the mechanism's own published pair at the authors' own budgets. J1 predicts the imitation rate RISES above the 8B pair's 0.8278, because a 70B base is further from a 1.8B anchor; J2 requires all four structural readings (saturation, spend-is-imitation, linearity, risky-unchanged at k=20) before SHAPE SURVIVES may be written.",
-      "evidence": ""
+      "evidence": "h1.py at TinyComma-1.8B + unsloth/Meta-Llama-3.1-70B (GPUs 0+1, --risky-device-map auto --max-memory 0=75GiB,1=70GiB), k in {-1,0,0.5,1,3,20}, 500 ordinary trajectories each, then analysis/imitation_cost.py --dirs output/phase5/imit_llama70b --tag _llama70b --min-trajectories 20 --out results. J1 FLAT: r_imit(3) = 0.8330 against the audited pair's 0.8278, inside the committed 0.05. The bands as written overlapped (RATE MEASURES DISTANCE and FLAT both admit +0.0052) and were scored the conservative way; FLAT is what the 20:02 addendum predicted before any number existed, because size pushes the rate up and the missing base-to-instruct shift pushes it down. J2 SHAPE SURVIVES on all four readings: ratio 1.091 <= 1.10, |r_real/r_imit - 1| = 0.0007 at k=3 and 0.0000 at k=20, median R^2 >= 0.9848 at every budget, p_r served unchanged at 99.999% of steps at k=20. J3: 131.12 nats against a published cap of 600. Proposition 3's measured shape now holds at FOUR pairs, 1B to 70B, base and instruct, including the mechanism authors' own pair. Scoring this arm found a measurement error that predates it: post-EOS padding positions were counted as decode steps, inflating beta and deflating the nats-per-token rate. dap/stats.py:strip_pad_steps fixes it; the audited arm's beta reads 0.954/0.033/0.0000 at k=0.1/3/20 where the manuscript said 0.960/0.034/0.0005, all corrected, and the 171.3 headline is unchanged because a spend in nats does not depend on T."
     },
     {
       "id": "feat-099",

@@ -96,7 +96,11 @@ def test_the_interior_blend_fraction_is_distinguished_from_beta():
     belongs, which is the mistake the body sentence was rewritten to avoid."""
     r = IMIT[("ordinary", "3")]
     beta, active = float(r["beta_binding_frac"]), float(r["active_frac"])
-    assert beta > 5 * active, (beta, active)
+    # the claim the body sentence rests on is that beta is mostly the prefix-debt opening, not
+    # interior blending. Stripping post-EOS padding (dap/stats.py:strip_pad_steps) cut the
+    # forced share more than the interior one, so the ratio is 2.7x rather than the 9.9x it
+    # read when padding positions were counted as forced steps. The claim is unchanged.
+    assert float(r["forced_safe_frac"]) > active, (r["forced_safe_frac"], active)
     assert abs(beta - (active + float(r["forced_safe_frac"]))) < 1e-6
     apx = open(APX, encoding="utf-8").read().replace("\n", " ")
     m = re.search(r"strictly interior blends alone\s+are \$([\d.]+)\\%\$ of steps at \$k=3\$", apx)
@@ -134,9 +138,13 @@ def test_the_sparsity_proposition_is_stated_and_its_one_number_is_measured():
     apx = open(APX, encoding="utf-8").read()
     assert r"\label{prop:sparse}" in apx, "the proposition has moved"
     assert r"\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon" in apx, "the bound has changed"
-    slack = 100 * (1 - float(IMIT[("ordinary", "20")]["beta_binding_frac"]))
-    m = re.search(r"serves \$p_\{r,t\}\$ unchanged at \$([\d.]+)\\%\$ of steps", apx.replace("\n", " "))
-    assert m and abs(float(m.group(1)) - slack) < 0.005, (m.group(1) if m else None, slack)
+    beta = float(IMIT[("ordinary", "20")]["beta_binding_frac"])
+    # Once post-EOS padding stops being counted as steps forced to the anchor, beta at k=20 is
+    # 0.0000 and the appendix says so as a beta rather than as a percentage.
+    assert beta == 0.0, beta
+    apx1 = apx.replace("\n", " ")
+    assert "unchanged at every step it takes ($\\beta = 0.0000$)" in apx1, \
+        "the sparsity contrast no longer quotes beta at k=20"
 
 
 def test_the_limitations_no_longer_call_the_shape_question_open():
@@ -197,3 +205,62 @@ def test_the_lorenz_curves_end_at_one_and_lie_above_the_diagonal():
         assert all(b >= a - 1e-9 for (_, a), (_, b) in zip(v, v[1:])), key
     half = dict(curves[("ordinary", "20")])[0.5]
     assert 0.5 < half < 0.9, half     # spread, not concentrated: half the steps carry most of it
+
+
+def test_strip_pad_steps_trims_a_padded_tail_and_leaves_a_forced_step_alone():
+    """The post-EOS tail is not decode steps. Two earlier predicates got this wrong in opposite
+    directions and both would have put wrong numbers in the paper, so both mistakes are pinned:
+    a real step forced to the anchor must survive, and a pad position whose risky probability has
+    decayed to 0.01 must not."""
+    from dap.stats import strip_pad_steps
+
+    def pad(tid=128000, p_r=1.0):
+        return dict(t=0, k_t=0.0, a_t=0.0, bd=0.0, p_star_prob=0.9999975,
+                    p_s_prob=0.9999975, p_risky_prob=p_r, sampled_token_id=tid)
+
+    def real(tok=42, p_s=0.28):
+        return dict(t=0, k_t=0.0, a_t=0.0, bd=0.0, p_star_prob=p_s, p_s_prob=p_s,
+                    p_risky_prob=0.0, sampled_token_id=tok)
+
+    spend = dict(t=0, k_t=17.4, a_t=1.48, bd=1.0, p_star_prob=0.14, p_s_prob=0.02,
+                 p_risky_prob=0.14, sampled_token_id=7)
+
+    # an empty generation: one real EOS step then 199 pad positions
+    log = [real(tok=128001)] + [pad() for _ in range(199)]
+    assert len(strip_pad_steps(log)) == 1
+
+    # the risky model's probability decays along a real tail; requiring it near 1 left 4,815
+    # pad steps in the k=20 arm
+    log = [spend] * 3 + [pad(p_r=1.0), pad(p_r=0.5), pad(p_r=0.0108)]
+    assert len(strip_pad_steps(log)) == 3
+
+    # a genuine run of steps forced to the anchor is NOT padding: different tokens
+    log = [spend] + [real(tok=t) for t in (11, 12, 13)]
+    assert len(strip_pad_steps(log)) == 4
+
+    # nor is one where the anchor is merely confident but not a point mass, even repeating a token
+    log = [spend] + [real(tok=11, p_s=0.9) for _ in range(3)]
+    assert len(strip_pad_steps(log)) == 4
+
+    # a single trailing pad-looking step is ambiguous and is kept
+    log = [spend] * 3 + [pad()]
+    assert len(strip_pad_steps(log)) == 4
+
+    # nothing to trim, and degenerate inputs
+    assert strip_pad_steps([]) == []
+    assert len(strip_pad_steps([spend] * 5)) == 5
+
+
+def test_no_imitation_csv_was_computed_over_padded_logs():
+    """A regression guard on the arms themselves: if any arm's beta at its largest budget is
+    inflated by padding again, the realised rate stops matching the imitation rate."""
+    import glob as _glob
+    for path in _glob.glob("results/imitation_cost*.csv"):
+        if "lorenz" in path:
+            continue
+        rows = [r for r in csv.DictReader(open(path, encoding="utf-8"))
+                if r["prompt_class"] == "ordinary" and r["k"] == "20"]
+        for r in rows:
+            i = float(r["imitation_rate_nats_per_token"])
+            v = float(r["realised_rate_nats_per_token"])
+            assert abs(v / i - 1) < 0.01, (path, i, v, "padding counted as decode steps?")

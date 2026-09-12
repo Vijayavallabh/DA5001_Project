@@ -123,3 +123,89 @@ must not be applied as stated.** Concretely, if the 70B rate comes back below `0
 J2 and J3 are unaffected: they are about the shape, not the level, and nothing above changes what
 they measure. This addendum is committed before the arm finishes so the record shows it was not
 written to accommodate a number.
+
+---
+
+## Scored 2026-09-12 23:20, against the bands above and the addendum committed at 20:02
+
+`analysis/imitation_cost.py --dirs output/phase5/imit_llama70b --tag _llama70b
+--min-trajectories 20 --out results` -> `results/imitation_cost_llama70b.csv`, `500` ordinary
+trajectories per budget.
+
+| k | beta | r_imit | r_real | spend | spend/K | median R^2 |
+|---|---|---|---|---|---|---|
+| 0.5 | 0.5042 | 0.3167 | 0.3416 | 56.09 | 0.561 | 0.9968 |
+| 1 | 0.2997 | 0.5740 | 0.5827 | 92.19 | 0.461 | 0.9898 |
+| 3 | 0.0838 | 0.8330 | 0.8324 | 131.12 | 0.218 | 0.9848 |
+| 20 | 0.00001 | 0.9085 | 0.9085 | 148.90 | 0.037 | 0.9866 |
+
+### A measurement error found while scoring this arm, and fixed before any band was read
+
+The first scoring pass read `beta = 0.1531` at `k=20` -- the decoder serving the anchor on
+`15%` of steps while using `3.7%` of a `4000`-nat cap. Those two cannot both be true, and the
+per-step log says why: this risky model is a **base** model, it emits `<|end_of_text|>` early on a
+third of ordinary prompts, and the harness pads the trajectory out to `T_max` with positions whose
+bucket reads `0`, whose spend is `0`, and whose served distribution is a point mass on the pad
+token. `analysis/imitation_cost.py` counted them as decode steps, which inflated `beta` and
+deflated the nats-per-token rate. `dap/stats.py:strip_pad_steps` now drops the tail and
+`tests/test_imitation_cost.py` pins it.
+
+**Two predicates were wrong before the third was right, and both are recorded because both would
+have reached the paper.** A probability-only rule trimmed genuine steps forced to the anchor out of
+`output/sweep_plain` and would have "corrected" published numbers that were correct. Tightening it
+then left `4{,}815` real pad steps in, because one pad position reads `p_risky_prob = 0.0108`, not
+the `0.999` the rule demanded. The signature that works is what a decoder out of budget cannot
+produce: the *same* token at every remaining position with the served distribution a point mass on
+it.
+
+**It moves numbers already in the manuscript, and they are corrected rather than left.** On the
+audited arm `beta` reads `0.954` at `k=0.1` (was `0.960`), `0.033` at `k=3` (was `0.034`) and
+`0.0000` at `k=20` (was `0.0005`); the realised rate at `k=20` is now `0.8570`, exactly the
+imitation rate. **The headline is unchanged**: realised spend still stalls at `171.3` nats, because
+a spend in nats does not depend on how many steps it is divided by.
+
+### J1 -- FLAT
+
+`r_imit(3) = 0.8330` at the 70B pair against `0.8278` at the 8B pair: `+0.0052`, well inside the
+committed `0.05`.
+
+**The bands as written overlap and are scored the conservative way.** RATE MEASURES DISTANCE says
+"exceeds `0.8278`" and FLAT says "within `0.05` of it", and `0.8330` satisfies both. Read as the
+three-way ladder its own INVERTED arm implies -- higher by more than `0.05`, within `0.05`, lower by
+more than `0.05` -- this is the middle rung, and the middle rung is what is recorded. Picking the
+reading that flatters the paper out of an ambiguity we wrote ourselves is exactly what a
+pre-registration is for.
+
+FLAT is what the 20:02 addendum predicted, before any number existed: parameter count pushes the
+rate up, the missing base-to-instruct shift pushes it down, and nothing on record said which would
+win. They approximately cancel. **The appendix sentence claiming the rate "moves the way a distance
+should" must therefore name which distance** -- style and tuning, not size -- and the level ordering
+it cites (`0.857` cross-corpus, `0.617` same-family base, `0.303` same-family instruct) is an
+ordering in *tuning*, with the 70B's `0.909` sitting at the top of it as a base model far from the
+anchor rather than as the largest model.
+
+### J2 -- SHAPE SURVIVES, all four readings
+
+* **SATURATES**: `r_imit(20)/r_imit(3) = 1.091`, against the committed `<= 1.10`.
+* **SPEND IS IMITATION**: `|r_real/r_imit - 1|` is `0.0007` at `k=3` and `0.0000` at `k=20`, against
+  `< 0.05`. (Before the padding fix these read `0.212` and `0.180` and this reading would have
+  failed. It failed on an artefact, and it is recorded here that it did.)
+* **LINEAR**: median within-trajectory `R^2` is `0.9968`, `0.9898`, `0.9848`, `0.9866` -- every
+  budget above the committed `0.95`.
+* **AS PREDICTED**: `p_r` served unchanged at `99.999%` of steps at `k=20`, against `>= 0.99`.
+
+Proposition 3's measured shape now holds at **four** pairs spanning `1`B to `70`B and both base and
+instruct risky models, including **the mechanism's authors' own evaluated pair**.
+
+### J3 -- the certificate's arithmetic at this pair
+
+Realised spend at `k=3` is `131.12` nats against a published cap of `K = 3 T_{\max} = 600`:
+`21.9%`. At `k=20` it is `148.90` against `4000`, `3.7%`. The cap rises sevenfold between them and
+the spend rises by `13.6%`.
+
+### Excluded alternatives, honoured
+
+Nothing was changed after seeing a number except `strip_pad_steps`, which is a correction to how a
+step is counted, applies to every arm equally, was verified not to move the audited arm's headline,
+and is reported above with the two wrong versions that preceded it. No leakage, certificate or
+`s(x)` number is taken from this arm. Both mandatory baselines (`k=-1`, `k=0`) were generated.

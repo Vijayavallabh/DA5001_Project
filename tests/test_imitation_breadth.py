@@ -89,11 +89,11 @@ def test_the_rate_differs_between_pairs_because_the_pairs_differ():
 
 
 def test_the_appendix_table_rounds_from_the_csvs():
-    """Caution (j): every cell of Appendix A's three-pair table comes from its own CSV, once."""
+    """Caution (j): every cell of Appendix A's four-pair table comes from its own CSV, once."""
     from tests.manuscript import tex
     apx = open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().replace("\n", " ")
     a = arms()
-    assert len(a) == 3, sorted(a)
+    assert len(a) == 4, sorted(a)
     for tag, ks in a.items():
         r3, r20 = ks["3"], ks["20"]
         i3 = float(r3["imitation_rate_nats_per_token"])
@@ -106,7 +106,7 @@ def test_the_appendix_table_rounds_from_the_csvs():
         assert f"{float(r20['spend_nats']):.1f}$" in apx, (tag, r20["spend_nats"])
 
 
-def test_section2_quotes_the_two_further_rates():
+def test_section2_quotes_the_further_saturated_rates():
     from tests.manuscript import tex
     body = open(tex("sections/frontier.tex"), encoding="utf-8").read().replace("\n", " ")
     # the quoted rate is the SATURATED one, r_imit(20), which is what "saturates at 0.857" means
@@ -115,7 +115,7 @@ def test_section2_quotes_the_two_further_rates():
                     for t, ks in arms().items() if t != "_audited")
     for v in others:
         assert f"${v:.3f}$" in body, v
-    assert "two further pairs" in body
+    assert "three further pairs" in body
     aud = float(arms()["_audited"]["20"]["imitation_rate_nats_per_token"])
     assert f"${aud:.3f}$" in body, aud
 
@@ -125,7 +125,9 @@ def test_the_narrow_i5_pass_is_reported_as_narrow():
     presented that as comfortable would be overclaiming."""
     a = arms()
     r = {t: float(ks["3"]["imitation_rate_nats_per_token"]) for t, ks in a.items()}
-    lo, mid = sorted(v for t, v in r.items() if t != "_audited")
+    # the I5 band was Llama-3.2-3B-Instruct against half of Llama-3.2-1B, named rather than
+    # picked by sorting: a third non-audited pair (the 70B) now exists and would change the pick
+    lo, mid = r["_llama323bi"], r["_llama321b"]
     assert lo < mid / 2, (lo, mid / 2)
     assert (mid / 2 - lo) / (mid / 2) < 0.05, "no longer narrow; the scoring log must be updated"
     log = open(os.path.join(ROOT, "results",

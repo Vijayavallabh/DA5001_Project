@@ -176,3 +176,49 @@ def budget_check(spends: List[float], budgets: List[float], eps: float = EPS_INV
     utils = [z / b for z, b in zip(spends, budgets) if b > 0 and math.isfinite(b)]
     certified = all(z <= max(0.0, b) + eps for z, b in zip(spends, budgets))
     return float(max(spends)), (float(max(utils)) if utils else None), bool(certified)
+
+
+def strip_pad_steps(log):
+    """Drop the post-EOS tail a per-step log carries when a generation ends before the cap.
+
+    When the risky model emits its end-of-text token the harness keeps stepping to `T_max` and
+    writes a record for each padding position. Those are not decode steps: the bucket reads
+    exactly 0, the step spends nothing, the solve puts nothing on the risky model, and the same
+    pad token is emitted at every position to the end. Counting them inflates `T`, which inflates
+    the binding fraction and deflates the realised nats-per-token rate.
+
+    Found on 2026-09-12 while scoring the TinyComma + Llama-3.1-70B arm, where a **base** risky
+    model ends early on a third of ordinary prompts: 15.3% of the k=20 arm's steps were padding
+    reported as steps forced to the anchor, with 2,000 nats still in the bucket.
+
+    The discriminator is the repeated token, not a probability threshold. A step genuinely forced
+    to the anchor -- common at low `k`, where the bucket really is empty -- also has zero spend
+    and `bd == 0`, and two earlier probability-based predicates got it wrong in both directions:
+    one trimmed real forced steps out of `output/sweep_plain` and would have moved published
+    numbers that were correct, the next left 4,815 real padding steps in because a pad position
+    read `p_risky_prob = 0.99887` rather than the 0.999 it demanded. What a decoder that has run
+    out of budget cannot do is emit the *same* token at every remaining position while the served
+    distribution is a point mass on it. So the rule is a contiguous suffix of at least two steps,
+    all spending nothing with a zeroed bucket, all emitting one token id, with the served and
+    anchor distributions both above 0.999 on it. `p_risky_prob` is deliberately NOT part of the
+    test: it is the one field that moves on a pad position, reading 1.0 at the start of a tail
+    and 0.0108 at its end, and requiring it is what left 4,815 pad steps in.
+    """
+    if len(log) < 2:
+        return log
+    last = log[-1]
+    tid = last.get("sampled_token_id")
+    if tid is None:
+        return log
+    i = len(log)
+    while i > 0:
+        e = log[i - 1]
+        if not (e.get("sampled_token_id") == tid
+                and e.get("k_t", 1.0) == 0.0
+                and e.get("a_t", 1.0) == 0.0
+                and e.get("bd", 1.0) == 0.0
+                and e.get("p_star_prob", 0.0) > 0.999
+                and e.get("p_s_prob", 0.0) > 0.999):
+            break
+        i -= 1
+    return log[:i] if len(log) - i >= 2 else log
