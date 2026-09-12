@@ -1,5 +1,10 @@
 # Selection anchoring on AlpacaEval-805 — an unregistered extension, reported as one
 
+> **Correction, 2026-09-12 (see the last section).** The section below headed "This is the
+> support ceiling, measured with a standard instrument" is **refuted** by
+> `results/onset_prediction_domain_breadth.md`. The support-ceiling *explanation* of the
+> weakening has no evidence at this scale. The measured result above it stands unchanged.
+
 **This arm has no committed bands.** Every other arm in this repository was pre-registered with a
 refuting band before it ran; this one was not, because the corpus and the run were built in the same
 pass on 2026-09-12. That is a deviation from the project's discipline and it is recorded here rather
@@ -51,3 +56,36 @@ support on instruction-style prompts. If the gain recovers there, the reading is
 if it does not, the reading is that the in-house prompt set flatters the mechanism. Either way the
 answer belongs in the paper, and the band for that one is committed in
 `results/onset_prediction_selection_breadth.md`.
+
+---
+
+## Correction, 2026-09-12: the support-ceiling explanation is refuted
+
+The section "This is the support ceiling, measured with a standard instrument" asserted that the
+weaker AlpacaEval gain is the anchor's support ceiling showing through, and closed by saying "the
+manuscript should say so in those terms". **The manuscript must not.** That explanation was tested
+against a pre-registered split and does not survive it.
+
+`analysis/domain_breadth.py`, registered in `results/onset_prediction_domain_breadth.md` before any
+per-domain number was computed, cut the 805 AlpacaEval prompts into the five sources the benchmark
+ships and MT-Bench into two committed families, and asked whether the gain tracks how well the
+anchor can already do the task. It does not, in either judge:
+
+* **D1 is uninformative.** The literal Spearman is `-0.786` (judge C) and `-0.703` (judge B) --- the
+  *opposite* of the ceiling prediction --- but that is the direction the pre-registration named as
+  mechanically cheap, and a within-prompt exchangeability null in which selection does nothing
+  already yields `-0.365 +/- 0.342` and `-0.339 +/- 0.350`. The observed values sit at
+  `P = 0.0947` and `0.1651` against that null. Seven cells cannot separate the two.
+* **D3 goes the wrong way and has no artefact in it,** because it compares control levels only:
+  MT-Bench's open-ended family scores *below* its constrained family in both judges (`0.200` vs
+  `0.287`, `0.300` vs `0.425`).
+
+What is refuted is the empirical claim. The theorem behind it --- `q(y) <= n p_s(y)`, so a served
+string must be one the anchor would have drawn --- is untouched and stays in Limitations, where it
+is a statement about what the mechanism can never do rather than an explanation of a number.
+
+So the paper's line on breadth is: **the gain is weaker off the in-house prompt set, one judge does
+not resolve it on AlpacaEval, MT-Bench at 80 prompts resolves nothing in either direction, and we
+cannot say why.** The Comma-7B arm named under "What would settle it" is still the right next test
+and is still queued; its bands are committed. Until it lands, "anchor-bound" is a hypothesis and is
+labelled as one.

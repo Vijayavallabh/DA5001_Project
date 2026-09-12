@@ -102,3 +102,74 @@ Writes `results/domain_breadth.csv`.
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+```
+.venv/bin/python analysis/domain_breadth.py --out results
+```
+→ `results/domain_breadth.csv`, `results/domain_breadth_null.csv`. No GPU: the per-prompt verdicts
+were already on disk, and no prompt was re-judged.
+
+| cell | n | control, judge C | gain, judge C | control, judge B | gain, judge B |
+|---|---|---|---|---|---|
+| `selfinstruct` | 252 | `0.284` | `+0.038` | `0.383` | `+0.026` |
+| `oasst` | 188 | `0.213` | `+0.080` | `0.293` | `+0.093` |
+| `koala` | 156 | `0.250` | `+0.039` | `0.356` | `-0.003` |
+| `helpful_base` | 129 | `0.147` | `+0.116` | `0.260` | `+0.035` |
+| `vicuna` | 80 | `0.163` | `+0.100` | `0.350` | `-0.038` |
+| MT-Bench open-ended | 40 | `0.200` | `-0.025` | `0.300` | `+0.050` |
+| MT-Bench constrained | 40 | `0.287` | `-0.050` | `0.425` | `-0.038` |
+
+### D1 — the band reads **ANTI**, and the band is wrong to be trusted here
+
+Spearman(control, gain) is `-0.786` (exact `p = 0.0480`) for judge C and `-0.703`
+(`p = 0.0897`) for judge B: the gain is *larger* where the anchor's control is *lower*, the
+opposite of the support-ceiling prediction, in both judges.
+
+**That reading does not survive the confound this file named before the run.** The pre-registration
+said the shared `u(n=1)` biases the correlation negative and that a negative reading is "the cheap
+direction"; it committed no way of sizing the bias, so one was added afterwards and is labelled
+post-hoc. The null is exchangeability within a prompt — if selection does nothing, `u(n=1)` and
+`u(n=8)` are two draws of the same thing, so swapping them per prompt with probability `1/2` builds
+a world with no effect that preserves every cell's size, every prompt's pair of values, and the
+mechanical coupling. Over `20{,}000` draws that no-effect null gives Spearman
+`-0.365 ± 0.342` (judge C) and `-0.339 ± 0.350` (judge B), and the observed values sit at
+`P(null <= observed) = 0.0947` and `0.1651`.
+
+So **about half of the observed correlation is the artefact and the rest is inside one standard
+deviation of it**. Seven cells cannot resolve this. The correct reading is that D1 is
+**uninformative**, and neither ANCHOR-BOUND nor ANTI may be written up. The exact permutation `p`
+of `0.048` is a `p` against independence, not against the artefact, and quoting it alone would be
+the error this file exists to prevent.
+
+### D3 — **NO FAMILY EFFECT**, and the sign is against the ceiling reading
+
+This half has no gain in it, so no artefact: it compares control levels only. MT-Bench's
+open-ended family scores *below* the constrained family in both judges — `0.200` vs `0.287`
+(judge C) and `0.300` vs `0.425` (judge B). The ceiling reading predicted the opposite. Judge C's
+`-0.087` is inside the committed `0.10`, so the reading is NO FAMILY EFFECT; judge B's `-0.125`
+exceeds it, but in the direction the band does not name, so CEILING VISIBLE is not triggered
+either.
+
+The plausible mechanism is not competence but headroom: on `math`, `coding`, `reasoning` and
+`extraction` neither the anchor nor the unconstrained 8B produces a good answer, so the pairwise
+judge is nearer a coin flip and the control sits higher, while on `writing` and `roleplay` the 8B
+is plainly better and the anchor loses cleanly. That is an observation about the instrument, not a
+measurement of the anchor's support, and it is offered as such.
+
+### What this changes in the paper
+
+The Limitations sentence "selection anchoring cannot exceed its anchor's support" is a **theorem**,
+from `q(y) <= n p_s(y)`, and is untouched. What is refuted is the *empirical* use of it that
+`results/selection_alpaca_note.md` reached for: that the ceiling is why the standard-benchmark
+gains are weaker than the in-house ones. **There is no evidence for that explanation at this
+scale**, and the note is corrected accordingly. The paper says the gain is weaker off the in-house
+prompt set, that one judge does not resolve it on AlpacaEval, and that we cannot say why.
+
+### Status
+
+D1's confound sizing is post-hoc and labelled. D3 and the seven cells are as registered. The
+aggregate readings above the line are unchanged by anything here.
