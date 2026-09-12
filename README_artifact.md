@@ -1006,3 +1006,99 @@ frontier against `7994.6x`.
 maximum `0.0000` over all 100 passages, against the memorising model's `0.4338` mean and `0.8233`
 max on the same passages and seeds. The selector's whole effect is about half a word of longest
 common substring and it is not monotone in `n`.
+
+---
+
+## Phase 6 (2026-09-12): the v7 reframe, and what it added
+
+Everything below is pre-registered: bands, grid, entry gate and the alternatives excluded in
+advance are committed to `results/onset_prediction_*.md` **before** the run that scores them, and
+nothing above a file's `## Scoring log` line is edited afterwards.
+
+### The dichotomy's second horn, and the one causal placement it allows
+
+```bash
+# Proposition 3 step by step, from per-step logs already on disk. Zero GPU.
+.venv/bin/python analysis/imitation_cost.py --out results          # -> imitation_cost.csv
+# and at further pairs, each generated first with h1.py (see onset_prediction_imitation_breadth.md)
+.venv/bin/python analysis/imitation_cost.py --dirs output/phase5/imit_llama321b \
+  --tag _llama321b --min-trajectories 20 --out results
+
+# placement at a fixed sequence budget: the same log 8 = 2.0794 nats spent uniformly, spent all at
+# once on the opening, or spent off the axis on the draw. Bands in onset_prediction_placement.md.
+.venv/bin/python h1.py --k-values 1e-9 --initial-bank 2.0794 --no-prefix-debt ... place_front_2p08
+.venv/bin/python analysis/placement.py --out results               # -> placement.csv
+```
+
+`--no-prefix-debt` is not a convenience: the prefix debt has median `2.53` nats and exceeds the
+whole matched budget on `77.5%` of prompts, so with the debt on **both** causal arms would have
+been the anchor by construction and the comparison would have read empty for a reason that has
+nothing to do with placement. That was measured and written down before the arms were generated.
+
+### The constructive claim at four anchors
+
+```bash
+# per anchor, self-paired (at k=0 only the safe model generates, so the risky slot is inert and the
+# factory's shared-vocabulary requirement is satisfied trivially)
+.venv/bin/python h1.py --k-values 0.0 --safe-model-path <anchor> --risky-model-path <anchor> \
+  --trajectories-per-prompt 8 --cap-neutral 200 --cap-creative 150 --cap-factual 150 \
+  --cap-val 0 --cap-test 0 --cap-attack-train 0 --max-new-tokens 200 \
+  --output-dir output/phase5/sel_<tag>_8
+.venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/sel_<tag>_8 \
+  --max-n 8 --tag _<tag> --out results
+.venv/bin/python analysis/selection_breadth.py --out results       # -> selection_breadth.csv
+
+# leakage at each anchor, adversarial selector, both mandatory baselines
+.venv/bin/python analysis/selection_extraction.py --safe-model <anchor> \
+  --risky-model output/memorizing_llama8b --n-values 1 8 64 --limit 100 \
+  --prefix selection_extraction_<tag> --out results
+```
+
+The entry gate (`> 20` tokens, `< 5%` empty completions on the `n=1` arm) is measured on each arm's
+own generations, not on a summary column. It **fails the audited anchor**, which is empty on `6.8%`
+of prompts; the failure is reported rather than exempted and the `gain_nonempty` column answers it
+(every gain moves by less than `0.003` on the non-empty prompts).
+
+### Standard benchmarks, and the explanation that does not survive its own test
+
+```bash
+.venv/bin/python analysis/build_bench_corpora.py                    # data/bench/, symlinks only
+# AlpacaEval-805 and MT-Bench-80 through the FACTUAL slot, never the neutral one
+.venv/bin/python h1.py --data-dir data/bench/alpaca --k-values 0.0 ... alpaca_anchor8
+.venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/alpaca_anchor8 \
+  --baseline-dir output/phase5/alpaca_risky --max-n 8 --tag _alpaca --out results
+# is the gain anchor-bound? seven domain cells, both judges, zero GPU
+.venv/bin/python analysis/domain_breadth.py --out results          # -> domain_breadth{,_null}.csv
+```
+
+`domain_breadth.py` reports a within-prompt **exchangeability null** beside the correlation, because
+`u(n=1)` is subtracted inside the gain and a no-effect world already produces `-0.36 +/- 0.34`.
+The observed `-0.79` / `-0.70` are not separable from it, so the reading is *uninformative* and the
+support-ceiling explanation of the weaker benchmark gain is not supported.
+
+### The vacuity statement on a hundred books
+
+```bash
+.venv/bin/python analysis/regimes.py --model jacquelinehe/tinycomma-1.8b-llama3-tokenizer \
+  --data data/bench/bookmia100 --out results/regimes_bookmia100.csv   # and bookmia100unseen, and data
+.venv/bin/python analysis/bookmia_regimes.py --out results             # -> bookmia_regimes.csv
+```
+
+Vacuity is `S(x) <= K` with `K = k*T_max`, the criterion `analysis/certificate_cap.py` uses. The
+CopyBench arm is a **positive control** and it earned its place: an earlier version of this script
+scored the asymptotic `k >= s(x)` instead and read `0.326` where the paper's own
+`certificate_cap_summary.csv` says `1.000`.
+
+### The other instruments
+
+```bash
+.venv/bin/python analysis/judge_consistency.py --out results   # both orders, 2,000 calls
+.venv/bin/python analysis/exact_rate.py --out results          # full-vocab D_KL vs the plug-in
+.venv/bin/python analysis/blocklist.py --data-dir <corpus> --tag <tag> --out results   # zero GPU
+```
+
+`judge_consistency.py` is why Table 1 reports **gains over each arm's own control** rather than
+judged levels: the same two texts win `261` of `500` shown second and `24` shown first, and only
+`29.2%` of items get a mutually consistent verdict. `blocklist.py` refuted the argument it was
+built to support --- an n-gram blocklist's collateral on ordinary text is *bounded*, flattening at
+`0.140%` between 4,935 and 9,870 passages.
