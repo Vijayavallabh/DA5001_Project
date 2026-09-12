@@ -884,12 +884,12 @@
     },
     {
       "id": "feat-088",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "feat-087"
       ],
       "description": "feat-087 measured selection anchoring at one n, with one scoring judge, under a selector that consults the risky model's own completion. Close all three gaps. (O1) Does the gain grow with n? Generate 64 anchor candidates per prompt on the same 500 ordinary prompts and sweep n in {1,2,4,8,16,32,64}; the arms nest by seed order so no candidate is scored twice. (O2) Is +0.081 a property of Phi-3.5-mini? Score every arm with a second judge (Llama-3.2-3B-Instruct), which is in the same family as the OPPONENT in every comparison, so any self-preference biases against selection. (O3) Must the selector see the risky model? Replace the pairwise judge-A verdict with a POINTWISE reward -- log p('Yes') - log p('No') from Qwen2.5-7B-Instruct on one fixed template, one forward pass per candidate, no reference completion and no access to p_r at any point -- so the served distribution is a function of the anchor and the reward model only, which is what Proposition 3 needs and what a deployment could run. Bands for all three committed in results/onset_prediction_selection_scaling.md BEFORE the run: SCALES / SATURATES / OVEROPTIMISES on gain(64) vs gain(8); GENERAL / PARTIAL / JUDGE-SPECIFIC on judge C at n=8; DEPLOYABLE / REFERENCE-BOUND on the pointwise selector against half the pairwise gain. Entry gate: the n=1 control must land within 0.05 of each judge's u_safe on record.",
-      "evidence": ""
+      "evidence": "analysis/selection_scaling.py --gen-dir output/phase5/sel_anchor64 --out results. Pointwise reward, n in {1..64}, two scoring judges. results/selection_scaling.csv: judge B +0.054 [+0.013,+0.095] at n=8 and +0.142 [+0.097,+0.187] at n=64, Spearman(u, log n) = +0.991 over seven arms; judge C agrees at n=8, +0.073 [+0.027,+0.120]. Scored against the bands in results/onset_prediction_selection_scaling.md."
     },
     {
       "id": "feat-089",
@@ -911,29 +911,57 @@
     },
     {
       "id": "feat-091",
-      "status": "not-started",
+      "status": "done",
       "dependencies": [
         "feat-088"
       ],
       "description": "Bound the instrument the constructive claim rests on. The +0.081 cross-judge gain is judged by an LLM shown one random presentation order; a human preference study is the decisive experiment and cannot be run from here. Re-judge the identical 500-prompt, two-arm cross-judge items in BOTH orders and report C1 order consistency, C2 first-slot win rate, C3 the gain re-estimated on order-averaged utility. Bands committed before the run in results/onset_prediction_judge_consistency.md. Queued behind feat-088 so it does not contend for the same card.",
-      "evidence": ""
+      "evidence": "analysis/judge_consistency.py --out results -> results/judge_consistency.csv. Re-judging the same 500 pairs in both orders (2,000 calls): the same two texts win 261/500 shown second and 24/500 shown first, 29.2% mutually consistent, first slot wins 12.7% of decided comparisons. C1 UNUSABLE, C2 STRONG, C3 SURVIVES: order-averaging leaves +0.0405 [+0.019,+0.063]. Drove Table 1 from levels to gains and AGENTS caution (m)."
     },
     {
       "id": "feat-092",
-      "status": "not-started",
+      "status": "done",
       "dependencies": [
         "feat-090"
       ],
       "description": "Budget PLACEMENT at a fixed sequence budget, the arm the v7 framing depends on. Proposition 5 has two horns and the paper demonstrated only one: the deployed bucket spreads its budget and lands on the vacuous horn, but the proposition permits a causal policy that CONCENTRATES a bounded budget. Run the same log 8 = 2.0794 nats three ways on the same 500 prompts under the same judge -- uniform per step, front-loaded via the new initial_bank, and off-axis at the draw (selection, on record) -- plus a K=20 front-loaded arm for scaling. Bands in results/onset_prediction_placement.md, committed before any arm was generated, with a pre-run correction recording that the prefix debt (median 2.53 nats) exceeds the whole budget on 77.5% of prompts and would have made both causal arms the anchor, so the arms run with --no-prefix-debt.",
-      "evidence": ""
+      "evidence": "h1.py at three placements of log 8 = 2.0794 nats with --no-prefix-debt, then analysis/placement.py --out results -> results/placement.csv. P1 PLACEMENT IS IRRELEVANT (front vs uniform differ by 0.024, overlapping), P2 THE CAUSAL HORN IS EMPTY (front-loaded -0.008 [-0.056,+0.041]), P3 FLAT (K=20 gives -0.019). Off the axis at the same budget selection gains +0.054 [+0.013,+0.095]. Bands in results/onset_prediction_placement.md."
     },
     {
       "id": "feat-093",
-      "status": "not-started",
+      "status": "done",
       "dependencies": [
         "feat-090"
       ],
       "description": "The exact-rate diagnostic. Eq. (req) r(x) = s_s - s_r is refuted and stays refuted; what is not established is why. It is the near-deterministic collapse of the full-distribution mean D_KL(p_r,t || p_s,t) along the target's own prefixes, and every miss on record is low, the signature of a biased estimator. analysis/exact_rate.py measures both in one teacher-forced pass over the nine pairs. Bands in results/onset_prediction_exact_rate.md, which states before anything else that the nine onsets are already known, so this is a diagnostic and never a confirmed prediction.",
+      "evidence": "analysis/exact_rate.py --out results -> results/exact_rate.csv. Nine pairs, 100 passages, both quantities from one teacher-forced pass. E1 MIXED (kbar > r on 0.711), E2 NO BETTER (median relative error 0.0507 against 0.0406), E3 Spearman(kbar, onset) = +0.867 (p = 0.0045). My own explanation is refuted and the manuscript's existing diagnosis gains the evidence it lacked."
+    },
+    {
+      "id": "feat-094",
+      "status": "done",
+      "dependencies": [
+        "feat-088"
+      ],
+      "description": "Is the constructive claim anchor-bound? The standard-benchmark gains (AlpacaEval-805, MT-Bench-80) are weaker than the in-house 500 and one judge does not resolve AlpacaEval. The obvious explanation is Proposition 4's support ceiling: a 1.8B base anchor cannot follow instructions, so a selector has less to reorder. Test it by splitting both benchmarks into domain cells and asking whether the gain tracks the anchor's own control level. Bands committed before any per-domain number exists; the shared-noise bias is named in advance.",
+      "evidence": "analysis/domain_breadth.py --out results -> results/domain_breadth.csv, domain_breadth_null.csv. Seven cells (AlpacaEval's five shipped sources, MT-Bench in two committed families), both judges, no GPU. D1 reads ANTI (Spearman -0.786 judge C, -0.703 judge B) -- the direction the pre-registration named as mechanically cheap -- and a within-prompt exchangeability null in which selection does nothing already gives -0.365 +/- 0.342 and -0.339 +/- 0.350 over 20,000 draws, putting the observed values at P = 0.0947 and 0.1651. D1 is therefore UNINFORMATIVE and neither direction is reported. D3 NO FAMILY EFFECT, and its sign is against the ceiling reading (MT-Bench open-ended scores BELOW constrained in both judges). Consequence: results/selection_alpaca_note.md's claim that the weakening IS the ceiling is corrected in place; the paper says the gain is weaker off the in-house set and that we cannot say why. 12 tests in tests/test_domain_breadth.py."
+    },
+    {
+      "id": "feat-095",
+      "status": "done",
+      "dependencies": [
+        "feat-088"
+      ],
+      "description": "Does the constructive claim hold at more than one anchor? Every selection-anchoring number in the paper came from TinyComma-1.8B, which the v7 reframe made load-bearing, so one setup was the narrowest evidence in the paper. Re-run the identical pipeline at three further openly licensed base anchors -- Pleias-1.2B, KL3M-1.7B, Comma-7B -- on the same prompts, judge and baseline, self-paired so the factory's shared-vocabulary requirement holds. B1 SINGLE-SETUP was written to cost the paper its constructive claim.",
+      "evidence": "analysis/selection_breadth.py --out results -> results/selection_breadth.csv. B1 GENERALISES: on the registered scorer KL3M-1.7B gains +0.039 [+0.005,+0.076] and Comma-7B +0.111 [+0.072,+0.148], both excluding zero (2 of 3 needed); Pleias-1.2B is +0.029 [-0.012,+0.068] and resolves on the secondary judge, where all three do. Comma-7B's +0.111 (judge B) / +0.155 (judge C) is now the largest gain in the paper, at the same log 8 nats. The entry gate, which had never actually run (it read a column its producer never writes), fails the AUDITED anchor at 6.8% empty completions; reported, and answered by a gain_nonempty column showing every gain moves by less than 0.003 on non-empty prompts. B2 Spearman +1.000 over four anchors, registered as descriptive and not used. B3 leakage: KL3M-1.7B recall 0.0000 at n = 1, 8, 64 against the memoriser's 0.3925 mean / 0.8154 max with 78% of passages above threshold; Pleias-1.2B and Comma-7B running. 8 tests in tests/test_selection_breadth.py, 4 in tests/test_selection_extraction_tokenizers.py."
+    },
+    {
+      "id": "feat-096",
+      "status": "in-progress",
+      "dependencies": [
+        "feat-094",
+        "feat-095"
+      ],
+      "description": "The deciding arm: Comma-7B on AlpacaEval-805. Two readings of the weaker standard-benchmark gain are open and one arm separates them -- the anchor's support ceiling (feat-094 came back uninformative on that question along the domain axis), or an in-house prompt set that flatters the mechanism. Comma-7B is the strongest openly licensed anchor we hold and gives the largest in-house gain, so if the gain recovers on AlpacaEval the ceiling reading is supported and if it drops as TinyComma's did the prompt set is. Bands and the manuscript consequence of each reading committed in results/onset_prediction_alpaca_comma7b.md before the run: under PROMPT-SET EFFECT the paper leads with the benchmark number in Section 6 and in the abstract, whatever A1 reads.",
       "evidence": ""
     }
   ]
