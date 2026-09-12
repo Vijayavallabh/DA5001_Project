@@ -45,12 +45,12 @@ tested* · 5 selection anchoring (Prop 4) · 6 experiments · 7 related · 8 lim
 | Proposition 3 at two more pairs (`results/onset_prediction_imitation_breadth.md`) | 0 | `output/logs/imit_breadth.log` | ~2 h from 17:04 |
 
 | feat-097 head-to-head at a second pair (`results/onset_prediction_frontier_second_pair.md`) | 4 | `output/logs/sel_llama321b.log`, `frontier_pair.log` | chained; scores as soon as generation lands |
-| feat-098 Proposition 3 at TinyComma + Llama-3.1-70B (`results/onset_prediction_imitation_70b.md`) | 0+4 | `output/logs/imit_70b.log` | queued behind a sentinel; ~8-12 GPU-h |
+| feat-098 Proposition 3 at TinyComma + Llama-3.1-70B (`results/onset_prediction_imitation_70b.md`) | 0+1 | `output/logs/imit_70b.log` | running since 19:43, ~3-4 h |
+| feat-100 the strongest anchor at the largest n (`results/onset_prediction_selection_n64_comma7b.md`) | 4 | `output/logs/sel_comma7b_64.log` | running since 20:27, ~6 h generation |
 
 The pre-registrations with no scoring section yet are
-`results/onset_prediction_alpaca_comma7b.md`, `results/onset_prediction_imitation_breadth.md`,
-`results/onset_prediction_frontier_second_pair.md` and
-`results/onset_prediction_imitation_70b.md`; `tests/test_preregistration_count.py` fails if an
+`results/onset_prediction_alpaca_comma7b.md`, `results/onset_prediction_imitation_70b.md` and
+`results/onset_prediction_selection_n64_comma7b.md`; `tests/test_preregistration_count.py` fails if an
 unscored one is not named here.
 
 **The 70B arm takes two cards and waits for them.** It starts only when
