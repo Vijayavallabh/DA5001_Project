@@ -126,7 +126,7 @@ written to accommodate a number.
 
 ---
 
-## Scored 2026-09-12 23:20, against the bands above and the addendum committed at 20:02
+## Scoring, 2026-09-12 23:20 --- against the bands above and the addendum committed at 20:02
 
 `analysis/imitation_cost.py --dirs output/phase5/imit_llama70b --tag _llama70b
 --min-trajectories 20 --out results` -> `results/imitation_cost_llama70b.csv`, `500` ordinary
