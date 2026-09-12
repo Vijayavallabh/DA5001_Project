@@ -2,16 +2,31 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-07 19:45
-**Active Feature:** none. **Phases 1, 2 and 3 are all complete.** feat-001..009, 013..015, 017..027 and **028..034** are `done`; feat-012 is superseded by feat-024; feat-010/011 stay optional; feat-016 is human-only and must never be started.
-**Plan:** `~/sub/satml/IMPROVEMENT_PLAN.md` is now **version 3 (2026-09-07)**; v2 archived as `IMPROVEMENT_PLAN_v2_2026-09-06.md`, v1 as `IMPROVEMENT_PLAN_v1_2026-09-05.md`. v3 attacks *significance*, not rigour: a second anchor, a real utility evaluation, Proposition 5, the prefix-debt promotion, length scaling, an optional second mechanism.
-**Venue: SaTML 2027 only.** ICLR 2027 closes first (abstract Sep 18, paper Sep 25 AoE) and both CFPs bar parallel archival submission; the SaTML HotCRP form asks whether the paper is under review elsewhere, and both venues decide Dec 16, so neither can inform the other. The ICLR-format derivative (`iclr_2027.tex`) is drafted after Oct 2 for ICML 2027 (abstract ~Jan 16 2027 per aggregators — confirm against the official CFP).
-**Artefacts:** manuscript `/mnt/md0/IITM/BackUp/Home/vijayavallabh/sub/satml/satml_2027.pdf` (**21 pages, body ends page 12**, 0 overfull, 0 `??`, 137 cited) with checkpoint `satml_2027_phase3_2026-09-07.pdf`; `references.bib` at **138 entries** (10 added and verified 2026-09-07); artifact v3 `artifact/` (206 files + `MANIFEST.sha256`) and `artifact.zip` (23 MB), manifest verified and anonymity scan clean.
-**Since the phase-3 close (2026-09-07 afternoon/evening):** a hostile internal review fixed 12 manuscript defects; the hallucinator rerun checked all 137 cited references (129 auto-verified, 8 hand-verified, none hallucinated); an anonymity scan found the PDF and artifact clean but three holes in `scripts/build_artifact.sh`, all fixed and negative-controlled; a full consistency audit of every table and prose figure against `results/*.csv` fixed 5 discrepancies; an editorial pass cut a contribution list that had been enumerated three times in the first four sections; and **the title became declarative**: *A KL Budget Is Uninformative Where the Mechanism Is Usable*. `satml_2027_arxiv_v1.tex` is **not** a variant of this paper and was left alone (see the 19:45 entry).
-**Deadline clock:** **Sep 20 = every headline number frozen** · abstract Sep 22 · paper Sep 29 · artifacts Oct 2 (AoE). The last three are human-only.
-**Compute:** phase 3 cost **2.3 GPU-hours** against a 19.5-hour estimate (feat-028b was blocked; feat-029 needed no generation because the phase-2 sweeps already held every arm). Paper total is now **56.5 GPU-hours** (`results/compute_hours.csv`). At 02:00 on 2026-09-07 `nvidia-smi` showed GPUs 1, 2 and 4 at 100% under other users and only GPU 0 free; plan v3 Section 5 gives the degradation path for 3, 2, 1 and 0 free cards.
-**Verification for a fresh session:** `./init.sh` (47 tests, 34 features) and the manuscript compile check in `AGENTS.md`. Read the log below from the bottom: entries are appended, so the phase-1 sections that follow are history, not the current plan.
-
+**Last Updated:** 2026-09-12 22:35
+**Branch `iclr-2027`.** Target **ICLR 2027** (abstract Sep 18, paper Sep 25). The finished SaTML
+submission is abandoned -- both CFPs bar parallel submission -- and `master` holds it at `dd7e801`
+as the fallback; do not delete it. The earlier "SaTML only" decision in the log below is history.
+**Active features:** four arms in progress, each with its bands committed before its run --
+**feat-098** (Prop 3 at TinyComma + Llama-3.1-70B), **feat-100** (Comma-7B at n=64), **feat-101**
+(the judge-free axis, GSM8K exact match) and **feat-102** (the adversarial selector handed to the
+70B). Everything through feat-097 and feat-099 is `done`; feat-096 closed this evening; feat-010/011
+stay optional, feat-012 is superseded by feat-024, and **feat-016 is human-only and must never be
+started**.
+**Manuscript:** `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial*. Main text **exactly 9 of 9 pages**
+(Ethics, Reproducibility and LLM Usage are uncounted), `exit=0`, 0 overfull, 0 `??`, 45 pages total.
+2,179 numeric literals audited with one expected miss (`64256`). **380 tests, 32 pre-registration
+logs**; `tests/test_preregistration_count.py` pins the Reproducibility Statement to the count.
+**The claim:** one line of the chain rule leaves a per-token budget two options -- `K = kT` grows
+with the work and the certificate is **vacuous**, or the budget is bounded and the decoder is the
+anchor at all but `O(1)` steps, which is **trivial**. Both horns are measured, all three repairs and
+the one causal placement fail where the theorem says they must, and the escape is a different
+*place* to spend: `q(y) <= n p_s(y)` is a pathwise certificate of exactly `log n`.
+**Compute:** `156` GPU-hours disclosed in the manuscript; `analysis/compute_hours.py` must be re-run
+and the disclosure re-matched once the queue drains, because `tests/test_compute_hours.py` asserts
+an exact match.
+**Verification for a fresh session:** `./init.sh`, then the manuscript compile check in `AGENTS.md`
+(exit status, 0 `??`, 0 overfull, **no body prose on pdftotext page 10**). Read the log below from
+the bottom: entries are appended, so everything before 2026-09-08 predates the ICLR reframe.
 ## Status
 
 ### What's Done
