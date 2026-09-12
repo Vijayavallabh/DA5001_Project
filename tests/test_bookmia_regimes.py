@@ -85,3 +85,39 @@ def test_the_correction_is_disclosed_rather_than_folded_in():
     t = open(LOG, encoding="utf-8").read()
     assert "A correction, made before any band was read" in t
     assert "0.326" in t, "the wrong criterion's control reading must stay on the record"
+
+
+def test_the_manuscript_quotes_the_bookmia_table_from_the_csv():
+    """Caution (j): a paper number rounds from the CSV, once, and the check is mechanical."""
+    from tests.manuscript import tex
+    apx = open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read().replace("\n", " ")
+    for r in rows():
+        n = f"{int(r['n_passages']):,}".replace(",", "{,}")
+        assert f"${n}$" in apx, (r["arm"], n)
+        assert f"${float(r['frac_vacuous']):.4f}$" in apx, (r["arm"], r["frac_vacuous"])
+        assert f"${float(r['S_median']):.1f}$" in apx, (r["arm"], r["S_median"])
+        assert f"${float(r['s_tok_median']):.3f}$" in apx, (r["arm"], r["s_tok_median"])
+
+
+def test_section4_quotes_the_scaled_vacuity_fraction():
+    """The main text carries one number from this arm and it must be the seen half's, rounded once,
+    beside the corpus size it was measured on."""
+    from tests.manuscript import tex
+    body = open(tex("sections/orders.tex"), encoding="utf-8").read().replace("\n", " ")
+    seen = arm("BookMIA seen")
+    pct = 100 * float(seen["frac_vacuous"])
+    assert f"${pct:.1f}\\%$" in body, (pct, "not in section 4")
+    total = sum(int(r["n_passages"]) for r in rows() if "BookMIA" in r["arm"])
+    assert f"${total // 1000}{{,}}{total % 1000:03d}$" in body, total
+    assert "hundred books" in body
+
+
+def test_the_shortfall_is_the_count_the_log_states():
+    """65 of 4,935. If the CSV moves, the sentence in the scoring log has to move with it."""
+    seen = arm("BookMIA seen")
+    n = int(seen["n_passages"])
+    short = round(n * (1 - float(seen["frac_vacuous"])))
+    assert short == 65, short
+    t = open(LOG, encoding="utf-8").read()
+    assert f"`{short}`" in t, f"the scoring log must state the shortfall count {short}"
+    assert f"`{n:,}`".replace(",", "{,}") in t, n
