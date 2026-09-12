@@ -1010,6 +1010,16 @@
       ],
       "description": "Every utility number in the paper is a pairwise judged preference, and the judge is dominated by position. GSM8K exact match is not a judge. Sample 64 completions per problem from Comma-7B -- the anchor carrying the paper's largest judged gain -- on the first 500 test problems, 8-shot at temperature 0.7, and serve the argmax under two rules over the same samples: majority vote (self-consistency) and the paper's own pointwise Qwen reward, unchanged. Both return one of the n draws, so both carry exactly the log n pathwise certificate of Proposition 4 -- which makes self-consistency, the most widely deployed inference-time method there is, a log n-certified NAF mechanism. Baselines k=0 (the n=1 arm) and k=-1 (Llama-3.1-8B-Instruct alone, greedy and sampled) on the same problems and seeds. Bands, gate and all four manuscript consequences pre-registered in results/onset_prediction_verifiable.md before generation.",
       "evidence": "Entry gate read before the bands were written: greedy 8-shot on 100 problems gives Comma-7B 0.42 (PASS) and TinyComma-1.8B 0.04 (FAIL). The FAIL is consequential and recorded: TinyComma is the only openly licensed anchor with the Llama-3 tokenizer and therefore the only anchor the metered decoder runs at, so there can be no judge-free head-to-head on this task and the paper may not imply one. Arm queued behind the 70B imitation run on GPU 0; scoring pending."
+    },
+    {
+      "id": "feat-102",
+      "title": "Hand the adversarial selector to a memoriser we did not make",
+      "status": "in-progress",
+      "depends_on": [
+        "feat-095"
+      ],
+      "description": "Every leakage measurement in the paper uses a memoriser we fine-tuned, so the safety claim for the paper's own proposal is only as strong as our LoRA recipe. Re-run analysis/selection_extraction.py unchanged on the same 100 CopyBench attack_train passages, same 20-token seed, same 200-token cap, same temperature and same n in {1,8,64}, with unsloth/Meta-Llama-3.1-70B -- the model the mechanism's authors evaluate and one that memorised these passages in pretraining -- as the adversarial selector in place of output/memorizing_llama8b. Only the adversary changes. Bands, both gates and the manuscript consequence of every reading pre-registered in results/onset_prediction_extraction_natural.md before generation.",
+      "evidence": "Corpus gate read first and it eliminated the alternative: on BookMIA's 'seen' test split the unconstrained Llama-3.1-8B-Instruct reproduces NOTHING -- sampled nv-recall 0.0000, maximum over 200 passages 0.0000 (results/bookmia_extraction_gate.csv) -- against caution (a)'s threshold of 0.10, so that corpus cannot carry an extraction arm at all and enters the paper for the vacuity statement only. Arm queued on GPUs 1+2 behind the 70B imitation run; selection_extraction.py gained --risky-device-map/--max-memory because a 141 GB model does not fit the single-card .cuda() it used to do."
     }
   ]
 }

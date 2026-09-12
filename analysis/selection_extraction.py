@@ -107,6 +107,12 @@ def main():
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", default="results")
     ap.add_argument("--prefix", default="selection_extraction")
+    # A 70B risky model is 141 GB and does not fit the single-card `.cuda()` below. Caution (q):
+    # the split must be given explicitly, or accelerate puts the whole thing on device 0.
+    ap.add_argument("--risky-device-map", default="",
+                    help="e.g. 'auto' to shard the risky model across the visible cards")
+    ap.add_argument("--max-memory", default="",
+                    help="e.g. '0=75GiB,1=70GiB', only used with --risky-device-map")
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -153,7 +159,16 @@ def main():
     del anchor
     torch.cuda.empty_cache()
 
-    risky = AutoModelForCausalLM.from_pretrained(a.risky_model, torch_dtype=torch.bfloat16).cuda().eval()
+    if a.risky_device_map:
+        mm = None
+        if a.max_memory:
+            mm = {int(k): v for k, v in (kv.split("=") for kv in a.max_memory.split(","))}
+        risky = AutoModelForCausalLM.from_pretrained(
+            a.risky_model, torch_dtype=torch.bfloat16,
+            device_map=a.risky_device_map, max_memory=mm).eval()
+    else:
+        risky = AutoModelForCausalLM.from_pretrained(
+            a.risky_model, torch_dtype=torch.bfloat16).cuda().eval()
     # k = -1: the risky model alone on the same seeds, the mandatory baseline
     solo = sample(risky, rtok, seeds, 1, a.max_new_tokens, a.temperature, a.batch_size, a.seed)
     flat = [(seeds[i], g) for i in range(len(passages)) for g in cands[i]]

@@ -7,6 +7,7 @@ Three arms are `in-progress` and each has its bands committed before its run:
 - **feat-098** — Proposition 3 at TinyComma + Llama-3.1-70B (`results/onset_prediction_imitation_70b.md`)
 - **feat-100** — the strongest anchor at the largest `n` (`results/onset_prediction_selection_n64_comma7b.md`)
 - **feat-101** — the judge-free axis, GSM8K exact match (`results/onset_prediction_verifiable.md`)
+- **feat-102** — the adversarial selector handed to a memoriser we did not make (`results/onset_prediction_extraction_natural.md`)
 
 Everything through feat-097 and feat-099 is `done`, and **feat-096, the decider, closed tonight**.
 
@@ -32,10 +33,10 @@ stays UNINFORMATIVE. Section 6 and Appendix J now label which axis each result s
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial* |
 | build | `exit=0`, `overfull=0`, `unresolved=0`, main text **exactly 9 of 9 pages** |
-| tests | **378**, all passing |
+| tests | **380**, all passing |
 | numeric audit | 2,179 literals, 1 expected miss (`64256`) |
 | compute | `156` disclosed; **refresh after the queue drains** (`test_compute_hours.py` wants an exact match) |
-| pre-registrations | **31** logs; `test_preregistration_count.py` pins the Reproducibility Statement to the count |
+| pre-registrations | **32** logs; `test_preregistration_count.py` pins the Reproducibility Statement to the count |
 | tree | clean, branch `iclr-2027` |
 
 Sections: 1 intro · 2 theory (Props 1, 2, Thm 1) · 3 onset · 4 *The dichotomy's corollaries,
@@ -48,6 +49,7 @@ tested* · 5 selection anchoring (Prop 4) · 6 experiments · 7 related · 8 lim
 | feat-098 Prop 3 at TinyComma + Llama-3.1-70B | 0+1 | `output/logs/imit_70b.log` | on `k=3` of `{-1,0,0.5,1,3,20}`, started 19:43 |
 | feat-100 Comma-7B at `n=64` | 4 | `output/logs/sel_comma7b_64.log` | `3,800/12,800` of the `k=0` arm, started 20:27 |
 | feat-101 judge-free axis, Comma-7B on GSM8K | 0 (queued) | `output/logs/verifiable_comma7b.log` | `scripts/run_verifiable.sh 1117475` waits on the 70B PID, then starts |
+| feat-102 selection extraction, 70B as the adversary | 1+2 (queued) | `output/logs/extraction_70b.log` | `scripts/run_extraction_70b.sh 1117475`, same wait |
 
 A card also carries **another user's** diffusion job on GPU 2 (47 GB, 100% util) since ~21:55.
 GPU 3 is the 4 GB T400 and is never used.
