@@ -1003,9 +1003,17 @@ still worth the run: `1.204` nats reach `u = 0.521` where the metered decoder's 
 frontier against `7994.6x`.
 
 **The extraction arm is a clean hit.** Near-verbatim recall is `0.0000` at every `n` from 1 to 64,
-maximum `0.0000` over all 100 passages, against the memorising model's `0.4338` mean and `0.8233`
+maximum `0.0000` over all 100 passages, against the memorising model's `0.3925` mean and `0.8154`
 max on the same passages and seeds. The selector's whole effect is about half a word of longest
 common substring and it is not monotone in `n`.
+
+> **Corrected 2026-09-12.** That baseline read `0.4338` / `0.8233` / `80%` until the arm was re-run
+> with each model given its **own** tokenizer. The old figure fed the memoriser the *safe* model's
+> token ids --- harmless-looking, because the audited anchor ships the Llama-3 tokenizer, but the
+> two tokenizer objects differ in their padding token and a batched sample is built from left
+> padding. The corrected value is now identical to four decimal places at all four anchors, which
+> it could not have been before; `tests/test_selection_claims.py` pins that identity. Phase 6
+> below has the four-anchor table.
 
 ---
 
