@@ -314,8 +314,7 @@ def selection_frontier():
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
     axL.set_xlabel("length of the protected work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
-    axL.set_title("(a) one budget indexed to the work, one not",
-                  fontsize=7.6 * F, loc="left")
+    axL.set_title("(a) indexed to the work, and not", fontsize=7.6 * F, loc="left")
 
     # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
     # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
@@ -338,12 +337,12 @@ def selection_frontier():
             best = max(best, f)
         return best
     ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
-            label=r"$\Lambda^*_s(u)$, the frontier of Thm. 1")
+            label=r"$\Lambda^*_s(u)$, Thm.~1")
 
     ks = sorted(k for k in j2 if k in price)
     x = [float(price[k]["mean_spend_nats"]) for k in ks]
     y = [float(j2[k]["utility"]) for k in ks]
-    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, $k$ swept")
+    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding")
     for k, xv, yv in zip(ks, x, y):
         if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
             ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5 * F,
@@ -352,20 +351,22 @@ def selection_frontier():
 
     xs = [max(float(r["kl_nats"]), 1e-3) for r in sweep]
     ys = [float(r["u"]) for r in sweep]
-    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f",
-            label="selection anchoring, $n$ swept")
+    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring")
     for r, xv, yv in zip(sweep, xs, ys):
         if r["n"] in ("1", "8", "64"):
             ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5 * F,
-                        xytext=(4, -10) if r["n"] == "1" else (-4, 6),
+                        xytext={"1": (4, -10), "64": (7, -4)}.get(r["n"], (-4, 6)),
                         textcoords="offset points")
 
     ax.set_xscale("log")
     ax.set_xlim(3e-4, 8e3)
-    ax.set_ylim(0.38, 0.73)
+    ax.set_ylim(0.38, 0.80)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
+    # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
+    # at readable type sizes the long three-line legend was as wide as the axes and sat on the
+    # n=64 point whichever corner it was pinned to. The swept variable is on the curve labels.
     ax.legend(fontsize=6.6 * F, frameon=False, loc="upper left", handlelength=1.6,
               borderaxespad=0.3)
     for _a in (axL, ax):
