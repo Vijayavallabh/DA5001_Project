@@ -103,3 +103,59 @@ def test_the_null_preserves_cell_sizes():
     assert counts == {"open-ended": 40, "constrained": 40}
     rng = random.Random(0)
     assert rng is not None
+
+
+# --- the manuscript paragraph these numbers back ------------------------------------------------
+
+def _manuscript(name):
+    from tests.manuscript import tex
+    return open(tex(f"sections/{name}"), encoding="utf-8").read().replace("\n", " ")
+
+
+def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
+    """Section 6's breadth paragraph must round from selection_scaling_{alpaca,mtbench}.csv, once.
+    Caution (j): a paper number rounds from the CSV, and the check is mechanical, not by eye."""
+    import re
+    body = _manuscript("experiments.tex")
+    want = {}
+    for bench in ("alpaca", "mtbench"):
+        for r in rows(os.path.join(ROOT, "results", f"selection_scaling_{bench}.csv")):
+            if int(r["n"]) == 8:
+                want[(bench, r["judge"])] = (float(r["gain"]), float(r["gain_lo95"]),
+                                             float(r["gain_hi95"]))
+    assert re is not None
+    for judge in ("Meta-Llama-3.1-8B-Instruct", "Phi-3.5-mini-instruct"):
+        g, lo, hi = want[("alpaca", judge)]
+        quoted = f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$"
+        assert quoted in body, (judge, quoted)   # rounds from the CSV, once
+
+
+def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():
+    """The paragraph says MT-Bench 'at a half-width of 0.09 could not' resolve anything. That is a
+    claim about the widest CI the benchmark produces at n=8, and it has to be true of both judges."""
+    hw = []
+    for r in rows(os.path.join(ROOT, "results", "selection_scaling_mtbench.csv")):
+        if int(r["n"]) == 8:
+            hw.append((float(r["gain_hi95"]) - float(r["gain_lo95"])) / 2)
+    assert min(hw) >= 0.085, hw          # 0.09 must not overstate how tight the arm is
+    assert "half-width of $0.09$" in _manuscript("experiments.tex")
+
+
+def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
+    """The refutation of the ceiling explanation rests on two numbers per judge; both are pinned."""
+    body = _manuscript("experiments.tex")
+    n = {x["judge"]: x for x in rows(NULL)}
+    c = n["Meta-Llama-3.1-8B-Instruct"]
+    b = n["Phi-3.5-mini-instruct"]
+    assert abs(float(c["observed_rho"]) + 0.79) < 5e-3 and abs(float(b["observed_rho"]) + 0.70) < 5e-3
+    assert "$-0.79$ and $-0.70$" in body
+    assert f"$-{-float(c['null_mean']):.2f} \\pm {float(c['null_sd']):.2f}$" in body, c
+    assert abs(float(c["p_vs_null"]) - 0.09) < 5e-3 and abs(float(b["p_vs_null"]) - 0.17) < 5e-3
+    assert "($P = 0.09$, $0.17$)" in body
+
+
+def test_section6_does_not_claim_the_ceiling_explains_the_weakening():
+    """The whole point of the paragraph. If a later edit reinstates the explanation, this fails."""
+    body = _manuscript("experiments.tex").lower()
+    assert "the pre-registered test of it fails" in body
+    assert "not shown to be" in body or "cannot say why" in body
