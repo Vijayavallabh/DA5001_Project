@@ -31,7 +31,13 @@ ids = {f["id"] for f in d["features"]}
 bad = [(f["id"], dep) for f in d["features"] for dep in f.get("dependencies", []) if dep not in ids]
 assert not bad, f"unknown dependencies: {bad}"
 active = [f["id"] for f in d["features"] if f["status"] == "in-progress"]
-assert len(active) <= 1, f"more than one feature in-progress: {active}"
+# One feature in progress for work being EDITED; parallel GPU arms are allowed (AGENTS, Working
+# Rules, amended 2026-09-12) provided each has bands committed before it started, its own
+# results/onset_prediction_*.md, and a line in session-handoff.md. That last condition is the one
+# that can rot, so it is checked here rather than taken on trust.
+handoff = open("session-handoff.md", encoding="utf-8").read()
+missing = [f for f in active if f not in handoff]
+assert not missing, f"in-progress but not named in session-handoff.md: {missing}"
 allowed = {"not-started", "in-progress", "blocked", "done"}
 assert all(f["status"] in allowed for f in d["features"]), "bad status value"
 print(f"[OK] feature_list.json valid: {len(ids)} features, in-progress={active or 'none'}")
