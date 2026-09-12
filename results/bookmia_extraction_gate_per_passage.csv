@@ -1,0 +1,201 @@
+prompt_id,novel,risky_alone_recall,anchor_mean_recall,anchor_max_recall,recall_n1,lcs_n1
+bookmia100.02.000,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.001,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.002,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.003,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.004,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.005,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.006,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.007,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.008,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,3
+bookmia100.02.009,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.010,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.011,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.012,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.013,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,4
+bookmia100.02.014,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.015,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.016,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.017,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.018,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.019,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.020,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.021,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.022,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.023,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.024,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.025,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.026,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.027,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.028,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.029,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.030,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.031,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,3
+bookmia100.02.032,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.033,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.034,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.035,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.036,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.037,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.038,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.039,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.040,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.041,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.042,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.043,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.044,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.045,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.046,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.047,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.048,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.049,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.050,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,3
+bookmia100.02.051,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,3
+bookmia100.02.052,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.053,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.054,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.055,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.056,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.057,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.058,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.059,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.060,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.061,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.062,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.063,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.064,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.065,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.066,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.067,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.068,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.069,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.070,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.071,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,3
+bookmia100.02.072,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.073,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.074,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.075,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.076,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.077,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.078,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.079,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.080,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,4
+bookmia100.02.081,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.082,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,3
+bookmia100.02.083,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.084,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.085,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.086,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.087,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.088,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.089,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.090,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.091,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.092,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.093,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.094,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,0
+bookmia100.02.095,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,1
+bookmia100.02.096,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.097,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.098,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.02.099,a portrait of the artist as a young man,0.0,0.0,0.0,0.0,2
+bookmia100.03.000,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.001,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.002,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.003,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.004,adventures of huckleberry finn,0.0,0.0,0.0,0.0,0
+bookmia100.03.005,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.006,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.007,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.008,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.009,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.010,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.011,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.012,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.013,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.014,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.015,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.016,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.017,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.018,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.019,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.020,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.021,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.022,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.023,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.024,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.025,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.026,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.027,adventures of huckleberry finn,0.0,0.0,0.0,0.0,0
+bookmia100.03.028,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.029,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.030,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.031,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.032,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.033,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.034,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.035,adventures of huckleberry finn,0.0,0.0,0.0,0.0,0
+bookmia100.03.036,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.037,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.038,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.039,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.040,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.041,adventures of huckleberry finn,0.0,0.0,0.0,0.0,0
+bookmia100.03.042,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.043,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.044,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.045,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.046,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.047,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.048,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.049,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.050,adventures of huckleberry finn,0.0,0.0,0.0,0.0,0
+bookmia100.03.051,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.052,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.053,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.054,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.055,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.056,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.057,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.058,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.059,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.060,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.061,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.062,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.063,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.064,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.065,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.066,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.067,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.068,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.069,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.070,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.071,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.072,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.073,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.074,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.075,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.076,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.077,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.078,adventures of huckleberry finn,0.0,0.0,0.0,0.0,3
+bookmia100.03.079,adventures of huckleberry finn,0.0,0.0,0.0,0.0,3
+bookmia100.03.080,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.081,adventures of huckleberry finn,0.0,0.0,0.0,0.0,3
+bookmia100.03.082,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.083,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.084,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.085,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.086,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.087,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.088,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.089,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.090,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.091,adventures of huckleberry finn,0.0,0.0,0.0,0.0,4
+bookmia100.03.092,adventures of huckleberry finn,0.0,0.0,0.0,0.0,0
+bookmia100.03.093,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.094,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.095,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.096,adventures of huckleberry finn,0.0,0.0,0.0,0.0,2
+bookmia100.03.097,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
+bookmia100.03.098,adventures of huckleberry finn,0.0,0.0,0.0,0.0,3
+bookmia100.03.099,adventures of huckleberry finn,0.0,0.0,0.0,0.0,1
