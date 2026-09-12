@@ -3600,3 +3600,101 @@ half is deleted before it was ever written down.
 No pre-registration for this arm, deliberately: it is a deterministic count over n-grams with no
 free parameter to steer, not a hypothesis test. Bands exist here for arms whose outcome a choice
 could move.
+
+---
+
+## 2026-09-12 (afternoon/evening): the constructive claim stops being a single setup
+
+The morning left the v7 reframe compiled at exactly 9 pages with three breadth generations running
+and four items pending. All four are closed and three new arms were added, two of which changed
+what the paper is allowed to say.
+
+### The page budget, and the lever that actually works
+
+Clearing the last five body lines from page 10 took a dozen prose trims that freed **nothing**
+measurable, then four structural changes that freed all five at once: a `\paragraph` heading
+deleted, a figure narrowed, a table caption shortened, a proof remark moved to the appendix. This
+is now AGENTS caution (n). Every later page-budget fight in this session was won the same way.
+
+### feat-094 — the domain split, and a hypothesis of mine that did not survive its own confound
+
+`results/selection_alpaca_note.md` had said the weaker AlpacaEval gain **is** the anchor's support
+ceiling and that "the manuscript should say so in those terms". It should not.
+`analysis/domain_breadth.py` cut AlpacaEval into the five sources it ships and MT-Bench into two
+families committed before the eight cells were computed, and asked whether the gain tracks the
+anchor's own control level. Literally the Spearman is `-0.786` and `-0.703` --- the *opposite* of
+the ceiling prediction --- but that is the direction the pre-registration had already named as
+mechanically cheap, because `u(n=1)` is subtracted inside the gain. A within-prompt exchangeability
+null in which selection does nothing already gives `-0.365 +/- 0.342` and `-0.339 +/- 0.350` over
+20,000 draws, and the observed values sit at `P = 0.0947` and `0.1651` against it. **D1 is
+uninformative and neither direction is reported.** D3 has no gain in it and so no artefact, and it
+goes the wrong way: MT-Bench's open-ended family scores *below* its constrained family in both
+judges. The note is corrected in place with a banner, and the paper now says the gain is weaker off
+our prompt set and that we cannot say why.
+
+The theorem `q(y) <= n p_s(y)` is untouched. What was refuted is using it to explain a number.
+
+### feat-095 — B1 GENERALISES: four anchors, three families
+
+Pleias-1.2B, KL3M-1.7B and Comma-7B, self-paired, same 500 prompts, same baseline, same judges.
+On the registered scorer KL3M-1.7B gains `+0.039 [+0.005, +0.076]` and Comma-7B
+`+0.111 [+0.072, +0.148]`, two of three excluding zero, which is the committed band for
+GENERALISES; on the secondary judge all three do. **Comma-7B's `+0.111` / `+0.155` is now the
+largest gain in the paper**, at the same `log 8` nats, and the strongest anchor giving the largest
+gain is the shape the support-ceiling argument predicts --- B2 is Spearman `+1.000` over four
+anchors, which the pre-registration registered as descriptive and excluded alternative 5 forbids
+using, so it is not used. B3 leakage replicates at KL3M-1.7B: `0.0000` at `n = 1, 8, 64` against
+the memoriser's `0.3925` mean and `0.8154` max with 78% of passages above threshold.
+
+Two defects had to be fixed before any of it was trustworthy:
+
+* **The entry gate had never run.** It read a summary column `mean_tokens` that
+  `selection_scaling.py` has never written --- it writes `mean_words` --- so `.get(...) or 0`
+  returned `0.0` and marked *every* anchor FAIL, the audited one included. The registered second
+  half ("fewer than 5% empty completions") was not implemented at all. Running it properly failed
+  the **audited** anchor at `6.8\%` empty, above its own threshold. Reported, not exempted, and
+  answered: best-of-`n` never picks an empty candidate, so on the 466 non-empty prompts the gain is
+  `+0.0536` against `+0.0540`, and across all four anchors every gain moves by less than `0.003`.
+  AGENTS caution (p), and a test that asserts at least one anchor passes.
+* **`selection_extraction.py` fed the safe model's token ids to both models**, harmless only
+  because the audited anchor ships the Llama-3 tokenizer the memoriser also uses. Each model now
+  gets its own, and the 20-token seed is built with the memoriser's tokenizer at every anchor so
+  it is byte-identical across them --- verified to reproduce the audited pair exactly, all 100
+  seeds and all 100 targets. Pleias-1.2B then needed a padding fallback: it declares no special
+  tokens at all, no eos, no pad, no unk, though its vocabulary has `[PAD]` at id 3.
+
+### feat-096 — the deciding arm, generating
+
+Comma-7B on AlpacaEval-805. Two readings of the weaker benchmark gain are open and one arm
+separates them: the ceiling, or an in-house prompt set that flatters the mechanism. Bands **and the
+manuscript consequence of each reading** are committed in
+`results/onset_prediction_alpaca_comma7b.md` before the run --- under PROMPT-SET EFFECT the paper
+leads with the benchmark number in Section 6 and in the abstract, whatever A1 says. Running on
+GPU 2 since 16:19, about 4.5 hours.
+
+### The vacuity statement at 13x the corpus, running
+
+`results/onset_prediction_bookmia_regimes.md`: `s(x)` and the verdict `K >= S(x)` need only anchor
+forward passes, so the paper's "vacuous for 100% of the 758 protected passages" can be restated on
+**9,870 passages across 100 BookMIA books** for a few GPU-minutes. V3 is a control the paper has
+never had: the anchor saw neither the seen nor the unseen half, so their `s(x)` should be
+indistinguishable, and if they are not the label is confounded with text properties.
+
+### Manuscript
+
+Section 6 gained two paragraphs --- the four anchors, and the standard benchmarks with the ceiling
+explanation refuted --- Table 1 gained the Comma-7B row and lost the failed scorer's (its number is
+in the prose), the abstract and the contribution bullet gained "four anchors in three families",
+and Appendix J gained the empty-completion and benchmark-weakness limits. All of it paid for
+structurally. Body is 9 pages, 0 overfull, 0 `??`, 2,044 numeric literals audited with the one
+expected miss, 322 tests.
+
+**Figure 1 was illegible and nobody had checked.** It was drawn 9.4 inches wide and printed at
+`0.88\textwidth`, so every label was scaled to 0.58 of nominal --- 3 to 4 pt --- and at the
+`0.72\textwidth` it briefly sat at while I was buying space, 0.42. It is now drawn at 6.9 inches
+for a 5.5-inch column with the type pre-scaled by the shrink it will take, and panel (a) carries
+identities only: the five rotated multi-line notes collided into a knot once the type was readable,
+and what they said moved to the caption. Rendering a page to PNG and *looking* at it is the check
+that found this; no compile-time check would have.
+
+Compute disclosure `144 -> 150` GPU-hours (`compute_hours.py` measures 149.6).
