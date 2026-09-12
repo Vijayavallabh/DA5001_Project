@@ -85,3 +85,77 @@ Writes `results/judge_consistency.csv` and `results/judge_consistency_per_prompt
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/judge_consistency.py --out results
+```
+
+500 prompts x 2 arms x 2 orders = 2,000 judge calls on the identical items the cross-judge arm used.
+
+| criterion | value | reading |
+|---|---|---|
+| C1 order consistency | `0.292` over 1,000 items | **UNUSABLE** (band: `< 0.50`) |
+| C2 first-slot win rate | `0.127` over 1,315 decided | **STRONG** (band: `> 0.15` from `0.5`) |
+| C3 gain, order-averaged | `+0.0405 [+0.019, +0.063]`, n=500 | **SURVIVES** |
+| C3 secondary, consistent items only | `+0.0197 [-0.026, +0.072]`, n=76 | conditions on an outcome |
+
+### The instrument is dominated by position, and here is the size of it
+
+The same two texts, the same judge, the same prompt — only the slots swapped:
+
+| arm | shown **first** | shown **second** |
+|---|---|---|
+| `n=1`, wins / ties / losses | `24` / `172` / `304` | `261` / `173` / `66` |
+| `n=8`, wins / ties / losses | `30` / `185` / `285` | `298` / `155` / `47` |
+
+A response wins **ten times more often when it is shown second**. This is not a parsing artefact:
+the two rows are the same generations judged twice, and the effect is symmetric across arms. Judge B
+(`microsoft/Phi-3.5-mini-instruct`) is answering the question *which one came last*, most of the
+time, and answering it about the text only in the residual.
+
+### What this invalidates, and what it does not
+
+**It invalidates every absolute judged level in the paper, across passes.** A `u` near `0.5` from
+this judge is mostly the coin flip that decides the order: an arm wins about `52\%` of the time in
+the second slot and about `5\%` in the first, so its average sits near the middle whatever it wrote.
+The manuscript must stop comparing levels from different judged passes — the sentence in
+Section~\ref{sec:experiments} that reads "the metered decoder reaches `0.522` and selection reaches
+`0.577`" compares two such levels and has to be restated as the paired gains over each arm's own
+control, which is `+0.082` against `+0.142`.
+
+**It does not invalidate the gains.** Every arm on record randomises the presentation order per pair
+(`analysis/utility.py`, `flip = rng.random() < 0.5`), so the bias enters as noise rather than as a
+shift, and both arms of a comparison draw from the same randomisation. C3 is the direct test of
+exactly that and it holds: order-averaging every item — the estimator that removes position by
+construction rather than in expectation — leaves `+0.0405 [+0.019, +0.063]`, an interval excluding
+zero and within the committed `0.05` of the `+0.081` on record.
+
+### The pre-registration said UNUSABLE would cost Sections 5-6, and it does not, for a stated reason
+
+The band was written as: "UNUSABLE would mean the judged gain cannot carry the weight the paper puts
+on it, and Sections 5-6 would have to be rewritten around the leakage result alone." C1 reads
+UNUSABLE and C3 reads SURVIVES, and the two are not in conflict: C1 is about a *single verdict* and
+C3 is about the *arm-level average under an order-averaged estimator*. The commitment is honoured in
+the half that the evidence reaches — the paper stops quoting levels and quotes gains — and not in
+the half it does not, because C3 was pre-registered precisely as the test of whether the gain
+survives, and it does. Both readings go in the manuscript; neither is omitted.
+
+### The secondary reading, reported as secondary
+
+On the 76 prompts of 500 where *both* arms happened to be order-consistent, the gain is
+`+0.0197 [-0.026, +0.072]`. Excluded alternative 1 forbids making this the headline, and it stays
+secondary: conditioning on consistency selects the prompts where the two texts differ most
+obviously, and 76 items cannot resolve `0.04`.
+
+### What a deployer and a reviewer should take from this
+
+Pairwise LLM judging at this model scale needs order-averaging as a *protocol*, not randomisation as
+a *hope*. Randomising makes the estimate unbiased and leaves the variance; averaging both orders per
+item removes the position term outright at exactly twice the cost. Every judged number this project
+adds from here uses the order-averaged estimator, and `analysis/judge_consistency.py` is the
+instrument check that should be run before any new judge is trusted.

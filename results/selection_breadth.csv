@@ -1,0 +1,3 @@
+anchor,model,judge,n,u_n1,u_n,gain,gain_lo95,gain_hi95,mean_tokens_n1,entry_gate
+TinyComma-1.8B (audited),jacquelinehe/tinycomma-1.8b-llama3-tokenizer,Meta-Llama-3.1-8B-Instruct,8,0.429,0.502,0.073,0.027,0.12,0.0,FAIL
+TinyComma-1.8B (audited),jacquelinehe/tinycomma-1.8b-llama3-tokenizer,Phi-3.5-mini-instruct,8,0.435,0.489,0.054,0.013,0.095,0.0,FAIL
