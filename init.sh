@@ -76,60 +76,62 @@ echo "[OK] no repo files stranded in the manuscript tree"
 
 echo "=== Init Complete ==="
 echo ""
-echo "Plan v5 + the v6 restructure, branch iclr-2027, target ICLR 2027 (abstract Sep 18, paper Sep 25).
-feat-035..087 and feat-089 are done except the optional ones; **feat-088 is in progress**.
-feat-089 rebuilt the paper around what worked: it now argues that the obstruction is METERING PER
-TOKEN, not budgeting, and selection anchoring is Sections 5-6 rather than Appendix H. The result it
-is built on is feat-087: the paper measures the audited decoder paying 165 nats for a gain the Cramer rate
-function prices at 0.052, and then declines to make the constructive claim. SELECTION ANCHORING
-makes it: draw n completions from the anchor, score them, serve the argmax, and the certificate is
-Proposition 1 with K = log n -- vacuous only at n = e^S(x), about e^849, and it does not grow with
-the work the way kT does (odometer.csv stores S_total_median = 849 exactly; 850 was a second
-rounding and is gone). Ranked by the RISKY MODEL'S OWN LIKELIHOOD it buys nothing (its committed
-band is refuted), because that likelihood predicts the judge at AUC 0.526, worse than the
-completion's length. Ranked by a quality model and scored by a judge that did no ranking, n=8 gains
-+0.081 [0.034, 0.130] for 1.204 nats where the metered decoder's best arm gains +0.072 for 171.3.
-Recall is 0.0000 at every n up to 64. Before that, feat-086: the paper's largest stated limitation turned into an intervention. Hand every one of
-the nine pairs' adversaries the SAME NUMBER OF WORDS instead of the same twenty tokens and the
-spread in onset/s(x) goes 0.289 -> 0.113, S_match/S_20 = 0.392 against a band of <= 0.5 committed
-before either new arm was swept -- 61% of what reads as a property of the anchors is the benchmark's
-seed convention. Every pair that moved moved DOWN; the five that did not move were already at the
-matched context, which makes them the control. Before that, feat-084/085: the onset ratio's two-value split was a GAP IN THE ANCHORS, not in the phenomenon.
-A survey of 21 openly licensed models found exactly one in the 2.4-3.4 chars/token gap Limitations
-called unfillable; built into a pair with everything committed beforehand it lands at 1.027, between
-the clusters. Its one confound that fired -- the weakest memoriser in the set -- was answered by the
-contingent control committed in the same file BEFORE that sweep: open-calm-3b, same tokenizer, s(x)
-within 0.5%, a memoriser 5.1x stronger, lands at 0.993, also between the clusters. Nine pairs now,
-and the context ranking strengthens to -0.958 at exact p = 0.0002.
-Before that, feat-082: the onset re-measured on a second, disjoint protected corpus, where the
-paper's central split reproduces -- the fine-tokenizer pair again the only one above 1 with its
-interval excluding it, every ratio within 0.05 of its twin on the novels. Before that, the matched-utility
-line (feat-072..081): twelve pairs in seven families, an earned negative on every predictor, and
-three robustness axes that move levels by more than the precision floor and never move the ranking. feat-010/011 stay optional, feat-012 is superseded by feat-024, and
-feat-016 is human-only - never start it. master holds the verified SaTML fallback at dd7e801.
+echo "Plan v5, the v6 restructure and the **v7 reframe**, branch iclr-2027, target ICLR 2027.
+Everything through feat-095 is done; **feat-096 is in progress**.
+
+The paper is v7 and argues ONE claim. One line of the chain rule leaves a per-token budget two
+options: either K = kT grows with the work and the certificate is VACUOUS -- empty exactly at
+K = S(x), identically for every Renyi order -- or the budget is bounded and the decoder is the
+anchor at all but O(1) steps, which is TRIVIAL. Both horns are measured. The deployed class takes
+the first by construction: its spend is the cost of IMITATING the risky model, Theta(T) nats
+independent of the utility bought, stalling at 171.3 while its certificate is written against 4000.
+Three repairs -- a sharper charge, a smaller cap, a better schedule -- are corollaries and fail
+where the dichotomy says they must, and so does the ONE causal placement it allows: concentrating
+the whole log-8 budget on the opening gains -0.008 [-0.056, +0.041] (feat-092, THE CAUSAL HORN IS
+EMPTY). The escape is a different PLACE to spend. Serving the best of n anchor draws satisfies
+q(y) <= n p_s(y) -- a PATHWISE certificate of exactly log n, under any score and any tie rule,
+vacuous only at n = e^S(x).
+
+What the last session added, and what it is allowed to claim:
+ * feat-095, B1 GENERALISES. The constructive claim is no longer one setup: four anchors in three
+   families, 1.2B to 7B, same prompts, judge and baseline. KL3M-1.7B +0.039 [+0.005, +0.076] and
+   Comma-7B +0.111 [+0.072, +0.148] on the registered scorer, all three new anchors on the second.
+   Comma-7B is now the paper's largest gain. Leakage is 0.0000 at n = 1, 8, 64 at every anchor.
+ * feat-094, the domain split, is UNINFORMATIVE and is reported as such. The gain does not track
+   the anchor control level across seven domain cells, but the -0.79/-0.70 it shows is inseparable
+   from a no-effect null already giving -0.36 +/- 0.34. The support-ceiling EXPLANATION of the
+   weaker AlpacaEval gain therefore has no evidence, results/selection_alpaca_note.md is corrected
+   in place, and the paper says the gain is weaker off our prompts and that we cannot say why.
+   The theorem q(y) <= n p_s(y) is untouched; what was refuted is using it to explain a number.
+ * The vacuity statement now covers 9,870 BookMIA passages across 100 books (98.7% seen, 100%
+   unseen and control) against 758 across 16. Its seen/unseen halves are CONFOUNDED under an anchor
+   that saw neither and may never be treated as a matched pair.
+ * feat-091: the judge is POSITION-DOMINATED. The same two texts win 261/500 shown second and 24
+   shown first. Never quote an absolute judged level across passes; Table 1 is gains, not levels.
+
+feat-010/011 stay optional, feat-012 is superseded by feat-024, and feat-016 is human-only - never
+start it. master holds the verified SaTML fallback at dd7e801.
 
 The ICLR manuscript ~/sub/satml/iclr_2027.tex is structurally complete: main text exactly 9 of 9
 pages - Ethics, Reproducibility and LLM Usage do not count, and pdftotext page 10 must carry NO
 body prose at all (counting characters before 'Ethics' missed a two-line spill on 2026-09-11);
-39 pages total, 0 overfull, 0 '??', 1831 numeric literals audited with one expected miss. It is NOT in this repo and must never be committed to the
-stray git repo it sits inside.
+0 overfull, 0 '??', 2080 numeric literals audited with one expected miss (64256). It is NOT in this
+repo and must never be committed to the stray git repo it sits inside.
 
 If you are here to work:
 1. Read AGENTS.md, then progress.md (bottom first) and session-handoff.md
-2. feat-088 is OPEN and may still be running: 64 anchor candidates on the 500 ordinary prompts
-   (output/phase5/sel_anchor64, log output/logs/sel_anchor64.log) with a chained scoring pass
-   (output/logs/sel_scaling.log). Its bands were committed BEFORE it ran, in
-   results/onset_prediction_selection_scaling.md -- score against them and do not refit.
-   Everything else is done. The paper was restructured on 2026-09-11 (feat-089): it now argues
-   that metering PER TOKEN is the obstruction, and selection anchoring is Sections 5-6 rather
-   than an appendix. Six live cautions: a paper number must round from its CSV ONCE -- double
-   rounding put six of Appendix D's 72 cells one off, and 849 was being quoted as 850; a pair
-   enters the onset analysis only if its SAMPLED k=-1 recall >= 0.10 (greedy recall lies);
-   every arm is pre-registered with a refuting band in results/onset_prediction_*.md;
-   pkill -f matches the shell that runs it, so kill by PID; killing a h1.py PARENT leaves the
-   CUDA child running and holding GPU memory, so check nvidia-smi --query-compute-apps and kill
-   the child too; and textwrap.fill breaks words at hyphens, which LaTeX renders as 'per- token',
-   so pass break_on_hyphens=False and check with grep -n '[a-zA-Z]-$' sections/*.tex.
+2. feat-096 is OPEN and may still be running: Comma-7B on AlpacaEval-805, the arm that decides
+   whether the weaker benchmark gain is the anchor's support ceiling or an in-house prompt set that
+   flatters the mechanism. Its bands AND the manuscript consequence of each reading were committed
+   before it started, in results/onset_prediction_alpaca_comma7b.md -- score against them and do
+   not refit. Sixteen live cautions are in AGENTS.md; the four that cost time most recently are
+   (m) the judge is position-dominated, (n) the page budget moves with floats, headings and table
+   rows and NOT with prose, (o) h1.py writes the CLI k string verbatim into filenames so 1e-9
+   becomes trajectories_k1e-09_*.jsonl, and (p) a gate that fails everything is not a gate -- the
+   breadth entry gate read a column its producer never writes and had therefore never run.
+   And one habit rather than a caution: RENDER A MANUSCRIPT PAGE TO PNG AND LOOK AT IT. Figure 1
+   had been drawn at 9.4in and printed at 0.88 textwidth for its whole life, putting every label
+   at 3-4pt, and no compile-time check saw it.
 3. If you change something, rerun its evidence command, update feature_list.json and progress.md,
    and recompile the manuscript (0 '??', 0 overfull, no body prose on pdftotext page 10)
 "
