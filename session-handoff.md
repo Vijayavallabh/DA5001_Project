@@ -4,12 +4,11 @@
 
 Three arms are `in-progress` and each has its bands committed before its run:
 
-- **feat-098** — Proposition 3 at TinyComma + Llama-3.1-70B (`results/onset_prediction_imitation_70b.md`)
 - **feat-100** — the strongest anchor at the largest `n` (`results/onset_prediction_selection_n64_comma7b.md`)
 - **feat-101** — the judge-free axis, GSM8K exact match (`results/onset_prediction_verifiable.md`)
 - **feat-102** — the adversarial selector handed to a memoriser we did not make (`results/onset_prediction_extraction_natural.md`)
 
-Everything through feat-097 and feat-099 is `done`, and **feat-096, the decider, closed tonight**.
+Everything through feat-099 is `done`. **feat-096** (the decider) and **feat-098** (Proposition 3 at the mechanism authors' own 70B) both closed tonight.
 
 The paper is v7. It argues one claim and exhibits a mechanism on the other side of it:
 
@@ -33,7 +32,7 @@ stays UNINFORMATIVE. Section 6 and Appendix J now label which axis each result s
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial* |
 | build | `exit=0`, `overfull=0`, `unresolved=0`, main text **exactly 9 of 9 pages** |
-| tests | **380**, all passing |
+| tests | **382**, all passing |
 | numeric audit | 2,179 literals, 1 expected miss (`64256`) |
 | compute | `156` disclosed; **refresh after the queue drains** (`test_compute_hours.py` wants an exact match) |
 | pre-registrations | **32** logs; `test_preregistration_count.py` pins the Reproducibility Statement to the count |
@@ -46,22 +45,22 @@ tested* · 5 selection anchoring (Prop 4) · 6 experiments · 7 related · 8 lim
 
 | job | GPU | log | state at 22:05 |
 |---|---|---|---|
-| feat-098 Prop 3 at TinyComma + Llama-3.1-70B | 0+1 | `output/logs/imit_70b.log` | on `k=3` of `{-1,0,0.5,1,3,20}`, started 19:43 |
-| feat-100 Comma-7B at `n=64` | 4 | `output/logs/sel_comma7b_64.log` | `3,800/12,800` of the `k=0` arm, started 20:27 |
-| feat-101 judge-free axis, Comma-7B on GSM8K | 0 (queued) | `output/logs/verifiable_comma7b.log` | `scripts/run_verifiable.sh 1117475` waits on the 70B PID, then starts |
-| feat-102 selection extraction, 70B as the adversary | 1+2 (queued) | `output/logs/extraction_70b.log` | `scripts/run_extraction_70b.sh 1117475`, same wait |
+| feat-100 Comma-7B at `n=64` | 4 | `output/logs/sel_comma7b_64.log` | `7,400/12,800` at 23:20 |
+| feat-101 judge-free axis, Comma-7B on GSM8K | 0 | `output/logs/verifiable_comma7b.log` | started 22:53, `2,624/32,000`, ~5 h |
+| feat-102 selection extraction, 70B as the adversary | 1+2 | `output/logs/extraction_70b.log` | started 22:55, anchor sampling `3,288/6,400` |
 
 A card also carries **another user's** diffusion job on GPU 2 (47 GB, 100% util) since ~21:55.
 GPU 3 is the 4 GB T400 and is never used.
 
 ## Recommended next step
 
-1. **Score feat-098** the moment `imit_70b.log` prints its last `k=20` line. It needs no GPU:
-   `analysis/imitation_cost.py --dirs output/phase5/imit_llama70b --tag _llama70b
-   --min-trajectories 20 --out results`, then read J1/J2/J3 against the committed bands,
-   **honouring the addendum that J1's INVERTED reading may not be applied as stated** because the
-   70B is a base model and the 8B is instruct-tuned, so size is confounded with tuning. Append a
-   fourth row to the Appendix A table and write the scoring log.
+1. **Finish the caution (s) audit.** Scoring feat-098 found that post-EOS padding positions were
+   being counted as decode steps; `dap/stats.py:strip_pad_steps` fixes it and
+   `analysis/imitation_cost.py` uses it. **The other consumers of `per_step_log` have not been
+   re-run**: `budget_drift.py` (`F = len(free)/len(steps)`) and `renyi_sweep.py`
+   (`tot += len(per_step_log)`) both take step fractions and are the likeliest to move;
+   `concentration.py`, `pathwise_price.py`, `burst_audit.py`, `regime_sweep.py` and
+   `reanalyze_logs.py` need checking. Anything reading the generated *text* is unaffected.
 2. **Score feat-100** when its seven `n` arms land. G3 is a nested reproducibility check and gates
    the rest: if the `n <= 8` rows disagree with the breadth arm by more than `0.03`, **G1 is not
    readable**. Under GROWS the abstract's headline number changes; under OVEROPTIMISES the
