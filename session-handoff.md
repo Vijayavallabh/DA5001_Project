@@ -41,7 +41,12 @@ tested* · 5 selection anchoring (Prop 4) · 6 experiments · 7 related · 8 lim
 | feat-096 Comma-7B on AlpacaEval-805 | 2 | `output/logs/alpaca_comma7b.log` | ~4.5 h from 16:19; the first progress line appears only after 805 of 6,440 generations |
 | B3 leakage, Comma-7B | 4 | `output/logs/b3_leakage.log` | ~45 min from 16:37 |
 | B3 leakage, Pleias-1.2B | 0 | `output/logs/b3_pleias12b.log` | scoring phase |
-| BookMIA regimes, seen + unseen | 0 | `output/logs/regimes_bookmia.log` | minutes |
+| BookMIA regimes, seen + unseen | 0 | `output/logs/regimes_bookmia.log` | **done**, scored |
+| Proposition 3 at two more pairs (`results/onset_prediction_imitation_breadth.md`) | 0 | `output/logs/imit_breadth.log` | ~2 h from 17:04 |
+
+The two pre-registrations with no scoring section yet are
+`results/onset_prediction_alpaca_comma7b.md` and `results/onset_prediction_imitation_breadth.md`;
+`tests/test_preregistration_count.py` fails if an unscored one is not named here.
 
 ## Recommended next step
 
