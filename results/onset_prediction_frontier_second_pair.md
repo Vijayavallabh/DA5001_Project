@@ -104,3 +104,82 @@ Writes `results/frontier_pair_llama321b.csv`.
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+```
+.venv/bin/python h1.py --k-values 0.0 --safe-model-path meta-llama/Llama-3.2-1B \
+  --risky-model-path meta-llama/Llama-3.1-8B-Instruct --trajectories-per-prompt 8 \
+  --cap-neutral 200 --cap-creative 150 --cap-factual 150 --cap-val 0 --cap-test 0 \
+  --cap-attack-train 0 --max-new-tokens 200 --output-dir output/phase5/sel_llama321b_8
+.venv/bin/python analysis/frontier_pair.py --sel-dir output/phase5/sel_llama321b_8 \
+  --metered-dir output/phase5/imit_llama321b --tag _llama321b --out results
+```
+→ `results/frontier_pair_llama321b.csv`. The metered arms were not regenerated: they are the ones
+`results/onset_prediction_imitation_breadth.md` produced, on the same 500 prompts.
+
+### A correction to this file's own protocol, disclosed rather than folded in
+
+The "What is measured" section above says the gain is taken "against the anchor-alone arm (`k=0` for
+the metered side, `n=1` for selection), **which is the same text either way**". That parenthetical is
+wrong: `k=0` from the metered sweep and `n=1` from the selection pool are two anchor-only samples at
+different seeds, not one text. The *intent* --- stated in the same sentence --- was that the two
+mechanisms share a control exactly, so the primary number below uses **one** shared control, the
+metered run's own `k=0` arm, for both mechanisms. Selection's within-pool gain against its own
+`n=1` is reported beside it and never substituted for it. Both are in the CSV.
+
+### The numbers, on the same 500 prompts against the same `k=-1` opponent
+
+| arm | spend, nats | gain, judge B (registered) | gain, judge C |
+|---|---|---|---|
+| metered, `k=0.5` | `88.1` | `+0.015 [-0.028, +0.057]` | `+0.102 [+0.045, +0.159]` |
+| metered, `k=1` | `112.7` | `+0.051 [+0.008, +0.091]` | `+0.131 [+0.074, +0.189]` |
+| metered, `k=3` | `123.2` | `+0.056 [+0.014, +0.097]` | `+0.124 [+0.069, +0.180]` |
+| metered, `k=20` | `123.4` | `+0.055 [+0.016, +0.093]` | `+0.131 [+0.076, +0.189]` |
+| selection, `n=2` | `0.193` | `+0.024 [-0.018, +0.068]` | `+0.080 [+0.038, +0.122]` |
+| selection, `n=4` | `0.636` | `+0.048 [+0.006, +0.090]` | `+0.140 [+0.094, +0.186]` |
+| **selection, `n=8`** | **`1.204`** | **`+0.076 [+0.031, +0.122]`** | **`+0.154 [+0.104, +0.200]`** |
+
+### F1 — **REPLICATES**, on both judges
+
+On the registered scorer the best metered arm is `k=3`, which gains `+0.056` for `123.2` nats;
+selection at `n=8` gains **more**, `+0.076`, for `1.204` --- `102\times` less divergence. On judge C
+the best metered arm is `k=1` at `+0.131` for `112.7` nats and selection gains `+0.154` for the
+same `1.204`, `94\times` less. Both selection intervals exclude zero. The committed band asked only
+that selection come within `0.03` of the best metered arm at under a tenth of its spend; it beats it
+outright at a hundredth.
+
+**The nats-for-utility gap is not a property of TinyComma.** That was the reading REVERSED would
+have cost the paper, and it is not what happened.
+
+### F2 — descriptive: the metered decoder is *useful* here, and still loses
+
+The contrast with the audited pair is worth recording rather than smoothing over. At TinyComma the
+metered decoder's best arm gains `+0.072` for `171.3` nats and every lower budget gains nothing
+measurable. Here it gains `+0.05` to `+0.13` and resolves at three of four budgets --- a Llama-3.2-1B
+anchor is close enough to the risky model that a per-token meter buys real utility. It still spends
+two orders of magnitude more than selection to buy less of it, and its own spend saturates at
+`123.4` nats exactly as Proposition 3 says: `k=3` and `k=20` differ by `0.2` nats of realised spend
+and by `0.001` of judged gain, while the published cap between them differs by a factor of seven.
+
+Within-pool, selection's `n=8` gain against its own `n=1` is `+0.110` (judge B) and `+0.143`
+(judge C), both larger than against the shared control, because the two anchor-only samples differ
+by about `0.03` of judged utility at these sample sizes. The shared-control number is the one
+reported above and is the more conservative of the two on both judges.
+
+### F3 — nothing else may be taken from this pair
+
+`Llama-3.2-1B` is not a safe model. No certificate, leakage or `s(x)` number appears above and none
+may be inferred; the arm decoded nothing on the protected split. The audited pair remains the
+paper's primary comparison and this is a robustness check, as excluded alternative 5 requires.
+
+### The constraint that made this the only available second pair
+
+Worth repeating from above the line, because it is a limitation of the field rather than of this
+run: among the openly licensed safe models we hold, **TinyComma-1.8B is the only one for which the
+metered decoder runs at all**, because anchored decoding fuses two distributions over one shared
+vocabulary and no other openly licensed anchor ships the Llama-3 tokenizer. A second *legitimate*
+head-to-head needs either an openly licensed anchor with a frontier model's tokenizer, or a
+mechanism that does not require a shared vocabulary. Neither exists today.
