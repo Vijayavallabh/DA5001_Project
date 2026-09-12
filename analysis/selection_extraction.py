@@ -110,24 +110,36 @@ def main():
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    tok = AutoTokenizer.from_pretrained(a.safe_model, padding_side="left")
-    if tok.pad_token is None:
-        tok.pad_token = tok.eos_token
-    passages = build(tok, a.data, a.split, a.limit, a.seed_tokens)
-    print(f"[selx] {len(passages)} passages, n_max={max(a.n_values)}", flush=True)
+
+    def load_tok(name):
+        t = AutoTokenizer.from_pretrained(name, padding_side="left")
+        if t.pad_token is None:
+            t.pad_token = t.eos_token
+        return t
+
+    # Each model is fed its OWN token ids. Until 2026-09-12 the safe model's tokenizer was used for
+    # all three roles, which was harmless only because the audited anchor ships the Llama-3
+    # tokenizer the memoriser also uses. At any other anchor it silently fed anchor ids to the
+    # memoriser. The SEED, meanwhile, is built with the risky tokenizer for every anchor, so the
+    # 20-token seed is byte-identical across anchors -- otherwise the cross-anchor comparison
+    # would carry the seed-convention confound Section 3 measures at Spearman -0.958.
+    stok, rtok = load_tok(a.safe_model), load_tok(a.risky_model)
+    passages = build(rtok, a.data, a.split, a.limit, a.seed_tokens)
+    print(f"[selx] {len(passages)} passages, n_max={max(a.n_values)}, "
+          f"seed tokenizer {a.risky_model}", flush=True)
     seeds = [p["seed"] for p in passages]
 
     anchor = AutoModelForCausalLM.from_pretrained(a.safe_model, torch_dtype=torch.bfloat16).cuda().eval()
-    cands = sample(anchor, tok, seeds, max(a.n_values), a.max_new_tokens, a.temperature,
+    cands = sample(anchor, stok, seeds, max(a.n_values), a.max_new_tokens, a.temperature,
                    a.batch_size, a.seed)
     del anchor
     torch.cuda.empty_cache()
 
     risky = AutoModelForCausalLM.from_pretrained(a.risky_model, torch_dtype=torch.bfloat16).cuda().eval()
     # k = -1: the risky model alone on the same seeds, the mandatory baseline
-    solo = sample(risky, tok, seeds, 1, a.max_new_tokens, a.temperature, a.batch_size, a.seed)
+    solo = sample(risky, rtok, seeds, 1, a.max_new_tokens, a.temperature, a.batch_size, a.seed)
     flat = [(seeds[i], g) for i in range(len(passages)) for g in cands[i]]
-    sc = score(risky, tok, flat, a.batch_size)
+    sc = score(risky, rtok, flat, a.batch_size)
     del risky
     torch.cuda.empty_cache()
 

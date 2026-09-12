@@ -5,3 +5,5 @@ Pleias-1.2B,PleIAs/Pleias-1.2b-Preview,Meta-Llama-3.1-8B-Instruct,8,0.333,0.404,
 Pleias-1.2B,PleIAs/Pleias-1.2b-Preview,Phi-3.5-mini-instruct,8,0.411,0.44,0.029,-0.012,0.068,203.3,0.0,500,PASS,0.029,-0.012,0.069,500
 KL3M-1.7B,alea-institute/kl3m-003-1.7b,Meta-Llama-3.1-8B-Instruct,8,0.242,0.293,0.051,0.013,0.09,206.9,0.002,500,PASS,0.0511,0.012,0.0882,499
 KL3M-1.7B,alea-institute/kl3m-003-1.7b,Phi-3.5-mini-instruct,8,0.31,0.349,0.039,0.005,0.076,206.9,0.002,500,PASS,0.0391,0.004,0.0752,499
+Comma-7B,common-pile/comma-v0.1-2t,Meta-Llama-3.1-8B-Instruct,8,0.426,0.581,0.155,0.106,0.2,203.6,0.03,500,PASS,0.1577,0.1093,0.2062,485
+Comma-7B,common-pile/comma-v0.1-2t,Phi-3.5-mini-instruct,8,0.45,0.561,0.111,0.072,0.148,203.6,0.03,500,PASS,0.1124,0.0722,0.1505,485
