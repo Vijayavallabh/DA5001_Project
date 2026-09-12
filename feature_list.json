@@ -963,6 +963,24 @@
       ],
       "description": "The deciding arm: Comma-7B on AlpacaEval-805. Two readings of the weaker standard-benchmark gain are open and one arm separates them -- the anchor's support ceiling (feat-094 came back uninformative on that question along the domain axis), or an in-house prompt set that flatters the mechanism. Comma-7B is the strongest openly licensed anchor we hold and gives the largest in-house gain, so if the gain recovers on AlpacaEval the ceiling reading is supported and if it drops as TinyComma's did the prompt set is. Bands and the manuscript consequence of each reading committed in results/onset_prediction_alpaca_comma7b.md before the run: under PROMPT-SET EFFECT the paper leads with the benchmark number in Section 6 and in the abstract, whatever A1 reads.",
       "evidence": ""
+    },
+    {
+      "id": "feat-097",
+      "status": "in-progress",
+      "dependencies": [
+        "feat-095"
+      ],
+      "description": "The head-to-head at a second pair. The paper's central comparison -- the metered decoder gains +0.072 for 171.3 nats and selection +0.142 for 3.175 -- is one (anchor, risky) pair, and it cannot be repeated at the anchors feat-095 added: the factory needs a shared vocabulary and among the openly licensed safe models only TinyComma-1.8B ships the Llama-3 tokenizer, so at every other legitimate anchor the metered decoder does not run. The one further pair that exists is Llama-3.2-1B against Llama-3.1-8B-Instruct, which is NOT a legitimate safe model and from which no certificate, leakage or s(x) number may be taken. Judge both mechanisms in one pass against the same k=-1 opponent with one shared anchor-alone control. REVERSED is the reading that would make the 171.3-against-3.175 sentence a property of TinyComma.",
+      "evidence": ""
+    },
+    {
+      "id": "feat-098",
+      "status": "in-progress",
+      "dependencies": [
+        "feat-095"
+      ],
+      "description": "Proposition 3 at the pair the mechanism's authors evaluate. Every spend measurement in the paper uses Llama-3.1-8B-Instruct as the risky model; He et al. use Llama 3.1 70B base with the same TinyComma anchor. The 70B fits in bf16 across two A100s and shares the anchor's vocabulary, so this is the strongest available version of the measurement: the mechanism's own published pair at the authors' own budgets. J1 predicts the imitation rate RISES above the 8B pair's 0.8278, because a 70B base is further from a 1.8B anchor; J2 requires all four structural readings (saturation, spend-is-imitation, linearity, risky-unchanged at k=20) before SHAPE SURVIVES may be written.",
+      "evidence": ""
     }
   ]
 }

@@ -20,7 +20,7 @@ Before writing code:
 
 ## Working Rules
 
-- **One feature at a time.** Exactly one feature `in-progress` at any moment.
+- **One feature at a time, with one bounded exception.** Exactly one feature `in-progress` at any moment *for work being edited*. **GPU arms may queue in parallel** when separate cards are free, provided each has its bands committed before it starts and its own `results/onset_prediction_*.md` scoring log — which is what keeps parallel arms from becoming scattered half-finished work. Amended 2026-09-12, when feat-096, feat-097 and feat-098 ran concurrently on GPUs 2, 4 and 0+4; `session-handoff.md` must list every one of them and `tests/test_preregistration_count.py` fails if an unscored pre-registration is not named there.
 - **Stay in scope.** Touch only files the feature needs. Log unrelated bugs in `progress.md` under Blockers/Risks; do not fix them.
 - **Verification required.** Nothing is done without running its evidence command and pasting the output into `feature_list.json`.
 - **Baselines are mandatory.** Every experiment that reports a copying or spend metric at some k also reports k = −1 (risky model only) and k = 0 (safe model only) on the same prompts and seeds.
