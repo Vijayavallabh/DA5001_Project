@@ -158,7 +158,11 @@ util_renyi_4,output/phase5/util_renyi_4.log,1,2026-09-08 16:56,2026-09-08 17:09,
 warp_arms,output/phase5/warp_arms.log,1,2026-09-10 03:12,2026-09-10 05:55,2.72,2.72,log_birth,0.0,scanned; traced sleeps removed
 warp_arms2,output/phase5/warp_arms2.log,1,2026-09-10 03:30,2026-09-10 05:07,1.61,1.61,log_birth,0.0,scanned; traced sleeps removed
 workload_arms,output/phase5/workload_arms.log,1,2026-09-11 07:08,2026-09-11 07:27,0.3,0.3,log_birth,0.0,scanned; traced sleeps removed
-alpaca_comma7b,output/logs/alpaca_comma7b.log,1,2026-09-12 16:17,2026-09-12 16:19,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
+alpaca_comma7b,output/logs/alpaca_comma7b.log,1,2026-09-12 16:17,2026-09-12 19:32,3.23,3.23,log_birth,0.0,scanned; traced sleeps removed
+alpaca_comma7b_score,output/logs/alpaca_comma7b_score.log,1,2026-09-12 18:59,2026-09-12 18:59,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+b3_leakage,output/logs/b3_leakage.log,1,2026-09-12 16:22,2026-09-12 16:56,0.57,0.57,log_birth,0.0,scanned; traced sleeps removed
+b3_pleias12b,output/logs/b3_pleias12b.log,1,2026-09-12 16:38,2026-09-12 16:55,0.27,0.27,log_birth,0.0,scanned; traced sleeps removed
+b3_tinycomma_v2,output/logs/b3_tinycomma_v2.log,1,2026-09-12 17:00,2026-09-12 17:15,0.25,0.25,log_birth,0.0,scanned; traced sleeps removed
 bp_opencalm1b_seed30,output/logs/bp_opencalm1b_seed30.log,1,2026-09-11 18:55,2026-09-11 18:55,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 bp_opencalm3b_seed30,output/logs/bp_opencalm3b_seed30.log,1,2026-09-11 18:55,2026-09-11 18:56,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 breadth_comma7b,output/logs/breadth_comma7b.log,1,2026-09-12 15:39,2026-09-12 16:13,0.56,0.56,log_birth,0.0,scanned; traced sleeps removed
@@ -168,10 +172,14 @@ campaign,output/logs/campaign.log,1,2026-09-12 02:34,2026-09-12 04:50,2.26,2.26,
 campaign_gen,output/logs/campaign_gen.log,1,2026-09-12 02:52,2026-09-12 04:46,1.9,1.9,log_birth,0.0,scanned; traced sleeps removed
 download_bench,output/logs/download_bench.log,1,2026-09-12 02:29,2026-09-12 02:29,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 exact_rate,output/logs/exact_rate.log,1,2026-09-12 01:37,2026-09-12 01:37,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+frontier_pair,output/logs/frontier_pair.log,1,2026-09-12 18:50,2026-09-12 18:50,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+imit_breadth,output/logs/imit_breadth.log,1,2026-09-12 17:04,2026-09-12 19:29,2.41,2.41,log_birth,0.0,scanned; traced sleeps removed
 judge_consistency,output/logs/judge_consistency.log,1,2026-09-12 01:22,2026-09-12 01:22,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 placement,output/logs/placement.log,1,2026-09-12 03:03,2026-09-12 03:43,0.67,0.67,log_birth,0.0,scanned; traced sleeps removed
 pleias350m_ext,output/logs/pleias350m_ext.log,1,2026-09-11 19:06,2026-09-11 19:13,0.12,0.12,log_birth,0.0,scanned; traced sleeps removed
 queue,output/logs/queue.log,1,2026-09-12 02:09,2026-09-12 02:09,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
+regimes_bookmia,output/logs/regimes_bookmia.log,1,2026-09-12 16:48,2026-09-12 16:53,0.08,0.08,log_birth,0.0,scanned; traced sleeps removed
+regimes_copybench,output/logs/regimes_copybench.log,1,2026-09-12 16:53,2026-09-12 16:54,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
 seed30_opencalm1b,output/logs/seed30_opencalm1b.log,1,2026-09-11 18:56,2026-09-11 19:10,0.23,0.23,log_birth,0.0,scanned; traced sleeps removed
 seed30_opencalm3b,output/logs/seed30_opencalm3b.log,1,2026-09-11 18:56,2026-09-11 19:15,0.31,0.31,log_birth,0.0,scanned; traced sleeps removed
 sel_anchor64,output/logs/sel_anchor64.log,1,2026-09-11 22:27,2026-09-12 02:34,4.12,4.12,log_birth,0.0,scanned; traced sleeps removed
