@@ -27,6 +27,7 @@ an exact match.
 **Verification for a fresh session:** `./init.sh`, then the manuscript compile check in `AGENTS.md`
 (exit status, 0 `??`, 0 overfull, **no body prose on pdftotext page 10**). Read the log below from
 the bottom: entries are appended, so everything before 2026-09-08 predates the ICLR reframe.
+
 ## Status
 
 ### What's Done
