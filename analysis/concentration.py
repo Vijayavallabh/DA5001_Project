@@ -18,6 +18,10 @@ Usage: .venv/bin/python analysis/concentration.py --logs output/phase2/kl_smoke 
 import argparse, csv, glob, json, math, os, statistics as st
 from collections import defaultdict
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+from dap.stats import strip_pad_steps  # noqa: E402
+
 LAMBDAS = (10.0, 25.0, 50.0, 100.0)
 
 
@@ -44,6 +48,7 @@ def main():
             for line in open(f):
                 r = json.loads(line)
                 md, ag, steps = r["metadata"], r["aggregate"], r["per_step_log"]
+                steps = strip_pad_steps(steps)   # caution (s)
                 if md["k"] <= 0 or not steps or steps[0].get("r_t") is None:
                     continue
                 own = [s for s in steps if s.get("r_t") is not None]

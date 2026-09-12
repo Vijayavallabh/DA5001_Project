@@ -29,6 +29,10 @@ Usage: .venv/bin/python analysis/budget_drift.py --run output/sweep_chat --out r
 """
 import argparse, csv, json, os, statistics as st
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+from dap.stats import strip_pad_steps  # noqa: E402
+
 
 def per_step(path):
     """(a_t, theta) for every logged step of one trajectory file."""
@@ -39,7 +43,7 @@ def per_step(path):
         line = line.strip()
         if not line:
             continue
-        for s in json.loads(line)["per_step_log"]:
+        for s in strip_pad_steps(json.loads(line)["per_step_log"]):   # caution (s)
             if s.get("a_t") is not None:
                 out.append((s["a_t"], s.get("bd")))
     return out

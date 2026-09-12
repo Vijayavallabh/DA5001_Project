@@ -3714,3 +3714,41 @@ and what they said moved to the caption. Rendering a page to PNG and *looking* a
 that found this; no compile-time check would have.
 
 Compute disclosure `144 -> 150` GPU-hours (`compute_hours.py` measures 149.6).
+
+### 2026-09-12 23:45 — caution (s): post-EOS padding was being counted as decode steps
+
+Found while scoring feat-098. `dap/stats.py:strip_pad_steps` is the fix; every consumer of
+`per_step_log` that takes a step fraction now calls it, and each CSV was regenerated with the same
+input set and the same row count as the version it replaces:
+
+```
+.venv/bin/python analysis/imitation_cost.py --out results
+.venv/bin/python analysis/imitation_cost.py --dirs output/phase5/imit_llama321b  --tag _llama321b  --min-trajectories 20 --out results
+.venv/bin/python analysis/imitation_cost.py --dirs output/phase5/imit_llama323bi --tag _llama323bi --min-trajectories 20 --out results
+.venv/bin/python analysis/imitation_cost.py --dirs output/phase5/imit_llama70b   --tag _llama70b   --min-trajectories 20 --out results
+.venv/bin/python analysis/renyi_sweep.py --price-runs 'output/phase4/util_*' --price-k 3 --price-class all --out results
+.venv/bin/python analysis/budget_drift.py --out results
+.venv/bin/python analysis/burst_audit.py --logs output/h1_outputs output/sweep_chat output/sweep_plain --out results
+.venv/bin/python analysis/concentration.py --logs output/phase2/conc_all --out results
+.venv/bin/python analysis/pathwise_price.py \
+  --kl output/sweep_plain output/phase2/kl_sweep_conc output/phase2/kl_sweep_hi \
+       output/phase2/kl_sweep_k5 output/phase2/kl_sweep_k10 output/phase2/kl_sweep_k20 \
+  --pathwise output/phase2/pathwise_sweep output/phase2/pathwise_sweep_hi --out results
+```
+
+**Manuscript impact.** Two number sets moved and both are corrected in `~/sub/satml`: the imitation
+arm's `beta` (`0.954`/`0.033`/`0.0000` at `k=0.1`/`3`/`20`, was `0.960`/`0.034`/`0.0005`) and the
+Renyi price table's three step fractions, which had been dividing aggregate counters that exclude
+padding by a raw log length that includes it and therefore summed to `94.7\%` rather than `100\%`.
+`171.3` is unchanged: a spend in nats does not depend on how many steps it is divided by.
+`budget_drift`, `burst_audit`, `concentration` and `pathwise_price` feed only the **retired SaTML
+sections** and no ICLR number, but were regenerated anyway so the artifact does not ship a fixed
+script beside an unfixed table. `output/h1_outputs` --- the released 26,999-trajectory logs --- has
+**zero** padding, so every "known truth from the released logs" is untouched.
+
+**Two wrong predicates preceded the right one** and both are recorded in caution (s), because both
+would have reached the paper: a probability-only rule trimmed genuine steps forced to the anchor out
+of `output/sweep_plain` and would have "corrected" published numbers that were correct, and
+tightening it left 4,815 real pad steps in. The signature that works is what a decoder out of budget
+cannot produce: the same token at every remaining position with the served distribution a point mass
+on it.

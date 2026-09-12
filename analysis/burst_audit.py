@@ -8,6 +8,10 @@ Usage: .venv/bin/python analysis/burst_audit.py --logs output/h1_outputs output/
 import argparse, csv, glob, json, os, statistics as st
 from collections import defaultdict
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+from dap.stats import strip_pad_steps  # noqa: E402
+
 
 def quantile(xs, q):
     xs = sorted(xs)
@@ -28,7 +32,7 @@ def main():
         for f in sorted(glob.glob(os.path.join(d, "trajectories_k*_*.jsonl"))):
             for line in open(f):
                 r = json.loads(line)
-                md, steps = r["metadata"], r["per_step_log"]
+                md, steps = r["metadata"], strip_pad_steps(r["per_step_log"])  # caution (s)
                 k = md["k"]
                 if k <= 0 or len(steps) < 2:
                     continue
