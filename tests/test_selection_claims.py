@@ -213,3 +213,19 @@ def test_every_anchor_reports_zero_recall_at_every_n():
                 continue
             assert float(r["nv_recall_mean"]) == 0.0, (path, r["n"])
             assert float(r["nv_recall_max"]) == 0.0, (path, r["n"])
+
+
+def test_the_pathwise_form_of_prop_sparse_states_where_it_has_no_force():
+    """Appendix A sharpens Proposition 6 from an expectation to a per-trajectory count for the
+    deployed class. The first draft had the inequality backwards, so this pins the arithmetic:
+    with K = k T_max = 600 and T = 200, N_eps <= K/eps is below T only when eps > 3, i.e. it
+    constrains NOTHING below 3 nats in a single step."""
+    from tests.manuscript import tex
+    body = " ".join(open(tex("sections/appendix_proofs.tex")).read().split())
+    assert "holds surely, not just in expectation" in body, "the sharpening is gone"
+    k, t_max, T = 3.0, 200, 200
+    eps_star = k * t_max / T          # 3.0: above this the count is below the trivial bound
+    assert eps_star == 3.0
+    assert "constrains nothing below $\\varepsilon = 3$ nats" in body, (
+        "the appendix must say the pathwise count is uninformative BELOW eps=3, not above")
+    assert "$600/\\varepsilon$" in body and "$200$ steps" in body
