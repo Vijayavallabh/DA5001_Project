@@ -278,7 +278,8 @@ def selection_frontier():
     odo = list(csv.DictReader(open(RESULTS / "odometer.csv")))
     if not sel or not dec or not onset or not odo:
         raise FileNotFoundError("an input CSV for selection_frontier is empty")
-    fig, (axL, ax) = plt.subplots(1, 2, figsize=(9.4, 2.6))
+    fig, (axL, ax) = plt.subplots(1, 2, figsize=(6.9, 2.15))
+    F = 6.9 / 5.5  # printed at \textwidth: pre-scale the type by the shrink it will take
 
     # ---- panel (a): a budget that scales with the work against one that does not -------------
     ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
@@ -289,31 +290,32 @@ def selection_frontier():
     axL.fill_between(T, [ss[0] * t for t in T], [ss[-1] * t for t in T],
                      color="0.72", alpha=0.5, lw=0)
     axL.plot(T, [s_med * t for t in T], color="0.25", lw=1.4)
-    axL.annotate("$S(x)$, the price of the work\n(nine measured pairs)", (T[22], s_med * T[22]),
-                 fontsize=6.3, color="0.2", rotation=31, rotation_mode="anchor",
-                 xytext=(0, 6), textcoords="offset points")
-    for k, style, xi, note in ((10.0, "-", 12, "never certified,\nthe only useful arm"),
-                               (3.0, "--", 50, "the authors' budget"),
-                               (0.5, ":", 76, "certified at every length,\nno measurable gain")):
+    # Type large enough to read leaves no room for the prose that used to sit on the rays: at
+    # \textwidth the five multi-line rotated notes collided into an unreadable knot. The panel now
+    # carries the identities only and the caption carries what they mean, which is where a reader
+    # who cannot read 4pt type was going to have to look anyway.
+    axL.annotate("$S(x) = s(x)T$", (T[26], s_med * T[26]), fontsize=6.3 * F, color="0.2",
+                 rotation=31, rotation_mode="anchor", xytext=(0, 5), textcoords="offset points")
+    for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 70)):
         axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
-        axL.annotate(f"$K=kT$, $k={k:g}$\n{note}", (T[xi], k * T[xi]), fontsize=6.3,
+        axL.annotate(f"$k={k:g}$", (T[xi], k * T[xi]), fontsize=6.3 * F,
                      color="#c1443c", rotation=31, rotation_mode="anchor",
-                     xytext=(0, 5 if k >= 3 else -17), textcoords="offset points")
+                     xytext=(0, 4), textcoords="offset points")
     import math as _m
     for n, style in ((64, "--"), (8, "-")):
         axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
-        axL.annotate(f"$K=\\log n$, $n={n}$", (T[0], _m.log(n)), fontsize=6.3,
-                     color="#2f6f9f", xytext=(3, 3), textcoords="offset points")
-    axL.annotate("certified at every length,\nand useful", (T[62], 1.08),
-                 fontsize=6.3, color="#2f6f9f", ha="center")
+        axL.annotate(f"$\\log {n}$", (T[97], _m.log(n)), fontsize=6.3 * F, ha="right",
+                     color="#2f6f9f", xytext=(0, 4 if n == 64 else -13),
+                     textcoords="offset points")
     axL.axvline(t_star, color="0.5", lw=0.8, ls="-.")
-    axL.annotate(f"median protected\ntarget, $S(x)={s_tot:.0f}$", (t_star, 2.4e4), fontsize=6.3,
-                 color="0.35", ha="center")
+    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 3.0e4), fontsize=6.3 * F,
+                 color="0.35", ha="right", va="top", xytext=(-3, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
     axL.set_xlabel("length of the protected work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
-    axL.set_title("(a) a budget indexed to the work, and one that is not", fontsize=7.6)
+    axL.set_title("(a) one budget indexed to the work, one not",
+                  fontsize=7.6 * F, loc="left")
 
     # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
     # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
@@ -344,7 +346,7 @@ def selection_frontier():
     ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, $k$ swept")
     for k, xv, yv in zip(ks, x, y):
         if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
-            ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5,
+            ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5 * F,
                         xytext=(6, -3) if k == max(ks) else (6, -8),
                         textcoords="offset points")
 
@@ -354,19 +356,23 @@ def selection_frontier():
             label="selection anchoring, $n$ swept")
     for r, xv, yv in zip(sweep, xs, ys):
         if r["n"] in ("1", "8", "64"):
-            ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5,
+            ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5 * F,
                         xytext=(4, -10) if r["n"] == "1" else (-4, 6),
                         textcoords="offset points")
 
     ax.set_xscale("log")
-    ax.set_xlim(3e-4, 2e3)
-    ax.set_ylim(0.38, 0.68)
+    ax.set_xlim(3e-4, 8e3)
+    ax.set_ylim(0.38, 0.73)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
-    ax.set_title("(b) what a nat buys, both under one judge", fontsize=7.6)
-    ax.legend(fontsize=6.6, frameon=False, loc="upper left", handlelength=1.6,
+    ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
+    ax.legend(fontsize=6.6 * F, frameon=False, loc="upper left", handlelength=1.6,
               borderaxespad=0.3)
-    fig.tight_layout()
+    for _a in (axL, ax):
+        _a.tick_params(labelsize=8 * F)
+        _a.xaxis.label.set_size(8 * F)
+        _a.yaxis.label.set_size(8 * F)
+    fig.tight_layout(w_pad=1.8)
     _save(fig, "selection_frontier")
 
 

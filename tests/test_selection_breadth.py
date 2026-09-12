@@ -98,3 +98,41 @@ def test_every_registered_anchor_has_a_generation_directory_declared():
         assert gen_dir.startswith("output/phase5/"), (label, gen_dir)
         assert (tag == "") == ("audited" in label)
         assert model.count("/") == 1, model
+
+
+def test_section6_quotes_the_four_anchor_gains_from_the_breadth_csv():
+    """Section 6's breadth paragraph names three gains. They round from selection_breadth.csv on
+    the registered scorer, once, and the claim 'two of three exclude zero' has to be true of it."""
+    from tests.manuscript import tex
+    body = open(tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+    new = [r for r in rows() if "audited" not in r["anchor"]
+           and r["judge"] == SCORING_JUDGE]
+    assert len(new) == 3, [r["anchor"] for r in new]
+    for r in new:
+        g, lo, hi = (float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"]))
+        assert f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$" in body, (r["anchor"], g, lo, hi)
+    excl = sum(1 for r in new if float(r["gain_lo95"]) > 0)
+    assert excl == 2, excl
+    assert "two of three exclude zero on the pre-registered scorer" in body
+    best = max(new, key=lambda r: float(r["gain"]))
+    assert "Comma-7B" in best["anchor"], best["anchor"]
+    assert "The strongest anchor gives the largest gain" in body
+
+
+def test_the_table_row_for_the_strongest_anchor_matches_the_breadth_csv():
+    from tests.manuscript import tex
+    body = open(tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+    r = next(x for x in rows() if x["anchor"] == "Comma-7B" and x["judge"] == SCORING_JUDGE)
+    g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
+    assert f"${g:+.3f}$ & $[{lo:+.3f}, {hi:+.3f}]$" in body, (g, lo, hi)
+
+
+def test_the_abstract_claims_the_anchor_count_the_csv_supports():
+    from tests.manuscript import tex
+    abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read().replace("\n", " ")
+    n = len({r["anchor"] for r in rows()})
+    word = ["", "one", "two", "three", "four", "five"][n]
+    assert f"{word} anchors in three families" in abstract, (n, word)
+    fams = {"TinyComma-1.8B (audited)": "Comma", "Comma-7B": "Comma",
+            "Pleias-1.2B": "Pleias", "KL3M-1.7B": "KL3M"}
+    assert len({fams[r["anchor"]] for r in rows()}) == 3

@@ -112,9 +112,27 @@ def main():
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     def load_tok(name):
+        """A padding token, whatever the checkpoint declares.
+
+        Pleias-1.2B declares no special tokens at all -- no eos, no pad, no unk -- so the usual
+        `pad_token = eos_token` leaves pad None and `padding=True` raises. Its vocabulary does
+        contain [PAD] at id 3, and its config names eos_token_id 2, so the ids exist and only the
+        tokenizer's declaration is missing. Left padding is masked out of every forward pass, so
+        any real id in the vocabulary is correct here; the order below prefers the one the
+        checkpoint actually meant."""
         t = AutoTokenizer.from_pretrained(name, padding_side="left")
-        if t.pad_token is None:
+        if t.pad_token is not None:
+            return t
+        if t.eos_token is not None:
             t.pad_token = t.eos_token
+            return t
+        from transformers import AutoConfig
+        for tid in ("[PAD]", "<pad>", "<|endoftext|>"):
+            if tid in t.get_vocab():
+                t.pad_token = tid
+                return t
+        eos = getattr(AutoConfig.from_pretrained(name), "eos_token_id", None)
+        t.pad_token = t.convert_ids_to_tokens(eos if isinstance(eos, int) else 0)
         return t
 
     # Each model is fed its OWN token ids. Until 2026-09-12 the safe model's tokenizer was used for

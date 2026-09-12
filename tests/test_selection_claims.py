@@ -122,8 +122,8 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     assert float(sel["gain"]) > dec_gain, (sel["gain"], dec_gain)
     ratio = float(dec["kl_nats"]) / float(sel["kl_nats"])
     body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
-    m = _re.search(r"metered decoder gains \$\+([\d.]+)\$ for \$([\d.]+)\$ nats and\s*"
-                   r"selection gains \$\+([\d.]+)\$ for \$([\d.]+)\$", body)
+    m = _re.search(r"metered\s*decoder gains \$\+([\d.]+)\$ for \$([\d.]+)\$ nats and selection\s*"
+                   r"\$\+([\d.]+)\$ for \$([\d.]+)\$", body)
     assert m, "the reversal sentence has moved"
     assert abs(float(m.group(1)) - dec_gain) < 0.001, (m.group(1), dec_gain)
     assert float(m.group(3)) == round(float(sel["gain"]), 3), (m.group(3), sel["gain"])
