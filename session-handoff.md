@@ -1,10 +1,14 @@
-# Session handoff — 2026-09-12 (evening)
+# Session handoff — 2026-09-12 (late evening)
 
 ## Current objective
 
-**feat-096 is the only thing in progress**: Comma-7B on AlpacaEval-805, the arm that decides between
-the two open readings of the weaker standard-benchmark gain. Everything else through feat-095 is
-`done` and verified.
+Three arms are `in-progress` and each has its bands committed before its run:
+
+- **feat-098** — Proposition 3 at TinyComma + Llama-3.1-70B (`results/onset_prediction_imitation_70b.md`)
+- **feat-100** — the strongest anchor at the largest `n` (`results/onset_prediction_selection_n64_comma7b.md`)
+- **feat-101** — the judge-free axis, GSM8K exact match (`results/onset_prediction_verifiable.md`)
+
+Everything through feat-097 and feat-099 is `done`, and **feat-096, the decider, closed tonight**.
 
 The paper is v7. It argues one claim and exhibits a mechanism on the other side of it:
 
@@ -14,11 +18,13 @@ The paper is v7. It argues one claim and exhibits a mechanism on the other side 
 > but a different place to spend: `q(y) <= n p_s(y)` is a pathwise certificate of exactly `log n`,
 > and it does not grow with the work.
 
-**What changed today, in one line each.** The constructive claim stopped being a single setup
-(B1 GENERALISES: four anchors, three families, and the strongest anchor gives the largest gain in
-the paper). The support-ceiling *explanation* of the weaker benchmark gain was tested and does not
-survive its own confound, so the paper says the gain is weaker off our prompts and that we cannot
-say why. Figure 1 was illegible at print size and is redrawn.
+**What feat-096 settled.** Comma-7B on AlpacaEval-805 gains `+0.075 [+0.042, +0.108]` on the
+registered scorer against the audited anchor's `+0.031 [-0.001, +0.062]`, and `+0.167` against
+`+0.067` on judge C. **A1 CEILING CONFIRMED** across anchors; **A2 NO PROMPT-SET EFFECT**, because
+judge C puts the benchmark gain *above* the in-house one and the band needed both judges below it.
+This does **not** overturn feat-094: that tested the ceiling across domains *within* one anchor and
+stays UNINFORMATIVE. Section 6 and Appendix J now label which axis each result speaks to, and
+`results/selection_alpaca_note.md` carries the same-day partial reversal.
 
 ## State
 
@@ -26,9 +32,10 @@ say why. Figure 1 was illegible at print size and is redrawn.
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial* |
 | build | `exit=0`, `overfull=0`, `unresolved=0`, main text **exactly 9 of 9 pages** |
-| tests | **322**, all passing |
-| numeric audit | 2,044 literals, 1 expected miss (`64256`) |
-| compute | 149.6 GPU-hours measured, `150` disclosed |
+| tests | **378**, all passing |
+| numeric audit | 2,179 literals, 1 expected miss (`64256`) |
+| compute | `156` disclosed; **refresh after the queue drains** (`test_compute_hours.py` wants an exact match) |
+| pre-registrations | **31** logs; `test_preregistration_count.py` pins the Reproducibility Statement to the count |
 | tree | clean, branch `iclr-2027` |
 
 Sections: 1 intro · 2 theory (Props 1, 2, Thm 1) · 3 onset · 4 *The dichotomy's corollaries,
@@ -36,62 +43,55 @@ tested* · 5 selection anchoring (Prop 4) · 6 experiments · 7 related · 8 lim
 
 ## What is running
 
-| job | GPU | log | expected |
+| job | GPU | log | state at 22:05 |
 |---|---|---|---|
-| feat-096 Comma-7B on AlpacaEval-805 | 2 | `output/logs/alpaca_comma7b.log` | ~4.5 h from 16:19; the first progress line appears only after 805 of 6,440 generations |
-| B3 leakage, Comma-7B | 4 | `output/logs/b3_leakage.log` | ~45 min from 16:37 |
-| B3 leakage, Pleias-1.2B | 0 | `output/logs/b3_pleias12b.log` | scoring phase |
-| BookMIA regimes, seen + unseen | 0 | `output/logs/regimes_bookmia.log` | **done**, scored |
-| Proposition 3 at two more pairs (`results/onset_prediction_imitation_breadth.md`) | 0 | `output/logs/imit_breadth.log` | ~2 h from 17:04 |
+| feat-098 Prop 3 at TinyComma + Llama-3.1-70B | 0+1 | `output/logs/imit_70b.log` | on `k=3` of `{-1,0,0.5,1,3,20}`, started 19:43 |
+| feat-100 Comma-7B at `n=64` | 4 | `output/logs/sel_comma7b_64.log` | `3,800/12,800` of the `k=0` arm, started 20:27 |
+| feat-101 judge-free axis, Comma-7B on GSM8K | 0 (queued) | `output/logs/verifiable_comma7b.log` | `scripts/run_verifiable.sh 1117475` waits on the 70B PID, then starts |
 
-| feat-097 head-to-head at a second pair (`results/onset_prediction_frontier_second_pair.md`) | 4 | `output/logs/sel_llama321b.log`, `frontier_pair.log` | chained; scores as soon as generation lands |
-| feat-098 Proposition 3 at TinyComma + Llama-3.1-70B (`results/onset_prediction_imitation_70b.md`) | 0+1 | `output/logs/imit_70b.log` | running since 19:43, ~3-4 h |
-| feat-100 the strongest anchor at the largest n (`results/onset_prediction_selection_n64_comma7b.md`) | 4 | `output/logs/sel_comma7b_64.log` | running since 20:27, ~6 h generation |
-
-The pre-registrations with no scoring section yet are
-`results/onset_prediction_alpaca_comma7b.md`, `results/onset_prediction_imitation_70b.md` and
-`results/onset_prediction_selection_n64_comma7b.md`; `tests/test_preregistration_count.py` fails if an
-unscored one is not named here.
-
-**The 70B arm takes two cards and waits for them.** It starts only when
-`output/logs/.frontier_pair_done` exists *and* both GPU 0 and GPU 4 read under 2 GB, then
-re-checks after a minute, so it cannot race the scoring pass onto a card someone else took. If it
-prints "a card was taken while waiting" it exited without starting and can simply be relaunched.
+A card also carries **another user's** diffusion job on GPU 2 (47 GB, 100% util) since ~21:55.
+GPU 3 is the 4 GB T400 and is never used.
 
 ## Recommended next step
 
-1. **Score feat-096 against its committed bands.** `results/onset_prediction_alpaca_comma7b.md`
-   fixes the manuscript consequence of each reading in advance: under PROMPT-SET EFFECT the paper
-   leads with the AlpacaEval number in Section 6 **and** the abstract, whatever A1 reads. Scoring
-   command is in the file.
-2. **Finish B3 and append it to the breadth scoring log.** Two of three anchors are pending;
-   `results/onset_prediction_selection_breadth.md` already carries B1 and B2 and says B3 is
-   appended below when it lands. Any non-zero recall at any anchor goes in the main text whatever
-   it does to the utility story.
-3. **Run the CopyBench baseline for the BookMIA arm.** `analysis/regimes.py --model
-   jacquelinehe/tinycomma-1.8b-llama3-tokenizer --data data --out results/regimes_copybench.csv`,
-   then `analysis/bookmia_regimes.py --out results`. V2 needs the 16-novel median to compare
-   against and it is the only input not yet computed.
-4. Rebuild the artifact and refresh the compute figure once the queue drains.
+1. **Score feat-098** the moment `imit_70b.log` prints its last `k=20` line. It needs no GPU:
+   `analysis/imitation_cost.py --dirs output/phase5/imit_llama70b --tag _llama70b
+   --min-trajectories 20 --out results`, then read J1/J2/J3 against the committed bands,
+   **honouring the addendum that J1's INVERTED reading may not be applied as stated** because the
+   70B is a base model and the 8B is instruct-tuned, so size is confounded with tuning. Append a
+   fourth row to the Appendix A table and write the scoring log.
+2. **Score feat-100** when its seven `n` arms land. G3 is a nested reproducibility check and gates
+   the rest: if the `n <= 8` rows disagree with the breadth arm by more than `0.03`, **G1 is not
+   readable**. Under GROWS the abstract's headline number changes; under OVEROPTIMISES the
+   Limitations caveat becomes a measurement.
+3. **feat-101 scores itself** — `selection_verifiable.py` writes
+   `results/selection_verifiable_comma7b.csv` at the end of the same run. Read V1/V2/V3 and apply
+   whichever of the four V4 consequences fires; two of them weaken the constructive claim and are
+   fixed in advance.
+4. Refresh `analysis/compute_hours.py`, rerun `analysis/audit_numbers.py`, rebuild the artifact
+   (`scripts/build_artifact.sh artifact`), and update `progress.md`.
 
 ## Still unscheduled from the scale audit
 
-BookMIA-50 **onset** (needs memorisers re-fine-tuned, ~11 GPU-h for 3 pairs); Proposition 3 at two
-more pairs (~14 GPU-h); the 70B comparison (~15 GPU-h on two cards). The BookMIA *vacuity* arm now
-running covers the corpus-size objection for Proposition 1 only --- it says nothing about onset, and
-the pre-registration names that as excluded alternative 5 so the two cannot be conflated.
+BookMIA-50 **onset** (needs memorisers re-fine-tuned, ~11 GPU-h for 3 pairs) — moderate value now
+that the onset has nine pairs and two corpora. A judge-free head-to-head against the *metered*
+decoder is **not possible** and the reason is on the record in
+`results/onset_prediction_verifiable.md`: TinyComma is the only openly licensed anchor with the
+Llama-3 tokenizer, and it scores `0.04` on GSM8K.
 
 ## Traps this session added to AGENTS.md
 
 - **(m)** the judge is position-dominated: the same two texts win 261/500 shown second and 24 shown
   first. Never quote an absolute judged level across passes; gains survive, levels do not.
-- **(n)** the page budget moves with floats, headings and table rows, not with prose. A dozen
-  sentence trims freed nothing; four structural changes freed five lines at once.
-- **(o)** `h1.py` writes the CLI `--k-values` string verbatim into filenames, so `1e-9` becomes
-  `trajectories_k1e-09_*.jsonl`.
-- **(p)** a gate that fails everything is not a gate. The breadth entry gate read a column its
-  producer never writes and had therefore never run; measure a gate against the artefacts it is
-  about and assert that something passes.
+- **(n)** the page budget moves with floats, headings and table rows, not with prose.
+- **(o)** `h1.py` writes the CLI `--k-values` string verbatim into filenames.
+- **(p)** a gate that fails everything is not a gate; assert that something passes.
+- **(q)** two 70B launch traps: a cache with no `refs/main` reports "couldn't connect" with every
+  shard present, and `--parallelize` pins the risky model to one card unless `--risky-device-map
+  auto --max-memory` is given.
+- **(r)** every pre-registration quotes `## Scoring log` in backticks on line 3, so
+  `txt.partition("## Scoring log")` splits at the wrong place. Split on the newline-prefixed
+  heading.
 
 And one that is not a trap but a habit: **render a manuscript page to PNG and look at it.** Figure 1
 had been below any legibility floor for as long as it has existed, and no compile-time check saw it.
