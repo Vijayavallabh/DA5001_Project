@@ -105,3 +105,71 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=<free card> HF_HUB_OFFLINE=1 \
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+```
+# per pair: k in {-1, 0, 0.5, 1, 3, 20} on the same 500 ordinary prompts, one trajectory each
+.venv/bin/python h1.py --k-values -1 0 0.5 1 3 20 --safe-model-path <anchor> \
+  --risky-model-path meta-llama/Llama-3.1-8B-Instruct --trajectories-per-prompt 1 \
+  --cap-neutral 200 --cap-creative 150 --cap-factual 150 --cap-val 0 --cap-test 0 \
+  --cap-attack-train 0 --max-new-tokens 200 --output-dir output/phase5/imit_<tag>
+.venv/bin/python analysis/imitation_cost.py --dirs output/phase5/imit_<tag> \
+  --tag _<tag> --min-trajectories 20 --out results
+```
+
+`analysis/imitation_cost.py` gained `--dirs`/`--tag` for this; the audited arm reproduces
+**byte-identically** with the new flags (`diff` against the committed CSV is empty), so nothing on
+record moved.
+
+| pair | anchor | `r_imit(3)` | `r_imit(20)` | ratio | `\|r_real/r_imit-1\|` at 3 / 20 | min median `R^2` | `p_r` unchanged at `k=20` | spend at `k=20` |
+|---|---|---|---|---|---|---|---|---|
+| audited | TinyComma-1.8B | `0.8278` | `0.8570` | `1.0353` | `0.0034` / `0.0006` | `0.9776` | `0.99947` | `171.3` |
+| A | Llama-3.2-1B (base) | `0.6157` | `0.6174` | `1.0028` | `0.0005` / `0.0003` | `0.9908` | `0.99953` | `123.4` |
+| B | Llama-3.2-3B-Instruct | `0.3010` | `0.3034` | `1.0080` | `0.0013` / `0.0007` | `0.9743` | `0.99954` | `60.6` |
+
+### I1 — **SATURATES** at all three
+
+`r_imit(20)/r_imit(3)` is `1.0353`, `1.0028` and `1.0080`, all inside the committed `1.10`. Raising
+the budget from three nats per token to twenty moves the rate by at most `3.5\%`.
+
+### I2 — **SPEND IS IMITATION** at all three
+
+`|r_real/r_imit - 1|` is at most `0.0034` at `k=3` and `0.0007` at `k=20`, two orders of magnitude
+inside the committed `0.05`. Above the pair's own imitation rate the decoder is not spending its
+allowance on anything: it is paying to imitate, and the rest of the certificate is unreachable.
+
+### I3 — **LINEAR** at all three
+
+The median within-trajectory `R^2` of cumulative spend on the step index is at worst `0.9743`,
+against a committed `0.95`, at every budget of every pair.
+
+### I4 — **AS PREDICTED** at all three
+
+At `k=20` the decoder serves `p_r` unchanged at `99.947\%`, `99.953\%` and `99.954\%` of steps.
+
+### I5 — the prediction holds, **narrowly**, and the ordering is the interesting part
+
+The band said pair B's `r_imit(3)` would be below **half** pair A's, because B's two models are the
+same family and both instruction-tuned. Half of A's `0.6157` is `0.3079`; B reads `0.3010`. It
+passes by `0.0069`, which is `2.2\%` of the threshold --- a pass, and reported as a narrow one.
+
+What is not narrow is the ordering. Across the three pairs the rate falls monotonically with how
+close the two models are --- `0.8278` for a 1.8B anchor trained on a different corpus entirely,
+`0.6157` for a same-family base model, `0.3010` for a same-family instruction-tuned model --- and
+the realised spend at `k=20` follows it exactly: `171.3`, `123.4`, `60.6` nats. The rate is
+measuring the distance between the two distributions, which is what
+`results/imitation_cost.csv` is read as in the paper and what I5 existed to be able to doubt.
+
+### What this does and does not establish
+
+Proposition 3 is a theorem and none of this confirms it; this file said so before the run. What is
+established is that its *measured shape* --- saturation, a realised spend that converges on the
+rate, linearity in the step index, and a decoder that ends as the risky model --- is a property of
+the mechanism and not of the audited pair, at three pairs spanning a `2.8\times` range in the rate.
+
+Neither Llama-3.2 anchor is a legitimate safe model, no near-access-freeness claim is made for
+them, and excluded alternative 2 forbids quoting a certificate or leakage number from either.
+Neither arm decoded anything on the protected split.

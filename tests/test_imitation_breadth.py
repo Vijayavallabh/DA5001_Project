@@ -86,3 +86,51 @@ def test_the_rate_differs_between_pairs_because_the_pairs_differ():
     r3 = {t: float(k["3"]["imitation_rate_nats_per_token"]) for t, k in a.items() if "3" in k}
     assert len(r3) >= 2, r3
     assert max(r3.values()) - min(r3.values()) > 0.05, r3
+
+
+def test_the_appendix_table_rounds_from_the_csvs():
+    """Caution (j): every cell of Appendix A's three-pair table comes from its own CSV, once."""
+    from tests.manuscript import tex
+    apx = open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().replace("\n", " ")
+    a = arms()
+    assert len(a) == 3, sorted(a)
+    for tag, ks in a.items():
+        r3, r20 = ks["3"], ks["20"]
+        i3 = float(r3["imitation_rate_nats_per_token"])
+        i20 = float(r20["imitation_rate_nats_per_token"])
+        assert f"${i3:.4f}$" in apx, (tag, i3)
+        assert f"${i20:.4f}$" in apx, (tag, i20)
+        assert f"${i20 / i3:.3f}$" in apx, (tag, i20 / i3)
+        dev = abs(float(r3["realised_rate_nats_per_token"]) / i3 - 1)
+        assert f"${dev:.4f}$" in apx, (tag, dev)
+        assert f"{float(r20['spend_nats']):.1f}$" in apx, (tag, r20["spend_nats"])
+
+
+def test_section2_quotes_the_two_further_rates():
+    from tests.manuscript import tex
+    body = open(tex("sections/frontier.tex"), encoding="utf-8").read().replace("\n", " ")
+    # the quoted rate is the SATURATED one, r_imit(20), which is what "saturates at 0.857" means
+    # for the audited pair two sentences earlier
+    others = sorted(float(ks["20"]["imitation_rate_nats_per_token"])
+                    for t, ks in arms().items() if t != "_audited")
+    for v in others:
+        assert f"${v:.3f}$" in body, v
+    assert "two further pairs" in body
+    aud = float(arms()["_audited"]["20"]["imitation_rate_nats_per_token"])
+    assert f"${aud:.3f}$" in body, aud
+
+
+def test_the_narrow_i5_pass_is_reported_as_narrow():
+    """0.3010 against a threshold of 0.30785 is a pass by 2.2% of the threshold. A scoring log that
+    presented that as comfortable would be overclaiming."""
+    a = arms()
+    r = {t: float(ks["3"]["imitation_rate_nats_per_token"]) for t, ks in a.items()}
+    lo, mid = sorted(v for t, v in r.items() if t != "_audited")
+    assert lo < mid / 2, (lo, mid / 2)
+    assert (mid / 2 - lo) / (mid / 2) < 0.05, "no longer narrow; the scoring log must be updated"
+    log = open(os.path.join(ROOT, "results",
+                            "onset_prediction_imitation_breadth.md"), encoding="utf-8").read()
+    assert "narrow" in log.lower()
+    apx_note = "passed narrowly"
+    from tests.manuscript import tex
+    assert apx_note in open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read()

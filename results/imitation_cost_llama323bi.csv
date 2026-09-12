@@ -1,0 +1,5 @@
+prompt_class,k,budget_K,n_trajectories,beta_binding_frac,forced_safe_frac,active_frac,imitation_rate_nats_per_token,realised_rate_nats_per_token,prop3_lower_bound_nats,spend_nats,spend_over_cap,top1pct_of_steps_share_of_spend,frac_of_steps_for_90pct_of_spend,median_cum_spend_vs_step_slope,median_cum_spend_vs_step_r2
+ordinary,0.5,100.0,500,0.03624,0.01139,0.02485,0.2684,0.2742,51.65,54.85,0.5485,0.0811,0.5756,0.2824,0.9798
+ordinary,1,200.0,500,0.00911,0.00468,0.00443,0.2958,0.2963,58.61,59.25,0.2963,0.0879,0.5689,0.2883,0.9772
+ordinary,3,600.0,500,0.00124,0.00049,0.00075,0.301,0.3014,60.12,60.28,0.1005,0.0884,0.572,0.2894,0.9743
+ordinary,20,4000.0,500,0.00046,0.00046,0.0,0.3034,0.3032,60.63,60.63,0.0152,0.0885,0.5726,0.2918,0.9743
