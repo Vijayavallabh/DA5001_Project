@@ -94,3 +94,32 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0,4 HF_HUB_OFFLINE=1 \
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+## Addendum, 2026-09-12 20:02, written while the arm is still generating and before any number exists
+
+J1 has a confound I did not name when I wrote it, and naming it after the result would be worthless.
+
+The band reads "a 70B base model is further from a 1.8B anchor than an 8B instruct model is, so its
+imitation rate should be **higher**". That treats size as the only axis of distance. It is not.
+`Llama-3.1-8B-Instruct` is **instruction-tuned** and TinyComma is a base model, so the `0.8278` on
+record already contains the base-to-instruct shift; `unsloth/Meta-Llama-3.1-70B` is a **base** model
+and shares that much of its style with the anchor. Size pushes the 70B rate up and the missing
+instruct shift pushes it down, and nothing on record says which wins.
+
+Today's two Llama-3.2 pairs point the same way: `0.6157` for a same-family **base** anchor against
+the 8B instruct, `0.3010` for a same-family **instruct** anchor against it. Both of those vary the
+anchor rather than the risky model, so neither settles it, but they do show the instruct axis moving
+the rate by more than the size axis does across `1`B to `3`B.
+
+**So J1 as written is not a clean test of "the rate measures distance", and its INVERTED reading
+must not be applied as stated.** Concretely, if the 70B rate comes back below `0.8278`:
+
+* the reading is **not** that the distance interpretation is wrong;
+* it is that base-versus-instruct is a larger axis than parameter count, which is itself worth
+  reporting and is consistent with the three pairs already measured;
+* the sentence in the appendix that says the rate "moves the way a distance should" must then name
+  *which* distance --- style and tuning, not size --- or be cut.
+
+J2 and J3 are unaffected: they are about the shape, not the level, and nothing above changes what
+they measure. This addendum is committed before the arm finishes so the record shows it was not
+written to accommodate a number.
