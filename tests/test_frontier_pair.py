@@ -131,3 +131,20 @@ def test_the_shared_vocabulary_constraint_is_stated_where_it_bites():
     for f in ("sections/experiments.tex", "sections/appendix_proofs.tex"):
         t = " ".join(open(tex(f), encoding="utf-8").read().split())
         assert "shared vocabulary" in t or "the risky model's tokenizer" in t, f
+
+
+def test_the_two_nominally_identical_control_arms_are_reported_not_smoothed():
+    """The pass judges the metered run's k=0 arm and the selection run's n=1 arm, which are the
+    same thing generated twice. A reviewer reading the released CSV finds the discrepancy whether
+    or not we mention it, so the appendix reports it as this paper's generation-run noise floor."""
+    from tests.manuscript import tex
+    n1 = {r["judge"]: r for r in rows() if r["arm"] == "selection, n=1"}
+    assert len(n1) == 2, "both judges must score the duplicated control"
+    for r in n1.values():
+        lo, hi = float(r["gain_lo95"]), float(r["gain_hi95"])
+        assert lo < 0 < hi, ("the two anchor-alone arms differ significantly; the appendix "
+                             "sentence saying neither interval excludes zero is now false")
+    body = " ".join(open(tex("sections/appendix_proofs.tex")).read().split())
+    assert "generation-run" in body, "the noise floor is measured but not reported"
+    for r in n1.values():
+        assert f"{float(r['gain']):+.3f}" in body, (r["judge"], r["gain"])
