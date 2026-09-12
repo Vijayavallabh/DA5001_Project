@@ -956,13 +956,13 @@
     },
     {
       "id": "feat-096",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "feat-094",
         "feat-095"
       ],
       "description": "The deciding arm: Comma-7B on AlpacaEval-805. Two readings of the weaker standard-benchmark gain are open and one arm separates them -- the anchor's support ceiling (feat-094 came back uninformative on that question along the domain axis), or an in-house prompt set that flatters the mechanism. Comma-7B is the strongest openly licensed anchor we hold and gives the largest in-house gain, so if the gain recovers on AlpacaEval the ceiling reading is supported and if it drops as TinyComma's did the prompt set is. Bands and the manuscript consequence of each reading committed in results/onset_prediction_alpaca_comma7b.md before the run: under PROMPT-SET EFFECT the paper leads with the benchmark number in Section 6 and in the abstract, whatever A1 reads.",
-      "evidence": ""
+      "evidence": "h1.py at Comma-7B on data/bench/alpaca (805 prompts, 8 candidates, 400-token cap) then analysis/selection_scaling.py --gen-dir output/phase5/alpaca_comma7b_8 --baseline-dir output/phase5/alpaca_risky --max-n 8 --tag _alpaca_comma7b -> results/selection_scaling_alpaca_comma7b.csv. A1 CEILING CONFIRMED: +0.075 [+0.042,+0.108] on the registered scorer against the audited anchor's +0.031 [-0.001,+0.062] -- interval off zero and an excess of 0.0435 past the committed 0.03 -- and +0.167 [+0.134,+0.201] against +0.067 on judge C, with Spearman(u, log n) = +1.000 in both. Only the anchor changed: same prompts, same unconstrained opponent, same reward, same judges. A2 NO PROMPT-SET EFFECT: the band needed the benchmark gain below the in-house gain by >0.03 in BOTH judges and judge C is the other way (+0.167 against +0.155), so the in-house set was not flattering the mechanism. The domain split (feat-094) stays UNINFORMATIVE and is a different axis; the manuscript and results/selection_alpaca_note.md now label which axis each result speaks to."
     },
     {
       "id": "feat-097",

@@ -1,9 +1,12 @@
 # Selection anchoring on AlpacaEval-805 — an unregistered extension, reported as one
 
-> **Correction, 2026-09-12 (see the last section).** The section below headed "This is the
-> support ceiling, measured with a standard instrument" is **refuted** by
-> `results/onset_prediction_domain_breadth.md`. The support-ceiling *explanation* of the
-> weakening has no evidence at this scale. The measured result above it stands unchanged.
+> **Correction, 2026-09-12 afternoon, and its partial reversal the same evening.** The section
+> below headed "This is the support ceiling, measured with a standard instrument" was refuted
+> by `results/onset_prediction_domain_breadth.md`, which found the ceiling not measurable
+> *across domains within one anchor*. That still holds. But the arm the section itself named
+> as what would settle it then ran, and **confirms the ceiling across anchors**: Comma-7B on
+> the same 805 prompts gains `+0.075 [+0.042, +0.108]` and `+0.167 [+0.134, +0.201]`, roughly
+> double the audited anchor's. See the two appended sections below, in order.
 
 **This arm has no committed bands.** Every other arm in this repository was pre-registered with a
 refuting band before it ran; this one was not, because the corpus and the run were built in the same
@@ -89,3 +92,33 @@ not resolve it on AlpacaEval, MT-Bench at 80 prompts resolves nothing in either 
 cannot say why.** The Comma-7B arm named under "What would settle it" is still the right next test
 and is still queued; its bands are committed. Until it lands, "anchor-bound" is a hypothesis and is
 labelled as one.
+
+---
+
+## Second correction, 2026-09-12 evening: the ceiling is confirmed across anchors
+
+The correction above refuted the support-ceiling *explanation* on the evidence available that
+afternoon, which was the domain split. The deciding arm this note itself named under "What would
+settle it" --- Comma-7B on AlpacaEval-805 --- then ran, pre-registered in
+`results/onset_prediction_alpaca_comma7b.md` before it started, and reads **A1 CEILING CONFIRMED**:
+
+| arm | judge B (registered) | judge C |
+|---|---|---|
+| TinyComma-1.8B, AlpacaEval-805, `n=8` | `+0.031 [-0.001, +0.062]` | `+0.067 [+0.034, +0.101]` |
+| Comma-7B, AlpacaEval-805, `n=8` | `+0.075 [+0.042, +0.108]` | `+0.167 [+0.134, +0.201]` |
+
+Same prompts, same unconstrained opponent, same reward, same judges; only the anchor changed.
+Judge B's interval comes off zero and the gain roughly doubles on both judges, past the committed
+`0.03` excess.
+
+**A2 reads NO PROMPT-SET EFFECT.** The band required the AlpacaEval gain to fall below the in-house
+gain by more than `0.03` in *both* judges; judge B does (`+0.075` against `+0.111`) and judge C does
+the opposite (`+0.167` against `+0.155`). At a capable anchor the standard benchmark is not harder
+than our own prompts, so the in-house set was not flattering the mechanism --- the weak number was
+the weak anchor.
+
+So this note's original reading was right about the *mechanism* and wrong about the *evidence it
+had*: "this is the support ceiling" was an assertion in the afternoon and is a pre-registered
+measurement in the evening, along the anchor axis only. The domain split stays uninformative and
+neither result is retro-fitted to the other. Both are in the manuscript, each labelled with the axis
+it speaks to.

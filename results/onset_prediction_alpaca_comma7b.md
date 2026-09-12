@@ -110,3 +110,76 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=<free card> HF_HUB_OFFLINE=1 \
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+```
+.venv/bin/python h1.py --k-values 0.0 --safe-model-path common-pile/comma-v0.1-2t \
+  --risky-model-path common-pile/comma-v0.1-2t --data-dir data/bench/alpaca \
+  --trajectories-per-prompt 8 --cap-factual 805 --cap-neutral 0 --cap-creative 0 \
+  --cap-val 0 --cap-test 0 --cap-attack-train 0 --max-new-tokens 400 \
+  --output-dir output/phase5/alpaca_comma7b_8
+.venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/alpaca_comma7b_8 \
+  --baseline-dir output/phase5/alpaca_risky --max-n 8 \
+  --reward-cache results/selection_rewards_alpaca_comma7b.csv --tag _alpaca_comma7b --out results
+```
+
+Self-paired (at `k=0` only the safe model generates), against the **same** unconstrained
+Llama-3.1-8B-Instruct completions the TinyComma AlpacaEval arm was judged against
+(`output/phase5/alpaca_risky`), so the baseline is byte-identical across the two anchors and the
+only thing that changed is the anchor.
+
+| arm | judge B (registered scorer) | judge C |
+|---|---|---|
+| TinyComma-1.8B, AlpacaEval-805, `n=8` | `+0.031 [-0.001, +0.062]` | `+0.067 [+0.034, +0.101]` |
+| **Comma-7B, AlpacaEval-805, `n=8`** | **`+0.075 [+0.042, +0.108]`** | **`+0.167 [+0.134, +0.201]`** |
+| Comma-7B, in-house 500, `n=8` | `+0.111 [+0.072, +0.148]` | `+0.155 [+0.106, +0.200]` |
+
+Spearman of `u` against `\log n` is `+1.000` over the four arms in **both** judges.
+
+### A1 — **CEILING CONFIRMED**
+
+On the registered scorer the gain is `+0.0745`, its interval excludes zero, and it exceeds
+TinyComma's `+0.031` by `0.0435`, past the committed `0.03`. Judge C says the same more loudly:
+`+0.167` against `+0.067`, two and a half times as large. **Swapping a `1.8`B base anchor for a
+`7`B one, changing nothing else, roughly doubles the gain on a standard instruction benchmark and
+takes judge B's interval off zero.**
+
+### A2 — **NO PROMPT-SET EFFECT**
+
+The band required the AlpacaEval gain to fall below the in-house gain by more than `0.03` in
+**both** judges. Judge B does (`+0.075` against `+0.111`, a drop of `0.036`); judge C does the
+opposite (`+0.167` against `+0.155`, `0.012` *higher*). One of two is not both, so the reading is
+NO PROMPT-SET EFFECT and the consequence fixed above the line --- leading with the AlpacaEval
+number in Section 6 and the abstract --- does not fire.
+
+What it does establish is narrower and still worth saying: at a capable anchor the standard
+benchmark is **not** harder than our own prompts. The gap that made the AlpacaEval arm look weak was
+the anchor, not the prompt set.
+
+### What this settles, and what it does not
+
+The two readings together answer the question this arm was run for. The weaker AlpacaEval gain **is**
+the support ceiling --- along the axis of the anchor. A base model of `1.8`B parameters given
+instructions leaves a selector little to reorder; a `7`B one leaves it plenty.
+
+That does **not** overturn `results/onset_prediction_domain_breadth.md`, which stays UNINFORMATIVE
+and is a different question: whether the gain tracks the anchor's competence *across domains within
+one anchor*. It does not, and the correlation it shows is inseparable from a no-effect null. The
+consistent picture is that the ceiling binds at the level of the anchor's overall capability rather
+than domain by domain, which is also what B2 of
+`results/onset_prediction_selection_breadth.md` suggested at Spearman `+1.000` over four anchors ---
+registered as descriptive there, and now with a pre-registered test behind it here.
+
+`results/selection_alpaca_note.md`'s correction stands as written: it refuted the ceiling as an
+explanation *on the evidence available on 2026-09-12 afternoon*, which was the domain split. This
+arm supplies evidence the domain split could not, and the note and the manuscript are updated to
+say which axis each result speaks to rather than either being quietly dropped.
+
+### A3 — no leakage number
+
+AlpacaEval carries no protected passages and none was decoded. Comma-7B's recall of `0.0000` at
+`n = 1, 8, 64` stands on the protected split (`results/selection_extraction_comma7b.csv`) and is
+untouched by this arm.

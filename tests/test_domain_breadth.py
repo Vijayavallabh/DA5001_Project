@@ -154,8 +154,77 @@ def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
     assert "($P = 0.09$, $0.17$)" in body
 
 
-def test_section6_does_not_claim_the_ceiling_explains_the_weakening():
-    """The whole point of the paragraph. If a later edit reinstates the explanation, this fails."""
-    body = _manuscript("experiments.tex").lower()
-    assert "the pre-registered test of it fails" in body
-    assert "not shown to be" in body or "cannot say why" in body
+def test_section6_separates_the_two_axes_the_ceiling_was_tested_on():
+    """Superseded 2026-09-12 evening. The earlier version of this test guarded the sentence 'the
+    pre-registered test of it fails', which was true of the DOMAIN axis and became misleading once
+    feat-096 tested the ANCHOR axis and the ceiling was confirmed there. What must not drift is the
+    distinction: the ceiling binds at the anchor, and the domain split remains uninformative."""
+    body = _manuscript("experiments.tex")
+    assert "binds at the anchor and not within one" in body
+    assert "does not track the anchor's control level" in body
+    low = body.lower()
+    assert "inseparable from a no-effect null" in low, "the domain null must stay beside it"
+    assert "the pre-registered test of it fails" not in low, "that sentence is now wrong"
+
+
+def test_the_domain_split_stays_uninformative_whatever_the_anchor_axis_says():
+    """feat-096 confirming the ceiling across ANCHORS does not retro-fit the domain result."""
+    t = open(LOG, encoding="utf-8").read()
+    assert "uninformative" in t
+    alpaca = os.path.join(ROOT, "results", "onset_prediction_alpaca_comma7b.md")
+    if os.path.exists(alpaca):
+        a = " ".join(open(alpaca, encoding="utf-8").read().split())
+        if "## Scoring, " in a:
+            assert "stays UNINFORMATIVE" in a, \
+                "the deciding arm must say which axis each result speaks to"
+
+
+# --- the deciding arm, and keeping the two axes apart -------------------------------------------
+
+ALPACA96 = os.path.join(ROOT, "results", "selection_scaling_alpaca_comma7b.csv")
+
+
+def test_the_deciding_arm_confirms_the_ceiling_across_anchors():
+    """A1 CEILING CONFIRMED: the CI excludes zero and the gain exceeds the audited anchor's by more
+    than the committed 0.03, on the registered scorer."""
+    if not os.path.exists(ALPACA96):
+        return
+    def n8(path, judge):
+        return next(r for r in rows(path)
+                    if int(float(r["n"])) == 8 and judge in r["judge"])
+    strong = n8(ALPACA96, "Phi-3.5-mini")
+    weak = n8(os.path.join(ROOT, "results", "selection_scaling_alpaca.csv"), "Phi-3.5-mini")
+    assert float(strong["gain_lo95"]) > 0, strong["gain_lo95"]
+    assert float(strong["gain"]) - float(weak["gain"]) > 0.03, (strong["gain"], weak["gain"])
+    for judge in ("Phi-3.5-mini", "Meta-Llama-3.1-8B"):
+        assert abs(float(n8(ALPACA96, judge)["spearman_u_logn"]) - 1.0) < 1e-9, judge
+
+
+def test_a2_reads_no_prompt_set_effect_and_the_log_says_so():
+    """The band needed the benchmark gain below the in-house gain by >0.03 in BOTH judges. It is
+    not: judge C's benchmark gain is the higher of the two. If that ever flips, the pre-registered
+    consequence (leading with the benchmark number in Section 6 and the abstract) does fire."""
+    if not os.path.exists(ALPACA96):
+        return
+    inhouse = {r["judge"]: r for r in rows(os.path.join(ROOT, "results", "selection_breadth.csv"))
+               if r["anchor"] == "Comma-7B"}
+    fired = []
+    for r in rows(ALPACA96):
+        if int(float(r["n"])) != 8:
+            continue
+        j = next(k for k in inhouse if k.split("/")[-1] in r["judge"] or r["judge"] in k)
+        fired.append(float(inhouse[j]["gain"]) - float(r["gain"]) > 0.03)
+    assert len(fired) == 2 and not all(fired), fired
+    t = " ".join(open(os.path.join(ROOT, "results", "onset_prediction_alpaca_comma7b.md"),
+                      encoding="utf-8").read().split())
+    assert "NO PROMPT-SET EFFECT" in t
+
+
+def test_section6_and_the_appendix_name_the_axis_each_result_speaks_to():
+    body = _manuscript("experiments.tex")
+    apx = " ".join(open(
+        __import__("tests.manuscript", fromlist=["tex"]).tex("sections/appendix_limitations.tex"),
+        encoding="utf-8").read().split())
+    assert "binds at the anchor and not within one" in body
+    assert "Across anchors" in apx and "Within one anchor" in apx
+    assert "not measurable" in apx
