@@ -205,7 +205,11 @@ class H1AuditRunner:
             delta_init = true_prefix_debt if true_prefix_debt is not None else self._estimate_prefix_debt(final_budget, gen_len, k)
 
             # feat-003: per-trajectory utilisation Z / max(0, B) and solver activity counts
-            own_len = true_gen_len(gen_ids, [self.tokenizer.pad_token_id, *([self.eos_ids] if isinstance(self.eos_ids, int) else self.eos_ids)])
+            # A model may declare neither an EOS nor a pad id -- PleIAs/Pleias-1.2b-Preview declares
+            # no eos_token_id, and `[*None]` raised TypeError here, killing the whole run after the
+            # first batch. Anything absent contributes no stop id rather than crashing.
+            own_len = true_gen_len(gen_ids, [t for t in [self.tokenizer.pad_token_id] +
+                                             _as_id_list(self.eos_ids) if t is not None])
             bd_i = [float(step["bd"][i]) for step in per_step_stats[:own_len] if "bd" in step and i < len(step["bd"])]
             steps_forced = sum(b <= 1e-6 for b in bd_i)
             steps_free = sum(b >= 1 - 1e-6 for b in bd_i)
@@ -374,6 +378,13 @@ SUMMARY_HEADERS = ["class", "k", "K", "M", "mean_Z", "var_Z", "all_within_budget
                    "util_max", "util_gt_0p9", "invariant_violations", "active_step_pct", "forced_safe_step_pct",
                    "rouge_l_mean", "lcs_word_mean", "lcs_char_mean", "acs_word_mean", "nv_recall_mean", "gen_len_mean"]
 METRIC_KEYS = ("rouge_l", "lcs_word", "lcs_char", "acs_word", "nv_recall")
+
+
+def _as_id_list(ids) -> List[int]:
+    """Normalise an eos specification to a list. It may be an int, a list, or absent entirely."""
+    if ids is None:
+        return []
+    return [ids] if isinstance(ids, int) else list(ids)
 
 
 def budget_K(k: float, t_max: int, initial_bank: float = 0.0) -> float:

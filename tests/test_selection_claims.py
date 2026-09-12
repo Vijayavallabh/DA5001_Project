@@ -77,8 +77,9 @@ def test_extraction_is_zero_at_every_n_in_the_table():
 
 
 def test_the_n_sweep_rows_in_the_table_round_from_selection_scaling_csv():
-    """feat-088's arms reach the main table; a stale row here would be a claim about a run that
-    never happened. Checked mechanically against the CSV, not by eye (caution (j))."""
+    """Table 1 reports GAINS over each arm's own control, not levels: the judge-consistency arm
+    showed an absolute level is largely a statement about slot order. Checked mechanically against
+    the CSV, not by eye (caution (j))."""
     import csv as _csv
     from tests.manuscript import tex as _tex
     rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
@@ -87,29 +88,46 @@ def test_the_n_sweep_rows_in_the_table_round_from_selection_scaling_csv():
             ("Meta-Llama-3.1-8B-Instruct", 64, "judge C")]
     for judge, n, label in want:
         r = next(x for x in rows if judge in x["judge"] and int(float(x["n"])) == n)
-        cell = (f"pointwise reward            & {label} & ${n}$ & "
-                f"${float(r['kl_nats']):.3f}$ & ${float(r['mean_words']):.1f}$ & "
-                f"${float(r['u']):.3f}$ & $[{float(r['u_lo95']):.3f}, {float(r['u_hi95']):.3f}]$")
+        cell = ("pointwise reward            & {} & ${}$ & ${:.3f}$ & ${:+.3f}$ & "
+                "$[{:+.3f}, {:+.3f}]$").format(label, n, float(r["kl_nats"]), float(r["gain"]),
+                                               float(r["gain_lo95"]), float(r["gain_hi95"]))
         assert cell in body, cell
 
 
+def test_no_absolute_judged_level_is_quoted_as_a_comparison():
+    """The instrument check (results/onset_prediction_judge_consistency.md) found the same text
+    wins 261/500 shown second and 24/500 shown first. Levels from different judged passes are
+    therefore not comparable, and the paper must not put two of them side by side again."""
+    from tests.manuscript import tex as _tex
+    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+    assert "reaches $0.522$" not in body and "reaches $0.577$" not in body, \
+        "a level-vs-level comparison is back in Section 6"
+    assert "gains over each arm's own" in body or "gain over control" in body
+
+
 def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
-    """The paper says the comparison is 'not a tie but a reversal'. That is only allowed while
-    selection's u at n=64 actually exceeds the metered decoder's, at a far smaller budget."""
+    """The paper says the comparison is a reversal. That is only allowed while selection's GAIN at
+    n=64 exceeds the metered decoder's gain over its own control, at a far smaller budget."""
     import csv as _csv
     import re as _re
     from tests.manuscript import tex as _tex
     sel = next(r for r in _csv.DictReader(open("results/selection_scaling.csv"))
                if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 64)
+    j2 = list(_csv.DictReader(open("results/judge_separation_v6_judge2.csv")))
+    anchor = next(x for x in j2 if x["decoder"].startswith("anchor"))
+    k10 = next(x for x in j2 if x["decoder"] == "KL" and float(x["k"]) == 10.0)
+    dec_gain = float(k10["utility"]) - float(anchor["utility"])
     dec = next(r for r in _csv.DictReader(open("results/selection_crossjudge.csv"))
                if "metered" in r["selector"])
-    assert float(sel["u"]) > float(dec["u"]), (sel["u"], dec["u"])
+    assert float(sel["gain"]) > dec_gain, (sel["gain"], dec_gain)
     ratio = float(dec["kl_nats"]) / float(sel["kl_nats"])
     body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
-    m = _re.search(r"selection reaches \$([\d.]+)\$ for \$([\d.]+)\$", body)
+    m = _re.search(r"metered decoder gains \$\+([\d.]+)\$ for \$([\d.]+)\$ nats and\s*"
+                   r"selection gains \$\+([\d.]+)\$ for \$([\d.]+)\$", body)
     assert m, "the reversal sentence has moved"
-    assert float(m.group(1)) == round(float(sel["u"]), 3), (m.group(1), sel["u"])
-    assert abs(float(m.group(2)) - float(sel["kl_nats"])) < 0.005, (m.group(2), sel["kl_nats"])
+    assert abs(float(m.group(1)) - dec_gain) < 0.001, (m.group(1), dec_gain)
+    assert float(m.group(3)) == round(float(sel["gain"]), 3), (m.group(3), sel["gain"])
+    assert abs(float(m.group(4)) - float(sel["kl_nats"])) < 0.005
     assert "fifty-fourth" in body and 53.0 < ratio < 55.0, ratio
 
 
@@ -126,3 +144,33 @@ def test_the_sweep_is_monotone_in_log_n_on_both_judges():
     gain8 = float(b[8]["u"]) - float(b[1]["u"])
     gain64 = float(b[64]["u"]) - float(b[1]["u"])
     assert gain64 >= gain8 + 0.05, (gain8, gain64)      # the committed SCALES band
+
+
+def test_the_position_bias_numbers_in_section_6_come_from_the_per_prompt_file():
+    """The judge-consistency paragraph is the paper's strongest methodological claim and every
+    figure in it is derivable from results/judge_consistency{,_per_prompt}.csv."""
+    import csv as _csv
+    import collections
+    import re as _re
+    from tests.manuscript import tex as _tex
+    rows = list(_csv.DictReader(open("results/judge_consistency_per_prompt.csv")))
+    fw = collections.Counter(r["u_n1_fwd"] for r in rows)
+    rv = collections.Counter(r["u_n1_rev"] for r in rows)
+    first_wins, second_wins = fw["1.0"], rv["1.0"]
+    assert second_wins > 5 * first_wins, (first_wins, second_wins)
+    crit = {r["criterion"]: r for r in _csv.DictReader(open("results/judge_consistency.csv"))}
+    c1 = float(crit["C1 order consistency"]["value"])
+    c2 = float(crit["C2 first-slot win rate"]["value"])
+    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+    m = _re.search(r"win \$(\d+)\$ of \$500\$ shown second and \$(\d+)\$ shown first", body)
+    assert m and (int(m.group(1)), int(m.group(2))) == (second_wins, first_wins), \
+        (m.groups() if m else None, second_wins, first_wins)
+    m = _re.search(r"only \$([\d.]+)\\%\$ of items get a mutually\s*consistent verdict", body)
+    assert m and abs(float(m.group(1)) - 100 * c1) < 0.05, (m.group(1) if m else None, c1)
+    m = _re.search(r"first slot wins \$([\d.]+)\\%\$", body)
+    assert m and abs(float(m.group(1)) - 100 * c2) < 0.05, (m.group(1) if m else None, c2)
+    # and the order-averaged gain the paragraph leans on
+    c3 = crit["C3 gain, order-averaged"]
+    m = _re.search(r"leaves \$\+([\d.]+)\$\s*\$\[\+([\d.]+), \+([\d.]+)\]\$", body)
+    assert m, "the order-averaged gain has moved"
+    assert abs(float(m.group(1)) - float(c3["value"])) < 5e-4, (m.group(1), c3["value"])
