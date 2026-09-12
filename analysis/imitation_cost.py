@@ -65,10 +65,10 @@ def median(v):
     return v[n // 2] if n % 2 else 0.5 * (v[n // 2 - 1] + v[n // 2])
 
 
-def scan(k, splits):
+def scan(k, splits, dirs=None):
     """One row of evidence per trajectory: slack fraction, slack charge, realised spend, linearity."""
     rows = []
-    for d in DIRS:
+    for d in (dirs or DIRS):
         for sp in splits:
             for path in glob.glob(os.path.join(d, f"trajectories_k{k}_{sp}.jsonl")):
                 for line in open(path):
@@ -133,16 +133,22 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default="results")
+    ap.add_argument("--dirs", nargs="+", default=list(DIRS),
+                    help="sweep directories to read; defaults to the audited pair's")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the output filenames, e.g. _llama321b for a second pair")
+    ap.add_argument("--min-trajectories", type=int, default=50)
     a = ap.parse_args()
+    dirs = a.dirs
 
     ks = sorted({os.path.basename(p).split("_")[1][1:]
-                 for d in DIRS for p in glob.glob(os.path.join(d, "trajectories_k*_neutral.jsonl"))},
+                 for d in dirs for p in glob.glob(os.path.join(d, "trajectories_k*_neutral.jsonl"))},
                 key=float)
     out, lorenz = [], {}
     for cls, splits in CLASSES.items():
         for k in [x for x in ks if float(x) > 0]:
-            rows = scan(k, splits)
-            if len(rows) < 50:
+            rows = scan(k, splits, dirs)
+            if len(rows) < a.min_trajectories:
                 continue
             K = rows[0]["K"]
             rec = dict(
@@ -175,13 +181,13 @@ def main():
                   f"spend/cap={rec['spend_over_cap']:.3f}  R2={rec['median_cum_spend_vs_step_r2']:.4f}")
 
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "imitation_lorenz.csv"), "w", newline="") as fh:
+    with open(os.path.join(a.out, f"imitation_lorenz{a.tag}.csv"), "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["prompt_class", "k", "frac_of_steps", "frac_of_spend"])
         for (cls, k), lz in sorted(lorenz.items()):
             for f, v in zip(LORENZ_GRID, lz):
                 w.writerow([cls, k, round(f, 4), round(v, 5)])
-    p = os.path.join(a.out, "imitation_cost.csv")
+    p = os.path.join(a.out, f"imitation_cost{a.tag}.csv")
     with open(p, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
         w.writeheader(); w.writerows(out)
