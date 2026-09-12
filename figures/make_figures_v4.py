@@ -302,14 +302,16 @@ def selection_frontier():
                      color="#c1443c", rotation=31, rotation_mode="anchor",
                      xytext=(0, 4), textcoords="offset points")
     import math as _m
+    # log 8 and log 64 are a factor of two apart on an axis spanning five decades, so one label
+    # each collided and the lower one landed on the x-axis. Two lines, one label.
     for n, style in ((64, "--"), (8, "-")):
         axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
-        axL.annotate(f"$\\log {n}$", (T[97], _m.log(n)), fontsize=6.3 * F, ha="right",
-                     color="#2f6f9f", xytext=(0, 4 if n == 64 else -13),
-                     textcoords="offset points")
+    axL.annotate("$\\log n$, $n=8,64$", (T[97], _m.log(64)), fontsize=6.3 * F, ha="right",
+                 color="#2f6f9f", xytext=(0, 4), textcoords="offset points")
     axL.axvline(t_star, color="0.5", lw=0.8, ls="-.")
-    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 3.0e4), fontsize=6.3 * F,
-                 color="0.35", ha="right", va="top", xytext=(-3, 0), textcoords="offset points")
+    # to the RIGHT of the rule: the top-left is where the $S(x)$ ray's own label sits.
+    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 6.0e4), fontsize=6.3 * F,
+                 color="0.35", ha="left", va="top", xytext=(4, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
     axL.set_xlabel("length of the protected work, tokens")
@@ -472,7 +474,7 @@ def order_no_collapse():
                     color=f"C{i}", label=pair if o == orders[0] else None)
         ax.axhline(0.0, color="0.4", lw=0.7, ls=":")
         ax.set_title(rf"$\alpha = {o:.0f}$")
-    axes[0].set_ylabel("$\log_{10}$ times safer, matched utility")
+    axes[0].set_ylabel(r"$\log_{10}$ times safer, matched utility")
     axes[0].legend(loc="lower left", frameon=False, ncol=1)
     fig.supxlabel("$F$, the fraction of the unconstrained ceiling the audited decoder already has",
                   fontsize=8, y=0.01)
