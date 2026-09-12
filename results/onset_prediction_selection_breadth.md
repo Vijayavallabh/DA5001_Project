@@ -184,3 +184,43 @@ the memoriser also uses, and would have been silently wrong at every anchor adde
 now gets its own tokenizer, and the 20-token seed is built with the memoriser's tokenizer at every
 anchor so the seed is byte-identical across them --- verified to reproduce the audited pair's
 passages exactly, all 100 seeds and all 100 targets.
+
+---
+
+## B3, appended 2026-09-12
+
+`analysis/selection_extraction.py` at each anchor: `n \in \{1, 8, 64\}`, 100 protected passages and
+their 20-token seeds, the adversarial selector (the **memorising** model's own likelihood on the
+`n` anchor samples), with the mandatory `k=-1` and `k=0` baselines. The audited anchor was re-run
+on the same footing after the tokenizer fix, at its full `n \in \{1,2,4,8,16,32,64\}` grid.
+
+| anchor | recall at `n=1` | `n=8` | `n=64` | max over all passages | memoriser alone |
+|---|---|---|---|---|---|
+| TinyComma-1.8B (audited) | `0.0000` | `0.0000` | `0.0000` | `0.0000` | `0.3925` |
+| Pleias-1.2B | `0.0000` | `0.0000` | `0.0000` | `0.0000` | `0.3925` |
+| KL3M-1.7B | `0.0000` | `0.0000` | `0.0000` | `0.0000` | `0.3925` |
+| Comma-7B | `0.0000` | `0.0000` | `0.0000` | `0.0000` | `0.3925` |
+
+**B3 is unanimous.** Near-verbatim recall is `0.0000` at every anchor and every `n`, with a maximum
+over all 100 passages of `0.0000`, while the memorising model alone reaches `0.3925` mean and
+`0.8154` maximum with `78\%` of passages above threshold on the same passages and seeds. There is
+nothing to report in the main text under the band's "any non-zero recall" clause, and the main text
+now says `0.0000` **at all four anchors**.
+
+That is what Proposition 4 requires rather than a surprise: `n` multiplies the *anchor's own* rate
+and no anchor saw the work. It is worth having measured anyway, because the proposition bounds the
+served distribution and says nothing about whether an adversarial selector can find, among `n`
+anchor samples, one that happens to run close to the protected text.
+
+### The audited anchor's `k=-1` baseline moved, and why
+
+It was `0.4338` mean / `0.8233` max / `80\%` and is now `0.3925` / `0.8154` / `78\%`. Nothing about
+the model, the passages or the seeds changed. The old figure was measured with the **safe** model's
+tokenizer object encoding the memoriser's inputs --- harmless-looking, because the audited anchor
+ships the Llama-3 tokenizer, but the two objects differ in their padding token and left padding is
+what a batched sample is built from. Each model now gets its own tokenizer, and the consequence is
+visible in the table above: the same baseline is measured at four anchors and comes back
+**identical to four decimal places at all of them**, which it could not have done before.
+`results/selection_extraction.csv` and its per-passage file now hold the corrected arm, the
+manuscript quotes `0.3925` / `0.8154` / `78\%`, and `tests/test_selection_claims.py` pins the
+cross-anchor identity so a future regression cannot hide.

@@ -70,7 +70,10 @@ def test_extraction_is_zero_at_every_n_in_the_table():
     for n in ("1", "2", "4", "8", "16", "32", "64"):
         assert float(rows[n]["nv_recall_mean"]) == 0.0, n
         assert float(rows[n]["nv_recall_max"]) == 0.0, n
-    assert float(rows["-1"]["nv_recall_mean"]) > 0.4
+    # The threshold is "substantially non-zero", not a specific value: it was 0.4 until the
+    # tokenizer fix of 2026-09-12 moved the baseline from 0.4338 (the memoriser fed the ANCHOR's
+    # token ids) to 0.3925 (its own), which is the number every anchor's arm now agrees on.
+    assert float(rows["-1"]["nv_recall_mean"]) > 0.3
     body = open(EXP, encoding="utf-8").read()
     assert f"${float(rows['-1']['nv_recall_mean']):.4f}$" in body
     assert f"${float(rows['-1']['nv_recall_max']):.4f}$" in body
@@ -174,3 +177,39 @@ def test_the_position_bias_numbers_in_section_6_come_from_the_per_prompt_file():
     m = _re.search(r"leaves \$\+([\d.]+)\$\s*\$\[\+([\d.]+), \+([\d.]+)\]\$", body)
     assert m, "the order-averaged gain has moved"
     assert abs(float(m.group(1)) - float(c3["value"])) < 5e-4, (m.group(1), c3["value"])
+
+
+def test_the_memoriser_baseline_is_identical_at_every_anchor():
+    """Same model, same 100 passages, same seeds, and since 2026-09-12 its own tokenizer, so the
+    k=-1 arm must not depend on which anchor it was measured beside. It used to: feeding the safe
+    model's token ids to the memoriser moved this by 0.04, which is a tenth of the quantity."""
+    import glob as _glob
+    import os as _os
+    vals = set()
+    for path in _glob.glob("results/selection_extraction*.csv"):
+        if path.endswith("_per_passage.csv"):
+            continue
+        r = {x["n"]: x for x in _rows(path)}
+        if "-1" not in r:
+            continue
+        vals.add((round(float(r["-1"]["nv_recall_mean"]), 4),
+                  round(float(r["-1"]["nv_recall_max"]), 4),
+                  round(float(r["-1"]["ge_0p01_pct"]), 1)))
+        assert _os.path.basename(path)
+    assert len(vals) == 1, vals
+    assert vals == {(0.3925, 0.8154, 78.0)}, vals
+
+
+def test_every_anchor_reports_zero_recall_at_every_n():
+    """Proposition 4 says n multiplies the ANCHOR's own rate, and no anchor saw the work. Four
+    anchors now, and Section 6 says 'at all four anchors', so all four have to be on disk."""
+    import glob as _glob
+    arms = [p for p in _glob.glob("results/selection_extraction*.csv")
+            if not p.endswith("_per_passage.csv")]
+    assert len(arms) == 4, arms
+    for path in arms:
+        for r in _rows(path):
+            if r["n"] == "-1":
+                continue
+            assert float(r["nv_recall_mean"]) == 0.0, (path, r["n"])
+            assert float(r["nv_recall_max"]) == 0.0, (path, r["n"])
