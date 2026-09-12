@@ -1,0 +1,4 @@
+arm,n_passages,n_books,k,K,t_max,frac_vacuous,frac_rate_below_k,S_median,s_tok_median,s_tok_p10,s_tok_p90,s_char_median,kcrit_over_s_median,frac_width_gt2
+CopyBench (16 novels),758,16,3.0,600.0,200,1.0,0.3259,204.77,3.1966,2.6087,3.8506,0.7784,5.0407,0.9037
+BookMIA seen (50 books),4935,50,3.0,600.0,200,0.9868,0.4028,182.63,3.1136,2.5244,3.8231,0.7419,5.6552,0.9836
+BookMIA unseen (50 books),4935,50,3.0,600.0,200,1.0,0.2588,192.1,3.3132,2.7095,3.9858,0.7808,5.2658,0.9781
