@@ -96,3 +96,46 @@ Writes `results/exact_rate.csv` (one row per pair) and `results/exact_rate_per_w
 ---
 
 ## Scoring log (appended after the run; nothing above this line is edited)
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+Nine pairs, 100 passages each, both models loaded together, both quantities from one teacher-forced
+pass. `.venv/bin/python analysis/exact_rate.py --out results` → `results/exact_rate.csv`.
+
+| criterion | value | reading |
+|---|---|---|
+| E1 fraction with `kbar > r(x)` | `0.711` | **MIXED** |
+| E2 median \|rate/onset − 1\| | `kbar 0.0507` vs `plug-in 0.0406`; misses high 4/9 vs 3/9 | **NO BETTER** |
+| E3 Spearman(`kbar`, onset) | `+0.867`, exact-ish `p = 0.0045` | reported, no band |
+| E4 onset quantile of `kbar` | `0.24` to `0.98`, no consistent value | secondary |
+
+### My hypothesis is refuted, and the manuscript's sentence gains the evidence it lacked
+
+The proposal was that Eq. (req) failed *as an estimator*: `r(x) = s_s − s_r` evaluates the integrand
+at one realised token, so where the memoriser is not near-deterministic it should sit systematically
+below the full-distribution `kbar(x)`, and every miss on record is low. It does sit below on `71\%`
+of passages — but that is MIXED, not the `≥ 0.90` a systematic bias would give, and replacing the
+estimator makes the prediction **worse**, not better: median relative error `0.0507` against
+`0.0406`, with the sign of the misses unchanged. The exact quantity is not a better point predictor
+of the onset than its collapse.
+
+So the manuscript's existing diagnosis is the right one and now has evidence behind it: Eq. (req)
+"is a correct statement about what a decoder must \emph{afford} and a wrong one about where leakage
+\emph{begins}". It is not the estimator. The budget granting access to a class of works is simply
+not the budget at which one work becomes recoverable.
+
+### One thing worth keeping
+
+E3 is strong: the exact rate **ranks** the nine onsets at `ρ = +0.867` (`p = 0.0045`) while
+mispredicting their levels. A quantity that orders the pairs correctly and misses their values is
+behaving like a correct rate with a missing constant — which is what an affordability threshold
+looks like when the onset also depends on something it does not contain (the adversary's context,
+which Section 3 shows carries `61\%` of the residual spread). Reported as an observation.
+
+### Status
+
+Post-hoc throughout, as the file said before the run: the nine onsets were already known, so nothing
+here is a confirmed prediction, and E2 reading NO BETTER is a refutation of *my* explanation rather
+than a confirmation of anything.
