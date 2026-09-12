@@ -3739,7 +3739,7 @@ input set and the same row count as the version it replaces:
 **Manuscript impact.** Two number sets moved and both are corrected in `~/sub/satml`: the imitation
 arm's `beta` (`0.954`/`0.033`/`0.0000` at `k=0.1`/`3`/`20`, was `0.960`/`0.034`/`0.0005`) and the
 Renyi price table's three step fractions, which had been dividing aggregate counters that exclude
-padding by a raw log length that includes it and therefore summed to `94.7\%` rather than `100\%`.
+padding by a raw log length that includes it and therefore summed to `94.7%` rather than `100%`.
 `171.3` is unchanged: a spend in nats does not depend on how many steps it is divided by.
 `budget_drift`, `burst_audit`, `concentration` and `pathwise_price` feed only the **retired SaTML
 sections** and no ICLR number, but were regenerated anyway so the artifact does not ship a fixed
