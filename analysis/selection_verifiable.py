@@ -72,25 +72,49 @@ def generate(model_id, shots, items, n, max_new, temperature, batch_size, seed, 
     model = AutoModelForCausalLM.from_pretrained(model_id, dtype=torch.bfloat16,
                                                  device_map={"": 0}).eval()
     torch.manual_seed(seed)
-    flat = [(it["qid"], shots + f"Question: {it['question']}\nAnswer:")
-            for it in items for _ in range(n)]
+    # The 8-shot prefix is ~1300 tokens and identical for all n samples of a problem, so encoding
+    # it n times makes prefill, not decoding, the cost of the run. num_return_sequences prefills
+    # once per problem instead of once per sample.
+    # Two constraints pull opposite ways: prefill once per problem (num_return_sequences), but
+    # keep the number of live sequences bounded, because n=64 x a 1300-token 8-shot prefix is tens
+    # of GB of KV cache. per_call problems per call, sub sequences each.
+    sub = min(n, batch_size)
+    assert n % sub == 0, "n must be a multiple of min(n, batch_size)"
+    per_call = max(1, batch_size // sub)
+    flat = [(it["qid"], shots + f"Question: {it['question']}\nAnswer:") for it in items]
+    done = 0
     with open(path, "w") as fh:
-        for s in range(0, len(flat), batch_size):
-            chunk = flat[s:s + batch_size]
+        for s in range(0, len(flat), per_call):
+            chunk = flat[s:s + per_call]
             enc = tok([p for _, p in chunk], return_tensors="pt", padding=True,
                       truncation=True, max_length=2048).to(model.device)
-            with torch.no_grad():
-                out = model.generate(**enc, do_sample=not greedy,
-                                     temperature=None if greedy else temperature,
-                                     top_k=None if greedy else 0,
-                                     top_p=None if greedy else 1.0,
-                                     max_new_tokens=max_new, pad_token_id=tok.pad_token_id)
-            for j, (qid, _) in enumerate(chunk):
-                txt = tok.decode(out[j, enc["input_ids"].shape[1]:], skip_special_tokens=True)
-                fh.write(json.dumps(dict(qid=qid, text=txt)) + "\n")
+            plen = enc["input_ids"].shape[1]
+            texts = [[] for _ in chunk]
+            for _ in range(n // sub):
+                with torch.no_grad():
+                    out = model.generate(**enc, do_sample=not greedy,
+                                         temperature=None if greedy else temperature,
+                                         top_k=None if greedy else 0,
+                                         top_p=None if greedy else 1.0,
+                                         num_return_sequences=sub,
+                                         max_new_tokens=max_new, pad_token_id=tok.pad_token_id)
+                # generate() returns the sub sequences of prompt j contiguously at rows
+                # j*sub .. j*sub+sub-1. If that ever changed every sample would be filed under the
+                # wrong problem and the accuracy would be silently wrong, so check it.
+                for j in range(len(chunk)):
+                    assert torch.equal(out[j * sub:(j + 1) * sub, :plen],
+                                       enc["input_ids"][j].unsqueeze(0).expand(sub, -1)), \
+                        "generate() no longer groups num_return_sequences contiguously by input"
+                    for r in range(sub):
+                        texts[j].append(tok.decode(out[j * sub + r, plen:],
+                                                   skip_special_tokens=True))
+            for (qid, _), ts in zip(chunk, texts):
+                for t in ts:
+                    fh.write(json.dumps(dict(qid=qid, text=t)) + "\n")
             fh.flush()
-            if (s // batch_size) % 20 == 0:
-                print(f"[gen] {min(s + batch_size, len(flat))}/{len(flat)}", flush=True)
+            done += len(chunk) * n
+            if (s // per_call) % 20 == 0:
+                print(f"[gen] {done}/{len(flat) * n}", flush=True)
     del model
     torch.cuda.empty_cache()
 
