@@ -94,3 +94,40 @@ def test_the_scoring_log_rounds_from_the_csv():
             continue
         g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
         assert f"`{g:+.3f} [{lo:+.3f}, {hi:+.3f}]`" in t, (r["judge"], r["arm"], g)
+
+
+def test_the_appendix_table_rounds_from_the_csv():
+    """Every cell of the second-pair table comes from frontier_pair_llama321b.csv, once."""
+    from tests.manuscript import tex
+    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
+    quoted = 0
+    for r in rows():
+        if r["arm"] in ("anchor alone (control)", "selection, n=1", "selection, n=2"):
+            continue
+        g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
+        cell = f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$"
+        assert cell in apx, (r["judge"], r["arm"], cell)
+        quoted += 1
+    assert quoted == 12, quoted
+    for r in rows():
+        if r["arm"].startswith("metered") and r["judge"] == SCORER:
+            assert f"${float(r['spend_nats']):.1f}$" in apx, r["spend_nats"]
+
+
+def test_section6_carries_the_second_pair_reversal():
+    from tests.manuscript import tex
+    body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    a = by_judge(SCORER)
+    sel = a["selection, n=8"]
+    best = max((v for k, v in a.items() if k.startswith("metered")), key=lambda r: float(r["gain"]))
+    assert f"${float(sel['gain']):+.3f}$ for ${float(sel['spend_nats']):.3f}$ nats" in body
+    assert f"${float(best['gain']):+.3f}$ for ${float(best['spend_nats']):.1f}$" in body
+    assert "the reversal repeats" in body
+
+
+def test_the_shared_vocabulary_constraint_is_stated_where_it_bites():
+    """A reader must not conclude we simply did not bother repeating the comparison."""
+    from tests.manuscript import tex
+    for f in ("sections/experiments.tex", "sections/appendix_proofs.tex"):
+        t = " ".join(open(tex(f), encoding="utf-8").read().split())
+        assert "shared vocabulary" in t or "the risky model's tokenizer" in t, f
