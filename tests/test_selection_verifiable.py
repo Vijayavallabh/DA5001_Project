@@ -123,7 +123,17 @@ def test_the_scored_arm_agrees_with_the_manuscript():
         if r["gain"] and float(r["n"]) == 1:
             assert float(r["gain"]) == 0.0, "the n=1 control must be its own baseline"
     body = " ".join(open(tex("sections/experiments.tex")).read().split())
-    if "GSM8K" in body:
-        best = max(float(r["acc"]) for r in rows if r["arm"].startswith("pointwise"))
-        assert re.search(r"\b%s\b" % re.escape(f"{best:.3f}".lstrip("0")), body) or \
-            f"{best:.3f}" in body, "Section 6 quotes GSM8K but not this arm's best accuracy"
+    assert "GSM8K" in body, "the judge-free arm is scored but Section 6 does not report it"
+    mv = {int(r["n"]): r for r in rows if r["arm"].startswith("majority")}
+    pw = {int(r["n"]): r for r in rows if r["arm"].startswith("pointwise")}
+    # the three numbers Section 6 quotes, each rounded from the CSV once (caution (j))
+    assert f"${float(mv[1]['acc']):.3f}$" in body, mv[1]["acc"]
+    best_n = max(mv, key=lambda n: float(mv[n]["acc"]))
+    assert f"${float(mv[best_n]['acc']):.3f}$" in body, mv[best_n]["acc"]
+    g = mv[best_n]
+    assert f"$+{float(g['gain']):.3f}$ $[+{float(g['gain_lo95']):.3f}, " \
+           f"+{float(g['gain_hi95']):.3f}]$" in body, g
+    r64 = pw[64]
+    assert f"$+{float(r64['gain']):.3f}$" in body, r64["gain"]
+    # and the paper must not present majority vote as the registered scorer
+    assert "pointwise" in body or "reward" in body

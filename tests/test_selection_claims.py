@@ -187,7 +187,9 @@ def test_the_memoriser_baseline_is_identical_at_every_anchor():
     import os as _os
     vals = set()
     for path in _glob.glob("results/selection_extraction*.csv"):
-        if path.endswith("_per_passage.csv"):
+        # the 70B arm is a different risky model, not an anchor arm, and its own gate failed
+        # (results/onset_prediction_extraction_natural.md), so it has no memoriser baseline
+        if path.endswith("_per_passage.csv") or path.endswith("_70b.csv"):
             continue
         r = {x["n"]: x for x in _rows(path)}
         if "-1" not in r:
@@ -205,7 +207,7 @@ def test_every_anchor_reports_zero_recall_at_every_n():
     anchors now, and Section 6 says 'at all four anchors', so all four have to be on disk."""
     import glob as _glob
     arms = [p for p in _glob.glob("results/selection_extraction*.csv")
-            if not p.endswith("_per_passage.csv")]
+            if not p.endswith("_per_passage.csv") and not p.endswith("_70b.csv")]
     assert len(arms) == 4, arms
     for path in arms:
         for r in _rows(path):
@@ -229,3 +231,20 @@ def test_the_pathwise_form_of_prop_sparse_states_where_it_has_no_force():
     assert "constrains nothing below $\\varepsilon = 3$ nats" in body, (
         "the appendix must say the pathwise count is uninformative BELOW eps=3, not above")
     assert "$600/\\varepsilon$" in body and "$200$ steps" in body
+
+
+def test_the_70b_extraction_arm_is_reported_as_gate_failed_not_as_a_zero():
+    """Its three zeros look exactly like the anchor arms' and mean the opposite. The 70B recovers
+    NOTHING of these passages unaided, so its own committed gate fails and E1 is not read: an
+    adversary that cannot extract proves nothing about a certificate."""
+    r = {x["n"]: x for x in _rows("results/selection_extraction_70b.csv")}
+    assert float(r["-1"]["nv_recall_mean"]) < 0.10, "the gate would now pass; re-score the arm"
+    log = open("results/onset_prediction_extraction_natural.md", encoding="utf-8").read()
+    head, _, scored = log.partition("\n## Scoring,")
+    assert scored, "the arm is unscored"
+    assert "gate fails" in scored and "NOT read as NO LEAK" in scored
+    # and the paper must not claim it
+    from tests.manuscript import tex
+    close = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())
+    assert "memoriser \\emph{we} fine-tuned" in close, \
+        "Limitations must say whose memoriser the zero-leakage result is against"

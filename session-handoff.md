@@ -4,11 +4,9 @@
 
 Three arms are `in-progress` and each has its bands committed before its run:
 
-- **feat-100** — the strongest anchor at the largest `n` (`results/onset_prediction_selection_n64_comma7b.md`)
-- **feat-101** — the judge-free axis, GSM8K exact match (`results/onset_prediction_verifiable.md`)
-- **feat-102** — the adversarial selector handed to a memoriser we did not make (`results/onset_prediction_extraction_natural.md`)
+- **feat-100** — the strongest anchor at the largest `n` (`results/onset_prediction_selection_n64_comma7b.md`), generation done, judging on GPU 4
 
-Everything through feat-099 is `done`. **feat-096** (the decider) and **feat-098** (Proposition 3 at the mechanism authors' own 70B) both closed tonight.
+Everything through feat-099 is `done`, and so are **feat-096** (the decider), **feat-098** (Proposition 3 at the authors' own 70B), **feat-101** (the judge-free axis) and **feat-102** (gate failed, reported as failing). Only **feat-100** is left.
 
 The paper is v7. It argues one claim and exhibits a mechanism on the other side of it:
 
@@ -32,7 +30,7 @@ stays UNINFORMATIVE. Section 6 and Appendix J now label which axis each result s
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial* |
 | build | `exit=0`, `overfull=0`, `unresolved=0`, main text **exactly 9 of 9 pages** |
-| tests | **382**, all passing |
+| tests | **384**, all passing |
 | numeric audit | 2,179 literals, 1 expected miss (`64256`) |
 | compute | `156` disclosed; **refresh after the queue drains** (`test_compute_hours.py` wants an exact match) |
 | pre-registrations | **32** logs; `test_preregistration_count.py` pins the Reproducibility Statement to the count |
