@@ -120,3 +120,71 @@ same base-vs-instruct confound that qualifies J1 in
 - Reading V1 or V2 on the risky model's own accuracy. `k = -1` is a baseline, not an arm.
 
 ## Scoring log
+
+---
+
+## Scoring, 2026-09-13 --- against the bands committed before generation
+
+`analysis/selection_verifiable.py --anchor common-pile/comma-v0.1-2t --limit 500 --max-n 64
+--batch-size 32 --reward-batch-size 16 --tag _comma7b --out results` ->
+`results/selection_verifiable_comma7b.csv`. `500` GSM8K test problems, 8-shot, temperature `0.7`,
+`64` samples each, nested.
+
+**The metric gate passes with room**: no number could be extracted from `0.04%` of the `32{,}000`
+samples, against a threshold of `10%`. The bands are readable.
+
+| n | log n | majority vote | gain | pointwise reward | gain |
+|---|---|---|---|---|---|
+| 1 | 0.000 | 0.320 | --- | 0.320 | --- |
+| 2 | 0.693 | 0.320 | +0.000 | 0.352 | +0.032 [+0.002, +0.062] |
+| 4 | 1.386 | 0.392 | +0.072 [+0.044, +0.100] | 0.344 | +0.024 [-0.014, +0.062] |
+| 8 | 2.079 | 0.466 | +0.146 [+0.110, +0.184] | 0.364 | +0.044 [+0.002, +0.088] |
+| 16 | 2.773 | 0.500 | +0.180 [+0.142, +0.220] | 0.356 | +0.036 [-0.008, +0.080] |
+| 32 | 3.466 | 0.546 | +0.226 [+0.184, +0.270] | 0.380 | +0.060 [+0.016, +0.104] |
+| 64 | 4.159 | 0.542 | +0.222 [+0.182, +0.264] | 0.386 | +0.066 [+0.024, +0.108] |
+
+### V1 -- SC LIFTS
+
+Majority vote at `n=64` gains `+0.222` `[+0.182, +0.264]` over its own `n=1`; the interval excludes
+zero by ten standard errors. Accuracy goes `0.320 -> 0.546` at `n=32`, **+22.6 points of exact-match
+accuracy for `3.47` nats of pathwise budget**.
+
+### V2 -- REWARD LIFTS
+
+The paper's own selector, unchanged and never told the task is arithmetic, gains `+0.066`
+`[+0.024, +0.108]` at `n=64`. The interval excludes zero.
+
+### V3 -- MONOTONE, both rules
+
+Spearman of accuracy against `\log n` is `+0.955` for majority vote and `+0.929` for the pointwise
+reward, both above the committed `+0.8`.
+
+### V4 -- the consequence that fires
+
+V2 fires, so the committed consequence is the first one: **Section 6 gains one sentence saying the
+gain is not an artefact of judged preference**, because the identical mechanism and the identical
+selector lift an exact-match metric with no judge in the loop. V1 fires as well, so the paper may
+also state that **self-consistency is a `\log n`-certified NAF mechanism** --- which follows from
+Proposition 4 and not from this run, since majority vote returns one of the `n` draws.
+
+**One thing this arm says that no band asked for, and it is not favourable to the reward.** The two
+rules differ by `3.4\times`: `+0.222` for majority vote against `+0.066` for the reward, on the same
+`32{,}000` samples. A general helpfulness reward is a poor selector for a task with a verifiable
+answer, and the certificate is indifferent to which is used --- `q(y) \le n\,p_s(y)` holds for both.
+So the mechanism's ceiling here is the *scorer*, not the certificate, which is the same lesson the
+first pre-registered scorer taught when the risky model's own likelihood moved judged utility by
+`-0.006`. It belongs in the paper beside the gain.
+
+### V5 -- descriptive, no band
+
+`Llama-3.1-8B-Instruct` alone scores `0.786` greedy and `0.726` sampled on the same `500` problems.
+Selection at `n=32` reaches `0.546`, closing `56%` of the distance from the anchor's `0.320` to the
+risky model's sampled `0.726` without ever drawing a token from it. Nothing is claimed from this:
+the risky model is instruction-tuned and the anchor is not, a confound this arm cannot break.
+
+### Excluded alternatives, honoured
+
+The grid, the eight shots, the temperature and the first `500` problems are as committed. The reward
+model was not swapped for a verifier, and majority vote is reported **beside** the registered
+scorer, never in place of it. The entry gate's unfavourable half stands: there is no judge-free
+head-to-head against the metered decoder, because TinyComma scores `0.04` on this task.

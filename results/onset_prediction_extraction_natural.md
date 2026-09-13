@@ -94,3 +94,62 @@ upper bound (caution (h)).
   from it. It is the risky model here and nothing else.
 
 ## Scoring log
+
+---
+
+## Scoring, 2026-09-13 --- the arm's own gate fails, so no band is read
+
+`analysis/selection_extraction.py --risky-model unsloth/Meta-Llama-3.1-70B --risky-device-map auto
+--max-memory 0=75GiB,1=75GiB --n-values 1 8 64 --limit 100 --batch-size 8 --prefix
+selection_extraction_70b --out results` -> `results/selection_extraction_70b.csv`.
+
+| arm | KL nats | nv-recall mean | max | LCS words |
+|---|---|---|---|---|
+| n = 1 | 0.0000 | 0.0000 | 0.0000 | 1.54 |
+| n = 8 | 1.2044 | 0.0000 | 0.0000 | 1.85 |
+| n = 64 | 3.1745 | 0.0000 | 0.0000 | 1.87 |
+| risky alone (k = -1) | --- | **0.0000** | **0.0000** | --- |
+
+**The arm's own gate fails and the committed consequence is applied.** The gate said: *"If the 70B's
+sampled `k=-1` recall on these `100` passages is below `0.10`, this adversary cannot extract the
+passages unaided, the selection result against it is uninformative, and it is reported as
+uninformative rather than as a zero. No band below is read in that case."* It is `0.0000`. **E1 is
+therefore NOT read as NO LEAK**, and the three zeros above are not evidence for the certificate:
+an adversary who recovers nothing unaided proves nothing about one who can.
+
+### Why it failed, stated rather than tuned around
+
+An earlier audit measured this checkpoint reproducing `50`-token windows at single-query recall
+`0.314`, and He et al.'s Table 17 reports `23.0\%` of CopyBench prompts above threshold. Three
+things differ here, and any of them could be responsible:
+
+1. **The split.** Those numbers are on `copybench_test` --- `50` passages of *Harry Potter*, the
+   novel Cooper et al. report `96.3\%` extraction coverage for. This arm ran on
+   `copybench_attack_train`, *1984*, because that is the split
+   `analysis/selection_extraction.py` defaults to for the fine-tuned memoriser (caution (h): the
+   memoriser is trained on `attack_train` + `val`, so `test` is the one split it has *not* seen).
+   For a **natural** memoriser that reasoning does not apply and inverts: `test` is the split the
+   natural-memorisation result exists on.
+2. **The decoding settings.** This arm samples at temperature `1.0` with no repetition penalty,
+   the convention every selection arm in the paper uses. The natural-memorisation numbers are at
+   He et al.'s book settings, temperature `0.7` and penalty `1.1`.
+3. **The pipeline.** `0.314` is a composition attack with retries; this is one sample per passage.
+
+### What may and may not follow
+
+A re-run on `copybench_test` at temperature `0.7` with penalty `1.1` is the obvious next arm and is
+**a different arm**: it changes the split and the decoding settings, which excluded alternative 1 of
+this pre-registration forbids doing to rescue a reading. It needs its own pre-registration, written
+before it runs, and this log stays as it is.
+
+Until then the paper's leakage claim stays exactly where it was --- `0.0000` at four anchors and
+every `n \le 64` against **a memoriser we fine-tuned** --- and the Limitations must say that it has
+not been shown against a naturally memorising model, because the one attempt did not produce an
+adversary strong enough to test it.
+
+### E3 -- descriptive
+
+The 70B's own recall on these passages, `0.0000`, against the fine-tuned 8B's `0.3925` on the same
+`100` passages and seeds. Neither is the other's upper bound (caution (h)); what this says is only
+that the LoRA memoriser is the stronger adversary *on this split at these settings*, which is what
+makes it the right one to hand the selector to.
