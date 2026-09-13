@@ -278,7 +278,7 @@ def selection_frontier():
     odo = list(csv.DictReader(open(RESULTS / "odometer.csv")))
     if not sel or not dec or not onset or not odo:
         raise FileNotFoundError("an input CSV for selection_frontier is empty")
-    fig, (axL, ax) = plt.subplots(1, 2, figsize=(6.9, 1.92))
+    fig, (axL, ax) = plt.subplots(1, 2, figsize=(6.9, 2.15))
     F = 6.9 / 5.5  # printed at \textwidth: pre-scale the type by the shrink it will take
 
     # ---- panel (a): a budget that scales with the work against one that does not -------------
