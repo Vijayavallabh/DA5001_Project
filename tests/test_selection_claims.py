@@ -248,3 +248,38 @@ def test_the_70b_extraction_arm_is_reported_as_gate_failed_not_as_a_zero():
     close = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())
     assert "memoriser \\emph{we} fine-tuned" in close, \
         "Limitations must say whose memoriser the zero-leakage result is against"
+
+
+def test_the_n64_comma7b_arm_is_reported_with_its_failed_nested_check():
+    """G3 failed, so the cross-arm reading is unreadable and the abstract must NOT have moved to
+    this arm's number. The within-pass curve is fine and is what the appendix reports."""
+    import csv as _csv
+    from tests.manuscript import tex
+    rows = list(_csv.DictReader(open("results/selection_scaling_comma7b64.csv")))
+    b = [r for r in rows if "Phi-3.5" in r["judge"]]
+    assert {int(r["n"]) for r in b} == {1, 2, 4, 8, 16, 32, 64}
+    g8 = float(next(r for r in b if r["n"] == "8")["gain"])
+    breadth = float(next(r for r in _csv.DictReader(open("results/selection_scaling_comma7b.csv"))
+                         if "Phi-3.5" in r["judge"] and r["n"] == "8")["gain"])
+    assert abs(g8 - breadth) > 0.03, "G3 would now pass; the appendix text must be re-scored"
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    assert "not readable" in apx and "failed" in apx
+    g64 = float(next(r for r in b if r["n"] == "64")["gain"])
+    assert f"$+{g64:.3f}$" in apx, g64
+    # the abstract keeps the number G1 never licensed it to change
+    absr = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    assert f"{g64:.3f}" not in absr.split("\\end{abstract}")[0], \
+        "the abstract moved to a gain whose cross-arm reading was declared unreadable"
+
+
+def test_the_cross_pass_floor_has_both_measurements():
+    """0.034 from the second-pair pass and 0.039 from the n=64 arm. If either moves, the appendix
+    sentence that says 'about 0.04' has to move with it."""
+    import csv as _csv
+    from tests.manuscript import tex
+    n1 = [r for r in _csv.DictReader(open("results/frontier_pair_llama321b.csv"))
+          if r["arm"] == "selection, n=1" and "Phi-3.5" in r["judge"]][0]
+    assert abs(abs(float(n1["gain"])) - 0.034) < 5e-4
+    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
+    assert "$0.039$" in apx and "$-0.034$" in apx
+    assert "cross-pass floor" in apx

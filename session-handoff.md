@@ -2,11 +2,9 @@
 
 ## Current objective
 
-Three arms are `in-progress` and each has its bands committed before its run:
+**Nothing is in progress.** Every arm through feat-102 is scored and closed.
 
-- **feat-100** — the strongest anchor at the largest `n` (`results/onset_prediction_selection_n64_comma7b.md`), generation done, judging on GPU 4
-
-Everything through feat-099 is `done`, and so are **feat-096** (the decider), **feat-098** (Proposition 3 at the authors' own 70B), **feat-101** (the judge-free axis) and **feat-102** (gate failed, reported as failing). Only **feat-100** is left.
+Closed overnight: **feat-096** (the decider), **feat-098** (Proposition 3 at the authors' own 70B), **feat-100** (n=64 at the strongest anchor -- G3 failed, G1 unreadable), **feat-101** (the judge-free axis) and **feat-102** (gate failed, reported as failing).
 
 The paper is v7. It argues one claim and exhibits a mechanism on the other side of it:
 
@@ -30,7 +28,7 @@ stays UNINFORMATIVE. Section 6 and Appendix J now label which axis each result s
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial* |
 | build | `exit=0`, `overfull=0`, `unresolved=0`, main text **exactly 9 of 9 pages** |
-| tests | **384**, all passing |
+| tests | **386**, all passing |
 | numeric audit | 2,179 literals, 1 expected miss (`64256`) |
 | compute | `156` disclosed; **refresh after the queue drains** (`test_compute_hours.py` wants an exact match) |
 | pre-registrations | **32** logs; `test_preregistration_count.py` pins the Reproducibility Statement to the count |

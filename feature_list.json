@@ -993,12 +993,12 @@
     },
     {
       "id": "feat-100",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "feat-095"
       ],
       "description": "Does the gain keep growing at the strongest anchor? The scaling curve to n=64 is TinyComma's (+0.142) and the largest gain in the paper is Comma-7B's at n=8 (+0.111); nothing on record says what the strongest anchor does at the largest n. Under GROWS the abstract's headline number changes; under OVEROPTIMISES the Limitations caveat that best-of-n turns over against the scorer's own errors (Gao et al. 2023) becomes a measurement and Section 6 must say the mechanism has an operating range with an upper end we found. G3 is a nested reproducibility check: if the n<=8 rows disagree with the breadth arm by more than 0.03, G1 is not readable whatever it says.",
-      "evidence": ""
+      "evidence": "h1.py at Comma-7B, 64 trajectories per prompt on 500 ordinary prompts -> output/phase5/sel_comma7b_64, then analysis/selection_scaling.py --gen-dir output/phase5/sel_comma7b_64 --max-n 64 --reward-cache results/selection_rewards64_comma7b.csv --tag _comma7b64 --out results. G3 FAILS on the registered scorer: this arm's n=8 gain is +0.072 against the breadth arm's +0.111, a discrepancy of 0.039 past the committed 0.03, so by the band's own words G1 IS NOT READABLE and the abstract does not change. The band's premise -- that the two arms shared generations -- was wrong when written (mean completion length 80.4 words here against 99.5 there), but rewriting a band after seeing the number is what the register prevents, so it stands. G2 MONOTONE: Spearman +1.000 in both judges. What the arm does support is a within-pass curve: +0.041, +0.060, +0.072, +0.103, +0.127, +0.173 at n = 2..64 on the registered scorer and +0.062 to +0.230 on the second, so the mechanism is still climbing at n=64 at the strongest anchor and reward overoptimisation is not observed anywhere on the grid. The failure is also corroboration: with the second-pair pass's -0.034 between two nominally identical control arms, TWO independent measurements now put this paper's cross-pass floor on a judged gain at about 0.04."
     },
     {
       "id": "feat-101",
