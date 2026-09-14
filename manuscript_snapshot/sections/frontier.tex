@@ -4,11 +4,12 @@
 % concludes, and Proposition~\ref{prop:threshold} has moved to Section~\ref{sec:selection}, where
 % what it certifies is the point. v7 kept as frontier_v7_2026-09-14.tex.
 
-\section{Why no per-token budget can do this}\label{sec:frontier}
+\section{Why a per-token budget is vacuous or trivial}\label{sec:frontier}
 
 Selection anchoring buys more utility than a metered decoder for a fraction of the divergence, under
-a strictly stronger order. Can the meter be repaired to match it? It cannot, and the obstruction is
-one line of the chain rule.
+a strictly stronger order. Can the meter be repaired to match it? The obstruction is one line of the
+chain rule --- a statement about the \emph{shape} a per-token policy must take, not a lower bound on
+what one could achieve.
 
 \begin{proposition}[An affordable causal policy is the anchor almost everywhere]\label{prop:sparse}
 Let $q$ be any causal policy, $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
@@ -23,8 +24,10 @@ $\Omega(T)$, which is the dichotomy of Section~\ref{sec:intro}. It binds exactly
 charge per decoded token, and we claim no more --- a per-\emph{query} rule such as
 CP-$\Delta$/CP-$k$ fusion \citep{abad2025cpfuse} is outside its scope, as is selection anchoring
 itself. Nothing here forbids a causal policy from \emph{concentrating} a bounded budget; it forbids
-one from spreading it, which is what a rate does by construction. That is the gap
-Section~\ref{sec:selection} walks through.
+one from spreading it, which is what a rate does by construction, and that is the gap
+Section~\ref{sec:selection} walks through. How close a sparse causal policy comes to
+Theorem~\ref{thm:nfl}'s frontier stays open; Section~\ref{sec:orders} closes it empirically for the
+deployed rule, not for the class.
 
 \paragraph{The class and the rates}
 Making both horns measurable takes three quantities and no attack. Write
@@ -54,8 +57,7 @@ deployer can compute them in advance. Rates are nats per \emph{character} where 
 different vocabularies are compared, per \emph{token} where a rate meets a budget
 (Appendix~\ref{app:opening}).
 
-The other side of the dichotomy has a price too, and it is the one that shows a certificate and a
-useful mechanism are not intrinsically in conflict.
+The other side of the dichotomy has a price too.
 \begin{theorem}[The price of utility]\label{thm:nfl}
 Let a decoder of the class above run to a per-trajectory sequence budget $K$ under any charge
 $c_\alpha$, $\alpha \in [1,\infty]$, and write $q$ for the law of its output. For every bounded
@@ -100,7 +102,6 @@ A second, weaker boundary sits above the vacuity threshold: the rate needed to e
 the Loynes running maximum of the surprisal process \citep{loynes1962stability}, so a budget
 publishes a \emph{drift} where safety is a \emph{workload maximum}
 (Proposition~\ref{prop:outrun}), and the two bracket a regime where the decoder protects the work
-and no budget in the family can say so (Appendix~\ref{app:opening}). Both rates need only forward
-passes, and they separate: over ten safe models the margin $s(x)/c_{\mathrm{use}}$ rises
-monotonically with capability (Appendix~\ref{app:scaling}). The raw material is improving; a
-per-token meter cannot use it.
+and no budget in the family can say so (Appendix~\ref{app:opening}). Over ten safe models the margin
+$s(x)/c_{\mathrm{use}}$ rises monotonically with capability (Appendix~\ref{app:scaling}): the raw
+material is improving, and a per-token meter cannot use it.

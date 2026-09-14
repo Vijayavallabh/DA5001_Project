@@ -1,0 +1,19 @@
+model,role,provenance,n_passages,frac_passages_leaking,max_recall,mean_recall,verdict
+comma1t,anchor,openly licensed,100,0.0,0.0,0.0,PASSES
+comma7b,anchor,openly licensed,100,0.0,0.0,0.0,PASSES
+kl3m17b,anchor,openly licensed,100,0.0,0.0,0.0,PASSES
+pleias12b,anchor,openly licensed,100,0.0,0.0,0.0,PASSES
+pleias3b,anchor,openly licensed,100,0.0,0.0,0.0,PASSES
+kl3m170m,anchor,fine-tuned on these passages,100,0.82,0.4145,0.2483,FAILS
+kl3m17b,anchor,fine-tuned on these passages,100,0.79,0.4145,0.2296,FAILS
+kl3m37b,anchor,fine-tuned on these passages,100,0.96,0.4145,0.3178,FAILS
+kl3m520m,anchor,fine-tuned on these passages,100,0.82,0.4145,0.2624,FAILS
+llama32_1b,anchor,fine-tuned on these passages,100,0.81,0.8308,0.3809,FAILS
+llama32_3b,anchor,fine-tuned on these passages,100,0.86,0.8182,0.3901,FAILS
+opencalm1b,anchor,fine-tuned on these passages,100,0.57,0.5882,0.1685,FAILS
+opencalm3b,anchor,fine-tuned on these passages,100,0.97,0.6093,0.4611,FAILS
+phi35mini,anchor,fine-tuned on these passages,100,0.85,0.7725,0.4799,FAILS
+pleias12b,anchor,fine-tuned on these passages,100,0.98,0.8186,0.6853,FAILS
+pleias350m,anchor,fine-tuned on these passages,100,0.98,0.8148,0.6615,FAILS
+qwen25_7b,anchor,fine-tuned on these passages,100,0.93,0.8307,0.5643,FAILS
+Llama-3.1-70B,(measured as a model),memorised in pre-training,50,0.5,1.0,0.2475,FAILS

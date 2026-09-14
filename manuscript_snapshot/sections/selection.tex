@@ -19,8 +19,8 @@ p_s(\cdot)$, score each with any function $f$, and serve the highest scorer. Eve
 drawn from $p_s$, so the per-step divergence is identically zero and there is nothing to meter; the
 whole budget is spent once, on \emph{which draw to serve}. That the safe model is the only
 \emph{generator} invites the objection that this is the safe model served well. It is not: the risky
-model may act as the scorer, through the ranking instead of the sampling, its influence bounded at
-$\log n$ however it is used, and Section~\ref{sec:experiments} tries that arm first.
+model may act as the scorer, through the ranking rather than the sampling, its influence bounded at
+$\log n$ however it is used.
 
 \begin{proposition}[The budget of a selection rule]\label{prop:selection}
 Let $y_1,\dots,y_n$ be i.i.d.\ $p_s$ and let $q$ be the law of $y^\star = \arg\max_i f(y_i)$ for any
@@ -67,10 +67,10 @@ once.
 Selection anchoring meets this under the $\alpha = \infty$ charge --- the \emph{pathwise} budget,
 which bounds every event rather than an average, and the strongest order in the family the deployed
 meters charge in --- at exactly $\log n$ nats, where the same strengthening costs a metered decoder
-dearly (Section~\ref{sec:orders}). The two budgets also scale differently in the one variable a
+dearly (Section~\ref{sec:orders}). The two also scale differently in the one variable a
 rights-holder cares about: a metered budget has $K/S(x) \to k/s(x)$, a constant no length improves,
-and a selection budget has $\log n / S(x) \to 0$. At $n=8$ that is $\log 8 = 2.08$ nats against a
-median $S(x)$ of $849$, a margin above $400\times$ whatever the work's length.
+a selection budget $\log n / S(x) \to 0$. At $n=8$ that is $\log 8 = 2.08$ nats against a median
+$S(x)$ of $849$, a margin above $400\times$ whatever the work's length.
 
 Put as the amplification a rights-holder can be promised --- the factor by which the mechanism may
 raise the safe model's own probability of emitting their work --- the two mechanisms reach the same
@@ -94,17 +94,13 @@ Proposition~\ref{prop:selection} advertises.
 The omissions are the engineering argument. Proposition~\ref{prop:selection} holds for \emph{any}
 score --- a reward model, a classifier, a human or an adversary --- any tie rule and any $p_s$, so a
 \emph{malicious} score multiplies the anchor's own probability of emitting $x$ by at most $n$ and
-introduces nothing new, where a metered decoder's certificate is about a charge its own
-implementation computes. Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted
+introduces nothing new. Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted
 works are bounded on the same terms as exact quotation \citep{ippolito2023preventing}.
 
-The price is compute, in a currency no nat measures. A metered decoder runs both models at every
-step; selection runs $n$ anchor generations and $n$ scoring prefills, which on this workload is
-$7.2\times$ its forward-pass cost at $n=8$ and $57.5\times$ at $n=64$
-(Appendix~\ref{app:orderavg}).
+The price is compute, in a currency no nat measures: selection costs $7.2\times$ the metered
+decoder's forward passes at $n=8$ and $57.5\times$ at $n=64$ (Appendix~\ref{app:orderavg}).
 
 The obvious objection is that the gain comes from leaving the decode loop rather than from where the
 budget sits, so we granted a metered decoder the same $\log 8$ nats up front. Neither causal
 placement buys anything --- $-0.008$ front-loaded, $-0.032$ uniform, $-0.019$ at ten times the
-budget, against $+0.054$ off the axis at the same $2.08$ nats (Appendix~\ref{app:proofs}) --- and
-Section~\ref{sec:frontier} says why it had to.
+budget, against $+0.054$ off the axis at the same $2.08$ nats (Appendix~\ref{app:proofs}).

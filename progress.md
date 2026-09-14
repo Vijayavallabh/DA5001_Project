@@ -32,6 +32,39 @@ Body is exactly 9 of 9 pages, page 10 body-free, 0 overfull, 0 unresolved, 429 t
 literals audited with the one expected miss (`64256`), artifact 811 files. A figure-font experiment
 that broke Figure 1's layout was caught by rendering the page and reverted.
 
+### 2026-09-15, v10: the rest of the referee report
+
+A second pass over the review, on the points the first pass left.
+
+* **feat-115, anchor vetting (`analysis/anchor_vetting.py`, `results/anchor_vetting.csv`).** The
+  review's deepest objection was that the clean-anchor premise is assumed, not argued, and that
+  open-licensed corpora carry only partial provenance guarantees. The premise is in fact the one
+  quantity a deployer can measure outright: draw from the candidate anchor on the protected
+  passages' prefixes and score near-verbatim recall --- exactly what `n` multiplies. Over eighteen
+  models it separates completely: **five openly licensed anchors read `0.000` on all 100 passages**,
+  the twelve we contaminated read `0.570`-`0.980`, and `Llama-3.1-70B`, which memorised in
+  pre-training rather than because we made it, reads `0.500` with one passage reproduced in full.
+  This is a **post hoc re-analysis of arms run for other purposes** -- no band was committed, it is
+  deliberately NOT named `onset_prediction_*`, and the appendix says so. The twelve fine-tuned rows
+  are near-circular; the non-circular facts are the five zeros and the 70B. Answers reviewer Q8
+  (what vetting is sufficient) and W2. It is sound, not complete: passing is evidence, not proof.
+* **W3, the Section 4 overclaim.** "Why no per-token budget can do this" promised more than
+  Proposition 3 proves. Retitled **"Why a per-token budget is vacuous or trivial"**, and the section
+  now says in its own words that it constrains the *shape* of a causal policy and not the utility
+  one could reach, with the frontier gap named as open.
+* **W11, the tie structure.** `261` and `24` do not partition `500` because about a third of items
+  tie in either order (n=1 control: 24/172/304 forward, 261/173/66 reverse). Now stated.
+* **W7, the anchor scale ceiling.** Comma-7B is the largest of the ten openly licensed base models
+  we could obtain; the paper now says the ceiling on that axis is the licensing frontier, not our
+  compute. Open-*data* families are excluded because their corpora contain books, which would
+  violate the premise the certificate is written against.
+* **W10, onset.** Softened to what nine pairs over a `1.6x` span can carry: "will not carry a law
+  and we claim none; what they show is that the threshold is not bookkeeping."
+
+A float added to an appendix produced a 52.8pt overfull box that the page-budget check does not
+see. Run the **full** gate after adding any float, not just the page-10 check.
+
+
 ## Status
 
 ### What's Done

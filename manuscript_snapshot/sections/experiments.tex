@@ -66,8 +66,9 @@ budget, $-0.019$ for $60.6$ (Appendix~\ref{app:proofs}).
 \paragraph{The judge is dominated by position, and only the gains survive it}
 Re-judging in \emph{both} orders --- $2{,}000$ calls on one arm and $4{,}000$ on the head-to-head,
 bands committed first --- shows position bias \citep{zheng2023judging} dominating it: the same two
-texts win $261$ of $500$ shown second and $24$ shown first, only $29.2\%$ of items get a mutually
-consistent verdict and the first slot wins $12.7\%$ of decided comparisons. An
+texts win $261$ of $500$ shown second and $24$ shown first --- about a third of items are tied
+either way, which is why the two counts do not partition $500$ --- only $29.2\%$ of items get a
+mutually consistent verdict, and the first slot wins $12.7\%$ of \emph{decided} comparisons. An
 absolute judged level is therefore largely a statement about slot order, which is why nothing above
 is quoted as one. The correction is \emph{not} symmetric between the two mechanisms, and we
 pre-registered the wrong prediction about it: order-averaging the judge-A arm leaves $+0.0405$ $[+0.019, +0.063]$ against the $+0.081$ on record,
@@ -92,8 +93,10 @@ The sharpest test hands the selector to the attacker: we score the $n$ anchor sa
 \emph{memorising} model's likelihood, on Section~\ref{sec:onset}'s $100$ passages and seeds, with
 both baselines. Recall is $0.0000$ at every $n$ from $1$ to $64$ and at every one of the $100$
 passages, against the memoriser's $0.3925$ mean and $0.8154$ maximum (Table~\ref{tab:extraction}),
-and $0.0000$ at all six anchors --- $n$ multiplies the \emph{anchor's own} rate, and the anchor
-never saw the work. \textbf{Nor is the memoriser ours.} Against \texttt{Llama-3.1-70B}, which
+and $0.0000$ at all six anchors --- $n$ multiplies the \emph{anchor's own} rate, and that the anchor
+never saw the work is checkable rather than assumed: the check separates all eighteen models here,
+every openly licensed anchor reproducing none of the $100$ passages and every model known to hold
+the work at least half (Appendix~\ref{app:vetting}). \textbf{Nor is the memoriser ours.} Against \texttt{Llama-3.1-70B}, which
 memorised \emph{Harry Potter} in pre-training, the unaided model recovers $0.2475$ on $50$ passages
 at a $100$-token prefix and reproduces two \emph{in full}; selection scored by its own likelihood
 recovers $0.0000$ (Appendix~\ref{app:selection}).
@@ -101,13 +104,14 @@ recovers $0.0000$ (Appendix~\ref{app:selection}).
 \paragraph{Four anchors, and where the ceiling binds}
 Nothing above is tied to the audited anchor, \texttt{TinyComma-1.8B}. The anchor set is constrained
 by the premise rather than by convenience: a safe model must be trained without the protected work,
-which rules out the open-\emph{data} families whose corpora contain books and leaves the
-openly \emph{licensed} ones. Re-run unchanged at three of them --- Pleias-1.2B, KL3M-1.7B and
-Comma-7B, a $6\times$ range in parameters, same prompts, judge and baseline --- selection gains $+0.029$ $[-0.012, +0.068]$, $+0.039$ $[+0.005, +0.076]$ and
+which rules out the open-\emph{data} families whose corpora contain books and leaves the openly
+\emph{licensed} ones, the largest of the ten we could obtain being Comma-7B: the ceiling on this
+axis is the licensing frontier, not our compute. Re-run unchanged at three of them --- Pleias-1.2B,
+KL3M-1.7B and Comma-7B, a $6\times$ range in parameters, same prompts, judge and baseline ---
+selection gains $+0.029$ $[-0.012, +0.068]$, $+0.039$ $[+0.005, +0.076]$ and
 $+0.111$ $[+0.072, +0.148]$: two of three exclude zero on the pre-registered scorer, all three on
 the second, against a band committed to cost us this claim had none. Across six anchors the gain
-does not track the anchor's own level ($\rho = +0.543$): capability buys gain inside a family, not
-across them. On \textbf{AlpacaEval}'s $805$ instructions \citep{dubois2024length} the audited anchor gains
+does not track the anchor's own level ($\rho = +0.543$). On \textbf{AlpacaEval}'s $805$ instructions \citep{dubois2024length} the audited anchor gains
 $+0.031$ $[-0.001, +0.062]$ under judge~B and $+0.067$ $[+0.034, +0.101]$ under judge~C, Comma-7B
 $+0.075$ $[+0.042, +0.108]$, all monotone in $\log n$, while \textbf{MT-Bench}'s $80$
 \citep{zheng2023judging} resolve nothing at a half-width of $0.09$.
@@ -117,9 +121,9 @@ inside one anchor the same test is inseparable from a no-effect null
 
 \paragraph{Off the judge's axis}
 Every gain above is a judged preference and the judge is position-dominated; exact match is not. On
-GSM8K's first $500$ test problems, $8$-shot, same anchor and $n$ grid, majority vote takes accuracy
-from $0.320$ to $0.546$ ($+0.226$ $[+0.184, +0.270]$ at $n=32$) and the pointwise reward gains
-$+0.066$ $[+0.024, +0.108]$, for $3.47$ and $4.16$ nats. On closed-book TriviaQA majority vote lifts
+GSM8K's first $500$ test problems, $8$-shot, majority vote takes accuracy from $0.320$ to $0.546$
+($+0.226$ $[+0.184, +0.270]$ at $n=32$) and the pointwise reward gains $+0.066$ $[+0.024, +0.108]$,
+for $3.47$ and $4.16$ nats. On closed-book TriviaQA majority vote lifts
 $4.2\times$ less, $+0.054$ $[+0.026, +0.082]$ at $n=64$, while the reward \emph{falls} with $n$,
 $-0.038$ $[-0.068, -0.008]$ at $n=16$: across two tasks the rules differ by $3.4\times$ and then in
 sign, and the ceiling is the scorer's.

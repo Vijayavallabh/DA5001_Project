@@ -8,8 +8,8 @@
 Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything;
 if leakage began far above it, that would be bookkeeping. It does not. On nine pairs with nine
 distinct anchors and six tokenizers, \textbf{every onset falls between $0.88$ and $1.17$ of $s(x)$},
-and for the two KL3M pairs the interval excludes $1$ from below --- there the certificate expires
-before the danger starts (Table~\ref{tab:onset}). The residual fifth belongs to the evaluation
-rather than the models, tracking the \emph{words} a fixed-token seed hands the adversary
-($\rho = -0.958$): a caution for anyone measuring extraction under a seed fixed in tokens
-\citep{carlini2023quantifying}. Appendix~\ref{app:onset} has the rest.
+and for the two KL3M pairs the interval excludes $1$ from below (Table~\ref{tab:onset}). Nine pairs
+over a $1.6\times$ span will not carry a law and we claim none; what they show is that the threshold
+is not bookkeeping. The residual fifth is the evaluation's, tracking the \emph{words} a fixed-token
+seed hands the adversary ($\rho = -0.958$) --- a caution for anyone measuring extraction under a
+seed fixed in tokens \citep{carlini2023quantifying}.

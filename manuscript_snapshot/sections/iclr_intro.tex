@@ -41,7 +41,7 @@ $e^{2000}$.
 \paragraph{The guarantee holds against the adversary, which is what makes it a security claim}
 Proposition~\ref{prop:selection} assumes nothing about the score, so a \emph{malicious} one can
 multiply the safe model's own probability of emitting a protected work by at most $n$ and never
-introduce one that model would not have produced. So we hand the selector to the attacker. Scored by
+introduce one that model would not have produced, so we hand the selector to the attacker. Scored by
 the \emph{memorising} model's own likelihood on the passages it was fine-tuned to reproduce,
 selection recovers $0.0000$ at every $n$ up to $64$ and on every one of $100$ passages against that
 model's own $0.3925$ --- and likewise against a \texttt{Llama-3.1-70B} that memorised \emph{Harry
@@ -79,10 +79,10 @@ $0.537$.
 
 \paragraph{Contributions}
 \textbf{A copyright certificate that does not grow with the work.} A selection rule's whole budget
-is a pathwise $\log n$ under any score, any tie rule and any safe model
+is a pathwise $\log n$ under any score, tie rule and safe model
 (Proposition~\ref{prop:selection}), read against an order-invariant vacuity threshold at $K = S(x)$
-(Proposition~\ref{prop:threshold}): $2.08$ nats at $n=8$ against a work worth $849$, and, max-divergence
-composing additively, $192$ queries under a $400$-nat odometer against $2$.
+(Proposition~\ref{prop:threshold}): $2.08$ nats at $n=8$ against a work worth $849$, and $192$
+composed queries under a $400$-nat odometer against $2$.
 
 \textbf{It works, and it survives an adversarial scorer.} $2.6\times$ the metered decoder's
 order-averaged judged gain for one fifty-fourth of its divergence, at four anchors in three

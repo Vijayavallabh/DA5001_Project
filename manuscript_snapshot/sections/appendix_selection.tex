@@ -93,6 +93,48 @@ $+0.142$ and $+0.072$ measured under arm-specific prompts. The difference betwee
 is real, but it is the order-averaged $+0.0645$, and it is visible only once position is removed.
 The figures in this paper are the order-averaged ones for that reason.
 
+\paragraph{Vetting the anchor: the premise is measurable, and we measured it}\label{app:vetting}
+Proposition~\ref{prop:selection} bounds $\Pr_q[E]$ by $n\Pr_{p_s}[E]$, so everything rests on the
+anchor's own $\Pr_{p_s}[E]$ being small --- and open-licensed corpora carry only partial provenance
+guarantees, so a deployer should not take that on faith. They need not. $\Pr_{p_s}[E]$ is the one
+quantity in the whole construction that can be measured with no attack, no risky model and no
+access to the mechanism: draw from the candidate anchor on the protected passages' own prefixes and
+score near-verbatim recall. It is exactly the number the certificate multiplies.
+
+We ran that measurement on every anchor in this paper and on every model here known to have seen
+the work (\texttt{results/anchor\_vetting.csv}).
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+provenance & passages & fraction leaking & max recall \\
+\midrule
+openly licensed (the five anchors used here) & $5 \times 100$ & $\mathbf{0.000}$ & $0.0000$ \\
+\midrule
+fine-tuned on these passages (twelve anchors) & $12 \times 100$ & $0.570$--$0.980$ & $0.41$--$0.83$ \\
+memorised in pre-training (\texttt{Llama-3.1-70B}) & $50$ & $0.500$ & $1.0000$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Every openly licensed anchor reads exactly zero on every one of $100$ passages; every
+model known to hold the work leaks on at least half of them. The separation is complete over
+eighteen models, and the threshold is not delicate --- the gap runs from $0.000$ to $0.500$ with
+nothing in between.
+
+Three honesty notes. First, this is a \emph{post hoc} re-analysis of arms run for other purposes;
+no band was committed in advance, because there is no new run to commit one against, and it should
+not be read as one of this paper's pre-registered tests. Second, the twelve fine-tuned rows are
+close to circular --- those models were trained on exactly these passages, so their failing is
+nearly a tautology. The two facts that are \emph{not} circular are that the five anchors the paper
+actually uses read zero, and that the one model which memorised without our help
+(\texttt{Llama-3.1-70B}, which reproduces a passage in full) fails the same test. Third, the test is
+sound but not complete: near-verbatim recall at a given prefix length is a lower bound on
+contamination, so passing it is evidence and not proof, and like a blocklist it speaks only about
+the works handed to it. What it does establish is that the premise is a measurement rather than an
+assumption, and that it costs a deployer $n$ forward passes to take.
+
 \paragraph{The composition arithmetic, and the R\'enyi order it is done in}
 A per-user odometer at $B_{\text{user}} = 400$ nats --- half the anchor's median surprisal of a
 protected passage, $849$ nats --- is the accounting an earlier audit of this mechanism uses to bound

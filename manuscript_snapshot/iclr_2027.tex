@@ -104,10 +104,24 @@ memorising model's own likelihood over $64$ draws raises the rate at which most 
 reproduced by a factor of $1.0$ to $4.0$, against the $64$ the certificate permits
 (Appendix~\ref{app:selection}). The mechanism is a multiplier on the anchor's own leakage, not a
 floor under it. It is a statement about a mechanism, not a legal conclusion about infringement, and
-we make no claim about legal thresholds for copyright infringement. The deployer-facing
-recommendation is narrow and we would rather it were quoted than the theorems: publish $k/s(x)$
-rather than $k$, name the work it was computed against, prefer a budget whose size does not grow
-with the thing it protects, and vet the anchor, because $n$ multiplies whatever it already has.
+we make no claim about legal thresholds for copyright infringement.
+
+That the guarantee is relative to the anchor is not a reason to take the anchor on faith, because
+$\Pr_{p_s}[E]$ is the one quantity here a deployer can measure outright --- with no attack, no risky
+model and no access to the mechanism. Draw from the candidate anchor on the protected passages' own
+prefixes and score near-verbatim recall; that is exactly the number $n$ multiplies. Run on every
+model in this paper, it reads $0.000$ on all $100$ passages at each of the five openly licensed
+anchors and flags every model known to hold the work --- the twelve we contaminated on purpose, on
+$0.57$ to $0.98$ of passages, and \texttt{Llama-3.1-70B}, which memorised in pre-training, on
+$0.50$, reproducing one passage in full. The separation over eighteen models is complete
+(Appendix~\ref{app:vetting}). It is sound rather than complete --- passing is evidence, not proof,
+since a model may hold a work it does not reproduce at this prefix length --- and like a blocklist
+it speaks only about the works it is handed.
+
+The deployer-facing recommendation is narrow and we would rather it were quoted than the theorems:
+publish $k/s(x)$ rather than $k$, name the work it was computed against, prefer a budget whose size
+does not grow with the thing it protects, and vet the anchor with the check above before quoting
+$\log n$ to anyone, because $n$ multiplies whatever the anchor already has.
 
 \section*{Reproducibility Statement}
 Every number in this paper is produced by a committed script and written to a CSV before it is
