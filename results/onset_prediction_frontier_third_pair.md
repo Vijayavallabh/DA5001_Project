@@ -73,3 +73,65 @@ it decodes no protected split at all. Stated so the absence is not later read as
 - Reading the metered decoder's behaviour here as evidence about a *safe* anchor. It is not one.
 
 ## Scoring log
+
+## Scoring, 2026-09-14
+
+Run: `scripts/run_frontier_third.sh`, GPU 0, `[f3] generate exit=0`, `[f3] judge exit=0 at 09:08`.
+Output `results/frontier_pair_llama323bi.csv`. One pass, one shared control, $500$ prompts per arm.
+
+### T1 --- REPLICATES, and at the pair that was registered as the hardest case
+
+Read on judge B, `Phi-3.5-mini-instruct`, the registered scorer.
+
+| arm | spend, nats | gain over the shared control |
+|---|---|---|
+| `metered, k=0.5` | `54.848` | `-0.023 [-0.066, +0.021]` |
+| `metered, k=1` | `59.254` | `-0.038 [-0.079, +0.001]` |
+| `metered, k=3` | `60.279` | `-0.022 [-0.058, +0.014]` |
+| `metered, k=20` | `60.634` | `-0.019 [-0.059, +0.021]` |
+| **`selection, n=8`** | **`1.204`** | **`+0.150 [+0.106, +0.194]`** |
+
+Selection's interval excludes zero, its gain is above the best metered arm's rather than within
+`0.03` of it, and it spends `1/50` of that arm's realised nats. **REPLICATES.**
+
+Judge C, `Meta-Llama-3.1-8B-Instruct`, reported beside it and never substituted for it, agrees and
+by more: selection `+0.273 [+0.227, +0.323]` against a best metered arm of `-0.009 [-0.066,
++0.044]` at `59.254` nats, a `49.2x` spend ratio.
+
+### What is new at this pair, and it is the dichotomy's second horn
+
+At the two earlier pairs the metered decoder bought *something* and selection bought more for less.
+Here **the metered decoder buys nothing at any budget**: all four gains are negative and all four
+intervals contain zero, on both judges. Forty times the published cap --- `k=0.5` to `k=20` ---
+moves the realised spend from `54.848` to `60.634` nats, `10.5\%`, and moves the judged gain by
+less than its own interval width. This is Proposition~\ref{prop:sparse}'s trivial horn as a
+measurement rather than an inference: the anchor is close enough to the risky model that the
+decoder is the anchor almost everywhere, and being the anchor almost everywhere is worth nothing
+over being the anchor.
+
+It is also what this pre-registration predicted would make the reversal *hard*, and the prediction
+was wrong about the direction of the difficulty. A close anchor does not narrow the gap by lifting
+the metered decoder; it widens it by flattening it.
+
+### T2 --- the cross-pass floor is not crossed
+
+Every number above is within one judging pass against one shared control, and the two nominally
+identical controls --- the metered run's `k=0` arm and the selection run's `n=1` arm, the same
+thing generated twice --- are reported rather than smoothed: `-0.009 [-0.053, +0.037]` on judge B
+and `+0.010 [-0.044, +0.062]` on judge C. Neither excludes zero, which is the same reading this
+paper's generation-run noise floor has at the second pair. No level here is quoted beside a level
+from another pass.
+
+### T3 --- what is not claimed
+
+`Llama-3.2-3B-Instruct` is trained on undisclosed data and is not a safe model. No leakage,
+certificate, vacuity or `s(x)` number comes from this arm, and it decoded no protected split at
+all. The `60.634` nats are a realised spend at this pair and are not comparable to the audited
+pair's `171.3` across passes; only the *direction* of the comparison is carried across.
+
+### Manuscript consequence
+
+Section 6's "At the one further pair where the metered decoder runs at all ... the reversal
+repeats" becomes two further pairs, and the new pair's flat metered arm is reported as the trivial
+horn rather than as a stronger version of the same reversal. Appendix~A gains the third pair's
+table beside the second's.

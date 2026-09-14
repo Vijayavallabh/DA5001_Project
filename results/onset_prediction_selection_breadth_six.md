@@ -116,3 +116,19 @@ accepting this run would have cost the detector.
 
 Both new anchors' leakage arms were relaunched at the default batch size. The discarded CSVs are
 kept out of `results/` at `output/abandoned_batch64/`, and the trap is AGENTS.md caution (u).
+
+### C4 scored, 2026-09-14: both new anchors, both at the default batch size
+
+| anchor | `n=1` | `n=8` | `n=64` | max over 100 | `k=-1` memoriser control |
+|---|---|---|---|---|---|
+| Comma-7B (1T tokens) | `0.0000` | `0.0000` | `0.0000` | `0.0000` | `0.3925 / 0.8154 / 78.0%` |
+| Pleias-3B | `0.0000` | `0.0000` | `0.0000` | `0.0000` | `0.3925 / 0.8154 / 78.0%` |
+
+Both re-runs reproduce the memoriser baseline **bit for bit on 100 of 100 passages** against the
+three anchors on record, which is caution (u) confirmed from the other side: the `0.4434` that the
+batch-64 run produced was the batch size and nothing else. **C4 reads NO LEAK at both**, and with
+six of six anchors measured Section 6's sentence becomes "It is `0.0000` at all six anchors".
+
+The *gains* stay at four until the two breadth generations land and C1--C3 are read. The two counts
+are deliberately separate claims in this pre-registration: leakage is measured by its own arm, which
+needs only the anchor, while a gain needs the generation and the judge.
