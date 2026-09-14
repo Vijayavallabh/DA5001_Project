@@ -99,3 +99,38 @@ anchor comes from any of them.
   The twelve-anchor reading supersedes and both are printed by the same script.
 
 ## Scoring log
+
+## Scoring log
+
+### Declared deviation, 2026-09-14 20:06, before either MoE arm produced a number
+
+The registration above says the two Mixtral anchors "run at batch `8`", and gives the reason: the
+`batched_mm` expert path materialises `down_proj[expert_ids]` and exhausts an idle 80 GB card at
+batch `32`.
+
+**That cause is now void.** `transformers` dispatches the expert forward through
+`config._experts_implementation`, and `from_pretrained(..., experts_implementation="eager")` falls
+back to the module's own loop over experts. Measured on `mem_kl3m-002-520m`, `64` samples at
+`n=1`:
+
+| path | batch | wall | peak card use |
+|---|---|---|---|
+| `batched_mm` | `32` | --- | OOM on an idle card |
+| `batched_mm` | `8` | --- | about `72` GiB |
+| `eager` | `8` | `116.4` s | about `2` GiB |
+| **`eager`** | **`32`** | **`44.2` s** | small |
+
+**Both MoE anchors therefore run at batch `32`, the same as the other ten**, with
+`--experts-impl eager`. `analysis/selection_extraction.py` gained `--experts-impl` for this; it is
+a kernel choice and changes no registered parameter other than the batch size the kernel had
+forced.
+
+This is declared rather than quietly applied, and the timing matters: **neither MoE arm had
+produced a CSV when this was written** --- the first attempt was killed at 10% of sampling when the
+session ended, the second after one minute --- so no number influenced it. What it buys is a
+uniform protocol across all twelve anchors and the removal of the caveat the exception would have
+carried into the paper. The excluded alternative it must not become is "changing the batch size
+*after seeing a number*", and it is not that.
+
+The abandoned `batched_mm` logs are kept as
+`output/logs/contam_kl3m{520m,37b}_batchedmm_abandoned.log`.

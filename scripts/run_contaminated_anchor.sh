@@ -6,13 +6,13 @@
 # Bands: results/onset_prediction_contaminated_anchor.md. Every band is read against THIS arm's
 # own n=1 row -- the k=-1 numbers in output/phase5/fine_*/ are a different pipeline (caution (v)).
 # Batch size stays at the default 32: the n=1 arm is sampled (caution (u)).
-# Usage: run_contaminated_anchor.sh <gpu> <anchor-dir> <tag> [wait-pid] [batch]
+# Usage: run_contaminated_anchor.sh <gpu> <anchor-dir> <tag> [wait-pid] [batch] [experts-impl]
 set -u
 # BATCH: the two Mixtral MoE anchors (kl3m-002-520m, kl3m-003-3.7b) exhaust an idle 80 GB card at
 # 32 -- the expert gather down_proj[expert_ids] is the allocation, and this box's broken NVML
 # reports the OOM as an allocator assert. They run at 8; see the twelve-anchor pre-registration for
 # why this is not the caution (u) situation. Default stays 32.
-GPU=$1; ANCHOR=$2; TAG=$3; WAIT_PID=${4:-}; BATCH=${5:-32}
+GPU=$1; ANCHOR=$2; TAG=$3; WAIT_PID=${4:-}; BATCH=${5:-32}; EXPERTS=${6:-}
 LOG=output/logs/contam${TAG}.log
 mkdir -p output/logs
 if [ -n "$WAIT_PID" ]; then
@@ -21,10 +21,10 @@ if [ -n "$WAIT_PID" ]; then
   sleep 30
 fi
 set -a; . ./.env; set +a
-echo "[ct${TAG}] start $(date +%H:%M) on GPU ${GPU}, anchor ${ANCHOR}, batch ${BATCH}" >> "$LOG"
+echo "[ct${TAG}] start $(date +%H:%M) on GPU ${GPU}, anchor ${ANCHOR}, batch ${BATCH}, experts ${EXPERTS:-default}" >> "$LOG"
 CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
   .venv/bin/python analysis/selection_extraction.py \
     --safe-model "$ANCHOR" --risky-model output/memorizing_llama8b \
-    --n-values 1 8 64 --limit 100 --batch-size "$BATCH" \
+    --n-values 1 8 64 --limit 100 --batch-size "$BATCH" ${EXPERTS:+--experts-impl "$EXPERTS"} \
     --prefix "contam${TAG}" --out results >> "$LOG" 2>&1
 echo "[ct${TAG}] exit=$? at $(date +%H:%M)" >> "$LOG"
