@@ -43,13 +43,24 @@ def test_the_selection_budget_arithmetic_is_exact():
 
 
 def test_the_composition_count_divides_out():
-    """332 queries at n = 8 and 2 at k = 3, both from a 400-nat odometer over the measured spend."""
+    """The odometer count depends on the Renyi order of the per-query charge, and the paper
+    advertises a PATHWISE certificate. Quoting the KL count (332) under a log n headline was the
+    defect a reviewer caught on 2026-09-14: 400/log 8 = 192 is the number at the advertised order,
+    400/(log 8 - 7/8) = 332 the number the deployed KL odometer permits. Both must appear, the
+    pathwise one must be the one Section 2 quotes, and neither may be swapped for the other."""
     spend = {r["k"]: float(r["mean_spend_nats"]) for r in _rows("results/utility_price.csv")}
     kl8 = math.log(8) - 7 / 8
+    import math as _m
     assert int(400 / kl8) == 332, 400 / kl8
+    assert int(400 / _m.log(8)) == 192, 400 / _m.log(8)
+    # a 200-token response at the audited k=3 is certified at 600 nats, so the odometer admits none
+    assert int(400 / (3 * 200)) == 0
     assert int(400 / spend["3.0"]) == 2, 400 / spend["3.0"]
     body = open(SEL, encoding="utf-8").read().replace("\n", " ")
-    assert "$332$ queries at $n=8$ against $2$" in body, body[body.find("composes"):][:220]
+    body1 = body.replace("\n", " ")
+    assert "that is $192$ queries" in body1, body1[body1.find("composes"):][:260]
+    assert "$1.204$ nats gives $332$" in body1, "the KL count must be reported beside the pathwise one"
+    assert "$332$ queries" not in body1, "the KL count is being quoted as THE composition count"
     m = re.search(r"spends a measured \$([\d.]+)\$ nats", body)
     assert m and float(m.group(1)) == spend["3.0"], (m.group(1) if m else None, spend["3.0"])
 

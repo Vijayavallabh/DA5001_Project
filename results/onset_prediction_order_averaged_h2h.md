@@ -92,3 +92,68 @@ writing it down before the run rather than after.
   stated. A missing artefact is not permitted to leave the claim standing by default.
 
 ## Scoring log
+
+**Run.** `output/logs/order_averaged_h2h.log`, GPU 1, 2026-09-14. 4,000 judged pairs (four arms
+x 500 prompts x both orders), judge `microsoft/Phi-3.5-mini-instruct`, no generation.
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/order_averaged_h2h.py --out results
+```
+
+| band | value | 95% CI | reading |
+|---|---|---|---|
+| D1 selection gain, n=64, order-averaged | `+0.1045` | `[+0.082, +0.128]` | **SURVIVES** |
+| D2 metered gain, k=10, order-averaged | `+0.0400` | `[+0.014, +0.0655]` | **SURVIVES** |
+| D3 difference, paired over 500 prompts | `+0.0645` | `[+0.030, +0.0995]` | **REVERSAL CONFIRMED** |
+
+**My prediction was wrong, and it was wrong in the paper's favour.** I committed to
+`REVERSAL UNRESOLVED` on the reasoning that the one order-averaging on record moved a gain by a
+factor of `0.50`, so both arms would move together and the difference would fall under the
+cross-pass floor. Both halves of that reasoning failed:
+
+| arm | single order | order-averaged | ratio |
+|---|---|---|---|
+| selection, n=64 | `+0.110` | `+0.1045` | `0.95` |
+| metered, k=10 | `+0.097` | `+0.0400` | `0.41` |
+| difference | `+0.013` | `+0.0645` | `4.96` |
+
+Order-averaging does not deflate the two arms together. It barely touches selection and removes
+**59%** of the metered decoder's gain, so the difference does not shrink -- it grows five-fold. The
+reviewer's extrapolation and mine were the same extrapolation, and the direction was the opposite
+of what we both assumed.
+
+A mechanism is available and we offer it as an explanation, not a finding: at `k=10` the metered
+decoder is nearly the risky model it is being judged against (Section 5 measures it serving `p_r`
+unchanged at every step it takes), so the judge is comparing two near-identical texts and falls
+back on slot order. Selection's output is visibly a different text, so the judge has something to
+read. Consistent with that, order consistency is lowest on the arms closest to their opponent.
+
+**What this run does NOT do is replicate `+0.142` and `+0.072`, and it must never be quoted as if
+it did.** It measures the same two arms under a *corrected and stricter* protocol, and the protocol
+differs in three ways that are all improvements:
+
+1. **One true prompt per item, for every arm.** `utility.py` and `selection_scaling.py` both show
+   the judge a prompt reconstructed as `full_text` minus `generation`, which is not the prompt: the
+   split point moves with how much each arm generated. For the same `prompt_id` the three arms here
+   disagree on it in **455 of 500** cases. This run takes the prompt from the corpus, so all four
+   arms are judged under identical conditions. See caution (aa).
+2. **One seed per prompt** (the lowest), so the arms are paired item-by-item.
+3. **Both orders**, which is the point of the arm.
+
+The cost of correction (1) is visible and it cuts against the published number: under one true
+prompt the **single-order** difference is `+0.013`, not the `+0.070` the published pair implies.
+Most of the published single-order gap was the two arms being judged under different prompt
+strings. The real difference is the order-averaged `+0.0645`, and it is real only because
+order-averaging strips a position bias that was flattering the metered decoder.
+
+**Consequence, applied.** The manuscript's headline comparison moves to the order-averaged pair and
+says so: selection `+0.1045 [+0.082, +0.128]` against the metered decoder `+0.0400
+[+0.014, +0.0655]`, difference `+0.0645 [+0.030, +0.0995]`, paired over 500 prompts with position
+removed by construction. That is a weaker point estimate than `+0.142` and much better evidence for
+it, and it is the number a reader should hold us to. `results/order_averaged_h2h.csv`,
+`results/order_averaged_h2h_per_prompt.csv`.
+
+Order consistency on this pass: `0.266` (sel n=64), `0.254` (sel n=1), `0.350` (metered k=10),
+`0.244` (anchor k=0) -- all UNUSABLE, which is why the gains are reported order-averaged and the
+levels are not reported at all.
