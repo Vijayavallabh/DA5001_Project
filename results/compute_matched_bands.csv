@@ -1,0 +1,6 @@
+band,quantity,value,lo95,hi95,reading
+F1 0.5B scorer carries a gain at n=64,sel05b_n64,0.022,0.0,0.044,FAILS
+F2 cost of shrinking the scorer 14x,sel05b_n64 - sel7b_n64,-0.0855,-0.107,-0.0645,COSTLY
+F3 crossover serving cost,none on the grid,,,,NO CROSSING
+F4 compute-matched head-to-head (0.94x),sel05b_n4 - metered_k10,-0.0395,-0.072,-0.0065,MATCHED-COMPUTE LOSS
+F5 replication of feat-113 within +/-0.04,sel7b_n64 +0.1075 vs +0.1045; metered_k10 +0.0400 vs +0.0400,,,,REPLICATES

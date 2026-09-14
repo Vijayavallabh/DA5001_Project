@@ -143,3 +143,105 @@ under the same protocol and must reproduce within the judge's own noise.
   caveat in the paper and is not measured here and not claimed.
 
 ## Scoring log
+
+**Run.** `output/logs/compute_matched.log`, GPU 0, 2026-09-15. Phase 1 re-scored 32,000 cached
+candidates with `Qwen/Qwen2.5-0.5B-Instruct`; phase 2 judged 3,130 distinct served completions plus
+the metered decoder and both controls, every one in both orders -- **8,260 judged calls**, no
+generation.
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/compute_matched.py --out results
+```
+
+| band | value | 95% CI | reading |
+|---|---|---|---|
+| F5 replication of feat-113 | `+0.1075` vs `+0.1045`; `+0.0400` vs `+0.0400` | -- | **REPLICATES** |
+| F1 0.5B gain at n=64 | `+0.0220` | `[+0.0000, +0.0440]` | **FAILS** |
+| F2 cost of a 14x smaller scorer | `-0.0855` | `[-0.1070, -0.0645]` | **COSTLY** |
+| F3 crossover serving cost | none on the grid | -- | **NO CROSSING** |
+| F4 matched compute, n=4 at 0.94x | `-0.0395` | `[-0.0720, -0.0065]` | **MATCHED-COMPUTE LOSS** |
+
+F5 passes first and cleanly, so the rest may be quoted: this pass puts `sel7b_n64` at `+0.1075`
+against feat-113's `+0.1045` and reproduces `metered_k10` at `+0.0400` exactly, both inside the
+`+/-0.04` floor. The frontier is `results/compute_matched.csv`.
+
+**I was wrong on three of the four bands, and wrong in the direction that costs the paper.**
+
+| band | I committed | measured |
+|---|---|---|
+| F1 | WORKS, `[0.03, 0.09]` | **FAILS**, `+0.0220` with the interval touching zero |
+| F2 | COSTLY, `[-0.07, -0.02]` | COSTLY, `-0.0855` -- worse than the band I wrote |
+| F3 | `WITHIN 4x`, at n=8 or n=16 | **NO CROSSING** |
+| F4 | PARITY | **MATCHED-COMPUTE LOSS**, `-0.0395` |
+
+**F3 deserves its exact margin rather than its label.** The rule I committed requires a 0.5B arm
+whose CI excludes zero *and* whose point estimate is at or above the metered decoder's. At `n = 16`
+and `3.75x` the 0.5B scorer gains `+0.0395 [+0.0205, +0.0585]` against the meter's
+`+0.0400 [+0.0140, +0.0660]`. It misses by **five ten-thousandths** and the two intervals overlap
+almost entirely, so the honest statement is that a 0.5B scorer at `3.75x` is *indistinguishable
+from* the metered decoder and not above it. The band asked for above. `NO CROSSING` is the score;
+"a small scorer cannot reach the meter" is not what the data say, and the paper says the former
+with the latter's caveat attached.
+
+**The unregistered finding, which is the interesting one: a weak scorer is non-monotone in n.**
+
+| n | 0.5B gain | 7B gain |
+|---|---|---|
+| 2 | `+0.0070` | `+0.0195` |
+| 4 | `+0.0005` | `+0.0210` |
+| 8 | `+0.0290` | `+0.0415` |
+| 16 | `+0.0395` | `+0.0655` |
+| 32 | `+0.0335` | `+0.0920` |
+| 64 | `+0.0220` | `+0.1075` |
+
+The 7B scorer is strictly increasing across the grid. The 0.5B scorer **peaks at `n = 16` and then
+falls**, ending at `n = 64` below where it stood at `n = 16`. Drawing more candidates and taking the
+argmax of a weak score makes the served output *worse*, which is best-of-n Goodharting the proxy:
+the maximum of a noisy score over a larger pool is increasingly selected on the noise. No band was
+committed on monotonicity and this is reported as a description of the curve, not as a law --- but
+it is what makes the result mean something beyond "small model worse", and it is a real hazard for
+a deployer who reads `log n` as a free knob.
+
+`results/compute_matched_scorer_agreement.csv` (post hoc, no band) says why without a judge: the
+two scorers' rankings correlate at Spearman `0.1333` within prompt, and they serve the same draw on
+`0.3120` of prompts at `n = 4` against `0.2500` by chance and `0.0520` at `n = 64` against `0.0156`.
+The 0.5B model is not a noisy copy of the 7B's preference; it is a nearly independent and much
+weaker ranker.
+
+**Consequence, applied, exactly as committed.** Both triggers for the third branch fired --
+`F1 = FAILS` and `F3 = NO CROSSING` -- so:
+
+1. **The `57.5x` concession stands exactly as written.** No number in Section 2 or Limitations was
+   softened.
+2. **Limitations states the committed sentence**: the gain is a property of the scorer's
+   capability, it does not survive shrinking the scorer, and the compute cost is intrinsic at the
+   scales tested and is the mechanism's main open problem.
+3. **One departure from the letter of the commitment, declared.** The commitment said the
+   counterfactual row would be "removed from `serving_cost.csv` rather than left as an unrealised
+   promise". Its premise no longer holds: those rows are no longer a counterfactual, because the
+   arm ran. Deleting a measured negative result would hide it, which is the opposite of what the
+   commitment was for. The rows stay, the note column now points at `compute_matched.csv`, and the
+   framing they were written to support -- that a smaller scorer is a route out of the compute
+   concession -- is gone from the paper. If a reader prefers the letter, the deletion would remove
+   evidence against us, and we decline it on that ground and record the choice here.
+
+**Two corrections to the manuscript that this arm forced, neither of which it was built to find.**
+
+* **An estimand mix in Limitations.** The closing paragraph read "at $n=8$ and $7.2\times$ it gains
+  $+0.054$ against its $+0.040$". `+0.054` is the **single-order** value from
+  `selection_scaling.csv` and `+0.040` is feat-113's **order-averaged** metered gain -- the same
+  defect the 2026-09-15 read-through caught in Table 1, surviving in the Limitations paragraph, and
+  pinned by no test. Under one protocol the number is `+0.0415`, so at `7.2\times` selection
+  **matches** the metered decoder rather than beating it. Corrected.
+* **The crossing for the 7B scorer is now measured** and was previously only asserted: selection
+  first reaches the metered decoder's order-averaged gain at `n = 8` and `7.18x`
+  (`+0.0415 [+0.0220, +0.0615]`), and needs `57.5x` to reach `2.7x` it.
+
+**What this does not touch.** The certificate is unchanged and was never on trial: `q(y) <= n p_s(y)`
+holds for any score, so every arm above is certified at `log n` -- `1.386` nats at `n = 4`,
+`4.159` at `n = 64` -- against the metered decoder's `2000` certified for the same median response.
+A 0.5B scorer buys the identical certificate a 7B one does and simply fails to use it. That
+separation between what the certificate guarantees and what the scorer achieves is the paper's
+claim, and this arm is the sharpest evidence for it: **the divergence axis is the mechanism's, the
+utility is the scorer's.**
