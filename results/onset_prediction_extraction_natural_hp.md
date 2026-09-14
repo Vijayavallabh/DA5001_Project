@@ -114,3 +114,50 @@ keeps the sentence and gains the three-arm history above.
   are a different corpus and the sentence that quotes them must say so.
 
 ## Scoring log
+
+## Scoring, 2026-09-14 --- INVALID, and the stop rule does not fire
+
+Run: `scripts/run_extraction_70b_hp.sh`, GPUs 1+2, `[e70hp] exit=0 at 08:57`. Output
+`results/selection_extraction_70b_hp.csv`.
+
+**This arm did not measure the corpus its own pre-registration names, and no band or gate is read
+from it.**
+
+The "What is run" section above says `--split test --limit 50` and calls it "50 *Harry Potter*
+`test` passages". The `test` split holds **150** passages in three novels --- 50 *Fifty Shades of
+Grey*, 50 *Harry Potter and the Sorcerer's Stone*, 50 *Lord of the Flies* --- and `--limit 50`
+takes the first fifty, which are *Fifty Shades of Grey*. Every `prompt_id` in
+`results/selection_extraction_70b_hp_per_passage.csv` is `bookmia.13.*`; `hp1_A`'s are
+`bookmia.17.*`. The reference run selected its novel with `composition_attack.py --novel
+harry_potter`; `selection_extraction.py`'s `build()` has always taken the same `novel` argument and
+there was **no CLI flag to reach it**, so the command in this pre-registration could not have
+produced the corpus the same pre-registration describes. The two disagree, and the pre-registration
+is the thing that is wrong.
+
+**Why this is not the third gate failure.** The stop rule counts arms that ran as registered and
+whose adversary then failed to extract. Of the three attempts so far, exactly **one** is that:
+
+| arm | what happened |
+|---|---|
+| feat-102 | INVALID --- a base model was handed the `Complete the prefix:` header |
+| feat-103 | **GATE FAILED** --- ran as registered, 20-token seed, `0.0000` |
+| feat-109 | INVALID --- the registered command does not select the registered corpus |
+
+Calling this one a gate failure would let a defect in our own specification retire a question the
+paper is open on, which is the opposite of what the stop rule is for. Calling it valid would let us
+read a gate against a corpus for which no positive control exists. It is neither: it is a
+specification error of the same kind as feat-102's, disclosed the same way.
+
+**What the run does establish, descriptively and with no band attached.** On 50 *Fifty Shades of
+Grey* `test` passages at a 100-token raw seed, temperature `1.0`, the unconstrained
+`Meta-Llama-3.1-70B` reads near-verbatim recall `0.0000`, maximum `0.0000`, and so does selection
+at every `n \le 64`. BookMIA marks these passages as **seen**; this checkpoint does not reproduce
+them under this protocol. With no positive control on this novel that is a fact about the corpus
+and the checkpoint, not evidence about the mechanism, and it is quoted nowhere in the manuscript.
+
+**What is done about it.** `--novel` is now a CLI flag on `selection_extraction.py`, the script
+asserts that a given `--novel` matches at least one passage and warns when it matches fewer than
+`--limit`, and it prints the novels and the seed length it actually used before generating.
+feat-110 is pre-registered separately at
+`results/onset_prediction_extraction_natural_hp2.md` with the flag in the command and a test that
+reads the novel back out of the per-passage CSV. AGENTS.md caution (w).

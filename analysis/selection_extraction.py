@@ -111,6 +111,12 @@ def main():
     ap.add_argument("--risky-model", required=True)
     ap.add_argument("--n-values", nargs="+", type=int, default=[1, 8, 64])
     ap.add_argument("--limit", type=int, default=100)
+    ap.add_argument("--novel", default="",
+                    help="keep only passages whose `novel_source` contains this substring, e.g. "
+                         "harry_potter. composition_attack.py has had this since feat-018 and "
+                         "build() has always taken it; there was no flag to reach it, so a "
+                         "pre-registration naming a corpus in words got whichever novels --split "
+                         "and --limit happened to return (AGENTS.md caution (w))")
     ap.add_argument("--seed-tokens", type=int, default=20)
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--temperature", type=float, default=1.0)
@@ -164,8 +170,18 @@ def main():
     # would carry the seed-convention confound Section 3 measures at Spearman -0.958.
     stok, rtok = load_tok(a.safe_model), load_tok(a.risky_model)
     passages = build(rtok, a.data, a.split, a.limit, a.seed_tokens,
-                     raw_prompt=a.raw_prompt)
-    print(f"[selx] {len(passages)} passages, n_max={max(a.n_values)}, "
+                     novel=a.novel, raw_prompt=a.raw_prompt)
+    # A filter that silently matches nothing is worse than no filter: it returns an empty set and
+    # an empty set is not obviously wrong in a log. A filter that matches FEWER than --limit is
+    # also worth saying out loud, because the arm then measures a smaller corpus than registered.
+    if a.novel:
+        assert passages, f"--novel {a.novel!r} matched no passage in split {a.split!r}"
+        if len(passages) < a.limit:
+            print(f"[selx] WARNING --novel {a.novel!r} yielded {len(passages)} < --limit "
+                  f"{a.limit}", flush=True)
+    novels = sorted({p["novel"] for p in passages})
+    print(f"[selx] {len(passages)} passages from {novels}, n_max={max(a.n_values)}, "
+          f"seed {a.seed_tokens} tokens raw_prompt={a.raw_prompt}, "
           f"seed tokenizer {a.risky_model}", flush=True)
     seeds = [p["seed"] for p in passages]
 

@@ -61,7 +61,7 @@ budget, $-0.019$ for $60.6$ (Appendix~\ref{app:proofs}).
 \paragraph{The judge is dominated by position, and only the gains survive it}
 Re-judging the same $500$ pairs in \emph{both} orders ($2{,}000$ calls, bands committed first)
 shows position bias \citep{zheng2023judging} dominating it: the same two texts win $261$ of $500$
-shown second and $24$ shown first, only $29.2\%$ of items get a mutually consistent verdict, and the
+shown second and $24$ shown first, only $29.2\%$ of items get a mutually consistent verdict and the
 first slot wins $12.7\%$ of decided comparisons. \emph{An absolute judged level is therefore largely
 a statement about slot order}, which is why nothing above is quoted as one. The gains survive,
 because every arm randomises order per pair: order-averaging each item, which removes position by
@@ -70,7 +70,7 @@ record (Appendix~\ref{app:selection}).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{selection_frontier.pdf}
+\includegraphics[width=0.86\textwidth]{selection_frontier.pdf}
 \caption{\textbf{(a)} A metered budget $K = kT$ and the price of the work $S(x) = s(x)T$ (grey band:
 nine pairs) are both rays, so which is larger is decided by $k/s(x)$, never by length; $\log n$ is
 horizontal. \textbf{(b)} What a nat buys, both mechanisms under one judge, against $\Lambda^*_s$
@@ -109,8 +109,7 @@ domains inside one anchor the same test is inseparable from a no-effect null
 \paragraph{Off the judge's axis}
 Every gain above is a judged preference and the judge is position-dominated; exact match is not. On
 GSM8K's first $500$ test problems, $8$-shot, same anchor and $n$ grid, majority vote takes
-accuracy from $0.320$ to $0.546$ ($+0.226$ $[+0.184, +0.270]$ at $n=32$, Spearman $+0.955$ in
-$\log n$) and the same pointwise reward gains $+0.066$ $[+0.024, +0.108]$ --- for $3.47$ and $4.16$
-nats. On closed-book TriviaQA majority vote lifts $4.2\times$ less, $+0.054$ $[+0.026, +0.082]$ at
+accuracy from $0.320$ to $0.546$ ($+0.226$ $[+0.184, +0.270]$ at $n=32$) and the same pointwise reward gains
+$+0.066$ $[+0.024, +0.108]$, for $3.47$ and $4.16$ nats. On closed-book TriviaQA majority vote lifts $4.2\times$ less, $+0.054$ $[+0.026, +0.082]$ at
 $n=64$, while the reward \emph{falls} with $n$, $-0.038$ $[-0.068, -0.008]$ at $n=16$: across two
 tasks the rules differ by $3.4\times$ and then in sign, and the ceiling is the scorer's.

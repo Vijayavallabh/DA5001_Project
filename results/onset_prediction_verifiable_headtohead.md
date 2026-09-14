@@ -97,3 +97,94 @@ workload, and any cap quoted must carry its `T_{\max}`.
 - Quoting any level from this arm beside a judged level from any other.
 
 ## Scoring log
+
+## Scoring, 2026-09-14
+
+Run: `scripts/run_tqa_headtohead.sh`, GPU 4, `[h2h] metered exit=0`, `[h2h] selection exit=0 at
+09:04`, `[h2h] score exit=0`. Output `results/verifiable_metered_tqa.csv`. TriviaQA
+`rc.nocontext`, 500 validation questions, `T_max = 24`, TinyComma-1.8B anchor,
+`Llama-3.1-8B-Instruct` risky.
+
+| mechanism | arm | certificate, nats | realised KL | accuracy | gain |
+|---|---|---|---|---|---|
+| metered | `k=-1` (risky alone) | --- | --- | `0.618 [0.576, 0.660]` | `+0.506` |
+| metered | `k=0` (anchor alone) | `0` | `0.0000` | `0.112 [0.086, 0.140]` | `0.000` |
+| metered | `k=0.5` | `12.0` | `0.0109` | `0.112 [0.086, 0.140]` | `0.000` |
+| metered | `k=1` | `24.0` | `0.2528` | `0.114 [0.088, 0.142]` | `+0.002` |
+| metered | `k=3` | `72.0` | `19.6867` | `0.166 [0.134, 0.200]` | `+0.054` |
+| metered | `k=20` | `480.0` | `44.8473` | `0.618 [0.576, 0.660]` | `+0.506` |
+| selection | `n=8` | `2.079` (`1.204` KL) | --- | `0.146 [0.116, 0.178]` | `+0.034` |
+| selection | `n=32` | `3.466` (`2.497` KL) | --- | `0.174 [0.142, 0.208]` | `+0.062` |
+| selection | `n=64` | `4.159` (`3.175` KL) | --- | `0.190 [0.156, 0.224]` | `+0.078` |
+
+### H1 --- METERED WINS, exactly as predicted before the run
+
+`0.618 [0.576, 0.660]` against `0.190 [0.156, 0.224]`: a gap of `0.428` against a band of `0.03`,
+intervals nowhere near overlapping. **The prediction on record holds**, and it was made so that this
+could not be read as a surprise. Proposition 4 bounds the served string to one TinyComma would have
+drawn, and TinyComma does not know who wrote the book; a metered decoder at a large budget serves
+the risky model and inherits its knowledge outright.
+
+### The line the table is really about
+
+**The metered decoder's winning arm is `k=20`, and its accuracy there is `0.618` --- the
+unconstrained risky model's `0.618`, to three decimals, on the same questions.** It wins by ceasing
+to be a constrained decoder. Its certificate at that point is `480` nats against a work of `24`
+tokens, which is the vacuous horn by this paper's own threshold; at the budgets where the
+certificate is not vacuous it gains `0.000` (`k=0.5`, `12` nats) and `+0.002` (`k=1`, `24` nats),
+which is the trivial horn. Between them, `k=3` buys `+0.054` for `72` certified and `19.7` realised
+nats --- less than selection buys at `n=32` for `2.497`.
+
+So the dichotomy is visible here on an axis with no judge in it at all, and it is visible in the
+arm that **beats** our mechanism: the metered decoder is useful exactly where its certificate is
+worthless, and carries a meaningful certificate exactly where it is useless.
+
+### H2 --- FRONTIER HOLDS on the registered axis, NARROWS on the stricter one. Both are reported.
+
+H2 says "accuracy against realised divergence from the anchor ... the same axes as Figure 1(b)".
+Those axes are Table 1's: the metered decoder's realised KL against selection's
+`\log n - (n-1)/n`, the sharper KL bound for best-of-$n$, which is the quantity
+`selection_decoding.py` has always written and which `1.204` and `3.175` are. The scorer originally
+wrote `realised_nats = 0.0` for selection --- true, and useless: every served token is an anchor
+draw, so a per-token meter reads zero by construction. `kl_nats` was added so the registered axis is
+in the CSV rather than recomputed by hand.
+
+| accuracy selection reaches | its KL nats | cheapest metered arm reaching it | its realised nats | ratio |
+|---|---|---|---|---|
+| `0.118` (`n=4`) | `0.6363` | `k=3` | `19.6867` | `0.032` |
+| `0.146` (`n=8`) | `1.2044` | `k=3` | `19.6867` | `0.061` |
+| `0.158` (`n=16`) | `1.8351` | `k=3` | `19.6867` | `0.093` |
+| `0.174` (`n=32`) | `2.4970` | `k=20` | `44.8473` | `0.056` |
+| `0.190` (`n=64`) | `3.1745` | `k=20` | `44.8473` | `0.071` |
+
+Every ratio is below the registered `0.1`. **FRONTIER HOLDS.**
+
+**Two disclosures, because neither is in the band as written.**
+
+1. **Arms that bought nothing are excluded, and had to be.** Selection `n=1` and `n=2` and metered
+   `k=0` and `k=0.5` all sit at the anchor's own `0.112` with a zero gain. The cheapest metered arm
+   "reaching" `0.112` is `k=0`, the anchor, at `0.0000` realised nats, so the ratio is infinite for
+   *any* mechanism including the metered one --- `k=0.5` spends `0.0109` for the same accuracy. A
+   ratio against zero is not a reading. The band should have said "every accuracy a mechanism buys
+   over the shared control"; it says "reaches". This exclusion is stated here rather than applied
+   silently.
+2. **On the pathwise axis the frontier NARROWS at two of five points.** Selection's `\log n`
+   against the metered decoder's realised KL gives `0.070`, **`0.106`**, **`0.141`**, `0.077`,
+   `0.093`. This compares selection's strongest-order bound against the metered decoder's
+   weakest-order realised spend, so it is not like for like --- but `\log n` is the certificate the
+   paper's headline rests on, and the reading that is less favourable to us is on the record.
+
+### H3 --- the consequence that fires
+
+**METERED WINS and FRONTIER HOLDS**, the predicted combination. Its committed consequence: Section 6
+gains a sentence and Limitations gains a scope statement **in the main text** --- the two mechanisms
+are **not substitutes** on a task whose answers the anchor does not know. The metered decoder buys
+real accuracy there and selection cannot, and it buys it at a budget this paper has already shown to
+be vacuous. That is the dichotomy, not a defence of the meter, and the sentence says both halves.
+
+### H4 --- what is not claimed
+
+No certificate, leakage, vacuity or `s(x)` number comes from this arm: TriviaQA answers are not
+protected text and the corpus carries no protected split. Every cap above is `k\,T_{\max}` at
+`T_{\max} = 24`, not the `200` of the copyright workload, and is quoted with it. No level here is
+quoted beside a judged level from any other arm.

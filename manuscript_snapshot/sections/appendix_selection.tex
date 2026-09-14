@@ -197,3 +197,55 @@ inference-time method in the literature therefore already carries a $\log n$ pat
 which nobody has had to add to it. What these two grids show is that the certificate costs nothing
 it was not already paying: the accuracy is what self-consistency delivers anyway, and the
 $4.159$~nats at $n=64$ are the whole charge.
+
+\paragraph{The judge-free head-to-head, where the metered decoder wins}\label{app:h2h}
+The comparison in Section~\ref{sec:experiments} is judged. It can be made with no judge at all only
+at the one anchor the factory runs at --- TinyComma-1.8B, the only openly licensed safe model
+shipping the risky model's tokenizer --- and only on a task it scores above the floor, which
+TriviaQA is ($0.07$ few-shot) and GSM8K is not ($0.04$). We ran it, and we
+committed the prediction that we would lose it before generating anything
+(\texttt{results/onset\_prediction\_verifiable\_headtohead.md}). Both mechanisms decode the same
+$500$ questions at $T_{\max}=24$ with the same risky model.
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+mechanism & arm & certificate, nats & realised KL & accuracy \\
+\midrule
+metered   & $k=-1$ (risky alone) & ---     & ---       & $0.618$ $[0.576, 0.660]$ \\
+metered   & $k=0$ (anchor alone) & $0$     & $0.0000$  & $0.112$ $[0.086, 0.140]$ \\
+metered   & $k=0.5$              & $12.0$  & $0.0109$  & $0.112$ $[0.086, 0.140]$ \\
+metered   & $k=1$                & $24.0$  & $0.2528$  & $0.114$ $[0.088, 0.142]$ \\
+metered   & $k=3$                & $72.0$  & $19.6867$ & $0.166$ $[0.134, 0.200]$ \\
+metered   & $k=20$               & $480.0$ & $44.8473$ & $0.618$ $[0.576, 0.660]$ \\
+selection & $n=8$                & $2.079$ & $1.2044$  & $0.146$ $[0.116, 0.178]$ \\
+selection & $n=32$               & $3.466$ & $2.4970$  & $0.174$ $[0.142, 0.208]$ \\
+selection & $n=64$               & $4.159$ & $3.1745$  & $0.190$ $[0.156, 0.224]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The metered decoder wins the level by $0.428$, and the way it wins is the paper's claim.}
+Its winning arm is $k=20$, where its accuracy is the unconstrained risky model's $0.618$ to three
+decimals: it has stopped being a constrained decoder. The certificate there is $480$ nats for a
+$24$-token answer. At the budgets whose certificate is not vacuous it gains $0.000$ ($k=0.5$, $12$
+nats) and $+0.002$ ($k=1$, $24$ nats). The mechanism is useful exactly where its certificate is
+worthless and carries a meaningful certificate exactly where it is useless, on an axis with no
+judge in it.
+
+\textbf{The frontier survives the loss.} At every accuracy selection buys over the shared control,
+it buys it for less than a tenth of what the cheapest metered arm reaching that accuracy spends:
+$0.032$, $0.061$, $0.093$, $0.056$ and $0.071$ of it at $n=4,8,16,32,64$, comparing
+$\log n - (n-1)/n$ against realised KL, which are Figure~\ref{fig:selection}(b)'s axes. Two things
+are disclosed rather than smoothed. Arms that bought nothing are excluded and had to be --- the
+cheapest metered arm ``reaching'' the anchor's own $0.112$ is the anchor, at zero nats, so the
+ratio is infinite for any mechanism including the metered one. And on the \emph{pathwise} axis,
+$\log n$ against realised KL, two of the five ratios rise above a tenth ($0.106$ and $0.141$);
+that comparison puts selection's strongest-order bound against the metered decoder's
+weakest-order spend, so it is not like for like, but $\log n$ is the certificate this paper's
+headline rests on and the less favourable reading is on the record.
+
+No certificate, leakage, vacuity or $s(x)$ number comes from this arm: TriviaQA answers are not
+protected text. Every cap above is $k\,T_{\max}$ at $T_{\max}=24$, not the $200$ of the copyright
+workload.

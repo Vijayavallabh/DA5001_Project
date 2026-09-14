@@ -102,8 +102,17 @@ def main():
             base = c
         acc, lo, hi = boot(c, a.reps, a.seed + n)
         g, glo, ghi = boot_gain(c, base, a.reps, a.seed + n)
+        # Three numbers, because H2 of the pre-registration reads on "the same axes as Figure
+        # 1(b)" and those axes are Table 1's: the metered decoder's realised KL against
+        # selection's `log n - (n-1)/n`, the sharper KL bound for best-of-n (Beirami et al.),
+        # which is what selection_decoding.py has always written and what 1.204 and 3.175 are.
+        # `certificate_nats` is the PATHWISE `log n`, a stronger order and a different quantity;
+        # `realised_nats` is 0.0 for selection because every served token is an anchor draw, so
+        # the per-token meter reads zero by construction and cannot be the comparison axis.
         rows.append(dict(mechanism="selection (majority vote)", arm=f"n={n}",
-                         certificate_nats=round(math.log(n), 4), realised_nats=0.0,
+                         certificate_nats=round(math.log(n), 4),
+                         kl_nats=round(math.log(n) - (n - 1) / n, 4) if n > 1 else 0.0,
+                         realised_nats=0.0,
                          n_questions=len(pids), acc=round(acc, 4), acc_lo95=round(lo, 4),
                          acc_hi95=round(hi, 4), gain=round(g, 4), gain_lo95=round(glo, 4),
                          gain_hi95=round(ghi, 4)))
@@ -121,6 +130,7 @@ def main():
         acc, lo, hi = boot(c, a.reps, a.seed)
         rec = dict(mechanism="metered decoder", arm=f"k={k}",
                    certificate_nats=(round(float(k) * a.t_max, 4) if float(k) > 0 else 0.0),
+                   kl_nats=round(spend, 4),
                    realised_nats=round(spend, 4), n_questions=len(pids), acc=round(acc, 4),
                    acc_lo95=round(lo, 4), acc_hi95=round(hi, 4))
         if ctrl is not None:
