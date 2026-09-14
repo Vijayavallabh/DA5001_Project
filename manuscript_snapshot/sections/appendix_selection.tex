@@ -249,3 +249,50 @@ headline rests on and the less favourable reading is on the record.
 No certificate, leakage, vacuity or $s(x)$ number comes from this arm: TriviaQA answers are not
 protected text. Every cap above is $k\,T_{\max}$ at $T_{\max}=24$, not the $200$ of the copyright
 workload.
+
+\paragraph{A memoriser we did not make, and the three arms it took to build one}\label{app:natural}
+Every zero above is measured against a model \emph{we} fine-tuned, which is a fair thing for a
+reviewer to discount: it could be a property of our LoRA recipe rather than of the mechanism. The
+answer needs an adversary that memorised the work in pre-training.
+\texttt{Llama-3.1-70B} is one --- \citet{cooper2025extracting} report $96.3\%$ extraction coverage
+for it on \emph{Harry Potter and the Sorcerer's Stone} --- and getting it to behave like one took
+four attempts, three of which failed for reasons of our own making. We report all four because each
+failure mode is a trap in the measurement rather than in the mechanism, and two of them produced a
+clean $0.0000$ that would have looked like a result.
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}llll@{}}
+\toprule
+arm & seed & corpus & the $70$B alone \\
+\midrule
+1 & $20$ tokens, \emph{with} the \texttt{Complete the prefix:} header & $100$ mixed & $0.0000$ (invalid) \\
+2 & $20$ tokens, raw & $100$ mixed & $0.0000$ (gate failed) \\
+3 & $100$ tokens, raw & $50$ \emph{Fifty Shades} & $0.0000$ (invalid) \\
+\textbf{4} & $\mathbf{100}$ \textbf{tokens, raw} & $\mathbf{50}$ \emph{\textbf{Harry Potter}} & $\mathbf{0.2475}$, \textbf{max} $\mathbf{1.0000}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Arm 1 handed a \emph{base} model an instruction where the protocol specifies a raw passage seed.
+Arm 2 fixed that and still recovered nothing, because the number it was predicted against,
+$0.4137$, had been measured at a $100$-token seed and the arm used $20$; a model that memorised a
+novel in pre-training needs a long raw prefix to re-enter the text. Arm 3 used the right seed
+length and the wrong book: the held-out split contains $150$ passages across three novels and a
+plain limit of $50$ returns the first of them. Only arm 4 selects the novel the reference was
+measured on.
+
+\textbf{It extracts.} Unaided, the $70$B recovers $0.2475$ mean near-verbatim recall across the $50$
+passages, clears the threshold on $25$ of them, and reproduces \textbf{two of fifty in full} ---
+near-verbatim recall exactly $1.0000$, the entire decoded target, from a $100$-token prefix. It is
+weaker on average than the memoriser we built ($0.3925$) and stronger at the top, which never
+reproduces a passage completely. Against it, selection anchoring with the $70$B's \emph{own}
+likelihood as the scorer --- the adversary choosing among the anchor's $n$ draws whichever is
+closest to the protected text --- recovers $0.0000$ at $n=1$, $n=8$ and $n=64$, maximum over all
+$50$ passages $0.0000$, longest common substring never above three words. The anchor's own base rate
+is zero and $n$ multiplies it.
+
+Every band, the entry gate and the stop rule were committed before the run
+(\texttt{results/onset\_prediction\_extraction\_natural\_hp2.md}), including the rule that a gate
+failure here would end the line of work and be reported as a limit on the evidence rather than a
+property of the mechanism.

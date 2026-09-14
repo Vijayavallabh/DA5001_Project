@@ -70,7 +70,7 @@ record (Appendix~\ref{app:selection}).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.86\textwidth]{selection_frontier.pdf}
+\includegraphics[width=0.80\textwidth]{selection_frontier.pdf}
 \caption{\textbf{(a)} A metered budget $K = kT$ and the price of the work $S(x) = s(x)T$ (grey band:
 nine pairs) are both rays, so which is larger is decided by $k/s(x)$, never by length; $\log n$ is
 horizontal. \textbf{(b)} What a nat buys, both mechanisms under one judge, against $\Lambda^*_s$
@@ -80,14 +80,16 @@ a wall two orders of magnitude to the right.}
 \end{figure}
 
 \paragraph{An adversarial scorer leaks nothing}
-The sharpest test of the certificate hands the selector to the attacker: we score the $n$ anchor
-samples by the
+The sharpest test hands the selector to the attacker: we score the $n$ anchor samples by the
 \emph{memorising} model's likelihood, on Section~\ref{sec:onset}'s $100$ passages and seeds, with
-both mandatory baselines. Near-verbatim recall is $0.0000$ at every $n$ from $1$ to $64$, maximum
-over all $100$ passages $0.0000$, against the memorising model's mean of $0.3925$ and maximum of
-$0.8154$ (Table~\ref{tab:extraction}) --- $n$ multiplies the \emph{anchor's own} rate and the anchor
-never saw the work. It is $0.0000$ at all six anchors, and the power is not in question: the same
-pipeline puts $78\%$ of passages above threshold for the unconstrained memoriser
+both baselines. Recall is $0.0000$ at every $n$ from $1$ to $64$, maximum over all $100$ passages
+$0.0000$, against the memoriser's $0.3925$ mean and $0.8154$ maximum
+(Table~\ref{tab:extraction}) --- $n$ multiplies the \emph{anchor's own} rate and the anchor never
+saw the work --- and $0.0000$ at all six anchors, while the same pipeline puts $78\%$ of passages
+above threshold for the unconstrained memoriser. \textbf{Nor is the memoriser ours.} Against
+\texttt{Llama-3.1-70B}, which memorised \emph{Harry Potter} in pre-training, on $50$ passages of it
+at a $100$-token prefix, the unaided model recovers $0.2475$ and reproduces two \emph{in full};
+selection scored by its own likelihood recovers $0.0000$ at every $n \le 64$
 (Appendix~\ref{app:selection}).
 
 \paragraph{Four anchors, and where the ceiling binds}

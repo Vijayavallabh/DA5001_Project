@@ -273,11 +273,25 @@ def test_the_70b_extraction_arm_is_reported_as_gate_failed_not_as_a_zero():
     assert "0.4137" in scored, "the contradicting known truth is not cited"
     assert pathlib.Path("results/onset_prediction_extraction_natural_raw.md").exists(), \
         "the corrected arm has no pre-registration"
-    # and the paper must not claim it
+    # and the paper must not claim it. The limitation "the zero leakage is measured against a
+    # memoriser WE fine-tuned" may only be dropped while an arm exists that measured it against
+    # one we did not -- feat-110, whose own gate must pass. Three arms before it produced a clean
+    # 0.0000 with a gate that did not, and any of them would have bought this sentence's removal
+    # on nothing.
     from tests.manuscript import tex
     close = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())
-    assert "memoriser \\emph{we} fine-tuned" in close, \
-        "Limitations must say whose memoriser the zero-leakage result is against"
+    nat = "results/selection_extraction_70b_hp2.csv"
+    passed = False
+    if pathlib.Path(nat).exists():
+        h = {x["n"]: x for x in _rows(nat)}
+        passed = float(h["-1"]["nv_recall_mean"]) >= 0.10 and all(
+            float(v["nv_recall_mean"]) == 0.0 for k, v in h.items() if k != "-1")
+    if not passed:
+        assert "memoriser \\emph{we} fine-tuned" in close, \
+            "Limitations must say whose memoriser the zero-leakage result is against"
+    else:
+        assert "memoriser \\emph{we} fine-tuned" not in close, \
+            "feat-110 passed its gate at NO LEAK; the withdrawn limitation is back"
 
 
 def test_the_n64_comma7b_arm_is_reported_with_its_failed_nested_check():

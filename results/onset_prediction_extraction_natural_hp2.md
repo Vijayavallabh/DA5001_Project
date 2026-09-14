@@ -118,3 +118,80 @@ sentence and gains the four-arm history above.
   corpus and any sentence quoting them must say so.
 
 ## Scoring log
+
+## Scoring, 2026-09-14 --- the gate passes, and R1 reads NO LEAK
+
+Run: `scripts/run_extraction_70b_hp2.sh`, GPUs 1+2, `[e70hp2] exit=0 at 09:58`. Outputs
+`results/selection_extraction_70b_hp2.csv` and `_per_passage.csv`.
+
+**The corpus line, which this arm is not scored without:**
+
+```
+[selx] 50 passages from ["harry_potter_and_the_sorcerer's_stone"], n_max=64,
+       seed 100 tokens raw_prompt=True, seed tokenizer unsloth/Meta-Llama-3.1-70B
+```
+
+50 passages, one novel, `bookmia.17.*`, a 100-token raw seed. This is `hp1_A`'s corpus and
+`hp1_A`'s protocol.
+
+### The gate --- PASSES, for the first time in four attempts
+
+| arm | `nv_recall` mean | max | passages `>= 0.01` |
+|---|---|---|---|
+| `k=-1`, the 70B alone | **`0.2475`** | **`1.0000`** | `25` of `50` |
+| `n=1` (anchor alone) | `0.0000` | `0.0000` | `0` |
+| `n=8` | `0.0000` | `0.0000` | `0` |
+| `n=64` | `0.0000` | `0.0000` | `0` |
+
+`0.2475` against a gate of `0.10`. **This adversary extracts.** Half its passages clear the
+threshold and **two of fifty are reproduced in full** --- `nv_recall` exactly `1.0000`, the entire
+decoded target, from a 100-token prefix, by a model nobody fine-tuned on it. That is what the three
+earlier arms were trying and failing to build, and it is not our LoRA: `unsloth/Meta-Llama-3.1-70B`
+memorised *Harry Potter and the Sorcerer's Stone* in pre-training.
+
+It is close to but not identical with the reference's `0.1996`, and the difference is pipeline, not
+model: `composition_attack.py` decodes `max_new_tokens = |target|` (mean `176`) and this decodes
+`200`, against the same full-length reference. Both are far above the gate and the arm is read
+against **its own** controls, as R4 requires.
+
+### R1 --- NO LEAK
+
+`0.0000` at every `n` from 1 to 64, maximum over all 50 passages `0.0000`, longest common substring
+never above `3` words. The adversarial selector --- scoring the anchor's `n` draws by the
+*memorising 70B's own likelihood*, which actively searches them for whatever is closest to the
+protected text --- recovers nothing at `n=64` from an anchor whose own base rate is zero. `n`
+multiplies the anchor's rate and the anchor never saw the work, which is exactly what
+Proposition 4 says and what the paper has so far been able to show only against a memoriser of our
+own making.
+
+### R2 --- not read
+
+R1 is NO LEAK, so R2's multiplication check is not read, as registered.
+
+### R3 --- how strong is this adversary
+
+| memoriser | route | corpus | `k=-1` recall |
+|---|---|---|---|
+| `Meta-Llama-3.1-70B` | pre-training | 50 *Harry Potter* `test` passages | `0.2475`, max `1.0000` |
+| `hp1_A` reference | pre-training, other pipeline | the same 50 | `0.1996` |
+| our LoRA 8B | fine-tuned by us | 100 `attack_train` passages | `0.3925`, max `0.8154` |
+
+Reported, no band. The natural memoriser is weaker on average than the one we built and **stronger
+at the top**: it reproduces two passages completely, which ours never does. None of the three
+bounds another, and the corpora differ.
+
+### R4 --- the anchor's base rate is this arm's own
+
+TinyComma's `n=1` here is `0.0000` on these 50 passages at a 100-token seed. No number is carried
+across from the 20-token arms or from the other novels.
+
+### R5 --- the manuscript consequence, as fixed before the run
+
+**Under NO LEAK: Limitations drops the sentence saying the zero-leakage result has only been shown
+against a memoriser we fine-tuned, and Section 6 gains the naturally memorising adversary with its
+corpus, novel and seed length named --- and says it is 50 *Harry Potter* passages, not the 100 the
+breadth arms use.** Both applied.
+
+The four-arm history stays on the record in `progress.md` and in AGENTS.md cautions (t), (v) and
+(w). Three of the four arms were our own defects, and each was disclosed in its own scoring log
+before the next was written.
