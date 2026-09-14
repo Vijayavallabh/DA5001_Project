@@ -93,11 +93,16 @@ def test_b1_is_read_off_the_registered_scorer_only():
 def test_every_registered_anchor_has_a_generation_directory_declared():
     """The gate needs the artefacts, so an anchor with no directory is a configuration error, not
     a silent PASS."""
-    assert len(ANCHORS) == 4
+    assert len(ANCHORS) >= 4, ANCHORS
     for label, tag, model, gen_dir in ANCHORS:
         assert gen_dir.startswith("output/phase5/"), (label, gen_dir)
         assert (tag == "") == ("audited" in label)
         assert model.count("/") == 1, model
+    # An anchor added by copy-paste that forgets to change the tag or the directory would score the
+    # same generations twice under two names, which is the failure this replaced a literal 4 with.
+    for field, i in (("label", 0), ("tag", 1), ("model", 2), ("gen_dir", 3)):
+        seen = [a[i] for a in ANCHORS]
+        assert len(set(seen)) == len(seen), (field, seen)
 
 
 def test_section6_quotes_the_four_anchor_gains_from_the_breadth_csv():
