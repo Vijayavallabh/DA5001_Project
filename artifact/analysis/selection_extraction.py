@@ -111,6 +111,13 @@ def main():
     ap.add_argument("--risky-model", required=True)
     ap.add_argument("--n-values", nargs="+", type=int, default=[1, 8, 64])
     ap.add_argument("--limit", type=int, default=100)
+    ap.add_argument("--experts-impl", default="",
+                    help="transformers `experts_implementation` for a mixture-of-experts anchor, "
+                         "e.g. 'eager'. The default batched_mm path materialises "
+                         "down_proj[expert_ids] and exhausts an idle 80 GB card on a 520M Mixtral "
+                         "at batch 32; 'eager' loops over the experts instead. Kernel choice only "
+                         "-- it changes neither the batch size nor any other registered parameter, "
+                         "but it does change the sampled draw, so declare it where an arm uses it")
     ap.add_argument("--novel", default="",
                     help="keep only passages whose `novel_source` contains this substring, e.g. "
                          "harry_potter. composition_attack.py has had this since feat-018 and "
@@ -185,7 +192,9 @@ def main():
           f"seed tokenizer {a.risky_model}", flush=True)
     seeds = [p["seed"] for p in passages]
 
-    anchor = AutoModelForCausalLM.from_pretrained(a.safe_model, torch_dtype=torch.bfloat16).cuda().eval()
+    load_kw = {"experts_implementation": a.experts_impl} if a.experts_impl else {}
+    anchor = AutoModelForCausalLM.from_pretrained(
+        a.safe_model, torch_dtype=torch.bfloat16, **load_kw).cuda().eval()
     cands = sample(anchor, stok, seeds, max(a.n_values), a.max_new_tokens, a.temperature,
                    a.batch_size, a.seed)
     del anchor

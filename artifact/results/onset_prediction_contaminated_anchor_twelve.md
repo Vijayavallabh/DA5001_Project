@@ -1,0 +1,169 @@
+# Pre-registration: the contamination axis at twelve anchors
+
+Committed at **12:25 on 2026-09-14**, while feat-111's arms were still sampling and **before any
+`results/contam_*.csv` existed** --- verified by `ls results/contam_*` returning nothing at that
+time, recorded in the commit that adds this file. Nothing above the `## Scoring log` line is edited
+afterwards.
+
+## Why this extends feat-111 rather than replacing it
+
+`results/onset_prediction_contaminated_anchor.md` registered five contaminated anchors and made
+**N3 descriptive with no band**, in those words, because five points cannot support a coefficient
+--- which is what C2 had just taught us at six
+(`results/onset_prediction_selection_breadth_six.md`).
+
+Seven further LoRA-memorised models are already on disk from the onset work. Running them costs no
+new training and roughly two hours on cards that are otherwise idle, and it takes the axis from
+five points to twelve. **This is not anchor-shopping**: no number from any of the five had been
+read when this was written, and N1 and N2 below are feat-111's bands unchanged. What changes is
+that N3 becomes readable.
+
+| added anchor | base | architecture |
+|---|---|---|
+| `mem_kl3m-002-170m` | `alea-institute/kl3m-002-170m` | GPT-NeoX |
+| `mem_kl3m-003-3_7b` | `alea-institute/kl3m-003-3.7b` | Mixtral, 4 experts |
+| `mem_llama32-1b` | `meta-llama/Llama-3.2-1B` | Llama |
+| `mem_llama32-3b` | `meta-llama/Llama-3.2-3B` | Llama |
+| `mem_opencalm3b` | `cyberagent/open-calm-3b` | GPT-NeoX |
+| `mem_Pleias-350m-Preview` | `PleIAs/Pleias-350m-Preview` | Llama |
+| `mem_qwen25-7b` | `Qwen/Qwen2.5-7B-Instruct` | Qwen2 |
+
+Everything else is feat-111's protocol unchanged: the same `100` `attack_train` passages and seeds,
+`20`-token seeds, `200`-token cap, temperature `1.0`, `n \in \{1, 8, 64\}`, the adversarial
+selector (the memorising `Llama-3.1-8B`'s own likelihood), and every band read against **each
+arm's own `n=1` row**.
+
+## The one protocol departure, declared here
+
+`kl3m-002-520m` and `kl3m-003-3.7b` are **Mixtral** mixtures of experts, and the expert gather
+`down_proj[expert_ids]` exhausts an idle 80 GB card at batch `32`: the first `kl3m-002-520m` arm
+died at 12:20 with the allocator assert that this box's broken NVML reports in place of an OOM.
+**Both MoE anchors run at batch `8`**; the other ten stay at the default `32`.
+
+This is **not** the situation caution (u) is about. That caution is one model measured twice and
+compared across runs, where a different batch size silently gives a different draw of the same
+quantity. Here each anchor is a different model, every band is a ratio **inside** one arm against
+its own `n=1` row, and no number is compared across arms except `A(64)`, which is itself such a
+ratio. The departure is declared before the run and is reported in the scoring log.
+
+## Bands
+
+**N1 and N2 are feat-111's, unchanged**, now read over twelve anchors instead of five: `rate(n) <=
+n * rate(1)` at both events and every `n` (HOLDS / VIOLATED, a violation being an implementation
+bug), and `A(64) = rate(64)/rate(1)` on `E_08` (SATURATES if `<= 4` at every anchor, GROWS
+otherwise). **The prediction stays SATURATES.**
+
+**N3 -- does an adversarial selector amplify a contaminated anchor more, or less, the more
+contaminated it is?** Spearman of `A(64)` against `rate(1)` on `E_08`, over every anchor with
+`rate(1) > 0`.
+
+| reading | band |
+|---|---|
+| AMPLIFIES LESS | `\rho <= -0.6` --- a badly contaminated anchor leaves selection less to add |
+| NO TREND | `-0.6 < \rho < +0.6` |
+| AMPLIFIES MORE | `\rho >= +0.6` |
+
+**We predict AMPLIFIES LESS**, committed so the arm can refute it: at a high base rate the anchor
+already emits the passage on most draws and there is nothing for a selector to find, while at a low
+base rate the occasional lucky draw is exactly what an adversarial scorer exists to pick out. If
+the prediction is wrong, the mechanism is more dangerous at the contaminated end than we expect.
+
+**N3 is confounded and the paper must say so.** Twelve models differ in family, size and tokenizer
+as well as contamination, exactly as C2's six did. What is *not* confounded is N2, which is a ratio
+computed inside each anchor; N2 is primary and N3 is read beside it.
+
+**N4 -- the manuscript consequence**, on top of feat-111's, fixed now:
+
+- Under **AMPLIFIES LESS**: Limitations states the shape --- selection adds most where the anchor
+  leaks least, so the danger from a mildly contaminated anchor is larger \emph{relative} to its own
+  rate than from a badly contaminated one, and the absolute rate is what a deployer must bound.
+- Under **NO TREND**: the coefficient is reported and no shape is claimed, as C2 was.
+- Under **AMPLIFIES MORE**: this goes in the **main text**. It would mean the mechanism is worst
+  exactly where the premise fails worst, which qualifies the constructive claim and must sit beside
+  it.
+
+**N5 -- what may not be claimed**, extending feat-111's. Four of the twelve
+(`llama32-1b`, `llama32-3b`, `phi35mini`, `qwen25-7b`) are instruction-tuned or
+undisclosed-corpus models and are **not** legitimate safe models; they appear here only as
+contamination levels, and no certificate, leakage, `s(x)` or utility claim about a deployable
+anchor comes from any of them.
+
+## Excluded alternatives
+
+- Adding a thirteenth anchor after reading any of these twelve.
+- Dropping an anchor whose `n=1` rate is inconvenient, or whose architecture forced batch `8`.
+- Reading N3 on `E_001` if `E_08` is unfavourable, or on the mean recall, which Proposition 4 does
+  not bound. All are reported.
+- Treating N3 as causal evidence about contamination when family, size and tokenizer vary with it.
+- Re-reading feat-111's N1/N2 on five anchors and these on twelve, whichever is more favourable.
+  The twelve-anchor reading supersedes and both are printed by the same script.
+
+## Scoring log
+
+## Scoring log
+
+### Declared deviation, 2026-09-14 20:06, before either MoE arm produced a number
+
+The registration above says the two Mixtral anchors "run at batch `8`", and gives the reason: the
+`batched_mm` expert path materialises `down_proj[expert_ids]` and exhausts an idle 80 GB card at
+batch `32`.
+
+**That cause is now void.** `transformers` dispatches the expert forward through
+`config._experts_implementation`, and `from_pretrained(..., experts_implementation="eager")` falls
+back to the module's own loop over experts. Measured on `mem_kl3m-002-520m`, `64` samples at
+`n=1`:
+
+| path | batch | wall | peak card use |
+|---|---|---|---|
+| `batched_mm` | `32` | --- | OOM on an idle card |
+| `batched_mm` | `8` | --- | about `72` GiB |
+| `eager` | `8` | `116.4` s | about `2` GiB |
+| **`eager`** | **`32`** | **`44.2` s** | small |
+
+**Both MoE anchors therefore run at batch `32`, the same as the other ten**, with
+`--experts-impl eager`. `analysis/selection_extraction.py` gained `--experts-impl` for this; it is
+a kernel choice and changes no registered parameter other than the batch size the kernel had
+forced.
+
+This is declared rather than quietly applied, and the timing matters: **neither MoE arm had
+produced a CSV when this was written** --- the first attempt was killed at 10% of sampling when the
+session ended, the second after one minute --- so no number influenced it. What it buys is a
+uniform protocol across all twelve anchors and the removal of the caveat the exception would have
+carried into the paper. The excluded alternative it must not become is "changing the batch size
+*after seeing a number*", and it is not that.
+
+The abandoned `batched_mm` logs are kept as
+`output/logs/contam_kl3m{520m,37b}_batchedmm_abandoned.log`.
+
+### Scoring, 2026-09-14
+
+All twelve arms landed. **N1, N2 and N3 are scored once, over twelve anchors, in
+`results/onset_prediction_contaminated_anchor.md`** --- the excluded alternative here forbids
+reading feat-111's bands at five and these at twelve and taking whichever is more favourable, so
+there is one reading and it is the twelve-anchor one. Summary:
+
+| band | reading |
+|---|---|
+| N1 | **VIOLATED** at the letter, on one passage at one anchor where the bound is exactly zero; the test has no power at the seven anchors with `rate(1) = 0`, and holds with a wide margin at the five where it does |
+| N2 | **SATURATES**, at the boundary: largest `A(64)` is exactly `4.00` against a band of `<= 4`, and that ratio is `8` passages over `2` |
+| N3 | **AMPLIFIES LESS**, `rho = -0.700` against the committed `<= -0.6` --- the prediction holds |
+
+### Did the extension earn its compute?
+
+Yes, and not in the way it was written to. It was written to take N3 from five points to twelve. It
+took N3 from **one** point to **five**: `A(64)` is undefined wherever the `E_08` base rate is zero,
+and of feat-111's original five anchors only Pleias-1.2B has a non-zero one. Without the seven
+added anchors there would have been a single point and no coefficient at all.
+
+What it did not buy is the twelve-point axis promised above. Seven of twelve anchors sit at an
+`E_08` base rate of exactly zero, which is the vacuity problem this whole line of work was built to
+escape, reappearing at the high threshold. That is stated in the scoring log rather than worked
+around, and it is the honest limit of the design: **to test a probability bound you need an event
+the anchor produces sometimes, and a LoRA memoriser either produces it constantly or not at all.**
+
+### The declared deviation, as executed
+
+Both MoE anchors ran at batch `32` with `--experts-impl eager`, as declared above before either
+produced a number. Both reproduce the memoriser control at `0.3925 / 0.8154 / 78.0%`, bit for bit
+with the other ten --- which is the check that the deviation cost nothing: a batch or kernel change
+that had perturbed the shared control would show here, and it does not.
