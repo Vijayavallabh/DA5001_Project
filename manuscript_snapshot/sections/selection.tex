@@ -97,9 +97,9 @@ score --- a reward model, a classifier, a human or an adversary --- any tie rule
 introduces nothing new. Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted
 works are bounded on the same terms as exact quotation \citep{ippolito2023preventing}.
 
-The price is compute, in a currency no nat measures: selection costs $7.7\times$ the metered
-decoder's forward passes at $n=8$, where it first matches it, and $61.3\times$ at $n=64$, and a
-smaller scorer does not buy it back (Appendix~\ref{app:frontier}).
+The price is compute, in a currency no nat measures: at a $7.6$B scorer selection costs
+$61.3\times$ the metered decoder's forward passes at $n=64$, but capability saturates by $1.5$B,
+which reaches $87\%$ of that gain for $35\%$ of the cost (Appendix~\ref{app:saturation}).
 
 The obvious objection is that the gain comes from leaving the decode loop rather than from where the
 budget sits, so we granted a metered decoder the same $\log 8$ nats up front. Neither causal

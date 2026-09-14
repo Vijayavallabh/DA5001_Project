@@ -216,6 +216,7 @@ queue_gpu4,output/logs/queue_gpu4.log,1,2026-09-14 12:28,2026-09-14 13:02,0.56,0
 queue_gpu4b,output/logs/queue_gpu4b.log,1,2026-09-14 12:30,2026-09-14 12:53,0.39,0.39,log_birth,0.0,scanned; traced sleeps removed
 regimes_bookmia,output/logs/regimes_bookmia.log,1,2026-09-12 16:48,2026-09-12 16:53,0.08,0.08,log_birth,0.0,scanned; traced sleeps removed
 regimes_copybench,output/logs/regimes_copybench.log,1,2026-09-12 16:53,2026-09-12 16:54,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
+scorer_scale,output/logs/scorer_scale.log,1,2026-09-15 03:46,2026-09-15 04:17,0.53,0.53,log_birth,0.0,scanned; traced sleeps removed
 seed30_opencalm1b,output/logs/seed30_opencalm1b.log,1,2026-09-11 18:56,2026-09-11 19:10,0.23,0.23,log_birth,0.0,scanned; traced sleeps removed
 seed30_opencalm3b,output/logs/seed30_opencalm3b.log,1,2026-09-11 18:56,2026-09-11 19:15,0.31,0.31,log_birth,0.0,scanned; traced sleeps removed
 sel_anchor64,output/logs/sel_anchor64.log,1,2026-09-11 22:27,2026-09-12 02:34,4.12,4.12,log_birth,0.0,scanned; traced sleeps removed

@@ -95,7 +95,7 @@ The \emph{comparison} the paper stands behind is therefore the order-averaged on
 Table~\ref{tab:selection}'s per-arm sweep is single-order throughout and says so in its
 caption, so the two must not be read off one another.
 
-\paragraph{The cost frontier, and the smaller scorer that does not rescue it}\label{app:frontier}
+\paragraph{The cost frontier, and the scorer that is too small to rescue it}\label{app:frontier}
 Selection's price is set by the reward model, not the anchor: at $n$ it runs
 $n(P_s+P_f)(L_p+T)$ forward-pass FLOPs against the metered decoder's $(P_s+P_r)(L_p+T)$, with
 $P_f=7.6$ and $P_s=1.8$. A $0.5$B scorer therefore divides the price by $4.16$ at every $n$, and we
@@ -132,16 +132,57 @@ matched compute, $n=4$ at $0.92\times$, it loses outright, $-0.0395\,[-0.0720,-0
 the scorer $14\times$ costs $-0.0855\,[-0.1070,-0.0645]$ of the gain at $n=64$. We predicted three
 of these four wrong and in the paper's favour.
 
-The unregistered observation is the one worth a deployer's attention. The $7$B scorer is monotone
-across the grid; the $0.5$B scorer \emph{peaks at $n=16$ and falls}, ending below where it stood
-with a quarter of the draws. Taking the argmax of a weak score over a larger pool selects
-increasingly on its noise, so $\log n$ is not a free knob: the certificate keeps improving in $n$
-while the utility it is bought for turns over. Without a judge, the two rankings correlate at
-Spearman $0.1333$ within prompt and serve the same draw on $0.052$ of prompts at $n=64$ against
-$0.016$ by chance --- the small model is not a noisy copy of the large one's preference but a nearly
-independent and much weaker ranker. The certificate is untouched throughout and was never at risk:
-$q(y)\le n\,p_s(y)$ holds for any score, so every cell above is certified at $\log n$ regardless.
-What the scorer decides is not whether the guarantee holds but whether anything is bought with it.
+We first read the $0.5$B curve as turning over --- it peaks at $n=16$ and ends lower --- and drew
+from it that $\log n$ is not a free knob. \textbf{We pre-registered that reading and it did not
+survive.} A second arm put two scales between $0.5$B and $7.6$B, registered the terminal drop
+$g(64)-g(16)$ as the test, and measured $-0.0160\,[-0.0340,+0.0010]$ for the $0.5$B scorer: negative,
+and its interval contains zero by a thousandth. Under the rule committed before that run the $0.5$B
+scorer reads \textsc{flat}, so the warning is withdrawn and we do not make it. What the sample does
+show, as description rather than as the registered test, is a stark difference in shape: Spearman
+between gain and $\log n$ is $0.5429$ for the $0.5$B scorer and exactly $1.0$ --- strictly monotone
+at all six grid points --- for each of $1.5$B, $3$B and $7.6$B.
+
+\paragraph{Scorer capability saturates, and it saturates early}\label{app:saturation}
+The same arm found something larger than what it was built to test. Judging all four scorers in one
+pass ($10{,}722$ calls, $4{,}361$ distinct served completions, both orders, the protocol above
+unchanged) reproduces its three reference arms to within $0.001$ --- \texttt{sel7b\_n64} $+0.1065$
+against $+0.1075$, \texttt{sel05b\_n64} $+0.0230$ against $+0.0220$, the metered decoder $+0.0400$
+against $+0.0400$, against a gate that allowed $\pm0.04$. Across the three adjacent steps at $n=64$,
+only the first separates: $1.5$B over $0.5$B is $+0.0700\,[+0.0500,+0.0900]$, $3$B over $1.5$B is
+$+0.0040\,[-0.0145,+0.0225]$, and $7.6$B over $3$B is $+0.0095\,[-0.0090,+0.0285]$. A scorer must
+clear a bar; past it, a $4.9\times$ larger scorer buys $+0.0135$ and neither step of it separates.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+scorer & gain at $n=64$ & cost & first cell at or above the meter \\
+\midrule
+$0.494$B  & $+0.0230$ & $14.73\times$ & none \\
+$1.5437$B & $+0.0930$ & $\mathbf{21.59\times}$ & $n=8$, $\mathbf{2.70\times}$ \\
+$3.0859$B & $+0.0970$ & $31.67\times$ & $n=8$, $3.96\times$ \\
+$7.6156$B & $+0.1065$ & $61.29\times$ & $n=16$, $15.32\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent No band was committed on the cost column, so it is post hoc; the crossing rule is taken
+verbatim from the arm above and applied unchanged to scorers that arm did not have. A $1.5$B scorer
+reaches $87.3\%$ of the $7.6$B scorer's gain for $35.2\%$ of its serving cost, so the $61.3\times$
+this paper concedes is the price of the scorer we happened to use and not of the mechanism.
+\textbf{One instability we do not hide}: a crossing \emph{cell} is a thresholded statistic and
+inherits none of the stability the gains showed. The $7.6$B scorer's crossing sits at $n=8$ and
+$7.66\times$ in one pass and $n=16$ and $15.32\times$ in the other, because \texttt{sel7b\_n8} read
+$+0.0415$ and then $+0.0360$ --- a difference of $0.0055$, far inside the judge's floor, that
+happens to straddle the meter's $+0.0400$. We therefore quote the $n=64$ column, which moved by
+$0.001$ between passes.
+
+Without a judge the reward caches give the same ordering: against the $7.6$B reference the
+within-prompt Spearman is $0.1333$, $0.4185$ and $0.4926$ at $0.5$B, $1.5$B and $3$B, and the rate
+of serving the same draw at $n=64$ is $0.052$, $0.132$ and $0.228$ against $0.016$ by chance. The
+large step is $0.5$B to $1.5$B and the small ones are above it. The certificate is untouched
+throughout and was never at risk: $q(y)\le n\,p_s(y)$ holds for any score, so every one of these
+$24$ cells is certified at $\log n$ whatever the scorer costs or achieves. What the scorer decides
+is not whether the guarantee holds but whether anything is bought with it.
 
 \paragraph{Vetting the anchor: the premise is measurable, and we measured it}\label{app:vetting}
 Proposition~\ref{prop:selection} bounds $\Pr_q[E]$ by $n\Pr_{p_s}[E]$, so everything rests on the

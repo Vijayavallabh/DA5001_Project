@@ -151,6 +151,52 @@ Commands: `analysis/compute_matched.py --out results` (GPU 0),
 `analysis/scorer_agreement.py --out results`, `analysis/serving_cost.py --out results`.
 
 
+### 2026-09-15, feat-117: the scorer-scale boundary, and the retraction it forced
+
+feat-116 read the 0.5B scorer's curve as peaking at `n=16` and falling and drew a deployer-facing
+warning from it. This arm registered that reading as the terminal drop `g(64)-g(16)`, put two scales
+between `0.5`B and `7.6`B, and judged all four scorers in one pass -- 10,722 calls, 4,361 distinct
+served completions, `0.53` GPU-h measured (I first wrote `2.0` from an estimate; `compute_hours.csv` bills the log).
+
+**G0 replicates to `0.001`** on all three reference arms against a gate that allowed `0.04`
+(`sel7b_n64` `+0.1065` vs `+0.1075`, `sel05b_n64` `+0.0230` vs `+0.0220`, metered `+0.0400` exactly).
+That is the strongest evidence this paper has that its judged *gains*, taken over a shared control
+with position removed by construction, are stable even though its judged *levels* are not.
+
+**G3 = NO TURNOVER FOUND, against my committed BOUNDARY AT 1.5B.** The 0.5B terminal drop is
+`-0.0160 [-0.0340, +0.0010]` -- negative, interval containing zero by a thousandth, so `FLAT`. The
+committed consequence was a retraction and it is executed: the appendix says we made the reading,
+registered it and lost it, and the `log n`-is-not-a-free-knob claim is out of the paper and out of
+`session-handoff.md`. G2 keeps what is genuinely in the sample as description rather than as the
+registered test -- Spearman(gain, log n) is `0.5429` at `0.5`B and exactly `1.0` at each of `1.5`B,
+`3`B and `7.6`B, so one curve of four is not monotone, but the endpoint test did not reach
+significance and six points carry no interval worth quoting.
+
+**The finding the arm was not built for is larger: capability saturates early.** Of the three
+adjacent steps at `n=64` only the first separates -- `1.5`B over `0.5`B `+0.0700 [+0.0500,+0.0900]`,
+`3`B over `1.5`B `+0.0040 [-0.0145,+0.0225]`, `7.6`B over `3`B `+0.0095 [-0.0090,+0.0285]`. A `1.5`B
+scorer reaches `87.3%` of the `7.6`B gain for `35.2%` of the serving cost, `21.59x` against
+`61.29x`. **So the `61.3x` the paper concedes is the price of the scorer we happened to use, not of
+the mechanism** -- which retracts the other half of feat-116's Limitations sentence, that the cost
+was "intrinsic at the scales we tested". No band was committed on the cost column; it is labelled
+post hoc and the crossing rule is feat-116's F3, applied unchanged to scorers it did not have.
+
+**An instability recorded rather than hidden.** A crossing *cell* is a thresholded statistic and
+inherits none of the stability the gains showed: the `7.6`B crossing sits at `n=8`/`7.66x` in one
+pass and `n=16`/`15.32x` in the other, because `sel7b_n8` read `+0.0415` and then `+0.0360` --
+`0.0055` apart, far inside the judge's floor, but straddling the meter's `+0.0400`. The paper quotes
+the `n=64` column, which moved by `0.001`.
+
+Without a judge, `scorer_scale_agreement.csv` gives the same ordering in reward space: against the
+`7.6`B reference the within-prompt Spearman is `0.1333`, `0.4185`, `0.4926` at `0.5`/`1.5`/`3`B and
+the same-draw rate at `n=64` is `0.052`, `0.132`, `0.228` against `0.016` by chance -- large step at
+the bottom, small ones above it, the same shape as the judged gains and reached without the
+instrument whose consistency this paper distrusts.
+
+Commands: `analysis/scorer_scale.py --out results` (GPU 0),
+`analysis/scorer_agreement.py --scale --out results`.
+
+
 ## Status
 
 ### What's Done

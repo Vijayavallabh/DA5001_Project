@@ -2,15 +2,37 @@
 
 ## Current objective
 
-**In flight: feat-117**, `results/onset_prediction_scorer_scale.md`, GPU 0, launched 2026-09-15
-03:5x, roughly two GPU-hours. It asks where between `0.5`B and `7.6`B best-of-n stops turning over,
-by re-scoring the same cached candidates with `Qwen2.5-1.5B-Instruct` and `Qwen2.5-3B-Instruct` and
-judging all four scorers in one pass. Bands G0-G4 committed at `cb660e8` before the run; G0 is a
-replication gate against feat-116 and if it fails nothing else may be quoted. If this session ends
-before it lands, the log is `output/logs/scorer_scale.log` and the outputs are
-`results/scorer_scale{,_bands,_per_prompt}.csv`.
+**feat-117 landed and it retracted feat-116's headline observation.** Two scales between `0.5`B
+and `7.6`B (`Qwen2.5-1.5B`, `Qwen2.5-3B`), all four scorers judged in one pass — 10,722 calls,
+4,361 distinct served completions, `0.53` GPU-h measured. **G0 replicates to `0.001`** on all three reference
+arms against a gate that allowed `0.04`, which is the best evidence this paper has that its judged
+*gains* are stable even though its judged *levels* are not.
 
-All forty-four other pre-registrations in `results/` are scored and the manuscript compiles clean
+**G3 = NO TURNOVER FOUND**, against my committed `BOUNDARY AT 1.5B`. The registered test of
+feat-116's observation, the terminal drop `g(64) − g(16)`, reads `-0.0160 [-0.0340, +0.0010]` for
+the `0.5`B scorer — negative, interval containing zero by a thousandth, so `FLAT`. The committed
+consequence was a retraction and it has been executed: the appendix now says we made the reading,
+registered it, and lost it, and **the `log n`-is-not-a-free-knob claim is withdrawn from the paper
+and from this file**. What survives as description, not as the registered test, is the shape
+contrast — Spearman(gain, log n) is `0.5429` at `0.5`B and exactly `1.0` at each of `1.5`B, `3`B
+and `7.6`B.
+
+**What the arm found instead is bigger than what it tested: scorer capability saturates early.** Of
+the three adjacent steps at `n=64` only the first separates — `1.5`B over `0.5`B `+0.0700
+[+0.0500,+0.0900]`, `3`B over `1.5`B `+0.0040 [-0.0145,+0.0225]`, `7.6`B over `3`B `+0.0095
+[-0.0090,+0.0285]`. A `1.5`B scorer reaches `87.3%` of the `7.6`B gain for `35.2%` of the cost
+(`21.59x` against `61.29x`), so **the `61.3x` concession is the price of the scorer we happened to
+use, not of the mechanism** — which retracts the other half of feat-116's Limitations sentence, that
+the cost was "intrinsic at the scales we tested". The cost column carries no committed band and is
+labelled post hoc; the crossing rule is feat-116's, applied unchanged.
+
+**One instability recorded rather than hidden:** a crossing *cell* is a thresholded statistic and
+inherits none of the stability the gains showed. The `7.6`B crossing sits at `n=8`/`7.66x` in one
+pass and `n=16`/`15.32x` in the other, because `sel7b_n8` read `+0.0415` then `+0.0360` — `0.0055`
+apart, far inside the judge's floor, but straddling the meter's `+0.0400`. The paper quotes the
+`n=64` column, which moved by `0.001`.
+
+All forty-five pre-registrations in `results/` are scored and the manuscript compiles clean
 from a deleted PDF.
 
 This session did four things: **reframed the paper to lead with its contribution (v8)**, **answered
@@ -38,15 +60,15 @@ F3 needs its margin, not its label: at `n=16` and `3.75x` the small scorer reach
 the meter's `+0.0400` — **five ten-thousandths** short, intervals almost entirely overlapping. The
 honest reading is *indistinguishable from* the meter; the registered rule asked for above.
 
-**The unregistered finding is the one worth carrying forward.** The 7B scorer is monotone in `n`
-across the grid; the 0.5B scorer **peaks at `n=16` and falls**, ending below where it stood with a
-quarter of the draws. Taking the argmax of a weak score over a larger pool selects increasingly on
-its noise, so `log n` is not a free knob — the certificate keeps improving in `n` while the utility
-bought with it turns over. `compute_matched_scorer_agreement.csv` (post hoc, no band) says why
-without a judge: Spearman `0.1333` between the two rankings within prompt, same served draw on
-`0.052` of prompts at `n=64` against `0.016` by chance.
+**An unregistered reading that feat-117 later retracted — left here because the retraction is the
+point.** feat-116 saw the 0.5B curve peak at `n=16` and end lower, and drew from it that `log n` is
+not a free knob. feat-117 registered that as the terminal drop and measured `-0.0160
+[-0.0340, +0.0010]`: `FLAT`. **The claim is withdrawn.** What was real in it is the reward-space
+ordering, `compute_matched_scorer_agreement.csv` (post hoc, no band): Spearman `0.1333` between the
+0.5B and 7B rankings within prompt, same served draw on `0.052` of prompts at `n=64` against `0.016`
+by chance.
 
-Committed consequence applied: **`57.5x` stands exactly as written** in the introduction, Section 2
+Committed consequence applied at the time: **`57.5x` stood exactly as written** in the introduction, Section 2
 and Limitations, and Limitations carries the committed sentence — the gain is the *scorer's*
 capability, not the mechanism's, and the cost is intrinsic at the scales tested. One declared
 departure from the letter, reasoned in the scoring log: the small-scorer rows stay in
@@ -190,11 +212,12 @@ Cautions are now **twenty-seven**. This session added three:
   Any new judged arm must take the prompt from `dap.shared.load_prompt_corpus`. The same entry
   records that **judge C is the risky model's own checkpoint**.
 
-feat-116 added no new caution: every trap it could have hit was already written down, and the two
-habits below are what caught the page-budget work. What it did add is a *finding* worth a caution's
-weight if it reproduces — `log n` is not a free knob, because a weak scorer's argmax over a larger
-pool selects on its noise, so the certificate improves in `n` while the utility turns over. It is
-one scorer at one scale and is recorded in the appendix as an observation, not a law.
+feat-116 and feat-117 added no new caution: every trap they could have hit was already written
+down. What they added instead is the clearest worked example this project has of the rule the
+cautions exist to serve — feat-116 read a curve off a table and drew a deployer-facing warning from
+it, feat-117 registered the test and the warning did not survive, and the paper says so in the
+appendix rather than quietly dropping it. **A shape you can see in a table is not a finding until an
+interval says so**, and `results/onset_prediction_scorer_scale.md` is what enforced that here.
 
 And two habits, both earned the hard way here:
 

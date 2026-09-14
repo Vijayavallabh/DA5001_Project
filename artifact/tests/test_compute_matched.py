@@ -105,39 +105,84 @@ def test_the_appendix_frontier_table_rounds_from_the_csv():
 
 def test_limitations_carries_the_committed_consequence_of_f1_and_f3():
     """F1 FAILS and F3 NO CROSSING both fired, and the pre-registration committed the paper to say
-    so: the gain is the scorer's capability, it does not survive shrinking it, and the compute cost
-    is intrinsic at the scales tested. If this sentence goes, a scored negative has been quietly
-    dropped."""
+    that the gain is the scorer's capability and does not survive shrinking it. That half stands.
+    The OTHER half of the sentence -- that the cost is intrinsic at the scales tested -- was
+    retracted by feat-117, which measured saturation by 1.5B, so this test now forbids it: a
+    conclusion a later arm refuted may not sit in Limitations because an earlier one committed it."""
     close = _tex("sections/iclr_closing.tex")
     assert "scorer's" in close and "capability" in close
     assert "never reaches the meter" in close
-    assert "intrinsic at the scales we tested" in close
     assert "main open problem" in close
+    assert "intrinsic at the scales we tested" not in close, \
+        "feat-117 refuted this; saturation by 1.5B means the cost is the scorer's, not the mechanism's"
+    assert "saturates by $1.5$B" in close, "the replacement claim is missing"
 
 
 def test_the_conceded_compute_ratios_were_not_softened_by_the_failed_rescue():
-    """The committed consequence of NO CROSSING is that 57.5x stands EXACTLY as written, in the
-    introduction, in Section 2 and in Limitations. A failed rescue may not be spent as a discount."""
+    """The committed consequence of NO CROSSING is that the n=64 concession stands EXACTLY as
+    written, in the introduction, in Section 2 and in Limitations: a failed rescue may not be spent
+    as a discount. The literal is read from the CSV rather than hardcoded, because it moved once
+    already -- 57.5x was computed from the models' NAMES and is 61.3x from their parameter counts."""
+    worst = max(float(r["cost_vs_metered"]) for r in _rows("results/compute_matched.csv"))
     for f in ("sections/iclr_intro.tex", "sections/selection.tex", "sections/iclr_closing.tex"):
-        assert "$57.5\\times$" in _tex(f), f
+        assert f"${worst:.1f}\\times$" in _tex(f), (f, worst)
 
 
-def test_limitations_compares_two_order_averaged_gains_and_not_one_of_each():
+def test_the_cost_model_uses_measured_parameter_counts_and_not_model_names():
+    """Qwen2.5-7B-Instruct holds 7.6156B parameters, not 7.0, and pricing it at its name understated
+    selection's serving cost by 8.8% everywhere it appeared. Every constant here must be a count
+    someone took off a checkpoint; a value equal to the round number in the model's name is the bug
+    this pins. Reproduce with sum(p.numel() for p in from_pretrained(<id>).parameters())."""
+    from analysis.serving_cost import P_ANCHOR, P_RISKY, P_SCORER, P_SMALL
+    measured = {"anchor": (P_ANCHOR, 1.7586), "risky": (P_RISKY, 8.0303),
+                "scorer": (P_SCORER, 7.6156), "small": (P_SMALL, 0.4940)}
+    for name, (got, want) in measured.items():
+        assert abs(got - want) < 5e-4, (name, got, want)
+    for name, label in (("anchor", 1.8), ("risky", 8.0), ("scorer", 7.0), ("small", 0.5)):
+        if abs(measured[name][1] - label) > 5e-4:
+            assert abs(measured[name][0] - label) > 5e-4, f"{name} is priced at its name again"
+
+
+def test_no_single_order_gain_is_quoted_in_limitations():
     """The estimand mix this arm found: Limitations read '+0.054 against its +0.040', a SINGLE-order
-    selection gain against an ORDER-AVERAGED metered gain. Both sides now come from one pass."""
+    selection gain against an ORDER-AVERAGED metered gain. 0.054 is selection_scaling.csv's
+    single-order n=8 value and must never reappear in a comparison; every judged gain in the closing
+    must be a value some order-averaged CSV actually holds."""
+    import re
     close = _tex("sections/iclr_closing.tex")
-    by = {r["arm"]: r for r in _rows("results/compute_matched.csv")}
-    assert f"${float(by['sel7b_n8']['gain']):+.4f}$" in close, "the n=8 gain is not the measured one"
-    assert f"${float(by['metered_k10']['gain']):+.4f}$" in close
     assert "$+0.054$" not in close, "the single-order n=8 gain is back beside an order-averaged one"
+    ok = {f"{float(r['gain']):+.4f}" for f in ("results/compute_matched.csv",
+                                               "results/scorer_scale.csv")
+          for r in _rows(f)} | {"+0.1045", "+0.0645", "+0.0400"}
+    for lit in re.findall(r"\$([+-]0\.\d{3,4})\$", close):
+        v = f"{float(lit):+.4f}"
+        assert v in ok, f"{lit} in Limitations is in no order-averaged CSV"
 
 
-def test_the_non_monotonicity_is_reported_where_it_is_measured():
-    """The weak scorer peaks at n=16 and falls. It is an unregistered observation, so it belongs in
-    the appendix with that status and must not be stated as a law."""
+def test_the_turnover_claim_is_retracted_and_not_merely_deleted():
+    """feat-116 read the 0.5B curve as turning over and drew a deployer-facing warning from it.
+    feat-117 registered the test and it came back FLAT, so the claim had to go. A retraction is not
+    a deletion: the appendix must still say that we made the reading, that we tested it, and what
+    the interval was, or the paper silently loses a negative result about itself."""
     apx = _tex("sections/appendix_selection.tex")
-    rows = {r["arm"]: float(r["gain"]) for r in _rows("results/compute_matched.csv")}
-    assert rows["sel05b_n64"] < rows["sel05b_n16"], "the non-monotonicity is no longer in the CSV"
-    assert all(rows[f"sel7b_n{a}"] < rows[f"sel7b_n{b}"]
-               for a, b in zip((2, 4, 8, 16, 32), (4, 8, 16, 32, 64))), "the 7B arm is not monotone"
-    assert "unregistered" in apx and "peaks at $n=16$ and falls" in apx
+    assert "did not\nsurvive" in apx or "did not survive" in apx, "the retraction is not stated"
+    assert "$-0.0160\\,[-0.0340,+0.0010]$" in apx, "the interval that retracted it is not quoted"
+    assert "\\textsc{flat}" in apx, "the reading is not named"
+    assert "$\\log n$ is not a free knob" in apx, "the withdrawn claim is not named as withdrawn"
+    assert "peaks at $n=16$ and falls" not in apx, "the withdrawn claim is stated as fact again"
+
+
+def test_the_saturation_finding_rounds_from_the_scorer_scale_csv():
+    """The replacement claim: 1.5B over 0.5B separates and the two steps above it do not, so the
+    61.3x concession is the scorer's price and not the mechanism's. Checked against the CSV."""
+    apx = _tex("sections/appendix_selection.tex")
+    R = {r["arm"]: r for r in _rows("results/scorer_scale.csv")}
+    for tag in ("05b", "15b", "3b", "7b"):
+        r = R[f"sel{tag}_n64"]
+        assert f"${float(r['gain']):+.4f}$" in apx, (tag, r["gain"])
+        assert f"${float(r['cost_vs_metered']):.2f}\\times$" in apx or \
+               f"$\\mathbf{{{float(r['cost_vs_metered']):.2f}\\times}}$" in apx, (tag, r["cost_vs_metered"])
+    frac = float(R["sel15b_n64"]["gain"]) / float(R["sel7b_n64"]["gain"])
+    cost = float(R["sel15b_n64"]["cost_vs_metered"]) / float(R["sel7b_n64"]["cost_vs_metered"])
+    assert f"${frac * 100:.1f}\\%$" in apx, round(frac * 100, 1)
+    assert f"${cost * 100:.1f}\\%$" in apx, round(cost * 100, 1)
