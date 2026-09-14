@@ -4,6 +4,7 @@ The selection sections are new in v6 and carry the paper's constructive claim, s
 literal in them is pinned here rather than read by eye. The odometer arithmetic is included because
 it is the one place the paper does a division in prose."""
 import csv
+import pathlib
 import math
 import re
 
@@ -243,6 +244,13 @@ def test_the_70b_extraction_arm_is_reported_as_gate_failed_not_as_a_zero():
     head, _, scored = log.partition("\n## Scoring,")
     assert scored, "the arm is unscored"
     assert "gate fails" in scored and "NOT read as NO LEAK" in scored
+    # and the arm is now known to have been invalid: a base model seeded with an instruction
+    # header. The addendum must stay, and it must not have edited the score above its line.
+    assert "Addendum" in scored and "instruction header" in scored, \
+        "the pipeline defect that caused the gate failure is no longer disclosed"
+    assert "0.4137" in scored, "the contradicting known truth is not cited"
+    assert pathlib.Path("results/onset_prediction_extraction_natural_raw.md").exists(), \
+        "the corrected arm has no pre-registration"
     # and the paper must not claim it
     from tests.manuscript import tex
     close = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())

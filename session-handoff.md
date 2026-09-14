@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**Nothing is in progress.** Every arm through feat-102 is scored and closed.
+**feat-103 is in progress** (`results/onset_prediction_extraction_natural_raw.md`): the natural-memorisation arm re-run with `--raw-prompt`, after feat-102 turned out to have seeded a base model with an instruction header. Everything else is scored and closed.
 
 Closed overnight: **feat-096** (the decider), **feat-098** (Proposition 3 at the authors' own 70B), **feat-100** (n=64 at the strongest anchor -- G3 failed, G1 unreadable), **feat-101** (the judge-free axis) and **feat-102** (gate failed, reported as failing).
 
