@@ -41,10 +41,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Parameter counts in billions, from the model cards of the checkpoints these arms actually ran.
-P_ANCHOR = 1.8      # jacquelinehe/tinycomma-1.8b-llama3-tokenizer
-P_RISKY = 8.0       # meta-llama/Llama-3.1-8B-Instruct
-P_SCORER = 7.0      # Qwen/Qwen2.5-7B-Instruct, the pointwise reward
-P_SMALL = 0.494     # Qwen2.5-0.5B-Instruct, counted off the loaded model rather than its label.
+# Parameter counts in billions, COUNTED OFF THE LOADED CHECKPOINT and not read off its name.
+# The three constants below were a model's label until 2026-09-15, and one of them was materially
+# wrong: Qwen2.5-7B-Instruct holds 7.6156B parameters, not 7.0, which understated selection's
+# serving cost by 8.8% everywhere it appeared -- the published 57.5x at n=64 is 61.3x. Found while
+# measuring the 1.5B and 3B scorers for feat-117 and fixed in the direction that costs us. Reproduce
+# every one of these with
+#   sum(p.numel() for p in AutoModelForCausalLM.from_pretrained(<id>).parameters())
+# and see tests/test_compute_matched.py, which pins them to a tolerance a mislabelled model fails.
+P_ANCHOR = 1.7586   # jacquelinehe/tinycomma-1.8b-llama3-tokenizer  (label says 1.8)
+P_RISKY = 8.0303    # meta-llama/Meta-Llama-3.1-8B-Instruct         (label says 8)
+P_SCORER = 7.6156   # Qwen/Qwen2.5-7B-Instruct, the pointwise reward (label says 7)
+P_SMALL = 0.4940    # Qwen/Qwen2.5-0.5B-Instruct                     (label says 0.5)
                     # Until feat-116 this was a round 0.5 and an untested counterfactual offered as
                     # a route out of the compute concession. The arm ran and REFUTED it: the small
                     # scorer's judged gain never reaches the metered decoder's, peaks at n=16 and
