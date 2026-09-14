@@ -208,8 +208,18 @@ def test_every_anchor_reports_zero_recall_at_every_n():
     anchors now, and Section 6 says 'at all four anchors', so all four have to be on disk."""
     import glob as _glob
     arms = [p for p in _glob.glob("results/selection_extraction*.csv")
-            if not p.endswith("_per_passage.csv") and not p.endswith("_70b.csv")]
-    assert len(arms) == 4, arms
+            if not p.endswith("_per_passage.csv") and "_70b" not in p]
+    assert len(arms) >= 4, arms
+    # Section 6 states the count. It must equal the number of anchor arms on disk, so adding an
+    # anchor without measuring its leakage -- or measuring one without updating the sentence --
+    # fails here rather than reaching a reviewer. C4 of the six-anchor pre-registration says the
+    # sentence stays at four until every new anchor has been scored.
+    from tests.manuscript import tex as _tex
+    words = {4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    assert f"at all {words[len(arms)]} anchors" in body, (
+        f"{len(arms)} anchor leakage arms on disk; Section 6 does not say "
+        f"'at all {words[len(arms)]} anchors'")
     for path in arms:
         for r in _rows(path):
             if r["n"] == "-1":

@@ -25,7 +25,17 @@ ANCHORS = [("TinyComma-1.8B (audited)", "", "jacquelinehe/tinycomma-1.8b-llama3-
            ("KL3M-1.7B", "_kl3m17b", "alea-institute/kl3m-003-1.7b",
             "output/phase5/sel_kl3m17b_8"),
            ("Comma-7B", "_comma7b", "common-pile/comma-v0.1-2t",
-            "output/phase5/sel_comma7b_8")]
+            "output/phase5/sel_comma7b_8"),
+           # Added 2026-09-14 for C2/C3 (results/onset_prediction_selection_breadth_six.md). These
+           # two are CONTROLLED contrasts against anchors already here, not extra scatter:
+           # Comma-1T is Comma-7B's architecture, size and corpus at half the training tokens, and
+           # Pleias-3B is Pleias-1.2B's family at 2.5x the parameters. A Spearman over six
+           # heterogeneous models confounds size, family, corpus and tokenizer at once; these vary
+           # one thing each, which is what C3 reads.
+           ("Comma-7B (1T tokens)", "_comma1t", "common-pile/comma-v0.1-1t",
+            "output/phase5/sel_comma1t_8"),
+           ("Pleias-3B", "_pleias3b", "PleIAs/Pleias-3b-Preview",
+            "output/phase5/sel_pleias3b_8")]
 # The entry gate, exactly as registered: "mean generation length > 20 tokens and fewer than 5%
 # empty completions". It is measured on the n=1 arm's own generations, not on a summary column --
 # the first version of this script read `mean_tokens`, which selection_scaling.py has never
@@ -173,8 +183,23 @@ def main():
     xs = [sum(x["u_n1"] for x in v) / len(v) for v in per.values()]
     ys = [sum(x["gain"] for x in v) / len(v) for v in per.values()]
     if len(xs) >= 3:
-        print(f"  B2 Spearman(anchor-alone u, gain) = {spearman(xs, ys):+.3f} over {len(xs)} "
-              f"anchors -- descriptive, not evidence for the ceiling argument")
+        rho = spearman(xs, ys)
+        verdict = ("TRACKS CAPABILITY" if rho >= 0.6 else
+                   "INVERTS" if rho <= -0.6 else "NO TREND")
+        note = ("descriptive, not evidence for the ceiling argument" if len(xs) < 6
+                else f"C2 band: {verdict}")
+        print(f"  B2/C2 Spearman(anchor-alone u, gain) = {rho:+.3f} over {len(xs)} "
+              f"anchors -- {note}")
+    # C3: the two within-family contrasts, each varying one thing. A rank correlation over six
+    # heterogeneous models cannot separate competence from size, family, corpus or tokenizer.
+    mean_gain = {k: sum(x["gain"] for x in v) / len(v) for k, v in per.items()}
+    for better, worse, what in (("Comma-7B", "Comma-7B (1T tokens)", "2x the training tokens"),
+                                ("Pleias-3B", "Pleias-1.2B", "2.5x the parameters")):
+        if better in mean_gain and worse in mean_gain:
+            d = mean_gain[better] - mean_gain[worse]
+            print(f"  C3 {better} vs {worse} ({what}): gain {mean_gain[better]:+.4f} vs "
+                  f"{mean_gain[worse]:+.4f}, difference {d:+.4f} -> "
+                  f"{'as predicted' if d > 0 else 'AGAINST the prediction'}")
     print()
     for r in rows:
         if r["gain_nonempty"] == "":
