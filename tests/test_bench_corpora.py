@@ -103,3 +103,42 @@ def test_the_built_artifact_carries_no_identifying_path():
            if any(k in os.path.basename(p).lower()
                   for k in ("sports", "vijayavallabh", "iitm"))]
     assert not bad, bad
+
+
+def test_the_triviaqa_corpus_is_a_symlink_dir_with_gold_aliases():
+    """The judge-free head-to-head needs both mechanisms on one corpus through one code path. The
+    committed prompt sets stay read-only, so the corpus is a directory of symlinks with one real
+    file swapped into the factual slot -- and that file must carry the gold aliases, or the scorer
+    has to re-download the dataset to join on prompt_id."""
+    import json
+    import os
+    d = "data/bench/triviaqa"
+    if not os.path.isdir(d):
+        return                       # rebuilt by analysis/build_bench_corpora.py
+    for f in os.listdir(d):
+        assert os.path.islink(os.path.join(d, f)), f
+    real = os.path.realpath(os.path.join(d, "factscore.jsonl"))
+    assert real.endswith("triviaqa_factual.jsonl"), real
+    rows = [json.loads(l) for l in open(real, encoding="utf-8")]
+    assert rows, "empty corpus"
+    for r in rows[:20]:
+        assert r["split"] == "factual", "the neutral slot would prepend 'Complete the prefix:'"
+        assert r["prompt_text"].rstrip().endswith("Answer:"), r["prompt_text"][-40:]
+        assert r["prompt_text"].count("Question:") >= 2, "the few-shot prefix is missing"
+        assert r["reference"].strip(), "no gold aliases to score against"
+
+
+def test_containment_scoring_is_whole_word_and_not_substring():
+    """'ann' must not match inside 'anne'. The relaxation exists to absorb an instruct model's
+    'The answer is X' preamble, not to hand out credit for a prefix of the right word."""
+    from analysis.selection_verifiable import correct_tqa, norm_answer
+    gold = {"david seville"}
+    assert correct_tqa(norm_answer("David Seville"), gold)
+    assert correct_tqa(norm_answer("The answer is David Seville."), gold)
+    assert not correct_tqa(norm_answer("Dave"), gold)
+    assert not correct_tqa(None, gold)
+    # whole-word, both directions: a plural is not the alias and a prefix is not the alias
+    assert not correct_tqa(norm_answer("annes"), {"ann"})
+    assert not correct_tqa(norm_answer("David Sevilles brother"), {"seville"})
+    # articles and punctuation are normalised away on both sides
+    assert correct_tqa(norm_answer("the Beatles!"), {"beatles"})
