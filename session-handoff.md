@@ -2,7 +2,11 @@
 
 ## Current objective
 
-**feat-103 is in progress** (`results/onset_prediction_extraction_natural_raw.md`): the natural-memorisation arm re-run with `--raw-prompt`, after feat-102 turned out to have seeded a base model with an instruction header. Everything else is scored and closed.
+Three arms are in progress, each with its bands committed before its run:
+
+- **feat-103** — the natural-memorisation arm re-run with `--raw-prompt` (`results/onset_prediction_extraction_natural_raw.md`), after feat-102 turned out to have seeded a base model with an instruction header. GPUs 1+2.
+- **feat-104** — the head-to-head at a **third** pair, Llama-3.2-3B-Instruct, the closest anchor on record and the hardest case for the reversal (`results/onset_prediction_frontier_third_pair.md`). GPU 0.
+- **feat-105** — the judge-free axis on a **knowledge** task, TriviaQA at Comma-7B (`results/onset_prediction_verifiable_triviaqa.md`). GPU 4.
 
 Closed overnight: **feat-096** (the decider), **feat-098** (Proposition 3 at the authors' own 70B), **feat-100** (n=64 at the strongest anchor -- G3 failed, G1 unreadable), **feat-101** (the judge-free axis) and **feat-102** (gate failed, reported as failing).
 

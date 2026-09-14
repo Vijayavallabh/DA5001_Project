@@ -1030,6 +1030,26 @@
       ],
       "description": "Re-run of feat-102 with --raw-prompt, which strips the 'Complete the prefix:' header so the 70B base model is seeded with twenty tokens of the protected passage rather than an instruction plus fourteen. Same 100 CopyBench attack_train passages, same cap, same temperature, same n in {1,8,64}, same anchor, the risky model's own likelihood as the selector. Both mandatory baselines. Bands, gate and all four manuscript consequences pre-registered in results/onset_prediction_extraction_natural_raw.md before generation.",
       "evidence": "Launched on GPUs 1+2; scoring pending."
+    },
+    {
+      "id": "feat-104",
+      "title": "The head-to-head at a third pair, the closest anchor yet",
+      "status": "in-progress",
+      "depends_on": [
+        "feat-097"
+      ],
+      "description": "Llama-3.2-3B-Instruct as anchor against Llama-3.1-8B-Instruct. The metered half is already on disk from the Proposition 3 breadth arm (output/phase5/imit_llama323bi); this generates the selection half and judges both in one pass against the same k=-1 opponent with one shared anchor-alone control. This pair has the lowest imitation rate on record (0.3034) -- the anchor sits close to the risky model, where a per-token meter buys most and selection should struggle -- so it is the hardest case for the reversal and the prediction is committed in advance. Bands in results/onset_prediction_frontier_third_pair.md.",
+      "evidence": "Launched; scoring pending."
+    },
+    {
+      "id": "feat-105",
+      "title": "The judge-free axis on a knowledge task",
+      "status": "in-progress",
+      "depends_on": [
+        "feat-101"
+      ],
+      "description": "TriviaQA rc.nocontext, 500 validation questions, 5-shot, at Comma-7B -- the same anchor as the GSM8K arm. Proposition 4 bounds the served string to one the anchor would have drawn, so selection can re-rank reasoning the anchor produces and cannot supply a fact it lacks; a closed-book knowledge task is the test that separates 'selection works' from 'selection works on reasoning'. Both gates pass (Comma-7B 0.19, TinyComma 0.07). Containment scoring fixed before any number and applied identically to every arm. W4 commits a directional prediction the arm can refute. Bands in results/onset_prediction_verifiable_triviaqa.md.",
+      "evidence": "Launched; scoring pending."
     }
   ]
 }
