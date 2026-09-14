@@ -2,11 +2,20 @@
 
 ## Current objective
 
-One arm is in progress, each with its bands committed before its run:
+No arms are running. Every pre-registration in `results/` is scored.
 
-- **feat-107** — the breadth arm at **six** anchors, adding Comma-7B (1T tokens) and Pleias-3B (`results/onset_prediction_selection_breadth_six.md`). **C4 is scored**: both new leakage arms read `0.0000` at every `n` with the memoriser control reproduced bit for bit on 100/100 passages, so Section 6 says six anchors. C1--C3 wait on the two generations, queued on GPU 0.
+Closed this session, eight arms:
 
-Closed this session: **feat-103** (GATE FAILED -- the reference was a 100-token seed, caution (v)), **feat-104** (third pair, REPLICATES, and the metered decoder resolves at no budget), **feat-105** (TriviaQA judge-free: majority vote lifts, the paper's own reward falls), **feat-106** (the judge-free head-to-head we predicted we would lose, and did), **feat-109** (INVALID -- the registered command returned the wrong novel, caution (w)) and **feat-108** (G0 UNMATCHED -- the two pipelines' controls differ by `0.0493` at matched length, so **no joint leakage table is built**; the residual is in Appendix J) and **feat-110** (**the natural memoriser, NO LEAK** -- the 70B recovers `0.2475` unaided and reproduces two of fifty passages in full; selection under its own likelihood recovers `0.0000`, so Limitations drops the sentence about whose memoriser it is).
+| arm | reading | what it cost or bought |
+|---|---|---|
+| feat-103 | **GATE FAILED** | the `0.4137` it predicted against was a 100-token seed and it used 20 (caution (v)) |
+| feat-104 | **T1 REPLICATES** | third pair; the metered decoder resolves at *no* budget on either judge -- the trivial horn observed |
+| feat-105 | **W1 lifts, W2 flat** | TriviaQA: majority vote `+0.054`, the paper's own reward *falls* with `n`; the two rules differ in sign across tasks |
+| feat-106 | **METERED WINS, FRONTIER HOLDS** | we predicted the loss before generating; it wins at `k=20` by *becoming* the risky model, certificate `480` nats |
+| feat-107 | **C1 ONE GAINS, C2 NO TREND, C3 CONFIRMED** | cost us "the strongest anchor gives the largest gain"; capability buys gain *within* a family, not across |
+| feat-108 | **G0 UNMATCHED** | refused the joint leakage table; residual `0.0493` in Appendix J |
+| feat-109 | **INVALID** | the registered command returned the wrong novel (caution (w)) |
+| feat-110 | **R1 NO LEAK** | the natural memoriser: the 70B recovers `0.2475` unaided and reproduces two of fifty passages **in full**, selection recovers `0.0000` -- Limitations drops the sentence about whose memoriser it is |
 
 The paper is v7. It argues one claim and exhibits a mechanism on the other side of it:
 

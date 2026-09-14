@@ -132,3 +132,79 @@ six of six anchors measured Section 6's sentence becomes "It is `0.0000` at all 
 The *gains* stay at four until the two breadth generations land and C1--C3 are read. The two counts
 are deliberately separate claims in this pre-registration: leakage is measured by its own arm, which
 needs only the anchor, while a gain needs the generation and the judge.
+
+## Scoring, 2026-09-14 --- C1--C3
+
+Runs: `scripts/run_breadth_queued.sh 0 common-pile/comma-v0.1-1t _comma1t` (`score exit=0 at
+10:01`) and the same for `PleIAs/Pleias-3b-Preview` (`score exit=0 at 10:39`), then
+`analysis/selection_breadth.py --out results` -> `results/selection_breadth.csv`. Read on judge B,
+`Phi-3.5-mini-instruct`, the registered scorer; judge C beside it.
+
+| anchor | $u_{n=1}$ | gain, judge B | gain, judge C | entry gate |
+|---|---|---|---|---|
+| TinyComma-1.8B (audited) | `0.435` | `+0.054 [+0.013, +0.095]` | `+0.073 [+0.027, +0.120]` | **FAIL** (`6.8%` empty) |
+| Pleias-1.2B | `0.411` | `+0.029 [-0.012, +0.068]` | `+0.071 [+0.027, +0.115]` | PASS |
+| KL3M-1.7B | `0.310` | `+0.039 [+0.005, +0.076]` | `+0.051 [+0.013, +0.090]` | PASS |
+| Comma-7B (2T) | `0.450` | `+0.111 [+0.072, +0.148]` | `+0.155 [+0.106, +0.200]` | PASS |
+| **Comma-7B (1T)** | `0.458` | `+0.026 [-0.010, +0.063]` | `+0.113 [+0.069, +0.157]` | **FAIL** (`16.6%` empty) |
+| **Pleias-3B** | `0.399` | `+0.047 [+0.003, +0.089]` | `+0.097 [+0.056, +0.140]` | PASS |
+
+### C1 --- ONE GAINS
+
+Pleias-3B's interval excludes zero on the registered scorer, `+0.047 [+0.003, +0.089]`. Comma-1T's
+does not, `+0.026 [-0.010, +0.063]`. Exactly one of the two new anchors gains. Both gain on judge C,
+which is reported and not substituted.
+
+**Comma-1T fails the entry gate at `16.6%` empty completions** against the registered `5%`, and the
+excluded alternatives forbid dropping it, so it is reported with its failure. Restricting to the
+`417` prompts whose `n=1` completion is non-empty leaves judge B unchanged at `+0.026 [-0.018,
++0.070]` and lifts judge C to `+0.143 [+0.094, +0.193]`: the empty completions are not what is
+holding the registered scorer's reading down.
+
+### C2 --- NO TREND, and it costs the paper a sentence
+
+Spearman of the two-judge mean gain against the anchor-alone level `u_{n=1}`, over **all six**
+anchors: **`rho = +0.543`**, inside the registered `(-0.6, +0.6)`.
+
+**The committed consequence applies: *"The strongest anchor gives the largest gain"* comes out of
+Section 6.** It was true of the four anchors it was written on and it is not a property of
+capability: Comma-1T has the *highest* anchor-alone level of all six (`0.458`) and the second
+lowest gain on the registered scorer. The support-ceiling reading of A1 accordingly loses its
+stated mechanism and is reported as a fact about the anchors measured rather than as a law about
+competence.
+
+This band was written to be able to cost us that sentence and it did. It is worth being precise
+about what survives: the *level* of the gain still varies by `4.3x` across anchors, and the largest
+gain is still at a `7`B anchor. What does not survive is the claim that the ordering is predicted
+by the anchor's own judged quality.
+
+### C3 --- CONTROLLED CONFIRMATION
+
+Both contrasts run in the predicted direction, on the two-judge mean the aggregation uses:
+
+| contrast | what varies | more capable | less capable | difference |
+|---|---|---|---|---|
+| Comma-7B 2T vs 1T | training tokens, `2x` | `+0.1330` | `+0.0695` | **`+0.0635`** |
+| Pleias 3B vs 1.2B | parameters, `2.5x` | `+0.0720` | `+0.0500` | **`+0.0220`** |
+
+**This is what C2 could not give.** A rank correlation over six heterogeneous models confounds
+size, family, corpus and tokenizer at once and reads NO TREND; two pairs that vary one thing each
+both move the way capability predicts. The honest summary is that capability buys gain *within* a
+family and does not order *across* families, and Section 6 says exactly that.
+
+**One caveat, disclosed rather than buried.** The first contrast compares a gate-passing anchor
+with a gate-failing one, so it is the weaker of the two. On the non-empty subset it survives with a
+smaller margin --- `+0.1351` against `+0.0846`, a difference of `+0.0505` rather than `+0.0635` ---
+and the direction does not change. The second contrast involves no gate failure at all.
+
+### C4 --- scored above, 2026-09-14
+
+Both new anchors' leakage arms read `0.0000` at every `n` with the memoriser control reproduced bit
+for bit on 100/100 passages, so Section 6's sentence is now "at all six anchors". See the C4 note
+above for why the first Pleias-3B arm was discarded unread.
+
+### B1 is not re-opened
+
+`selection_breadth.py` prints a B1 line over the anchors that pass the gate; it is ignored here.
+B1 was scored at four anchors as GENERALISES and the excluded alternatives close it. Section 6's
+B1 sentence keeps its four anchors and its three numbers.

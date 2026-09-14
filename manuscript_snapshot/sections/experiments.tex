@@ -38,10 +38,9 @@ metered decoder, $k=10$     & judge B & --- & $171.3$ & $+0.072$ & --- \\
 \paragraph{The scorer decides, and the obvious one fails}
 The first scorer we pre-registered was the risky model's own per-token log-likelihood --- the
 objective anchored decoding tilts toward. It fails, moving judged utility by $-0.006$ at $n=8$
-against a committed band of $+0.077$, while its control reproduces the $u_{\text{safe}} = 0.323$ on
-record so the pipeline is sound; Section~\ref{sec:orders}'s AUC diagnosis is measured on exactly
-these candidates and explains it, and a circular oracle over the same eight reaches $+0.488$, so
-what fails is the objective and not the budget (Appendix~\ref{app:selection}).
+against a committed band of $+0.077$; Section~\ref{sec:orders}'s AUC diagnosis is measured on
+exactly these candidates and explains it, and a circular oracle over the same eight reaches
+$+0.488$, so what fails is the objective and not the budget (Appendix~\ref{app:selection}).
 Two scorers do track quality, and the cheaper is the better one. Selecting by judge~A and scoring with judge~B,
 which did no selecting, gives $+0.081$ $[+0.034, +0.130]$ at $n=8$. The deployable scorer does not
 consult the risky model at all: a \emph{pointwise} reward,
@@ -85,8 +84,7 @@ The sharpest test hands the selector to the attacker: we score the $n$ anchor sa
 both baselines. Recall is $0.0000$ at every $n$ from $1$ to $64$, maximum over all $100$ passages
 $0.0000$, against the memoriser's $0.3925$ mean and $0.8154$ maximum
 (Table~\ref{tab:extraction}) --- $n$ multiplies the \emph{anchor's own} rate and the anchor never
-saw the work --- and $0.0000$ at all six anchors, while the same pipeline puts $78\%$ of passages
-above threshold for the unconstrained memoriser. \textbf{Nor is the memoriser ours.} Against
+saw the work --- and $0.0000$ at all six anchors. \textbf{Nor is the memoriser ours.} Against
 \texttt{Llama-3.1-70B}, which memorised \emph{Harry Potter} in pre-training, on $50$ passages of it
 at a $100$-token prefix, the unaided model recovers $0.2475$ and reproduces two \emph{in full};
 selection scored by its own likelihood recovers $0.0000$ at every $n \le 64$
@@ -97,16 +95,17 @@ Nothing above is tied to the audited anchor. Re-run unchanged at three further o
 models --- Pleias-1.2B, KL3M-1.7B and Comma-7B, a $6\times$ range in parameters, same prompts, judge
 and baseline --- selection gains $+0.029$ $[-0.012, +0.068]$, $+0.039$ $[+0.005, +0.076]$ and
 $+0.111$ $[+0.072, +0.148]$: two of three exclude zero on the pre-registered scorer, all three on
-the second, against a band committed to cost us this claim had none. The strongest anchor gives the
-largest gain, and the anchor decides the standard benchmarks too. On \textbf{AlpacaEval}'s $805$
+the second, against a band committed to cost us this claim had none. Two further anchors vary
+\emph{one} thing each: Comma-7B at twice the training tokens gains $+0.064$ more than at one
+trillion, Pleias at $2.5\times$ the parameters $+0.022$ more. Across all six the gain does not track
+the anchor's own level ($\rho = +0.543$): capability buys gain inside a family, not across them. On \textbf{AlpacaEval}'s $805$
 instructions \citep{dubois2024length} the audited anchor gains $+0.031$ $[-0.001, +0.062]$ under
-judge~B, which does not resolve, and $+0.067$ $[+0.034, +0.101]$ under judge~C, while
-\textbf{MT-Bench}'s $80$ \citep{zheng2023judging} resolve nothing in either at a half-width of
-$0.09$; Comma-7B on the same prompts, opponent and judges gives $+0.075$ $[+0.042, +0.108]$ and
-$+0.167$ $[+0.134, +0.201]$, monotone in $\log n$ in both. Proposition~\ref{prop:selection}'s
-ceiling is what the weaker number was, and it binds at the anchor and not within one: across
-domains inside one anchor the same test is inseparable from a no-effect null
-(Appendix~\ref{app:limitations}).
+judge~B and $+0.067$ $[+0.034, +0.101]$ under judge~C, while \textbf{MT-Bench}'s $80$
+\citep{zheng2023judging} resolve nothing in either at a half-width of $0.09$; Comma-7B on the same
+prompts, opponent and judges gives $+0.075$ $[+0.042, +0.108]$ and $+0.167$ $[+0.134, +0.201]$,
+monotone in $\log n$ in both. Proposition~\ref{prop:selection}'s ceiling is what the weaker number
+was, and it binds at the anchor and not within one: across domains inside one anchor the same test
+is inseparable from a no-effect null (Appendix~\ref{app:limitations}).
 
 \paragraph{Off the judge's axis}
 Every gain above is a judged preference and the judge is position-dominated; exact match is not. On

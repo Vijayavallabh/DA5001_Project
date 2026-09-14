@@ -1064,12 +1064,12 @@
     {
       "id": "feat-107",
       "title": "Selection breadth at six anchors, with two controlled contrasts",
-      "status": "in-progress",
+      "status": "done",
       "depends_on": [
         "feat-095"
       ],
       "description": "B1 GENERALISES was scored on four anchors in three families, which is enough scatter to claim breadth and not enough to say what breadth depends on. Comma-7B (1T tokens) is Comma-7B's architecture, size and corpus at half the training tokens, and Pleias-3B is Pleias-1.2B's family at 2.5x the parameters, so each varies ONE thing against an anchor already on the table -- which is what C3's within-family contrasts read, and what a Spearman over six heterogeneous models could not. C4 measures near-verbatim recall at both new anchors under the adversarial selector; Section 6's 'at all four anchors' becomes 'six' only once both land. Bands in results/onset_prediction_selection_breadth_six.md.",
-      "evidence": "Generations and leakage arms queued; scoring pending."
+      "evidence": "scripts/run_breadth_queued.sh for both new anchors (score exit=0 at 10:01 and 10:39) then analysis/selection_breadth.py --out results -> results/selection_breadth.csv. C1 ONE GAINS: on the registered scorer Pleias-3B is +0.047 [+0.003, +0.089] and Comma-1T is +0.026 [-0.010, +0.063]; both gain on judge C, reported not substituted. Comma-1T FAILS the entry gate at 16.6% empty completions against the registered 5% and is reported with its failure rather than dropped; on the 417 non-empty prompts judge B is unchanged and judge C rises to +0.143, so the empties are not what holds the registered reading down. C2 NO TREND: Spearman(anchor-alone u, gain) = +0.543 over all six anchors, inside the registered (-0.6, +0.6). ITS COMMITTED CONSEQUENCE APPLIES -- 'The strongest anchor gives the largest gain' is REMOVED from Section 6 and the support-ceiling reading of A1 loses its stated mechanism. Comma-1T has the highest anchor-alone level of all six (0.458) and the second lowest gain. C3 CONTROLLED CONFIRMATION: both contrasts run as predicted on the two-judge mean -- Comma-7B 2T vs 1T, +0.1330 vs +0.0695 (difference +0.0635), and Pleias-3B vs Pleias-1.2B, +0.0720 vs +0.0500 (+0.0220). The first compares a gate-passing anchor with a gate-failing one and is the weaker; on the non-empty subset it survives at +0.0505. C4 scored 2026-09-14: both leakage arms 0.0000 at every n with the memoriser control reproduced 100/100, so Section 6 says six anchors. B1 is NOT re-opened. Scoring log: results/onset_prediction_selection_breadth_six.md."
     },
     {
       "id": "feat-108",
