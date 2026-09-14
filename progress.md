@@ -2,7 +2,7 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-15 01:40
+**Last Updated:** 2026-09-15 02:55
 **Branch `iclr-2027`.** Target **ICLR 2027**. No arms running; all forty-three pre-registrations in
 `results/` are scored. **v9 answers a referee report** (5/10, reject) on four counts, each by
 measurement or by a correction rather than by rewording:
@@ -28,8 +28,8 @@ served-text-minus-generation and disagrees across arms in **455 of 500** cases (
 prompt the single-order difference is `+0.013`, not `+0.070`); and **judge C is the same checkpoint
 as the risky model every arm is judged against**, a self-preference risk that was nowhere disclosed.
 
-Body is exactly 9 of 9 pages, page 10 body-free, 0 overfull, 0 unresolved, 429 tests, 2,741 numeric
-literals audited with the one expected miss (`64256`), artifact 811 files. A figure-font experiment
+Body is exactly 9 of 9 pages, page 10 body-free, 0 overfull, 0 unresolved, 429 tests, 2,762 numeric
+literals audited with the one expected miss (`64256`), artifact 813 files. A figure-font experiment
 that broke Figure 1's layout was caught by rendering the page and reverted.
 
 ### 2026-09-15, v10: the rest of the referee report
