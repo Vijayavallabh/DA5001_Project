@@ -2,7 +2,7 @@
 
 ## Current objective
 
-No arms are running. Every pre-registration in `results/` is scored.
+**feat-111** is running: five contaminated anchors, testing Proposition 4 where it can actually fail (`results/onset_prediction_contaminated_anchor.md`). Every other leakage arm has a clean anchor and a base rate of zero, so `n x 0 = 0` holds whatever is measured and the multiplication bound has never been tested. GPUs 0/1/2/4, a fifth queued behind GPU 0.
 
 Closed this session, eight arms:
 
