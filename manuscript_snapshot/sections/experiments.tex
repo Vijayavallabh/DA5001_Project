@@ -22,9 +22,11 @@ and the first cost us a claim.
 \centering\footnotesize
 \setlength{\tabcolsep}{4pt}
 \caption{Selection anchoring on $500$ prompts, as \textbf{gains over each arm's own anchor-alone
-control}, against the metered decoder's best arm (bottom). Levels are omitted because the instrument
-check below shows they are largely a statement about slot order; a dash marks a gain whose
-\emph{paired} interval that pass cannot form.}
+control}, against the metered decoder's best arm (bottom). Every row is a \textbf{single-order}
+estimate, each pair shown to the judge in one random order; the head-to-head in the text is
+order-averaged and is the comparison we stand behind. Levels are omitted because the instrument
+check below shows they are largely a statement about slot order, and a dash marks an interval that
+pass cannot form.}
 \label{tab:selection}
 \begin{tabular}{@{}llcccc@{}}
 \toprule
@@ -35,7 +37,7 @@ pointwise reward            & judge B & $64$ & $3.175$ & $+0.142$ & $[+0.097, +0
 pointwise reward            & judge C & $64$ & $3.175$ & $+0.123$ & $[+0.076, +0.171]$ \\
 pointwise, anchor Comma-7B  & judge B & $8$ & $1.204$ & $+0.111$ & $[+0.072, +0.148]$ \\
 \midrule
-metered decoder, $k=10$     & judge B & --- & $171.3$ & $+0.040$ & $[+0.014, +0.066]$ \\
+metered decoder, $k=10$     & judge B & --- & $171.3$ & $+0.072$ & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -44,8 +46,7 @@ metered decoder, $k=10$     & judge B & --- & $171.3$ & $+0.040$ & $[+0.014, +0.
 The first scorer we pre-registered was the risky model's own per-token log-likelihood --- the
 objective anchored decoding tilts toward --- and it fails, moving judged utility by $-0.006$ at
 $n=8$ against a committed band of $+0.077$. A circular oracle over the same eight draws reaches
-$+0.488$, so what fails is the objective and not the budget, and Section~\ref{sec:orders}'s AUC
-diagnosis is measured on exactly these candidates (Appendix~\ref{app:selection}).
+$+0.488$, so what fails is the objective and not the budget (Appendix~\ref{app:selection}).
 Two scorers track quality, and the cheaper is better. Selecting by judge~A and scoring with judge~B
 gains $+0.081$ $[+0.034, +0.130]$ at $n=8$; the deployable scorer
 (Table~\ref{tab:selection}) never consults the risky model --- a \emph{pointwise} reward,

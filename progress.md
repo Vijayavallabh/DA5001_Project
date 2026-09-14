@@ -65,6 +65,34 @@ A float added to an appendix produced a 52.8pt overfull box that the page-budget
 see. Run the **full** gate after adding any float, not just the page-10 check.
 
 
+### 2026-09-15, full read-through of the rendered PDF
+
+Read all 9 body pages and the new appendix material as rendered, not as source. Eight defects, two
+of them substantive and both created by the v9/v10 edits themselves:
+
+1. **Table 1 mixed estimands.** Its four selection rows were single-order while the metered row had
+   been changed to the *order-averaged* `+0.040` in v9 -- an apples-to-oranges comparison inside one
+   table, and exactly what a reviewer pounces on. The metered row is back to its single-order
+   `+0.072`, and the caption now states that every row is single-order and that the head-to-head in
+   the text is the order-averaged comparison the paper stands behind.
+2. **A stale claim in Section 2.** "the two mechanisms reach the same judged utility on this
+   workload" was written when both reached `u ~ 0.52`; after feat-113 selection gains `2.6x` the
+   meter's gain. Cut.
+3. Appendix I said "the figures in this paper are the order-averaged ones", which now contradicts
+   the Table 1 caption. Reconciled: the *comparison* is order-averaged, the per-arm sweep is not.
+4. The contributions bullet still read "Why no per-token budget can reach it" after Section 4 was
+   retitled away from that overclaim in v10.
+5. Abstract and Conclusion had been trimmed to "promised 8" and "8, not e^2000" -- the referent
+   ("an amplification of") had been cut away, leaving a bare number.
+6. Two compression artefacts in the introduction: a sentence with two "so" clauses, and a dash pair
+   that left its final clause without a connective.
+7. Table 1's caption still described a dash that no longer appeared in the columns it named.
+
+Anonymity re-checked on the rendered PDF: four hits for the author name, all the sanctioned
+third-person citation `(Vijayavallabh, 2026)` plus the bibliography entry; zero "our earlier audit",
+zero affiliation.
+
+
 ## Status
 
 ### What's Done

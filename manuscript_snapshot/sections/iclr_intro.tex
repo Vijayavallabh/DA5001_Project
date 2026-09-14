@@ -90,7 +90,7 @@ families, on AlpacaEval, and on two judge-free tasks where the ranking of scorin
 which bounds the claim as well as making it --- with zero near-verbatim recall at every $n \le 64$,
 bought with $57.5\times$ the forward-pass cost at $n=64$ (Section~\ref{sec:experiments}).
 
-\textbf{Why no per-token budget can reach it.} Proposition~\ref{prop:sparse} bounds an affordable
+\textbf{Why a per-token budget is vacuous or trivial.} Proposition~\ref{prop:sparse} bounds an affordable
 causal policy's departures from the safe model while the deployed rule is its opposite
 (Proposition~\ref{prop:imitation}), and bounded utility costs $O(1)$ nats however long the sequence
 (Theorem~\ref{thm:nfl}): the conflict is the per-token axis, not the certificate. Extraction sits at

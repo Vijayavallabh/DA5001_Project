@@ -52,10 +52,9 @@ $S(x) = \sum_t s_t$, three rates govern everything below:
 \underbrace{c_{\mathrm{use}} = \operatorname{med}_{y \sim p_r} \frac{\log p_r(y) - \log p_s(y)}{|y|}}_{\text{divergence rate of ordinary traffic}} .
 \label{eq:rates}
 \end{equation}
-All three need only forward passes --- no decoding, no attack, no access to the mechanism --- so a
-deployer can compute them in advance. Rates are nats per \emph{character} where safe models with
-different vocabularies are compared, per \emph{token} where a rate meets a budget
-(Appendix~\ref{app:opening}).
+All three need only forward passes, so a deployer can compute them in advance. Rates are nats per
+\emph{character} where safe models with different vocabularies are compared, per \emph{token} where
+a rate meets a budget (Appendix~\ref{app:opening}).
 
 The other side of the dichotomy has a price too.
 \begin{theorem}[The price of utility]\label{thm:nfl}
