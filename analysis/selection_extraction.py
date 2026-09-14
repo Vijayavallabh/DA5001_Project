@@ -34,12 +34,23 @@ from recipes.finetune_memorizing import join  # noqa: E402
 HEADER = "Complete the prefix:\n"
 
 
-def build(tok, data, split, limit, seed_tokens, novel=""):
+def build(tok, data, split, limit, seed_tokens, novel="", raw_prompt=False):
+    """Seeds and targets. `prompt_text` begins with `Complete the prefix:\n`, which costs six of
+    the twenty seed tokens and, worse, hands a BASE model an instruction instead of protected text.
+    Protocol C7 specifies raw passage seeds for natural memorisation for exactly that reason, and
+    `--raw-prompt` strips the header the way `composition_attack.py --raw-prompt` does.
+
+    Leaving it in is correct for a memoriser fine-tuned WITH the header and wrong for a model that
+    memorised the book in pre-training: the 70B arm of 2026-09-13 scored 0.0000 against the LoRA
+    memoriser's 0.3925 on the same passages and seeds, and the header is why."""
     out = []
     for p in load_prompt_corpus(data, "factscore_prompt"):
         if p.split != split or not p.reference or novel not in (p.novel_source or ""):
             continue
-        ids = tok(join(p.prompt_text, p.reference)).input_ids
+        text = p.prompt_text
+        if raw_prompt and text.startswith(HEADER):
+            text = text[len(HEADER):]
+        ids = tok(join(text, p.reference)).input_ids
         out.append(dict(prompt_id=p.prompt_id, novel=p.novel_source,
                         seed=tok.decode(ids[:seed_tokens], skip_special_tokens=True),
                         target=tok.decode(ids[seed_tokens:], skip_special_tokens=True)))
@@ -107,6 +118,10 @@ def main():
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", default="results")
     ap.add_argument("--prefix", default="selection_extraction")
+    ap.add_argument("--raw-prompt", action="store_true",
+                    help="strip the 'Complete the prefix:' header from the seed (protocol C7: "
+                         "raw passage seeds for a base model that memorised the work in "
+                         "pre-training)")
     # A 70B risky model is 141 GB and does not fit the single-card `.cuda()` below. Caution (q):
     # the split must be given explicitly, or accelerate puts the whole thing on device 0.
     ap.add_argument("--risky-device-map", default="",
@@ -148,7 +163,8 @@ def main():
     # 20-token seed is byte-identical across anchors -- otherwise the cross-anchor comparison
     # would carry the seed-convention confound Section 3 measures at Spearman -0.958.
     stok, rtok = load_tok(a.safe_model), load_tok(a.risky_model)
-    passages = build(rtok, a.data, a.split, a.limit, a.seed_tokens)
+    passages = build(rtok, a.data, a.split, a.limit, a.seed_tokens,
+                     raw_prompt=a.raw_prompt)
     print(f"[selx] {len(passages)} passages, n_max={max(a.n_values)}, "
           f"seed tokenizer {a.risky_model}", flush=True)
     seeds = [p["seed"] for p in passages]
