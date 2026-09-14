@@ -43,13 +43,24 @@ def test_the_selection_budget_arithmetic_is_exact():
 
 
 def test_the_composition_count_divides_out():
-    """332 queries at n = 8 and 2 at k = 3, both from a 400-nat odometer over the measured spend."""
+    """The odometer count depends on the Renyi order of the per-query charge, and the paper
+    advertises a PATHWISE certificate. Quoting the KL count (332) under a log n headline was the
+    defect a reviewer caught on 2026-09-14: 400/log 8 = 192 is the number at the advertised order,
+    400/(log 8 - 7/8) = 332 the number the deployed KL odometer permits. Both must appear, the
+    pathwise one must be the one Section 2 quotes, and neither may be swapped for the other."""
     spend = {r["k"]: float(r["mean_spend_nats"]) for r in _rows("results/utility_price.csv")}
     kl8 = math.log(8) - 7 / 8
+    import math as _m
     assert int(400 / kl8) == 332, 400 / kl8
+    assert int(400 / _m.log(8)) == 192, 400 / _m.log(8)
+    # a 200-token response at the audited k=3 is certified at 600 nats, so the odometer admits none
+    assert int(400 / (3 * 200)) == 0
     assert int(400 / spend["3.0"]) == 2, 400 / spend["3.0"]
     body = open(SEL, encoding="utf-8").read().replace("\n", " ")
-    assert "$332$ queries at $n=8$ against $2$" in body, body[body.find("composes"):][:220]
+    body1 = body.replace("\n", " ")
+    assert "that is $192$ queries" in body1, body1[body1.find("composes"):][:260]
+    assert "$1.204$ nats gives $332$" in body1, "the KL count must be reported beside the pathwise one"
+    assert "$332$ queries" not in body1, "the KL count is being quoted as THE composition count"
     m = re.search(r"spends a measured \$([\d.]+)\$ nats", body)
     assert m and float(m.group(1)) == spend["3.0"], (m.group(1) if m else None, spend["3.0"])
 
@@ -110,31 +121,41 @@ def test_no_absolute_judged_level_is_quoted_as_a_comparison():
 
 
 def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
-    """The paper says the comparison is a reversal. That is only allowed while selection's GAIN at
-    n=64 exceeds the metered decoder's gain over its own control, at a far smaller budget."""
+    """The paper says the comparison is a reversal. Since 2026-09-14 that claim is the ORDER-AVERAGED
+    head-to-head (results/order_averaged_h2h.csv), not the two single-order gains it used to quote:
+    a reviewer pointed out that a comparison of two gains measured with a position-dominated judge
+    had never itself been checked for position, and feat-113 checked it. The difference must be
+    positive with an interval excluding zero, and Section 3 must quote all three numbers."""
     import csv as _csv
     import re as _re
     from tests.manuscript import tex as _tex
-    sel = next(r for r in _csv.DictReader(open("results/selection_scaling.csv"))
-               if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 64)
-    j2 = list(_csv.DictReader(open("results/judge_separation_v6_judge2.csv")))
-    anchor = next(x for x in j2 if x["decoder"].startswith("anchor"))
-    k10 = next(x for x in j2 if x["decoder"] == "KL" and float(x["k"]) == 10.0)
-    dec_gain = float(k10["utility"]) - float(anchor["utility"])
+    rows = {r["quantity"]: r for r in
+            _csv.DictReader(open("results/order_averaged_h2h.csv"))}
+    sel = rows["D1 selection gain, order-averaged"]
+    met = rows["D2 metered gain, order-averaged"]
+    dif = rows["D3 difference of gains, paired"]
+    # the reversal is only claimable while the paired difference excludes zero
+    assert float(dif["lo95"]) > 0, dif
+    assert dif["reading"] == "REVERSAL CONFIRMED", dif
+    assert abs((float(sel["value"]) - float(met["value"])) - float(dif["value"])) < 5e-4
+
+    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for \$3.175\$ "
+                   r"nats and the metered decoder \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
+                   body)
+    assert m, "the order-averaged head-to-head sentence has moved"
+    assert abs(float(m.group(1)) - float(sel["value"])) < 5e-4, (m.group(1), sel["value"])
+    assert abs(float(m.group(4)) - float(met["value"])) < 5e-4, (m.group(4), met["value"])
+    m2 = _re.search(r"difference of \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$", body)
+    assert m2, "the paired difference has moved"
+    assert abs(float(m2.group(1)) - float(dif["value"])) < 5e-4, (m2.group(1), dif["value"])
+    # and the divergence ratio it is set against, which no judging pass can change
     dec = next(r for r in _csv.DictReader(open("results/selection_crossjudge.csv"))
                if "metered" in r["selector"])
-    assert float(sel["gain"]) > dec_gain, (sel["gain"], dec_gain)
-    ratio = float(dec["kl_nats"]) / float(sel["kl_nats"])
-    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
-    m = _re.search(r"metered\s*decoder gains \$\+([\d.]+)\$ for \$([\d.]+)\$ nats and selection\s*"
-                   r"\$\+([\d.]+)\$ for \$([\d.]+)\$", body)
-    assert m, "the reversal sentence has moved"
-    assert abs(float(m.group(1)) - dec_gain) < 0.001, (m.group(1), dec_gain)
-    assert float(m.group(3)) == round(float(sel["gain"]), 3), (m.group(3), sel["gain"])
-    assert abs(float(m.group(4)) - float(sel["kl_nats"])) < 0.005
+    scal = next(r for r in _csv.DictReader(open("results/selection_scaling.csv"))
+                if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 64)
+    ratio = float(dec["kl_nats"]) / float(scal["kl_nats"])
     assert "fifty-fourth" in body and 53.0 < ratio < 55.0, ratio
-
-
 def test_the_sweep_is_monotone_in_log_n_on_both_judges():
     """O1 read SCALES. If a rerun ever made it non-monotone the paragraph would be wrong, and the
     Spearman the paper quotes is the thing to check."""

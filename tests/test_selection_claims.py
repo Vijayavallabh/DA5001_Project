@@ -121,31 +121,41 @@ def test_no_absolute_judged_level_is_quoted_as_a_comparison():
 
 
 def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
-    """The paper says the comparison is a reversal. That is only allowed while selection's GAIN at
-    n=64 exceeds the metered decoder's gain over its own control, at a far smaller budget."""
+    """The paper says the comparison is a reversal. Since 2026-09-14 that claim is the ORDER-AVERAGED
+    head-to-head (results/order_averaged_h2h.csv), not the two single-order gains it used to quote:
+    a reviewer pointed out that a comparison of two gains measured with a position-dominated judge
+    had never itself been checked for position, and feat-113 checked it. The difference must be
+    positive with an interval excluding zero, and Section 3 must quote all three numbers."""
     import csv as _csv
     import re as _re
     from tests.manuscript import tex as _tex
-    sel = next(r for r in _csv.DictReader(open("results/selection_scaling.csv"))
-               if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 64)
-    j2 = list(_csv.DictReader(open("results/judge_separation_v6_judge2.csv")))
-    anchor = next(x for x in j2 if x["decoder"].startswith("anchor"))
-    k10 = next(x for x in j2 if x["decoder"] == "KL" and float(x["k"]) == 10.0)
-    dec_gain = float(k10["utility"]) - float(anchor["utility"])
+    rows = {r["quantity"]: r for r in
+            _csv.DictReader(open("results/order_averaged_h2h.csv"))}
+    sel = rows["D1 selection gain, order-averaged"]
+    met = rows["D2 metered gain, order-averaged"]
+    dif = rows["D3 difference of gains, paired"]
+    # the reversal is only claimable while the paired difference excludes zero
+    assert float(dif["lo95"]) > 0, dif
+    assert dif["reading"] == "REVERSAL CONFIRMED", dif
+    assert abs((float(sel["value"]) - float(met["value"])) - float(dif["value"])) < 5e-4
+
+    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for \$3.175\$ "
+                   r"nats and the metered decoder \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
+                   body)
+    assert m, "the order-averaged head-to-head sentence has moved"
+    assert abs(float(m.group(1)) - float(sel["value"])) < 5e-4, (m.group(1), sel["value"])
+    assert abs(float(m.group(4)) - float(met["value"])) < 5e-4, (m.group(4), met["value"])
+    m2 = _re.search(r"difference of \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$", body)
+    assert m2, "the paired difference has moved"
+    assert abs(float(m2.group(1)) - float(dif["value"])) < 5e-4, (m2.group(1), dif["value"])
+    # and the divergence ratio it is set against, which no judging pass can change
     dec = next(r for r in _csv.DictReader(open("results/selection_crossjudge.csv"))
                if "metered" in r["selector"])
-    assert float(sel["gain"]) > dec_gain, (sel["gain"], dec_gain)
-    ratio = float(dec["kl_nats"]) / float(sel["kl_nats"])
-    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
-    m = _re.search(r"metered\s*decoder gains \$\+([\d.]+)\$ for \$([\d.]+)\$ nats and selection\s*"
-                   r"\$\+([\d.]+)\$ for \$([\d.]+)\$", body)
-    assert m, "the reversal sentence has moved"
-    assert abs(float(m.group(1)) - dec_gain) < 0.001, (m.group(1), dec_gain)
-    assert float(m.group(3)) == round(float(sel["gain"]), 3), (m.group(3), sel["gain"])
-    assert abs(float(m.group(4)) - float(sel["kl_nats"])) < 0.005
+    scal = next(r for r in _csv.DictReader(open("results/selection_scaling.csv"))
+                if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 64)
+    ratio = float(dec["kl_nats"]) / float(scal["kl_nats"])
     assert "fifty-fourth" in body and 53.0 < ratio < 55.0, ratio
-
-
 def test_the_sweep_is_monotone_in_log_n_on_both_judges():
     """O1 read SCALES. If a rerun ever made it non-monotone the paragraph would be wrong, and the
     Spearman the paper quotes is the thing to check."""

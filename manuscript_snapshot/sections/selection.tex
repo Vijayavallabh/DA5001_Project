@@ -8,19 +8,19 @@
 
 Fix a prompt and write $p_s$ for a \emph{safe} model, trained without the protected work, and $p_r$
 for the \emph{risky} model a deployer would rather serve. An inference-time copyright defence serves
-some law $q$ and certifies $D(q \,\|\, p_s) \le K$, so that a small $K$ means the served text is
-nearly as unlikely to be the work as the safe model's own output is. This is
-$k$-near-access-freeness \citep{vyas2023provable}, and every deployed instance charges it \emph{per
-decoded token}, a rate $k$ banked over $T$ steps so that $K = kT$ \citep{he2026anchored}. The budget
-is the right idea in the wrong place.
+a law $q$ and certifies $D(q \,\|\, p_s) \le K$, so a small $K$ means the served text is nearly as
+unlikely to be the work as the safe model's own output is --- $k$-near-access-freeness
+\citep{vyas2023provable}, charged by every deployed instance \emph{per decoded token}, a rate $k$
+banked over $T$ steps so that $K = kT$ \citep{he2026anchored}. The budget is the right idea in the
+wrong place.
 
 \emph{Selection anchoring} puts it somewhere else. Draw $n$ completions $y_1,\dots,y_n \sim
 p_s(\cdot)$, score each with any function $f$, and serve the highest scorer. Every token emitted is
 drawn from $p_s$, so the per-step divergence is identically zero and there is nothing to meter; the
-entire budget is spent once, on \emph{which draw to serve}. That the safe model is the only
-\emph{generator} invites the objection that this is merely the safe model served well. It is not:
-the risky model may act as the scorer, through the ranking instead of the sampling, its influence
-bounded at $\log n$ however it is used, and Section~\ref{sec:experiments} tries that arm first.
+whole budget is spent once, on \emph{which draw to serve}. That the safe model is the only
+\emph{generator} invites the objection that this is the safe model served well. It is not: the risky
+model may act as the scorer, through the ranking instead of the sampling, its influence bounded at
+$\log n$ however it is used, and Section~\ref{sec:experiments} tries that arm first.
 
 \begin{proposition}[The budget of a selection rule]\label{prop:selection}
 Let $y_1,\dots,y_n$ be i.i.d.\ $p_s$ and let $q$ be the law of $y^\star = \arg\max_i f(y_i)$ for any
@@ -40,9 +40,9 @@ tight (Appendix~\ref{app:proofs}); the sharper KL bound is \citet{beirami2025bes
 reproved.
 \end{proof}
 
-The inequality is elementary and the KL form is known; what has not been said is what it
-\emph{certifies}. Nothing in it mentions a reward, so \textbf{self-consistency is an instance}, and
-the deployer already running it has the better guarantee.
+The inequality is elementary and the KL form known; what has not been said is what it
+\emph{certifies}. Nothing in it mentions a reward, so \textbf{self-consistency is an instance}: the
+deployer already running it has the better guarantee.
 
 \paragraph{What $\log n$ certifies, and why it does not grow}
 Put the budget beside the price of the work. Write $S(x) = -\log p_s(x)$ for the safe model's
@@ -59,41 +59,52 @@ The proof (Appendix~\ref{app:proofs}) is three standard conversions --- the $\al
 of measure, the R\'enyi-to-probability bound underwriting reconstruction robustness in R\'enyi
 differential privacy \citep{mironov2017renyi}, and the binary-KL inversion. None is new; what
 matters is that all three break in the same place. Raising $\alpha$ buys a strictly tighter bound
-\emph{below} the threshold --- at $S=200$, $K=100$ the cap falls from $0.50$ to $e^{-100}$ --- and
-moves it not at all, so the quantity carrying risk is $K/S(x)$ and never the rate.
-\citet{vyas2023provable} already report their budget as a fraction of the safe model's entropy; new
-here is the exact threshold, for a \emph{specific} work and every order at once.
+\emph{below} the threshold and moves it not at all, so the quantity carrying risk is $K/S(x)$ and
+never the rate. \citet{vyas2023provable} already report their budget as a fraction of the safe
+model's entropy; new here is the exact threshold, for a \emph{specific} work and every order at
+once.
 
 Selection anchoring meets this under the $\alpha = \infty$ charge --- the \emph{pathwise} budget,
 which bounds every event rather than an average, and the strongest order in the family the deployed
-meters charge in --- at exactly $\log n$ nats. Section~\ref{sec:orders} measures what that
-strengthening costs a metered decoder: at $\alpha=4$ it serves the risky model unchanged at only
-$9.4\%$ of steps. Here it is free, being the same inequality. The two budgets also scale differently
-in the one variable a rights-holder cares about: a metered budget has $K/S(x) \to k/s(x)$, a
-constant no length improves, and a selection budget has $\log n / S(x) \to 0$. At $n=8$ that is
-$\log 8 = 2.08$ nats against a median $S(x)$ of $849$, a margin above $400\times$, whether the work
-is a paragraph or a novel.
+meters charge in --- at exactly $\log n$ nats, where the same strengthening costs a metered decoder
+dearly (Section~\ref{sec:orders}). The two budgets also scale differently in the one variable a
+rights-holder cares about: a metered budget has $K/S(x) \to k/s(x)$, a constant no length improves,
+and a selection budget has $\log n / S(x) \to 0$. At $n=8$ that is $\log 8 = 2.08$ nats against a
+median $S(x)$ of $849$, a margin above $400\times$ whatever the work's length.
 
 Put as the amplification a rights-holder can be promised --- the factor by which the mechanism may
-raise the safe model's own probability of emitting their work --- both mechanisms reach judged
-utility $u \approx 0.52$ on the same workload, and the metered decoder does it at
-$K = kT_{\max} = 2000$ nats, so the tightest factor its accounting implies is $e^{2000}$, against
-exactly $8$ at $n=8$. It composes: under a $400$-nat per-user odometer
-\citep{vijayavallabh2026audit} a user may issue $332$ queries at $n=8$ against $2$ at $k=3$, which
-spends a measured $165.0$ nats per response.
+raise the safe model's own probability of emitting their work --- the two mechanisms reach the same
+judged utility on this workload, but the two numbers are not of the same kind. For selection at
+$n=8$ it is exactly $8$, certified and realised alike, the bound being structural rather than a
+measurement. For the metered decoder at $k=10$ the certificate is $K = kT_{\max} = 2000$ nats, so
+the tightest factor its accounting implies is $e^{2000}$, while its measured spend implies
+$e^{171.3}$, about $10^{74}$. Both are empty, and only the first is what a rights-holder is handed.
+
+\textbf{It composes, at the order the certificate is written in.} Max-divergence adds exactly under
+adaptive composition, so $m$ queries at $n=8$ cost $m \log 8$ with no advanced composition and no
+assumption about how they were chosen --- not true of per-query access-freeness in general
+\citep{cohen2025blameless}. Under a $400$-nat per-user odometer \citep{vijayavallabh2026audit} that
+is $192$ queries, against $2$ for a metered decoder that spends a measured $165.0$ nats on a
+$200$-token response, and none at all if the odometer is charged the $600$ nats that response is
+certified at.
+The sharper KL bound of $1.204$ nats gives $332$; we quote the pathwise $192$, the order
+Proposition~\ref{prop:selection} advertises.
 
 \paragraph{What the guarantee does not depend on}
 The omissions are the engineering argument. Proposition~\ref{prop:selection} holds for \emph{any}
 score --- a reward model, a classifier, a human or an adversary --- any tie rule and any $p_s$, so a
 \emph{malicious} score multiplies the anchor's own probability of emitting $x$ by at most $n$ and
-introduces nothing new. A metered decoder can make no comparable statement, its certificate being
-about a charge its own implementation computes, and unlike an $n$-gram blocklist selection names no
-work, so paraphrase and unlisted works are bounded on the same terms as exact quotation
-\citep{ippolito2023preventing}. The price is compute.
+introduces nothing new, where a metered decoder's certificate is about a charge its own
+implementation computes. Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted
+works are bounded on the same terms as exact quotation \citep{ippolito2023preventing}.
+
+The price is compute, in a currency no nat measures. A metered decoder runs both models at every
+step; selection runs $n$ anchor generations and $n$ scoring prefills, which on this workload is
+$7.2\times$ its forward-pass cost at $n=8$ and $57.5\times$ at $n=64$
+(Appendix~\ref{app:orderavg}).
 
 The obvious objection is that the gain comes from leaving the decode loop rather than from where the
 budget sits, so we granted a metered decoder the same $\log 8$ nats up front. Neither causal
 placement buys anything --- $-0.008$ front-loaded, $-0.032$ uniform, $-0.019$ at ten times the
-budget, against $+0.054$ off the axis at the same $2.08$ nats, bands committed first
-(Appendix~\ref{app:proofs}) --- and Section~\ref{sec:frontier} says why it had to come out that
-way.
+budget, against $+0.054$ off the axis at the same $2.08$ nats (Appendix~\ref{app:proofs}) --- and
+Section~\ref{sec:frontier} says why it had to.

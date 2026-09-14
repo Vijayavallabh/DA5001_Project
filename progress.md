@@ -2,22 +2,35 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-14 23:10
-**Branch `iclr-2027`.** Target **ICLR 2027**. No arms running; every pre-registration in `results/`
-is scored. **The manuscript is v8, reordered to lead with the constructive result** rather than the
-audit: selection anchoring is Section 2 and its experiments Section 3, the dichotomy and the three
-failed repairs follow as Sections 4-5, and the title is *Two Nats, Not Two Thousand: Spending the
-Copyright Budget on the Draw Instead of the Token*. No measured number changed; the abstract,
-introduction and conclusion were rewritten and every other section changed only at its seams.
-Body is exactly 9 of 9 pages, page 10 body-free, 0 overfull, 0 unresolved, 429 tests,
-2,687 numeric literals audited with the one expected miss (`64256`).
+**Last Updated:** 2026-09-15 01:40
+**Branch `iclr-2027`.** Target **ICLR 2027**. No arms running; all forty-three pre-registrations in
+`results/` are scored. **v9 answers a referee report** (5/10, reject) on four counts, each by
+measurement or by a correction rather than by rewording:
 
-Two pre-existing defects the reorder surfaced and fixed: `prop:sparse` was `\label`led in both
-`frontier.tex` and `appendix_proofs.tex`, so every `\ref` to the paper's own dichotomy had been
-resolving to an appendix restatement (rendered as Proposition 6) instead of the body's statement
-(Proposition 3) since v5 -- caution (z); and `scripts/snapshot_manuscript.sh` followed `\input`
-only from the top-level file, so `onset.tex` went stale in the snapshot the moment it became a
-child of `orders.tex`.
+1. **Composition order.** The certificate is advertised at `D_inf = log n`; the odometer count was
+   priced at the KL bound. Both orders are now named and the conservative one leads: `192` queries
+   at the pathwise order (max-divergence composes additively, so no advanced composition theorem is
+   needed -- which is also the direct answer to Cohen 2025), `332` at KL, against `2` for the
+   metered decoder at its realised spend and `0` at its own published certificate.
+2. **feat-113, the order-averaged head-to-head.** 4,000 judged pairs, four arms, both presentation
+   orders, paired over 500 prompts. **REVERSAL CONFIRMED**: `+0.1045 [+0.082,+0.128]` against
+   `+0.0400 [+0.014,+0.0655]`, difference `+0.0645 [+0.030,+0.0995]`. My pre-registered prediction
+   (UNRESOLVED) was **wrong**: order-averaging moves selection by `0.95` and the meter by `0.41`, so
+   the difference grows five-fold. Position bias was flattering the meter, not selection.
+3. **feat-114, serving cost.** `results/serving_cost.csv`: selection is `7.2x` the metered decoder's
+   forward-pass cost at `n=8` and `57.5x` at `n=64`. The reviewer's 30-60x estimate was right; our
+   nats axis hid it. Now in Section 2 and Limitations.
+4. **Prior art.** Kalai et al. (consensus sampling) and Chen et al. (DP training for NAF) were
+   cited and never discussed; both are now positioned in Section 6 and Appendix K.
+
+Two defects of our own, both now caution (aa): `served_prompt()` reconstructs the judge's prompt as
+served-text-minus-generation and disagrees across arms in **455 of 500** cases (under one true
+prompt the single-order difference is `+0.013`, not `+0.070`); and **judge C is the same checkpoint
+as the risky model every arm is judged against**, a self-preference risk that was nowhere disclosed.
+
+Body is exactly 9 of 9 pages, page 10 body-free, 0 overfull, 0 unresolved, 429 tests, 2,741 numeric
+literals audited with the one expected miss (`64256`), artifact 811 files. A figure-font experiment
+that broke Figure 1's layout was caught by rendering the page and reverted.
 
 ## Status
 

@@ -6,9 +6,9 @@
 
 \section{Why no per-token budget can do this}\label{sec:frontier}
 
-Selection anchoring buys more utility than a metered decoder for a two-thousandth of the divergence,
-under a strictly stronger order. The next question is not whether to believe that but whether the
-meter can be repaired to match it. It cannot, and the obstruction is one line of the chain rule.
+Selection anchoring buys more utility than a metered decoder for a fraction of the divergence, under
+a strictly stronger order. Can the meter be repaired to match it? It cannot, and the obstruction is
+one line of the chain rule.
 
 \begin{proposition}[An affordable causal policy is the anchor almost everywhere]\label{prop:sparse}
 Let $q$ be any causal policy, $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
@@ -17,34 +17,32 @@ $N_\varepsilon = \#\{t \le T : D_{\mathrm{KL}}(q_t(\cdot \mid y_{<t}) \,\|\, p_{
 Then $\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon$ for every $\varepsilon > 0$.
 \end{proposition}
 
-The proof is the exact chain rule
-$D_{\mathrm{KL}}(q\|p_s) = \sum_t \mathbb{E}_q[D_{\mathrm{KL}}(q_t\|p_{s,t})]$ followed by Markov at
-each step. Its force is the contrapositive: a policy that moves the distribution at a constant
-fraction of its steps has a budget that is $\Omega(T)$, which is the dichotomy of
-Section~\ref{sec:intro}. Nothing here forbids a causal policy from \emph{concentrating} a bounded budget; it forbids one from
-spreading it, which is what a rate does by construction. That is the whole gap
-Section~\ref{sec:selection} walks through, and it is why selection anchoring is not one option among
-several: it is what is left when the per-step axis is closed.
+The proof is the exact chain rule followed by Markov at each step. Its force is the contrapositive:
+a policy that moves the distribution at a constant fraction of its steps has a budget that is
+$\Omega(T)$, which is the dichotomy of Section~\ref{sec:intro}. It binds exactly the mechanisms that
+charge per decoded token, and we claim no more --- a per-\emph{query} rule such as
+CP-$\Delta$/CP-$k$ fusion \citep{abad2025cpfuse} is outside its scope, as is selection anchoring
+itself. Nothing here forbids a causal policy from \emph{concentrating} a bounded budget; it forbids
+one from spreading it, which is what a rate does by construction. That is the gap
+Section~\ref{sec:selection} walks through.
 
 \paragraph{The class and the rates}
 Making both horns measurable takes three quantities and no attack. Write
-$p_\theta \propto p_s^{1-\theta} p_r^{\theta}$ for the geometric path between the two models, so that
-$\log p_\theta = \log p_s + \theta \ell - \log Z(\theta)$ with $\ell = \log p_r - \log p_s$ and
-$Z(u) = \mathbb{E}_{p_s}[e^{u\ell}]$. A \emph{bucket-metered decoder} serves the largest
-$\theta_t \in [0,1]$ with $c(\theta_t) \le k_t$, for $k_t$ the allowance of a token bucket of rate
-$k$ started at a debt $\delta$. The charge is the R\'enyi divergence of order $\alpha \in
-[1,\infty]$,
+$p_\theta \propto p_s^{1-\theta} p_r^{\theta}$ for the geometric path, with
+$\ell = \log p_r - \log p_s$ and $Z(u) = \mathbb{E}_{p_s}[e^{u\ell}]$; a \emph{bucket-metered
+decoder} serves the largest $\theta_t \in [0,1]$ with $c(\theta_t) \le k_t$, for $k_t$ the allowance
+of a token bucket of rate $k$ started at a debt $\delta$, charged by the R\'enyi divergence of order
+$\alpha \in [1,\infty]$,
 \begin{equation}
 c_\alpha(\theta) \;=\; D_\alpha(p_\theta \,\|\, p_s)
  \;=\; \frac{\log Z(\alpha\theta) - \alpha \log Z(\theta)}{\alpha - 1},
 \label{eq:renyi-path}
 \end{equation}
-whose $\alpha \to 1$ limit is $D_{\mathrm{KL}}(p_\theta \| p_s)$, the charge of the deployed
-decoder, and whose $\alpha \to \infty$ limit is the pathwise charge selection anchoring satisfies
-for free, so the family contains both published accounting rules and interpolates between a
-guarantee about an average and one about every event. For a protected work $x$ of $N$ characters,
-with $s_1,\dots,s_T$ the safe model's per-token surprisals along $x$, $N_t$ the characters consumed
-after $t$ tokens and $S(x) = \sum_t s_t$, three rates govern everything below:
+whose $\alpha \to 1$ limit is the charge of the deployed decoder and whose $\alpha \to \infty$ limit
+is the pathwise charge selection anchoring satisfies for free, so the family contains both published
+accounting rules. For a protected work $x$ of $N$ characters, with $s_1,\dots,s_T$ the safe model's
+per-token surprisals along $x$, $N_t$ the characters consumed after $t$ tokens and
+$S(x) = \sum_t s_t$, three rates govern everything below:
 \begin{equation}
 \underbrace{s(x) = \frac{S(x)}{N}}_{\text{surprisal rate}}, \qquad
 \underbrace{k_{\mathrm{crit}}(x) = \max_{t \le T} \frac{\sum_{i \le t} s_i + \delta}{N_t}}_{\text{Loynes running maximum}}, \qquad
@@ -53,8 +51,8 @@ after $t$ tokens and $S(x) = \sum_t s_t$, three rates govern everything below:
 \end{equation}
 All three need only forward passes --- no decoding, no attack, no access to the mechanism --- so a
 deployer can compute them in advance. Rates are nats per \emph{character} where safe models with
-different vocabularies are compared and per \emph{token} where a rate meets a budget; both
-denominators appear in Appendix~\ref{app:opening}.
+different vocabularies are compared, per \emph{token} where a rate meets a budget
+(Appendix~\ref{app:opening}).
 
 The other side of the dichotomy has a price too, and it is the one that shows a certificate and a
 useful mechanism are not intrinsically in conflict.
@@ -71,11 +69,9 @@ the Cram\'er rate function of $U$ under the safe model.
 \end{theorem}
 
 The proof is Donsker--Varadhan at the sequence level (Appendix~\ref{app:proofs}); it is a converse
-holding for the optimal policy, and that optimum is not loose, the maximum reward purchasable at a
-fixed KL budget having a closed form governed by a Jeffreys divergence rather than the
-$\sqrt{\mathrm{KL}}$ of earlier analyses \citep{monteiropaes2026limits}. Read beside
-Proposition~\ref{prop:threshold} it settles the shape of the problem: reproducing a particular work
-costs $S(x)$ nats and grows with its length --- $849$ for a protected target in
+holding for the optimal policy, and that optimum is not loose \citep{monteiropaes2026limits}. Read
+beside Proposition~\ref{prop:threshold} it settles the shape of the problem: reproducing a
+particular work costs $S(x)$ nats and grows with its length --- $849$ for a protected target in
 Section~\ref{sec:orders} --- while buying mean utility $u$ costs $\Lambda^*_s(u)$, which for bounded
 $U$ is $O(1)$ \emph{however long the sequence}. There is room for a mechanism that is both safe and
 useful, and a rate cannot occupy it.
@@ -90,11 +86,10 @@ bounded $U$, the overhead $Z_T / \Lambda^*_s(\mathbb{E}_q[U])$ is $\Omega(T)$ wh
 bounded away from $1$.
 \end{proposition}
 
-This is the vacuous horn taken \emph{by construction}, not by accident: where the bucket is slack the
-largest feasible tilt is $\theta_t = 1$, so the step is charged the full
-$D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$ --- the cost of \emph{imitating} the risky model, which the
-decoder pays whether or not imitation is what the user wanted. Both factors are \emph{measured, not
-assumed}, over $16{,}500$ logged trajectories: $\beta$ falls from $0.954$ at $k=0.1$ to $0.033$ at
+This is the vacuous horn taken \emph{by construction}: where the bucket is slack the largest
+feasible tilt is $\theta_t = 1$, so the step is charged the full $D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$
+--- the cost of \emph{imitating} the risky model, paid whether or not imitation is what the user
+wanted. Both factors are \emph{measured, not assumed}, over $16{,}500$ logged trajectories: $\beta$ falls from $0.954$ at $k=0.1$ to $0.033$ at
 $k=3$ and $0.0000$ at $k=20$, while the rate it multiplies saturates at $0.857$ nats per token and
 the running spend is linear in the step index at every budget (median $R^2 \ge 0.97$). Realised
 spend therefore stalls at $171.30$ nats, $4.3\%$ of the allowance the certificate is written
@@ -104,9 +99,8 @@ $70$B among them, at rates $0.617$, $0.303$, $0.908$ (Appendix~\ref{app:proofs})
 A second, weaker boundary sits above the vacuity threshold: the rate needed to emit $x$ at all is
 the Loynes running maximum of the surprisal process \citep{loynes1962stability}, so a budget
 publishes a \emph{drift} where safety is a \emph{workload maximum}
-(Proposition~\ref{prop:outrun}), and the two bracket a regime where the decoder protects the work and
-no budget in the family can say so (Appendix~\ref{app:opening}). Both rates are measurable without
-any mechanism and are separating --- over ten safe models the margin $s(x)/c_{\mathrm{use}}$ rises
-monotonically with capability, correcting an earlier audit~\citep{vijayavallabh2026audit} that read
-the protected rate alone (Appendix~\ref{app:scaling}). The raw material is improving; a per-token
-meter cannot use it.
+(Proposition~\ref{prop:outrun}), and the two bracket a regime where the decoder protects the work
+and no budget in the family can say so (Appendix~\ref{app:opening}). Both rates need only forward
+passes, and they separate: over ten safe models the margin $s(x)/c_{\mathrm{use}}$ rises
+monotonically with capability (Appendix~\ref{app:scaling}). The raw material is improving; a
+per-token meter cannot use it.

@@ -9,32 +9,34 @@ per token with a bucket. Two results bear directly on ours: \citet{cohen2025blam
 per-query access-freeness does not compose, which makes Section~\ref{sec:selection}'s composition
 arithmetic load-bearing, and \citet{segal2026provably} report that CP-style guarantees can be
 numerically uninformative and demonstrate extraction against NAF-protected models
-\citep[see also][]{cohen2026barriers}. We are downstream of that observation. What differs is the
-shape of the claim: they show a particular bound is loose and propose a tighter mechanism, so the
-natural reading is that the accounting can be repaired.
-Proposition~\ref{prop:threshold} says it cannot, for every order at once, and
-Section~\ref{sec:orders} closes the remaining two levers empirically --- which is what licenses
-changing the primitive rather than the constant.
+\citep[see also][]{cohen2026barriers}. We are downstream of that observation, and what differs is
+the shape of the claim: they show a particular bound is loose and propose a tighter mechanism, so
+the natural reading is that the accounting can be repaired. Proposition~\ref{prop:threshold} says it
+cannot, for every order at once --- which is what licenses changing the primitive rather than the
+constant.
 
 We claim no novelty for best-of-$n$ sampling or its divergence bound. Selecting among $n$ draws is
 standard inference-time alignment \citep{gao2023scaling,mudgal2024controlled}, the bound
 $D_{\mathrm{KL}} \le \log n - (n-1)/n$ is \citet{beirami2025bestofn}, and its coverage and
 optimality are characterised by \citet{huang2025bestofn}. That literature prices the divergence as a
-\emph{cost} --- the budget before reward overoptimisation \citep{gao2023scaling}, or the one an
-attacker spends to jailbreak \citep{hughes2024bestofn}. What is new here is the opposite reading:
-the same inequality, in its sharper pointwise form $q(y) \le n\,p_s(y)$, is a \emph{copyright
-certificate} of exactly the kind Proposition~\ref{prop:threshold} governs, at $K = \log n$ and under
-the pathwise order rather than the KL. To our knowledge no prior work states that a selection rule
-satisfies near-access-freeness, nor compares the two mechanisms on one divergence axis.
+\emph{cost} --- the budget before reward overoptimisation, or the one an attacker spends to jailbreak
+\citep{hughes2024bestofn}. What is new is the opposite reading: the same inequality, in its sharper
+pointwise form $q(y) \le n\,p_s(y)$, is a \emph{copyright certificate} of exactly the kind
+Proposition~\ref{prop:threshold} governs, at $K = \log n$ and under the pathwise order. To our
+knowledge no prior work states that a selection rule satisfies near-access-freeness, nor compares
+the two mechanisms on one divergence axis.
+The closest neighbour is \citet{kalai2026consensus}, who aggregate $k$ distributions and serve only
+where they agree: the same instinct from the opposite premise, since they need $k$ models of which
+some unknown subset is safe and pay by abstaining, where we need one \emph{named} safe model and
+never abstain (Appendix~\ref{app:related}).
 
 Our proof shape is the one used for inference-time impossibility results generally
 \citep{zhang2024watermarks,sadasivan2025can}, but is \emph{partial}: it rules out one primitive and
 exhibits another that survives. The machinery is standard --- the R\'enyi filter
 \citep{feldman2020renyifilter} and adaptive composition
-\citep{whitehouse2023fully,rogers2016odometers}, the token bucket and its running maximum from
-network calculus \citep{loynes1962stability,cruz1991calculus,leboudec2001network}, attacks from the
-extraction literature \citep{carlini2021extracting,nasr2025scalable,cooper2025extracting} --- and
-our seed-length result is a measurement-methodology finding in the tradition of
-\citet{carlini2023quantifying}, whose extractability is indexed by a context length tokenizers do
-not hold fixed. Appendix~\ref{app:related} covers decoding-time control, other inference-time
-copyright defences and the legal framing.
+\citep{whitehouse2023fully,rogers2016odometers}, the token bucket from network calculus
+\citep{loynes1962stability,cruz1991calculus,leboudec2001network}, attacks from the extraction
+literature \citep{carlini2021extracting,nasr2025scalable,cooper2025extracting} --- and our
+seed-length result follows \citet{carlini2023quantifying}, whose extractability is indexed by a
+context length tokenizers do not hold fixed. Appendix~\ref{app:related} covers decoding-time
+control, other inference-time copyright defences and the legal framing.

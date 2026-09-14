@@ -9,14 +9,17 @@
 \textbf{The two mechanisms are not substitutes, and the scorer binds first.} $q(y) \le n\,p_s(y)$
 means a served string is one the safe model would have drawn, so an anchor that cannot do the task
 gains nothing at any $n$: head to head on TriviaQA with no judge the metered decoder reaches $0.618$
-and selection $0.190$ --- but only at $k=20$, where it \emph{is} the risky model and its certificate
-is $480$ nats for a $24$-token answer. Below that the scorer binds: a reward gains
-$3.4\times$ less than majority vote on GSM8K and \emph{loses} accuracy on TriviaQA. The corpus is
-sixteen English novels, judged levels are position-dominated, and how close a policy of the shape
-Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier is open
-(Appendix~\ref{app:proofs}).
+and selection $0.190$ --- but only at $k=20$, where it \emph{is} the risky model, certified at $480$
+nats for a $24$-token answer. Below that the scorer binds: a reward gains $3.4\times$ less than
+majority vote on GSM8K and \emph{loses} accuracy on TriviaQA.
+
+\noindent\textbf{And it is paid for in compute, which no nat measures.} Selection needs $n=64$, at
+$57.5\times$ the metered decoder's forward-pass cost, to reach $+0.1045$; at $n=8$ and $7.2\times$
+it gains $+0.054$ against its $+0.040$, so a deployer trades throughput for the order of the
+certificate. The corpus is sixteen English novels, judged levels are position-dominated, and the
+quantitative half is open: how close a policy of the shape Proposition~\ref{prop:sparse} permits
+comes to Theorem~\ref{thm:nfl}'s frontier.
 
 \noindent\textbf{Conclusion.}\label{sec:conclusion}
-A copyright budget is not a rate. Charged per token it must grow with the work it protects or stop
-changing the output; one line of the chain rule leaves no third option. Spent once, on which of $n$
-draws to serve, it is $\log n$: pathwise, and constant in the work's length. $8$, not $e^{2000}$.
+A copyright budget is not a rate: charged per token it must grow with the work or stop changing the
+output. Spend it once, on the draw. $8$, not $e^{2000}$.

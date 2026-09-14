@@ -132,3 +132,15 @@ the leakage of the most vulnerable samples by an order of magnitude, and that no
 they study beats a tuned DP-SGD baseline whose own provable guarantee is vacuous. That is the gap
 this paper measures from the other side: between what the budget reports and what the running
 maximum controls, and between a certificate being vacuous and a mechanism being useless.
+
+\paragraph{Consensus sampling and DP training, compared directly}
+Two neighbours deserve a direct comparison. \citet{kalai2026consensus} aggregate $k$ distributions
+and serve only where they agree, abstaining otherwise, with risk competitive with the average of the
+safest $s$ and an $R$-robustness bound on leakage and adversarial influence. That is the same
+instinct --- buy safety at the aggregation step --- from the opposite premise: they need $k$ models
+of which some unknown subset is safe, and they pay for the guarantee by abstaining, where selection
+anchoring needs one \emph{named} safe model, never abstains, and prices itself in the same R\'enyi
+family the deployed meters charge in, which is what puts the two mechanisms on one axis.
+\citet{chen2024randomization} ask whether differentially private \emph{training} can deliver
+near-access-freeness and find the cost prohibitive; we take the budget as given at inference and ask
+only where it should sit.

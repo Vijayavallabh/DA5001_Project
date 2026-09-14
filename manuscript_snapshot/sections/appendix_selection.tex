@@ -53,17 +53,79 @@ carried no information would read $0.500$; the summed form reads \emph{below} ch
 length preference with the sign the judge disagrees with, which is the same pathology the served-token
 column of Table~\ref{tab:selection} shows directly ($98 \to 15$ tokens).
 
-\paragraph{The composition arithmetic}
+\paragraph{The head-to-head with position removed from both arms, and a protocol defect it found}
+\label{app:orderavg}
+Every judged number in this paper is produced by a pairwise LLM judge whose order consistency we
+measure at $0.24$--$0.35$, so a gain estimated with each pair shown in one random order is unbiased
+but noisy, and a \emph{comparison} of two such gains had never been checked. We re-judged the two
+arms the paper compares with every item shown in \emph{both} orders --- $4{,}000$ calls, four arms
+($n=64$, its $n=1$ control, the metered decoder at $k=10$, its anchor-alone control) against the one
+fixed risky opponent, paired over $500$ prompts, bands committed first.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+ & one order & order-averaged & $95\%$ CI \\
+\midrule
+selection, $n=64$ & $+0.110$ & $+0.1045$ & $[+0.082, +0.128]$ \\
+metered decoder, $k=10$ & $+0.097$ & $+0.0400$ & $[+0.014, +0.0655]$ \\
+\midrule
+difference, paired & $+0.013$ & $\mathbf{+0.0645}$ & $[+0.030, +0.0995]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent We pre-registered the opposite prediction --- that both arms would deflate together and
+the difference would vanish under the cross-pass floor --- and it was wrong. The correction is
+\emph{asymmetric}: it moves selection by a factor of $0.95$ and the metered decoder by $0.41$, so
+the difference grows five-fold instead of shrinking. We offer a mechanism rather than claim one: at
+$k=10$ the metered decoder serves $p_r$ unchanged at every step it takes, so the judge is comparing
+two near-identical texts and has little to go on but slot order, while selection's output is
+visibly a different text.
+
+The same arm found a defect in the protocol behind the earlier numbers. \texttt{utility.py} and
+\texttt{selection\_scaling.py} both show the judge a prompt reconstructed as the served text minus
+the generation, which is not the prompt: the split point moves with how much each arm generated, so
+for the same item the three arms here disagree about it in \textbf{455 of 500} cases. This run takes
+the prompt from the corpus, identical for every arm. The cost of that correction falls on us: under
+one true prompt the \emph{single-order} difference is $+0.013$, not the $+0.070$ implied by the
+$+0.142$ and $+0.072$ measured under arm-specific prompts. The difference between the two mechanisms
+is real, but it is the order-averaged $+0.0645$, and it is visible only once position is removed.
+The figures in this paper are the order-averaged ones for that reason.
+
+\paragraph{The composition arithmetic, and the R\'enyi order it is done in}
 A per-user odometer at $B_{\text{user}} = 400$ nats --- half the anchor's median surprisal of a
 protected passage, $849$ nats --- is the accounting an earlier audit of this mechanism uses to bound
 what one user can accumulate across queries \citep{vijayavallabh2026audit}, and it is where a budget
-that is not spent per token pays off twice. The metered decoder at $k=3$ spends a measured mean of
-$165.0$ nats on a $200$-token response (\texttt{results/utility\_price.csv}), so a user exhausts
-$400$ nats after $2$ queries; at $k=10$ the figure is $171.3$ and the answer is still $2$. Selection
-at $n=8$ spends $\log 8 - 7/8 = 1.204$ nats whatever the response length, so the same user may issue
-$332$. The spend of a selection rule does not depend on how long the response is, which is the
-composition consequence of the same asymmetry Section~\ref{sec:selection} states for the
-certificate.
+that is not spent per token pays off twice. The count depends on which order the per-query charge is
+read at, and a paper that advertises a pathwise certificate must not quote a KL composition, so both
+are given here and the pathwise one is what Section~\ref{sec:selection} states.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}llrr@{}}
+\toprule
+mechanism & per-query charge & nats & queries within $400$ \\
+\midrule
+selection, $n=8$ & pathwise, $D_\infty \le \log 8$ & $2.079$ & $192$ \\
+selection, $n=8$ & KL, $\log 8 - 7/8$ \citep{beirami2025bestofn} & $1.204$ & $332$ \\
+\midrule
+metered, $k=3$ & realised KL, measured mean & $165.0$ & $2$ \\
+metered, $k=3$ & certified, $K = kT_{\max}$ & $600$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three things follow. First, max-divergence adds \emph{exactly} under adaptive composition,
+so $192$ needs no advanced composition theorem and no assumption about how a user chooses their
+queries; this is the property \citet{cohen2025blameless} shows per-query access-freeness lacks in
+general, and it is why the pathwise order is worth its extra $0.875$ nats per query. Second, the
+$332$ is what the deployed odometer --- which meters KL spend, \texttt{analysis/odometer.py} --- would
+actually permit, and it is reported so that the two are never conflated. Third, the metered
+decoder's row is given twice for the same reason: at its \emph{measured} spend a user gets $2$
+queries, and at the budget the deployer publishes a single $200$-token response is already certified
+at $600$ nats, so the odometer admits none. Selection's charge does not depend on the response
+length at either order, which is the composition consequence of the asymmetry
+Section~\ref{sec:selection} states for the certificate.
 
 \begin{table}[h]
 \centering\footnotesize

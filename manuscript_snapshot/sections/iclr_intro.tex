@@ -27,12 +27,13 @@ reward, so self-consistency is an instance: the most widely deployed inference-t
 field already carries a copyright certificate, and a better one than the mechanism built for the
 purpose.
 
-That comparison is the paper's headline and it is not close. On the workload where a metered decoder
-spends a measured $171.3$ nats of realised divergence to become judged-better than its own safe
-model, eight draws cost $2.08$ and sixty-four cost $3.175$ --- and win, $+0.142$ against
-$+0.072$: twice the utility for one fifty-fourth of the divergence, at four anchors in three
-families spanning a $6\times$ range in parameters, on AlpacaEval's $805$ instructions, and on exact
-match with no judge in the loop at all, where majority vote takes GSM8K accuracy from $0.320$ to
+That comparison is the paper's headline. Where a metered decoder spends a measured $171.3$ nats to
+become judged-better than its own safe model, sixty-four draws cost $3.175$ and win. Judged with
+every item shown in both presentation orders --- position removed by construction rather than in
+expectation --- and paired over $500$ prompts, selection gains $+0.1045$ $[+0.082, +0.128]$ against
+the metered decoder's $+0.0400$ $[+0.014, +0.0655]$, a difference of $+0.0645$ $[+0.030, +0.0995]$
+for one fifty-fourth of the divergence. It holds at four anchors in three families, on AlpacaEval,
+and with no judge in the loop at all, where majority vote takes GSM8K accuracy from $0.320$ to
 $0.546$. Put as the promise a rights-holder can actually be given --- the factor by which the
 mechanism may raise the safe model's own chance of emitting their work --- it is $8$, against
 $e^{2000}$.
@@ -40,14 +41,13 @@ $e^{2000}$.
 \paragraph{The guarantee holds against the adversary, which is what makes it a security claim}
 Proposition~\ref{prop:selection} assumes nothing about the score, so a \emph{malicious} one can
 multiply the safe model's own probability of emitting a protected work by at most $n$ and never
-introduce one that model would not have produced. So we hand the selector to the attacker. Scoring
-the anchor's draws by the \emph{memorising} model's own likelihood, on the passages it was
-fine-tuned to reproduce, recovers $0.0000$ at every $n$ up to $64$ and on every one of $100$
-passages, against that model's own $0.3925$ --- and likewise where the memoriser is not ours to
-build, against a \texttt{Llama-3.1-70B} that memorised \emph{Harry Potter} in pre-training, recovers
-$0.2475$ unaided and reproduces two passages of fifty \emph{in full}. Where the premise does fail
-the bound degrades gracefully: across twelve deliberately contaminated anchors the realised
-amplification at $n=64$ runs between $1.0$ and $4.0$, against the $64$ the certificate permits.
+introduce one that model would not have produced. So we hand the selector to the attacker. Scored by
+the \emph{memorising} model's own likelihood on the passages it was fine-tuned to reproduce,
+selection recovers $0.0000$ at every $n$ up to $64$ and on every one of $100$ passages against that
+model's own $0.3925$ --- and likewise against a \texttt{Llama-3.1-70B} that memorised \emph{Harry
+Potter} in pre-training and unaided recovers $0.2475$. Where the premise fails the bound degrades
+gracefully: across twelve deliberately contaminated anchors the realised amplification at $n=64$
+runs between $1.0$ and $4.0$, against the $64$ the certificate permits.
 
 \paragraph{Why this was available: a per-token budget cannot be repaired to match it}
 The natural objection is that a meter could be fixed --- charge more sharply, cap more tightly,
@@ -80,21 +80,21 @@ $0.537$.
 \paragraph{Contributions}
 \textbf{A copyright certificate that does not grow with the work.} A selection rule's whole budget
 is a pathwise $\log n$ under any score, any tie rule and any safe model
-(Proposition~\ref{prop:selection}), read against a vacuity threshold at $K = S(x)$ that does not
-move with the R\'enyi order (Proposition~\ref{prop:threshold}): $2.08$ nats at $n=8$ against a work
-worth $849$, and $332$ composed queries under a per-user odometer against $2$.
+(Proposition~\ref{prop:selection}), read against an order-invariant vacuity threshold at $K = S(x)$
+(Proposition~\ref{prop:threshold}): $2.08$ nats at $n=8$ against a work worth $849$, and, max-divergence
+composing additively, $192$ queries under a $400$-nat odometer against $2$.
 
-\textbf{It works, and it survives an adversarial scorer.} Twice the metered decoder's judged utility
-for one fifty-fourth of its divergence, at four anchors in three families, on AlpacaEval, and on two
-judge-free tasks where the ranking of scoring rules reverses --- which bounds the claim as well as
-making it --- with zero near-verbatim recall at every $n \le 64$ (Section~\ref{sec:experiments}).
+\textbf{It works, and it survives an adversarial scorer.} $2.6\times$ the metered decoder's
+order-averaged judged gain for one fifty-fourth of its divergence, at four anchors in three
+families, on AlpacaEval, and on two judge-free tasks where the ranking of scoring rules reverses ---
+which bounds the claim as well as making it --- with zero near-verbatim recall at every $n \le 64$,
+bought with $57.5\times$ the forward-pass cost at $n=64$ (Section~\ref{sec:experiments}).
 
 \textbf{Why no per-token budget can reach it.} Proposition~\ref{prop:sparse} bounds an affordable
 causal policy's departures from the safe model while the deployed rule is its opposite
 (Proposition~\ref{prop:imitation}), and bounded utility costs $O(1)$ nats however long the sequence
-(Theorem~\ref{thm:nfl}): the conflict is the per-token axis, not the certificate. Both factors are
-read off per-step logs, and nine pairs with nine distinct anchors locate extraction at $0.88$--$1.17$
-of $s(x)$, tying the threshold to something a rights-holder would recognise. None of this
-contradicts the mechanisms' own theorems --- across more than $100{,}000$ budgeted trajectories no
-per-trajectory violation occurs --- and the gap is between what they bound and what the published
-number is taken to mean.
+(Theorem~\ref{thm:nfl}): the conflict is the per-token axis, not the certificate. Extraction sits at
+$0.88$--$1.17$ of $s(x)$ across nine pairs with nine distinct anchors, tying the threshold to
+something a rights-holder would recognise. None of this contradicts the mechanisms' own theorems
+--- no per-trajectory violation occurs in more than $100{,}000$ budgeted trajectories --- the gap
+is between what they bound and what the published number is taken to mean.

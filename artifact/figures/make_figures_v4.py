@@ -279,7 +279,11 @@ def selection_frontier():
     if not sel or not dec or not onset or not odo:
         raise FileNotFoundError("an input CSV for selection_frontier is empty")
     fig, (axL, ax) = plt.subplots(1, 2, figsize=(6.9, 2.15))
-    F = 6.9 / 5.5  # printed at \textwidth: pre-scale the type by the shrink it will take
+    # Printed at \textwidth: pre-scale the type by the shrink it will take. Raising this to
+    # 6.9/4.05 on 2026-09-15 to allow a narrower \includegraphics broke the layout -- axis
+    # labels of the two panels collided and the legend sat on the data -- because figsize is
+    # fixed. If this figure must get narrower, shrink figsize too and RENDER THE PAGE.
+    F = 6.9 / 5.5
 
     # ---- panel (a): a budget that scales with the work against one that does not -------------
     ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
