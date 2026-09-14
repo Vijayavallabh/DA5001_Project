@@ -3752,3 +3752,40 @@ of `output/sweep_plain` and would have "corrected" published numbers that were c
 tightening it left 4,815 real pad steps in. The signature that works is what a decoder out of budget
 cannot produce: the same token at every remaining position with the served distribution a point mass
 on it.
+
+### 2026-09-13/14 — five arms scored, one of them invalid, and what each changed
+
+**feat-098** Proposition 3 at TinyComma + Llama-3.1-70B. J1 FLAT (`r_imit(3) = 0.8330` against the
+audited pair's `0.8278`; the bands overlapped and were scored the conservative way, which is what
+the 20:02 addendum predicted before any number existed). J2 SHAPE SURVIVES on all four readings.
+The measured shape now holds at **four** pairs, 1B to 70B, base and instruct, including the
+mechanism authors' own evaluated pair.
+
+**feat-100** Comma-7B at `n=64`. **G3 failed** (`+0.072` here against the breadth arm's `+0.111`,
+`0.039` past the committed `0.03`), so **G1 is not readable and the abstract did not change**, even
+though `+0.173 [+0.130, +0.218]` is the largest gain in the paper. The band's premise --- that the
+two arms shared generations --- was wrong when written; that does not rescue it. The failure
+corroborates the cross-pass floor: with the second-pair pass's `-0.034`, two independent estimates
+now put it at about `0.04`.
+
+**feat-101** the judge-free axis. GSM8K exact match, no judge in the loop: majority vote takes
+Comma-7B from `0.320` to `0.546` (`+0.226 [+0.184, +0.270]`, Spearman `+0.955`) and the paper's own
+pointwise reward gains `+0.066 [+0.024, +0.108]`. **The constructive gain is not an artefact of
+judged preference**, and since nothing in Proposition 4 mentions a reward, **self-consistency is an
+instance** and carries the same `log n` pathwise certificate. Both are now in Sections 5 and 6.
+
+**feat-102** the 70B as adversary --- **invalid, and superseded by feat-103**.
+`natural_memorisation.csv` has this checkpoint, novel, temperature and `k=-1` at `0.4137` against my
+`0.0000`, and the escalation rule says to treat that as a bug. It was:
+`selection_extraction.py` seeded from `prompt_text`, which begins `Complete the prefix:\n`, so a
+**base** model got an instruction plus fourteen tokens of the novel where protocol C7 specifies a
+raw passage seed. `--raw-prompt` implemented; the original scoring log is unedited above its line
+and carries the addendum; the manuscript sentence it bought is withdrawn.
+
+**Also fixed.** Post-EOS padding was being counted as decode steps (caution (s)); the Renyi price
+table's three step fractions had been dividing padding-free counters by a padded denominator and
+summed to `94.7%`. The artifact builder shipped 1.9 GB of driver payload and, for its whole
+existence, a directory named `torchinductor_$USER` that no content grep could see; both are
+excluded, and a size guard plus a path-name anonymity scan now catch the class.
+
+Compute is `190.6` GPU-hours measured, `191` disclosed.
