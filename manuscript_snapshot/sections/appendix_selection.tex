@@ -1,0 +1,110 @@
+% v6 (2026-09-11): the mechanism and its three results are now Sections 5 and 6. This appendix
+% carries what did not fit: the protocol, the pre-registration record, the diagnostic construction
+% and the composition arithmetic. Numbers from results/selection_decoding.csv,
+% selection_candidates.csv, selection_crossjudge{,_per_prompt}.csv and selection_extraction.csv.
+\section{Selection anchoring: protocol, pre-registration and diagnostics}\label{app:selection}
+
+\paragraph{The strongest anchor at the largest $n$, and the check that stopped it being a headline}
+Comma-7B was swept to $n=64$ on the same $500$ ordinary prompts, the same reward, the same two
+judges and the same opponent, bands committed first
+(\texttt{results/onset\_prediction\_selection\_n64\_comma7b.md}). Within the pass the gain rises
+monotonically --- $+0.041$, $+0.060$, $+0.072$, $+0.103$, $+0.127$, $+0.173$ at $n = 2,4,8,16,32,64$
+on the registered scorer and $+0.062$ to $+0.230$ on the second, Spearman $+1.000$ in $\log n$ in
+both --- so the mechanism is still climbing at $n=64$ at the strongest anchor, for $3.17$ nats of
+measured KL against a $\log 64 = 4.16$ pathwise certificate, and the reward overoptimisation that
+turns such curves over is not observed anywhere on the grid.
+
+The arm's own nested check, however, **failed**: its $n=8$ gain of $+0.072$ sits $0.039$ from the
+breadth arm's $+0.111$ on the registered scorer, past the $0.03$ the pre-registration allowed, so by
+its own committed rule the comparison against the earlier number is \emph{not readable} and the
+abstract is unchanged. The band's premise was that the two arms shared generations; they did not,
+and the discrepancy is the cross-pass floor of Appendix~\ref{app:proofs} rather than a scoring
+fault. Rewriting a band around a premise found wrong after the number is what the register exists to
+prevent, so it stands as written.
+
+\paragraph{Candidates}
+The $500$ ordinary prompts are the neutral, creative and factual classes of the same workload every
+other arm in this paper uses, served raw under the harness's ``Complete the prefix:'' header at
+temperature $1$ with a $200$-token cap. Candidates are the $k=0$ arm of the ordinary decoding
+harness at $n$ trajectories per prompt, so they are anchor samples produced by the same code path as
+every other anchor-only arm, and trajectory seeds are $(h \ll 16) \mid j$ for $j < n$: arm $n$ is
+exactly the first $n$ candidates in seed order, the arms nest, and no candidate is scored twice. The
+opponent in every judged comparison is the \emph{unconstrained} risky model's completion on the same
+prompt at its lowest seed --- one fixed opponent per prompt, so every candidate of that prompt is
+judged against the same text.
+
+\paragraph{Why the $n=1$ control is the entry gate}
+Selection at $n=1$ is the anchor served alone, which every arm of Section~\ref{sec:orders} already
+measures. Under judge~A it reads $u = 0.319$ $[0.281, 0.358]$ against the $u_{\text{safe}} = 0.323$
+on record from a different run, a different sample and a different judging pass. A pipeline that
+mis-assembles prompts, mis-parses verdicts or mixes up the presentation order would not reproduce
+that number, so the control is what licenses reading the refutation at $n=8$ as a refutation rather
+than as a bug --- which matters, because the committed arm failed.
+
+\paragraph{How the AUC diagnostic is computed}
+The claim that the risky model's likelihood is a poor guide to judged quality is measured
+\emph{within} prompt, never across prompts, because across prompts the comparison is confounded by
+how hard each prompt is. For each prompt we form all pairs of its eight candidates whose judge~A
+verdicts differ, giving $5{,}687$ ordered pairs over the $500$ prompts, and ask how often the
+candidate the judge preferred also has the higher score. That fraction is the AUC. Three scores are
+evaluated on the identical pair set: the risky model's per-token mean log-likelihood ($0.526$), its
+summed log-likelihood ($0.477$) and the completion's length in tokens ($0.537$). A score that
+carried no information would read $0.500$; the summed form reads \emph{below} chance because it is a
+length preference with the sign the judge disagrees with, which is the same pathology the served-token
+column of Table~\ref{tab:selection} shows directly ($98 \to 15$ tokens).
+
+\paragraph{The composition arithmetic}
+A per-user odometer at $B_{\text{user}} = 400$ nats --- half the anchor's median surprisal of a
+protected passage, $849$ nats --- is the accounting an earlier audit of this mechanism uses to bound
+what one user can accumulate across queries \citep{vijayavallabh2026audit}, and it is where a budget
+that is not spent per token pays off twice. The metered decoder at $k=3$ spends a measured mean of
+$165.0$ nats on a $200$-token response (\texttt{results/utility\_price.csv}), so a user exhausts
+$400$ nats after $2$ queries; at $k=10$ the figure is $171.3$ and the answer is still $2$. Selection
+at $n=8$ spends $\log 8 - 7/8 = 1.204$ nats whatever the response length, so the same user may issue
+$332$. The spend of a selection rule does not depend on how long the response is, which is the
+composition consequence of the same asymmetry Section~\ref{sec:selection} states for the
+certificate.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{An adversarial selector leaks nothing. The $n$ anchor samples are scored by the
+\emph{memorising} model's likelihood --- the attacker choosing the rule --- on the same $100$
+protected passages and seeds as Section~\ref{sec:onset}. \texttt{risky alone} is the mandatory
+$k=-1$ baseline; the $n=1$ column is the $k=0$ baseline, and it is the base rate
+Proposition~\ref{prop:selection} multiplies.}
+\label{tab:extraction}
+
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+$n$ & $1$ & $4$ & $8$ & $16$ & $32$ & $64$ & risky alone \\
+\midrule
+near-verbatim recall     & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.3925$ \\
+longest substring, words & $1.59$ & $1.83$ & $1.93$ & $1.91$ & $1.87$ & $1.85$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The pre-registration record}
+Bands, grid, entry gate, primary metric and the excluded alternatives were committed to the
+repository before anything was generated, in \texttt{results/onset\_prediction\_selection.md} and
+\texttt{results/onset\_prediction\_selection\_scaling.md}. The primary arm's band was: at $n=8$,
+judged utility of at least $0.469$ means the mechanism works, $0.396$ to $0.469$ partial, below
+$0.396$ refuted. It scored $0.313$ --- refuted, and by a margin that no reading of the band rescues.
+The extraction band was near-verbatim recall at most $0.005$ at $n=64$; it scored $0.0000$. The
+cross-judge follow-up was committed separately, after the primary arm had been scored and before the
+second judge was run, with bands of at least $+0.244$ for a real capacity, $+0.10$ to $+0.244$ for a
+partial one and below $+0.10$ for an artefact of the selecting judge; it scored $+0.081$, so the
+recorded verdict is \textsc{artefact} --- the oracle's $+0.488$ was largely circular --- while the
+surviving $+0.081$ has a paired interval excluding zero and is reported as such. Four alternatives
+were excluded in advance and none was adopted afterwards: scoring the oracle against a band,
+re-fitting a band after seeing a result, quoting the best $n$ rather than the committed one, and
+changing the scoring template between arms.
+
+\paragraph{What this does and does not establish}
+It does not recommend any particular scorer. A judge is not a deployment's utility, $+0.081$ is a
+small effect measured once, and the mechanism runs a second model $n$ times per response. What it
+establishes is narrower and is the thing Theorem~\ref{thm:nfl}'s gap alone could not: the
+impossibility --- that no budget certifies every protected work and also buys a detectable
+improvement --- is a property of \emph{metering per token}, not of budgeted decoding. At $k=10$ the
+metered decoder's $2{,}000$ nats cover none of the works; $\log 8 = 2.08$ nats cover all of them
+with four hundred times the margin to spare, and reach the same judged utility.

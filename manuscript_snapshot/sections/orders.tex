@@ -1,71 +1,61 @@
-% Plan v4 / section E: the budget is not a sufficient statistic. Written 2026-09-07, branch iclr-2027.
-% Numbers from results/renyi_sweep.csv and results/renyi_price.csv (analysis/renyi_sweep.py).
+% v7 (2026-09-12): the three repairs are now the dichotomy's corollaries being tested, not a
+% narrative of what we tried; the motivation moved to the introduction, which states all three.
+% v6 kept as orders_v6_2026-09-11.tex.
+% Numbers: results/renyi_sweep.csv, renyi_price.csv, order_law.csv, utility_price.csv,
+% judge_separation_v6{,_judge2}.csv, marginal_price_table.csv, selection_candidates.csv.
 
-\section{The published budget determines neither the protection nor the price}\label{sec:orders}
+\section{The dichotomy's corollaries, tested}\label{sec:orders}
 
-Proposition~\ref{prop:threshold} says every order of the charge becomes vacuous at the same budget,
-so a deployer who publishes $k$ publishes the same certificate whichever order the decoder uses. We
-built the family --- $\alpha \to 1$ is the audited decoder, $\alpha \to \infty$ the pathwise one,
-and Eq.~\eqref{eq:renyi-path} is closed form on the geodesic, so one bisection serves all of them
---- and ran the same attack and workload through four members at the budget the mechanism's authors
-use. Figure~\ref{fig:orders} in
-Appendix~\ref{app:proofs} shows what the certificate says across the family;
-Table~\ref{tab:orders} shows what the decoders do.
+A mechanism on the vacuous horn has three degrees of freedom --- the charge, the cap, the schedule.
+All three repairs were pre-registered, and the interesting part is not that they fail but
+\emph{where}: each at a different place, from one measurable shared cause.
 
-\begin{table}[tb]
-\centering\small
-\setlength{\tabcolsep}{5pt}
-\caption{Four decoders at the same budget $k=3$, so all four publish $K = 3T$ and for all four the
-certificate is vacuous for $100\%$ of the 758 protected passages: nothing distinguishes them to a
-rights-holder. Attack columns are mean near-verbatim recall of a passage from the memorising 8B
-model over 100 passages; price columns over 150 ordinary prompts at the same budget. $\alpha=1$
-reproduces the audited decoder to three decimals, which checks the independent bisection solver.}
-\label{tab:orders}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-& \multicolumn{2}{c}{attack recall} & \multicolumn{3}{c}{price on ordinary traffic} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-6}
-order & single query & oracle windows & risky unchanged & steps touched & distinct-3 \\
-\midrule
-$\alpha = 1$ (KL) & $0.012$ & $0.097$ & $94.0\%$ & $0.4\%$  & $0.9910$ \\
-$\alpha = 2$      & $0.001$ & $0.054$ & $91.4\%$ & $2.4\%$  & $0.9924$ \\
-$\alpha = 4$      & $0.000$ & $0.004$ & $8.7\%$  & $83.0\%$ & $0.9850$ \\
-$\alpha = 8$      & $0.000$ & $0.001$ & $0.07\%$ & $90.1\%$ & $0.9872$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\paragraph{Repair 1: sharpen the accounting}
+Proposition~\ref{prop:threshold} says a stronger divergence cannot move the threshold, so the
+question is what it does to the system underneath. Eq.~\eqref{eq:renyi-path} is closed form on the
+geodesic, so one bisection serves every order; four members ran the same attack and workload at the
+authors' own budget $k=3$, where all four publish $K = 3T$ and the certificate is vacuous for
+$100\%$ of the $758$ protected passages, and for $98.7\%$ of $9{,}870$ across a hundred books
+(Appendix~\ref{app:bookmia}) --- nothing distinguishes them to a rights-holder
+(Table~\ref{tab:orders}). Underneath, they span two orders of magnitude in what a compliant
+adversary recovers, oracle-window recall $0.0965$ at $\alpha=1$ against $0.0012$ at $\alpha=8$, and
+more than two in what they cost, $0.4\%$ of ordinary decode steps against $99.6\%$ --- one step past
+$\alpha=2$ taking the decoder from serving the risky model unchanged at $97.2\%$ of steps to $9.4\%$.
+Compared at \emph{matched utility} --- fidelity to $p_r$ is monotone in $k$ at fixed order, so each
+order can be given the budget that buys what $\alpha=1$ buys --- the order runs from $10^{6}$ times
+more dangerous to $10^{7}$ times safer over twelve pairs, and nothing measured predicts which pair a
+deployer has (Appendix~\ref{app:matched}). The certificate does not
+move; everything underneath it does.
 
-Table~\ref{tab:orders} is the point of this paper in one row group. Holding the published budget
-fixed, and the certificate with it --- vacuous throughout --- the four decoders span two orders of
-magnitude in what a compliant adversary recovers, $0.097$ of a passage down to $0.001$, and more
-than two in what they cost, from touching $0.4\%$ of ordinary decode steps to $90.1\%$. A number
-that determines neither the protection nor the price is not a summary of the mechanism but of one
-accounting convention inside it.
+\paragraph{Repair 2: lower the budget}
+This is a walk onto the trivial horn, and both sides of Eq.~\eqref{eq:nfl} price the walk. Taking
+$U$ to be the judge's verdict scored $1/\tfrac12/0$, the decoder spends $79$ to $171$ nats of
+realised divergence to buy gains of $+0.011$ to $+0.179$ that an optimal policy could have bought for
+$0.0003$ to $0.077$, a ratio of $2.8\times10^{5}$ at $k=0.5$ that never falls below $2200$
+(Appendix~\ref{app:proofs}). A three-valued judge is not too blunt to price this, because bluntness
+\emph{caps} the rate function: winning \emph{every} comparison would cost an optimal policy $1.30$
+nats and the decoder spends $132$ times that to win a third of them. The certified and the useful
+regions then fail to meet. Under two instruction-tuned judges outside the audit, $600$
+comparisons per budget with order randomised, neither separates the decoder from its own safe model
+at $k=0.5$ ($-1.03\sigma$, $+1.52\sigma$), where all $758$ protected passages are still covered;
+both do only at $k \ge 10$ ($-6.97\sigma$, $-3.29\sigma$), where none is. Between those the judges
+disagree about the crossing by nearly a decade in $k$, $0.66$ against $5.4$ --- itself a result
+about how resolvable this is.
 
-The family is cheap at one end and not in the middle. Moving from $\alpha=1$ to $\alpha=2$ nearly
-halves oracle-window recall, $0.097$ to $0.054$, for intervention rising from $0.4\%$ to $2.4\%$ of
-steps and no measurable loss of diversity --- distinct-3 moves from $0.9910$ to $0.9924$, the wrong
-way for a cost. One more step does not continue that trade: at $\alpha=4$ oracle recall falls to
-$0.004$, but the decoder serves the risky model unchanged at $8.7\%$ of steps instead of $91.4\%$
-and intervenes at $83.0\%$, already most of the way to $\alpha=8$. The order is a sharp knob, not a
-dial, and a deployer choosing $\alpha$ on the published budget alone cannot tell which system they
-have bought.
+\paragraph{Repair 3: spend the budget better}
+Proposition~\ref{prop:sparse} bounds this one before it is run: a schedule cannot deliver what a
+bounded sequence budget does not contain, and a greedy decoder is not short of allowance but of
+somewhere useful to put it. Reallocating its own realised spend
+across its own trajectory is a closed form in $\psi$, computable offline and therefore a ceiling no
+causal scheduler can beat \citep{tomasi2026primaldual}; it buys $3$ to $13\%$ more utility where the
+certificate still says something ($k \le 1$) and under $1.4\%$ at $k=3$ (Appendix~\ref{app:proofs}).
 
-\paragraph{Judged utility, and the resolution of the instrument}
-Activity counts are not utility, so we also score the arms with a judge outside the audit
-(Qwen2.5-7B-Instruct, order randomised, $150$ pairs per order arm). A win rate is meaningless
-without a null, and there are two: the unconstrained model judged against \emph{itself} at a
-different seed loses $46.4\%$ of the time, and the anchor served alone loses $62.7\%$. Every arm is
-a position between them.
-
-Against those: $\alpha=1$ sits $1.92\sigma$ from the anchor, $\alpha=4$ $1.49\sigma$ and $\alpha=2$
-$1.05\sigma$ --- separations of $0.35\sigma$ and $0.70\sigma$ from $\alpha=1$, which $150$ pairs
-cannot resolve, and a second judge reorders them completely. \emph{Activity is not price either.}
-The $\alpha=4$ decoder overrides the risky model at $90\%$ of decode steps and leaks $24\times$ less
-than $\alpha=1$ in oracle windows ($0.004$ against $0.097$), and neither judge can tell it from
-$\alpha=1$: the published budget determines neither the protection nor the price, and neither does
-the intervention rate. Only at $\alpha=8$ does the first judge find a cost, and there it is total
---- it loses $62.7\%$, the anchor's own rate to the decimal ($0.00\sigma$), with the anchor's
-leakage. Turning the order up far enough converges on the safe model, which was always available
-without a mechanism, at matched budget rather than matched utility
-(Appendix~\ref{app:collapse}).
+\paragraph{What the three have in common}
+The budget is not spent inefficiently on utility; it is spent \emph{efficiently on a target that is
+not utility}. A metered decoder exists to move the served distribution toward $p_r$, so its budget
+buys likelihood under $p_r$ and nothing else. Among $4{,}000$ anchor samples on $500$ prompts,
+within-prompt on the $5{,}687$ candidate pairs a judge ranked differently, that likelihood separates
+better from worse at AUC $\mathbf{0.526}$, its summed form at $0.477$ --- \emph{below} chance ---
+and raw length at $0.537$. All three repairs optimise the
+delivery of a currency that predicts judged quality worse than the answer's length does. A wrong
+currency spent on the wrong axis is not repaired by a better meter.

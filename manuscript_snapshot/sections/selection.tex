@@ -1,0 +1,70 @@
+% v6 (2026-09-11): the method section. Promoted from Appendix H, where feat-087 left it.
+% Proposition 3's proof is three lines and is given here in full; the divergence bound is quoted.
+
+\section{Selection anchoring: a budget spent once}\label{sec:selection}
+
+Proposition~\ref{prop:sparse} closes the per-step axis and leaves everything else open.
+\emph{Selection anchoring} takes the one other place a budget can sit: it draws $n$ completions
+$y_1,\dots,y_n \sim p_s(\cdot)$, scores each with any function $f$, and serves the highest scorer.
+Every token it emits is drawn from $p_s$, so $N_\varepsilon = 0$ identically and the chain rule's
+sum is empty; the entire budget is spent on which draw to serve. That the safe model is the only
+\emph{generator} invites the objection that this is merely the safe model served well. It is not:
+the risky model may act as the scorer, through the ranking instead of the sampling, its influence
+bounded at $\log n$ however it is used, and Section~\ref{sec:experiments} tries that arm first.
+
+\begin{proposition}[The budget of a selection rule]\label{prop:selection}
+Let $y_1,\dots,y_n$ be i.i.d.\ $p_s$ and let $q$ be the law of $y^\star = \arg\max_i f(y_i)$ for any
+score $f$, ties broken by any rule depending on the $y_i$ only through their scores. Then
+$q(y) \le n\,p_s(y)$ for every $y$. Consequently
+$D_\infty(q \,\|\, p_s) \le \log n$, hence $D_\alpha(q\,\|\,p_s) \le \log n$ for every
+$\alpha \in [1,\infty]$, and $\Pr_q[E] \le n \Pr_{p_s}[E]$ for every event $E$. The KL is smaller
+still: $D_{\mathrm{KL}}(q \,\|\, p_s) \le \log n - (n-1)/n$.
+\end{proposition}
+
+\begin{proof}
+$q(y) = \sum_i \Pr[y_i = y,\ y_i \text{ served}] \le \sum_i \Pr[y_i = y] = n\,p_s(y)$, each summand
+bounded by the marginal of its own draw. A logarithm and a maximum over $y$ give the
+$\alpha = \infty$ statement, which dominates every lower order by monotonicity in $\alpha$; summing
+over $y \in E$ gives the event form. Nothing is assumed about $f$, ties or $p_s$, and the bound is
+tight (Appendix~\ref{app:proofs}); the sharper KL bound is \citet{beirami2025bestofn}, quoted not
+reproved.
+\end{proof}
+
+Nothing in it mentions a reward, so \textbf{self-consistency is an instance}: majority vote serves
+one of the $n$ draws, and the most widely deployed inference-time method already carries a
+$\log n$ pathwise certificate.
+
+\textbf{The certificate is Proposition~\ref{prop:threshold} at $K = \log n$, under the strongest
+order in the family.} Selection anchoring satisfies the $\alpha = \infty$ charge --- the pathwise
+budget, which bounds \emph{every} event rather than an average --- at exactly $\log n$ nats, so the
+vacuity threshold sits at $n = e^{S(x)}$, about $e^{849}$ candidates for these passages.
+Section~\ref{sec:orders} measured what that same strengthening costs a metered decoder: at $\alpha =
+4$ it serves the risky model unchanged at only $9.4\%$ of steps. Here it is free, being the same
+inequality. Put as the amplification a rights-holder can be promised --- the factor by which the
+mechanism may raise the safe model's own probability of emitting their work --- both reach $u
+\approx 0.52$ on the same workload, and the metered decoder does it at $K = kT_{\max} = 2000$ nats,
+so the tightest factor its accounting implies is $e^{2000}$ and the promise is empty, against
+exactly $8$ for selection at $n=8$.
+
+\textbf{The budget does not scale with the work.} A metered budget has $K/S(x) \to k/s(x)$, a
+constant in length; a selection budget has $\log n / S(x) \to 0$, so the longer and more
+idiosyncratic the work, the \emph{more} margin the same mechanism has. At $n=8$ that is
+$\log 8 = 2.08$ nats against a median $S(x)$ of $849$, a margin above $400\times$, whether the work
+is a paragraph or a novel. It composes: under a $400$-nat per-user odometer \citep{vijayavallabh2026audit} a user may issue
+$332$ queries at $n=8$ against $2$ at $k=3$, which spends a measured $165.0$ nats per response.
+
+Proposition~\ref{prop:sparse} forbids \emph{spreading} a bounded budget, not concentrating one, so
+the honest test of ``leave the decode loop'' is a decoder granted the same $\log 8$ nats up front.
+Neither causal placement buys anything: $-0.008$ front-loaded, $-0.032$ uniform, $-0.019$ at ten
+times the budget, against $+0.054$ off the axis at the same $2.08$ nats, all bands committed first
+(Appendix~\ref{app:proofs}).
+
+\paragraph{What the guarantee does not depend on}
+The omissions are the engineering argument. Proposition~\ref{prop:selection} holds for \emph{any}
+score --- a reward model, a classifier, a human or an adversary --- any tie rule and any $p_s$, so a
+\emph{malicious} score changes nothing: it multiplies the anchor's own probability of emitting $x$
+by at most $n$, and Section~\ref{sec:experiments} measures that adversary. A metered decoder can
+make no comparable statement, its certificate being about a charge its own implementation computes.
+Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted works are bounded on the
+same terms as exact quotation \citep{ippolito2023preventing}. The price is compute: $n$ draws and
+$n$ scoring passes against two models per token.

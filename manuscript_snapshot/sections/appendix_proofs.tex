@@ -61,3 +61,356 @@ $\Lambda^*_s$ is convex, vanishes at $u = \mathbb{E}_{p_s}[U]$ and is strictly p
 of it, any $u$ strictly above the safe model's own mean utility forces $K > 0$ and, by
 monotonicity, forces $K \ge \Lambda^*_s(u)$ specifically. Proposition~\ref{prop:threshold} then
 applies verbatim to any work with $S(x) \le \Lambda^*_s(u) \le K$. \qed
+
+\subsection{Proposition~\ref{prop:outrun}}
+\begin{proposition}[Protection outruns certification]\label{prop:outrun}
+Under the banking rule, if the decoder emits each token of $x$ with probability at least $1-\eta$
+then $k \ge (1-\eta)\,k_{\mathrm{crit}}(x) - \log 2$, and $k_{\mathrm{crit}}(x) \ge s(x) + \delta/N$
+for every work, with equality iff the surprisal accumulates at a constant rate.
+\end{proposition}
+
+The proof needs only that the charge dominates the KL, which every $\alpha \ge 1$ does.
+$k_{\mathrm{crit}}$ is not our invention: it is the Loynes running maximum representing the workload
+of a queue \citep{loynes1962stability}, equivalently the smallest rate of a $(\sigma,\rho)$ arrival
+curve admitting the surprisal process \citep{cruz1991calculus,leboudec2001network}. Naming it makes
+the diagnosis concrete: a budget publishes a \emph{drift} where safety is a \emph{workload maximum}.
+It is a statement about regime boundaries and not a per-work screen --- as a predictor of the onset
+it misses by $21.9\%$ against a no-change null's $12.3\%$ and ranks the nine pairs at
+$\rho = +0.036$ (Appendix~\ref{app:limitations}) --- which is why it sits here rather than in
+Section~\ref{sec:frontier}.
+
+\subsection{Proposition~\ref{prop:imitation}}
+Write $c(\theta) = D_{\mathrm{KL}}(p_\theta \| p_s)$ for the charge at step $t$, dropping the index.
+$c$ is nondecreasing on $[0,1]$ with $c(0) = 0$, and the decoder serves
+$\theta_t = \max\{\theta \in [0,1] : c(\theta) \le k_t\}$. At a step where the constraint is slack
+--- that is, where $c(1) \le k_t$ --- that maximum is attained at $\theta_t = 1$, so the decoder
+serves $p_{r,t}$ exactly and is charged $c(1) = D_{\mathrm{KL}}(p_{r,t} \| p_{s,t})$. Writing
+$\mathcal{S}$ for the set of slack steps and $\beta = 1 - |\mathcal{S}|/T$,
+\[
+Z_T \;=\; \sum_{t \le T} c(\theta_t) \;\ge\; \sum_{t \in \mathcal{S}} D_{\mathrm{KL}}(p_{r,t} \| p_{s,t})
+\;\ge\; (1-\beta)\, T \cdot \min_{t \in \mathcal{S}} D_{\mathrm{KL}}(p_{r,t} \| p_{s,t}),
+\]
+the first inequality because every term of the sum is nonnegative. Nothing about the utility enters.
+
+For the second part, $\Lambda^*_s$ is convex, vanishes at $u_0 = \mathbb{E}_{p_s}[U]$ and is
+nondecreasing on $[u_0, u_{\max}]$, so $\Lambda^*_s(\mathbb{E}_q[U]) \le \Lambda^*_s(u_{\max})$ for
+any $q$; and $\Lambda^*_s(u_{\max}) = -\log \Pr_{p_s}[U = u_{\max}]$, a constant in $T$ for a
+bounded $U$ whose top outcome has positive probability under $p_s$. Dividing gives the stated
+$\Omega(T)$ provided $\beta$ is bounded away from $1$ and the slack steps carry divergence bounded
+away from $0$.
+
+\paragraph{The proposition's two factors, measured per step}
+Both quantities in the bound are in the logs. A step is slack exactly when the solve returns
+$p_{r,t}$ unchanged, and there the charge $a_t$ \emph{is} $D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$, so the
+proposition's right-hand side is measured rather than estimated. Over $16{,}500$ trajectories on
+ordinary prompts, each with a complete per-step log (arm means; the last column is a median over
+per-trajectory fits):
+
+\begin{center}
+\small
+\begin{tabular}{rrrrrrrr}
+\toprule
+$k$ & $K$ & $\beta$ & imitation rate & realised rate & spend & spend\,/\,$K$ & $R^2$ \\
+ & (nats) & (binding) & (nats/token) & (nats/token) & (nats) & & (cum.\ vs.\ $t$) \\
+\midrule
+$0.1$ & $20$ & $0.9540$ & $0.034$ & $0.051$ & $9.3$ & $46.5\%$ & $0.9794$ \\
+$0.15$ & $30$ & $0.9249$ & $0.063$ & $0.093$ & $16.9$ & $56.3\%$ & $0.9942$ \\
+$0.25$ & $50$ & $0.8507$ & $0.135$ & $0.180$ & $33.2$ & $66.4\%$ & $0.9987$ \\
+$0.5$ & $100$ & $0.5915$ & $0.359$ & $0.404$ & $78.5$ & $78.5\%$ & $0.9994$ \\
+$1$ & $200$ & $0.2057$ & $0.665$ & $0.676$ & $134.1$ & $67.1\%$ & $0.9940$ \\
+$3$ & $600$ & $0.0332$ & $0.828$ & $0.828$ & $165.0$ & $27.5\%$ & $0.9915$ \\
+$5$ & $1000$ & $0.0074$ & $0.848$ & $0.850$ & $169.9$ & $17.0\%$ & $0.9915$ \\
+$10$ & $2000$ & $0.0001$ & $0.857$ & $0.857$ & $171.3$ & $8.6\%$ & $0.9915$ \\
+$20$ & $4000$ & $0.0000$ & $0.857$ & $0.857$ & $171.3$ & $4.3\%$ & $0.9916$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two regimes, in one column. Below the imitation rate the meter binds almost everywhere and the
+decoder spends most of its allowance; above it the meter goes slack, the realised rate stops at
+$0.857$ nats per token, and the rest of the allowance is unreachable --- the certificate at
+$k=20$ is written against a quantity the decoder uses $4.3\%$ of. The crossover is not a risk
+level: it is the pair's mean $D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$, which is exactly what
+Eq.~\eqref{eq:req} says a decoder must \emph{afford}. That half of Eq.~\eqref{eq:req} is confirmed
+here directly, even though its prediction of where leakage \emph{begins} was refuted
+(Appendix~\ref{app:onset}). Here $\beta$ counts every step the bucket touches, including the
+prefix-debt opening where the anchor writes the token outright; the strictly interior blends alone
+are $0.9\%$ of steps at $k=3$, the same order as the $0.4\%$ Table~\ref{tab:orders} records for
+the $\alpha=1$ decoder. On the $3{,}300$ protected-passage
+trajectories the same rate is higher, $0.911$ nats per token: the meter charges most where the risky
+model is most distinctive from the anchor, which is where memorisation lives. A cross-trajectory
+regression of spend on generation \emph{length} would test none of this, because every trajectory
+here runs to $T_{\max}$ and the length has no spread; the variation the last column uses is across
+steps within a trajectory.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/imitation_cost}
+\caption{The two propositions in the two shapes they constrain, both measured on the per-step logs
+of $16{,}500$ ordinary-prompt trajectories. \textbf{(a)} What the decoder spends. The certificate
+is written against the cap $k$; the realised rate follows it while the meter binds and then stops
+at the pair's imitation rate $0.857$ nats per token, after which the rest of the allowance is
+unreachable --- at $k=20$ the decoder uses $4.3\%$ of it. The crossover is not a risk level; it is
+the pair's mean $D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$. \textbf{(b)} Where it spends it: the share of
+a trajectory's spend carried by its busiest steps. Proposition~\ref{prop:sparse} requires a policy
+on a budget that does not grow with the work to sit against the left axis; the deployed rule sits
+just above the uniform diagonal, and once the meter stops binding ($k=3$ and $k=20$ coincide) the
+shape no longer depends on the cap at all.}
+\label{fig:imitation}
+\end{figure}
+
+\paragraph{What the proposition does and does not close}
+It bounds \emph{this} class as it is defined --- $\theta_t$ the largest feasible tilt, which is the
+deployed rule and the one the mechanism's authors specify --- and shows its spend is the cost of
+imitating $p_r$, indexed to the length of the generation and independent of what utility is bought.
+It does \emph{not} bound an arbitrary causal policy that spends a sequence budget $K$ however it
+likes. What can be said about that larger class is a constraint on its \emph{shape}.
+
+\begin{proposition}[An affordable causal policy is the anchor almost everywhere]\label{prop:sparse}
+Let $q$ be any causal policy, $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
+$D_{\mathrm{KL}}(q \,\|\, p_s) \le K$, and let
+$N_\varepsilon = \#\{t \le T : D_{\mathrm{KL}}(q_t(\cdot \mid y_{<t}) \,\|\, p_{s,t}) > \varepsilon\}$.
+Then $\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon$ for every $\varepsilon > 0$.
+\end{proposition}
+
+\emph{Proof.} The chain rule for an autoregressive factorisation is exact:
+$D_{\mathrm{KL}}(q \| p_s) = \sum_{t \le T} \mathbb{E}_{y_{<t} \sim q}\!\left[D_{\mathrm{KL}}(q_t \| p_{s,t})\right]$,
+every term nonnegative. Markov's inequality at each step gives
+$\Pr_q[D_{\mathrm{KL}}(q_t \| p_{s,t}) > \varepsilon] \le \mathbb{E}_q[D_{\mathrm{KL}}(q_t \| p_{s,t})]/\varepsilon$,
+and summing over $t$ bounds $\mathbb{E}_q[N_\varepsilon]$ by $K/\varepsilon$. \qed
+
+Three readings, in the order they matter. First, it settles the direction of the earlier sentence:
+a policy with a bounded sequence budget does not merely \emph{get to} concentrate its spend, it
+\emph{has to}. With $K = \Lambda^*_s(u)$ fixed by Theorem~\ref{thm:nfl} and $T$ growing, the
+fraction of steps on which such a policy departs from the anchor by more than $\varepsilon$ goes to
+zero: buying utility under a budget that does not grow with the work means being the anchor at all
+but $O(1)$ steps. Second, the deployed rule is the exact opposite of sparse, and by a measured
+margin: at $k = 20$ it serves $p_{r,t}$ unchanged at every step it takes ($\beta = 0.0000$),
+each charged the full
+$D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$, so $N_\varepsilon = \Theta(T)$ for every $\varepsilon$ below
+the pair's imitation rate. The spend is spread to match: the busiest $1\%$ of steps carry $5.8\%$ of
+it, and covering $90\%$ of it takes $64\%$ of the sequence. Third --- and this is why the construction takes the shape it does --- a
+selection rule is not a causal policy at all. Every token it emits is drawn from $p_{s,t}$, so
+$N_\varepsilon = 0$ identically, and its $\log n$ is spent on \emph{which draw to serve}, the one
+place the chain rule does not reach. That is the precise content of metering the draw rather than
+the step.
+
+What remains open is the quantitative half: Proposition~\ref{prop:sparse} constrains the shape of
+an affordable causal policy, not how close a sparse one can come to Theorem~\ref{thm:nfl}'s
+frontier. Section~\ref{sec:orders} prices one member of that larger class empirically --- the
+optimal offline reallocation of the decoder's own realised spend --- and finds $3$ to $13\%$ where
+the certificate still says something.
+
+\paragraph{Proposition~\ref{prop:sparse} holds surely, not just in expectation, for the deployed class}
+The proposition is stated for any causal policy under a budget on $D_{\mathrm{KL}}(q\|p_s)$, which
+is an expectation over trajectories, so the count it bounds is an expectation too. The deployed
+class enforces more than that: the token bucket caps the \emph{realised} charges of each
+trajectory, $\sum_{t \le T} a_t \le K$ pathwise, which is the accounting this paper checks and
+the accounting under which no violation occurs in more than $100{,}000$ trajectories. Under it the
+same count is deterministic --- at most $K/\varepsilon$ steps of any single served trajectory can
+carry a charge above $\varepsilon$, since $K \ge \sum_t a_t \ge \varepsilon N_\varepsilon$ ---
+so the trivial horn is a statement about \emph{every} output the mechanism serves and not about
+its average. It also shows where that horn has no force. At the authors' own $k=3$ with
+$T_{\max}=200$ the count is $600/\varepsilon$ against a trajectory of $200$ steps, so it
+constrains nothing below $\varepsilon = 3$ nats in a single step --- which is the first horn again
+in another currency, since the pathwise form is informative precisely when $K$ is small and
+$K = kT$ is not.
+
+\paragraph{The head-to-head at a second pair}\label{app:frontier2}
+Section~\ref{sec:experiments}'s comparison of the two mechanisms cannot simply be repeated at the
+anchors of the breadth arm: the factory fuses two distributions over one shared vocabulary, and
+among the openly licensed safe models we hold, TinyComma-1.8B is the only one that ships the risky
+model's tokenizer, so at every other legitimate anchor the metered decoder does not run. The one
+further pair that exists is \texttt{Llama-3.2-1B} against the same
+\texttt{Llama-3.1-8B-Instruct} --- \emph{not} a legitimate safe model, and no certificate, leakage
+or $s(x)$ number is taken from it. Both mechanisms were judged in one pass against the same $k=-1$
+opponent on the same $500$ prompts, with one shared anchor-alone control, bands committed before the
+selection arm was generated
+(\texttt{results/onset\_prediction\_frontier\_second\_pair.md}).
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+arm & spend, nats & gain, judge B & gain, judge C \\
+\midrule
+metered, $k=0.5$   & $88.1$  & $+0.015$ $[-0.028, +0.057]$ & $+0.102$ $[+0.045, +0.159]$ \\
+metered, $k=1$     & $112.7$ & $+0.051$ $[+0.008, +0.091]$ & $+0.131$ $[+0.074, +0.189]$ \\
+metered, $k=3$     & $123.2$ & $+0.056$ $[+0.014, +0.097]$ & $+0.124$ $[+0.069, +0.180]$ \\
+metered, $k=20$    & $123.4$ & $+0.055$ $[+0.016, +0.093]$ & $+0.131$ $[+0.076, +0.189]$ \\
+selection, $n=4$   & $0.636$ & $+0.048$ $[+0.006, +0.090]$ & $+0.140$ $[+0.094, +0.186]$ \\
+selection, $n=8$   & $1.204$ & $+0.076$ $[+0.031, +0.122]$ & $+0.154$ $[+0.104, +0.200]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Selection at $n=8$ gains \emph{more} than the best metered arm on both judges, at $102\times$ and
+$94\times$ less divergence; the committed band only asked it to come within $0.03$ at under a tenth
+of the spend. Three things are worth reporting rather than smoothing. First, the metered decoder is
+genuinely useful at this pair --- it resolves at three of four budgets, where at the audited pair
+every budget below $k=10$ gains nothing measurable --- because a Llama-3.2-1B anchor sits close
+enough to the risky model for a per-token meter to buy something. It still loses by two orders of
+magnitude in what it spends to buy it. Second, its realised spend saturates exactly as
+Proposition~\ref{prop:imitation} says: $k=3$ and $k=20$ differ by $0.2$ nats of spend and $0.001$ of
+gain while the published cap between them differs sevenfold.
+Third, the pass contains two arms that ought to be identical, and they are. The shared control is
+the metered run's own $k=0$ arm and \texttt{selection, $n=1$} is the first draw of the selection
+run: each is one unconstrained completion from the same anchor on the same $500$ prompts, from two
+independent generation runs. Judged here they differ by $-0.034$ $[-0.071, +0.004]$ under judge~B
+and $+0.011$ $[-0.025, +0.048]$ under judge~C, neither interval excluding zero. That is this
+paper's floor on \emph{generation-run} variation, a different quantity from the position bias of
+Section~\ref{sec:experiments}, and it is why no judged level is quoted across passes and why the
+six rows above are read against one shared control rather than each arm's own.
+
+A second measurement puts the same floor at the same size. The Comma-7B sweep to $n=64$
+(Appendix~\ref{app:selection}) re-generated and re-judged the identical configuration the breadth
+arm had already run, and its $n=8$ gain came back at $+0.072$ against the breadth arm's $+0.111$ on
+the registered scorer --- a discrepancy of $0.039$, with mean completion length $80.4$ words against
+$99.5$. Its own pre-registered nested check failed on that and declared the cross-arm reading
+unreadable. **Two independent estimates therefore put the cross-pass floor on a judged gain at about
+$0.04$**, and every comparison in this paper between gains measured in \emph{different} passes
+carries it, whether or not the within-pass interval shows it. The comparisons that do not are the
+ones read inside one pass: the six rows above, and every $n$-sweep, which is why the paper's
+mechanism claim is a monotone curve within an arm rather than a difference between arms.
+
+\paragraph{Proposition~\ref{prop:imitation}'s shape is the mechanism's, not the pair's}
+The measurement above is one (anchor, risky) pair. Two more were run against the same risky model,
+Llama-3.1-8B-Instruct, on the same $500$ ordinary prompts, the same budget grid and the same
+$200$-token cap, with both mandatory baselines and the bands committed first
+(\texttt{results/onset\_prediction\_imitation\_breadth.md}). Neither anchor is
+a \emph{safe} model --- both are trained on undisclosed data --- and no certificate or leakage
+number is taken from either; they vary the distance between the two distributions while the
+mechanism, the workload and the judges stay fixed.
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+anchor & $r_{\rm imit}(3)$ & $r_{\rm imit}(20)$ & ratio & $|r_{\rm real}/r_{\rm imit}-1|$
+& spend, $k{=}20$ \\
+\midrule
+TinyComma-1.8B, 8B-Inst.  & $0.8278$ & $0.8570$ & $1.035$ & $0.0005$ & $171.3$ \\
+Llama-3.2-1B, 8B-Inst.    & $0.6157$ & $0.6174$ & $1.003$ & $0.0005$ & $123.4$ \\
+Llama-3.2-3B-Inst., 8B-Inst. & $0.3010$ & $0.3034$ & $1.008$ & $0.0013$ & $\ \ 60.6$ \\
+TinyComma-1.8B, 70B base  & $0.8330$ & $0.9085$ & $1.091$ & $0.0007$ & $148.9$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All four readings hold at all four pairs: the rate saturates (the ratio column, against a
+committed $1.10$), the realised spend converges on it to within $0.14\%$, the cumulative spend is linear in the step index at every budget, with a minimum median $R^2$ of $0.974$, and at $k=20$
+the decoder serves $p_r$ unchanged at $\ge 99.95\%$ of steps in every pair. What moves is the
+\emph{level}, and the fourth pair says which distance it tracks. The registered band read a $70$B
+base risky model as \emph{further} from a $1.8$B anchor than an $8$B instruction-tuned one and
+predicted a higher rate; it came back at $0.8330$ against $0.8278$, flat, and an addendum committed
+before the arm finished had already named the confound --- the $8$B is instruction-tuned and the
+anchor is not, so the $0.8278$ already contains a base-to-instruct shift the $70$B does not pay.
+Size pushes up, the missing shift pushes down, and they cancel. Read as \emph{tuning} rather than
+parameter count the levels order cleanly: $0.303$ for a same-family instruction-tuned model,
+$0.617$ for a same-family base model, and $0.857$ and $0.908$ for the two trained on a different
+corpus entirely, with the realised spend following exactly. The registered prediction that the
+same-family instruct rate would fall below half the same-family base rate passed narrowly, by
+$2.2\%$ of its threshold, and is reported as narrow.
+
+\paragraph{The causal placement Proposition~\ref{prop:sparse} permits}
+Section~\ref{sec:selection} reports the two placements in one sentence. In full: the front-loaded
+decoder is granted $\log 8 = 2.0794$ nats up front rather than metered per token, and spends them,
+realised median \emph{and} maximum $2.0794$. On the same $500$ prompts and the same judge it gains
+$-0.008$ $[-0.056, +0.041]$; the uniform rate at the same total gains $-0.032$ $[-0.083, +0.016]$
+and ten times the budget gains $-0.019$. The two placements differ by $0.024$ with overlapping
+intervals, so the paper claims no ordering between them --- only that neither resolves, where
+selection at the same $2.08$ nats gains $+0.054$. All three bands were committed before the runs.
+
+\paragraph{Proposition~\ref{prop:selection} is tight}
+If $f$ is maximised at a single $y^\star$ with $p_s(y^\star) = p$, then
+$q(y^\star) = 1-(1-p)^n \to np$ as $p \to 0$, so no constant below $n$ works in
+$q(y) \le n\,p_s(y)$ and the $\log n$ charge cannot be improved without assuming something about
+$f$ or $p_s$ --- which is the point of assuming neither.
+
+\paragraph{What Theorem~\ref{thm:nfl} is worth in numbers}
+The utility is the judge's verdict scored $1/\tfrac12/0$ and its law under $p_s$ is read off the
+anchor-only arm; realised spend is the decoder's own sequence divergence, which never reaches its
+cap. Every row satisfies Eq.~\eqref{eq:nfl} by three to five orders of magnitude, and
+bootstrapping over judged pairs at the \emph{weakest} end of each interval still leaves the ratio
+between $1.3\times10^{3}$ and $8.6\times10^{3}$. The two mechanisms sit at very different distances
+from the frontier under judge~B's own law of $U$: selection at $n=8$ is $58\times$ it, and the
+metered decoder's best arm $7{,}995\times$.
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+$k$ & realised spend & $\mathbb{E}_q[U]$ & gain & $\Lambda^*_s$ & spend\,/\,$\Lambda^*_s$ \\
+\midrule
+$0.5$ & $79.0$  & $0.334$ & $+0.011$ & $0.0003$ & $2.8{\times}10^{5}$ \\
+$1$   & $134.6$ & $0.420$ & $+0.097$ & $0.023$  & $5900$ \\
+$3$   & $165.0$ & $0.469$ & $+0.146$ & $0.052$  & $3200$ \\
+$20$  & $171.3$ & $0.483$ & $+0.160$ & $0.061$  & $2800$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Why better scheduling cannot close the gap}
+The decoder trades two quantities and on the geodesic both are closed forms in $\psi(u) = \log Z(u)$:
+\begin{equation}
+C(\theta) = \theta\psi'(\theta) - \psi(\theta), \quad C'(\theta) = \theta\psi''(\theta), \qquad
+G(\theta) = \theta m - \psi(\theta), \quad G'(\theta) = m - \psi'(\theta),
+\label{eq:charge-gain}
+\end{equation}
+with $m = \psi'(1)$. $C$ is the charge and $G(\theta) = -D_{\mathrm{KL}}(p_r \| p_\theta)$ up to a
+per-step constant, so $G$ is fidelity to the model the decoder is trying to imitate, $G(0) = 0$ and
+$G(1) = D_{\mathrm{KL}}(p_r\|p_s)$. Note $C'(0) = 0$ while $G'(0) = m - \psi'(0)$ is the Jeffreys
+divergence between the two models --- the quantity governing the exact reward--KL
+frontier~\citep{monteiropaes2026limits} --- so at every step the first nat bought is worth a
+Jeffreys divergence and the last is worth nothing.
+
+The token bucket is myopic: it takes whatever marginal price $G'/C'$ its current allowance happens
+to land on. The best allocation of a \emph{fixed} total across a trajectory instead equalises that
+price, serving the $\theta_t$ that solve $G'(\theta) = \lambda C'(\theta)$ at one shared $\lambda$.
+Both allocations are computable from two teacher-forced forward passes, with no decoding run and no
+change to the decoder, so what better scheduling is worth can be measured rather than argued.
+Walking both models along $30$ targets --- $12$ for KL3M-520M's ordinary generations, the one arm
+run at a smaller limit --- and giving the equal-price allocation exactly the total the bucket itself
+spent. Three kinds of target, because the geometry could in principle depend on what
+is being written: a passage the risky model was fine-tuned to reproduce, a novel from a split it has
+never seen, and a sample it drew itself on an ordinary prompt.
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+& & \multicolumn{2}{c}{memorised passage} & \multicolumn{2}{c}{held-out novel} & \multicolumn{2}{c}{ordinary generation} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
+pair & $k$ & \% of $\theta{=}1$ & gain & \% of $\theta{=}1$ & gain & \% of $\theta{=}1$ & gain \\
+\midrule
+KL3M 520M   & $0.25$ & $51.2\%$ & $1.123$ & $54.5\%$ & $1.103$ & $54.4\%$ & $1.105$ \\
+            & $0.50$ & $63.7\%$ & $1.068$ & $69.4\%$ & $1.063$ & $70.0\%$ & $1.063$ \\
+            & $1.00$ & $76.1\%$ & $1.031$ & $84.5\%$ & $1.033$ & $84.6\%$ & $1.034$ \\
+            & $3.00$ & $92.7\%$ & $1.006$ & $98.9\%$ & $1.008$ & $98.2\%$ & $1.010$ \\
+\addlinespace
+Pleias 1.2B & $0.25$ & $46.7\%$ & $1.133$ & $44.4\%$ & $1.125$ & $45.6\%$ & $1.121$ \\
+            & $0.50$ & $60.4\%$ & $1.084$ & $59.7\%$ & $1.094$ & $61.1\%$ & $1.088$ \\
+            & $1.00$ & $74.6\%$ & $1.041$ & $76.9\%$ & $1.056$ & $79.2\%$ & $1.050$ \\
+            & $3.00$ & $92.8\%$ & $1.007$ & $96.9\%$ & $1.013$ & $97.1\%$ & $1.013$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two readings, and the second does not need the first. Optimal reallocation of the same budget buys
+$3$ to $13\%$ at the budgets where the certificate says anything, so a primal-dual scheduler is
+worth percent, not orders of magnitude --- and the three target columns agree to within two points
+of gain everywhere, so this is a property of the geometry and not of what is being written. The
+percentage columns bound \emph{every} allocation at once: they are the fraction of the $\theta = 1$
+fidelity the bucket already captures, and $\theta = 1$ everywhere is the risky model served
+outright, which is what an unlimited budget buys. At $k=1$ that ceiling is only $1.2$ to
+$1.3\times$ away, and on the memorised trajectory --- the one an extraction adversary actually
+walks --- $1.3$ to $1.4\times$. No decoder that still meters divergence from the anchor
+can recover three orders of magnitude, because three orders of magnitude of fidelity are not there
+to recover.
+
+Two limitations. The allocation is computed along a fixed teacher-forced trajectory, and a decoder
+that spent differently would walk a different one; and fidelity to $p_r$ is not judged utility. The
+second is the point rather than a caveat: the mechanism has no utility signal, and imitating $p_r$
+is the only thing its budget can buy. What the measurement adds to Theorem~\ref{thm:nfl} is that the
+overhead is the price of that target, not of the schedule.
+

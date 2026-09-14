@@ -18,7 +18,7 @@ only variable; in the original pair it is confounded with a change of corpus, sc
 recipe. The memoriser reaches $0.915$ near-verbatim recall on the passages it was trained on and
 $0.000$ on the held-out split.
 
-Across $9$ budgets, $5$ strategies and $31{,}640$ budgeted queries there are no invariant
+Across $7$ budgets, their two baselines, $5$ strategies and $31{,}738$ budgeted queries there are no invariant
 violations. Three things are sharper on this pair:
 
 \begin{itemize}
@@ -33,8 +33,9 @@ violations. Three things are sharper on this pair:
       target set the anchor has never seen.
 \end{itemize}
 
-The certificate goes vacuous above $s(x) = 2.39$ nats per token for these targets, and reproduction
-is provably impossible below $k_{\mathrm{crit}} = 11.32$. Measured recall is $0.000$ at every budget
+The certificate goes vacuous above $s(x) = 2.39$ nats per token for these targets, and no budget
+below $k_{\mathrm{crit}} = 11.32$ lets the decoder emit the work reliably
+(Proposition~\ref{prop:outrun}). Measured recall is $0.000$ at every budget
 up to $k=1$, $0.048$ at $k=3$ and $0.197$ at $k=5$: leakage starts far below $k_{\mathrm{crit}}$ and
 close to $s(x)$, while the budget at which the \emph{whole} work becomes reproducible is four to
 five times higher.

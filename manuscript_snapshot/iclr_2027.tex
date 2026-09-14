@@ -24,11 +24,14 @@
 \renewcommand{\floatpagefraction}{0.75}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
+% Retitled 2026-09-12 around the dichotomy, which is the contribution: the audit and the three
+% failed repairs are its corollaries being confirmed, not an experiment log. The earlier titles
+% named a mechanism comparison; this one names the theorem. (2026-09-09 note kept below.)
 % Retitled 2026-09-09 around what five pairs left standing. The fixed-fraction onset law did not
 % survive pair 5, so the title must not promise a law; the units result and the no-free-lunch did,
 % and both are what the abstract's first two sentences already claim.
-\title{A Divergence Budget Is Uninformative Without the Work It Protects\\
-Vacuity, Extraction and Utility in Metered Decoding}
+\title{Vacuous or Trivial\\
+A Dichotomy for Per-Token Copyright Certificates, and Where the Budget Must Go Instead}
 
 \author{Anonymous authors\\Paper under double-blind review}
 
@@ -36,94 +39,109 @@ Vacuity, Extraction and Utility in Metered Decoding}
 \maketitle
 
 \begin{abstract}
-Inference-time mechanisms for copyright protection meter how far a language model's output may
-drift from a safe model that never saw the protected work, and publish the allowance as a single
-number $k$. We show that $k$ carries no risk information on its own, and identify what does. The
-bound such a budget implies on reproducing a work $x$ becomes vacuous at $K = S(x)$, the safe
-model's surprisal of $x$, and this threshold is identical for every R\'enyi order of the charge, so
-no strengthening of the accounting moves it. A second result prices the other thing a budget buys:
-Donsker--Varadhan at the sequence level bounds the budget needed for mean utility by the Cram\'er
-rate function of that utility under the safe model. Measuring both sides, the decoder spends $79$ to
-$171$ nats of realised divergence for a utility gain worth hundredths of a nat --- three to four
-orders of magnitude of overhead, so what pushes a budget past the vacuity threshold is the price of
-imitating the risky model, not the price of being better than the safe one. The useful region opens
-only where the certified one has closed: under two independent judges and $600$ comparisons per
-budget, neither separates the decoder from its own safe model at $k=0.5$, the largest budget that
-covers every protected work, and both separate it only at $k \ge 10$, where the certificate covers
-none. Finally, extraction begins near that threshold but not at a fixed fraction of it: on seven
-model pairs sharing no anchor, tokenizer or risky model, leakage first becomes measurable between
-$0.88$ and $1.17$ of $s(x)$, and where in that range falls depends on how much of the work the
-adversary is handed --- a quantity extraction evaluations specify in tokens, and therefore report
-differently under every tokenizer. Halving it moves a pair across its own vacuity threshold. Across ten safe models and
-three openly licensed corpora, the separation between the rate that must be permitted and the rate
-that must be forbidden widens as safe models improve.
+Inference-time copyright defences meter how far a language model's output may drift from a
+\emph{safe} model that never saw the protected work, and publish the allowance as a single number
+$k$. We show the design is closed. For any autoregressive policy the sequence divergence is exactly
+the sum of its per-step divergences, so a policy holding to a budget $K$ can differ from the safe
+model by more than $\varepsilon$ at no more than $K/\varepsilon$ steps in expectation. A per-token
+meter therefore faces a dichotomy. Either its allowance $K = kT$ grows with the work, and it is
+\emph{vacuous} --- the bound it implies on reproducing $x$ is empty exactly at $K = S(x)$,
+identically for every R\'enyi order, and across nine pairs with nine distinct anchors and six tokenizers
+extraction becomes measurable between $0.88$ and $1.17$ of $s(x)$ --- or the budget is
+bounded and the decoder is the safe model at all but $O(1)$ of its steps, where at $k=0.5$ neither
+of two judges can separate it from the safe model at $600$ comparisons per budget. The deployed
+class takes the first horn by construction: its spend is the cost of \emph{imitating} the risky
+model, $\Theta(T)$ nats independent of the utility bought, stalling at $171.3$ over $16{,}500$
+trajectories while its certificate is written against $4000$. Three repairs --- a sharper charge, a
+smaller cap, a better schedule --- are corollaries of the dichotomy and fail as it predicts. The
+escape is not a better meter but a different place to spend, outside the per-step factorisation the
+chain rule reaches. Serving the best of $n$ safe-model draws satisfies $q(y) \le n\,p_s(y)$, a
+\emph{pathwise} certificate of exactly $\log n$ under any score and any tie rule, vacuous only at
+$n = e^{S(x)}$. At $n = 8$ that is $2.08$ nats against a work worth $849$, and it gains judged
+utility at four anchors in three families and exact-match accuracy with no judge at
+all, reaches the utility a metered decoder needs $171.3$ nats for, promises an amplification of $8$ against $e^{2000}$, and reproduces none of the protected
+passages at any $n \le 64$, even when the adversary picks the scorer.
 \end{abstract}
 
 \input{sections/iclr_intro}
 
 \input{sections/frontier}
 
-\begin{figure}[tb]
-\centering
-\includegraphics[width=0.62\textwidth]{frontier_scaling.pdf}
-\caption{Ten safe models, three independently curated openly licensed corpora. \textbf{Left:} the
-safe model's surprisal rate on the 758 protected passages, $s(x)$, and the rate at which ordinary
-risky-model output diverges from the same safe model, $c_{\mathrm{use}}$, both in nats per
-character. Both fall as the safe model improves; $c_{\mathrm{use}}$ falls faster.
-\textbf{Right:} their ratio rises monotonically with capability in every family, and for all
-sixteen novels individually ($p = 3.1\times10^{-5}$ per family, paired sign test).}
-\label{fig:frontier}
-\end{figure}
-
-\input{sections/scaling}
-
 \input{sections/onset}
 
 \input{sections/orders}
+
+\input{sections/selection}
+
+\input{sections/experiments}
 
 \input{sections/related_work_v4}
 
 \input{sections/iclr_closing}
 
 \section*{Ethics Statement}
-This work audits a copyright-protection mechanism, so it necessarily demonstrates extraction of
-copyrighted text. We use passages already published as benchmarks (CopyBench, BookMIA) and report
-only aggregate recall statistics, never reconstructed passages. The memorising models are the
-adversary's construction rather than an artifact we advocate: the accompanying anonymised
-repository contains the fine-tuning recipes and every analysis script, but not the merged
-memorising weights, which reproduce copyrighted text on demand. We make no claim about legal thresholds for infringement. The findings are reported so
-that deployers of divergence-budgeted decoders can choose budgets that mean what they think they
-mean; nothing here enables an attack that a fine-tuned model would not already permit.
+Auditing a copyright defence requires demonstrating that it can be defeated, and this paper does
+that: it fine-tunes memorising models, attacks a protected decoder, and reports where extraction
+begins. We judge the disclosure net positive and have bounded it deliberately. The passages are
+already published as extraction benchmarks (CopyBench, BookMIA), only aggregate recall statistics are
+reported and never reconstructed passages, and the accompanying anonymised repository ships the
+fine-tuning recipes and every analysis script but not the merged memorising weights, which reproduce
+copyrighted text on demand. Nothing here enables an attack that possession of a fine-tuned model
+would not already permit.
+
+The constructive direction carries its own risk, which is misplaced confidence. A $\log n$
+certificate bounds the probability that the served text is a protected work \emph{relative to the
+safe model's own probability of producing it}, and is worthless if the safe model is itself
+contaminated; it is a statement about a mechanism, not a legal conclusion about infringement, and we
+make no claim about legal thresholds for copyright infringement. The deployer-facing recommendation
+is narrow and we would rather it were quoted than the theorems: publish $k/s(x)$ rather than $k$,
+name the work it was computed against, and prefer a budget whose size does not grow with the thing it
+protects.
 
 \section*{Reproducibility Statement}
 Every number in this paper is produced by a committed script and written to a CSV before it is
 quoted, with the producing command recorded alongside it. Proofs of
 Propositions~\ref{prop:threshold} and~\ref{prop:outrun} and of Theorem~\ref{thm:nfl} are in
-Appendix~\ref{app:proofs}, stated with their assumptions. The three rates of
-Eq.~\eqref{eq:rates} require only forward passes and no decoding, so
-Sections~\ref{sec:scaling} and~\ref{sec:onset} reproduce on a single GPU from openly licensed
-checkpoints. Budget accounting is checked per trajectory rather than on averages, and every run
-reports the $k=-1$ (risky only) and $k=0$ (safe only) baselines on the same prompts and seeds. An
-anonymised repository with the code, the CSVs and the reproduction commands accompanies the
-submission.
+Appendix~\ref{app:proofs}, stated with their assumptions; Proposition~\ref{prop:selection} is proved
+where it is stated. The three rates of Eq.~\eqref{eq:rates} require only forward passes and no
+decoding, so Section~\ref{sec:onset} and Appendix~\ref{app:scaling} reproduce on a single GPU from
+openly licensed checkpoints. Every band this paper scores against was committed to the repository before the run that scores it,
+together with the grid, the entry gate and the alternatives excluded in advance; the records are the
+thirty-seven pre-registration logs in \texttt{results/}, of which
+\texttt{results/onset\_prediction\_selection.md} is the one Section~\ref{sec:experiments} scores. Budget accounting is
+checked per trajectory rather than on averages, and every run reports the $k=-1$ (risky only) and
+$k=0$ (safe only) baselines on the same prompts and seeds. An anonymised repository with the code,
+the CSVs and the reproduction commands accompanies the submission.
 
 \section*{LLM Usage}
 LLMs were used for editorial purposes in this manuscript, and all outputs were inspected by the
-authors to ensure accuracy and originality. An instruction-tuned model is also used as a
-\emph{measurement instrument} in Section~\ref{sec:orders}, where it judges output quality; its
-resolution is measured rather than assumed, by scoring one decoder against itself under two seeds
-and by including a null arm. Total compute for this work is approximately $63$ GPU-hours on A100
-hardware, dominated by the memorisation fine-tunes and the budget sweeps.
+authors to ensure accuracy and originality. Instruction-tuned models also appear in two further
+roles, which we separate deliberately. As \emph{measurement instruments} they judge output quality
+in Sections~\ref{sec:orders} and~\ref{sec:experiments}; their resolution is measured rather than
+assumed --- by scoring one decoder against itself under two seeds, by including a null arm, and by
+running two judges that are reported separately wherever they disagree. As a \emph{component of the
+proposed mechanism} one of them supplies the score that selection anchoring ranks by, which is why
+Section~\ref{sec:experiments} never scores an arm with the model that selected it, and why
+Proposition~\ref{prop:selection} is stated for an arbitrary score: the certificate must not depend
+on that model behaving well. Total compute for this work is approximately $191$ GPU-hours on A100
+hardware (\texttt{results/compute\_hours.csv}), most of it the budget sweeps and the judged arms;
+the memorisation fine-tunes account for at most $28$ of those hours, some of whose run directories
+also contain the sweep that followed.
 
 \bibliographystyle{iclr2027_conference}
 \bibliography{references}
 
 \appendix
+% Appendix order follows the main text: theory, then the audit that motivates the diagnosis, then
+% the mechanism, then the wrap-up. Selection moved ahead of limitations on 2026-09-11 because it is
+% the paper's contribution and was last in the list only because it was written last.
 \input{sections/appendix_proofs}
 \input{sections/appendix_opening}
+\input{sections/appendix_onset}
 \input{sections/appendix_robustness}
 \input{sections/appendix_seed}
+\input{sections/appendix_second_anchor}
+\input{sections/appendix_selection}
 \input{sections/appendix_limitations}
 \input{sections/appendix_related}
-\input{sections/appendix_second_anchor}
 \end{document}

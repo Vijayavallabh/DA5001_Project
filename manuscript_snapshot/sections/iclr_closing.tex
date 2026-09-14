@@ -1,20 +1,19 @@
-% Plan v5 / item F: conclusion with limitations folded in; the full discussion is Appendix~\ref{app:limitations}.
+% v6 (2026-09-11): limitations and conclusion. Broader impact is in the (uncounted) Ethics
+% Statement of iclr_2027.tex; the full limitations are Appendix~\ref{app:limitations}.
 
-\section{Conclusion}\label{sec:conclusion}
+\section{Limitations and conclusion}\label{sec:limitations}
 
-A scalar divergence budget is a rate, and safety against reproducing a particular work is a
-workload maximum; queueing theory has known those come apart since \citet{loynes1962stability}.
-The mismatch has consequences a deployer can compute. The budget's unit is the safe model's
-surprisal of the work it protects, the certificate is exactly vacuous at $k = s(x)$ for every
-R\'enyi order, and extraction begins within about a fifth of that point on every pair, on either
-side of it. We found no budget both informative and useful, but Theorem~\ref{thm:nfl} says the
-obstruction is not fundamental: the decoder spends hundreds of nats for utility worth hundredths.
-All three boundaries are computable in advance, so a deployer publishing one number should publish
-$k/s(x)$, and a rights-holder reading one should ask which work it was computed against.
+\textbf{The scorer binds before the anchor does.} $q(y) \le n\,p_s(y)$ means a served string is one
+the safe model would have drawn, so an anchor that cannot do the task gains nothing at any $n$ ---
+but a general reward gains $3.4\times$ less than majority vote on GSM8K and \emph{loses} accuracy
+on TriviaQA: the scorer is the lower ceiling. Judged levels are position-dominated, the corpus is sixteen English
+novels, and the zero leakage is measured against a memoriser \emph{we} fine-tuned --- it has not
+been shown against a model that memorised the work in pre-training.
 
-\paragraph{Limitations}
-Four, in full in Appendix~\ref{app:limitations}: all seven pairs use the same sixteen English genre
-novels, so $p = 3.1\times10^{-5}$ is the smallest value they can give; the onset ratio splits by
-tokenizer granularity rather than holding fixed; Theorem~\ref{thm:nfl} is a converse, bounding what
-is possible rather than this decoder; and two judges bracket the useful region but do not agree on
-where it opens.
+\paragraph{Conclusion}\label{sec:conclusion}
+One line of the chain rule leaves a per-token budget two options: grow with the work, or be the
+anchor almost everywhere. Three repairs and the one causal placement fail where it says they must.
+It fixes a shape and not a value --- how close a policy of the shape
+Proposition~\ref{prop:sparse} permits could come to Theorem~\ref{thm:nfl}'s frontier is open, and
+we measure one, not the class. Spend it once, on the
+draw: the promise is $8$, not $e^{2000}$.

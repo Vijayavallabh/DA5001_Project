@@ -1,0 +1,116 @@
+% v6 (2026-09-11): Numbers from results/selection_decoding.csv, selection_candidates.csv,
+% selection_crossjudge.csv, selection_scaling.csv, selection_extraction.csv, utility_price.csv.
+% Pre-registrations: results/onset_prediction_selection{,_scaling}.md, committed before each run.
+
+\section{Does it work?}\label{sec:experiments}
+
+Proposition~\ref{prop:selection} is worth little if the mechanism serves worse text. We measure
+both sides on the workload Section~\ref{sec:orders} priced the metered decoder on, and every band
+below was committed before the run it scores. The protocol: $500$ ordinary prompts at the same
+anchor, temperature and cap as every other arm, utility a pairwise judgement against the
+\emph{unconstrained} risky model scored $1/\tfrac12/0$, order randomised, arms nested
+(Appendix~\ref{app:selection}).
+
+\begin{table}[tb]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Selection anchoring on $500$ prompts, as \textbf{gains over each arm's own anchor-alone
+control}: the two deployable scorers, the strongest anchor, and the metered
+decoder's best arm under one judge (bottom). The circular oracle that selects by the judge that
+then scores it is Appendix~\ref{app:selection}, where its verdict is recorded as an artefact. Levels are omitted because the instrument check below shows they are largely a
+statement about slot order; a dash marks a gain whose \emph{paired} interval that pass cannot
+form.}
+\label{tab:selection}
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+scorer & scored by & $n$ & budget, nats & gain over control & $95\%$ CI \\
+\midrule
+judge A's verdict           & judge B & $8$ & $1.204$ & $+0.081$ & $[+0.034, +0.130]$ \\
+pointwise reward            & judge B & $8$ & $1.204$ & $+0.054$ & $[+0.013, +0.095]$ \\
+pointwise reward            & judge B & $64$ & $3.175$ & $+0.142$ & $[+0.097, +0.187]$ \\
+pointwise reward            & judge C & $64$ & $3.175$ & $+0.123$ & $[+0.076, +0.171]$ \\
+pointwise, anchor Comma-7B  & judge B & $8$ & $1.204$ & $+0.111$ & $[+0.072, +0.148]$ \\
+\midrule
+metered decoder, $k=10$     & judge B & --- & $171.3$ & $+0.072$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The scorer decides, and the obvious one fails}
+The first scorer we pre-registered was the risky model's own per-token log-likelihood --- the
+objective anchored decoding tilts toward. It fails, moving judged utility by $-0.006$ at $n=8$
+against a committed band of $+0.077$, while its control reproduces the $u_{\text{safe}} = 0.323$ on
+record so the pipeline is sound; Section~\ref{sec:orders}'s AUC diagnosis is measured on exactly
+these candidates and explains it, and a circular oracle over the same eight reaches $+0.488$, so
+what fails is the objective and not the budget (Appendix~\ref{app:selection}).
+Two scorers do track quality, and the cheaper is the better one. Selecting by judge~A and scoring with judge~B,
+which did no selecting, gives $+0.081$ $[+0.034, +0.130]$ at $n=8$. The deployable scorer does not
+consult the risky model at all: a \emph{pointwise} reward,
+$\log p(\text{Yes}) - \log p(\text{No})$ from a third model on one fixed template, one forward pass
+per candidate. It gains $+0.054$ $[+0.013, +0.095]$ at $n=8$ and $+0.142$ $[+0.097, +0.187]$ at
+$n=64$, monotone in $\log n$ (Spearman $+0.991$ over seven arms), and a second judge that also did
+no selecting agrees at $n=8$, $+0.073$ $[+0.027, +0.120]$; all three were pre-registered with
+refuting bands. The comparison is not a tie but a reversal --- in \emph{gains over each arm's own
+control}, because absolute judged levels do not survive the instrument check below: the metered
+decoder gains $+0.072$ for $171.3$ nats and selection $+0.142$ for $3.175$, twice the utility for
+one fifty-fourth of the divergence, under the pathwise order rather than the KL. At the one further
+pair where the metered decoder runs at all --- it needs a shared vocabulary, and no other openly
+licensed anchor has the risky model's --- the reversal repeats: $+0.076$ for $1.204$ nats against
+its best arm's $+0.056$ for $123.2$ (Appendix~\ref{app:proofs}).
+
+\paragraph{The judge is dominated by position, and only the gains survive it}
+Re-judging the same $500$ pairs in \emph{both} orders ($2{,}000$ calls, bands committed first)
+shows position bias \citep{zheng2023judging} dominating it: the same two texts win $261$ of $500$
+shown second and $24$ shown first, only $29.2\%$ of items get a mutually consistent verdict, and the
+first slot wins $12.7\%$ of decided comparisons. \emph{An absolute judged level is therefore largely
+a statement about slot order}, which is why nothing above is quoted as one. The gains survive,
+because every arm randomises order per pair: order-averaging each item, which removes position by
+construction rather than in expectation, leaves $+0.0405$ $[+0.019, +0.063]$ against the $+0.081$ on
+record (Appendix~\ref{app:selection}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{selection_frontier.pdf}
+\caption{\textbf{(a)} A metered budget $K = kT$ and the price of the work $S(x) = s(x)T$ (grey band:
+nine pairs) are both rays, so which is larger is decided by $k/s(x)$, never by length; $\log n$ is
+horizontal. \textbf{(b)} What a nat buys, both mechanisms under one judge, against $\Lambda^*_s$
+(dotted). Sweeping $n$ moves selection up the frontier; sweeping $k$ moves the metered decoder along
+a wall two orders of magnitude to the right.}
+\label{fig:selection}
+\end{figure}
+
+\paragraph{An adversarial scorer leaks nothing}
+The sharpest test of the certificate hands the selector to the attacker: we score the $n$ anchor
+samples by the
+\emph{memorising} model's likelihood, on Section~\ref{sec:onset}'s $100$ passages and seeds, with
+both mandatory baselines. Near-verbatim recall is $0.0000$ at every $n$ from $1$ to $64$, maximum
+over all $100$ passages $0.0000$, against the memorising model's mean of $0.3925$ and maximum of
+$0.8154$ (Table~\ref{tab:extraction}) --- $n$ multiplies the \emph{anchor's own} rate and the anchor
+never saw the work. It is $0.0000$ at all four anchors, and the power is not in question: the same
+pipeline puts $78\%$ of passages above threshold for the unconstrained memoriser
+(Appendix~\ref{app:selection}).
+
+\paragraph{Four anchors, and where the ceiling binds}
+Nothing above is tied to the audited anchor. Re-run unchanged at three further openly licensed base
+models --- Pleias-1.2B, KL3M-1.7B and Comma-7B, a $6\times$ range in parameters, same prompts, judge
+and baseline --- selection gains $+0.029$ $[-0.012, +0.068]$, $+0.039$ $[+0.005, +0.076]$ and
+$+0.111$ $[+0.072, +0.148]$: two of three exclude zero on the pre-registered scorer, all three on
+the second, against a band committed to cost us this claim had none. The strongest anchor gives the
+largest gain, and the anchor decides the standard benchmarks too. On \textbf{AlpacaEval}'s $805$
+instructions \citep{dubois2024length} the audited anchor gains $+0.031$ $[-0.001, +0.062]$ under
+judge~B, which does not resolve, and $+0.067$ $[+0.034, +0.101]$ under judge~C, while
+\textbf{MT-Bench}'s $80$ \citep{zheng2023judging} resolve nothing in either at a half-width of
+$0.09$; Comma-7B on the same prompts, opponent and judges gives $+0.075$ $[+0.042, +0.108]$ and
+$+0.167$ $[+0.134, +0.201]$, monotone in $\log n$ in both. Proposition~\ref{prop:selection}'s
+ceiling is what the weaker number was, and it binds at the anchor and not within one: across
+domains inside one anchor the same test is inseparable from a no-effect null
+(Appendix~\ref{app:limitations}).
+
+\paragraph{Off the judge's axis}
+Every gain above is a judged preference and the judge is position-dominated; exact match is not. On
+GSM8K's first $500$ test problems, $8$-shot, same anchor and $n$ grid, majority vote takes
+accuracy from $0.320$ to $0.546$ ($+0.226$ $[+0.184, +0.270]$ at $n=32$, Spearman $+0.955$ in
+$\log n$) and the same pointwise reward gains $+0.066$ $[+0.024, +0.108]$ --- for $3.47$ and $4.16$
+nats. On closed-book TriviaQA majority vote lifts $4.2\times$ less, $+0.054$ $[+0.026, +0.082]$ at
+$n=64$, while the reward \emph{falls} with $n$, $-0.038$ $[-0.068, -0.008]$ at $n=16$: across two
+tasks the rules differ by $3.4\times$ and then in sign, and the ceiling is the scorer's.
