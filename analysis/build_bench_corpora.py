@@ -83,6 +83,42 @@ def build_alpaca():
     return len(rows)
 
 
+def build_triviaqa(limit=500, n_shot=5):
+    """TriviaQA as a FACTUAL-slot corpus, so the metered decoder can be run on a task with a
+    checkable answer.
+
+    The judged head-to-head between the two mechanisms exists at three pairs; a *judge-free* one
+    did not exist at all, because it needs an anchor that both shares the risky model's tokenizer
+    (only TinyComma does) and can do the task. TinyComma scores 0.04 on GSM8K and cannot, and 0.07
+    on TriviaQA and can. This builds the corpus that makes it possible.
+
+    `prompt_text` carries the whole few-shot prompt, because h1.py conditions on it verbatim
+    through the factscore normaliser and the anchor is a base model that needs the format. The gold
+    aliases ride along in `reference` so a scorer can join on prompt_id without re-downloading.
+    """
+    from datasets import load_dataset
+    d = load_dataset("mandarjoshi/trivia_qa", "rc.nocontext")
+    shots = "".join(f"Question: {r['question']}\nAnswer: {r['answer']['value']}\n\n"
+                    for r in d["train"].select(range(n_shot)))
+    val = d["validation"].select(range(limit))
+    out = os.path.join(BENCH, "triviaqa_factual.jsonl")
+    with open(out, "w", encoding="utf-8") as fh:
+        for i, r in enumerate(val):
+            aliases = sorted({a for a in r["answer"]["normalized_aliases"] if a}
+                             | {r["answer"]["value"]})
+            fh.write(json.dumps({
+                "prompt_id": f"tqa_{i:04d}",
+                "source_novel": "triviaqa",
+                "split": "factual",
+                "prompt_text": shots + f"Question: {r['question']}\nAnswer:",
+                "reference": " ||| ".join(aliases),
+                "expected_answer": r["answer"]["value"],
+            }) + "\n")
+    dd = link_dir("triviaqa", {"factscore.jsonl": out})
+    print(f"triviaqa: {len(val)} questions, {n_shot}-shot -> {out}; data-dir {dd}")
+    return len(val)
+
+
 def build_bookmia(label=1, tag="bookmia100"):
     src = os.path.join(BENCH, "bookmia.jsonl")
     rows = [json.loads(l) for l in open(src)]
@@ -151,6 +187,7 @@ def build_mtbench():
 
 if __name__ == "__main__":
     build_alpaca()
+    build_triviaqa()
     build_mtbench()
     build_bookmia(label=1, tag="bookmia100")
     # The benchmark's label = 0 books are text the models did NOT train on. Built the same way,
