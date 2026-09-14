@@ -116,10 +116,28 @@ def test_limitations_carries_the_committed_consequence_of_f1_and_f3():
 
 
 def test_the_conceded_compute_ratios_were_not_softened_by_the_failed_rescue():
-    """The committed consequence of NO CROSSING is that 57.5x stands EXACTLY as written, in the
-    introduction, in Section 2 and in Limitations. A failed rescue may not be spent as a discount."""
+    """The committed consequence of NO CROSSING is that the n=64 concession stands EXACTLY as
+    written, in the introduction, in Section 2 and in Limitations: a failed rescue may not be spent
+    as a discount. The literal is read from the CSV rather than hardcoded, because it moved once
+    already -- 57.5x was computed from the models' NAMES and is 61.3x from their parameter counts."""
+    worst = max(float(r["cost_vs_metered"]) for r in _rows("results/compute_matched.csv"))
     for f in ("sections/iclr_intro.tex", "sections/selection.tex", "sections/iclr_closing.tex"):
-        assert "$57.5\\times$" in _tex(f), f
+        assert f"${worst:.1f}\\times$" in _tex(f), (f, worst)
+
+
+def test_the_cost_model_uses_measured_parameter_counts_and_not_model_names():
+    """Qwen2.5-7B-Instruct holds 7.6156B parameters, not 7.0, and pricing it at its name understated
+    selection's serving cost by 8.8% everywhere it appeared. Every constant here must be a count
+    someone took off a checkpoint; a value equal to the round number in the model's name is the bug
+    this pins. Reproduce with sum(p.numel() for p in from_pretrained(<id>).parameters())."""
+    from analysis.serving_cost import P_ANCHOR, P_RISKY, P_SCORER, P_SMALL
+    measured = {"anchor": (P_ANCHOR, 1.7586), "risky": (P_RISKY, 8.0303),
+                "scorer": (P_SCORER, 7.6156), "small": (P_SMALL, 0.4940)}
+    for name, (got, want) in measured.items():
+        assert abs(got - want) < 5e-4, (name, got, want)
+    for name, label in (("anchor", 1.8), ("risky", 8.0), ("scorer", 7.0), ("small", 0.5)):
+        if abs(measured[name][1] - label) > 5e-4:
+            assert abs(measured[name][0] - label) > 5e-4, f"{name} is priced at its name again"
 
 
 def test_limitations_compares_two_order_averaged_gains_and_not_one_of_each():

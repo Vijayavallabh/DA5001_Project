@@ -2,8 +2,16 @@
 
 ## Current objective
 
-Nothing is running. All forty-four pre-registrations in `results/` are scored and the manuscript
-compiles clean from a deleted PDF.
+**In flight: feat-117**, `results/onset_prediction_scorer_scale.md`, GPU 0, launched 2026-09-15
+03:5x, roughly two GPU-hours. It asks where between `0.5`B and `7.6`B best-of-n stops turning over,
+by re-scoring the same cached candidates with `Qwen2.5-1.5B-Instruct` and `Qwen2.5-3B-Instruct` and
+judging all four scorers in one pass. Bands G0-G4 committed at `cb660e8` before the run; G0 is a
+replication gate against feat-116 and if it fails nothing else may be quoted. If this session ends
+before it lands, the log is `output/logs/scorer_scale.log` and the outputs are
+`results/scorer_scale{,_bands,_per_prompt}.csv`.
+
+All forty-four other pre-registrations in `results/` are scored and the manuscript compiles clean
+from a deleted PDF.
 
 This session did four things: **reframed the paper to lead with its contribution (v8)**, **answered
 a referee report by measurement (v9/v10)**, **read the rendered PDF end to end**, and **ran the
