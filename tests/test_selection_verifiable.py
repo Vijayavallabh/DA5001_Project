@@ -199,3 +199,35 @@ def test_limitations_carries_both_tasks_worth_of_scorer_evidence():
     body = " ".join(open(tex("sections/iclr_closing.tex")).read().split())
     assert "The scorer binds before the anchor does" in body
     assert "TriviaQA" in body and "3.4" in body
+
+
+def test_every_cell_of_the_judgefree_table_rounds_from_its_csv():
+    """Caution (j): a paper number rounds from the CSV once. 28 rows x 4 numbers plus the two
+    baselines, checked mechanically rather than read."""
+    import csv
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    checked = 0
+    for p in ("results/selection_verifiable_comma7b.csv",
+              "results/selection_verifiable_tqa_comma7b.csv"):
+        rows = list(csv.DictReader(open(p)))
+        for r in rows:
+            if r["arm"].startswith("risky"):
+                assert f"${float(r['acc']):.3f}$" in apx, (p, r["arm"], r["acc"])
+                checked += 1
+                continue
+            g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
+            cell = (f"${float(r['budget_nats']):.3f}$ & ${float(r['acc']):.3f}$ & "
+                    f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$")
+            assert cell in apx or cell.split("& ", 1)[1] in apx, (p, r["arm"], r["n"], cell)
+            checked += 1
+        sp = {r["arm"].split(" ")[0]: r["spearman_acc_logn"] for r in rows if r["gain_lo95"]}
+        for v in sp.values():
+            assert f"${float(v):+.3f}$" in apx or f"${float(v):.3f}$" in apx, (p, v)
+    assert checked == 32, checked
+
+
+def test_the_appendix_states_both_metric_gates_as_measured():
+    """Both arms are gated on an extraction rate and both gates are reported, not just the one
+    that reads better. The TriviaQA figure is 1 - the logged no-answer fraction."""
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    assert "$99.96\\%$" in apx and "$98.67\\%$" in apx, "a metric gate is missing from the appendix"

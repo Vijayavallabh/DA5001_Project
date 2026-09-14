@@ -108,3 +108,92 @@ impossibility --- that no budget certifies every protected work and also buys a 
 improvement --- is a property of \emph{metering per token}, not of budgeted decoding. At $k=10$ the
 metered decoder's $2{,}000$ nats cover none of the works; $\log 8 = 2.08$ nats cover all of them
 with four hundred times the margin to spare, and reach the same judged utility.
+
+\paragraph{The judge-free axis: protocol and the full grids}\label{app:judgefree}
+Every other utility number in this paper is a pairwise judged preference and the judge is dominated
+by position (Appendix~\ref{app:limitations}). Exact match is not, so two arms measure the
+constructive claim with no judge in the loop. Both run at Comma-7B --- the anchor carrying the
+largest judged gain --- on the same $n$ grid as the judged experiments, at temperature $0.7$, and
+both score the \emph{served} string, which Proposition~\ref{prop:selection} bounds only because it
+is one of the $n$ draws: the tie rule returns an index into the sample, never a synthesised answer.
+
+\textbf{Reasoning.} GSM8K's first $500$ test problems, $8$-shot with the first eight training
+problems as a fixed prompt, $256$-token cap, $64$ samples per problem drawn once and read nested, so
+$n \in \{1,\dots,64\}$ are prefixes of one draw and no sample is scored twice. Scoring is the
+benchmark's own: the final integer after \texttt{\#\#\#\#}, cut at the first run-on into the next
+few-shot question, because a base model continues past its answer and grading the last marker in
+the buffer grades a different problem.
+
+\textbf{Knowledge.} TriviaQA \texttt{rc.nocontext}, the first $500$ validation questions, $5$-shot,
+$24$-token cap, $64$ samples. Scoring is \emph{containment}: a gold alias appears as a whole-word
+span in the normalised answer line. Exact match here would score format rather than knowledge --- a
+base model completing a few-shot prompt emits \texttt{David Seville} and an instruction-tuned one
+emits \texttt{The answer is David Seville}, and a smoke run scored the latter $0/8$ on questions it
+had right --- so the rule was fixed in the pre-registration before any number, and the $24$-token
+cap bounds what a verbose completion can sweep up by accident. It applies identically to the anchor
+draws, the selected outputs and both baselines.
+
+Each arm reads no band unless a number was extracted from $90\%$ of its $500 \times 64$ samples:
+GSM8K yields one on $99.96\%$ and TriviaQA on $98.67\%$. Both arms carry the mandatory baselines on
+the same questions and seeds --- $k=0$ is the $n=1$ row and $k=-1$ is
+\texttt{Llama-3.1-8B-Instruct} alone, $0.786$ greedy and $0.726$ sampled on GSM8K, $0.722$ and
+$0.674$ on TriviaQA. Those are descriptive: the risky model is instruction-tuned and the anchor is
+not, and the comparison this paper makes is between two ways of spending a budget over one anchor.
+On GSM8K both rules are monotone in $\log n$ (Spearman $+0.955$ and $+0.929$); on TriviaQA only one
+is, which is the whole of what separates the two tasks.
+
+\begin{table}[t]
+\centering
+\caption{The judge-free grids, both tasks, both selection rules, at Comma-7B. Gains are paired
+against each rule's own $n=1$ row, which is the anchor's first draw and the same string for both
+rules. Budget is $\log n$ nats, the exact pathwise charge of
+Proposition~\ref{prop:selection}. \textbf{Majority vote lifts on both tasks and the pointwise
+reward only on one}: on TriviaQA its accuracy falls with $n$ (Spearman $-0.607$ against majority
+vote's $+0.982$) and at $n=16$ the interval excludes zero on the wrong side. The ceiling
+Proposition~\ref{prop:selection} implies is the anchor's support; what binds first here is the
+scorer.}
+\label{tab:judgefree}
+\small
+\begin{tabular}{rr rl rl}
+\toprule
+& & \multicolumn{2}{c}{majority vote} & \multicolumn{2}{c}{pointwise reward} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+$n$ & $\log n$ & acc. & gain & acc. & gain \\
+\midrule
+\multicolumn{6}{l}{\emph{GSM8K, exact match, $500$ problems}}\\
+$1$ & $0.000$ & $0.320$ & $+0.000$ $[+0.000, +0.000]$ & $0.320$ & $+0.000$ $[+0.000, +0.000]$ \\
+$2$ & $0.693$ & $0.320$ & $+0.000$ $[+0.000, +0.000]$ & $0.352$ & $+0.032$ $[+0.002, +0.062]$ \\
+$4$ & $1.386$ & $0.392$ & $+0.072$ $[+0.044, +0.100]$ & $0.344$ & $+0.024$ $[-0.014, +0.062]$ \\
+$8$ & $2.079$ & $0.466$ & $+0.146$ $[+0.110, +0.184]$ & $0.364$ & $+0.044$ $[+0.002, +0.088]$ \\
+$16$ & $2.773$ & $0.500$ & $+0.180$ $[+0.142, +0.220]$ & $0.356$ & $+0.036$ $[-0.008, +0.080]$ \\
+$32$ & $3.466$ & $0.546$ & $+0.226$ $[+0.184, +0.270]$ & $0.380$ & $+0.060$ $[+0.016, +0.104]$ \\
+$64$ & $4.159$ & $0.542$ & $+0.222$ $[+0.182, +0.264]$ & $0.386$ & $+0.066$ $[+0.024, +0.108]$ \\
+\midrule
+\multicolumn{6}{l}{\emph{TriviaQA, containment, $500$ questions}}\\
+$1$ & $0.000$ & $0.280$ & $+0.000$ $[+0.000, +0.000]$ & $0.280$ & $+0.000$ $[+0.000, +0.000]$ \\
+$2$ & $0.693$ & $0.280$ & $+0.000$ $[+0.000, +0.000]$ & $0.282$ & $+0.002$ $[-0.018, +0.022]$ \\
+$4$ & $1.386$ & $0.300$ & $+0.020$ $[+0.004, +0.038]$ & $0.284$ & $+0.004$ $[-0.022, +0.032]$ \\
+$8$ & $2.079$ & $0.322$ & $+0.042$ $[+0.020, +0.066]$ & $0.256$ & $-0.024$ $[-0.054, +0.006]$ \\
+$16$ & $2.773$ & $0.322$ & $+0.042$ $[+0.018, +0.066]$ & $0.242$ & $-0.038$ $[-0.068, -0.008]$ \\
+$32$ & $3.466$ & $0.328$ & $+0.048$ $[+0.022, +0.074]$ & $0.252$ & $-0.028$ $[-0.060, +0.002]$ \\
+$64$ & $4.159$ & $0.334$ & $+0.054$ $[+0.026, +0.082]$ & $0.266$ & $-0.014$ $[-0.046, +0.018]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{What separates the two tasks is the support, and it was predicted.} The TriviaQA
+pre-registration committed, before the run, that majority vote would lift by \emph{less} than on
+GSM8K, and gave the reason: selection re-ranks draws, and a closed-book question offers less spread
+between them than a multi-step derivation, where one arithmetic slip decides the answer. The
+measured ratio is $4.2\times$. Proposition~\ref{prop:selection} is why the direction is not a
+surprise --- $q(y) \le n\,p_s(y)$ means the served string is one the anchor would have drawn, so no
+$n$ supplies a fact the anchor does not have --- but the size of the gap is a measurement and the
+prediction could have been refuted by it.
+
+\textbf{Self-consistency is the mechanism, not an analogy.} Nothing in
+Proposition~\ref{prop:selection} mentions a reward: majority vote returns one of the $n$ draws, so
+it satisfies the same $q(y) \le n\,p_s(y)$ under the same tie rule. The most widely deployed
+inference-time method in the literature therefore already carries a $\log n$ pathwise certificate,
+which nobody has had to add to it. What these two grids show is that the certificate costs nothing
+it was not already paying: the accuracy is what self-consistency delivers anyway, and the
+$4.159$~nats at $n=64$ are the whole charge.
