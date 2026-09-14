@@ -12,7 +12,7 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACH
     --safe-model-path meta-llama/Llama-3.2-3B-Instruct \
     --risky-model-path meta-llama/Llama-3.1-8B-Instruct \
     --trajectories-per-prompt 8 --cap-neutral 200 --cap-creative 150 --cap-factual 150 \
-    --cap-val 0 --cap-test 0 --cap-attack-train 0 --max-new-tokens 200 \
+    --cap-val 0 --cap-test 0 --cap-attack-train 0 --max-new-tokens 200 --batch-size 32 \
     --output-dir output/phase5/sel_llama323bi_8 >> "$LOG" 2>&1
 echo "[f3] generate exit=$? at $(date +%H:%M)" >> "$LOG"
 echo "[f3] judge $(date +%H:%M)" >> "$LOG"
