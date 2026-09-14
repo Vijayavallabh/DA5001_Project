@@ -15,6 +15,12 @@ proportional to FLOPs for every arm here, so the ratios are the quantity of inte
   selection, n      n independent anchor generations, then one scoring PREFILL per candidate:
                     n (P_anchor + P_scorer)(L_p + T)
 
+FLOPs is the fair common currency and it is not the whole story in either direction: decode steps
+are memory-bandwidth-bound and poorly utilised while a scoring prefill is compute-bound and runs
+near peak, and selection's n draws are independent where a metered decode step is not. Both effects
+push the same way -- a FLOP ratio OVERSTATES selection's wall-clock cost. We do not measure
+wall-clock and do not claim it; the ratios below are what they say they are.
+
 The scoring pass is a prefill over the whole sequence, not a single token; costing it as one token
 understates selection by about 4x and is the easy mistake here.
 
@@ -38,7 +44,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 P_ANCHOR = 1.8      # jacquelinehe/tinycomma-1.8b-llama3-tokenizer
 P_RISKY = 8.0       # meta-llama/Llama-3.1-8B-Instruct
 P_SCORER = 7.0      # Qwen/Qwen2.5-7B-Instruct, the pointwise reward
-P_SMALL = 0.5       # an untested counterfactual scorer, reported as such and never as a result
+P_SMALL = 0.494     # Qwen2.5-0.5B-Instruct, counted off the loaded model rather than its label.
+                    # Until feat-116 this was a round 0.5 and an untested counterfactual offered as
+                    # a route out of the compute concession. The arm ran and REFUTED it: the small
+                    # scorer's judged gain never reaches the metered decoder's, peaks at n=16 and
+                    # falls thereafter (results/compute_matched.csv). The rows stay because they
+                    # are now a measured negative and deleting one would hide it; what is gone is
+                    # the claim they were written to support.
 
 
 def median_tokens(pattern, field="generation_length_tokens"):
@@ -80,12 +92,13 @@ def main():
                          seq_tokens=int(L), cost_bparam_tokens=round(c, 1),
                          ratio_vs_metered=round(c / metered, 2),
                          note="n anchor generations + n scoring prefills"))
-    for n in (8, 64):
+    for n in (1, 2, 4, 8, 16, 32, 64):
         c = n * (P_ANCHOR + P_SMALL) * L
-        rows.append(dict(mechanism="selection anchoring (counterfactual scorer)", n=n,
-                         scorer="0.5B, NOT RUN", seq_tokens=int(L),
+        rows.append(dict(mechanism="selection anchoring (small scorer)", n=n,
+                         scorer="Qwen2.5-0.5B", seq_tokens=int(L),
                          cost_bparam_tokens=round(c, 1), ratio_vs_metered=round(c / metered, 2),
-                         note="arithmetic only; no arm was run with a 0.5B scorer"))
+                         note="feat-116 RAN and refuted the route: see compute_matched.csv, "
+                              "this cost buys no gain the metered decoder does not already have"))
 
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, "serving_cost.csv")

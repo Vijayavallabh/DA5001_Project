@@ -1,0 +1,8 @@
+quantity,n,value,n_prompts,note
+"Spearman(7B, 0.5B) over 64 candidates, mean within prompt",,0.1333,500,how much of the big scorer's ordering the small one reproduces
+the two scorers serve the same draw,2,0.59,500,chance is 0.5000 if the two rankings were independent
+the two scorers serve the same draw,4,0.312,500,chance is 0.2500 if the two rankings were independent
+the two scorers serve the same draw,8,0.208,500,chance is 0.1250 if the two rankings were independent
+the two scorers serve the same draw,16,0.138,500,chance is 0.0625 if the two rankings were independent
+the two scorers serve the same draw,32,0.094,500,chance is 0.0312 if the two rankings were independent
+the two scorers serve the same draw,64,0.052,500,chance is 0.0156 if the two rankings were independent

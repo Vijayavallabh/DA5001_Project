@@ -1,12 +1,55 @@
-# Session handoff — 2026-09-15 (early morning)
+# Session handoff — 2026-09-15 (early morning, after feat-116)
 
 ## Current objective
 
-Nothing is running. Tree is clean at `f619d6a` on `iclr-2027`, all forty-three pre-registrations in
-`results/` are scored, and the manuscript compiles clean from a deleted PDF.
+Nothing is running. All forty-four pre-registrations in `results/` are scored and the manuscript
+compiles clean from a deleted PDF.
 
-This session did three things: **reframed the paper to lead with its contribution (v8)**, **answered
-a referee report by measurement (v9/v10)**, and **read the rendered PDF end to end**.
+This session did four things: **reframed the paper to lead with its contribution (v8)**, **answered
+a referee report by measurement (v9/v10)**, **read the rendered PDF end to end**, and **ran the
+paper's own escape hatch from the compute concession and reported that it failed (feat-116)**.
+
+### feat-116 — the 0.5B scorer does not carry the gain
+
+`serving_cost.csv` carried a row marked `0.5B, NOT RUN`: the arithmetic saying that because the 7B
+reward model dominates the price, a small scorer would cut `57.5x` to `15x`. An unmeasured
+counterfactual is the thing this paper exists to object to, so it was pre-registered
+(`results/onset_prediction_compute_matched.md`, five bands, committed to git at `1cc982d` **before**
+the run) and run: `Qwen2.5-0.5B-Instruct` (`0.494`B measured), identical template and Yes/No reward,
+re-scoring the same 32,000 cached candidates, then both scorers judged over the whole nested grid
+under feat-113's corrected protocol — 8,260 calls, both orders, one true prompt, one fixed opponent,
+`0.23` GPU-h.
+
+**F5 replicates first** (`sel7b_n64` `+0.1075` against feat-113's `+0.1045`; `metered_k10` `+0.0400`
+exactly), which is the gate that licenses quoting anything else. Then: **F1 FAILS**
+(`+0.0220 [+0.0000,+0.0440]` at `n=64`, against a committed `WORKS` in `[0.03,0.09]`), **F2 COSTLY**
+(`-0.0855`, worse than the band I wrote), **F4 MATCHED-COMPUTE LOSS** (`-0.0395 [-0.0720,-0.0065]`
+at `0.94x`, against a committed `PARITY`), **F3 NO CROSSING**. Wrong on three of four.
+
+F3 needs its margin, not its label: at `n=16` and `3.75x` the small scorer reaches `+0.0395` against
+the meter's `+0.0400` — **five ten-thousandths** short, intervals almost entirely overlapping. The
+honest reading is *indistinguishable from* the meter; the registered rule asked for above.
+
+**The unregistered finding is the one worth carrying forward.** The 7B scorer is monotone in `n`
+across the grid; the 0.5B scorer **peaks at `n=16` and falls**, ending below where it stood with a
+quarter of the draws. Taking the argmax of a weak score over a larger pool selects increasingly on
+its noise, so `log n` is not a free knob — the certificate keeps improving in `n` while the utility
+bought with it turns over. `compute_matched_scorer_agreement.csv` (post hoc, no band) says why
+without a judge: Spearman `0.1333` between the two rankings within prompt, same served draw on
+`0.052` of prompts at `n=64` against `0.016` by chance.
+
+Committed consequence applied: **`57.5x` stands exactly as written** in the introduction, Section 2
+and Limitations, and Limitations carries the committed sentence — the gain is the *scorer's*
+capability, not the mechanism's, and the cost is intrinsic at the scales tested. One declared
+departure from the letter, reasoned in the scoring log: the small-scorer rows stay in
+`serving_cost.csv` rather than being deleted, because they are now a measured negative and deleting
+one would hide it. What is gone is the framing they were written to support.
+
+The arm also forced two corrections it was not built to find: an **estimand mix in Limitations**
+(`+0.054` single-order quoted against `+0.040` order-averaged — the read-through's Table 1 defect,
+surviving in the Limitations paragraph, pinned by no test; the true figure is `+0.0415`, so at
+`7.2x` selection *matches* the meter rather than beating it), and the first **measured** crossing
+for the 7B scorer, `n=8` at `7.18x`.
 
 ### v8 — the paper now leads with the result
 
@@ -80,12 +123,12 @@ Read all nine body pages and the new appendix material as rendered rather than a
 
 | | |
 |---|---|
-| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 52 total |
+| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 53 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **429 passed**, `./init.sh` exit 0 |
-| pre-registrations | **43**, all scored |
+| tests | **440 passed**, `./init.sh` exit 0 |
+| pre-registrations | **44**, all scored (`onset_prediction_compute_matched.md`, `onset_prediction_order_averaged_h2h.md`) |
 | numeric audit | 2,762 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
-| compute | 221.2 measured, "approximately 220" disclosed |
+| compute | 221.4 measured over 232 jobs, "approximately 221" disclosed |
 | artifact | 813 files, `MANIFEST.sha256` verified |
 | anonymity | 0 "our earlier audit", 0 affiliation; name appears only as `(Vijayavallabh, 2026)` |
 
@@ -103,13 +146,19 @@ new `results/order_averaged_h2h{,_per_prompt}.csv`, `serving_cost.csv`, `anchor_
 
 ## Recommended next step
 
-**A compute-matched arm.** The paper now concedes selection costs `57.5x` the meter at `n=64`, and
-that concession is the weakest point a reviewer can still push on. `results/serving_cost.csv` has
-the arithmetic that would fix it: the 7B reward model dominates the cost, and a **0.5B scorer**
-would bring `n=8` to `1.9x` and `n=64` to `15x`. If a small scorer holds most of the gain, the paper
-claims parity-or-better at comparable compute instead of conceding the axis. Needs its own
-pre-registration with a band on how much gain may be lost, and roughly 2–3 GPU-hours to re-score the
-cached `sel_anchor64` candidates — no generation, the candidates are on disk.
+**Where does monotonicity come back?** feat-116 leaves one sharp, cheap question open. A 7B scorer
+is monotone in `n` and a 0.5B scorer turns over at `n=16`; nobody knows where between them the
+turnover appears, and that boundary is the deployer-facing number this paper would be the first to
+give. Two more scorers on the same cached candidates — `Qwen2.5-1.5B-Instruct` and
+`Qwen2.5-3B-Instruct`, the same family so scale is again the only variable — would place it.
+Re-scoring is `0.2` GPU-h and the judging is the same 8,260-call pattern, so roughly `0.5`–`1`
+GPU-h total, no generation. It needs its own pre-registration with a band on where the turnover
+falls, and it should commit in advance to reporting a monotone 1.5B arm as "no turnover found
+between 1.5B and 7B" rather than searching for a scale that turns over.
+
+This matters beyond the frontier: the paper's claim is that the certificate is the mechanism's and
+the utility is the scorer's, and a measured scorer-scale boundary is the strongest form of that
+claim. It also gives Limitations a number where it currently has a direction.
 
 Second, unchanged: **BookMIA-50 onset** (~11 GPU-h for 3 pairs) is moderate value now that onset has
 nine pairs and two corpora. A judge-free head-to-head against the *metered* decoder remains
@@ -132,6 +181,12 @@ Cautions are now **twenty-seven**. This session added three:
   the single-order head-to-head difference is `+0.013`, not the `+0.070` the published pair implied.
   Any new judged arm must take the prompt from `dap.shared.load_prompt_corpus`. The same entry
   records that **judge C is the risky model's own checkpoint**.
+
+feat-116 added no new caution: every trap it could have hit was already written down, and the two
+habits below are what caught the page-budget work. What it did add is a *finding* worth a caution's
+weight if it reproduces — `log n` is not a free knob, because a weak scorer's argmax over a larger
+pool selects on its noise, so the certificate improves in `n` while the utility turns over. It is
+one scorer at one scale and is recorded in the appendix as an observation, not a law.
 
 And two habits, both earned the hard way here:
 

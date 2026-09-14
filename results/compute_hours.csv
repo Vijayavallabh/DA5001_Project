@@ -173,6 +173,7 @@ breadth_pleias12b,output/logs/breadth_pleias12b.log,1,2026-09-12 15:39,2026-09-1
 breadth_pleias3b,output/logs/breadth_pleias3b.log,1,2026-09-14 07:24,2026-09-14 10:39,3.26,3.26,log_birth,0.0,scanned; traced sleeps removed
 campaign,output/logs/campaign.log,1,2026-09-12 02:34,2026-09-12 04:50,2.26,2.26,log_birth,0.0,scanned; traced sleeps removed
 campaign_gen,output/logs/campaign_gen.log,1,2026-09-12 02:52,2026-09-12 04:46,1.9,1.9,log_birth,0.0,scanned; traced sleeps removed
+compute_matched,output/logs/compute_matched.log,1,2026-09-15 03:04,2026-09-15 03:18,0.23,0.23,log_birth,0.0,scanned; traced sleeps removed
 contam_kl3m170m,output/logs/contam_kl3m170m.log,1,2026-09-14 12:27,2026-09-14 13:44,1.29,1.29,log_birth,0.0,scanned; traced sleeps removed
 contam_kl3m17b,output/logs/contam_kl3m17b.log,1,2026-09-14 12:18,2026-09-14 12:47,0.48,0.48,log_birth,0.0,scanned; traced sleeps removed
 contam_kl3m37b,output/logs/contam_kl3m37b.log,1,2026-09-14 20:01,2026-09-14 20:49,0.81,0.81,log_birth,0.0,scanned; traced sleeps removed

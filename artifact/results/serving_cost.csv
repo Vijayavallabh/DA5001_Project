@@ -7,5 +7,10 @@ selection anchoring,8,Qwen2.5-7B,217,15276.8,7.18,n anchor generations + n scori
 selection anchoring,16,Qwen2.5-7B,217,30553.6,14.37,n anchor generations + n scoring prefills
 selection anchoring,32,Qwen2.5-7B,217,61107.2,28.73,n anchor generations + n scoring prefills
 selection anchoring,64,Qwen2.5-7B,217,122214.4,57.47,n anchor generations + n scoring prefills
-selection anchoring (counterfactual scorer),8,"0.5B, NOT RUN",217,3992.8,1.88,arithmetic only; no arm was run with a 0.5B scorer
-selection anchoring (counterfactual scorer),64,"0.5B, NOT RUN",217,31942.4,15.02,arithmetic only; no arm was run with a 0.5B scorer
+selection anchoring (small scorer),1,Qwen2.5-0.5B,217,497.8,0.23,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
+selection anchoring (small scorer),2,Qwen2.5-0.5B,217,995.6,0.47,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
+selection anchoring (small scorer),4,Qwen2.5-0.5B,217,1991.2,0.94,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
+selection anchoring (small scorer),8,Qwen2.5-0.5B,217,3982.4,1.87,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
+selection anchoring (small scorer),16,Qwen2.5-0.5B,217,7964.8,3.75,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
+selection anchoring (small scorer),32,Qwen2.5-0.5B,217,15929.5,7.49,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
+selection anchoring (small scorer),64,Qwen2.5-0.5B,217,31859.1,14.98,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"

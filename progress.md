@@ -93,6 +93,64 @@ third-person citation `(Vijayavallabh, 2026)` plus the bibliography entry; zero 
 zero affiliation.
 
 
+### 2026-09-15, feat-116: the compute concession's escape hatch, run and refuted
+
+The v9 draft conceded `57.5x` the metered decoder's forward-pass FLOPs at `n=64` and left in
+`serving_cost.csv` a row marked `0.5B, NOT RUN` -- the arithmetic saying a small scorer would cut
+that to `15x`. An unmeasured counterfactual is what this paper exists to object to, so we ran it:
+`Qwen2.5-0.5B-Instruct` (`0.494`B measured), identical template and Yes/No reward, re-scoring the
+same 32,000 cached candidates, then both scorers judged over the whole nested grid under feat-113's
+corrected protocol -- 8,260 calls, both orders, one true prompt, one fixed opponent.
+
+**F5 replicates first and cleanly** (`sel7b_n64` `+0.1075` against feat-113's `+0.1045`;
+`metered_k10` `+0.0400` exactly), which is the gate that licenses quoting the rest.
+
+**The route fails, and I was wrong on three of the four bands.** F1 `FAILS`: the 0.5B scorer gains
+`+0.0220 [+0.0000,+0.0440]` at `n=64` against a committed `WORKS` in `[0.03,0.09]`. F2 `COSTLY` at
+`-0.0855 [-0.1070,-0.0645]`, worse than the band I wrote. F4 `MATCHED-COMPUTE LOSS` at
+`-0.0395 [-0.0720,-0.0065]` against a committed `PARITY`. F3 `NO CROSSING` -- though the margin
+deserves its own sentence: at `n=16` and `3.75x` the small scorer reaches `+0.0395` against the
+meter's `+0.0400`, missing by **five ten-thousandths** with the intervals almost entirely
+overlapping, so the honest reading is *indistinguishable from* the meter, not below it. The
+registered rule asked for above.
+
+**The unregistered finding is the one that matters.** The 7B scorer is monotone in `n` across the
+grid (`+0.0195` to `+0.1075`); the 0.5B scorer **peaks at `n=16` and falls**, ending at `+0.0220`
+with four times the draws it had at its peak. Taking the argmax of a weak score over a larger pool
+selects increasingly on its noise -- best-of-n Goodharting the proxy -- so `log n` is not a free
+knob: the certificate keeps improving in `n` while the utility bought with it turns over.
+`compute_matched_scorer_agreement.csv` says why without a judge: Spearman `0.1333` between the two
+rankings within prompt, same served draw on `0.052` of prompts at `n=64` against `0.016` by chance.
+The 0.5B model is not a noisy copy of the 7B's preference but a nearly independent, much weaker
+ranker.
+
+**Committed consequence applied.** Both triggers for the third branch fired, so the `57.5x`
+concession stands *exactly* as written in the introduction, Section 2 and Limitations, and
+Limitations now carries the committed sentence: the gain is the scorer's capability, not the
+mechanism's, and the compute cost is intrinsic at the scales tested. One declared departure from
+the letter: the small-scorer rows stay in `serving_cost.csv` rather than being deleted, because
+they are now a measured negative and deleting one would hide it. What is gone is the framing they
+were written to support. The reasoning is in the scoring log.
+
+**Two corrections the arm forced without being built to find them.** (1) Limitations read "at $n=8$
+and $7.2\times$ it gains $+0.054$ against its $+0.040$" -- a **single-order** selection gain against
+an **order-averaged** metered gain, the same estimand mix the read-through caught in Table 1,
+surviving in the Limitations paragraph and pinned by no test. Under one protocol it is `+0.0415`
+against `+0.0400`, so at `7.2x` selection **matches** the metered decoder rather than beating it.
+(2) The crossing for the 7B scorer is now measured rather than asserted: `n=8` at `7.18x`.
+
+The certificate is untouched and was never on trial: `q(y) <= n p_s(y)` holds for any score, so
+every cell is certified at `log n` regardless of the scorer. That is the sharpest evidence yet for
+the paper's actual claim -- **the divergence axis is the mechanism's, the utility is the scorer's.**
+
+The body figure narrowed `0.80` -> `0.74\textwidth` to pay for the Limitations sentence; the page
+was rendered and read before and after, and both panels stay legible. Prose trims freed nothing
+again, exactly as caution (n) says.
+
+Commands: `analysis/compute_matched.py --out results` (GPU 0),
+`analysis/scorer_agreement.py --out results`, `analysis/serving_cost.py --out results`.
+
+
 ## Status
 
 ### What's Done
