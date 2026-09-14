@@ -2,13 +2,14 @@
 
 ## Current objective
 
-Five arms are in progress, each with its bands committed before its run:
+Six arms are in progress, each with its bands committed before its run:
 
 - **feat-103** — the natural-memorisation arm re-run with `--raw-prompt` (`results/onset_prediction_extraction_natural_raw.md`), after feat-102 turned out to have seeded a base model with an instruction header. GPUs 1+2.
 - **feat-104** — the head-to-head at a **third** pair, Llama-3.2-3B-Instruct, the closest anchor on record and the hardest case for the reversal (`results/onset_prediction_frontier_third_pair.md`). GPU 0.
 - **feat-105** — the judge-free axis on a **knowledge** task, TriviaQA at Comma-7B (`results/onset_prediction_verifiable_triviaqa.md`). GPU 4.
 - **feat-106** — the **judge-free head-to-head**, both mechanisms on TriviaQA at TinyComma (`results/onset_prediction_verifiable_headtohead.md`). Queued behind feat-105 on GPU 4. H1 predicts METERED WINS in advance.
 - **feat-107** — the breadth arm at **six** anchors, adding Comma-7B (1T tokens) and Pleias-3B (`results/onset_prediction_selection_breadth_six.md`), each with its own leakage arm. GPU 0 and GPU 4, queued behind feat-104 and feat-105.
+- **feat-108** — the **leakage head-to-head**: both mechanisms on one set of 100 passages with one control, after the two existing pipelines' `k=-1` rows were found to disagree (`0.4921` against `0.3925`) (`results/onset_prediction_leakage_headtohead.md`). Queued last on GPU 0. G0 can cost us the joint table and is written that way.
 
 Closed overnight: **feat-096** (the decider), **feat-098** (Proposition 3 at the authors' own 70B), **feat-100** (n=64 at the strongest anchor -- G3 failed, G1 unreadable), **feat-101** (the judge-free axis) and **feat-102** (gate failed, reported as failing).
 
