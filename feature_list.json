@@ -1110,6 +1110,16 @@
       ],
       "description": "Proposition 4 bounds an EVENT: Pr_q[E] <= n Pr_{p_s}[E]. Every leakage arm in the paper has a clean anchor, so Pr_{p_s}[E] = 0 and the inequality is satisfied by any number we could have measured -- it has never actually been tested. The Ethics Statement also asserts that the certificate 'is worthless if the safe model is itself contaminated', which is the mechanism's only failure mode and is measured nowhere. This arm is both at once: run selection anchoring with the adversarial selector over five LoRA-memorised anchors already on disk, spanning a wide range of memorisation strength, on the same 100 attack_train passages and seeds. N1 tests the multiplication bound against a non-zero base rate on two event thresholds; N2 asks how much an adversarial selector actually amplifies at n=64, predicting SATURATES (A <= 4, against a permitted 64) because n draws from one anchor on one 20-token prefix are highly correlated. Every band is read against this arm's own n=1 row -- the k=-1 numbers in output/phase5/fine_*/ are a different pipeline, which is caution (v). Bands in results/onset_prediction_contaminated_anchor.md.",
       "evidence": "Four arms running on GPUs 0/1/2/4, a fifth queued; scoring pending."
+    },
+    {
+      "id": "feat-112",
+      "title": "The contamination axis at twelve anchors",
+      "status": "in-progress",
+      "depends_on": [
+        "feat-111"
+      ],
+      "description": "feat-111 registered five contaminated anchors and made N3 descriptive with no band, because five points cannot support a coefficient. Seven further LoRA-memorised models are already on disk from the onset work, so the axis goes from five points to twelve at no training cost and about two hours on otherwise idle cards. Committed at 12:25 on 2026-09-14 while feat-111's arms were still sampling and BEFORE any results/contam_*.csv existed, which is why it is an extension and not anchor-shopping: N1 and N2 are feat-111's bands unchanged and only N3 becomes readable, with a committed prediction of AMPLIFIES LESS (rho <= -0.6) on the reasoning that a badly contaminated anchor already emits the passage on most draws and leaves a selector nothing to find. The two Mixtral MoE anchors run at batch 8 because the expert gather exhausts an idle 80 GB card at 32; declared before the run, and not the caution (u) situation because every band is a ratio inside one arm. Four of the twelve are instruction-tuned or undisclosed-corpus models and are not legitimate safe models -- they appear only as contamination levels. Bands in results/onset_prediction_contaminated_anchor_twelve.md.",
+      "evidence": "Six arms running across GPUs 0/1/2/4, six queued; scoring pending."
     }
   ]
 }

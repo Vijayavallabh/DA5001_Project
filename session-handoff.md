@@ -2,7 +2,9 @@
 
 ## Current objective
 
-**feat-111** is running: five contaminated anchors, testing Proposition 4 where it can actually fail (`results/onset_prediction_contaminated_anchor.md`). Every other leakage arm has a clean anchor and a base rate of zero, so `n x 0 = 0` holds whatever is measured and the multiplication bound has never been tested. GPUs 0/1/2/4, a fifth queued behind GPU 0.
+**feat-111** is running: five contaminated anchors, testing Proposition 4 where it can actually fail (`results/onset_prediction_contaminated_anchor.md`). Every other leakage arm has a clean anchor and a base rate of zero, so `n x 0 = 0` holds whatever is measured and the multiplication bound has never been tested. GPUs GPUs 0/1/2/4.
+
+**feat-112** extends it to **twelve** anchors (`results/onset_prediction_contaminated_anchor_twelve.md`), committed at 12:25 while feat-111 was still sampling and before any `results/contam_*.csv` existed. Six arms run concurrently, six are queued one-per-card behind them.
 
 Closed this session, eight arms:
 
