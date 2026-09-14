@@ -41,6 +41,53 @@ def gold(answer):
     return answer.split("####")[-1].strip().replace(",", "")
 
 
+# ---- TriviaQA, the second verifiable task -------------------------------------------------
+# GSM8K asks the anchor to reason; TriviaQA asks it to KNOW. The distinction matters for a
+# mechanism bounded by its anchor's support: selection can re-rank reasoning the anchor already
+# produces, and it cannot invent a fact the anchor does not have.
+_ARTICLES = re.compile(r"\b(a|an|the)\b")
+_PUNCT = re.compile(r"[^a-z0-9 ]")
+
+
+def norm_answer(s):
+    """TriviaQA's own normalisation: lowercase, drop articles and punctuation, squeeze spaces."""
+    return " ".join(_PUNCT.sub(" ", _ARTICLES.sub(" ", s.lower().strip())).split())
+
+
+def load_triviaqa(limit, n_shot):
+    from datasets import load_dataset
+    d = load_dataset("mandarjoshi/trivia_qa", "rc.nocontext")
+    shots = "".join(f"Question: {r['question']}\nAnswer: {r['answer']['value']}\n\n"
+                    for r in d["train"].select(range(n_shot)))
+    val = d["validation"] if not limit else d["validation"].select(range(limit))
+    return shots, [dict(qid=f"tqa{i}", question=r["question"],
+                        gold={norm_answer(x) for x in r["answer"]["normalized_aliases"]}
+                        | {norm_answer(r["answer"]["value"])})
+                   for i, r in enumerate(val)]
+
+
+def extract_tqa(text):
+    """The answer is the rest of the line; a base model then starts the next question."""
+    line = text.split("Question:")[0].strip().split("\n")[0]
+    a = norm_answer(line)
+    return a or None
+
+
+def correct_tqa(pred, gold_set):
+    """A gold alias appears in the answer line, as a whole-word span.
+
+    Exact match on the line would score by FORMAT rather than by knowledge: a base model completing
+    a few-shot prompt emits `David Seville` and an instruction-tuned one emits `The answer is David
+    Seville`, and the smoke run scored the latter 0/8 on questions it had right. Containment is
+    applied identically to every arm -- anchor draws, selected outputs and both `k=-1` baselines --
+    so it cannot favour one of them, and the 24-token answer cap bounds what a verbose completion
+    can sweep up by accident."""
+    if not pred:
+        return False
+    hay = f" {pred} "
+    return any(f" {g} " in hay for g in gold_set if g)
+
+
 def extract(text):
     """The 8-shot format ends an answer with '#### N'; a base model that runs on starts the next
     question.  Cut at the run-on, prefer the number after '####', else the last number."""
@@ -189,6 +236,7 @@ def main():
     ap.add_argument("--gen-dir", default="output/phase5/verifiable")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--max-n", type=int, default=64)
+    ap.add_argument("--task", choices=("gsm8k", "triviaqa"), default="gsm8k")
     ap.add_argument("--n-shot", type=int, default=8)
     ap.add_argument("--max-new", type=int, default=256)
     ap.add_argument("--temperature", type=float, default=0.7)
@@ -203,8 +251,14 @@ def main():
 
     os.makedirs(a.gen_dir, exist_ok=True)
     os.makedirs(a.out, exist_ok=True)
-    shots, items = load_gsm8k(a.limit, a.n_shot)
-    print(f"[verif] {len(items)} problems, {a.n_shot}-shot, anchor {a.anchor}", flush=True)
+    if a.task == "gsm8k":
+        shots, items = load_gsm8k(a.limit, a.n_shot)
+        pick, ok = extract, lambda p, g: p == g
+    else:
+        shots, items = load_triviaqa(a.limit, a.n_shot)
+        pick, ok = extract_tqa, correct_tqa
+    print(f"[verif] {a.task}: {len(items)} problems, {a.n_shot}-shot, anchor {a.anchor}",
+          flush=True)
 
     anchor_path = os.path.join(a.gen_dir, f"anchor{a.tag}_n{a.max_n}.jsonl")
     if not os.path.exists(anchor_path):
@@ -223,7 +277,7 @@ def main():
         if os.path.exists(p):
             risky[name] = read_gen(p)
 
-    ans = {q: [extract(t) for t in v] for q, v in gens.items()}
+    ans = {q: [pick(t) for t in v] for q, v in gens.items()}
     empty = sum(1 for v in ans.values() for x in v if x is None) / (len(ans) * a.max_n)
     print(f"[verif] no answer extracted in {empty:.4f} of samples", flush=True)
 
@@ -266,7 +320,7 @@ def main():
                 else:
                     sc = rewards[q][:n]
                     i = max(range(n), key=lambda j: sc[j])
-                correct.append(1.0 if cand[i] == it["gold"] else 0.0)
+                correct.append(1.0 if ok(cand[i], it["gold"]) else 0.0)
             if n == 1:
                 base[rule] = correct
             acc, lo, hi = boot(correct, a.reps, a.seed + n)
@@ -282,7 +336,8 @@ def main():
             r["spearman_acc_logn"] = round(rho, 4)
 
     for name, g in risky.items():
-        correct = [1.0 if extract(g[it["qid"]][0]) == it["gold"] else 0.0 for it in items]
+        correct = [1.0 if ok(pick(g[it["qid"]][0]), it["gold"]) else 0.0
+                   for it in items]
         acc, lo, hi = boot(correct, a.reps, a.seed)
         rows.append(dict(arm=f"risky model alone, k=-1 ({name})", n=1, budget_nats="",
                          n_problems=len(items), acc=round(acc, 4), acc_lo95=round(lo, 4),
