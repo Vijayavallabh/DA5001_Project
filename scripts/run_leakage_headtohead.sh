@@ -5,7 +5,7 @@
 set -u
 GPU=$1; WAIT_PID="${2:-}"
 LOG=output/logs/leakage_headtohead.log
-mkdir -p output/logs
+mkdir -p output/logs results/h2h output/h2h output/h2h_figures
 if [ -n "$WAIT_PID" ]; then
   echo "[l2l] waiting on PID $WAIT_PID at $(date +%H:%M)" >> "$LOG"
   while kill -0 "$WAIT_PID" 2>/dev/null; do sleep 60; done
