@@ -137,3 +137,20 @@ def test_the_scored_arm_agrees_with_the_manuscript():
     assert f"$+{float(r64['gain']):.3f}$" in body, r64["gain"]
     # and the paper must not present majority vote as the registered scorer
     assert "pointwise" in body or "reward" in body
+
+
+def test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured():
+    """The abstract's utility claim was 'judged' alone, which is the first thing a reviewer
+    discounts. It may say 'with no judge at all' only while an exact-match arm exists and lifts."""
+    from tests.manuscript import tex
+    absr = " ".join(open(tex("iclr_2027.tex")).read().split())
+    absr = absr.split("\\end{abstract}")[0]
+    if "no judge at all" not in absr:
+        return                      # the claim was withdrawn; nothing to pin
+    import csv as _csv
+    rows = list(_csv.DictReader(open("results/selection_verifiable_comma7b.csv")))
+    for rule in ("majority", "pointwise"):
+        arm = [r for r in rows if r["arm"].startswith(rule) and r["gain_lo95"]]
+        best = max(arm, key=lambda r: float(r["gain"]))
+        assert float(best["gain_lo95"]) > 0, (rule, best)
+    assert "judged" in absr, "the abstract must still say which of the two metrics is judged"
