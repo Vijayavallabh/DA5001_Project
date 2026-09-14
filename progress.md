@@ -2,31 +2,22 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-12 22:35
-**Branch `iclr-2027`.** Target **ICLR 2027** (abstract Sep 18, paper Sep 25). The finished SaTML
-submission is abandoned -- both CFPs bar parallel submission -- and `master` holds it at `dd7e801`
-as the fallback; do not delete it. The earlier "SaTML only" decision in the log below is history.
-**Active features:** four arms in progress, each with its bands committed before its run --
-**feat-098** (Prop 3 at TinyComma + Llama-3.1-70B), **feat-100** (Comma-7B at n=64), **feat-101**
-(the judge-free axis, GSM8K exact match) and **feat-102** (the adversarial selector handed to the
-70B). Everything through feat-097 and feat-099 is `done`; feat-096 closed this evening; feat-010/011
-stay optional, feat-012 is superseded by feat-024, and **feat-016 is human-only and must never be
-started**.
-**Manuscript:** `~/sub/satml/iclr_2027.tex`, *Vacuous or Trivial*. Main text **exactly 9 of 9 pages**
-(Ethics, Reproducibility and LLM Usage are uncounted), `exit=0`, 0 overfull, 0 `??`, 45 pages total.
-2,179 numeric literals audited with one expected miss (`64256`). **380 tests, 32 pre-registration
-logs**; `tests/test_preregistration_count.py` pins the Reproducibility Statement to the count.
-**The claim:** one line of the chain rule leaves a per-token budget two options -- `K = kT` grows
-with the work and the certificate is **vacuous**, or the budget is bounded and the decoder is the
-anchor at all but `O(1)` steps, which is **trivial**. Both horns are measured, all three repairs and
-the one causal placement fail where the theorem says they must, and the escape is a different
-*place* to spend: `q(y) <= n p_s(y)` is a pathwise certificate of exactly `log n`.
-**Compute:** `156` GPU-hours disclosed in the manuscript; `analysis/compute_hours.py` must be re-run
-and the disclosure re-matched once the queue drains, because `tests/test_compute_hours.py` asserts
-an exact match.
-**Verification for a fresh session:** `./init.sh`, then the manuscript compile check in `AGENTS.md`
-(exit status, 0 `??`, 0 overfull, **no body prose on pdftotext page 10**). Read the log below from
-the bottom: entries are appended, so everything before 2026-09-08 predates the ICLR reframe.
+**Last Updated:** 2026-09-14 23:10
+**Branch `iclr-2027`.** Target **ICLR 2027**. No arms running; every pre-registration in `results/`
+is scored. **The manuscript is v8, reordered to lead with the constructive result** rather than the
+audit: selection anchoring is Section 2 and its experiments Section 3, the dichotomy and the three
+failed repairs follow as Sections 4-5, and the title is *Two Nats, Not Two Thousand: Spending the
+Copyright Budget on the Draw Instead of the Token*. No measured number changed; the abstract,
+introduction and conclusion were rewritten and every other section changed only at its seams.
+Body is exactly 9 of 9 pages, page 10 body-free, 0 overfull, 0 unresolved, 429 tests,
+2,687 numeric literals audited with the one expected miss (`64256`).
+
+Two pre-existing defects the reorder surfaced and fixed: `prop:sparse` was `\label`led in both
+`frontier.tex` and `appendix_proofs.tex`, so every `\ref` to the paper's own dichotomy had been
+resolving to an appendix restatement (rendered as Proposition 6) instead of the body's statement
+(Proposition 3) since v5 -- caution (z); and `scripts/snapshot_manuscript.sh` followed `\input`
+only from the top-level file, so `onset.tex` went stale in the snapshot the moment it became a
+child of `orders.tex`.
 
 ## Status
 

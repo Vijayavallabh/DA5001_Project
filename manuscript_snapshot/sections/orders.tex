@@ -1,14 +1,19 @@
-% v7 (2026-09-12): the three repairs are now the dichotomy's corollaries being tested, not a
-% narrative of what we tried; the motivation moved to the introduction, which states all three.
-% v6 kept as orders_v6_2026-09-11.tex.
+% v8 (2026-09-14): Section 5. Absorbs the onset section, which is now its opening paragraph, so the
+% audit is one section rather than two and the reader meets it after the result rather than before.
+% v7 kept as orders_v7_2026-09-14.tex, v6 as orders_v6_2026-09-11.tex.
 % Numbers: results/renyi_sweep.csv, renyi_price.csv, order_law.csv, utility_price.csv,
 % judge_separation_v6{,_judge2}.csv, marginal_price_table.csv, selection_candidates.csv.
 
-\section{The dichotomy's corollaries, tested}\label{sec:orders}
+\section{The deployed instance, and the three repairs it has left}\label{sec:orders}
 
-A mechanism on the vacuous horn has three degrees of freedom --- the charge, the cap, the schedule.
-All three repairs were pre-registered, and the interesting part is not that they fail but
-\emph{where}: each at a different place, from one measurable shared cause.
+Two questions follow for the deployed instance, anchored decoding \citep{he2026anchored}. Does the
+vacuity threshold correspond to anything a rights-holder would recognise? And can its three
+remaining degrees of freedom --- the charge, the cap, the schedule --- recover what
+Proposition~\ref{prop:sparse} says they cannot? All four answers were pre-registered, and the
+interesting part of the three failures is not that they fail but \emph{where}: each at a different
+place, from one measurable shared cause.
+
+\input{sections/onset}
 
 \paragraph{Repair 1: sharpen the accounting}
 Proposition~\ref{prop:threshold} says a stronger divergence cannot move the threshold, so the
@@ -19,43 +24,38 @@ $100\%$ of the $758$ protected passages, and for $98.7\%$ of $9{,}870$ across a 
 (Appendix~\ref{app:bookmia}) --- nothing distinguishes them to a rights-holder
 (Table~\ref{tab:orders}). Underneath, they span two orders of magnitude in what a compliant
 adversary recovers, oracle-window recall $0.0965$ at $\alpha=1$ against $0.0012$ at $\alpha=8$, and
-more than two in what they cost, $0.4\%$ of ordinary decode steps against $99.6\%$ --- one step past
-$\alpha=2$ taking the decoder from serving the risky model unchanged at $97.2\%$ of steps to $9.4\%$.
-Compared at \emph{matched utility} --- fidelity to $p_r$ is monotone in $k$ at fixed order, so each
-order can be given the budget that buys what $\alpha=1$ buys --- the order runs from $10^{6}$ times
-more dangerous to $10^{7}$ times safer over twelve pairs, and nothing measured predicts which pair a
-deployer has (Appendix~\ref{app:matched}). The certificate does not
-move; everything underneath it does.
+more than two in what they cost, one step past $\alpha=2$ taking the decoder from serving the risky
+model unchanged at $97.2\%$ of steps to $9.4\%$. At \emph{matched utility} the order runs from
+$10^{6}$ times more dangerous to $10^{7}$ times safer over twelve pairs, and nothing measured
+predicts which pair a deployer has (Appendix~\ref{app:matched}). The certificate does not move;
+everything underneath it does.
 
 \paragraph{Repair 2: lower the budget}
 This is a walk onto the trivial horn, and both sides of Eq.~\eqref{eq:nfl} price the walk. Taking
 $U$ to be the judge's verdict scored $1/\tfrac12/0$, the decoder spends $79$ to $171$ nats of
-realised divergence to buy gains of $+0.011$ to $+0.179$ that an optimal policy could have bought for
-$0.0003$ to $0.077$, a ratio of $2.8\times10^{5}$ at $k=0.5$ that never falls below $2200$
-(Appendix~\ref{app:proofs}). A three-valued judge is not too blunt to price this, because bluntness
-\emph{caps} the rate function: winning \emph{every} comparison would cost an optimal policy $1.30$
-nats and the decoder spends $132$ times that to win a third of them. The certified and the useful
-regions then fail to meet. Under two instruction-tuned judges outside the audit, $600$
-comparisons per budget with order randomised, neither separates the decoder from its own safe model
-at $k=0.5$ ($-1.03\sigma$, $+1.52\sigma$), where all $758$ protected passages are still covered;
-both do only at $k \ge 10$ ($-6.97\sigma$, $-3.29\sigma$), where none is. Between those the judges
-disagree about the crossing by nearly a decade in $k$, $0.66$ against $5.4$ --- itself a result
-about how resolvable this is.
+realised divergence to buy gains an optimal policy could have bought for $0.0003$ to $0.077$, a
+ratio of $2.8\times10^{5}$ at $k=0.5$ that never falls below $2200$. A three-valued judge is not too
+blunt to price this, because bluntness \emph{caps} the rate function: winning \emph{every}
+comparison would cost an optimal policy $1.30$ nats and the decoder spends $132$ times that to win a
+third of them (Appendix~\ref{app:proofs}). The certified and the useful regions then fail to meet. Under two
+instruction-tuned judges outside the audit, $600$ comparisons per budget with order randomised,
+neither separates the decoder from its own safe model at $k=0.5$ ($-1.03\sigma$, $+1.52\sigma$),
+where all $758$ protected passages are still covered; both do only at $k \ge 10$ ($-6.97\sigma$,
+$-3.29\sigma$), where none is. Between those the judges disagree about the crossing by nearly a
+decade in $k$, $0.66$ against $5.4$ --- itself a result about how resolvable this is.
 
 \paragraph{Repair 3: spend the budget better}
-Proposition~\ref{prop:sparse} bounds this one before it is run: a schedule cannot deliver what a
-bounded sequence budget does not contain, and a greedy decoder is not short of allowance but of
-somewhere useful to put it. Reallocating its own realised spend
-across its own trajectory is a closed form in $\psi$, computable offline and therefore a ceiling no
-causal scheduler can beat \citep{tomasi2026primaldual}; it buys $3$ to $13\%$ more utility where the
+Proposition~\ref{prop:sparse} bounds this one before it is run: a greedy decoder is not short of
+allowance but of somewhere useful to put it. Reallocating its own realised spend across its own
+trajectory is a closed form in $\psi$, computable offline and therefore a ceiling no causal
+scheduler can beat \citep{tomasi2026primaldual}; it buys $3$ to $13\%$ more utility where the
 certificate still says something ($k \le 1$) and under $1.4\%$ at $k=3$ (Appendix~\ref{app:proofs}).
 
 \paragraph{What the three have in common}
 The budget is not spent inefficiently on utility; it is spent \emph{efficiently on a target that is
 not utility}. A metered decoder exists to move the served distribution toward $p_r$, so its budget
-buys likelihood under $p_r$ and nothing else. Among $4{,}000$ anchor samples on $500$ prompts,
-within-prompt on the $5{,}687$ candidate pairs a judge ranked differently, that likelihood separates
-better from worse at AUC $\mathbf{0.526}$, its summed form at $0.477$ --- \emph{below} chance ---
-and raw length at $0.537$. All three repairs optimise the
-delivery of a currency that predicts judged quality worse than the answer's length does. A wrong
-currency spent on the wrong axis is not repaired by a better meter.
+buys likelihood under $p_r$ and nothing else --- and among $4{,}000$ anchor samples on $500$
+prompts, within-prompt on the $5{,}687$ candidate pairs a judge ranked differently, that likelihood
+separates better from worse at AUC $\mathbf{0.526}$, its summed form at $0.477$ (\emph{below}
+chance) and raw length at $0.537$. A wrong currency spent on the wrong axis is not repaired by a
+better meter.

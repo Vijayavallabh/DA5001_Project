@@ -2,9 +2,11 @@
 \section{Proofs}\label{app:proofs}
 
 \subsection{Proposition~\ref{prop:threshold}}
-For $\alpha = \infty$ the budget gives $p_\theta(E) \le e^{K} p_s(E) = e^{K - S(x)}$, which is at
+Nothing below uses the form of $q$, only the budget it holds to, which is why the statement covers a
+metered decoder and a selection rule alike. For $\alpha = \infty$ the budget gives
+$q(E) \le e^{K} p_s(E) = e^{K - S(x)}$, which is at
 least $1$ exactly when $K \ge S(x)$. For $\alpha \in (1,\infty)$, R\'enyi-to-probability conversion
-gives $p_\theta(E) \le \left(e^{K} p_s(E)\right)^{(\alpha-1)/\alpha}$; since the exponent is
+gives $q(E) \le \left(e^{K} p_s(E)\right)^{(\alpha-1)/\alpha}$; since the exponent is
 positive and finite, this is at least $1$ exactly when $e^{K} p_s(E) \ge 1$, i.e. $K \ge S(x)$. For
 $\alpha = 1$ the tightest bound is the binary-KL inversion
 $\max\{p : d(p \,\|\, e^{-S(x)}) \le K\}$, which attains $1$ exactly when $d(1 \| e^{-S(x)}) = S(x)
@@ -166,12 +168,11 @@ imitating $p_r$, indexed to the length of the generation and independent of what
 It does \emph{not} bound an arbitrary causal policy that spends a sequence budget $K$ however it
 likes. What can be said about that larger class is a constraint on its \emph{shape}.
 
-\begin{proposition}[An affordable causal policy is the anchor almost everywhere]\label{prop:sparse}
-Let $q$ be any causal policy, $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
+\noindent\emph{Proposition~\ref{prop:sparse}, restated.} Let $q$ be any causal policy,
+$q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
 $D_{\mathrm{KL}}(q \,\|\, p_s) \le K$, and let
 $N_\varepsilon = \#\{t \le T : D_{\mathrm{KL}}(q_t(\cdot \mid y_{<t}) \,\|\, p_{s,t}) > \varepsilon\}$.
 Then $\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon$ for every $\varepsilon > 0$.
-\end{proposition}
 
 \emph{Proof.} The chain rule for an autoregressive factorisation is exact:
 $D_{\mathrm{KL}}(q \| p_s) = \sum_{t \le T} \mathbb{E}_{y_{<t} \sim q}\!\left[D_{\mathrm{KL}}(q_t \| p_{s,t})\right]$,

@@ -7,7 +7,11 @@ cd "$(dirname "$0")/.."
 S=${SATML_DIR:-../sub/satml}
 mkdir -p manuscript_snapshot/sections
 cp "$S/iclr_2027.tex" "$S/references.bib" manuscript_snapshot/
-for f in $(grep -o 'sections/[a-z_0-9]*' "$S/iclr_2027.tex" | sort -u); do
+# Follow \input from the top-level file AND from the section files it pulls in: since the v8
+# restructure, onset.tex is \input by orders.tex rather than by iclr_2027.tex, and scanning only
+# the top level silently left a stale copy in the snapshot.
+for f in $(cat "$S/iclr_2027.tex" "$S"/sections/*.tex 2>/dev/null \
+             | grep -o 'sections/[a-z_0-9]*' | sort -u); do
   [ -f "$S/$f.tex" ] && cp "$S/$f.tex" manuscript_snapshot/sections/
 done
 echo "snapshot: $(ls manuscript_snapshot/sections | wc -l) section files + iclr_2027.tex + references.bib"

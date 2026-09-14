@@ -24,14 +24,15 @@
 \renewcommand{\floatpagefraction}{0.75}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
-% Retitled 2026-09-12 around the dichotomy, which is the contribution: the audit and the three
-% failed repairs are its corollaries being confirmed, not an experiment log. The earlier titles
-% named a mechanism comparison; this one names the theorem. (2026-09-09 note kept below.)
-% Retitled 2026-09-09 around what five pairs left standing. The fixed-fraction onset law did not
-% survive pair 5, so the title must not promise a law; the units result and the no-free-lunch did,
-% and both are what the abstract's first two sentences already claim.
-\title{Vacuous or Trivial\\
-A Dichotomy for Per-Token Copyright Certificates, and Where the Budget Must Go Instead}
+% Retitled 2026-09-14 around the CONSTRUCTIVE result, which is the contribution. v7 led with the
+% dichotomy and reached selection anchoring on page 5; a reader met four pages of a mechanism
+% failing before meeting one that works. The dichotomy is now what explains WHY the constructive
+% result was available -- the theorem that says no per-token meter could have found it -- and it
+% follows the measurement instead of preceding it. Previous title kept below.
+% (2026-09-12) Vacuous or Trivial: A Dichotomy for Per-Token Copyright Certificates, and Where the
+% Budget Must Go Instead. (2026-09-09) named the units result; (earlier) named a mechanism comparison.
+\title{Two Nats, Not Two Thousand\\
+Spending the Copyright Budget on the Draw Instead of the Token}
 
 \author{Anonymous authors\\Paper under double-blind review}
 
@@ -40,40 +41,44 @@ A Dichotomy for Per-Token Copyright Certificates, and Where the Budget Must Go I
 
 \begin{abstract}
 Inference-time copyright defences meter how far a language model's output may drift from a
-\emph{safe} model that never saw the protected work, and publish the allowance as a single number
-$k$. We show the design is closed. For any autoregressive policy the sequence divergence is exactly
-the sum of its per-step divergences, so a policy holding to a budget $K$ can differ from the safe
-model by more than $\varepsilon$ at no more than $K/\varepsilon$ steps in expectation. A per-token
-meter therefore faces a dichotomy. Either its allowance $K = kT$ grows with the work, and it is
-\emph{vacuous} --- the bound it implies on reproducing $x$ is empty exactly at $K = S(x)$,
-identically for every R\'enyi order, and across nine pairs with nine distinct anchors and six tokenizers
-extraction becomes measurable between $0.88$ and $1.17$ of $s(x)$ --- or the budget is
-bounded and the decoder is the safe model at all but $O(1)$ of its steps, where at $k=0.5$ neither
-of two judges can separate it from the safe model at $600$ comparisons per budget. The deployed
-class takes the first horn by construction: its spend is the cost of \emph{imitating} the risky
-model, $\Theta(T)$ nats independent of the utility bought, stalling at $171.3$ over $16{,}500$
-trajectories while its certificate is written against $4000$. Three repairs --- a sharper charge, a
-smaller cap, a better schedule --- are corollaries of the dichotomy and fail as it predicts. The
-escape is not a better meter but a different place to spend, outside the per-step factorisation the
-chain rule reaches. Serving the best of $n$ safe-model draws satisfies $q(y) \le n\,p_s(y)$, a
-\emph{pathwise} certificate of exactly $\log n$ under any score and any tie rule, vacuous only at
-$n = e^{S(x)}$. At $n = 8$ that is $2.08$ nats against a work worth $849$, and it gains judged
-utility at four anchors in three families and exact-match accuracy with no judge at
-all, reaches the utility a metered decoder needs $171.3$ nats for, promises an amplification of $8$ against $e^{2000}$, and reproduces none of the protected
-passages at any $n \le 64$, even when the adversary picks the scorer.
+\emph{safe} model that never saw the protected work, charging the drift per decoded token and
+publishing the allowance as a single number $k$. We show the budget is in the wrong place. Draw $n$
+completions from the safe model, score them by anything at all, and serve the best: every token
+emitted is still a safe-model token, so the per-step charge is identically zero and the whole budget
+is spent once, on \emph{which draw to serve}. The served law satisfies $q(y) \le n\,p_s(y)$ for any
+score, any tie rule and any safe model --- a \emph{pathwise} certificate of exactly $\log n$ nats,
+the strongest R\'enyi order in the family the deployed meters charge in, and constant in the length
+of the work where a per-token allowance is linear in it. Self-consistency is an instance, so the
+most widely deployed inference-time method already carries one. On the workload where a metered
+decoder spends a measured $171.3$ nats to become judged-better than its own safe model, eight draws
+cost $2.08$ and do better: $+0.142$ against $+0.072$ at one fifty-fourth of the divergence, at four
+anchors in three families, on AlpacaEval, and on exact match with no judge at all. It reproduces no
+protected passage at any $n \le 64$ --- not when an adversary picks the scorer, and not against a
+$70$B model that memorised the book in pre-training and recovers $0.2475$ unaided. This is
+not luck but the only place left. One line of the chain rule makes a causal policy's sequence budget
+the sum of its per-step budgets, so a per-token meter is \emph{vacuous} --- its allowance $K = kT$
+grows with the work, the bound it implies is empty exactly at $K = S(x)$ identically for every
+R\'enyi order, and across nine pairs with nine distinct anchors extraction becomes measurable
+between $0.88$ and $1.17$ of $s(x)$ --- or \emph{trivial}, the safe model at all but $O(1)$ of its
+steps, where at $k=0.5$ neither of two judges can separate it from that model at $600$
+comparisons. The deployed class takes
+the first horn by construction, paying $\Theta(T)$ nats to \emph{imitate} the risky model rather
+than to buy utility, and the three repairs this predicts fail where it says they must. A
+rights-holder can be promised an amplification of $8$, against $e^{2000}$.
 \end{abstract}
 
 \input{sections/iclr_intro}
 
-\input{sections/frontier}
-
-\input{sections/onset}
-
-\input{sections/orders}
-
+% Order rebuilt 2026-09-14: the result, then the evidence, then the theorem that says no per-token
+% mechanism could have reached it. The audit sections are unchanged in substance and carry their
+% own labels, so every \ref and every appendix cross-reference follows the renumbering.
 \input{sections/selection}
 
 \input{sections/experiments}
+
+\input{sections/frontier}
+
+\input{sections/orders}
 
 \input{sections/related_work_v4}
 

@@ -1,30 +1,17 @@
+% v8 (2026-09-14): demoted from a section to the opening paragraph of Section~\ref{sec:orders},
+% which is where it belongs once the audit is one section rather than two. Body unchanged.
 % v6 (2026-09-11): ~0.35 page. The nine-pair table, the context gradient and the two refuted
 % refinements are all Appendix~\ref{app:onset}; the interventions are Appendix~\ref{app:seed}.
 
-\section{Where extraction actually begins}\label{sec:onset}
+\paragraph{Where extraction actually begins}\label{sec:onset}
 
-Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything.
-It does not say leakage begins there; if leakage began far above, the threshold would be a
-curiosity. It does not. We measure the onset --- the budget at which mean
-single-query recall first reaches $0.01$, interpolated inside its bracket on a grid of at least
-twelve points, with $k=-1$ and $k=0$ baselines on the same prompts and seeds --- on nine pairs with
-nine distinct anchors and six tokenizers. The first is the audited pair; in the other eight
-memorisation is the only difference --- we fine-tune a model until it reproduces the passages and
-fuse it against the \emph{unmodified} model it came from --- and a pair enters only on
-\emph{sampled} $k=-1$ recall above $0.10$ (Appendix~\ref{app:second-anchor}). Over a
-$1.61\times$ span in $s(x)$ per token and $1.87\times$ per character, \textbf{every onset falls
-between $0.88$ and $1.17$ of $s(x)$}, and for the two KL3M
-pairs the interval excludes $1$ from below --- there the certificate expires before the danger
-starts. The threshold is therefore not bookkeeping but, to within a fifth, where a compliant
-adversary begins recovering protected text (Table~\ref{tab:onset}).
-
-The residual fifth is not a property of the models but of the evaluation: it tracks the number of
-\emph{words} a fixed-token seed hands the adversary, at Spearman $-0.958$ (exact $p = 0.0002$), and
-handing all nine the same $13.6$--$15.0$ words rather than twenty tokens drops the spread in
-onset$/s(x)$ from $0.289$ to $0.113$, every pair that moved moving \emph{down}: $61\%$ of it is the
-benchmark's seed convention, a caution for anyone measuring extraction under a seed fixed in tokens
-\citep{carlini2023quantifying}. Two
-refinements we derived and pre-registered, $r(x) = s_s(x) - s_r(x)$ and $k_{\mathrm{crit}}$, were
-refuted in complementary directions, while warping the anchor moves the onset with it,
-refuting a budget quoted in constant nats.
-Appendix~\ref{app:onset} has all of it, bands committed first.
+Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything;
+if leakage began far above it, that would be bookkeeping. It does not. On nine pairs with nine
+distinct anchors and six tokenizers, over a $1.61\times$ span in $s(x)$, \textbf{every onset falls
+between $0.88$ and $1.17$ of $s(x)$}, and for the two KL3M pairs the interval excludes $1$ from
+below --- there the certificate expires before the danger starts (Table~\ref{tab:onset}). The
+residual fifth belongs to the evaluation, not the models: it tracks the \emph{words} a fixed-token
+seed hands the adversary at Spearman $-0.958$ (exact $p = 0.0002$), and equalising them removes
+$61\%$ of the spread --- a caution for anyone measuring extraction under a seed fixed in tokens
+\citep{carlini2023quantifying}. Appendix~\ref{app:onset} has the protocol, the table, the two
+refuted refinements and the bands, committed first.

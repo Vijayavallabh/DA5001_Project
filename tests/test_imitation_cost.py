@@ -136,7 +136,14 @@ def test_the_sparsity_proposition_is_stated_and_its_one_number_is_measured():
     does not grow with the work MUST be the anchor almost everywhere. Its only empirical claim is
     the contrast -- the deployed rule serves p_r unchanged at 99.95% of steps at k=20."""
     apx = open(APX, encoding="utf-8").read()
-    assert r"\label{prop:sparse}" in apx, "the proposition has moved"
+    # The label belongs to the main-text statement and MUST NOT also be set here: it was declared
+    # in both places until 2026-09-14, so every \ref{prop:sparse} in the paper resolved to this
+    # restatement's number rather than the proposition it names. The appendix restates and proves
+    # it without a counter, so what is checked here is the restatement and the bound.
+    assert r"\label{prop:sparse}" in open(tex("sections/frontier.tex"), encoding="utf-8").read(), \
+        "the proposition is no longer stated in the body"
+    assert r"\label{prop:sparse}" not in apx, "the duplicate label is back"
+    assert r"Proposition~\ref{prop:sparse}, restated" in apx, "the appendix no longer restates it"
     assert r"\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon" in apx, "the bound has changed"
     beta = float(IMIT[("ordinary", "20")]["beta_binding_frac"])
     # Once post-EOS padding stops being counted as steps forced to the anchor, beta at k=20 is

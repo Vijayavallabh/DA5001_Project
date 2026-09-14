@@ -1,10 +1,40 @@
-# Session handoff — 2026-09-14 (evening)
+# Session handoff — 2026-09-14 (late evening)
 
 ## Current objective
 
-No arms are running. Every pre-registration in `results/` is scored, feat-111 and feat-112 included.
+No arms are running. Every pre-registration in `results/` is scored.
 
-**feat-111/112 closed.** Twelve deliberately contaminated anchors tested Proposition 4 where it can actually fail. N1 VIOLATED at the letter on one passage where the bound is exactly zero (seven of twelve anchors have a zero base rate, so the test has no power there); at the five where it does, the bound holds with a wide margin. N2 SATURATES at the boundary, `A(64)` running `1.00`-`4.00` against a permitted `64`. N3 AMPLIFIES LESS, `rho = -0.700`, as predicted. The Ethics Statement's assertion is now a measurement and Appendix I carries the table.
+**The paper is v8: reordered to lead with the constructive result.** v7 argued the dichotomy and
+reached selection anchoring on page 5, so a reader met four pages of a mechanism failing before
+meeting one that works. v8 swaps the two roles. The order is now
+
+1. Introduction — the mechanism, the number, and one paragraph on why it was available
+2. **Selection anchoring** (was §5) — Prop 1 `prop:selection`, and Prop 2 `prop:threshold` moved in
+   from `frontier.tex`, because what makes `log n` a *certificate* is where it sits against `S(x)`
+3. **Does it work?** (was §6) — the evidence, immediately after the claim it supports
+4. **Why no per-token budget can do this** (was §2) — `prop:sparse` now *opens* the section
+5. **The deployed instance, and the three repairs it has left** (was §3 + §4; `onset.tex` is
+   demoted to its opening paragraph and `\input` from `orders.tex`)
+6. Related work · 7. Limitations and conclusion
+
+Title is now *Two Nats, Not Two Thousand: Spending the Copyright Budget on the Draw Instead of the
+Token*. The abstract, introduction and conclusion are rewritten; every other section keeps its body
+and changed only at the seams. **No measured number changed.**
+
+**Two defects the restructure surfaced, both pre-existing:**
+- **`prop:sparse` was labelled twice** — `frontier.tex` and `appendix_proofs.tex` — so from v5
+  through v7 every `\ref` to the paper's own dichotomy rendered as **Proposition 6** and pointed
+  at an appendix restatement, while the body's statement was Proposition 3 and nothing referred to
+  it. Fixed; caution (z); `tests/test_imitation_cost.py` now forbids the duplicate.
+- **`scripts/snapshot_manuscript.sh` followed `\input` only from the top-level file**, so
+  `onset.tex` went stale in the snapshot the moment it became a child of `orders.tex`. Fixed.
+
+Page budget: body is **exactly 9 of 9 pages**, page 10 body-free. The restructure cost ~23 lines of
+new connective tissue and they were paid for by cutting duplication, one section heading, one table
+row and one `\paragraph` heading. Seven CSV-consistency tests caught sentences the trimming had
+removed; six were restored (they are evidence, not filler) and one was retargeted to the appendix
+the sentence legitimately moved to. Caution (n) held throughout: prose trims were absorbed by
+reflow, and only headings, table rows and the final paragraph moved the count.
 
 Closed this session, eight arms:
 

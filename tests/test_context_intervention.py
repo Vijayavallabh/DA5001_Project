@@ -54,8 +54,12 @@ def test_the_manuscript_quotes_the_csv():
     tot = rows[-1]
     assert tot["pair"] == "ALL"
     s20, smatch, frac = float(tot["ratio_20"]), float(tot["ratio_matched"]), float(tot["delta"])
+    # appendix_onset joined the list on 2026-09-14: the v8 restructure demoted onset.tex to a
+    # paragraph of Section 5 and the sentence quoting the two spreads moved into the appendix that
+    # already carried the table. The claim is still in the paper and still checked against the CSV.
     body = "".join(open(tex(f"sections/{f}.tex"), encoding="utf-8").read()
-                   for f in ("onset", "appendix_seed", "iclr_closing", "appendix_limitations"))
+                   for f in ("onset", "appendix_onset", "appendix_seed", "iclr_closing",
+                             "appendix_limitations"))
     assert f"${s20:.3f}$ to ${smatch:.3f}$" in body, (s20, smatch)
     closed = round(100 * (1 - frac))
     assert body.count(f"${closed}\\%$") >= 3, closed
