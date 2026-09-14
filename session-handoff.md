@@ -4,7 +4,7 @@
 
 Six arms are in progress, each with its bands committed before its run:
 
-- **feat-103** — the natural-memorisation arm re-run with `--raw-prompt` (`results/onset_prediction_extraction_natural_raw.md`), after feat-102 turned out to have seeded a base model with an instruction header. GPUs 1+2.
+- **feat-109** — the natural-memorisation arm, third attempt, with a reference measured at the **same protocol** (`results/onset_prediction_extraction_natural_hp.md`). feat-103 closed as a second gate failure: `--raw-prompt` worked, but the `0.4137` it predicted against was a 100-token seed and it used 20. This one is `--split test --limit 50 --seed-tokens 100`, `hp1_A`'s protocol, where the 70B alone reads `0.1996`. GPUs 1+2. **A third gate failure stops this line.**
 - **feat-104** — the head-to-head at a **third** pair, Llama-3.2-3B-Instruct, the closest anchor on record and the hardest case for the reversal (`results/onset_prediction_frontier_third_pair.md`). GPU 0.
 - **feat-105** — the judge-free axis on a **knowledge** task, TriviaQA at Comma-7B (`results/onset_prediction_verifiable_triviaqa.md`). GPU 4.
 - **feat-106** — the **judge-free head-to-head**, both mechanisms on TriviaQA at TinyComma (`results/onset_prediction_verifiable_headtohead.md`). Queued behind feat-105 on GPU 4. H1 predicts METERED WINS in advance.

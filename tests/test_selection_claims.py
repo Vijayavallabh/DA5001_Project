@@ -188,9 +188,11 @@ def test_the_memoriser_baseline_is_identical_at_every_anchor():
     import os as _os
     vals = set()
     for path in _glob.glob("results/selection_extraction*.csv"):
-        # the 70B arm is a different risky model, not an anchor arm, and its own gate failed
-        # (results/onset_prediction_extraction_natural.md), so it has no memoriser baseline
-        if path.endswith("_per_passage.csv") or path.endswith("_70b.csv"):
+        # Any _70b arm is a different RISKY model, not an anchor arm: its k=-1 row is the 70B
+        # alone and has no reason to equal the LoRA memoriser's. endswith("_70b.csv") was too
+        # narrow -- selection_extraction_70b_raw.csv (feat-103) walked straight through it and
+        # contributed a (0.0, 0.0, 0.0) baseline. Match the sibling test and skip the substring.
+        if path.endswith("_per_passage.csv") or "_70b" in path:
             continue
         r = {x["n"]: x for x in _rows(path)}
         if "-1" not in r:

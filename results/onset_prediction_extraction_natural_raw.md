@@ -86,3 +86,62 @@ Under a gate failure, **nothing is claimed** and Limitations keeps the sentence.
   model here and nothing else.
 
 ## Scoring log
+
+## Scoring, 2026-09-14
+
+Run: `scripts/run_extraction_70b_raw.sh`, GPUs 1+2, `[e70raw] exit=0 at 08:12`. Outputs
+`results/selection_extraction_70b_raw.csv` and `_per_passage.csv`.
+
+### GATE FAILED, for the second time and for a different reason
+
+| arm | `nv_recall_mean` | max | `lcs_word` |
+|---|---|---|---|
+| `k=-1`, the 70B alone | `0.0000` | `0.0000` | --- |
+| `n=1` (anchor alone) | `0.0000` | `0.0000` | `1.90` |
+| `n=8` | `0.0000` | `0.0000` | `2.04` |
+| `n=64` | `0.0000` | `0.0000` | `1.92` |
+
+The gate is the 70B's sampled `k=-1` recall on these passages at `>= 0.10`. It is `0.0000`, with a
+maximum of `0.0000` over all `100`. **No band is read. R4's gate-failure branch applies: nothing is
+claimed, and Limitations keeps the sentence saying the zero-leakage result has been shown only
+against a memoriser we fine-tuned.**
+
+### Why, and it is not the header this time
+
+`--raw-prompt` worked --- the header is gone. What this arm got wrong is the thing it compared
+itself against. The pre-registration says "the expectation on record is `0.4137` ...
+(`results/natural_memorisation.csv`, arm `1984_A`)" and does not say what seed that number was
+measured at. The run log does:
+
+```
+[ca] 8 passages; target length mean 169 tokens; seed 100 tokens raw_prompt=True greedy=False;
+     constraint=kl prefix_debt=True temperature=1.0 rp=1.0
+```
+
+**A 100-token seed.** This arm gives the 70B **20**. A base model that memorised a novel in
+pre-training needs a long raw prefix to re-enter the text --- Cooper et al. use 50-token prefixes
+and report that 200-token prefixes push their metric above 90%, and feat-017 recorded the same
+thing on this checkpoint. `0.4137` was never a like-for-like expectation for a 20-token seed, and
+the gate was built on it twice.
+
+Two further things this run establishes, both of which the replacement arm must respect:
+
+1. **The passage set is not the reference's.** `--split attack_train --limit 100` is `50`
+   *A Game of Thrones*, `42` *Casino Royale* and `8` *1984*; `1984_A` is those `8` alone. Even on
+   the `8`, this run reads `0.0000`.
+2. **A better-controlled corpus exists.** `hp1_A` is `50` *Harry Potter* `test` passages at a
+   `100`-token raw seed, temperature `1.0`, penalty `1.0` --- the same temperature and the same
+   prompt handling `selection_extraction.py` uses --- and the 70B alone reads `0.1996` there,
+   above the gate. That is the arm to run, and it is `50` passages rather than `8`.
+
+### What is done about it
+
+feat-103 is closed as a gate failure and its numbers are not quoted anywhere. A **new** arm,
+feat-109, is pre-registered separately at
+`results/onset_prediction_extraction_natural_hp.md`: `--split test --limit 50 --raw-prompt
+--seed-tokens 100`, with the gate stated against `hp1_A`'s `0.1996` at the protocol that produced
+it. Re-running *this* arm with a longer seed is excluded by its own pre-registration and is not
+what happens; a new arm with a correctly specified reference is the same remedy feat-103 was for
+feat-102.
+
+The caution is general and is now AGENTS.md (v): **a reference number carries its protocol.**
