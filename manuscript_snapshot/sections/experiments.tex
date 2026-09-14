@@ -16,10 +16,9 @@ anchor, temperature and cap as every other arm, utility a pairwise judgement aga
 \setlength{\tabcolsep}{4pt}
 \caption{Selection anchoring on $500$ prompts, as \textbf{gains over each arm's own anchor-alone
 control}: the two deployable scorers, the strongest anchor, and the metered
-decoder's best arm under one judge (bottom). The circular oracle that selects by the judge that
-then scores it is Appendix~\ref{app:selection}, where its verdict is recorded as an artefact. Levels are omitted because the instrument check below shows they are largely a
-statement about slot order; a dash marks a gain whose \emph{paired} interval that pass cannot
-form.}
+decoder's best arm under one judge (bottom). Levels are omitted because the instrument check below shows they are
+largely a statement about slot order; a dash marks a gain whose \emph{paired} interval that pass
+cannot form.}
 \label{tab:selection}
 \begin{tabular}{@{}llcccc@{}}
 \toprule
@@ -53,10 +52,11 @@ no selecting agrees at $n=8$, $+0.073$ $[+0.027, +0.120]$; all three were pre-re
 refuting bands. The comparison is not a tie but a reversal --- in \emph{gains over each arm's own
 control}, because absolute judged levels do not survive the instrument check below: the metered
 decoder gains $+0.072$ for $171.3$ nats and selection $+0.142$ for $3.175$, twice the utility for
-one fifty-fourth of the divergence, under the pathwise order rather than the KL. At the one further
-pair where the metered decoder runs at all --- it needs a shared vocabulary, and no other openly
-licensed anchor has the risky model's --- the reversal repeats: $+0.076$ for $1.204$ nats against
-its best arm's $+0.056$ for $123.2$ (Appendix~\ref{app:proofs}).
+one fifty-fourth of the divergence, under the pathwise order rather than the KL. At the two further
+pairs where it runs at all --- no other openly licensed anchor ships the risky model's tokenizer
+--- the reversal repeats and then widens: $+0.076$ for $1.204$ nats against its best arm's $+0.056$
+for $123.2$, and at the closest anchor $+0.150$ against a metered decoder that resolves at no
+budget, $-0.019$ for $60.6$ (Appendix~\ref{app:proofs}).
 
 \paragraph{The judge is dominated by position, and only the gains survive it}
 Re-judging the same $500$ pairs in \emph{both} orders ($2{,}000$ calls, bands committed first)
@@ -86,7 +86,7 @@ samples by the
 both mandatory baselines. Near-verbatim recall is $0.0000$ at every $n$ from $1$ to $64$, maximum
 over all $100$ passages $0.0000$, against the memorising model's mean of $0.3925$ and maximum of
 $0.8154$ (Table~\ref{tab:extraction}) --- $n$ multiplies the \emph{anchor's own} rate and the anchor
-never saw the work. It is $0.0000$ at all four anchors, and the power is not in question: the same
+never saw the work. It is $0.0000$ at all six anchors, and the power is not in question: the same
 pipeline puts $78\%$ of passages above threshold for the unconstrained memoriser
 (Appendix~\ref{app:selection}).
 
