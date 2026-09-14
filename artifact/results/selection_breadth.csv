@@ -7,3 +7,7 @@ KL3M-1.7B,alea-institute/kl3m-003-1.7b,Meta-Llama-3.1-8B-Instruct,8,0.242,0.293,
 KL3M-1.7B,alea-institute/kl3m-003-1.7b,Phi-3.5-mini-instruct,8,0.31,0.349,0.039,0.005,0.076,206.9,0.002,500,PASS,0.0391,0.004,0.0752,499
 Comma-7B,common-pile/comma-v0.1-2t,Meta-Llama-3.1-8B-Instruct,8,0.426,0.581,0.155,0.106,0.2,203.6,0.03,500,PASS,0.1577,0.1093,0.2062,485
 Comma-7B,common-pile/comma-v0.1-2t,Phi-3.5-mini-instruct,8,0.45,0.561,0.111,0.072,0.148,203.6,0.03,500,PASS,0.1124,0.0722,0.1505,485
+Comma-7B (1T tokens),common-pile/comma-v0.1-1t,Meta-Llama-3.1-8B-Instruct,8,0.438,0.551,0.113,0.069,0.157,202.0,0.166,500,FAIL,0.1427,0.0935,0.193,417
+Comma-7B (1T tokens),common-pile/comma-v0.1-1t,Phi-3.5-mini-instruct,8,0.458,0.484,0.026,-0.01,0.063,202.0,0.166,500,FAIL,0.0264,-0.018,0.0695,417
+Pleias-3B,PleIAs/Pleias-3b-Preview,Meta-Llama-3.1-8B-Instruct,8,0.297,0.394,0.097,0.056,0.14,201.8,0.0,500,PASS,0.097,0.054,0.141,500
+Pleias-3B,PleIAs/Pleias-3b-Preview,Phi-3.5-mini-instruct,8,0.399,0.446,0.047,0.003,0.089,201.8,0.0,500,PASS,0.047,0.006,0.089,500

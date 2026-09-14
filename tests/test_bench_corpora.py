@@ -95,13 +95,19 @@ def test_the_anonymity_scan_covers_path_names_not_only_contents():
 
 
 def test_the_built_artifact_carries_no_identifying_path():
+    """The tokens are read out of the builder rather than written here. Spelling them in a test
+    put them inside the artifact -- tests/ ships, scripts/build_artifact.sh does not -- and the
+    builder's own content scan then failed on the file that guards it. One home for the list."""
     import glob
     import os
+    import re
+    src = open("scripts/build_artifact.sh", encoding="utf-8").read()
+    toks = re.findall(r"-iname '\*([^*']+)\*'", src)
+    assert len(set(toks)) >= 3, toks
     if not os.path.isdir("artifact"):
         return
     bad = [p for p in glob.glob("artifact/**/*", recursive=True)
-           if any(k in os.path.basename(p).lower()
-                  for k in ("sports", "vijayavallabh", "iitm"))]
+           if any(k.lower() in os.path.basename(p).lower() for k in toks)]
     assert not bad, bad
 
 

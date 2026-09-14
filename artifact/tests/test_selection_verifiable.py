@@ -137,3 +137,175 @@ def test_the_scored_arm_agrees_with_the_manuscript():
     assert f"$+{float(r64['gain']):.3f}$" in body, r64["gain"]
     # and the paper must not present majority vote as the registered scorer
     assert "pointwise" in body or "reward" in body
+
+
+def test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured():
+    """The abstract's utility claim was 'judged' alone, which is the first thing a reviewer
+    discounts. It may say 'with no judge at all' only while an exact-match arm exists and lifts."""
+    from tests.manuscript import tex
+    absr = " ".join(open(tex("iclr_2027.tex")).read().split())
+    absr = absr.split("\\end{abstract}")[0]
+    if "no judge at all" not in absr:
+        return                      # the claim was withdrawn; nothing to pin
+    import csv as _csv
+    rows = list(_csv.DictReader(open("results/selection_verifiable_comma7b.csv")))
+    for rule in ("majority", "pointwise"):
+        arm = [r for r in rows if r["arm"].startswith(rule) and r["gain_lo95"]]
+        best = max(arm, key=lambda r: float(r["gain"]))
+        assert float(best["gain_lo95"]) > 0, (rule, best)
+    assert "judged" in absr, "the abstract must still say which of the two metrics is judged"
+
+
+@pytest.mark.skipif(not os.path.exists("results/selection_verifiable_tqa_comma7b.csv"),
+                    reason="the TriviaQA arm has not been scored yet")
+def test_the_knowledge_task_arm_agrees_with_the_manuscript():
+    """feat-105. The TriviaQA arm is the one that cuts against the paper: majority vote lifts, the
+    paper's own pointwise reward does not, and at n=16 it is significantly WORSE than the anchor's
+    first draw. All three numbers are quoted in Section 6 and each must round from the CSV once."""
+    import csv
+    rows = list(csv.DictReader(open("results/selection_verifiable_tqa_comma7b.csv")))
+    mv = {int(r["n"]): r for r in rows if r["arm"].startswith("majority")}
+    pw = {int(r["n"]): r for r in rows if r["arm"].startswith("pointwise")}
+    assert set(mv) == set(pw) == set(N_GRID), sorted(mv)
+
+    # W1 SC LIFTS and W2 FLAT are the readings Section 6 is written against; if either flips, the
+    # paragraph is false and this fails rather than the reader finding it.
+    top = mv[max(N_GRID)]
+    assert float(top["gain_lo95"]) > 0, ("W1 no longer lifts", top)
+    assert float(pw[max(N_GRID)]["gain_lo95"]) <= 0, ("W2 now lifts; Section 6 says it does not",
+                                                      pw[max(N_GRID)])
+    worst = min(pw.values(), key=lambda r: float(r["gain"]))
+    assert float(worst["gain_hi95"]) < 0, ("the reward is no longer significantly negative "
+                                           "anywhere; Section 6's sign-flip sentence is now false")
+
+    body = " ".join(open(tex("sections/experiments.tex")).read().split())
+    assert "TriviaQA" in body, "the knowledge-task arm is scored but Section 6 does not report it"
+    assert f"$+{float(top['gain']):.3f}$ $[+{float(top['gain_lo95']):.3f}, " \
+           f"+{float(top['gain_hi95']):.3f}]$ at $n={top['n']}$" in body, top
+    assert f"${float(worst['gain']):.3f}$ $[{float(worst['gain_lo95']):.3f}, " \
+           f"{float(worst['gain_hi95']):.3f}]$ at $n={worst['n']}$" in body, worst
+
+    # the ratio between the two tasks, quoted as the support ceiling, is not eyeballed
+    gsm = list(csv.DictReader(open("results/selection_verifiable_comma7b.csv")))
+    gmv = [r for r in gsm if r["arm"].startswith("majority") and r["gain_lo95"]]
+    best = max(gmv, key=lambda r: float(r["gain"]))
+    ratio = float(best["gain"]) / float(top["gain"])
+    assert f"${ratio:.1f}\\times$ less" in body, (ratio, best["gain"], top["gain"])
+
+
+def test_limitations_carries_both_tasks_worth_of_scorer_evidence():
+    """W5's committed consequence: the limitation keeps 'the scorer binds before the anchor does'
+    and names the sign flip, not just the 3.4x."""
+    body = " ".join(open(tex("sections/iclr_closing.tex")).read().split())
+    # the heading was widened on 2026-09-14 when feat-106 landed: it now carries the scope
+    # statement as well, so the phrase to pin is the claim, not the old heading text
+    assert "the scorer binds first" in body
+    assert "TriviaQA" in body and "3.4" in body
+
+
+def test_every_cell_of_the_judgefree_table_rounds_from_its_csv():
+    """Caution (j): a paper number rounds from the CSV once. 28 rows x 4 numbers plus the two
+    baselines, checked mechanically rather than read."""
+    import csv
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    checked = 0
+    for p in ("results/selection_verifiable_comma7b.csv",
+              "results/selection_verifiable_tqa_comma7b.csv"):
+        rows = list(csv.DictReader(open(p)))
+        for r in rows:
+            if r["arm"].startswith("risky"):
+                assert f"${float(r['acc']):.3f}$" in apx, (p, r["arm"], r["acc"])
+                checked += 1
+                continue
+            g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
+            cell = (f"${float(r['budget_nats']):.3f}$ & ${float(r['acc']):.3f}$ & "
+                    f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$")
+            assert cell in apx or cell.split("& ", 1)[1] in apx, (p, r["arm"], r["n"], cell)
+            checked += 1
+        sp = {r["arm"].split(" ")[0]: r["spearman_acc_logn"] for r in rows if r["gain_lo95"]}
+        for v in sp.values():
+            assert f"${float(v):+.3f}$" in apx or f"${float(v):.3f}$" in apx, (p, v)
+    assert checked == 32, checked
+
+
+def test_the_appendix_states_both_metric_gates_as_measured():
+    """Both arms are gated on an extraction rate and both gates are reported, not just the one
+    that reads better. The TriviaQA figure is 1 - the logged no-answer fraction."""
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    assert "$99.96\\%$" in apx and "$98.67\\%$" in apx, "a metric gate is missing from the appendix"
+
+
+@pytest.mark.skipif(not os.path.exists("results/verifiable_metered_tqa.csv"),
+                    reason="the judge-free head-to-head has not been scored yet")
+def test_the_judgefree_headtohead_agrees_with_the_appendix():
+    """feat-106. The arm the paper LOSES. H1 predicted METERED WINS before generation and it does,
+    so what has to stay true is the reason: the winning arm is the one whose accuracy equals the
+    unconstrained risky model's, at a certificate this paper calls vacuous."""
+    import csv
+    rows = list(csv.DictReader(open("results/verifiable_metered_tqa.csv")))
+    met = {r["arm"]: r for r in rows if r["mechanism"] == "metered decoder"}
+    sel = {r["arm"]: r for r in rows if r["mechanism"].startswith("selection")}
+    best = max((r for a, r in met.items() if a != "k=-1"), key=lambda r: float(r["acc"]))
+    assert best["arm"] == "k=20", best["arm"]
+    # it wins by BECOMING the risky model; if that ever stops being true the framing is wrong
+    assert float(best["acc"]) == float(met["k=-1"]["acc"]), (best["acc"], met["k=-1"]["acc"])
+    # ... and where the certificate is small it buys nothing
+    for arm in ("k=0.5", "k=1"):
+        assert float(met[arm]["gain"]) <= 0.01, (arm, met[arm]["gain"])
+    # H1 METERED WINS: the band is 0.03 with non-overlapping intervals
+    top = max(sel.values(), key=lambda r: float(r["acc"]))
+    assert float(best["acc"]) - float(top["acc"]) > 0.03
+    assert float(best["acc_lo95"]) > float(top["acc_hi95"]), (best["acc_lo95"], top["acc_hi95"])
+
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    # the table carries every metered arm and the three selection arms Section 6 and the
+    # Limitations lean on; the intermediate n are in the nested grid of Table 6 already
+    shown = [r for r in rows
+             if r["mechanism"] == "metered decoder" or r["arm"] in ("n=8", "n=32", "n=64")]
+    assert len(shown) == 9, [r["arm"] for r in shown]
+    for r in shown:
+        if r["arm"] == "k=-1":
+            assert f"${float(r['acc']):.3f}$ $[{float(r['acc_lo95']):.3f}, " \
+                   f"{float(r['acc_hi95']):.3f}]$" in apx, r["arm"]
+            continue
+        assert f"${float(r['acc']):.3f}$ $[{float(r['acc_lo95']):.3f}, " \
+               f"{float(r['acc_hi95']):.3f}]$" in apx, (r["mechanism"], r["arm"], r["acc"])
+    assert "$480.0$" in apx and "$44.8473$" in apx, "the winning arm's budget is not quoted"
+
+
+@pytest.mark.skipif(not os.path.exists("results/verifiable_metered_tqa.csv"),
+                    reason="the judge-free head-to-head has not been scored yet")
+def test_h2_is_read_on_the_axis_the_preregistration_named():
+    """H2 says "the same axes as Figure 1(b)", and those are Table 1's: selection's
+    log n - (n-1)/n against the metered decoder's realised KL. The scorer used to write 0.0 for
+    selection, which is true of a per-token meter and useless as a comparison axis."""
+    import csv
+    import math
+    rows = list(csv.DictReader(open("results/verifiable_metered_tqa.csv")))
+    sel = [r for r in rows if r["mechanism"].startswith("selection")]
+    met = [r for r in rows if r["mechanism"] == "metered decoder" and r["arm"] != "k=-1"]
+    assert all("kl_nats" in r for r in rows), "the registered axis is not in the CSV"
+    for r in sel:
+        n = int(r["arm"].split("=")[1])
+        want = math.log(n) - (n - 1) / n if n > 1 else 0.0
+        assert abs(float(r["kl_nats"]) - want) < 5e-4, (n, r["kl_nats"], want)
+    # every accuracy selection BUYS is bought for under a tenth of the cheapest metered arm's spend
+    ratios = []
+    for s in sel:
+        if float(s["gain"]) <= 0:
+            continue                       # bought nothing; the ratio is against zero nats
+        cand = [m for m in met if float(m["acc"]) >= float(s["acc"])]
+        if not cand:
+            continue
+        c = min(cand, key=lambda m: float(m["realised_nats"]))
+        ratios.append(float(s["kl_nats"]) / float(c["realised_nats"]))
+    assert ratios and max(ratios) < 0.1, ratios       # FRONTIER HOLDS
+
+
+def test_limitations_states_the_two_are_not_substitutes():
+    """H3's committed consequence for METERED WINS + FRONTIER HOLDS: a scope statement in the MAIN
+    text, carrying both halves -- the metered decoder wins, and wins by going vacuous."""
+    body = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())
+    assert "not substitutes" in body
+    assert "$0.618$" in body and "$0.190$" in body
+    assert "$480$ nats" in body, "the scope statement omits the budget it was won at"

@@ -153,3 +153,39 @@ The 70B's own recall on these passages, `0.0000`, against the fine-tuned 8B's `0
 `100` passages and seeds. Neither is the other's upper bound (caution (h)); what this says is only
 that the LoRA memoriser is the stronger adversary *on this split at these settings*, which is what
 makes it the right one to hand the selector to.
+
+---
+
+## Addendum, 2026-09-14: the gate failure was my pipeline, not the adversary
+
+Nothing above is edited. The reading recorded above --- gate failed, E1 not read --- stands as the
+score of the arm that was run. **That arm did not implement the adversary it claimed to.**
+
+`results/natural_memorisation.csv` has this same checkpoint, on this same novel, at this same
+temperature, at `k=-1`, reaching `nv_recall_mean = 0.4137` over 8 passages. That contradicts the
+`0.0000` above, and the escalation rule in `AGENTS.md` says to treat a result that contradicts a
+known truth as a bug in the new code until proven otherwise. It was.
+
+`selection_extraction.py:build()` seeds from `p.prompt_text`, which **begins with
+`Complete the prefix:\n`**. At `--seed-tokens 20` that header consumes six of the twenty tokens and
+leaves about fourteen tokens of *1984*; worse, it hands a **base** model an instruction where the
+protocol's natural-memorisation check (C7) specifies *"raw passage seeds with no instruction"*.
+`composition_attack.py` has carried a `--raw-prompt` flag for this since feat-018.
+`selection_extraction.py` defined the header constant and never used it.
+
+That is the whole discrepancy. For the LoRA memoriser the header is harmless --- it was fine-tuned
+with it, and it recalls `0.3925` --- and for the 70B it is disqualifying. On the two passages at the
+top of `results/selection_extraction_70b_per_passage.csv` the fine-tuned 8B recovers `0.802` and
+`0.7014` where the 70B recovers `0.0`, on identical seeds.
+
+**What this changes.** The three candidate causes offered above --- the split, the decoding
+settings, the pipeline --- are superseded: the cause is the instruction header, demonstrated rather
+than guessed. `--raw-prompt` is now implemented in `selection_extraction.py`. The corrected arm is
+**a new arm with its own pre-registration**
+(`results/onset_prediction_extraction_natural_raw.md`), because excluded alternative 1 above
+forbids re-running this one until its gate passes.
+
+**And the manuscript must not keep the sentence this arm bought it.** Limitations said the 70B
+"reproduced none of them unaided at our settings"; the settings were defective, so the claim is
+withdrawn until the corrected arm is scored, and the leakage limitation goes back to the plain
+statement that every measurement uses a memoriser we fine-tuned.

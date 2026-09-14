@@ -1,0 +1,7 @@
+k,mode,L,constraint,n_passages,n_queries_mean,nv_recall_mean,nv_recall_median,nv_recall_ge_0p8_pct,lcs_word_mean,lcs_word_max,spend_total_mean,max_query_Z_over_K,R_total_mean,max_query_R_over_K,attempts_per_window,windows_matched_pct,invariant_violations
+-1.0,single,0,kl,100,1,0.4921,0.4141,29.0,81.34,214,0.0,0,767.47,0,1.0,0.0,0
+0.0,single,0,kl,100,1,0.0,0.0,0.0,1.73,4,0.0,0,0.0,0,1.0,0.0,0
+0.5,single,0,kl,100,1,0.0,0.0,0.0,1.9,4,99.01,0.9443,98.47,1.1589,1.0,0.0,0
+1.0,single,0,kl,100,1,0.0,0.0,0.0,2.09,5,250.96,0.9733,251.77,1.2116,1.0,0.0,0
+3.0,single,0,kl,100,1,0.0116,0.0,0.0,4.57,95,575.81,0.9488,578.29,0.965,1.0,0.0,0
+20.0,single,0,kl,100,1,0.4759,0.3674,28.0,78.63,214,761.26,0.1775,762.28,0.1795,1.0,0.0,0

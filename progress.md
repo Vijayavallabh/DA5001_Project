@@ -3837,3 +3837,41 @@ flip on TriviaQA; the contributions bullet says the gain is also exact match wit
 reasoning task and a knowledge task. Reproducibility Statement: thirty-eight logs. Build `exit=0`,
 `overfull=0`, `unresolved=0`, page 10 body-free. Numeric audit `2,266` literals, 1 expected miss.
 394 tests.
+
+## 2026-09-14 late morning — the queue drained; eight arms scored
+
+| arm | reading | what it cost or bought |
+|---|---|---|
+| feat-103 | **GATE FAILED** | the `0.4137` it predicted against was a 100-token seed and it used 20 (caution (v)) |
+| feat-104 | **T1 REPLICATES** | third pair; the metered decoder resolves at *no* budget on either judge |
+| feat-105 | **W1 lifts, W2 flat** | TriviaQA: majority vote `+0.054`, the paper's own reward *falls* with `n` |
+| feat-106 | **METERED WINS, FRONTIER HOLDS** | predicted the loss first; it wins at `k=20` by *becoming* the risky model |
+| feat-107 | **C1 ONE GAINS, C2 NO TREND, C3 CONFIRMED** | cost "the strongest anchor gives the largest gain" |
+| feat-108 | **G0 UNMATCHED** | refused the joint leakage table; residual `0.0493` in Appendix J |
+| feat-109 | **INVALID** | the registered command returned the wrong novel (caution (w)) |
+| feat-110 | **R1 NO LEAK** | the natural memoriser; Limitations drops the sentence about whose memoriser it is |
+
+**The headline.** `unsloth/Meta-Llama-3.1-70B` memorised *Harry Potter* in pre-training: on 50
+held-out passages at a 100-token raw prefix it recovers `0.2475` mean near-verbatim recall, clears
+threshold on 25 of 50, and reproduces **two of fifty in full**. Selection anchoring with that
+model's *own* likelihood as the scorer recovers `0.0000` at every `n \le 64`. The zero-leakage claim
+no longer rests on a memoriser we made.
+
+**Three of the four natural-memorisation arms were our own defects**, each disclosed in its own
+scoring log before the next was written, and each produced a clean `0.0000` that would have read as
+a result: an instruction header handed to a base model (t), a reference number quoted without its
+seed length (v), and a registered corpus the registered command could not return (w).
+
+**Bands that cost us something, as designed.** C2's NO TREND removed a sentence from Section 6;
+G0's UNMATCHED refused a table the paper would have been stronger with; H1's METERED WINS is a loss
+we predicted in writing before generating. All three are in the main text.
+
+Commands: `scripts/run_frontier_third.sh`, `run_verifiable_tqa.sh`, `run_tqa_headtohead.sh`,
+`run_breadth_queued.sh` x2, `run_breadth_leakage.sh` x2, `run_leakage_headtohead.sh 4`,
+`run_extraction_70b_{raw,hp,hp2}.sh`, then `analysis/selection_breadth.py --out results`.
+
+Compute `207.3` GPU-hours measured, `207` disclosed. Artifact rebuilt: 774 files, 13 MB.
+`tests/test_bench_corpora.py` had spelled the forbidden path tokens as literals, which put them
+inside the artifact (tests/ ships, `scripts/build_artifact.sh` does not) and failed the builder's
+own content scan on the file that guards it; the list now has one home and the test reads it out of
+the builder.

@@ -4,6 +4,7 @@ The selection sections are new in v6 and carry the paper's constructive claim, s
 literal in them is pinned here rather than read by eye. The odometer arithmetic is included because
 it is the one place the paper does a division in prose."""
 import csv
+import pathlib
 import math
 import re
 
@@ -187,9 +188,11 @@ def test_the_memoriser_baseline_is_identical_at_every_anchor():
     import os as _os
     vals = set()
     for path in _glob.glob("results/selection_extraction*.csv"):
-        # the 70B arm is a different risky model, not an anchor arm, and its own gate failed
-        # (results/onset_prediction_extraction_natural.md), so it has no memoriser baseline
-        if path.endswith("_per_passage.csv") or path.endswith("_70b.csv"):
+        # Any _70b arm is a different RISKY model, not an anchor arm: its k=-1 row is the 70B
+        # alone and has no reason to equal the LoRA memoriser's. endswith("_70b.csv") was too
+        # narrow -- selection_extraction_70b_raw.csv (feat-103) walked straight through it and
+        # contributed a (0.0, 0.0, 0.0) baseline. Match the sibling test and skip the substring.
+        if path.endswith("_per_passage.csv") or "_70b" in path:
             continue
         r = {x["n"]: x for x in _rows(path)}
         if "-1" not in r:
@@ -207,8 +210,28 @@ def test_every_anchor_reports_zero_recall_at_every_n():
     anchors now, and Section 6 says 'at all four anchors', so all four have to be on disk."""
     import glob as _glob
     arms = [p for p in _glob.glob("results/selection_extraction*.csv")
-            if not p.endswith("_per_passage.csv") and not p.endswith("_70b.csv")]
-    assert len(arms) == 4, arms
+            if not p.endswith("_per_passage.csv") and "_70b" not in p]
+    assert len(arms) >= 4, arms
+    # Section 6 states the count, and the paper may never claim more anchors than were measured.
+    # It may claim FEWER while a registered anchor's arm is still running: C4 of the six-anchor
+    # pre-registration says the sentence stays at four until every new anchor has been scored, so
+    # the count is pinned to the registered set once that set is complete and bounded by the
+    # measured set until then. Both halves matter -- the upper bound stops an unmeasured anchor
+    # being counted, the equality stops a measured one being quietly left out.
+    import re as _re
+    from analysis.selection_breadth import ANCHORS as _ANCHORS
+    from tests.manuscript import tex as _tex
+    words = {4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+    nums = {w: n for n, w in words.items()}
+    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    m = _re.search(r"at all ([a-z]+) anchors", body)
+    assert m and m.group(1) in nums, "Section 6 no longer states the anchor count"
+    stated = nums[m.group(1)]
+    assert stated <= len(arms), (f"Section 6 claims {stated} anchors; only {len(arms)} leakage "
+                                 f"arms are on disk")
+    if len(arms) >= len(_ANCHORS):
+        assert stated == len(_ANCHORS), (stated, len(_ANCHORS),
+                                         "every registered anchor is measured; say so")
     for path in arms:
         for r in _rows(path):
             if r["n"] == "-1":
@@ -243,11 +266,32 @@ def test_the_70b_extraction_arm_is_reported_as_gate_failed_not_as_a_zero():
     head, _, scored = log.partition("\n## Scoring,")
     assert scored, "the arm is unscored"
     assert "gate fails" in scored and "NOT read as NO LEAK" in scored
-    # and the paper must not claim it
+    # and the arm is now known to have been invalid: a base model seeded with an instruction
+    # header. The addendum must stay, and it must not have edited the score above its line.
+    assert "Addendum" in scored and "instruction header" in scored, \
+        "the pipeline defect that caused the gate failure is no longer disclosed"
+    assert "0.4137" in scored, "the contradicting known truth is not cited"
+    assert pathlib.Path("results/onset_prediction_extraction_natural_raw.md").exists(), \
+        "the corrected arm has no pre-registration"
+    # and the paper must not claim it. The limitation "the zero leakage is measured against a
+    # memoriser WE fine-tuned" may only be dropped while an arm exists that measured it against
+    # one we did not -- feat-110, whose own gate must pass. Three arms before it produced a clean
+    # 0.0000 with a gate that did not, and any of them would have bought this sentence's removal
+    # on nothing.
     from tests.manuscript import tex
     close = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())
-    assert "memoriser \\emph{we} fine-tuned" in close, \
-        "Limitations must say whose memoriser the zero-leakage result is against"
+    nat = "results/selection_extraction_70b_hp2.csv"
+    passed = False
+    if pathlib.Path(nat).exists():
+        h = {x["n"]: x for x in _rows(nat)}
+        passed = float(h["-1"]["nv_recall_mean"]) >= 0.10 and all(
+            float(v["nv_recall_mean"]) == 0.0 for k, v in h.items() if k != "-1")
+    if not passed:
+        assert "memoriser \\emph{we} fine-tuned" in close, \
+            "Limitations must say whose memoriser the zero-leakage result is against"
+    else:
+        assert "memoriser \\emph{we} fine-tuned" not in close, \
+            "feat-110 passed its gate at NO LEAK; the withdrawn limitation is back"
 
 
 def test_the_n64_comma7b_arm_is_reported_with_its_failed_nested_check():
