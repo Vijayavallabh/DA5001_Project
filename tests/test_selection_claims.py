@@ -210,16 +210,26 @@ def test_every_anchor_reports_zero_recall_at_every_n():
     arms = [p for p in _glob.glob("results/selection_extraction*.csv")
             if not p.endswith("_per_passage.csv") and "_70b" not in p]
     assert len(arms) >= 4, arms
-    # Section 6 states the count. It must equal the number of anchor arms on disk, so adding an
-    # anchor without measuring its leakage -- or measuring one without updating the sentence --
-    # fails here rather than reaching a reviewer. C4 of the six-anchor pre-registration says the
-    # sentence stays at four until every new anchor has been scored.
+    # Section 6 states the count, and the paper may never claim more anchors than were measured.
+    # It may claim FEWER while a registered anchor's arm is still running: C4 of the six-anchor
+    # pre-registration says the sentence stays at four until every new anchor has been scored, so
+    # the count is pinned to the registered set once that set is complete and bounded by the
+    # measured set until then. Both halves matter -- the upper bound stops an unmeasured anchor
+    # being counted, the equality stops a measured one being quietly left out.
+    import re as _re
+    from analysis.selection_breadth import ANCHORS as _ANCHORS
     from tests.manuscript import tex as _tex
     words = {4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+    nums = {w: n for n, w in words.items()}
     body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
-    assert f"at all {words[len(arms)]} anchors" in body, (
-        f"{len(arms)} anchor leakage arms on disk; Section 6 does not say "
-        f"'at all {words[len(arms)]} anchors'")
+    m = _re.search(r"at all ([a-z]+) anchors", body)
+    assert m and m.group(1) in nums, "Section 6 no longer states the anchor count"
+    stated = nums[m.group(1)]
+    assert stated <= len(arms), (f"Section 6 claims {stated} anchors; only {len(arms)} leakage "
+                                 f"arms are on disk")
+    if len(arms) >= len(_ANCHORS):
+        assert stated == len(_ANCHORS), (stated, len(_ANCHORS),
+                                         "every registered anchor is measured; say so")
     for path in arms:
         for r in _rows(path):
             if r["n"] == "-1":

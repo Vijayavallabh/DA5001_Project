@@ -154,3 +154,48 @@ def test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured():
         best = max(arm, key=lambda r: float(r["gain"]))
         assert float(best["gain_lo95"]) > 0, (rule, best)
     assert "judged" in absr, "the abstract must still say which of the two metrics is judged"
+
+
+@pytest.mark.skipif(not os.path.exists("results/selection_verifiable_tqa_comma7b.csv"),
+                    reason="the TriviaQA arm has not been scored yet")
+def test_the_knowledge_task_arm_agrees_with_the_manuscript():
+    """feat-105. The TriviaQA arm is the one that cuts against the paper: majority vote lifts, the
+    paper's own pointwise reward does not, and at n=16 it is significantly WORSE than the anchor's
+    first draw. All three numbers are quoted in Section 6 and each must round from the CSV once."""
+    import csv
+    rows = list(csv.DictReader(open("results/selection_verifiable_tqa_comma7b.csv")))
+    mv = {int(r["n"]): r for r in rows if r["arm"].startswith("majority")}
+    pw = {int(r["n"]): r for r in rows if r["arm"].startswith("pointwise")}
+    assert set(mv) == set(pw) == set(N_GRID), sorted(mv)
+
+    # W1 SC LIFTS and W2 FLAT are the readings Section 6 is written against; if either flips, the
+    # paragraph is false and this fails rather than the reader finding it.
+    top = mv[max(N_GRID)]
+    assert float(top["gain_lo95"]) > 0, ("W1 no longer lifts", top)
+    assert float(pw[max(N_GRID)]["gain_lo95"]) <= 0, ("W2 now lifts; Section 6 says it does not",
+                                                      pw[max(N_GRID)])
+    worst = min(pw.values(), key=lambda r: float(r["gain"]))
+    assert float(worst["gain_hi95"]) < 0, ("the reward is no longer significantly negative "
+                                           "anywhere; Section 6's sign-flip sentence is now false")
+
+    body = " ".join(open(tex("sections/experiments.tex")).read().split())
+    assert "TriviaQA" in body, "the knowledge-task arm is scored but Section 6 does not report it"
+    assert f"$+{float(top['gain']):.3f}$ $[+{float(top['gain_lo95']):.3f}, " \
+           f"+{float(top['gain_hi95']):.3f}]$ at $n={top['n']}$" in body, top
+    assert f"${float(worst['gain']):.3f}$ $[{float(worst['gain_lo95']):.3f}, " \
+           f"{float(worst['gain_hi95']):.3f}]$ at $n={worst['n']}$" in body, worst
+
+    # the ratio between the two tasks, quoted as the support ceiling, is not eyeballed
+    gsm = list(csv.DictReader(open("results/selection_verifiable_comma7b.csv")))
+    gmv = [r for r in gsm if r["arm"].startswith("majority") and r["gain_lo95"]]
+    best = max(gmv, key=lambda r: float(r["gain"]))
+    ratio = float(best["gain"]) / float(top["gain"])
+    assert f"${ratio:.1f}\\times$ less" in body, (ratio, best["gain"], top["gain"])
+
+
+def test_limitations_carries_both_tasks_worth_of_scorer_evidence():
+    """W5's committed consequence: the limitation keeps 'the scorer binds before the anchor does'
+    and names the sign flip, not just the 3.4x."""
+    body = " ".join(open(tex("sections/iclr_closing.tex")).read().split())
+    assert "The scorer binds before the anchor does" in body
+    assert "TriviaQA" in body and "3.4" in body

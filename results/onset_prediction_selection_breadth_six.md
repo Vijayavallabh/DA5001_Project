@@ -92,3 +92,27 @@ arm; each new anchor's near-verbatim recall must be measured by
 - Quoting a level from this pass beside a level from another (the cross-pass floor is about `0.04`).
 
 ## Scoring log
+
+## Scoring log
+
+### C4 note, 2026-09-14: the first Pleias-3B leakage run was discarded before it was read
+
+The arm ran to `exit=0` at 07:42 and reported `0.0000` at every `n`, which is the registered C4
+reading. **It is not used**, and the reason is not the leakage column.
+
+`scripts/run_breadth_leakage.sh` had been given `--batch-size 64` that morning, against the default
+`32` that every anchor on record used. The `k=-1` arm is the memoriser sampled alone, and
+`generate()` consumes the RNG once per chunk, so the batch size changes the draw: the baseline read
+`0.4434 / 85.0%` against `0.3925 / 78.0%` at the other three anchors, and per passage it agreed with
+them on **24 of 100** where they agree with each other on **100 of 100**.
+
+Nothing about the leakage number is wrong. What is wrong is the *comparison*: the paper's positive
+control --- the memoriser does reproduce these passages, so a `0.0000` is the mechanism and not a
+broken probe --- is only a control if it is the same number at every anchor, and
+`tests/test_selection_claims.py::test_the_memoriser_baseline_is_identical_at_every_anchor` was
+written to catch a bug (the safe model's token ids fed to the memoriser) that moves it by `0.04`.
+A batch-size change moves it by `0.05` and is indistinguishable from that bug at the CSV, so
+accepting this run would have cost the detector.
+
+Both new anchors' leakage arms were relaunched at the default batch size. The discarded CSVs are
+kept out of `results/` at `output/abandoned_batch64/`, and the trap is AGENTS.md caution (u).

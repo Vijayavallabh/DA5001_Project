@@ -100,3 +100,42 @@ for context only; it is instruction-tuned and the anchor is not.
 - Reading W1 or W2 on the `k=-1` baseline. It is a baseline, not an arm.
 
 ## Scoring log
+
+## Scoring, 2026-09-14
+
+Run: `scripts/run_verifiable_tqa.sh`, GPU 4, started 06:03, `[tqa] exit=0 at 07:39`. Outputs
+`results/selection_verifiable_tqa_comma7b.csv` and `results/selection_verifiable_rewards_tqa_comma7b.csv`.
+
+**Metric gate PASS.** `[verif] no answer extracted in 0.0133 of samples` --- 1.33% against the
+registered ceiling of 10%.
+
+| band | reading | evidence |
+|---|---|---|
+| W1 | **SC LIFTS** | majority vote at `n=64`: `+0.054 [+0.026, +0.082]`, excludes zero |
+| W2 | **FLAT** | pointwise reward at `n=64`: `-0.014 [-0.046, +0.018]`, contains zero |
+| W3 | **MONOTONE for SC, not for the reward** | Spearman `+0.982` against the registered `>= +0.8`; the reward is `-0.607` |
+| W4 | **prediction HOLDS** | `+0.054` is below GSM8K's `+0.222`, as committed |
+| W5 | **"W1 lifts, W2 flat"** fires | the consequence written before the run |
+| W6 | descriptive | `Llama-3.1-8B-Instruct` alone: `0.722` greedy, `0.674` sampled |
+
+**The reward is worse than flat.** W2's band is two-way and `n=64` lands in FLAT, but the arm is not
+noise around zero: the reward's accuracy *falls* with `n` (Spearman `-0.607`), and at `n=16` the
+interval excludes zero on the wrong side, `-0.038 [-0.068, -0.008]`. Selecting by the paper's own
+scorer on a knowledge task is actively worse than taking the anchor's first draw. On GSM8K the two
+rules differed by `3.4x` in the same direction; here they differ in **sign**.
+
+**What this arm establishes and what it does not.** The judge-free claim now covers two tasks of
+different kinds --- reasoning (GSM8K, `+0.222`) and closed-book knowledge (TriviaQA, `+0.054`) ---
+so it is not an artefact of a judge and not an artefact of one task. Proposition 4's support
+ceiling is visible in the size of the gain: a knowledge question offers less spread between draws
+than a multi-step derivation, and the gain is `4.2x` smaller, which is the direction W4 committed
+to. What the arm does **not** establish is that the mechanism's deployed scorer transfers. It does
+not, on this task, at all.
+
+**Consequences applied to the manuscript** (all three were fixed in W5 before the run):
+
+1. Section 6's judge-free paragraph reports both tasks and both rules, including the negative one.
+2. Limitations keeps *"the scorer binds before the anchor does"* and now cites two tasks: a `3.4x`
+   gap on GSM8K and a **sign flip** on TriviaQA.
+3. No abstract change. The abstract says "exact-match accuracy with no judge at all", which the
+   majority-vote result supports on both tasks; it does not claim the pointwise reward transfers.
