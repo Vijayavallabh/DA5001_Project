@@ -1110,3 +1110,54 @@ judged levels: the same two texts win `261` of `500` shown second and `24` shown
 `29.2%` of items get a mutually consistent verdict. `blocklist.py` refuted the argument it was
 built to support --- an n-gram blocklist's collateral on ordinary text is *bounded*, flattening at
 `0.140%` between 4,935 and 9,870 passages.
+
+### Data this artifact does not ship, and how to rebuild it
+
+Two corpora are rebuilt rather than shipped, because both are derived from public sources by a
+script in this artifact and shipping them would add tens of megabytes of redistributable-but-
+pointless bytes:
+
+```bash
+.venv/bin/python analysis/build_gutenberg_excerpts.py   # -> data/gutenberg/excerpts.jsonl
+.venv/bin/python analysis/build_bench_corpora.py        # -> data/bench/{alpaca,mtbench,bookmia100,bookmia100unseen,bookmia_all}
+```
+
+`build_bench_corpora.py` needs network access and a Hugging Face token for the dataset downloads
+(`openai/gsm8k`, `tatsu-lab/alpaca_eval`, `HuggingFaceH4/mt_bench_prompts`, `swj0419/BookMIA`). Each
+corpus is written as a **directory of symlinks** to the five committed prompt files plus one real
+file, so a run on a new corpus takes the identical code path as every run on record; the committed
+prompt sets under `data/` are never modified. `tests/test_bench_corpora.py` asserts every entry is a
+symlink.
+
+The build script refuses to produce an artifact larger than `ARTIFACT_MAX_MB` (default 80) and
+lists the largest entries when it does, because twice now something large and re-fetchable has been
+swept in by accident. It also fails on identifying strings in *path* names as well as in file
+contents: torch's compile cache is named `torchinductor_$USER` and had been shipping the account
+name in a directory name that no content grep would ever have seen.
+
+### Phase 6 additions (2026-09-13)
+
+```bash
+# the judge-free axis: does selection lift an objective metric? (feat-101)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_verifiable.py --anchor common-pile/comma-v0.1-2t \
+    --limit 500 --max-n 64 --batch-size 32 --reward-batch-size 16 --tag _comma7b --out results
+
+# Proposition 3 at the mechanism authors' own pair (feat-098)
+.venv/bin/python analysis/imitation_cost.py --dirs output/phase5/imit_llama70b \
+  --tag _llama70b --min-trajectories 20 --out results
+
+# the strongest anchor at the largest n (feat-100)
+.venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/sel_comma7b_64 \
+  --max-n 64 --reward-cache results/selection_rewards64_comma7b.csv --tag _comma7b64 --out results
+
+# the adversarial selector handed to a naturally memorising model (feat-102; its own gate failed)
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1,2 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_extraction.py --risky-model unsloth/Meta-Llama-3.1-70B \
+    --risky-device-map auto --max-memory 0=75GiB,1=75GiB --n-values 1 8 64 --limit 100 \
+    --batch-size 8 --prefix selection_extraction_70b --out results
+```
+
+Every per-step analysis calls `dap.stats.strip_pad_steps` before counting: a generation that ends
+before the cap is padded out to `T_max`, and those positions are not decode steps. Counting them
+inflated the binding fraction and deflated the nats-per-token rate.

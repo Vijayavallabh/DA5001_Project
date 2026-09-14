@@ -13,10 +13,12 @@ artifact.zip
 claude-me
 hf_cache/
 data/gutenberg/
-
+NVIDIA-Linux-x86_64-580.173.02
+NVIDIA-Linux-x86_64-580.173.02.run
 # scripts/snapshot_manuscript.sh backs the ICLR sources up here so the paper has version
 # history (it lives outside this repo, inside an unrelated git repo it must never be committed
 # to). The blanket *.tex / *.bib rules above silently swallowed the whole snapshot, so the
 # backup existed on disk and in no commit. scripts/build_artifact.sh excludes this directory.
 !manuscript_snapshot/**/*.tex
 !manuscript_snapshot/**/*.bib
+data/bench/

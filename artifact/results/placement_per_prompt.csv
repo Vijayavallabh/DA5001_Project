@@ -1,0 +1,501 @@
+prompt_id,anchor alone (control),"uniform, per step",front-loaded,"front-loaded, large"
+1nzes2,0.5,0.5,0.5,0.5
+2786lw,1.0,0.5,1.0,1.0
+2ov45h,0.5,0.5,0.5,1.0
+49u4dh,0.5,0.5,1.0,0.0
+4iorz7,0.5,0.5,1.0,0.5
+4xzr87,0.5,0.5,0.5,0.5
+53rqr9,0.5,0.0,0.5,0.0
+5apkek,1.0,1.0,0.5,1.0
+5e6rcz,1.0,0.0,1.0,1.0
+5ec7q2,1.0,0.5,0.5,1.0
+5f5p86,0.5,1.0,1.0,1.0
+5fqwjc,0.5,0.5,0.0,1.0
+5g58dz,0.0,0.5,0.0,0.5
+5gq4jc,0.5,1.0,0.5,0.5
+5j7ypk,0.0,0.5,1.0,0.5
+5je6l4,0.5,0.5,0.5,0.5
+5nc21f,0.5,0.0,0.5,0.0
+5nzsq6,0.5,1.0,1.0,1.0
+5ozqb9,0.5,0.5,0.5,0.5
+5qf97d,0.5,0.0,0.5,0.0
+5qwzjo,1.0,0.0,0.5,0.5
+5r104c,0.0,0.0,0.0,0.0
+5te65i,0.0,0.5,0.5,0.5
+5umucz,0.0,0.0,1.0,1.0
+5w4x14,0.5,0.0,0.0,0.0
+609k0n,0.5,1.0,0.5,0.5
+625es0,1.0,1.0,1.0,0.5
+63dn97,0.5,0.0,0.5,0.0
+63ku7q,0.5,0.5,1.0,0.5
+64c0w6,0.5,0.0,0.5,0.0
+65458n,0.5,0.0,0.0,1.0
+66uo64,1.0,1.0,0.0,1.0
+68f5c5,0.5,1.0,0.5,0.5
+68ykga,0.5,0.5,0.5,0.5
+69dzba,1.0,0.0,0.5,0.0
+6d1iqq,0.5,1.0,0.5,0.5
+6eytds,0.5,0.5,1.0,0.5
+6gl289,0.5,0.5,0.5,0.5
+6hoxmq,1.0,0.5,0.5,1.0
+6imc4i,0.5,0.5,1.0,1.0
+6isay3,0.5,0.5,0.5,0.5
+6ixx9u,0.5,0.5,1.0,0.5
+6k8gdu,0.5,0.5,0.5,0.5
+6l6v6l,1.0,1.0,1.0,0.5
+6m7z8a,0.5,1.0,0.5,1.0
+6mztko,0.5,0.5,0.5,0.5
+6o18uh,0.5,0.5,1.0,0.0
+6o679d,0.5,0.0,1.0,0.0
+6ohgxv,0.0,0.0,1.0,0.0
+6szrbs,0.0,0.5,0.0,0.5
+6tsiyd,1.0,0.0,0.5,1.0
+6wgtsx,0.5,0.5,0.5,0.5
+6wxzhc,0.5,0.5,0.5,0.5
+6xisxt,0.5,0.0,1.0,0.0
+6xngfe,0.5,0.5,0.5,0.5
+6xsruw,0.0,0.5,0.5,0.0
+71p51h,1.0,0.5,0.5,1.0
+72l2aj,1.0,0.5,1.0,0.5
+74ih3z,1.0,0.5,0.0,0.0
+765fhd,0.5,0.0,0.0,0.0
+76b9gc,0.0,0.5,0.0,1.0
+77dd17,0.0,0.5,1.0,0.5
+796161,1.0,0.0,0.5,1.0
+7adktz,0.5,0.5,0.5,0.5
+7bowjq,0.0,1.0,1.0,0.5
+7d0x9k,0.0,1.0,1.0,0.0
+7dcwik,0.0,1.0,1.0,0.0
+7e3im5,1.0,0.5,0.0,0.0
+7en7vl,0.5,1.0,1.0,0.5
+7ezd5t,1.0,0.0,0.0,0.0
+7gjj2w,0.0,1.0,1.0,0.0
+7h9f8e,0.0,1.0,0.0,0.0
+7iltd1,0.5,1.0,1.0,0.5
+7iubwq,0.0,1.0,0.0,0.5
+7jfvx7,0.5,0.5,0.5,1.0
+7jqj29,0.5,0.0,1.0,0.0
+7l7e1m,1.0,1.0,0.5,0.0
+7ld0jk,1.0,1.0,0.5,0.5
+7lzk5g,1.0,1.0,1.0,0.5
+7q0acw,0.5,1.0,0.5,0.5
+7rb6uj,0.5,0.5,0.5,0.5
+7rie85,0.0,0.5,1.0,1.0
+7rpy8m,0.0,1.0,0.0,1.0
+7svmp5,0.5,1.0,1.0,0.5
+7tge90,0.0,0.0,1.0,0.0
+7u04a5,0.0,0.5,0.0,0.5
+7uezw8,0.5,0.5,0.5,0.5
+7v8ind,0.5,0.5,0.5,0.0
+80sf6g,0.5,0.5,0.5,0.5
+83mehz,0.5,1.0,0.5,0.5
+849wc3,0.5,0.5,0.5,1.0
+87ak6w,0.5,0.5,0.5,0.5
+87tx3g,0.5,1.0,0.5,0.0
+8a18sf,1.0,1.0,0.5,0.5
+8aec6t,0.5,0.5,0.0,0.5
+8fk0hr,1.0,0.0,0.5,0.5
+8gfhh9,0.5,0.5,0.5,0.5
+8gs4wp,0.5,1.0,0.5,1.0
+8k4am7,1.0,1.0,0.5,0.0
+8myeno,0.5,0.0,1.0,0.5
+8o89ko,0.5,0.5,0.5,0.5
+8p3ora,0.0,1.0,0.5,1.0
+8pr271,0.5,0.5,1.0,1.0
+8tmkfc,1.0,1.0,1.0,1.0
+8vr4k2,1.0,0.0,0.0,0.0
+8vyqdq,0.5,0.5,0.0,1.0
+8x0xa7,0.5,0.0,0.5,0.0
+8x86s0,0.5,0.0,0.5,0.5
+8y8wrr,0.0,0.5,0.0,0.0
+8z1sq1,1.0,1.0,0.0,1.0
+9470fc,0.5,0.5,0.5,0.5
+96myl6,0.0,0.5,0.0,1.0
+96xnw9,0.5,1.0,0.5,1.0
+99kk88,0.0,0.5,0.0,0.0
+9edjv0,0.5,0.5,0.5,0.5
+9f7www,0.5,0.5,0.5,0.5
+9g2cbq,0.5,1.0,1.0,0.5
+9ki47u,1.0,1.0,1.0,1.0
+9l0dam,0.0,1.0,1.0,0.0
+9neuk8,0.0,0.5,0.0,0.5
+9qn4tw,0.5,0.5,0.5,0.0
+a318ye,0.5,0.5,0.5,0.5
+a3pdwk,0.5,0.5,1.0,0.5
+acjzv0,0.5,0.0,1.0,1.0
+afc9c4,0.5,0.0,0.5,0.5
+aowr4t,0.5,0.5,1.0,1.0
+ar7nm2,0.0,1.0,0.0,1.0
+auig0m,1.0,0.0,0.0,0.5
+b4yx63,0.0,0.0,0.5,0.0
+b87jl7,1.0,1.0,0.0,0.0
+b9uzz1,0.0,0.0,0.0,0.0
+bhyplf,0.0,0.0,0.5,0.0
+bk7lic,1.0,0.0,1.0,0.5
+ciifmd,0.0,0.0,1.0,1.0
+ck6twx,1.0,0.5,0.5,0.5
+cpxk2b,0.5,0.5,0.5,0.5
+dqn4sj,0.0,0.5,0.5,1.0
+eu7ub2,0.0,1.0,0.5,1.0
+fact_00003_Fernando da Costa Novaes,1.0,0.5,0.5,1.0
+fact_00006_David Galloway (writer),0.0,0.0,1.0,0.0
+fact_00007_Cheyenne Brando,0.5,0.5,0.0,0.5
+fact_00012_Braulio Lara,0.5,0.0,0.5,0.5
+fact_00015_Amr Shabana,0.0,0.0,0.0,0.0
+fact_00017_Abdulqawi Yusuf,0.0,0.5,0.0,0.5
+fact_00025_Carlos P. Romulo,0.0,0.5,0.0,0.5
+fact_00027_Arthur Ewert,0.0,0.0,1.0,1.0
+fact_00032_Flavio Méndez Santiago,1.0,0.5,0.5,0.5
+fact_00039_Chris Duffield,0.0,0.0,0.0,0.0
+fact_00040_Daniil Medvedev,0.0,0.0,0.0,0.0
+fact_00043_Alexander Vovin,0.0,1.0,1.0,0.0
+fact_00044_Cobhams Asuquo,0.0,0.0,0.0,1.0
+fact_00045_David Bogue,0.0,0.5,1.0,0.5
+fact_00048_Don Beard,1.0,1.0,0.5,1.0
+fact_00053_Andriy Yarmolenko,0.0,1.0,0.0,0.0
+fact_00058_Danny Faure,0.0,0.5,0.0,1.0
+fact_00063_Ayman al-Zawahiri,0.5,1.0,1.0,0.5
+fact_00064_Diego Suarez (garden designer),1.0,0.5,0.0,1.0
+fact_00066_Daniel Alexander Cameron,1.0,0.0,0.0,1.0
+fact_00075_Antonio Leviste,0.5,1.0,0.0,0.5
+fact_00078_Chi Pu,0.0,1.0,0.0,0.0
+"fact_00080_Felipe (footballer, born 1977)",1.0,0.0,0.0,0.0
+fact_00084_Alfred Hitchcock,0.0,0.0,1.0,0.0
+fact_00085_Dascha Polanco,1.0,1.0,0.0,1.0
+fact_00086_Amelia Earhart,1.0,0.0,0.0,0.0
+fact_00087_Chris John (boxer),1.0,1.0,1.0,1.0
+fact_00088_Blair Tugman,0.0,0.5,0.0,0.0
+fact_00093_David Oyite-Ojok,1.0,0.0,1.0,1.0
+fact_00097_Chris Cuomo,0.0,0.5,0.0,0.0
+fact_00098_Adnan Sami,1.0,1.0,1.0,0.5
+fact_00108_Bhuma Nagi Reddy,0.5,0.5,0.0,0.0
+fact_00109_Charmion King,0.0,1.0,1.0,1.0
+fact_00110_Andreea Marin,0.0,0.0,1.0,0.0
+fact_00114_Ahn Jae-hyun,1.0,1.0,1.0,1.0
+fact_00116_Bobo Baldé,0.0,1.0,1.0,0.0
+fact_00118_Chacho Gaytán,1.0,0.0,0.0,0.0
+fact_00119_Bastian Schweinsteiger,0.0,0.0,0.0,0.0
+fact_00120_Erich Hartmann,0.5,0.0,0.5,0.5
+fact_00127_Ezechiel N'Douassel,0.0,0.0,0.5,0.5
+fact_00131_Aditya Kalyanpur,0.5,0.5,0.0,0.0
+fact_00132_Dennis Andersson,0.0,0.5,0.0,0.5
+fact_00133_Daniel Bedingfield,1.0,1.0,0.5,0.0
+fact_00134_Celâl Bayar,0.0,0.0,0.0,0.0
+fact_00138_Diana Ivanova,1.0,0.0,0.0,1.0
+fact_00140_André Le Nôtre,0.0,1.0,0.0,0.0
+fact_00142_Cierre Wood,0.0,0.0,1.0,0.0
+fact_00145_Carmelo Anthony,1.0,0.0,0.0,0.0
+fact_00146_Asafa Powell,1.0,1.0,1.0,1.0
+fact_00152_Felix Newman,0.0,0.0,1.0,1.0
+fact_00154_Earl Garrison,1.0,0.5,1.0,1.0
+fact_00162_Aleksandar Kolarov,0.0,0.0,0.0,0.5
+fact_00163_Alexandre Hohagen,0.5,1.0,1.0,1.0
+fact_00166_Emcee N.I.C.E.,0.5,0.5,0.5,1.0
+fact_00181_Chris Woakes,0.0,0.0,0.0,0.0
+fact_00182_Diosdado Cabello,1.0,1.0,0.5,0.0
+fact_00184_Dana Awartani,0.0,1.0,1.0,0.5
+fact_00185_Brianna Keilar,0.5,0.0,0.0,0.0
+fact_00188_Cédric Bakambu,0.0,0.0,1.0,0.0
+fact_00193_Bobby Fischer,1.0,1.0,1.0,1.0
+fact_00198_Benjamin Lawrence Reid,0.0,1.0,0.5,1.0
+fact_00199_Djimon Hounsou,0.0,0.0,0.0,1.0
+fact_00202_Ahsee Tuala,0.0,1.0,0.5,0.5
+fact_00204_Don DeLillo,0.0,0.0,0.0,0.0
+fact_00207_Elizabeth Inglis,0.5,0.5,1.0,0.5
+fact_00208_Fifi Cooper,0.0,0.0,0.0,0.5
+fact_00223_Ahmed Mumin Warfa,1.0,0.0,1.0,1.0
+fact_00226_Dewi Sartika,0.0,1.0,0.0,1.0
+fact_00227_Alf Garland,0.5,1.0,1.0,1.0
+fact_00230_Abdul Ilah Khatib,0.5,0.0,0.0,0.0
+fact_00239_Bif Naked,1.0,0.5,1.0,1.0
+fact_00245_Dominique Blake,1.0,0.0,0.5,1.0
+fact_00247_Diafra Sakho,0.0,0.0,1.0,0.5
+fact_00249_Fahadh Faasil,0.0,0.0,0.5,0.0
+fact_00250_Dr. Dre,0.0,0.0,0.0,0.0
+fact_00255_Caitlin Lowe,1.0,1.0,0.0,0.0
+fact_00257_Camille Paulus,1.0,0.0,1.0,0.0
+fact_00258_Charley Boorman,0.0,0.0,0.0,0.5
+fact_00260_Douglas Wood (engineer),0.0,1.0,0.0,0.0
+fact_00263_Billy Snedden,0.5,0.0,0.5,0.0
+fact_00264_Esteban Espíndola,0.5,0.5,1.0,0.0
+fact_00270_Daniel Ek,1.0,0.0,0.0,0.0
+fact_00275_Belisarius,0.5,0.0,0.5,1.0
+fact_00276_Carol Dweck,0.0,0.0,0.0,0.0
+fact_00286_Amr Diab,0.0,0.5,0.0,0.0
+fact_00296_Akbar Hossain,0.0,0.0,0.0,0.0
+fact_00300_Coco Chanel,0.5,0.0,0.0,0.0
+fact_00302_Enamul Haque (engineer),0.0,0.5,0.5,0.5
+fact_00304_Abdelhamid Shabana,1.0,0.0,1.0,1.0
+fact_00307_Abdullahi Mohammad Ahmad Hassan,0.5,0.0,0.5,0.5
+fact_00309_Diego Godín,0.0,0.0,0.0,0.0
+fact_00312_Adel Emam,0.0,0.0,0.0,0.0
+fact_00315_Billy Conigliaro,1.0,0.0,0.0,1.0
+fact_00316_Arif Mohammad Khan,0.0,0.0,1.0,0.0
+fact_00321_Bob Marley,0.0,0.0,0.0,0.0
+fact_00328_Dana Ashbrook,1.0,0.0,1.0,1.0
+fact_00332_Cha Eun-woo,0.5,1.0,1.0,1.0
+fact_00333_Abdul Halik Hudu,1.0,0.0,1.0,0.0
+fact_00335_Carl Braun (obstetrician),0.0,1.0,0.0,0.0
+fact_00343_Ameyaw Debrah,0.0,0.0,0.5,0.5
+fact_00344_Cleopatra,0.0,0.0,0.0,0.5
+fact_00345_Ana Cláudia Bolzan,0.0,0.5,0.0,0.0
+fact_00347_Evgeny Shalunov,1.0,0.0,1.0,0.5
+fact_00348_Charles Allen (jurist),0.0,1.0,0.0,0.0
+fact_00349_Deyverson,0.0,0.5,0.0,0.0
+fact_00351_Cris Cyborg,0.0,0.5,0.5,0.5
+fact_00354_Bobby Thomson,0.0,0.0,0.0,0.5
+fact_00356_Eric Winter,1.0,1.0,0.0,1.0
+fact_00362_Aert van der Neer,0.5,0.5,0.5,0.0
+fact_00364_Blanca Errázuriz,0.0,1.0,0.0,0.0
+fact_00366_Deitrick Haddon,0.5,0.0,1.0,0.5
+fact_00367_Andreas Ivanschitz,1.0,1.0,0.0,0.0
+fact_00368_Clancy Brown,1.0,0.0,0.5,0.5
+fact_00371_Carrie Ann Inaba,0.0,0.0,0.5,0.5
+fact_00374_Cicero,0.0,0.0,0.0,0.0
+fact_00376_14th Dalai Lama,0.0,0.0,0.0,0.0
+fact_00377_Christian Almeida,0.0,1.0,0.0,1.0
+fact_00378_Arthur Wakefield,1.0,0.0,0.5,0.5
+fact_00384_Andry Rajoelina,1.0,0.0,0.0,0.0
+fact_00394_Danny Almonte,0.0,0.0,1.0,1.0
+fact_00396_Andy Middleton,1.0,0.5,0.5,1.0
+fact_00397_Anderson Silva,1.0,0.0,0.0,1.0
+fact_00399_Edgar Bennett,0.0,1.0,0.5,0.0
+fact_00401_Balázs Bekő,1.0,1.0,0.0,1.0
+fact_00404_Abraham Ancer,0.0,0.5,0.5,1.0
+fact_00418_A. K. Ramanujan,0.5,0.0,1.0,0.0
+fact_00420_Carlos Ghosn,1.0,0.0,0.0,0.5
+fact_00421_Anurag Kashyap,0.5,1.0,0.0,0.0
+fact_00425_Angela Bairstow,1.0,0.5,0.5,0.5
+fact_00427_Ernestine Eckstein,0.5,0.0,0.5,1.0
+fact_00430_Ezekiel Elliott,0.0,0.0,0.0,0.0
+fact_00433_Aaron Burr,0.5,0.5,0.5,0.5
+fact_00444_Charles B. McVay III,0.0,0.0,0.0,0.0
+fact_00448_Carol Chell,1.0,1.0,1.0,1.0
+fact_00449_Alen Omić,0.0,0.5,0.5,0.5
+fact_00452_Alice Torriani,1.0,1.0,1.0,1.0
+fact_00454_Albert Outler,1.0,0.5,1.0,1.0
+fact_00459_Felician of Foligno,0.0,0.0,0.0,0.0
+fact_00460_Annie Landouw,1.0,0.0,0.5,0.0
+fact_00462_Bhāskara I,0.0,1.0,0.0,0.5
+fact_00464_Damon Herriman,0.5,0.0,1.0,1.0
+fact_00466_Feroze Gandhi,0.5,1.0,0.0,0.0
+fact_00471_D. B. Nihalsinghe,0.5,0.5,0.5,0.0
+fact_00478_F. Gwynplaine MacIntyre,0.5,0.0,0.5,1.0
+fact_00486_Fidel Castro,0.0,0.0,0.0,0.0
+fact_00489_Bir Hambir,0.5,0.5,0.0,0.5
+fact_00491_Avraham Eilam-Amzallag,0.0,0.0,0.0,0.0
+fact_00492_Date Narikuni,1.0,0.5,1.0,0.5
+fact_00495_Ariel Behar,0.0,0.5,0.0,0.0
+fact_00498_DeAnna Bennett,0.5,0.5,1.0,0.5
+g4fs4z,0.5,0.5,0.5,0.0
+gyp3c3,1.0,0.5,1.0,0.5
+hmsv36,0.5,0.5,1.0,1.0
+hrkod1,0.0,0.0,0.5,1.0
+irdp6g,1.0,1.0,1.0,0.5
+iuj8br,0.0,1.0,0.5,0.0
+jizn99,0.0,0.5,1.0,0.0
+jjrido,0.0,0.5,0.5,0.0
+llrdyo,0.5,0.5,0.5,0.5
+lvcurd,0.5,0.5,1.0,0.5
+m70bt5,0.5,1.0,0.5,0.5
+mjrz7h,1.0,1.0,1.0,0.0
+neutral_bio_000,1.0,1.0,1.0,1.0
+neutral_bio_001,0.5,0.0,0.0,1.0
+neutral_bio_002,1.0,1.0,0.5,0.5
+neutral_bio_003,1.0,1.0,0.5,1.0
+neutral_bio_004,0.5,1.0,0.5,1.0
+neutral_bio_005,0.5,1.0,1.0,1.0
+neutral_bio_006,1.0,0.0,0.0,0.0
+neutral_bio_007,0.0,0.5,0.0,0.0
+neutral_bio_008,0.5,0.0,1.0,0.0
+neutral_bio_009,0.5,0.5,0.0,1.0
+neutral_bio_010,0.0,1.0,1.0,1.0
+neutral_bio_011,1.0,0.0,0.0,1.0
+neutral_bio_012,0.5,1.0,1.0,1.0
+neutral_bio_013,0.5,1.0,0.5,0.5
+neutral_bio_014,0.5,0.5,0.5,0.0
+neutral_bio_015,0.5,0.0,0.0,0.0
+neutral_bio_016,0.0,0.0,0.5,0.0
+neutral_bio_017,1.0,1.0,1.0,0.0
+neutral_bio_018,0.0,1.0,0.0,1.0
+neutral_bio_019,1.0,0.0,0.0,1.0
+neutral_bio_020,1.0,0.0,1.0,0.0
+neutral_bio_021,1.0,1.0,1.0,1.0
+neutral_bio_022,1.0,1.0,1.0,1.0
+neutral_bio_023,0.0,1.0,1.0,0.0
+neutral_bio_024,0.0,1.0,0.0,1.0
+neutral_bio_025,0.0,1.0,0.0,1.0
+neutral_bio_026,1.0,0.0,0.5,1.0
+neutral_bio_027,1.0,0.0,1.0,1.0
+neutral_bio_028,1.0,0.5,1.0,0.5
+neutral_bio_029,0.5,0.0,0.0,1.0
+neutral_bio_030,1.0,0.0,0.0,0.0
+neutral_bio_031,0.5,0.0,0.0,1.0
+neutral_bio_032,0.5,0.5,0.5,1.0
+neutral_bio_033,0.0,0.0,0.0,1.0
+neutral_bio_034,0.5,0.5,0.0,0.0
+neutral_bio_035,1.0,0.0,1.0,0.5
+neutral_bio_036,0.0,0.0,0.0,0.5
+neutral_bio_037,1.0,1.0,1.0,0.0
+neutral_bio_038,1.0,1.0,0.5,0.0
+neutral_bio_039,1.0,1.0,1.0,0.0
+neutral_nar_000,0.0,0.0,0.0,0.0
+neutral_nar_001,1.0,1.0,1.0,1.0
+neutral_nar_002,0.5,0.5,0.5,0.5
+neutral_nar_003,1.0,0.5,1.0,1.0
+neutral_nar_004,0.5,1.0,0.5,0.0
+neutral_nar_005,1.0,0.0,0.5,0.0
+neutral_nar_006,0.0,0.0,0.0,0.0
+neutral_nar_007,1.0,1.0,1.0,1.0
+neutral_nar_008,0.0,1.0,1.0,0.0
+neutral_nar_009,0.5,0.5,0.0,0.0
+neutral_nar_010,1.0,0.5,0.5,0.5
+neutral_nar_011,0.5,0.0,0.0,0.0
+neutral_nar_012,0.5,0.0,1.0,0.0
+neutral_nar_013,0.5,1.0,0.5,1.0
+neutral_nar_014,1.0,0.5,1.0,1.0
+neutral_nar_015,1.0,1.0,0.0,0.0
+neutral_nar_016,1.0,1.0,0.0,0.0
+neutral_nar_017,0.5,1.0,0.5,0.5
+neutral_nar_018,0.5,1.0,1.0,0.5
+neutral_nar_019,1.0,0.0,0.5,0.0
+neutral_nar_020,0.5,0.5,1.0,0.5
+neutral_nar_021,0.5,1.0,1.0,1.0
+neutral_nar_022,0.0,0.5,0.0,0.0
+neutral_nar_023,0.0,1.0,0.5,1.0
+neutral_nar_024,0.5,0.0,0.5,0.5
+neutral_nar_025,0.5,0.5,0.0,0.5
+neutral_nar_026,0.5,0.5,1.0,0.5
+neutral_nar_027,0.5,1.0,0.5,0.5
+neutral_nar_028,0.5,0.5,0.5,0.0
+neutral_nar_029,0.5,0.5,0.5,0.5
+neutral_nar_030,0.5,0.5,1.0,0.5
+neutral_nar_031,0.5,1.0,1.0,0.5
+neutral_nar_032,1.0,1.0,0.5,0.5
+neutral_nar_033,0.5,0.5,0.5,1.0
+neutral_nar_034,0.0,0.0,0.0,0.0
+neutral_nar_035,1.0,1.0,1.0,1.0
+neutral_nar_036,1.0,0.5,1.0,0.5
+neutral_nar_037,0.0,0.0,0.0,0.5
+neutral_nar_038,1.0,0.5,0.0,1.0
+neutral_nar_039,1.0,0.0,0.0,0.0
+neutral_ncs_000,1.0,0.5,0.5,0.5
+neutral_ncs_001,1.0,0.0,1.0,0.0
+neutral_ncs_002,1.0,0.0,0.0,1.0
+neutral_ncs_003,1.0,0.0,1.0,1.0
+neutral_ncs_004,0.0,0.0,0.5,0.0
+neutral_ncs_005,1.0,0.5,1.0,0.5
+neutral_ncs_006,0.5,0.0,1.0,1.0
+neutral_ncs_007,1.0,0.0,0.0,0.0
+neutral_ncs_008,0.0,1.0,0.0,1.0
+neutral_ncs_009,0.0,1.0,1.0,1.0
+neutral_ncs_010,0.5,0.0,1.0,0.0
+neutral_ncs_011,0.5,0.0,1.0,1.0
+neutral_ncs_012,1.0,0.0,0.0,0.0
+neutral_ncs_013,1.0,0.5,0.5,1.0
+neutral_ncs_014,1.0,0.5,1.0,0.0
+neutral_ncs_015,0.0,1.0,1.0,1.0
+neutral_ncs_016,0.0,0.0,0.0,0.0
+neutral_ncs_017,0.0,1.0,0.0,0.0
+neutral_ncs_018,0.5,0.0,1.0,0.0
+neutral_ncs_019,0.5,0.5,0.0,0.0
+neutral_ncs_020,1.0,0.5,0.0,0.0
+neutral_ncs_021,1.0,0.5,0.0,1.0
+neutral_ncs_022,0.0,0.0,0.0,1.0
+neutral_ncs_023,0.0,1.0,0.0,0.0
+neutral_ncs_024,0.0,0.0,0.0,0.0
+neutral_ncs_025,0.5,0.5,0.5,0.5
+neutral_ncs_026,0.0,1.0,1.0,1.0
+neutral_ncs_027,0.5,0.0,0.0,0.0
+neutral_ncs_028,0.0,1.0,1.0,0.5
+neutral_ncs_029,1.0,1.0,0.0,1.0
+neutral_ncs_030,0.5,1.0,0.0,0.0
+neutral_ncs_031,0.0,0.5,0.0,1.0
+neutral_ncs_032,0.0,0.0,0.0,0.0
+neutral_ncs_033,1.0,0.0,0.0,0.0
+neutral_ncs_034,0.5,0.5,0.0,1.0
+neutral_ncs_035,1.0,0.0,0.0,1.0
+neutral_ncs_036,0.5,0.5,0.5,1.0
+neutral_ncs_037,1.0,0.5,0.0,0.5
+neutral_ncs_038,1.0,1.0,0.0,0.0
+neutral_ncs_039,0.0,0.0,0.0,0.0
+neutral_qa_000,0.5,0.0,0.0,0.5
+neutral_qa_001,0.5,0.5,0.0,0.0
+neutral_qa_002,0.0,1.0,0.0,0.0
+neutral_qa_003,0.0,0.0,0.0,0.0
+neutral_qa_004,0.0,0.0,0.0,0.0
+neutral_qa_005,0.0,0.5,0.5,0.0
+neutral_qa_006,1.0,0.0,0.0,0.0
+neutral_qa_007,0.0,0.0,1.0,1.0
+neutral_qa_008,1.0,0.5,0.0,0.0
+neutral_qa_009,0.5,0.0,0.0,1.0
+neutral_qa_010,0.0,0.0,0.5,1.0
+neutral_qa_011,0.0,0.0,0.0,0.0
+neutral_qa_012,0.5,0.0,0.5,0.0
+neutral_qa_013,1.0,0.0,0.0,1.0
+neutral_qa_014,0.5,0.5,0.5,0.5
+neutral_qa_015,0.0,1.0,1.0,1.0
+neutral_qa_016,0.0,0.0,1.0,0.5
+neutral_qa_017,1.0,0.0,0.0,0.0
+neutral_qa_018,0.5,0.5,1.0,1.0
+neutral_qa_019,0.0,0.0,0.0,0.0
+neutral_qa_020,0.0,0.0,1.0,0.0
+neutral_qa_021,0.5,0.0,0.0,0.0
+neutral_qa_022,1.0,0.0,0.0,0.0
+neutral_qa_023,0.5,0.0,0.5,1.0
+neutral_qa_024,0.0,0.0,0.0,0.0
+neutral_qa_025,0.0,1.0,0.0,0.0
+neutral_qa_026,0.5,0.5,0.0,0.5
+neutral_qa_027,0.0,0.0,0.0,0.0
+neutral_qa_028,0.5,1.0,0.0,1.0
+neutral_qa_029,1.0,0.5,0.5,0.5
+neutral_qa_030,1.0,0.0,0.5,1.0
+neutral_qa_031,0.0,0.0,0.0,0.0
+neutral_qa_032,0.0,1.0,1.0,1.0
+neutral_qa_033,1.0,0.0,1.0,0.0
+neutral_qa_034,0.5,0.5,0.5,0.5
+neutral_qa_035,0.0,0.0,1.0,1.0
+neutral_qa_036,1.0,1.0,0.0,0.0
+neutral_qa_037,0.0,1.0,1.0,1.0
+neutral_qa_038,0.0,1.0,1.0,0.0
+neutral_qa_039,0.0,0.0,0.0,0.0
+neutral_sum_000,0.5,0.0,1.0,0.0
+neutral_sum_001,0.0,0.0,0.5,1.0
+neutral_sum_002,0.0,0.5,0.0,0.0
+neutral_sum_003,1.0,0.5,0.5,0.0
+neutral_sum_004,0.5,0.5,0.5,0.5
+neutral_sum_005,0.5,0.0,0.5,0.0
+neutral_sum_006,0.5,0.5,0.0,1.0
+neutral_sum_007,1.0,0.0,0.0,1.0
+neutral_sum_008,0.0,0.0,0.0,1.0
+neutral_sum_009,0.5,0.5,1.0,0.0
+neutral_sum_010,1.0,0.0,0.0,0.0
+neutral_sum_011,0.0,0.0,1.0,1.0
+neutral_sum_012,0.0,0.5,0.0,1.0
+neutral_sum_013,0.0,0.0,0.0,0.0
+neutral_sum_014,1.0,0.5,0.0,1.0
+neutral_sum_015,0.5,0.5,0.5,0.5
+neutral_sum_016,1.0,1.0,0.0,1.0
+neutral_sum_017,1.0,0.5,1.0,0.0
+neutral_sum_018,0.0,0.0,1.0,0.0
+neutral_sum_019,0.0,0.0,1.0,1.0
+neutral_sum_020,0.0,1.0,1.0,0.0
+neutral_sum_021,0.0,1.0,1.0,0.0
+neutral_sum_022,1.0,0.0,1.0,1.0
+neutral_sum_023,0.5,0.0,1.0,1.0
+neutral_sum_024,0.5,1.0,1.0,0.5
+neutral_sum_025,0.0,0.0,1.0,0.0
+neutral_sum_026,0.5,1.0,0.5,1.0
+neutral_sum_027,0.0,0.0,0.0,0.0
+neutral_sum_028,0.0,0.0,0.5,0.0
+neutral_sum_029,1.0,1.0,0.0,1.0
+neutral_sum_030,0.0,0.5,0.0,0.5
+neutral_sum_031,1.0,1.0,0.0,0.0
+neutral_sum_032,1.0,0.0,0.5,0.5
+neutral_sum_033,1.0,1.0,0.5,0.0
+neutral_sum_034,0.0,0.0,0.0,1.0
+neutral_sum_035,0.5,0.0,0.0,0.0
+neutral_sum_036,1.0,0.0,1.0,0.0
+neutral_sum_037,0.0,0.0,1.0,0.0
+neutral_sum_038,1.0,0.0,0.0,0.0
+neutral_sum_039,0.0,0.0,0.5,0.0

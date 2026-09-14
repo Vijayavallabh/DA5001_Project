@@ -4,6 +4,7 @@ no GPU, no logs, the analysis scripts own the numbers and this script only draws
   frontier_scaling   <- results/anchor_scaling_summary.csv
   opening_effect     <- results/opening_effect_summary*.csv
   order_invariance   <- analysis.regimes.event_bound (closed form) + results/renyi_sweep.csv if present
+  imitation_cost     <- results/imitation_cost.csv + results/imitation_lorenz.csv
 
 Usage: .venv/bin/python figures/make_figures_v4.py [--copy-to /path/to/manuscript/figures]
 """
@@ -277,7 +278,8 @@ def selection_frontier():
     odo = list(csv.DictReader(open(RESULTS / "odometer.csv")))
     if not sel or not dec or not onset or not odo:
         raise FileNotFoundError("an input CSV for selection_frontier is empty")
-    fig, (axL, ax) = plt.subplots(1, 2, figsize=(9.4, 2.7))
+    fig, (axL, ax) = plt.subplots(1, 2, figsize=(6.9, 2.15))
+    F = 6.9 / 5.5  # printed at \textwidth: pre-scale the type by the shrink it will take
 
     # ---- panel (a): a budget that scales with the work against one that does not -------------
     ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
@@ -288,33 +290,43 @@ def selection_frontier():
     axL.fill_between(T, [ss[0] * t for t in T], [ss[-1] * t for t in T],
                      color="0.72", alpha=0.5, lw=0)
     axL.plot(T, [s_med * t for t in T], color="0.25", lw=1.4)
-    axL.annotate("$S(x)$, the price of the work\n(nine measured pairs)", (T[22], s_med * T[22]),
-                 fontsize=6.3, color="0.2", rotation=31, rotation_mode="anchor",
-                 xytext=(0, 6), textcoords="offset points")
-    for k, style, xi, note in ((10.0, "-", 12, "never certified,\nthe only useful arm"),
-                               (3.0, "--", 50, "the authors' budget"),
-                               (0.5, ":", 76, "certified at every length,\nno measurable gain")):
+    # Type large enough to read leaves no room for the prose that used to sit on the rays: at
+    # \textwidth the five multi-line rotated notes collided into an unreadable knot. The panel now
+    # carries the identities only and the caption carries what they mean, which is where a reader
+    # who cannot read 4pt type was going to have to look anyway.
+    axL.annotate("$S(x) = s(x)T$", (T[26], s_med * T[26]), fontsize=6.3 * F, color="0.2",
+                 rotation=31, rotation_mode="anchor", xytext=(0, 5), textcoords="offset points")
+    for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 70)):
         axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
-        axL.annotate(f"$K=kT$, $k={k:g}$\n{note}", (T[xi], k * T[xi]), fontsize=6.3,
+        axL.annotate(f"$k={k:g}$", (T[xi], k * T[xi]), fontsize=6.3 * F,
                      color="#c1443c", rotation=31, rotation_mode="anchor",
-                     xytext=(0, 5 if k >= 3 else -17), textcoords="offset points")
+                     xytext=(0, 4), textcoords="offset points")
     import math as _m
+    # log 8 and log 64 are a factor of two apart on an axis spanning five decades, so one label
+    # each collided and the lower one landed on the x-axis. Two lines, one label.
     for n, style in ((64, "--"), (8, "-")):
         axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
-        axL.annotate(f"$K=\\log n$, $n={n}$", (T[0], _m.log(n)), fontsize=6.3,
-                     color="#2f6f9f", xytext=(3, 3), textcoords="offset points")
-    axL.annotate("certified at every length,\nand useful", (T[62], 1.08),
-                 fontsize=6.3, color="#2f6f9f", ha="center")
+    axL.annotate("$\\log n$, $n=8,64$", (T[97], _m.log(64)), fontsize=6.3 * F, ha="right",
+                 color="#2f6f9f", xytext=(0, 4), textcoords="offset points")
     axL.axvline(t_star, color="0.5", lw=0.8, ls="-.")
-    axL.annotate(f"median protected\ntarget, $S(x)={s_tot:.0f}$", (t_star, 2.4e4), fontsize=6.3,
-                 color="0.35", ha="center")
+    # to the RIGHT of the rule: the top-left is where the $S(x)$ ray's own label sits.
+    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 6.0e4), fontsize=6.3 * F,
+                 color="0.35", ha="left", va="top", xytext=(4, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
     axL.set_xlabel("length of the protected work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
-    axL.set_title("(a) a budget indexed to the work, and one that is not", fontsize=7.6)
+    axL.set_title("(a) indexed to the work, and not", fontsize=7.6 * F, loc="left")
 
-    u_safe = float(dec[0]["u_safe"])
+    # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
+    # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
+    # curve would invite exactly the reading the paper refuses. Both series here are judge B.
+    j2 = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "judge_separation_v6_judge2.csv"))
+          if r["decoder"] == "KL"}
+    price = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "utility_price.csv"))}
+    sweep = [r for r in csv.DictReader(open(RESULTS / "selection_scaling.csv"))
+             if "Phi-3.5" in r["judge"]]
+    u_safe = float(sweep[0]["u"])
     w = math.exp(-float(dec[0]["lambda_star_u_max"]))          # P_{p_s}[U = 1]
     t = 2 * (u_safe - w)                                        # from u = w + t/2
     us = [u_safe + i * (1.0 - u_safe) / 200 for i in range(1, 201)]
@@ -327,39 +339,43 @@ def selection_frontier():
             best = max(best, f)
         return best
     ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
-            label=r"$\Lambda^*_s(u)$, the frontier of Thm. 1")
+            label=r"$\Lambda^*_s(u)$, Thm.~1")
 
-    x = [float(r["mean_spend_nats"]) for r in dec]
-    y = [float(r["u_decoder"]) for r in dec]
-    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, $k$ swept")
-    for r, off in ((dec[0], (-26, -4)), (dec[-2], (6, -2))):
-        ax.annotate(f"$k={float(r['k']):g}$", (float(r["mean_spend_nats"]),
-                                               float(r["u_decoder"])),
-                    fontsize=6.5, xytext=off, textcoords="offset points")
+    ks = sorted(k for k in j2 if k in price)
+    x = [float(price[k]["mean_spend_nats"]) for k in ks]
+    y = [float(j2[k]["utility"]) for k in ks]
+    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding")
+    for k, xv, yv in zip(ks, x, y):
+        if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
+            ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5 * F,
+                        xytext=(6, -3) if k == max(ks) else (6, -8),
+                        textcoords="offset points")
 
-    prim = [r for r in sel if r["rule"].startswith("per-token")]
-    xs = [max(float(r["kl_nats"]), 1e-3) for r in prim]
-    ys = [float(r["u"]) for r in prim]
-    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring, $n$ swept")
-    for r, xv, yv in zip(prim, xs, ys):
-        off = {"1": (4, -11), "2": (-7, 6), "4": (-19, 1), "8": (5, 3)}[r["n"]]
-        ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5, xytext=off,
-                    textcoords="offset points")
-    orc = [r for r in sel if r["rule"].startswith("oracle")]
-    if orc:
-        ax.plot([max(float(r["kl_nats"]), 1e-3) for r in orc], [float(r["u"]) for r in orc],
-                "^--", ms=4, lw=1.0, color="#2f6f9f", alpha=0.5,
-                label="selection, oracle selector (a ceiling)")
+    xs = [max(float(r["kl_nats"]), 1e-3) for r in sweep]
+    ys = [float(r["u"]) for r in sweep]
+    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring")
+    for r, xv, yv in zip(sweep, xs, ys):
+        if r["n"] in ("1", "8", "64"):
+            ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5 * F,
+                        xytext={"1": (4, -10), "64": (7, -4)}.get(r["n"], (-4, 6)),
+                        textcoords="offset points")
 
     ax.set_xscale("log")
-    ax.set_xlim(3e-4, 2e3)
-    ax.set_ylim(0.26, 1.02)
+    ax.set_xlim(3e-4, 8e3)
+    ax.set_ylim(0.38, 0.80)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
-    ax.set_ylabel("judged utility $u$")
-    ax.set_title("(b) what a nat buys", fontsize=7.6)
-    ax.legend(fontsize=6.6, frameon=False, loc="upper left", handlelength=1.6,
+    ax.set_ylabel("judged utility $u$ (judge B)")
+    ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
+    # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
+    # at readable type sizes the long three-line legend was as wide as the axes and sat on the
+    # n=64 point whichever corner it was pinned to. The swept variable is on the curve labels.
+    ax.legend(fontsize=6.6 * F, frameon=False, loc="upper left", handlelength=1.6,
               borderaxespad=0.3)
-    fig.tight_layout()
+    for _a in (axL, ax):
+        _a.tick_params(labelsize=8 * F)
+        _a.xaxis.label.set_size(8 * F)
+        _a.yaxis.label.set_size(8 * F)
+    fig.tight_layout(w_pad=1.8)
     _save(fig, "selection_frontier")
 
 
@@ -458,12 +474,63 @@ def order_no_collapse():
                     color=f"C{i}", label=pair if o == orders[0] else None)
         ax.axhline(0.0, color="0.4", lw=0.7, ls=":")
         ax.set_title(rf"$\alpha = {o:.0f}$")
-    axes[0].set_ylabel("$\log_{10}$ times safer, matched utility")
+    axes[0].set_ylabel(r"$\log_{10}$ times safer, matched utility")
     axes[0].legend(loc="lower left", frameon=False, ncol=1)
     fig.supxlabel("$F$, the fraction of the unconstrained ceiling the audited decoder already has",
                   fontsize=8, y=0.01)
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     _save(fig, "order_no_collapse")
+
+
+def imitation_cost():
+    """Propositions 3 and 5, in the two shapes they make claims about.
+
+    (a) the rate. The certificate is written against k nats per token; the decoder spends the
+    imitation cost and stops, so above the crossover the allowance is unreachable.
+    (b) the shape. Proposition 5 needs an O(1)-budget policy to put its spend on O(1) steps; the
+    deployed rule spreads it over the sequence, barely above the uniform diagonal.
+    """
+    rows = [r for r in csv.DictReader(open(RESULTS / "imitation_cost.csv"))
+            if r["prompt_class"] == "ordinary"]
+    lz = [r for r in csv.DictReader(open(RESULTS / "imitation_lorenz.csv"))
+          if r["prompt_class"] == "ordinary"]
+    ks = [float(r["k"]) for r in rows]
+    realised = [float(r["realised_rate_nats_per_token"]) for r in rows]
+    sat = float(rows[-1]["imitation_rate_nats_per_token"])
+
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(6.6, 2.5))
+    axL.plot(ks, ks, color="0.55", lw=1.1, ls="--", label="cap $k$ (what is certified)")
+    axL.plot(ks, realised, "o-", color="C3", lw=1.5, ms=3.4, label="realised rate (measured)")
+    axL.axhline(sat, color="C0", lw=1.0, ls=":")
+    axL.annotate(f"imitation rate {sat:.3f}", xy=(0.12, sat), xytext=(0.115, sat * 1.35),
+                 fontsize=6.4, color="C0")
+    axL.axvline(sat, color="0.3", lw=0.8, ls="-.")
+    axL.set_xscale("log"); axL.set_yscale("log")
+    axL.set_ylim(0.03, 30)
+    axL.annotate("meter binds", xy=(0.105, 0.038), fontsize=6.4, color="0.3")
+    axL.annotate("allowance unreachable", xy=(1.05, 0.038), fontsize=6.4, color="0.3")
+    axL.set_xlabel("budget $k$ (nats per token)")
+    axL.set_ylabel("nats per token")
+    axL.set_title("(a) what the decoder spends", fontsize=8)
+    axL.legend(frameon=False, loc="upper left")
+    axL.grid(alpha=0.25, lw=0.5)
+
+    axR.plot([0, 1], [0, 1], color="0.55", lw=1.1, ls="--", label="uniform over steps")
+    # k = 3 and k = 20 lie on top of each other, which is the point: once the meter stops binding
+    # the shape of the spend stops depending on the cap. Dashed so both are visible.
+    for k, ls, col in (("0.5", "-", "C0"), ("20", "-", "C2"), ("3", "--", "C1")):
+        v = [(float(r["frac_of_steps"]), float(r["frac_of_spend"])) for r in lz if r["k"] == k]
+        v.sort()
+        axR.plot([0] + [x for x, _ in v], [0] + [y for _, y in v], lw=1.4, ls=ls, color=col,
+                 label=f"$k = {k}$")
+    axR.plot([0, 0.02, 1], [0, 1, 1], color="C3", lw=1.2, ls=":",
+             label="what Proposition 5 needs")
+    axR.set_xlabel("fraction of steps, busiest first")
+    axR.set_ylabel("share of the spend")
+    axR.set_title("(b) where it spends it", fontsize=8)
+    axR.legend(frameon=False, loc="lower right")
+    axR.grid(alpha=0.25, lw=0.5)
+    _save(fig, "imitation_cost")
 
 
 def main():
@@ -475,7 +542,8 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               context_intervention, selection_frontier, units_law, order_no_collapse)
+               context_intervention, selection_frontier, units_law, order_no_collapse,
+               imitation_cost)
     for fn in figures:
         try:
             fn()

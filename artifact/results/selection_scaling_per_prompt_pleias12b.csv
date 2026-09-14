@@ -1,0 +1,1001 @@
+judge,prompt_id,u_n1,u_n2,u_n4,u_n8
+Phi-3.5-mini-instruct,1nzes2,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,2786lw,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,2ov45h,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,49u4dh,0.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,4iorz7,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,4xzr87,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,53rqr9,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,5apkek,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5e6rcz,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5ec7q2,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,5f5p86,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5fqwjc,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5g58dz,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,5gq4jc,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,5j7ypk,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5je6l4,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,5nc21f,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5nzsq6,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,5ozqb9,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5qf97d,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,5qwzjo,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5r104c,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,5te65i,0.5,0.0,0.5,0.5
+Phi-3.5-mini-instruct,5umucz,0.5,0.0,1.0,0.0
+Phi-3.5-mini-instruct,5w4x14,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,609k0n,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,625es0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,63dn97,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,63ku7q,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,64c0w6,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,65458n,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,66uo64,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,68f5c5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,68ykga,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,69dzba,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,6d1iqq,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,6eytds,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,6gl289,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6hoxmq,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6imc4i,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,6isay3,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6ixx9u,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6k8gdu,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6l6v6l,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,6m7z8a,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6mztko,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,6o18uh,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,6o679d,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,6ohgxv,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,6szrbs,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,6tsiyd,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,6wgtsx,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6wxzhc,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6xisxt,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,6xngfe,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,6xsruw,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,71p51h,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,72l2aj,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,74ih3z,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,765fhd,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,76b9gc,1.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,77dd17,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,796161,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7adktz,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7bowjq,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7d0x9k,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,7dcwik,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,7e3im5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7en7vl,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7ezd5t,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,7gjj2w,1.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,7h9f8e,1.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,7iltd1,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7iubwq,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,7jfvx7,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7jqj29,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,7l7e1m,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7ld0jk,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7lzk5g,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,7q0acw,0.5,1.0,0.5,1.0
+Phi-3.5-mini-instruct,7rb6uj,0.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,7rie85,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7rpy8m,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7svmp5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7tge90,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,7u04a5,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,7uezw8,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,7v8ind,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,80sf6g,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,83mehz,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,849wc3,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,87ak6w,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,87tx3g,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8a18sf,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8aec6t,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8fk0hr,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,8gfhh9,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8gs4wp,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8k4am7,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8myeno,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,8o89ko,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8p3ora,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,8pr271,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8tmkfc,0.0,0.0,1.0,0.5
+Phi-3.5-mini-instruct,8vr4k2,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,8vyqdq,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8x0xa7,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8x86s0,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,8y8wrr,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8z1sq1,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,9470fc,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,96myl6,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,96xnw9,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,99kk88,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,9edjv0,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,9f7www,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,9g2cbq,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,9ki47u,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,9l0dam,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,9neuk8,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,9qn4tw,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,a318ye,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,a3pdwk,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,acjzv0,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,afc9c4,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,aowr4t,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,ar7nm2,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,auig0m,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,b4yx63,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,b87jl7,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,b9uzz1,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,bhyplf,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,bk7lic,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,ciifmd,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,ck6twx,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,cpxk2b,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,dqn4sj,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,eu7ub2,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00003_Fernando da Costa Novaes,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00006_David Galloway (writer),0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00007_Cheyenne Brando,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00012_Braulio Lara,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00015_Amr Shabana,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00017_Abdulqawi Yusuf,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00025_Carlos P. Romulo,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00027_Arthur Ewert,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00032_Flavio Méndez Santiago,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00039_Chris Duffield,0.0,0.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00040_Daniil Medvedev,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00043_Alexander Vovin,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00044_Cobhams Asuquo,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00045_David Bogue,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00048_Don Beard,0.5,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00053_Andriy Yarmolenko,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00058_Danny Faure,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00063_Ayman al-Zawahiri,1.0,1.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00064_Diego Suarez (garden designer),0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00066_Daniel Alexander Cameron,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00075_Antonio Leviste,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00078_Chi Pu,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,"fact_00080_Felipe (footballer, born 1977)",0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00084_Alfred Hitchcock,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00085_Dascha Polanco,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00086_Amelia Earhart,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00087_Chris John (boxer),0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00088_Blair Tugman,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00093_David Oyite-Ojok,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00097_Chris Cuomo,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00098_Adnan Sami,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00108_Bhuma Nagi Reddy,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00109_Charmion King,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00110_Andreea Marin,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00114_Ahn Jae-hyun,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00116_Bobo Baldé,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00118_Chacho Gaytán,0.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00119_Bastian Schweinsteiger,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00120_Erich Hartmann,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00127_Ezechiel N'Douassel,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00131_Aditya Kalyanpur,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00132_Dennis Andersson,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00133_Daniel Bedingfield,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00134_Celâl Bayar,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00138_Diana Ivanova,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00140_André Le Nôtre,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00142_Cierre Wood,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00145_Carmelo Anthony,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00146_Asafa Powell,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00152_Felix Newman,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00154_Earl Garrison,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00162_Aleksandar Kolarov,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00163_Alexandre Hohagen,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00166_Emcee N.I.C.E.,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00181_Chris Woakes,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00182_Diosdado Cabello,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00184_Dana Awartani,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00185_Brianna Keilar,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00188_Cédric Bakambu,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00193_Bobby Fischer,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00198_Benjamin Lawrence Reid,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00199_Djimon Hounsou,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00202_Ahsee Tuala,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00204_Don DeLillo,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00207_Elizabeth Inglis,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00208_Fifi Cooper,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00223_Ahmed Mumin Warfa,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00226_Dewi Sartika,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00227_Alf Garland,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00230_Abdul Ilah Khatib,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00239_Bif Naked,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00245_Dominique Blake,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00247_Diafra Sakho,0.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00249_Fahadh Faasil,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00250_Dr. Dre,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00255_Caitlin Lowe,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00257_Camille Paulus,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00258_Charley Boorman,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00260_Douglas Wood (engineer),0.0,0.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00263_Billy Snedden,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00264_Esteban Espíndola,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00270_Daniel Ek,0.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00275_Belisarius,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00276_Carol Dweck,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00286_Amr Diab,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00296_Akbar Hossain,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00300_Coco Chanel,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00302_Enamul Haque (engineer),0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00304_Abdelhamid Shabana,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00307_Abdullahi Mohammad Ahmad Hassan,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00309_Diego Godín,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00312_Adel Emam,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00315_Billy Conigliaro,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00316_Arif Mohammad Khan,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00321_Bob Marley,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00328_Dana Ashbrook,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00332_Cha Eun-woo,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00333_Abdul Halik Hudu,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00335_Carl Braun (obstetrician),0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00343_Ameyaw Debrah,0.5,0.5,0.0,0.5
+Phi-3.5-mini-instruct,fact_00344_Cleopatra,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00345_Ana Cláudia Bolzan,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00347_Evgeny Shalunov,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00348_Charles Allen (jurist),1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00349_Deyverson,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00351_Cris Cyborg,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00354_Bobby Thomson,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00356_Eric Winter,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00362_Aert van der Neer,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00364_Blanca Errázuriz,0.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00366_Deitrick Haddon,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00367_Andreas Ivanschitz,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00368_Clancy Brown,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00371_Carrie Ann Inaba,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00374_Cicero,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00376_14th Dalai Lama,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00377_Christian Almeida,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00378_Arthur Wakefield,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00384_Andry Rajoelina,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00394_Danny Almonte,0.5,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00396_Andy Middleton,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00397_Anderson Silva,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00399_Edgar Bennett,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00401_Balázs Bekő,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00404_Abraham Ancer,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00418_A. K. Ramanujan,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00420_Carlos Ghosn,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00421_Anurag Kashyap,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00425_Angela Bairstow,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00427_Ernestine Eckstein,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00430_Ezekiel Elliott,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00433_Aaron Burr,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00444_Charles B. McVay III,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00448_Carol Chell,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00449_Alen Omić,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00452_Alice Torriani,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00454_Albert Outler,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00459_Felician of Foligno,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00460_Annie Landouw,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00462_Bhāskara I,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00464_Damon Herriman,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00466_Feroze Gandhi,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00471_D. B. Nihalsinghe,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00478_F. Gwynplaine MacIntyre,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,fact_00486_Fidel Castro,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00489_Bir Hambir,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00491_Avraham Eilam-Amzallag,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00492_Date Narikuni,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00495_Ariel Behar,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00498_DeAnna Bennett,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,g4fs4z,0.0,0.5,0.0,0.5
+Phi-3.5-mini-instruct,gyp3c3,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,hmsv36,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,hrkod1,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,irdp6g,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,iuj8br,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,jizn99,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,jjrido,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,llrdyo,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,lvcurd,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,m70bt5,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,mjrz7h,0.5,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_000,1.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_bio_001,1.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_002,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_003,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_004,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_005,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_006,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_007,0.5,0.5,0.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_008,1.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_009,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_010,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_011,0.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_bio_012,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_013,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_014,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_015,1.0,0.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_016,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_017,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_018,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_bio_019,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_020,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_021,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_022,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_bio_023,0.5,0.5,0.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_024,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_025,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_026,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_027,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_028,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_029,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_030,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_031,1.0,0.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_032,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_033,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_034,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_035,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_036,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_037,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_038,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_039,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_000,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_001,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_002,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_003,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_004,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_005,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_006,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_007,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_008,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_009,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_010,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_011,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_012,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_013,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_014,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_015,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_016,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_017,0.5,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_018,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_019,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_020,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_021,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_nar_022,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_023,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_024,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,neutral_nar_025,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_026,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_027,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_028,0.5,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_029,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_nar_030,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_031,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_032,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_033,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_034,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_035,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_nar_036,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_037,0.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_038,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,neutral_nar_039,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_000,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_001,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_ncs_002,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_003,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_004,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_005,1.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_006,1.0,1.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_ncs_007,0.5,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_008,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_009,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_ncs_010,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_011,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_012,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_013,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_014,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_015,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_016,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_017,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_018,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_019,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_020,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_021,1.0,0.5,0.0,0.5
+Phi-3.5-mini-instruct,neutral_ncs_022,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_023,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_ncs_024,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_025,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_026,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_027,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_028,0.5,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_029,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_030,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_031,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_032,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_033,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_034,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_ncs_035,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_036,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_037,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_038,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_ncs_039,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_000,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_001,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_002,0.5,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_003,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_004,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_005,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_006,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_007,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_008,0.5,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_009,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_010,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_011,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_012,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_013,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_014,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_015,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_qa_016,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_017,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_018,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_019,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_qa_020,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_021,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_022,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_023,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_024,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_025,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_026,0.5,0.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_qa_027,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_028,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_029,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_qa_030,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_031,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_032,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_033,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_034,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_035,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_036,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_037,0.0,1.0,0.5,0.0
+Phi-3.5-mini-instruct,neutral_qa_038,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_039,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_000,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_001,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_002,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_003,0.5,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_004,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_sum_005,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_sum_006,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_007,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_008,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_009,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_010,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_011,0.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_012,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_013,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_014,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_015,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_016,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_017,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_018,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_019,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_020,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_021,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_022,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_023,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_024,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_025,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_sum_026,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_027,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_028,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_029,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_030,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_031,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_032,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_033,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_034,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_035,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_sum_036,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_037,0.0,0.5,0.0,0.5
+Phi-3.5-mini-instruct,neutral_sum_038,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_039,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,1nzes2,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,2786lw,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,2ov45h,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,49u4dh,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,4iorz7,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,4xzr87,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,53rqr9,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,5apkek,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,5e6rcz,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5ec7q2,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5f5p86,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5fqwjc,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5g58dz,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5gq4jc,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,5j7ypk,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5je6l4,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5nc21f,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5nzsq6,0.0,0.0,0.5,0.5
+Meta-Llama-3.1-8B-Instruct,5ozqb9,0.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,5qf97d,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,5qwzjo,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,5r104c,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,5te65i,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,5umucz,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,5w4x14,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,609k0n,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,625es0,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,63dn97,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,63ku7q,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,64c0w6,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,65458n,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,66uo64,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,68f5c5,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,68ykga,0.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,69dzba,0.0,0.5,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6d1iqq,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6eytds,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,6gl289,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6hoxmq,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6imc4i,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,6isay3,0.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,6ixx9u,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,6k8gdu,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6l6v6l,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6m7z8a,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,6mztko,0.0,0.0,0.0,0.5
+Meta-Llama-3.1-8B-Instruct,6o18uh,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6o679d,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6ohgxv,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,6szrbs,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6tsiyd,0.0,0.0,0.0,0.5
+Meta-Llama-3.1-8B-Instruct,6wgtsx,1.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,6wxzhc,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,6xisxt,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6xngfe,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,6xsruw,0.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,71p51h,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,72l2aj,1.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,74ih3z,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,765fhd,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,76b9gc,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,77dd17,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,796161,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7adktz,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7bowjq,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7d0x9k,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7dcwik,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7e3im5,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7en7vl,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7ezd5t,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7gjj2w,0.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,7h9f8e,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7iltd1,1.0,0.5,0.5,0.5
+Meta-Llama-3.1-8B-Instruct,7iubwq,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7jfvx7,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7jqj29,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7l7e1m,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7ld0jk,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7lzk5g,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7q0acw,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7rb6uj,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7rie85,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7rpy8m,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7svmp5,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7tge90,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7u04a5,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,7uezw8,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,7v8ind,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,80sf6g,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,83mehz,0.5,0.5,0.5,0.5
+Meta-Llama-3.1-8B-Instruct,849wc3,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,87ak6w,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,87tx3g,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8a18sf,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,8aec6t,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8fk0hr,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,8gfhh9,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,8gs4wp,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,8k4am7,0.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8myeno,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8o89ko,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8p3ora,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8pr271,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,8tmkfc,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,8vr4k2,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,8vyqdq,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8x0xa7,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,8x86s0,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8y8wrr,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,8z1sq1,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,9470fc,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,96myl6,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,96xnw9,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,99kk88,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,9edjv0,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,9f7www,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,9g2cbq,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,9ki47u,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,9l0dam,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,9neuk8,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,9qn4tw,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,a318ye,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,a3pdwk,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,acjzv0,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,afc9c4,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,aowr4t,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,ar7nm2,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,auig0m,0.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,b4yx63,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,b87jl7,1.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,b9uzz1,0.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,bhyplf,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,bk7lic,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,ciifmd,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,ck6twx,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,cpxk2b,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,dqn4sj,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,eu7ub2,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00003_Fernando da Costa Novaes,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00006_David Galloway (writer),0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00007_Cheyenne Brando,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00012_Braulio Lara,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00015_Amr Shabana,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00017_Abdulqawi Yusuf,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00025_Carlos P. Romulo,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00027_Arthur Ewert,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00032_Flavio Méndez Santiago,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00039_Chris Duffield,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00040_Daniil Medvedev,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00043_Alexander Vovin,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00044_Cobhams Asuquo,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00045_David Bogue,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00048_Don Beard,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00053_Andriy Yarmolenko,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00058_Danny Faure,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00063_Ayman al-Zawahiri,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00064_Diego Suarez (garden designer),0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00066_Daniel Alexander Cameron,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00075_Antonio Leviste,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00078_Chi Pu,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,"fact_00080_Felipe (footballer, born 1977)",1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00084_Alfred Hitchcock,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00085_Dascha Polanco,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00086_Amelia Earhart,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00087_Chris John (boxer),1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00088_Blair Tugman,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00093_David Oyite-Ojok,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00097_Chris Cuomo,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00098_Adnan Sami,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00108_Bhuma Nagi Reddy,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00109_Charmion King,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00110_Andreea Marin,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00114_Ahn Jae-hyun,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00116_Bobo Baldé,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00118_Chacho Gaytán,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00119_Bastian Schweinsteiger,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00120_Erich Hartmann,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00127_Ezechiel N'Douassel,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00131_Aditya Kalyanpur,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00132_Dennis Andersson,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00133_Daniel Bedingfield,1.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00134_Celâl Bayar,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00138_Diana Ivanova,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00140_André Le Nôtre,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00142_Cierre Wood,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00145_Carmelo Anthony,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00146_Asafa Powell,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00152_Felix Newman,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00154_Earl Garrison,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00162_Aleksandar Kolarov,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00163_Alexandre Hohagen,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00166_Emcee N.I.C.E.,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00181_Chris Woakes,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00182_Diosdado Cabello,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00184_Dana Awartani,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00185_Brianna Keilar,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00188_Cédric Bakambu,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00193_Bobby Fischer,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00198_Benjamin Lawrence Reid,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00199_Djimon Hounsou,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00202_Ahsee Tuala,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00204_Don DeLillo,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00207_Elizabeth Inglis,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00208_Fifi Cooper,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00223_Ahmed Mumin Warfa,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00226_Dewi Sartika,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00227_Alf Garland,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00230_Abdul Ilah Khatib,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00239_Bif Naked,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00245_Dominique Blake,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00247_Diafra Sakho,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00249_Fahadh Faasil,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00250_Dr. Dre,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00255_Caitlin Lowe,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00257_Camille Paulus,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00258_Charley Boorman,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00260_Douglas Wood (engineer),1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00263_Billy Snedden,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00264_Esteban Espíndola,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00270_Daniel Ek,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00275_Belisarius,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00276_Carol Dweck,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00286_Amr Diab,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00296_Akbar Hossain,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00300_Coco Chanel,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00302_Enamul Haque (engineer),0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00304_Abdelhamid Shabana,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00307_Abdullahi Mohammad Ahmad Hassan,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00309_Diego Godín,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00312_Adel Emam,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00315_Billy Conigliaro,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00316_Arif Mohammad Khan,0.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00321_Bob Marley,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00328_Dana Ashbrook,0.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00332_Cha Eun-woo,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00333_Abdul Halik Hudu,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00335_Carl Braun (obstetrician),0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00343_Ameyaw Debrah,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00344_Cleopatra,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00345_Ana Cláudia Bolzan,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00347_Evgeny Shalunov,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00348_Charles Allen (jurist),0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00349_Deyverson,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00351_Cris Cyborg,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00354_Bobby Thomson,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00356_Eric Winter,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00362_Aert van der Neer,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00364_Blanca Errázuriz,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00366_Deitrick Haddon,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00367_Andreas Ivanschitz,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00368_Clancy Brown,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00371_Carrie Ann Inaba,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00374_Cicero,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00376_14th Dalai Lama,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00377_Christian Almeida,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00378_Arthur Wakefield,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00384_Andry Rajoelina,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00394_Danny Almonte,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00396_Andy Middleton,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00397_Anderson Silva,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00399_Edgar Bennett,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00401_Balázs Bekő,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00404_Abraham Ancer,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00418_A. K. Ramanujan,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00420_Carlos Ghosn,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00421_Anurag Kashyap,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00425_Angela Bairstow,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00427_Ernestine Eckstein,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00430_Ezekiel Elliott,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00433_Aaron Burr,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00444_Charles B. McVay III,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00448_Carol Chell,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00449_Alen Omić,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00452_Alice Torriani,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00454_Albert Outler,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00459_Felician of Foligno,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00460_Annie Landouw,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00462_Bhāskara I,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00464_Damon Herriman,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00466_Feroze Gandhi,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00471_D. B. Nihalsinghe,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00478_F. Gwynplaine MacIntyre,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00486_Fidel Castro,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00489_Bir Hambir,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00491_Avraham Eilam-Amzallag,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,fact_00492_Date Narikuni,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00495_Ariel Behar,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,fact_00498_DeAnna Bennett,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,g4fs4z,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,gyp3c3,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,hmsv36,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,hrkod1,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,irdp6g,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,iuj8br,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,jizn99,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,jjrido,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,llrdyo,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,lvcurd,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,m70bt5,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,mjrz7h,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_000,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_001,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_002,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_003,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_004,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_005,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_006,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_007,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_008,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_009,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_010,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_011,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_012,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_013,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_014,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_015,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_016,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_017,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_018,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_019,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_020,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_021,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_022,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_023,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_024,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_025,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_026,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_027,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_028,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_029,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_030,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_031,1.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_032,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_033,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_034,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_035,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_036,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_037,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_038,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_bio_039,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_000,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_001,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_002,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_003,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_004,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_005,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_006,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_007,0.5,0.5,0.5,0.5
+Meta-Llama-3.1-8B-Instruct,neutral_nar_008,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_009,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_010,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_011,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_012,0.0,0.5,0.5,0.5
+Meta-Llama-3.1-8B-Instruct,neutral_nar_013,0.5,0.5,0.5,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_014,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_015,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_016,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_017,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_018,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_019,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_020,0.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_021,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_022,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_023,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_024,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_025,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_026,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_027,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_028,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_029,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_030,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_031,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_032,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_033,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_034,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_035,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_036,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_037,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_038,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_nar_039,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_000,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_001,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_002,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_003,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_004,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_005,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_006,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_007,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_008,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_009,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_010,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_011,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_012,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_013,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_014,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_015,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_016,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_017,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_018,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_019,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_020,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_021,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_022,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_023,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_024,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_025,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_026,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_027,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_028,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_029,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_030,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_031,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_032,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_033,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_034,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_035,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_036,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_037,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_038,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_ncs_039,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_000,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_001,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_002,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_003,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_004,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_005,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_006,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_007,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_008,1.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_009,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_010,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_011,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_012,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_013,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_014,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_015,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_016,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_017,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_018,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_019,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_020,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_021,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_022,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_023,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_024,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_025,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_026,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_027,0.0,0.0,0.5,0.5
+Meta-Llama-3.1-8B-Instruct,neutral_qa_028,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_029,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_030,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_031,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_032,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_033,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_034,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_035,1.0,1.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_036,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_037,1.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_038,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_qa_039,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_000,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_001,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_002,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_003,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_004,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_005,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_006,1.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_007,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_008,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_009,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_010,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_011,0.0,1.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_012,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_013,0.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_014,0.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_015,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_016,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_017,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_018,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_019,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_020,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_021,0.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_022,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_023,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_024,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_025,0.0,0.0,0.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_026,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_027,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_028,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_029,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_030,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_031,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_032,0.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_033,1.0,1.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_034,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_035,1.0,1.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_036,1.0,0.0,1.0,1.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_037,0.0,0.0,1.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_038,0.0,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,neutral_sum_039,0.0,0.0,0.0,1.0

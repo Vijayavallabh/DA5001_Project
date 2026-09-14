@@ -45,6 +45,7 @@ class AnchoredDecodingFactory:
         log_kl_stats: bool = False,
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
+        initial_bank: float = 0.0,
         meter: str = "token",
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
@@ -189,6 +190,7 @@ class AnchoredDecodingFactory:
             log_kl_stats=log_kl_stats,
             constraint=constraint,
             bank_cap=bank_cap,
+            initial_bank=initial_bank,
             meter=meter,
             device=device,
         )
@@ -204,6 +206,7 @@ class AnchoredDecodingFactory:
         log_kl_stats: bool = False,
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
+        initial_bank: float = 0.0,
         meter: str = "token",
         verbose: bool = False,
         device: Optional[torch.device] = None,
@@ -250,6 +253,13 @@ class AnchoredDecodingFactory:
         assert constraint in ("kl", "pathwise", "renyi"), \
             f"constraint must be 'kl', 'pathwise' or 'renyi[:alpha]', got {constraint!r}"
         self.bank_cap = bank_cap  # feat-021: token-bucket depth; None = the unbounded bank of He et al.
+        # feat-092: nats granted up front rather than accrued. The bucket's refill rate k places the
+        # budget UNIFORMLY along the sequence; an initial bank with a negligible refill places the
+        # same total at the FRONT. Both are causal policies with a sequence budget, and Proposition 5
+        # says a policy whose budget does not grow with the work must look like the second. Default
+        # 0.0 is the deployed rule exactly, so every number on record is unaffected.
+        assert initial_bank >= 0.0, "initial_bank must be non-negative"
+        self.initial_bank = initial_bank
         # feat-064: what the budget is metered in. He et al. meter per TOKEN, so K = k*T_max; but the
         # protected object is text, and a tokenizer that cuts the same passage into twice as many
         # tokens then hands the adversary twice the budget for it. 'char' meters per character, which
@@ -831,7 +841,7 @@ class AnchoredDecodingFactory:
                 del d_all_out, d_logits_prefix
 
             prefix_debt = self._compute_prefix_debt_fast(c_lp, d_lp, input_ids, attention_mask, self.prefix_n)
-            init_budget_tensor = -prefix_debt.to(torch.float32)
+            init_budget_tensor = -prefix_debt.to(torch.float32) + self.initial_bank
             bank = init_budget_tensor.clone()
             if self.verbose:
                 print(f"[INFO] Using prefix debt True with prefix_n={self.prefix_n}")
@@ -848,7 +858,8 @@ class AnchoredDecodingFactory:
                 safe_logits, safe_past_key_values = self.forward_direct(self.safe_model, input_ids, attention_mask, None)
                 risky_logits, risky_past_key_values = self.forward_direct(self.risky_model, input_ids, attention_mask, None)
 
-            init_budget_tensor = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
+            init_budget_tensor = torch.full((batch_size,), float(self.initial_bank),
+                                            device=self.device, dtype=torch.float32)
             bank = init_budget_tensor.clone()
 
         use_precomputed_logits = True

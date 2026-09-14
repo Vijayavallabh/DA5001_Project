@@ -1,0 +1,19 @@
+judge,arm,n_prompts,spend_nats,u,u_lo95,u_hi95,gain,gain_lo95,gain_hi95,gain_vs_own_n1,gain_vs_own_n1_lo95,gain_vs_own_n1_hi95
+Phi-3.5-mini-instruct,anchor alone (control),500,0.0,0.443,0.407,0.477,0.0,0.0,0.0,,,
+Phi-3.5-mini-instruct,"metered, k=0.5",500,88.1158,0.458,0.424,0.491,0.015,-0.028,0.057,,,
+Phi-3.5-mini-instruct,"metered, k=1",500,112.7301,0.494,0.469,0.52,0.051,0.008,0.091,,,
+Phi-3.5-mini-instruct,"metered, k=3",500,123.2026,0.499,0.481,0.518,0.056,0.014,0.097,,,
+Phi-3.5-mini-instruct,"metered, k=20",500,123.4387,0.498,0.482,0.514,0.055,0.016,0.093,,,
+Phi-3.5-mini-instruct,"selection, n=1",500,0.0,0.409,0.374,0.442,-0.034,-0.071,0.004,0.0,0.0,0.0
+Phi-3.5-mini-instruct,"selection, n=2",500,0.1931,0.467,0.431,0.501,0.024,-0.018,0.068,0.058,0.019,0.1
+Phi-3.5-mini-instruct,"selection, n=4",500,0.6363,0.491,0.456,0.524,0.048,0.006,0.09,0.082,0.039,0.126
+Phi-3.5-mini-instruct,"selection, n=8",500,1.2044,0.519,0.484,0.552,0.076,0.031,0.122,0.11,0.067,0.157
+Meta-Llama-3.1-8B-Instruct,anchor alone (control),500,0.0,0.37,0.328,0.412,0.0,0.0,0.0,,,
+Meta-Llama-3.1-8B-Instruct,"metered, k=0.5",500,88.1158,0.472,0.428,0.514,0.102,0.045,0.159,,,
+Meta-Llama-3.1-8B-Instruct,"metered, k=1",500,112.7301,0.501,0.458,0.543,0.131,0.074,0.189,,,
+Meta-Llama-3.1-8B-Instruct,"metered, k=3",500,123.2026,0.494,0.455,0.534,0.124,0.069,0.18,,,
+Meta-Llama-3.1-8B-Instruct,"metered, k=20",500,123.4387,0.501,0.462,0.54,0.131,0.076,0.189,,,
+Meta-Llama-3.1-8B-Instruct,"selection, n=1",500,0.0,0.381,0.34,0.424,0.011,-0.025,0.048,0.0,0.0,0.0
+Meta-Llama-3.1-8B-Instruct,"selection, n=2",500,0.1931,0.45,0.41,0.492,0.08,0.038,0.122,0.069,0.027,0.113
+Meta-Llama-3.1-8B-Instruct,"selection, n=4",500,0.6363,0.51,0.464,0.554,0.14,0.094,0.186,0.129,0.084,0.176
+Meta-Llama-3.1-8B-Instruct,"selection, n=8",500,1.2044,0.524,0.482,0.566,0.154,0.104,0.2,0.143,0.096,0.191

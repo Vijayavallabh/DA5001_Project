@@ -121,3 +121,125 @@ The `n = 1` control must land within `0.05` of the `u_safe` on record for its ju
 ## Scoring log
 
 *(appended after each arm runs; nothing above is edited)*
+
+---
+
+## Addendum, written before the scoring pass and after a smoke test — judge C is replaced
+
+**Nothing above is edited.** This records a change to one arm's *instrument*, made before that arm
+produced any number, with the evidence that forced it.
+
+A smoke run of `analysis/selection_scaling.py` on the existing eight-candidate directory
+(`--limit 8`, so no band applies) returned `u = 0.5000` for **every** arm under judge C,
+`meta-llama/Llama-3.2-3B-Instruct`. That is not a parsing bug. Probed directly on 24 comparisons
+under the shared judging template, the model answers
+
+```
+Llama-3.2-3B-Instruct   free-text  {'Tie': 14, 'Tie.': 9, 'B': 1}
+```
+
+It takes the tie option on 23 of 24 and has no resolution at all under the protocol feat-087 fixed.
+An instrument that returns the same value for every arm cannot decide O2 in either direction.
+
+**Replacement: judge C is now `meta-llama/Meta-Llama-3.1-8B-Instruct`**, under the *identical*
+protocol — free-text verdict, order randomised, scored `1/½/0`. The same 24-comparison probe gives
+
+```
+Meta-Llama-3.1-8B-Instruct   free-text {'A': 19, 'B': 5}   forced A/B logits {'A': 19, 'B': 5}
+```
+
+so it discriminates, and its free-text verdicts agree with its own A-vs-B logits on all 24, which is
+the check that the free-text rule is reading what the model actually believes. (The 19-to-5 split is
+the position bias the protocol randomises away: this probe put the candidate in position A every
+time, and the scored run does not.)
+
+**Why this substitution is conservative rather than convenient.** Judge C is now the *same
+checkpoint that generated the opponent* in every comparison. Any self-preference it carries favours
+the unconstrained completion, which is the arm selection anchoring must beat, so the bias runs
+against the hypothesis under test. The O2 bands are unchanged:
+
+| reading | band |
+|---|---|
+| **GENERAL** | gain at `n=8` `>= +0.03` and paired 95% CI excludes 0 |
+| **PARTIAL** | point estimate `> 0`, CI includes 0 |
+| **JUDGE-SPECIFIC** | `<= 0` |
+
+**The discarded judge is reported, not hidden.** That a 3B instruction-tuned model answers "Tie" on
+23 of 24 pairwise quality comparisons is a fact about the resolution of LLM judges at that scale and
+belongs in the appendix beside the two-judge disagreement already reported. It is one more reason
+the paper quotes a judged separation only with its sample size and never builds a claim on a
+separation smaller than a sigma.
+
+**Not changed:** judge B stays `microsoft/Phi-3.5-mini-instruct` under the identical protocol, so
+O2's comparison against the `+0.081` on record remains like-for-like; the pointwise reward, the
+grid, the entry gate, the primary metrics and the five excluded alternatives all stand as written
+above.
+
+---
+
+## Scoring, 2026-09-12 (appended; nothing above is edited)
+
+Produced by, in order:
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python h1.py --k-values 0.0 --trajectories-per-prompt 64 \
+  --cap-neutral 200 --cap-creative 150 --cap-factual 150 \
+  --cap-val 0 --cap-test 0 --cap-attack-train 0 \
+  --max-new-tokens 200 --batch-size 64 --output-dir output/phase5/sel_anchor64
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_scaling.py --gen-dir output/phase5/sel_anchor64 --out results
+```
+
+32,000 trajectories over 500 prompts, exactly 64 candidates each. Outputs
+`results/selection_scaling.csv`, `results/selection_scaling_per_prompt.csv`,
+`results/selection_rewards64.csv`.
+
+**Entry gate: PASS.** Judge B's `n = 1` control is `u = 0.435` against the `0.440` on record,
+`|Δ| = 0.005`, inside the committed `0.05`.
+
+| | judge B (Phi-3.5-mini) | judge C (Meta-Llama-3.1-8B-Instruct) |
+|---|---|---|
+| `n=1` | `0.435 [0.401, 0.469]` | `0.429 [0.386, 0.473]` |
+| `n=8` | `0.489`, gain `+0.054 [0.013, 0.095]` | `0.502`, gain `+0.073 [0.027, 0.120]` |
+| `n=64` | `0.577`, gain `+0.142 [0.097, 0.187]` | `0.552`, gain `+0.123 [0.076, 0.171]` |
+
+### O1 — **SCALES**
+
+`gain(64) = +0.142` against `gain(8) = +0.054` on judge B: a difference of `+0.088`, above the
+committed `+0.05`. Both intervals exclude zero and do not overlap. The capacity grows with the
+candidate pool, and it grows while the budget grows only as `log n`: `1.2044 → 3.1745` nats buys
+`+0.054 → +0.142`.
+
+Secondary, as committed: Spearman of `u` against `log n` over the seven arms is `+0.991` on judge B
+and `+1.000` on judge C — monotone in both.
+
+### O2 — **GENERAL**
+
+Judge C's gain at `n = 8` is `+0.073 [0.027, 0.120]`: above the committed `+0.03` with an interval
+excluding zero. The constructive claim is not a property of Phi. This is the conservative direction
+for the substitution recorded in the addendum, since judge C is now the checkpoint that generated
+the opponent, so any self-preference runs *against* the hypothesis.
+
+### O3 — **DEPLOYABLE**
+
+The pointwise selector — `log p("Yes") − log p("No")` from Qwen on one fixed template, which never
+touches the risky model — reaches `+0.054` at `n = 8` on judge B, above the committed `+0.041`
+(half of feat-087's pairwise `+0.081` on the same judge and prompts). The risky model is not needed
+at selection time. At `n = 64` the same selector reaches `+0.142`, **above** the pairwise arm's
+`+0.081`, so the cheaper selector is not a compromise once the pool is large enough.
+
+### What this does to the comparison in the paper
+
+The metered decoder's best judged arm gains `+0.072` for `171.3` nats. Selection at `n = 64` gains
+`+0.142` for `3.1745` nats — **about twice the utility for one fifty-fourth of the divergence**, and
+under the pathwise order rather than the KL one.
+
+### Two things this does not say
+
+Every number here is one anchor (TinyComma-1.8B) on 500 in-house prompts, which is what
+`results/onset_prediction_selection_breadth.md` and the AlpacaEval/MT-Bench arms exist to test;
+until those land, the generality of `+0.142` is unestablished. And O1 reading SCALES is *not* the
+reading that would most have flattered the argument: OVEROPTIMISES would have shown the selector's
+errors compounding and made the case against metering sharper still. It scaled instead, which is
+the more useful result and the less rhetorically convenient one.

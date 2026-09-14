@@ -7,6 +7,10 @@ Usage: .venv/bin/python analysis/pathwise_price.py --kl output/sweep_plain --pat
 import argparse, csv, glob, json, math, os, statistics as st
 from collections import defaultdict
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+from dap.stats import strip_pad_steps  # noqa: E402
+
 
 def load(d):
     out = {}
@@ -14,6 +18,7 @@ def load(d):
         for line in open(f):
             r = json.loads(line)
             md, ag, steps = r["metadata"], r["aggregate"], r["per_step_log"]
+            steps = strip_pad_steps(steps)   # caution (s)
             out[(md["k"], md["prompt_id"], md["seed"])] = (md, ag, steps)
     return out
 

@@ -1,0 +1,15 @@
+judge,benchmark,cell,n_prompts,control,control_lo95,control_hi95,gain,gain_lo95,gain_hi95
+Meta-Llama-3.1-8B-Instruct,AlpacaEval,selfinstruct,252,0.2837,0.2302,0.3393,0.0377,-0.0278,0.0972
+Meta-Llama-3.1-8B-Instruct,AlpacaEval,oasst,188,0.2128,0.1596,0.2713,0.0798,0.0106,0.1489
+Meta-Llama-3.1-8B-Instruct,AlpacaEval,koala,156,0.25,0.1859,0.3141,0.0385,-0.0385,0.1154
+Meta-Llama-3.1-8B-Instruct,AlpacaEval,helpful_base,129,0.1473,0.0853,0.2171,0.1163,0.0388,0.1938
+Meta-Llama-3.1-8B-Instruct,AlpacaEval,vicuna,80,0.1625,0.0875,0.25,0.1,-0.0125,0.2
+Meta-Llama-3.1-8B-Instruct,MT-Bench,open-ended,40,0.2,0.075,0.325,-0.025,-0.15,0.1
+Meta-Llama-3.1-8B-Instruct,MT-Bench,constrained,40,0.2875,0.15,0.425,-0.05,-0.175,0.075
+Phi-3.5-mini-instruct,AlpacaEval,selfinstruct,252,0.3829,0.3373,0.4286,0.0258,-0.0278,0.0813
+Phi-3.5-mini-instruct,AlpacaEval,oasst,188,0.2926,0.242,0.3431,0.0931,0.0293,0.1569
+Phi-3.5-mini-instruct,AlpacaEval,koala,156,0.3558,0.2949,0.4135,-0.0032,-0.0769,0.0705
+Phi-3.5-mini-instruct,AlpacaEval,helpful_base,129,0.2597,0.1938,0.3256,0.0349,-0.0465,0.1163
+Phi-3.5-mini-instruct,AlpacaEval,vicuna,80,0.35,0.2625,0.4313,-0.0375,-0.1375,0.0625
+Phi-3.5-mini-instruct,MT-Bench,open-ended,40,0.3,0.1875,0.4125,0.05,-0.1125,0.2
+Phi-3.5-mini-instruct,MT-Bench,constrained,40,0.425,0.3375,0.5125,-0.0375,-0.1375,0.05

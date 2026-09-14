@@ -75,7 +75,14 @@ def score_rewards(model, tok, items, device, batch_size=8, log_every=40):
         enc = tok(texts, return_tensors="pt", padding=True, truncation=True,
                   max_length=2048).to(device)
         with torch.no_grad():
-            logits = model(**enc).logits[:, -1, :].float()
+            # Only the last position is scored, and the full [B, T, V] logits tensor is 5 GB at
+            # B=8, T=2048, V=152k. Ask for one position where the installed transformers supports
+            # it; fall back for older versions rather than failing.
+            try:
+                res = model(**enc, logits_to_keep=1)
+            except TypeError:
+                res = model(**enc)
+            logits = res.logits[:, -1, :].float()
         lp = torch.log_softmax(logits, dim=-1)
         y = torch.logsumexp(lp[:, ids["yes"]], dim=-1)
         n = torch.logsumexp(lp[:, ids["no"]], dim=-1)
@@ -98,14 +105,26 @@ def main():
     ap.add_argument("--gen-dir", default="output/phase5/sel_anchor64")
     ap.add_argument("--baseline-dir", default="output/sweep_plain")
     ap.add_argument("--reward-model", default="Qwen/Qwen2.5-7B-Instruct")
+    # Judge C was Llama-3.2-3B-Instruct until a smoke test found it answers "Tie" on 23 of 24
+    # probe comparisons under this template -- no resolution, so it cannot decide O2 either way.
+    # Replaced by Meta-Llama-3.1-8B-Instruct under the IDENTICAL protocol; it is the checkpoint that
+    # generated the opponent, so any self-preference runs against the hypothesis under test. The
+    # substitution and its evidence are recorded in results/onset_prediction_selection_scaling.md,
+    # written before this arm produced a number. Use the Meta- prefixed id: the other one has no
+    # tokenizer in the local cache.
     ap.add_argument("--judges", nargs="+",
                     default=["microsoft/Phi-3.5-mini-instruct",
-                             "meta-llama/Llama-3.2-3B-Instruct"])
+                             "meta-llama/Meta-Llama-3.1-8B-Instruct"])
     ap.add_argument("--max-n", type=int, default=64)
     ap.add_argument("--seed", type=int, default=8801)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--batch-size", type=int, default=8)
+    ap.add_argument("--limit", type=int, default=0,
+                    help="score only the first N prompts. For smoke tests only: the bands assume 500.")
     ap.add_argument("--reward-cache", default="results/selection_rewards64.csv")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the output filenames, so a second corpus "
+                         "(AlpacaEval) does not overwrite the first")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
@@ -118,6 +137,9 @@ def main():
     base = load_baseline(a.baseline_dir)
     pids = sorted(p for p in cands if p in base and len(cands[p]) >= a.max_n)
     assert pids, f"no prompt has {a.max_n} candidates in {a.gen_dir}"
+    if a.limit:
+        pids = pids[:a.limit]
+        print(f"[sel] SMOKE: {len(pids)} prompts only, bands do not apply", flush=True)
     print(f"[sel] {len(pids)} prompts x {a.max_n} candidates", flush=True)
 
     # ---- phase 1: the pointwise reward, cached -----------------------------------------------
@@ -178,8 +200,10 @@ def main():
         per = {p: {n: u_of[(p, picks[(p, n)])] for n in grid} for p in pids}
         per_judge[judge] = per
         base_u = [per[p][1] for p in pids]
+        u_raw = {}
         for n in grid:
             us = [per[p][n] for p in pids]
+            u_raw[n] = sum(us) / len(us)
             lo, hi = boot_mean(us, rng)
             diffs = [per[p][n] - per[p][1] for p in pids]
             g = sum(diffs) / len(diffs)
@@ -193,7 +217,9 @@ def main():
             print(f"  {judge.split('/')[-1]:24s} n={n:3d}  KL {kl_best_of_n(n):5.3f}  "
                   f"u={out[-1]['u']:.4f} [{lo:.3f}, {hi:.3f}]  gain {g:+.4f} "
                   f"[{g_lo:+.4f}, {g_hi:+.4f}]", flush=True)
-        assert abs(sum(base_u) / len(base_u) - out[-len(grid)]["u"]) < 1e-9
+        # against the UNROUNDED mean: out[...]["u"] is stored at 4 dp, so an exact comparison here
+        # fails on any judge whose mean is not a 4-dp number (it did, on the first smoke run).
+        assert abs(sum(base_u) / len(base_u) - u_raw[1]) < 1e-12, (base_u[:4], u_raw[1])
         del jm
         torch.cuda.empty_cache()
 
@@ -207,12 +233,12 @@ def main():
             r["spearman_u_logn"] = round(rho, 4)
 
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "selection_scaling.csv")
+    path = os.path.join(a.out, f"selection_scaling{a.tag}.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
-    ppath = os.path.join(a.out, "selection_scaling_per_prompt.csv")
+    ppath = os.path.join(a.out, f"selection_scaling_per_prompt{a.tag}.csv")
     with open(ppath, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["judge", "prompt_id"] + [f"u_n{n}" for n in grid])

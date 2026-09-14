@@ -73,3 +73,33 @@ def test_the_instruction_benchmarks_are_complete_and_are_not_wrapped_as_prefixes
         assert len({x.novel_source for x in rows}) == groups, d
         assert not any(x.prompt_text.startswith("Complete the prefix") for x in rows), d
         assert all(x.prompt_text.strip() for x in rows), d
+
+
+def test_the_artifact_builder_excludes_refetchable_data_and_stray_caches():
+    """Twice something large and re-fetchable has been swept into the artifact: 44 MB of Gutenberg
+    books in September 2026, then 1.9 GB of driver payload and 67 MB of bench corpora. The size
+    guard catches the class; these assertions catch the two paths by name so a future rsync edit
+    cannot quietly drop them."""
+    src = open("scripts/build_artifact.sh", encoding="utf-8").read()
+    for path in ("data/gutenberg", "data/bench", "NVIDIA-Linux-*", "torchinductor_*"):
+        assert f"--exclude '{path}'" in src, path
+    assert "ARTIFACT_MAX_MB" in src and "-gt" in src, "the size guard is gone"
+
+
+def test_the_anonymity_scan_covers_path_names_not_only_contents():
+    """torch's compile cache is named torchinductor_$USER and shipped for as long as the artifact
+    has existed, carrying the account name where no content grep would see it."""
+    src = open("scripts/build_artifact.sh", encoding="utf-8").read()
+    assert "identifying strings in PATH names" in src
+    assert "-iname '*sports*'" in src
+
+
+def test_the_built_artifact_carries_no_identifying_path():
+    import glob
+    import os
+    if not os.path.isdir("artifact"):
+        return
+    bad = [p for p in glob.glob("artifact/**/*", recursive=True)
+           if any(k in os.path.basename(p).lower()
+                  for k in ("sports", "vijayavallabh", "iitm"))]
+    assert not bad, bad

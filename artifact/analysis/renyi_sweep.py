@@ -23,6 +23,9 @@ Usage: .venv/bin/python analysis/renyi_sweep.py --runs output/phase4 --out resul
 import argparse, csv, glob, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dap.stats import strip_pad_steps  # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def order_of(dirname):
@@ -65,7 +68,10 @@ def price(a):
                 continue
             r = json.loads(line)
             agg = r["aggregate"]
-            tot += len(r["per_step_log"])
+            # The three aggregate counters exclude the post-EOS padding tail, so dividing them
+            # by the RAW log length deflated all three and made them sum to 94.7% rather than
+            # 100% (caution (s), dap/stats.py:strip_pad_steps).
+            tot += len(strip_pad_steps(r["per_step_log"]))
             n += 1
             free += agg.get("steps_risky_unchanged") or 0
             active += agg.get("steps_active") or 0

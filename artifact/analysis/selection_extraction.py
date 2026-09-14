@@ -107,27 +107,72 @@ def main():
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", default="results")
     ap.add_argument("--prefix", default="selection_extraction")
+    # A 70B risky model is 141 GB and does not fit the single-card `.cuda()` below. Caution (q):
+    # the split must be given explicitly, or accelerate puts the whole thing on device 0.
+    ap.add_argument("--risky-device-map", default="",
+                    help="e.g. 'auto' to shard the risky model across the visible cards")
+    ap.add_argument("--max-memory", default="",
+                    help="e.g. '0=75GiB,1=70GiB', only used with --risky-device-map")
     a = ap.parse_args()
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    tok = AutoTokenizer.from_pretrained(a.safe_model, padding_side="left")
-    if tok.pad_token is None:
-        tok.pad_token = tok.eos_token
-    passages = build(tok, a.data, a.split, a.limit, a.seed_tokens)
-    print(f"[selx] {len(passages)} passages, n_max={max(a.n_values)}", flush=True)
+
+    def load_tok(name):
+        """A padding token, whatever the checkpoint declares.
+
+        Pleias-1.2B declares no special tokens at all -- no eos, no pad, no unk -- so the usual
+        `pad_token = eos_token` leaves pad None and `padding=True` raises. Its vocabulary does
+        contain [PAD] at id 3, and its config names eos_token_id 2, so the ids exist and only the
+        tokenizer's declaration is missing. Left padding is masked out of every forward pass, so
+        any real id in the vocabulary is correct here; the order below prefers the one the
+        checkpoint actually meant."""
+        t = AutoTokenizer.from_pretrained(name, padding_side="left")
+        if t.pad_token is not None:
+            return t
+        if t.eos_token is not None:
+            t.pad_token = t.eos_token
+            return t
+        from transformers import AutoConfig
+        for tid in ("[PAD]", "<pad>", "<|endoftext|>"):
+            if tid in t.get_vocab():
+                t.pad_token = tid
+                return t
+        eos = getattr(AutoConfig.from_pretrained(name), "eos_token_id", None)
+        t.pad_token = t.convert_ids_to_tokens(eos if isinstance(eos, int) else 0)
+        return t
+
+    # Each model is fed its OWN token ids. Until 2026-09-12 the safe model's tokenizer was used for
+    # all three roles, which was harmless only because the audited anchor ships the Llama-3
+    # tokenizer the memoriser also uses. At any other anchor it silently fed anchor ids to the
+    # memoriser. The SEED, meanwhile, is built with the risky tokenizer for every anchor, so the
+    # 20-token seed is byte-identical across anchors -- otherwise the cross-anchor comparison
+    # would carry the seed-convention confound Section 3 measures at Spearman -0.958.
+    stok, rtok = load_tok(a.safe_model), load_tok(a.risky_model)
+    passages = build(rtok, a.data, a.split, a.limit, a.seed_tokens)
+    print(f"[selx] {len(passages)} passages, n_max={max(a.n_values)}, "
+          f"seed tokenizer {a.risky_model}", flush=True)
     seeds = [p["seed"] for p in passages]
 
     anchor = AutoModelForCausalLM.from_pretrained(a.safe_model, torch_dtype=torch.bfloat16).cuda().eval()
-    cands = sample(anchor, tok, seeds, max(a.n_values), a.max_new_tokens, a.temperature,
+    cands = sample(anchor, stok, seeds, max(a.n_values), a.max_new_tokens, a.temperature,
                    a.batch_size, a.seed)
     del anchor
     torch.cuda.empty_cache()
 
-    risky = AutoModelForCausalLM.from_pretrained(a.risky_model, torch_dtype=torch.bfloat16).cuda().eval()
+    if a.risky_device_map:
+        mm = None
+        if a.max_memory:
+            mm = {int(k): v for k, v in (kv.split("=") for kv in a.max_memory.split(","))}
+        risky = AutoModelForCausalLM.from_pretrained(
+            a.risky_model, torch_dtype=torch.bfloat16,
+            device_map=a.risky_device_map, max_memory=mm).eval()
+    else:
+        risky = AutoModelForCausalLM.from_pretrained(
+            a.risky_model, torch_dtype=torch.bfloat16).cuda().eval()
     # k = -1: the risky model alone on the same seeds, the mandatory baseline
-    solo = sample(risky, tok, seeds, 1, a.max_new_tokens, a.temperature, a.batch_size, a.seed)
+    solo = sample(risky, rtok, seeds, 1, a.max_new_tokens, a.temperature, a.batch_size, a.seed)
     flat = [(seeds[i], g) for i in range(len(passages)) for g in cands[i]]
-    sc = score(risky, tok, flat, a.batch_size)
+    sc = score(risky, rtok, flat, a.batch_size)
     del risky
     torch.cuda.empty_cache()
 

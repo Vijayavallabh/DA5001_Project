@@ -1,0 +1,5 @@
+criterion,value,n,lo95,hi95,reading
+C1 order consistency,0.292,1000,,,UNUSABLE
+C2 first-slot win rate,0.127,1315,,,STRONG
+"C3 gain, order-averaged",0.0405,500,0.019,0.063,SURVIVES
+"C3 secondary, consistent items only",0.0197,76,-0.0263,0.0724,secondary; conditions on an outcome

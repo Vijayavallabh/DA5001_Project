@@ -1,0 +1,4001 @@
+prompt_id,rank,prompt_class,n_words,reward
+1nzes2,0,creative,5,-24.875
+1nzes2,1,creative,5,-25.625
+1nzes2,2,creative,144,-23.875
+1nzes2,3,creative,147,-20.375
+1nzes2,4,creative,137,-20.75
+1nzes2,5,creative,148,-18.5
+1nzes2,6,creative,139,-26.3125
+1nzes2,7,creative,128,-26.9375
+2786lw,0,creative,126,-18.125
+2786lw,1,creative,134,-23.5
+2786lw,2,creative,24,-25.3125
+2786lw,3,creative,144,-19.75
+2786lw,4,creative,106,-17.375
+2786lw,5,creative,136,-21.0
+2786lw,6,creative,142,-22.125
+2786lw,7,creative,144,-18.625
+2ov45h,0,creative,6,-27.1875
+2ov45h,1,creative,141,-25.5
+2ov45h,2,creative,124,-29.8125
+2ov45h,3,creative,53,-29.25
+2ov45h,4,creative,153,-26.625
+2ov45h,5,creative,149,-28.125
+2ov45h,6,creative,119,-27.0
+2ov45h,7,creative,21,-28.3125
+49u4dh,0,creative,123,-17.5
+49u4dh,1,creative,27,-21.375
+49u4dh,2,creative,129,-28.0
+49u4dh,3,creative,155,-27.9375
+49u4dh,4,creative,140,-11.75
+49u4dh,5,creative,136,-26.875
+49u4dh,6,creative,155,-21.25
+49u4dh,7,creative,148,-5.0
+4iorz7,0,creative,50,-7.5
+4iorz7,1,creative,124,-7.25
+4iorz7,2,creative,13,-13.5
+4iorz7,3,creative,120,-26.0
+4iorz7,4,creative,93,-27.6875
+4iorz7,5,creative,19,-21.0
+4iorz7,6,creative,143,-24.875
+4iorz7,7,creative,6,-8.25
+4xzr87,0,creative,146,-27.4375
+4xzr87,1,creative,153,-19.875
+4xzr87,2,creative,163,-25.5
+4xzr87,3,creative,147,-27.125
+4xzr87,4,creative,142,-24.375
+4xzr87,5,creative,143,-9.75
+4xzr87,6,creative,138,-21.5
+4xzr87,7,creative,157,-24.625
+53rqr9,0,creative,124,-29.75
+53rqr9,1,creative,137,-26.9375
+53rqr9,2,creative,145,-25.875
+53rqr9,3,creative,52,-20.375
+53rqr9,4,creative,143,-26.9375
+53rqr9,5,creative,157,-26.375
+53rqr9,6,creative,140,-25.375
+53rqr9,7,creative,21,-24.25
+5apkek,0,creative,138,-21.625
+5apkek,1,creative,139,-26.9375
+5apkek,2,creative,129,-26.0625
+5apkek,3,creative,113,-22.125
+5apkek,4,creative,38,-24.125
+5apkek,5,creative,122,-18.375
+5apkek,6,creative,141,-24.125
+5apkek,7,creative,7,-9.375
+5e6rcz,0,creative,88,-17.25
+5e6rcz,1,creative,146,-23.875
+5e6rcz,2,creative,41,-27.8125
+5e6rcz,3,creative,157,-15.5
+5e6rcz,4,creative,138,-10.375
+5e6rcz,5,creative,146,-29.0
+5e6rcz,6,creative,160,-10.5
+5e6rcz,7,creative,128,-19.0
+5ec7q2,0,creative,133,-8.25
+5ec7q2,1,creative,135,-24.625
+5ec7q2,2,creative,140,-21.125
+5ec7q2,3,creative,150,-17.875
+5ec7q2,4,creative,131,0.0
+5ec7q2,5,creative,130,-20.25
+5ec7q2,6,creative,139,-22.25
+5ec7q2,7,creative,135,-24.25
+5f5p86,0,creative,160,-10.5
+5f5p86,1,creative,154,-22.5
+5f5p86,2,creative,163,-22.0
+5f5p86,3,creative,124,-26.5625
+5f5p86,4,creative,149,-11.375
+5f5p86,5,creative,50,-10.375
+5f5p86,6,creative,134,-23.0
+5f5p86,7,creative,140,-4.0
+5fqwjc,0,creative,148,-28.5
+5fqwjc,1,creative,111,-23.75
+5fqwjc,2,creative,70,-19.0
+5fqwjc,3,creative,149,-23.875
+5fqwjc,4,creative,100,-28.125
+5fqwjc,5,creative,53,-20.75
+5fqwjc,6,creative,130,-29.5
+5fqwjc,7,creative,147,-27.5
+5g58dz,0,creative,23,-28.1875
+5g58dz,1,creative,153,-24.25
+5g58dz,2,creative,150,-24.375
+5g58dz,3,creative,140,-29.5625
+5g58dz,4,creative,146,-24.3125
+5g58dz,5,creative,136,-29.375
+5g58dz,6,creative,143,-26.375
+5g58dz,7,creative,129,-23.125
+5gq4jc,0,creative,143,-23.125
+5gq4jc,1,creative,167,-23.75
+5gq4jc,2,creative,170,-13.75
+5gq4jc,3,creative,162,-18.625
+5gq4jc,4,creative,148,-18.75
+5gq4jc,5,creative,152,-23.625
+5gq4jc,6,creative,154,-24.0
+5gq4jc,7,creative,12,-14.125
+5j7ypk,0,creative,127,-25.5
+5j7ypk,1,creative,26,-26.0
+5j7ypk,2,creative,150,-27.875
+5j7ypk,3,creative,146,0.5
+5j7ypk,4,creative,87,-19.25
+5j7ypk,5,creative,126,-23.75
+5j7ypk,6,creative,141,-26.375
+5j7ypk,7,creative,121,-25.1875
+5je6l4,0,creative,132,-29.1875
+5je6l4,1,creative,147,-24.5
+5je6l4,2,creative,134,-5.5
+5je6l4,3,creative,147,-18.625
+5je6l4,4,creative,143,-27.9375
+5je6l4,5,creative,129,-26.125
+5je6l4,6,creative,154,-16.25
+5je6l4,7,creative,142,-26.8125
+5nc21f,0,creative,156,-28.75
+5nc21f,1,creative,156,-11.875
+5nc21f,2,creative,156,-26.3125
+5nc21f,3,creative,140,-27.625
+5nc21f,4,creative,155,-19.875
+5nc21f,5,creative,52,-11.375
+5nc21f,6,creative,161,-21.625
+5nc21f,7,creative,147,-26.875
+5nzsq6,0,creative,93,-19.0
+5nzsq6,1,creative,73,-13.0
+5nzsq6,2,creative,82,-23.87499
+5nzsq6,3,creative,133,-25.75
+5nzsq6,4,creative,71,-25.0
+5nzsq6,5,creative,47,-26.125
+5nzsq6,6,creative,48,-13.75
+5nzsq6,7,creative,74,-20.5
+5ozqb9,0,creative,112,-26.5
+5ozqb9,1,creative,129,-25.5
+5ozqb9,2,creative,11,-25.375
+5ozqb9,3,creative,151,-18.25
+5ozqb9,4,creative,132,-23.125
+5ozqb9,5,creative,144,-27.9375
+5ozqb9,6,creative,136,-18.125
+5ozqb9,7,creative,160,-24.875
+5qf97d,0,creative,140,-12.875
+5qf97d,1,creative,151,-4.87499
+5qf97d,2,creative,11,-23.125
+5qf97d,3,creative,98,-30.3125
+5qf97d,4,creative,136,-25.0
+5qf97d,5,creative,136,-22.5
+5qf97d,6,creative,145,-23.625
+5qf97d,7,creative,135,3.0
+5qwzjo,0,creative,156,-23.125
+5qwzjo,1,creative,38,-27.1875
+5qwzjo,2,creative,48,-22.25
+5qwzjo,3,creative,117,-23.875
+5qwzjo,4,creative,50,-25.8125
+5qwzjo,5,creative,131,-25.1875
+5qwzjo,6,creative,25,-22.375
+5qwzjo,7,creative,78,-19.125
+5r104c,0,creative,142,-13.0
+5r104c,1,creative,31,-12.375
+5r104c,2,creative,122,-6.5
+5r104c,3,creative,45,-17.0
+5r104c,4,creative,129,-15.5
+5r104c,5,creative,152,-25.0
+5r104c,6,creative,138,-23.75
+5r104c,7,creative,150,-9.5
+5te65i,0,creative,144,-28.6875
+5te65i,1,creative,116,-23.875
+5te65i,2,creative,136,-25.3125
+5te65i,3,creative,144,-25.75
+5te65i,4,creative,39,-29.8125
+5te65i,5,creative,114,-27.8125
+5te65i,6,creative,148,-24.0
+5te65i,7,creative,129,-28.0
+5umucz,0,creative,139,-17.875
+5umucz,1,creative,157,-24.25
+5umucz,2,creative,84,-23.0
+5umucz,3,creative,144,-25.375
+5umucz,4,creative,157,-10.375
+5umucz,5,creative,155,-14.375
+5umucz,6,creative,136,-26.9375
+5umucz,7,creative,71,-1.5
+5w4x14,0,creative,140,-19.125
+5w4x14,1,creative,134,-28.125
+5w4x14,2,creative,152,-22.625
+5w4x14,3,creative,118,-19.625
+5w4x14,4,creative,81,-28.75
+5w4x14,5,creative,135,-28.25
+5w4x14,6,creative,92,-22.0
+5w4x14,7,creative,4,-25.125
+609k0n,0,creative,107,-29.8125
+609k0n,1,creative,115,-29.3125
+609k0n,2,creative,104,-26.3125
+609k0n,3,creative,153,-28.75
+609k0n,4,creative,135,-26.875
+609k0n,5,creative,130,-27.375
+609k0n,6,creative,140,-26.5
+609k0n,7,creative,135,-25.5
+625es0,0,creative,142,-15.25
+625es0,1,creative,139,-25.125
+625es0,2,creative,4,-26.375
+625es0,3,creative,104,-25.875
+625es0,4,creative,129,-25.375
+625es0,5,creative,134,-7.75
+625es0,6,creative,142,-27.75
+625es0,7,creative,5,-26.75
+63dn97,0,creative,13,-25.125
+63dn97,1,creative,150,-28.0
+63dn97,2,creative,150,-24.375
+63dn97,3,creative,113,-20.5625
+63dn97,4,creative,157,-19.625
+63dn97,5,creative,13,-25.125
+63dn97,6,creative,150,-28.5
+63dn97,7,creative,155,-8.75
+63ku7q,0,creative,138,-23.125
+63ku7q,1,creative,151,-7.75
+63ku7q,2,creative,154,9.125
+63ku7q,3,creative,122,-21.375
+63ku7q,4,creative,145,-14.5
+63ku7q,5,creative,146,-16.125
+63ku7q,6,creative,150,-20.75
+63ku7q,7,creative,148,-18.25
+64c0w6,0,creative,132,-25.875
+64c0w6,1,creative,140,-17.5
+64c0w6,2,creative,132,-24.9375
+64c0w6,3,creative,133,-29.5625
+64c0w6,4,creative,149,-14.74999
+64c0w6,5,creative,150,-11.5
+64c0w6,6,creative,135,-26.6875
+64c0w6,7,creative,148,-28.6875
+65458n,0,creative,129,-27.9375
+65458n,1,creative,72,-27.5
+65458n,2,creative,146,-25.0
+65458n,3,creative,149,-11.0
+65458n,4,creative,144,-26.6875
+65458n,5,creative,125,-28.4375
+65458n,6,creative,16,-15.625
+65458n,7,creative,128,-26.625
+66uo64,0,creative,139,2.0
+66uo64,1,creative,125,-17.875
+66uo64,2,creative,24,-26.25
+66uo64,3,creative,47,-27.0
+66uo64,4,creative,139,-26.625
+66uo64,5,creative,102,-22.375
+66uo64,6,creative,129,-27.4375
+66uo64,7,creative,74,-16.125
+68f5c5,0,creative,122,-3.25
+68f5c5,1,creative,146,-9.0
+68f5c5,2,creative,133,-23.625
+68f5c5,3,creative,117,-27.125
+68f5c5,4,creative,130,-13.625
+68f5c5,5,creative,143,-27.0625
+68f5c5,6,creative,145,-18.0
+68f5c5,7,creative,122,-25.625
+68ykga,0,creative,63,-5.75
+68ykga,1,creative,119,-18.25
+68ykga,2,creative,146,-20.375
+68ykga,3,creative,130,-15.625
+68ykga,4,creative,135,-11.625
+68ykga,5,creative,132,-24.5
+68ykga,6,creative,56,1.25
+68ykga,7,creative,151,-8.5
+69dzba,0,creative,141,-22.625
+69dzba,1,creative,7,-27.125
+69dzba,2,creative,141,-26.25
+69dzba,3,creative,158,-25.125
+69dzba,4,creative,141,-11.125
+69dzba,5,creative,134,-27.5625
+69dzba,6,creative,148,-27.9375
+69dzba,7,creative,39,-26.5
+6d1iqq,0,creative,135,-8.5
+6d1iqq,1,creative,144,-15.375
+6d1iqq,2,creative,143,-22.875
+6d1iqq,3,creative,135,-27.0
+6d1iqq,4,creative,42,-18.625
+6d1iqq,5,creative,150,-8.625
+6d1iqq,6,creative,154,-24.875
+6d1iqq,7,creative,137,-15.625
+6eytds,0,creative,147,-24.0
+6eytds,1,creative,46,-11.5
+6eytds,2,creative,9,-26.25
+6eytds,3,creative,133,-26.5
+6eytds,4,creative,74,-22.875
+6eytds,5,creative,134,-25.6875
+6eytds,6,creative,131,-24.75
+6eytds,7,creative,111,-26.1875
+6gl289,0,creative,130,-26.75
+6gl289,1,creative,151,-25.8125
+6gl289,2,creative,148,-25.125
+6gl289,3,creative,140,-18.625
+6gl289,4,creative,152,-24.25
+6gl289,5,creative,151,-18.75
+6gl289,6,creative,150,-26.4375
+6gl289,7,creative,134,-24.25
+6hoxmq,0,creative,18,-16.75
+6hoxmq,1,creative,129,-26.9375
+6hoxmq,2,creative,124,-25.5
+6hoxmq,3,creative,163,-20.125
+6hoxmq,4,creative,122,-20.0
+6hoxmq,5,creative,132,-22.0
+6hoxmq,6,creative,75,-28.0
+6hoxmq,7,creative,16,-27.75
+6imc4i,0,creative,141,-16.75
+6imc4i,1,creative,144,-25.75
+6imc4i,2,creative,146,-3.25
+6imc4i,3,creative,145,-14.25
+6imc4i,4,creative,11,-25.625
+6imc4i,5,creative,154,-20.875
+6imc4i,6,creative,148,-23.125
+6imc4i,7,creative,141,-19.125
+6isay3,0,creative,151,-20.875
+6isay3,1,creative,136,-24.3125
+6isay3,2,creative,127,-13.0
+6isay3,3,creative,149,-17.0
+6isay3,4,creative,139,-14.75
+6isay3,5,creative,147,-20.625
+6isay3,6,creative,28,-11.875
+6isay3,7,creative,156,-8.0
+6ixx9u,0,creative,137,-0.25
+6ixx9u,1,creative,146,-1.25
+6ixx9u,2,creative,136,6.0
+6ixx9u,3,creative,60,-18.375
+6ixx9u,4,creative,145,-13.75
+6ixx9u,5,creative,142,-21.0
+6ixx9u,6,creative,141,-9.625
+6ixx9u,7,creative,88,-20.875
+6k8gdu,0,creative,129,-21.25
+6k8gdu,1,creative,132,-27.4375
+6k8gdu,2,creative,125,-25.625
+6k8gdu,3,creative,144,-24.875
+6k8gdu,4,creative,146,-22.5
+6k8gdu,5,creative,90,-28.1875
+6k8gdu,6,creative,14,-25.375
+6k8gdu,7,creative,18,-15.5
+6l6v6l,0,creative,137,-22.125
+6l6v6l,1,creative,140,-12.875
+6l6v6l,2,creative,97,-25.25
+6l6v6l,3,creative,141,-25.25
+6l6v6l,4,creative,84,-27.8125
+6l6v6l,5,creative,138,-7.75
+6l6v6l,6,creative,116,-26.75
+6l6v6l,7,creative,88,-24.8125
+6m7z8a,0,creative,159,-20.5
+6m7z8a,1,creative,124,-19.5
+6m7z8a,2,creative,157,-23.875
+6m7z8a,3,creative,145,-27.125
+6m7z8a,4,creative,137,-24.25
+6m7z8a,5,creative,132,-22.75
+6m7z8a,6,creative,155,-11.25
+6m7z8a,7,creative,142,-24.5
+6mztko,0,creative,140,-24.5
+6mztko,1,creative,129,-17.5
+6mztko,2,creative,130,-26.875
+6mztko,3,creative,139,-25.875
+6mztko,4,creative,18,-24.625
+6mztko,5,creative,145,-7.75
+6mztko,6,creative,132,-17.0
+6mztko,7,creative,137,-14.125
+6o18uh,0,creative,114,-25.9375
+6o18uh,1,creative,126,-26.0625
+6o18uh,2,creative,151,-19.5
+6o18uh,3,creative,141,-19.125
+6o18uh,4,creative,93,-28.375
+6o18uh,5,creative,128,-25.25
+6o18uh,6,creative,129,-27.0
+6o18uh,7,creative,74,-21.625
+6o679d,0,creative,60,-26.75
+6o679d,1,creative,116,-28.8125
+6o679d,2,creative,117,-25.8125
+6o679d,3,creative,143,-26.0625
+6o679d,4,creative,146,-27.625
+6o679d,5,creative,145,-27.75
+6o679d,6,creative,133,-21.1875
+6o679d,7,creative,71,-29.0
+6ohgxv,0,creative,139,-19.125
+6ohgxv,1,creative,148,-22.125
+6ohgxv,2,creative,87,-26.1875
+6ohgxv,3,creative,150,-9.25
+6ohgxv,4,creative,149,-27.25
+6ohgxv,5,creative,127,-23.875
+6ohgxv,6,creative,162,-22.125
+6ohgxv,7,creative,156,-11.875
+6szrbs,0,creative,144,-24.625
+6szrbs,1,creative,71,-24.875
+6szrbs,2,creative,152,-21.5
+6szrbs,3,creative,156,-14.625
+6szrbs,4,creative,120,-7.375
+6szrbs,5,creative,160,-14.625
+6szrbs,6,creative,158,-15.375
+6szrbs,7,creative,151,-16.125
+6tsiyd,0,creative,136,-10.375
+6tsiyd,1,creative,150,-15.5
+6tsiyd,2,creative,155,-12.0
+6tsiyd,3,creative,155,-20.5
+6tsiyd,4,creative,80,-28.0
+6tsiyd,5,creative,149,-3.0
+6tsiyd,6,creative,159,-0.25
+6tsiyd,7,creative,137,-11.5
+6wgtsx,0,creative,126,-27.375
+6wgtsx,1,creative,151,-28.1875
+6wgtsx,2,creative,141,-29.75
+6wgtsx,3,creative,120,-29.0625
+6wgtsx,4,creative,144,-22.0
+6wgtsx,5,creative,138,-24.125
+6wgtsx,6,creative,30,-23.875
+6wgtsx,7,creative,112,-5.75
+6wxzhc,0,creative,28,-27.0625
+6wxzhc,1,creative,146,-19.5
+6wxzhc,2,creative,9,-13.125
+6wxzhc,3,creative,122,-22.625
+6wxzhc,4,creative,134,-24.375
+6wxzhc,5,creative,49,-27.6875
+6wxzhc,6,creative,83,-23.625
+6wxzhc,7,creative,157,-7.0
+6xisxt,0,creative,139,-18.125
+6xisxt,1,creative,134,-19.5
+6xisxt,2,creative,63,-13.25
+6xisxt,3,creative,149,-20.625
+6xisxt,4,creative,144,-26.8125
+6xisxt,5,creative,142,-16.625
+6xisxt,6,creative,142,-7.5
+6xisxt,7,creative,85,-12.75
+6xngfe,0,creative,61,-19.375
+6xngfe,1,creative,153,-24.8125
+6xngfe,2,creative,114,-23.6875
+6xngfe,3,creative,20,-26.4375
+6xngfe,4,creative,134,-25.75
+6xngfe,5,creative,151,-25.5
+6xngfe,6,creative,68,-29.625
+6xngfe,7,creative,168,-8.0
+6xsruw,0,creative,145,-28.75
+6xsruw,1,creative,131,-27.875
+6xsruw,2,creative,103,-16.375
+6xsruw,3,creative,129,-26.1875
+6xsruw,4,creative,134,-24.5
+6xsruw,5,creative,128,-29.0
+6xsruw,6,creative,143,13.0
+6xsruw,7,creative,133,-28.375
+71p51h,0,creative,128,-28.1875
+71p51h,1,creative,110,-27.6875
+71p51h,2,creative,129,-26.25
+71p51h,3,creative,107,-22.25
+71p51h,4,creative,133,-13.25
+71p51h,5,creative,131,-25.1875
+71p51h,6,creative,118,-27.25
+71p51h,7,creative,133,-20.875
+72l2aj,0,creative,106,-20.875
+72l2aj,1,creative,145,-24.625
+72l2aj,2,creative,152,-23.875
+72l2aj,3,creative,130,-21.75
+72l2aj,4,creative,130,-26.375
+72l2aj,5,creative,130,-20.0
+72l2aj,6,creative,117,-28.0
+72l2aj,7,creative,7,-24.5
+74ih3z,0,creative,44,-16.25
+74ih3z,1,creative,145,-3.0
+74ih3z,2,creative,138,-27.625
+74ih3z,3,creative,139,-28.4375
+74ih3z,4,creative,140,-30.0625
+74ih3z,5,creative,128,-28.6875
+74ih3z,6,creative,30,-14.5
+74ih3z,7,creative,151,-25.375
+765fhd,0,creative,171,-25.625
+765fhd,1,creative,160,-28.0
+765fhd,2,creative,116,-25.0
+765fhd,3,creative,133,-17.875
+765fhd,4,creative,147,-27.0625
+765fhd,5,creative,150,-24.375
+765fhd,6,creative,110,-27.375
+765fhd,7,creative,153,-25.8125
+76b9gc,0,creative,132,-22.0
+76b9gc,1,creative,86,-26.625
+76b9gc,2,creative,147,-26.1875
+76b9gc,3,creative,56,-13.0
+76b9gc,4,creative,138,-27.5
+76b9gc,5,creative,160,-25.875
+76b9gc,6,creative,155,-26.125
+76b9gc,7,creative,136,-23.375
+77dd17,0,creative,22,-28.1875
+77dd17,1,creative,151,-26.75
+77dd17,2,creative,3,-28.0
+77dd17,3,creative,145,-21.125
+77dd17,4,creative,135,-14.625
+77dd17,5,creative,147,-4.5
+77dd17,6,creative,49,-24.75
+77dd17,7,creative,156,-20.0
+796161,0,creative,121,-10.625
+796161,1,creative,138,-20.125
+796161,2,creative,61,-24.25
+796161,3,creative,107,-15.75
+796161,4,creative,148,-8.625
+796161,5,creative,100,-17.75
+796161,6,creative,157,-12.625
+796161,7,creative,162,-26.0
+7adktz,0,creative,141,-20.125
+7adktz,1,creative,128,-21.0
+7adktz,2,creative,125,-13.125
+7adktz,3,creative,126,-18.875
+7adktz,4,creative,118,-20.125
+7adktz,5,creative,81,-23.625
+7adktz,6,creative,154,-19.875
+7adktz,7,creative,130,-16.5
+7bowjq,0,creative,126,-28.4375
+7bowjq,1,creative,137,-26.5
+7bowjq,2,creative,141,-14.375
+7bowjq,3,creative,150,-19.375
+7bowjq,4,creative,147,-16.625
+7bowjq,5,creative,161,-27.5625
+7bowjq,6,creative,29,-22.125
+7bowjq,7,creative,134,-7.625
+7d0x9k,0,creative,137,-25.25
+7d0x9k,1,creative,55,-20.0
+7d0x9k,2,creative,10,-1.25
+7d0x9k,3,creative,142,-23.875
+7d0x9k,4,creative,153,-7.5
+7d0x9k,5,creative,148,-12.625
+7d0x9k,6,creative,137,-22.875
+7d0x9k,7,creative,147,-19.75
+7dcwik,0,creative,7,-26.75
+7dcwik,1,creative,157,-25.25
+7dcwik,2,creative,7,-26.75
+7dcwik,3,creative,20,-27.125
+7dcwik,4,creative,143,-26.3125
+7dcwik,5,creative,96,-23.625
+7dcwik,6,creative,122,-20.875
+7dcwik,7,creative,28,-24.0
+7e3im5,0,creative,165,-23.25
+7e3im5,1,creative,154,-19.25
+7e3im5,2,creative,22,-13.875
+7e3im5,3,creative,161,-27.4375
+7e3im5,4,creative,74,-24.625
+7e3im5,5,creative,146,-28.0625
+7e3im5,6,creative,139,-14.0
+7e3im5,7,creative,161,-20.0
+7en7vl,0,creative,158,-13.875
+7en7vl,1,creative,127,-29.375
+7en7vl,2,creative,150,-26.8125
+7en7vl,3,creative,109,-24.0
+7en7vl,4,creative,155,-4.0
+7en7vl,5,creative,137,-24.625
+7en7vl,6,creative,131,-16.25
+7en7vl,7,creative,68,-27.4375
+7ezd5t,0,creative,90,-18.125
+7ezd5t,1,creative,129,-22.75
+7ezd5t,2,creative,115,-11.125
+7ezd5t,3,creative,142,-16.5
+7ezd5t,4,creative,162,-25.375
+7ezd5t,5,creative,140,-3.25
+7ezd5t,6,creative,146,-11.5
+7ezd5t,7,creative,155,5.75
+7gjj2w,0,creative,77,-15.125
+7gjj2w,1,creative,152,-25.75
+7gjj2w,2,creative,136,-25.5
+7gjj2w,3,creative,56,-23.375
+7gjj2w,4,creative,143,-26.75
+7gjj2w,5,creative,147,-19.125
+7gjj2w,6,creative,95,-25.875
+7gjj2w,7,creative,113,-27.5625
+7h9f8e,0,creative,149,-2.25
+7h9f8e,1,creative,152,-18.0
+7h9f8e,2,creative,68,-22.125
+7h9f8e,3,creative,157,-22.75
+7h9f8e,4,creative,119,-22.25
+7h9f8e,5,creative,72,-15.75
+7h9f8e,6,creative,163,-11.625
+7h9f8e,7,creative,163,-22.125
+7iltd1,0,creative,114,-11.75
+7iltd1,1,creative,122,-28.8125
+7iltd1,2,creative,94,-26.8125
+7iltd1,3,creative,131,-27.5
+7iltd1,4,creative,145,-24.375
+7iltd1,5,creative,149,-23.375
+7iltd1,6,creative,147,-26.3125
+7iltd1,7,creative,125,-28.75
+7iubwq,0,creative,18,-6.75
+7iubwq,1,creative,140,-15.625
+7iubwq,2,creative,134,-21.625
+7iubwq,3,creative,115,-8.75
+7iubwq,4,creative,140,-18.875
+7iubwq,5,creative,132,-10.125
+7iubwq,6,creative,141,-25.125
+7iubwq,7,creative,145,-2.0
+7jfvx7,0,creative,116,-9.375
+7jfvx7,1,creative,137,-16.125
+7jfvx7,2,creative,143,-28.6875
+7jfvx7,3,creative,148,-29.6875
+7jfvx7,4,creative,132,-22.625
+7jfvx7,5,creative,139,-9.0
+7jfvx7,6,creative,135,-11.875
+7jfvx7,7,creative,60,-23.625
+7jqj29,0,creative,131,-27.3125
+7jqj29,1,creative,135,-21.0
+7jqj29,2,creative,144,-28.4375
+7jqj29,3,creative,128,-21.0
+7jqj29,4,creative,122,-22.625
+7jqj29,5,creative,143,-27.0
+7jqj29,6,creative,17,-18.0
+7jqj29,7,creative,141,-23.25
+7l7e1m,0,creative,159,-24.375
+7l7e1m,1,creative,155,-11.375
+7l7e1m,2,creative,141,-22.25
+7l7e1m,3,creative,147,-20.625
+7l7e1m,4,creative,148,-24.25
+7l7e1m,5,creative,162,-19.125
+7l7e1m,6,creative,152,-5.75
+7l7e1m,7,creative,126,-24.75
+7ld0jk,0,creative,126,-26.3125
+7ld0jk,1,creative,131,-28.4375
+7ld0jk,2,creative,114,-28.875
+7ld0jk,3,creative,10,-23.75
+7ld0jk,4,creative,135,-27.5625
+7ld0jk,5,creative,99,-27.75
+7ld0jk,6,creative,122,-28.875
+7ld0jk,7,creative,76,-25.9375
+7lzk5g,0,creative,156,-26.0
+7lzk5g,1,creative,46,-29.625
+7lzk5g,2,creative,98,-13.625
+7lzk5g,3,creative,152,-27.125
+7lzk5g,4,creative,141,-28.4375
+7lzk5g,5,creative,83,-0.5
+7lzk5g,6,creative,144,-29.5
+7lzk5g,7,creative,154,-27.5
+7q0acw,0,creative,138,-26.75
+7q0acw,1,creative,137,-25.25
+7q0acw,2,creative,141,-14.0
+7q0acw,3,creative,143,-13.0
+7q0acw,4,creative,152,-25.75
+7q0acw,5,creative,134,-18.875
+7q0acw,6,creative,145,-19.5
+7q0acw,7,creative,129,-20.375
+7rb6uj,0,creative,149,-15.875
+7rb6uj,1,creative,150,-25.75
+7rb6uj,2,creative,152,-17.875
+7rb6uj,3,creative,150,-17.25
+7rb6uj,4,creative,6,-18.0
+7rb6uj,5,creative,95,-28.3125
+7rb6uj,6,creative,137,-25.875
+7rb6uj,7,creative,127,-27.9375
+7rie85,0,creative,57,-26.5625
+7rie85,1,creative,154,-27.1875
+7rie85,2,creative,116,-25.125
+7rie85,3,creative,47,-24.75
+7rie85,4,creative,154,-5.25
+7rie85,5,creative,164,-23.5
+7rie85,6,creative,167,-27.875
+7rie85,7,creative,168,-23.625
+7rpy8m,0,creative,121,-27.5
+7rpy8m,1,creative,118,-16.0
+7rpy8m,2,creative,135,-11.875
+7rpy8m,3,creative,32,-24.625
+7rpy8m,4,creative,156,-11.5
+7rpy8m,5,creative,152,-17.5
+7rpy8m,6,creative,136,-24.5
+7rpy8m,7,creative,114,-25.25
+7svmp5,0,creative,137,-11.625
+7svmp5,1,creative,155,-9.625
+7svmp5,2,creative,137,-18.625
+7svmp5,3,creative,139,-24.875
+7svmp5,4,creative,1,-10.75
+7svmp5,5,creative,26,-22.125
+7svmp5,6,creative,142,-23.25
+7svmp5,7,creative,130,-24.0
+7tge90,0,creative,138,-25.125
+7tge90,1,creative,129,0.75
+7tge90,2,creative,134,-26.375
+7tge90,3,creative,55,-5.25
+7tge90,4,creative,152,-15.0
+7tge90,5,creative,153,-22.375
+7tge90,6,creative,101,-27.875
+7tge90,7,creative,91,-8.625
+7u04a5,0,creative,3,6.5
+7u04a5,1,creative,141,-6.75
+7u04a5,2,creative,148,-9.375
+7u04a5,3,creative,137,-23.75
+7u04a5,4,creative,142,-21.75
+7u04a5,5,creative,149,-12.625
+7u04a5,6,creative,44,-28.625
+7u04a5,7,creative,123,-26.375
+7uezw8,0,creative,142,-8.375
+7uezw8,1,creative,72,-19.5
+7uezw8,2,creative,141,-26.5
+7uezw8,3,creative,103,-19.875
+7uezw8,4,creative,149,-28.1875
+7uezw8,5,creative,148,-26.3125
+7uezw8,6,creative,173,-18.625
+7uezw8,7,creative,141,-22.625
+7v8ind,0,creative,1,-23.5
+7v8ind,1,creative,91,-21.875
+7v8ind,2,creative,120,-26.625
+7v8ind,3,creative,9,-21.25
+7v8ind,4,creative,117,-28.0
+7v8ind,5,creative,118,-25.375
+7v8ind,6,creative,133,-27.5
+7v8ind,7,creative,124,-28.6875
+80sf6g,0,creative,137,-28.875
+80sf6g,1,creative,43,-28.375
+80sf6g,2,creative,5,-29.4375
+80sf6g,3,creative,5,-29.4375
+80sf6g,4,creative,147,-28.75
+80sf6g,5,creative,107,-27.625
+80sf6g,6,creative,54,-29.75
+80sf6g,7,creative,145,-20.5
+83mehz,0,creative,154,-22.375
+83mehz,1,creative,154,-1.0
+83mehz,2,creative,172,-15.75
+83mehz,3,creative,100,-28.375
+83mehz,4,creative,129,-24.625
+83mehz,5,creative,57,-19.375
+83mehz,6,creative,151,-3.25
+83mehz,7,creative,123,-26.125
+849wc3,0,creative,131,-27.6875
+849wc3,1,creative,128,-28.0
+849wc3,2,creative,136,-27.4375
+849wc3,3,creative,133,-28.4375
+849wc3,4,creative,154,-17.625
+849wc3,5,creative,87,-25.3125
+849wc3,6,creative,135,-24.0
+849wc3,7,creative,140,-20.5
+87ak6w,0,creative,107,-28.9375
+87ak6w,1,creative,138,-28.5
+87ak6w,2,creative,128,-27.8125
+87ak6w,3,creative,82,-16.0
+87ak6w,4,creative,52,-27.25
+87ak6w,5,creative,64,-28.4375
+87ak6w,6,creative,134,-29.1875
+87ak6w,7,creative,124,-27.4375
+87tx3g,0,creative,131,-22.125
+87tx3g,1,creative,29,-27.125
+87tx3g,2,creative,47,-23.625
+87tx3g,3,creative,144,-25.625
+87tx3g,4,creative,140,-10.375
+87tx3g,5,creative,141,-27.0
+87tx3g,6,creative,112,-28.25
+87tx3g,7,creative,124,-22.375
+8a18sf,0,creative,121,-1.5
+8a18sf,1,creative,142,-26.375
+8a18sf,2,creative,133,-6.75
+8a18sf,3,creative,121,-27.3125
+8a18sf,4,creative,72,-27.3125
+8a18sf,5,creative,128,-21.5
+8a18sf,6,creative,110,-29.125
+8a18sf,7,creative,159,-8.75
+8aec6t,0,creative,111,-27.375
+8aec6t,1,creative,109,-16.5
+8aec6t,2,creative,20,-11.25
+8aec6t,3,creative,138,-28.875
+8aec6t,4,creative,121,-26.625
+8aec6t,5,creative,46,-18.375
+8aec6t,6,creative,140,-29.6875
+8aec6t,7,creative,126,-21.25
+8fk0hr,0,creative,144,-21.125
+8fk0hr,1,creative,137,-20.625
+8fk0hr,2,creative,116,-26.125
+8fk0hr,3,creative,147,-27.5625
+8fk0hr,4,creative,139,-15.875
+8fk0hr,5,creative,130,-27.3125
+8fk0hr,6,creative,122,-29.0625
+8fk0hr,7,creative,30,-29.375
+8gfhh9,0,creative,143,-27.75
+8gfhh9,1,creative,140,-23.5
+8gfhh9,2,creative,155,-25.8125
+8gfhh9,3,creative,38,-19.0
+8gfhh9,4,creative,159,-26.5625
+8gfhh9,5,creative,152,-24.875
+8gfhh9,6,creative,155,-16.25
+8gfhh9,7,creative,98,-23.5
+8gs4wp,0,creative,126,-28.4375
+8gs4wp,1,creative,67,-26.5
+8gs4wp,2,creative,87,-24.25
+8gs4wp,3,creative,81,-17.5
+8gs4wp,4,creative,25,-25.1875
+8gs4wp,5,creative,126,-26.25
+8gs4wp,6,creative,131,-26.875
+8gs4wp,7,creative,130,-24.0
+8k4am7,0,creative,136,-10.375
+8k4am7,1,creative,142,-13.25
+8k4am7,2,creative,122,-26.375
+8k4am7,3,creative,132,-25.25
+8k4am7,4,creative,141,-22.125
+8k4am7,5,creative,21,-6.25
+8k4am7,6,creative,137,-10.625
+8k4am7,7,creative,109,-13.25
+8myeno,0,creative,147,-17.625
+8myeno,1,creative,8,-18.625
+8myeno,2,creative,157,-16.375
+8myeno,3,creative,140,4.0
+8myeno,4,creative,111,-27.6875
+8myeno,5,creative,150,-9.875
+8myeno,6,creative,128,-11.625
+8myeno,7,creative,121,-27.8125
+8o89ko,0,creative,142,-0.75
+8o89ko,1,creative,112,-25.125
+8o89ko,2,creative,147,-26.0
+8o89ko,3,creative,156,-11.75
+8o89ko,4,creative,146,-19.5
+8o89ko,5,creative,143,-23.625
+8o89ko,6,creative,146,-28.125
+8o89ko,7,creative,15,-22.5
+8p3ora,0,creative,95,-28.125
+8p3ora,1,creative,116,-25.25
+8p3ora,2,creative,128,-28.1875
+8p3ora,3,creative,130,-25.0
+8p3ora,4,creative,159,-25.0
+8p3ora,5,creative,128,-28.4375
+8p3ora,6,creative,141,-15.125
+8p3ora,7,creative,140,-19.625
+8pr271,0,creative,138,-26.875
+8pr271,1,creative,134,-21.75
+8pr271,2,creative,52,-26.1875
+8pr271,3,creative,137,-14.75
+8pr271,4,creative,128,-26.25
+8pr271,5,creative,125,-24.5
+8pr271,6,creative,114,-27.3125
+8pr271,7,creative,144,-20.75
+8tmkfc,0,creative,151,-27.375
+8tmkfc,1,creative,124,-27.3125
+8tmkfc,2,creative,129,-15.375
+8tmkfc,3,creative,117,-27.75
+8tmkfc,4,creative,139,-2.25
+8tmkfc,5,creative,39,-20.625
+8tmkfc,6,creative,141,-28.625
+8tmkfc,7,creative,131,-26.5625
+8vr4k2,0,creative,83,-14.75
+8vr4k2,1,creative,129,-29.8125
+8vr4k2,2,creative,141,-28.0625
+8vr4k2,3,creative,156,-28.5625
+8vr4k2,4,creative,1,-23.0625
+8vr4k2,5,creative,146,-28.9375
+8vr4k2,6,creative,134,-27.4375
+8vr4k2,7,creative,135,-25.75
+8vyqdq,0,creative,143,-10.375
+8vyqdq,1,creative,22,15.0
+8vyqdq,2,creative,142,-18.375
+8vyqdq,3,creative,140,-24.625
+8vyqdq,4,creative,152,-6.5
+8vyqdq,5,creative,93,-25.125
+8vyqdq,6,creative,147,2.5
+8vyqdq,7,creative,151,-15.125
+8x0xa7,0,creative,120,-28.0625
+8x0xa7,1,creative,137,-30.3125
+8x0xa7,2,creative,97,-3.5
+8x0xa7,3,creative,146,-26.125
+8x0xa7,4,creative,98,-24.375
+8x0xa7,5,creative,128,-24.9375
+8x0xa7,6,creative,150,-5.87499
+8x0xa7,7,creative,132,-28.5625
+8x86s0,0,creative,115,-21.125
+8x86s0,1,creative,11,-27.0625
+8x86s0,2,creative,117,-24.5
+8x86s0,3,creative,145,-26.8125
+8x86s0,4,creative,142,-28.25
+8x86s0,5,creative,150,-25.75
+8x86s0,6,creative,128,-25.875
+8x86s0,7,creative,154,-23.125
+8y8wrr,0,creative,132,-26.6875
+8y8wrr,1,creative,90,-25.375
+8y8wrr,2,creative,144,-21.75
+8y8wrr,3,creative,118,-25.25
+8y8wrr,4,creative,141,-8.125
+8y8wrr,5,creative,120,-17.25
+8y8wrr,6,creative,156,-6.0
+8y8wrr,7,creative,61,-23.25
+8z1sq1,0,creative,147,-26.75
+8z1sq1,1,creative,100,-27.5
+8z1sq1,2,creative,151,-20.25
+8z1sq1,3,creative,144,-26.375
+8z1sq1,4,creative,94,-19.5
+8z1sq1,5,creative,92,-22.75
+8z1sq1,6,creative,137,-13.75
+8z1sq1,7,creative,132,-19.25
+9470fc,0,creative,150,-18.75
+9470fc,1,creative,10,-25.8125
+9470fc,2,creative,131,-12.5
+9470fc,3,creative,157,-29.3125
+9470fc,4,creative,115,-25.75
+9470fc,5,creative,141,-24.125
+9470fc,6,creative,151,-27.1875
+9470fc,7,creative,157,-18.625
+96myl6,0,creative,137,-24.125
+96myl6,1,creative,106,-22.0
+96myl6,2,creative,141,-17.75
+96myl6,3,creative,149,-20.125
+96myl6,4,creative,132,-21.75
+96myl6,5,creative,65,-26.75
+96myl6,6,creative,137,-23.125
+96myl6,7,creative,145,-1.62499
+96xnw9,0,creative,22,-24.875
+96xnw9,1,creative,132,-27.3125
+96xnw9,2,creative,157,-6.75
+96xnw9,3,creative,155,-20.0
+96xnw9,4,creative,151,-28.3125
+96xnw9,5,creative,141,-25.9375
+96xnw9,6,creative,30,-27.1875
+96xnw9,7,creative,149,-25.375
+99kk88,0,creative,176,-19.875
+99kk88,1,creative,152,-20.875
+99kk88,2,creative,133,-18.625
+99kk88,3,creative,155,-25.0
+99kk88,4,creative,157,-21.25
+99kk88,5,creative,158,-28.375
+99kk88,6,creative,152,-27.0
+99kk88,7,creative,151,-20.125
+9edjv0,0,creative,45,-24.625
+9edjv0,1,creative,130,-24.625
+9edjv0,2,creative,44,-23.75
+9edjv0,3,creative,135,-21.125
+9edjv0,4,creative,144,-26.25
+9edjv0,5,creative,82,-23.25
+9edjv0,6,creative,83,-19.75
+9edjv0,7,creative,95,-23.5
+9f7www,0,creative,120,-23.0
+9f7www,1,creative,28,-21.125
+9f7www,2,creative,145,-17.125
+9f7www,3,creative,148,-28.5625
+9f7www,4,creative,157,-27.0625
+9f7www,5,creative,137,-17.375
+9f7www,6,creative,142,-27.375
+9f7www,7,creative,138,-28.6875
+9g2cbq,0,creative,70,-24.75
+9g2cbq,1,creative,144,-23.125
+9g2cbq,2,creative,145,-25.625
+9g2cbq,3,creative,134,-14.625
+9g2cbq,4,creative,151,-19.0
+9g2cbq,5,creative,115,-17.875
+9g2cbq,6,creative,70,-16.375
+9g2cbq,7,creative,135,-20.25
+9ki47u,0,creative,146,-22.25
+9ki47u,1,creative,141,-23.375
+9ki47u,2,creative,151,-18.625
+9ki47u,3,creative,133,-27.9375
+9ki47u,4,creative,145,-22.0
+9ki47u,5,creative,132,-28.5625
+9ki47u,6,creative,116,-26.75
+9ki47u,7,creative,17,-22.75
+9l0dam,0,creative,157,-24.0
+9l0dam,1,creative,139,-28.5
+9l0dam,2,creative,161,-23.625
+9l0dam,3,creative,134,-19.75
+9l0dam,4,creative,159,-23.375
+9l0dam,5,creative,116,-25.375
+9l0dam,6,creative,142,-19.625
+9l0dam,7,creative,135,-26.0625
+9neuk8,0,creative,150,-27.1875
+9neuk8,1,creative,145,-26.5
+9neuk8,2,creative,147,-9.75
+9neuk8,3,creative,136,-5.75
+9neuk8,4,creative,22,-25.75
+9neuk8,5,creative,137,-18.75
+9neuk8,6,creative,141,-26.125
+9neuk8,7,creative,144,-27.125
+9qn4tw,0,creative,142,-12.125
+9qn4tw,1,creative,106,-26.25
+9qn4tw,2,creative,144,-13.5
+9qn4tw,3,creative,140,-16.5
+9qn4tw,4,creative,98,-20.25
+9qn4tw,5,creative,3,-19.125
+9qn4tw,6,creative,125,-18.5
+9qn4tw,7,creative,130,-1.0
+a318ye,0,creative,139,-24.875
+a318ye,1,creative,119,-26.375
+a318ye,2,creative,148,-20.625
+a318ye,3,creative,139,-29.0625
+a318ye,4,creative,126,-29.1875
+a318ye,5,creative,156,-5.5
+a318ye,6,creative,146,-25.5
+a318ye,7,creative,127,-13.375
+a3pdwk,0,creative,129,-27.75
+a3pdwk,1,creative,154,-13.75
+a3pdwk,2,creative,139,-19.625
+a3pdwk,3,creative,155,-19.75
+a3pdwk,4,creative,140,-24.0
+a3pdwk,5,creative,144,-13.75
+a3pdwk,6,creative,19,-24.125
+a3pdwk,7,creative,90,-28.5625
+acjzv0,0,creative,134,-16.25
+acjzv0,1,creative,133,-4.25
+acjzv0,2,creative,143,-8.0
+acjzv0,3,creative,137,-25.25
+acjzv0,4,creative,120,-20.875
+acjzv0,5,creative,132,-26.625
+acjzv0,6,creative,140,-26.875
+acjzv0,7,creative,121,-25.125
+afc9c4,0,creative,37,-14.5
+afc9c4,1,creative,149,-26.0
+afc9c4,2,creative,132,-27.5625
+afc9c4,3,creative,146,-9.125
+afc9c4,4,creative,134,-19.25
+afc9c4,5,creative,123,-15.375
+afc9c4,6,creative,58,-25.1875
+afc9c4,7,creative,141,-25.375
+aowr4t,0,creative,135,4.25
+aowr4t,1,creative,9,3.5
+aowr4t,2,creative,131,-26.8125
+aowr4t,3,creative,151,-12.375
+aowr4t,4,creative,133,-13.25
+aowr4t,5,creative,132,1.5
+aowr4t,6,creative,149,-21.0
+aowr4t,7,creative,114,-25.8125
+ar7nm2,0,creative,6,-24.375
+ar7nm2,1,creative,130,-12.125
+ar7nm2,2,creative,81,-27.5625
+ar7nm2,3,creative,144,-10.5
+ar7nm2,4,creative,152,-13.125
+ar7nm2,5,creative,149,-12.125
+ar7nm2,6,creative,127,-26.1875
+ar7nm2,7,creative,6,-24.375
+auig0m,0,creative,130,-28.125
+auig0m,1,creative,124,-22.625
+auig0m,2,creative,139,-20.25
+auig0m,3,creative,120,-22.625
+auig0m,4,creative,34,10.5
+auig0m,5,creative,69,-21.875
+auig0m,6,creative,143,-28.5
+auig0m,7,creative,7,9.625
+b4yx63,0,creative,141,-20.625
+b4yx63,1,creative,87,-15.5
+b4yx63,2,creative,129,-25.0
+b4yx63,3,creative,142,-21.875
+b4yx63,4,creative,147,-0.75
+b4yx63,5,creative,106,-17.5
+b4yx63,6,creative,141,-20.125
+b4yx63,7,creative,91,-22.625
+b87jl7,0,creative,137,1.5
+b87jl7,1,creative,128,2.25
+b87jl7,2,creative,124,-24.125
+b87jl7,3,creative,128,-25.75
+b87jl7,4,creative,134,-27.3125
+b87jl7,5,creative,133,-27.3125
+b87jl7,6,creative,135,-24.125
+b87jl7,7,creative,129,-16.5
+b9uzz1,0,creative,146,-23.5
+b9uzz1,1,creative,139,-6.25
+b9uzz1,2,creative,152,-19.125
+b9uzz1,3,creative,142,-11.625
+b9uzz1,4,creative,158,-27.9375
+b9uzz1,5,creative,85,-27.375
+b9uzz1,6,creative,150,2.25
+b9uzz1,7,creative,144,-19.25
+bhyplf,0,creative,9,-27.9375
+bhyplf,1,creative,146,-27.875
+bhyplf,2,creative,140,-21.5
+bhyplf,3,creative,152,-28.0625
+bhyplf,4,creative,113,-24.375
+bhyplf,5,creative,157,-25.6875
+bhyplf,6,creative,18,-27.5625
+bhyplf,7,creative,154,-26.0
+bk7lic,0,creative,143,-17.875
+bk7lic,1,creative,105,-28.5625
+bk7lic,2,creative,150,-26.625
+bk7lic,3,creative,96,-29.375
+bk7lic,4,creative,159,-9.0
+bk7lic,5,creative,17,-17.75
+bk7lic,6,creative,146,-20.375
+bk7lic,7,creative,134,-21.125
+ciifmd,0,creative,153,-14.375
+ciifmd,1,creative,61,-27.125
+ciifmd,2,creative,136,-23.5
+ciifmd,3,creative,143,0.5
+ciifmd,4,creative,126,-26.125
+ciifmd,5,creative,143,-10.125
+ciifmd,6,creative,138,-10.125
+ciifmd,7,creative,149,-4.75
+ck6twx,0,creative,137,-20.0
+ck6twx,1,creative,151,-23.75
+ck6twx,2,creative,142,-15.5
+ck6twx,3,creative,139,-26.5
+ck6twx,4,creative,151,-27.5625
+ck6twx,5,creative,129,-8.12499
+ck6twx,6,creative,157,-12.5
+ck6twx,7,creative,132,-11.125
+cpxk2b,0,creative,138,-17.5
+cpxk2b,1,creative,143,-25.0
+cpxk2b,2,creative,150,-6.25
+cpxk2b,3,creative,136,-21.5
+cpxk2b,4,creative,142,-1.25
+cpxk2b,5,creative,134,-23.0
+cpxk2b,6,creative,129,-20.625
+cpxk2b,7,creative,148,-19.0
+dqn4sj,0,creative,56,11.125
+dqn4sj,1,creative,135,-16.375
+dqn4sj,2,creative,145,-9.25
+dqn4sj,3,creative,141,-6.0
+dqn4sj,4,creative,137,2.5
+dqn4sj,5,creative,150,-24.875
+dqn4sj,6,creative,126,-8.875
+dqn4sj,7,creative,152,-1.5
+eu7ub2,0,creative,137,-24.1875
+eu7ub2,1,creative,10,-25.8125
+eu7ub2,2,creative,135,-26.25
+eu7ub2,3,creative,114,-15.625
+eu7ub2,4,creative,132,-28.5625
+eu7ub2,5,creative,135,-25.625
+eu7ub2,6,creative,73,-21.375
+eu7ub2,7,creative,134,-27.625
+fact_00003_Fernando da Costa Novaes,0,factual,143,-25.25
+fact_00003_Fernando da Costa Novaes,1,factual,28,-18.875
+fact_00003_Fernando da Costa Novaes,2,factual,1,-28.125
+fact_00003_Fernando da Costa Novaes,3,factual,82,-28.625
+fact_00003_Fernando da Costa Novaes,4,factual,83,-28.875
+fact_00003_Fernando da Costa Novaes,5,factual,26,-24.875
+fact_00003_Fernando da Costa Novaes,6,factual,5,-27.125
+fact_00003_Fernando da Costa Novaes,7,factual,111,-15.625
+fact_00006_David Galloway (writer),0,factual,121,-0.25
+fact_00006_David Galloway (writer),1,factual,127,-24.5
+fact_00006_David Galloway (writer),2,factual,121,-6.375
+fact_00006_David Galloway (writer),3,factual,127,-16.75
+fact_00006_David Galloway (writer),4,factual,120,-21.0
+fact_00006_David Galloway (writer),5,factual,125,-21.875
+fact_00006_David Galloway (writer),6,factual,126,-24.0
+fact_00006_David Galloway (writer),7,factual,115,-23.625
+fact_00007_Cheyenne Brando,0,factual,1,-28.25
+fact_00007_Cheyenne Brando,1,factual,30,-24.375
+fact_00007_Cheyenne Brando,2,factual,108,-20.0
+fact_00007_Cheyenne Brando,3,factual,99,-5.0
+fact_00007_Cheyenne Brando,4,factual,24,-29.875
+fact_00007_Cheyenne Brando,5,factual,51,-21.25
+fact_00007_Cheyenne Brando,6,factual,116,-27.125
+fact_00007_Cheyenne Brando,7,factual,6,-26.25
+fact_00012_Braulio Lara,0,factual,122,-4.75
+fact_00012_Braulio Lara,1,factual,93,-17.625
+fact_00012_Braulio Lara,2,factual,86,-28.1875
+fact_00012_Braulio Lara,3,factual,135,1.5
+fact_00012_Braulio Lara,4,factual,63,-9.0
+fact_00012_Braulio Lara,5,factual,107,-21.375
+fact_00012_Braulio Lara,6,factual,1,-26.625
+fact_00012_Braulio Lara,7,factual,134,-4.75
+fact_00015_Amr Shabana,0,factual,100,-29.0625
+fact_00015_Amr Shabana,1,factual,110,-27.1875
+fact_00015_Amr Shabana,2,factual,130,-24.75
+fact_00015_Amr Shabana,3,factual,127,0.5
+fact_00015_Amr Shabana,4,factual,1,-26.25
+fact_00015_Amr Shabana,5,factual,107,-27.625
+fact_00015_Amr Shabana,6,factual,102,-24.0
+fact_00015_Amr Shabana,7,factual,132,-5.25
+fact_00017_Abdulqawi Yusuf,0,factual,23,-26.8125
+fact_00017_Abdulqawi Yusuf,1,factual,138,-26.875
+fact_00017_Abdulqawi Yusuf,2,factual,15,-28.5
+fact_00017_Abdulqawi Yusuf,3,factual,124,-28.25
+fact_00017_Abdulqawi Yusuf,4,factual,122,-28.625
+fact_00017_Abdulqawi Yusuf,5,factual,128,-28.0625
+fact_00017_Abdulqawi Yusuf,6,factual,109,-22.625
+fact_00017_Abdulqawi Yusuf,7,factual,138,-26.5625
+fact_00025_Carlos P. Romulo,0,factual,120,-25.875
+fact_00025_Carlos P. Romulo,1,factual,125,-24.125
+fact_00025_Carlos P. Romulo,2,factual,112,-15.25
+fact_00025_Carlos P. Romulo,3,factual,137,-21.375
+fact_00025_Carlos P. Romulo,4,factual,122,-25.5
+fact_00025_Carlos P. Romulo,5,factual,130,-27.5
+fact_00025_Carlos P. Romulo,6,factual,129,-22.75
+fact_00025_Carlos P. Romulo,7,factual,113,-21.125
+fact_00027_Arthur Ewert,0,factual,83,-29.5625
+fact_00027_Arthur Ewert,1,factual,116,-27.4375
+fact_00027_Arthur Ewert,2,factual,98,-28.375
+fact_00027_Arthur Ewert,3,factual,79,-29.875
+fact_00027_Arthur Ewert,4,factual,117,-7.25
+fact_00027_Arthur Ewert,5,factual,129,-25.8125
+fact_00027_Arthur Ewert,6,factual,117,-6.0
+fact_00027_Arthur Ewert,7,factual,113,-19.25
+fact_00032_Flavio Méndez Santiago,0,factual,131,-15.0
+fact_00032_Flavio Méndez Santiago,1,factual,133,-15.625
+fact_00032_Flavio Méndez Santiago,2,factual,15,-28.625
+fact_00032_Flavio Méndez Santiago,3,factual,41,-26.8125
+fact_00032_Flavio Méndez Santiago,4,factual,80,-27.875
+fact_00032_Flavio Méndez Santiago,5,factual,106,-30.625
+fact_00032_Flavio Méndez Santiago,6,factual,108,-23.75
+fact_00032_Flavio Méndez Santiago,7,factual,34,-20.625
+fact_00039_Chris Duffield,0,factual,105,-23.625
+fact_00039_Chris Duffield,1,factual,115,-10.74999
+fact_00039_Chris Duffield,2,factual,133,-28.4375
+fact_00039_Chris Duffield,3,factual,130,-18.875
+fact_00039_Chris Duffield,4,factual,119,-10.0
+fact_00039_Chris Duffield,5,factual,130,-27.3125
+fact_00039_Chris Duffield,6,factual,133,-24.75
+fact_00039_Chris Duffield,7,factual,101,-28.8125
+fact_00040_Daniil Medvedev,0,factual,122,-28.5
+fact_00040_Daniil Medvedev,1,factual,118,-29.4375
+fact_00040_Daniil Medvedev,2,factual,39,-27.0
+fact_00040_Daniil Medvedev,3,factual,91,-27.5
+fact_00040_Daniil Medvedev,4,factual,136,-23.875
+fact_00040_Daniil Medvedev,5,factual,119,-22.375
+fact_00040_Daniil Medvedev,6,factual,106,-24.9375
+fact_00040_Daniil Medvedev,7,factual,107,-27.3125
+fact_00043_Alexander Vovin,0,factual,126,-4.75
+fact_00043_Alexander Vovin,1,factual,67,-29.5625
+fact_00043_Alexander Vovin,2,factual,122,-28.0625
+fact_00043_Alexander Vovin,3,factual,111,-26.875
+fact_00043_Alexander Vovin,4,factual,53,-9.25
+fact_00043_Alexander Vovin,5,factual,69,-22.125
+fact_00043_Alexander Vovin,6,factual,1,-21.75
+fact_00043_Alexander Vovin,7,factual,115,-27.4375
+fact_00044_Cobhams Asuquo,0,factual,126,-27.0
+fact_00044_Cobhams Asuquo,1,factual,111,-7.0
+fact_00044_Cobhams Asuquo,2,factual,124,-19.375
+fact_00044_Cobhams Asuquo,3,factual,132,12.25
+fact_00044_Cobhams Asuquo,4,factual,102,-28.0625
+fact_00044_Cobhams Asuquo,5,factual,125,-25.875
+fact_00044_Cobhams Asuquo,6,factual,129,-23.0
+fact_00044_Cobhams Asuquo,7,factual,120,-16.375
+fact_00045_David Bogue,0,factual,148,-19.875
+fact_00045_David Bogue,1,factual,149,-27.3125
+fact_00045_David Bogue,2,factual,19,-28.3125
+fact_00045_David Bogue,3,factual,137,-24.25
+fact_00045_David Bogue,4,factual,128,-26.125
+fact_00045_David Bogue,5,factual,113,-26.75
+fact_00045_David Bogue,6,factual,110,-4.25
+fact_00045_David Bogue,7,factual,131,-13.0
+fact_00048_Don Beard,0,factual,110,-23.375
+fact_00048_Don Beard,1,factual,127,-29.875
+fact_00048_Don Beard,2,factual,120,-27.75
+fact_00048_Don Beard,3,factual,67,-16.625
+fact_00048_Don Beard,4,factual,118,-25.375
+fact_00048_Don Beard,5,factual,117,-22.25
+fact_00048_Don Beard,6,factual,137,-26.6875
+fact_00048_Don Beard,7,factual,75,-27.625
+fact_00053_Andriy Yarmolenko,0,factual,111,-30.4375
+fact_00053_Andriy Yarmolenko,1,factual,92,-27.125
+fact_00053_Andriy Yarmolenko,2,factual,102,-27.375
+fact_00053_Andriy Yarmolenko,3,factual,98,-29.0625
+fact_00053_Andriy Yarmolenko,4,factual,1,-22.625
+fact_00053_Andriy Yarmolenko,5,factual,20,-28.25
+fact_00053_Andriy Yarmolenko,6,factual,118,-27.125
+fact_00053_Andriy Yarmolenko,7,factual,85,-26.0
+fact_00058_Danny Faure,0,factual,1,-22.5
+fact_00058_Danny Faure,1,factual,133,-21.875
+fact_00058_Danny Faure,2,factual,1,-22.5
+fact_00058_Danny Faure,3,factual,143,-28.125
+fact_00058_Danny Faure,4,factual,130,-8.5
+fact_00058_Danny Faure,5,factual,118,-29.6875
+fact_00058_Danny Faure,6,factual,97,-24.75
+fact_00058_Danny Faure,7,factual,100,-30.125
+fact_00063_Ayman al-Zawahiri,0,factual,5,-30.25
+fact_00063_Ayman al-Zawahiri,1,factual,20,-26.0625
+fact_00063_Ayman al-Zawahiri,2,factual,138,-29.875
+fact_00063_Ayman al-Zawahiri,3,factual,112,-7.75
+fact_00063_Ayman al-Zawahiri,4,factual,132,-29.125
+fact_00063_Ayman al-Zawahiri,5,factual,0,-16.25
+fact_00063_Ayman al-Zawahiri,6,factual,45,-23.0
+fact_00063_Ayman al-Zawahiri,7,factual,119,-28.0625
+fact_00064_Diego Suarez (garden designer),0,factual,1,-21.5
+fact_00064_Diego Suarez (garden designer),1,factual,1,-21.5
+fact_00064_Diego Suarez (garden designer),2,factual,1,-21.5
+fact_00064_Diego Suarez (garden designer),3,factual,134,-25.25
+fact_00064_Diego Suarez (garden designer),4,factual,114,-10.875
+fact_00064_Diego Suarez (garden designer),5,factual,40,-27.5625
+fact_00064_Diego Suarez (garden designer),6,factual,25,-24.625
+fact_00064_Diego Suarez (garden designer),7,factual,129,-29.0625
+fact_00066_Daniel Alexander Cameron,0,factual,76,-26.5
+fact_00066_Daniel Alexander Cameron,1,factual,129,-19.5
+fact_00066_Daniel Alexander Cameron,2,factual,14,-17.75
+fact_00066_Daniel Alexander Cameron,3,factual,111,-25.5
+fact_00066_Daniel Alexander Cameron,4,factual,124,-26.125
+fact_00066_Daniel Alexander Cameron,5,factual,101,-29.9375
+fact_00066_Daniel Alexander Cameron,6,factual,44,-28.25
+fact_00066_Daniel Alexander Cameron,7,factual,1,-22.25
+fact_00075_Antonio Leviste,0,factual,104,-26.0625
+fact_00075_Antonio Leviste,1,factual,115,-23.75
+fact_00075_Antonio Leviste,2,factual,1,-23.25
+fact_00075_Antonio Leviste,3,factual,113,-24.75
+fact_00075_Antonio Leviste,4,factual,125,-13.125
+fact_00075_Antonio Leviste,5,factual,99,-27.9375
+fact_00075_Antonio Leviste,6,factual,90,-28.625
+fact_00075_Antonio Leviste,7,factual,5,-28.4375
+fact_00078_Chi Pu,0,factual,145,-24.8125
+fact_00078_Chi Pu,1,factual,120,-18.125
+fact_00078_Chi Pu,2,factual,131,-29.375
+fact_00078_Chi Pu,3,factual,52,-29.4375
+fact_00078_Chi Pu,4,factual,21,-30.1875
+fact_00078_Chi Pu,5,factual,111,-21.0
+fact_00078_Chi Pu,6,factual,55,-29.6875
+fact_00078_Chi Pu,7,factual,140,-27.375
+"fact_00080_Felipe (footballer, born 1977)",0,factual,1,-24.0625
+"fact_00080_Felipe (footballer, born 1977)",1,factual,38,0.5
+"fact_00080_Felipe (footballer, born 1977)",2,factual,1,-24.0625
+"fact_00080_Felipe (footballer, born 1977)",3,factual,1,-24.0625
+"fact_00080_Felipe (footballer, born 1977)",4,factual,123,-28.9375
+"fact_00080_Felipe (footballer, born 1977)",5,factual,133,-28.5625
+"fact_00080_Felipe (footballer, born 1977)",6,factual,134,-27.375
+"fact_00080_Felipe (footballer, born 1977)",7,factual,147,-28.1875
+fact_00084_Alfred Hitchcock,0,factual,121,-28.75
+fact_00084_Alfred Hitchcock,1,factual,121,-26.3125
+fact_00084_Alfred Hitchcock,2,factual,125,-20.625
+fact_00084_Alfred Hitchcock,3,factual,79,-20.0
+fact_00084_Alfred Hitchcock,4,factual,113,-25.125
+fact_00084_Alfred Hitchcock,5,factual,134,-22.25
+fact_00084_Alfred Hitchcock,6,factual,118,-26.9375
+fact_00084_Alfred Hitchcock,7,factual,127,-26.75
+fact_00085_Dascha Polanco,0,factual,1,-27.625
+fact_00085_Dascha Polanco,1,factual,135,-20.5
+fact_00085_Dascha Polanco,2,factual,1,-27.625
+fact_00085_Dascha Polanco,3,factual,117,-28.25
+fact_00085_Dascha Polanco,4,factual,136,-10.5
+fact_00085_Dascha Polanco,5,factual,132,-30.0
+fact_00085_Dascha Polanco,6,factual,51,-16.375
+fact_00085_Dascha Polanco,7,factual,117,-28.6875
+fact_00086_Amelia Earhart,0,factual,124,-21.125
+fact_00086_Amelia Earhart,1,factual,131,-27.875
+fact_00086_Amelia Earhart,2,factual,133,-25.375
+fact_00086_Amelia Earhart,3,factual,128,-24.75
+fact_00086_Amelia Earhart,4,factual,116,-11.5
+fact_00086_Amelia Earhart,5,factual,129,-28.4375
+fact_00086_Amelia Earhart,6,factual,134,-26.8125
+fact_00086_Amelia Earhart,7,factual,1,-27.875
+fact_00087_Chris John (boxer),0,factual,110,-20.875
+fact_00087_Chris John (boxer),1,factual,132,-9.375
+fact_00087_Chris John (boxer),2,factual,1,-25.625
+fact_00087_Chris John (boxer),3,factual,129,-20.75
+fact_00087_Chris John (boxer),4,factual,129,-10.875
+fact_00087_Chris John (boxer),5,factual,117,-15.0
+fact_00087_Chris John (boxer),6,factual,130,-21.75
+fact_00087_Chris John (boxer),7,factual,141,-7.25
+fact_00088_Blair Tugman,0,factual,73,-27.875
+fact_00088_Blair Tugman,1,factual,106,-27.9375
+fact_00088_Blair Tugman,2,factual,96,-26.625
+fact_00088_Blair Tugman,3,factual,123,-14.375
+fact_00088_Blair Tugman,4,factual,126,-6.375
+fact_00088_Blair Tugman,5,factual,8,-28.0
+fact_00088_Blair Tugman,6,factual,46,-28.5
+fact_00088_Blair Tugman,7,factual,0,-19.875
+fact_00093_David Oyite-Ojok,0,factual,118,7.25
+fact_00093_David Oyite-Ojok,1,factual,109,-28.3125
+fact_00093_David Oyite-Ojok,2,factual,95,-30.0
+fact_00093_David Oyite-Ojok,3,factual,109,-22.75
+fact_00093_David Oyite-Ojok,4,factual,99,-30.0
+fact_00093_David Oyite-Ojok,5,factual,32,-27.25
+fact_00093_David Oyite-Ojok,6,factual,147,-25.5
+fact_00093_David Oyite-Ojok,7,factual,113,-29.8125
+fact_00097_Chris Cuomo,0,factual,101,-29.75
+fact_00097_Chris Cuomo,1,factual,121,-29.3125
+fact_00097_Chris Cuomo,2,factual,27,-26.5
+fact_00097_Chris Cuomo,3,factual,127,-28.875
+fact_00097_Chris Cuomo,4,factual,25,-29.625
+fact_00097_Chris Cuomo,5,factual,112,-13.0
+fact_00097_Chris Cuomo,6,factual,121,-22.875
+fact_00097_Chris Cuomo,7,factual,115,-25.25
+fact_00098_Adnan Sami,0,factual,141,-27.0
+fact_00098_Adnan Sami,1,factual,143,-2.25
+fact_00098_Adnan Sami,2,factual,88,-7.375
+fact_00098_Adnan Sami,3,factual,131,-26.25
+fact_00098_Adnan Sami,4,factual,86,-29.25
+fact_00098_Adnan Sami,5,factual,125,-25.625
+fact_00098_Adnan Sami,6,factual,137,-26.5625
+fact_00098_Adnan Sami,7,factual,131,-28.0625
+fact_00108_Bhuma Nagi Reddy,0,factual,47,-26.5625
+fact_00108_Bhuma Nagi Reddy,1,factual,113,-0.75
+fact_00108_Bhuma Nagi Reddy,2,factual,119,-27.875
+fact_00108_Bhuma Nagi Reddy,3,factual,89,-15.625
+fact_00108_Bhuma Nagi Reddy,4,factual,113,-7.87499
+fact_00108_Bhuma Nagi Reddy,5,factual,148,-20.875
+fact_00108_Bhuma Nagi Reddy,6,factual,103,-20.875
+fact_00108_Bhuma Nagi Reddy,7,factual,130,-15.0
+fact_00109_Charmion King,0,factual,1,-21.75
+fact_00109_Charmion King,1,factual,121,-27.75
+fact_00109_Charmion King,2,factual,1,-21.75
+fact_00109_Charmion King,3,factual,1,-21.75
+fact_00109_Charmion King,4,factual,71,-26.1875
+fact_00109_Charmion King,5,factual,125,-27.0
+fact_00109_Charmion King,6,factual,98,-27.125
+fact_00109_Charmion King,7,factual,11,-27.625
+fact_00110_Andreea Marin,0,factual,162,-26.8125
+fact_00110_Andreea Marin,1,factual,128,-28.125
+fact_00110_Andreea Marin,2,factual,99,-25.9375
+fact_00110_Andreea Marin,3,factual,123,-22.0
+fact_00110_Andreea Marin,4,factual,126,-8.625
+fact_00110_Andreea Marin,5,factual,120,-9.125
+fact_00110_Andreea Marin,6,factual,113,-26.4375
+fact_00110_Andreea Marin,7,factual,125,-21.125
+fact_00114_Ahn Jae-hyun,0,factual,117,-25.25
+fact_00114_Ahn Jae-hyun,1,factual,94,-28.1875
+fact_00114_Ahn Jae-hyun,2,factual,117,-28.875
+fact_00114_Ahn Jae-hyun,3,factual,109,-24.25
+fact_00114_Ahn Jae-hyun,4,factual,122,-0.5
+fact_00114_Ahn Jae-hyun,5,factual,120,-28.9375
+fact_00114_Ahn Jae-hyun,6,factual,125,-0.25
+fact_00114_Ahn Jae-hyun,7,factual,124,-29.0
+fact_00116_Bobo Baldé,0,factual,145,-28.5
+fact_00116_Bobo Baldé,1,factual,135,-30.5
+fact_00116_Bobo Baldé,2,factual,129,-21.0
+fact_00116_Bobo Baldé,3,factual,116,-11.875
+fact_00116_Bobo Baldé,4,factual,142,-29.4375
+fact_00116_Bobo Baldé,5,factual,141,-26.1875
+fact_00116_Bobo Baldé,6,factual,29,-28.5625
+fact_00116_Bobo Baldé,7,factual,123,-22.0
+fact_00118_Chacho Gaytán,0,factual,1,-23.125
+fact_00118_Chacho Gaytán,1,factual,131,-25.75
+fact_00118_Chacho Gaytán,2,factual,107,-27.5625
+fact_00118_Chacho Gaytán,3,factual,7,-28.75
+fact_00118_Chacho Gaytán,4,factual,51,-11.375
+fact_00118_Chacho Gaytán,5,factual,135,-22.125
+fact_00118_Chacho Gaytán,6,factual,88,-19.25
+fact_00118_Chacho Gaytán,7,factual,117,-26.3125
+fact_00119_Bastian Schweinsteiger,0,factual,0,-13.75
+fact_00119_Bastian Schweinsteiger,1,factual,127,-24.375
+fact_00119_Bastian Schweinsteiger,2,factual,79,-28.9375
+fact_00119_Bastian Schweinsteiger,3,factual,112,-28.8125
+fact_00119_Bastian Schweinsteiger,4,factual,111,-21.25
+fact_00119_Bastian Schweinsteiger,5,factual,83,-27.8125
+fact_00119_Bastian Schweinsteiger,6,factual,103,-28.5
+fact_00119_Bastian Schweinsteiger,7,factual,130,-29.8125
+fact_00120_Erich Hartmann,0,factual,113,-19.75
+fact_00120_Erich Hartmann,1,factual,132,-22.75
+fact_00120_Erich Hartmann,2,factual,73,-27.3125
+fact_00120_Erich Hartmann,3,factual,48,-15.37499
+fact_00120_Erich Hartmann,4,factual,122,-10.5
+fact_00120_Erich Hartmann,5,factual,123,-30.375
+fact_00120_Erich Hartmann,6,factual,93,-26.8125
+fact_00120_Erich Hartmann,7,factual,118,-25.75
+fact_00127_Ezechiel N'Douassel,0,factual,113,-29.5
+fact_00127_Ezechiel N'Douassel,1,factual,119,-29.4375
+fact_00127_Ezechiel N'Douassel,2,factual,136,-29.6875
+fact_00127_Ezechiel N'Douassel,3,factual,94,-15.875
+fact_00127_Ezechiel N'Douassel,4,factual,98,-25.0
+fact_00127_Ezechiel N'Douassel,5,factual,19,-23.25
+fact_00127_Ezechiel N'Douassel,6,factual,100,-2.75
+fact_00127_Ezechiel N'Douassel,7,factual,4,-28.625
+fact_00131_Aditya Kalyanpur,0,factual,124,-20.875
+fact_00131_Aditya Kalyanpur,1,factual,100,-13.625
+fact_00131_Aditya Kalyanpur,2,factual,45,-11.5
+fact_00131_Aditya Kalyanpur,3,factual,125,-24.0
+fact_00131_Aditya Kalyanpur,4,factual,116,-22.125
+fact_00131_Aditya Kalyanpur,5,factual,125,-13.125
+fact_00131_Aditya Kalyanpur,6,factual,117,-21.5
+fact_00131_Aditya Kalyanpur,7,factual,109,-29.6875
+fact_00132_Dennis Andersson,0,factual,114,-26.125
+fact_00132_Dennis Andersson,1,factual,103,-24.875
+fact_00132_Dennis Andersson,2,factual,116,-18.375
+fact_00132_Dennis Andersson,3,factual,1,-28.5625
+fact_00132_Dennis Andersson,4,factual,126,-26.8125
+fact_00132_Dennis Andersson,5,factual,126,-24.9375
+fact_00132_Dennis Andersson,6,factual,70,-29.625
+fact_00132_Dennis Andersson,7,factual,9,-24.875
+fact_00133_Daniel Bedingfield,0,factual,114,-10.0
+fact_00133_Daniel Bedingfield,1,factual,114,-28.125
+fact_00133_Daniel Bedingfield,2,factual,117,-28.125
+fact_00133_Daniel Bedingfield,3,factual,17,-23.625
+fact_00133_Daniel Bedingfield,4,factual,111,-12.875
+fact_00133_Daniel Bedingfield,5,factual,128,-26.5
+fact_00133_Daniel Bedingfield,6,factual,130,-27.375
+fact_00133_Daniel Bedingfield,7,factual,110,-21.875
+fact_00134_Celâl Bayar,0,factual,136,-28.625
+fact_00134_Celâl Bayar,1,factual,1,-22.625
+fact_00134_Celâl Bayar,2,factual,134,-26.25
+fact_00134_Celâl Bayar,3,factual,125,-23.75
+fact_00134_Celâl Bayar,4,factual,73,-28.25
+fact_00134_Celâl Bayar,5,factual,73,-7.75
+fact_00134_Celâl Bayar,6,factual,124,-18.0
+fact_00134_Celâl Bayar,7,factual,58,-29.25
+fact_00138_Diana Ivanova,0,factual,134,-26.0625
+fact_00138_Diana Ivanova,1,factual,98,-18.5
+fact_00138_Diana Ivanova,2,factual,132,-19.875
+fact_00138_Diana Ivanova,3,factual,17,-22.0
+fact_00138_Diana Ivanova,4,factual,115,-15.25
+fact_00138_Diana Ivanova,5,factual,95,-25.0
+fact_00138_Diana Ivanova,6,factual,126,-23.5
+fact_00138_Diana Ivanova,7,factual,128,-15.25
+fact_00140_André Le Nôtre,0,factual,133,-10.75
+fact_00140_André Le Nôtre,1,factual,84,-30.0625
+fact_00140_André Le Nôtre,2,factual,116,-22.625
+fact_00140_André Le Nôtre,3,factual,117,-24.25
+fact_00140_André Le Nôtre,4,factual,72,-20.99999
+fact_00140_André Le Nôtre,5,factual,128,-29.375
+fact_00140_André Le Nôtre,6,factual,108,-25.25
+fact_00140_André Le Nôtre,7,factual,19,-21.25
+fact_00142_Cierre Wood,0,factual,83,-22.625
+fact_00142_Cierre Wood,1,factual,27,-25.375
+fact_00142_Cierre Wood,2,factual,47,-23.625
+fact_00142_Cierre Wood,3,factual,75,-16.625
+fact_00142_Cierre Wood,4,factual,0,-20.25
+fact_00142_Cierre Wood,5,factual,82,-29.4375
+fact_00142_Cierre Wood,6,factual,150,-14.5
+fact_00142_Cierre Wood,7,factual,113,-3.0
+fact_00145_Carmelo Anthony,0,factual,90,-29.8125
+fact_00145_Carmelo Anthony,1,factual,128,-21.625
+fact_00145_Carmelo Anthony,2,factual,128,-28.625
+fact_00145_Carmelo Anthony,3,factual,129,-26.9375
+fact_00145_Carmelo Anthony,4,factual,104,-24.625
+fact_00145_Carmelo Anthony,5,factual,121,-26.3125
+fact_00145_Carmelo Anthony,6,factual,104,-27.8125
+fact_00145_Carmelo Anthony,7,factual,128,-26.9375
+fact_00146_Asafa Powell,0,factual,103,-30.25
+fact_00146_Asafa Powell,1,factual,113,-27.375
+fact_00146_Asafa Powell,2,factual,117,-26.25
+fact_00146_Asafa Powell,3,factual,119,-26.0
+fact_00146_Asafa Powell,4,factual,124,-26.0625
+fact_00146_Asafa Powell,5,factual,131,-28.3125
+fact_00146_Asafa Powell,6,factual,127,-23.75
+fact_00146_Asafa Powell,7,factual,53,-29.875
+fact_00152_Felix Newman,0,factual,119,-16.0
+fact_00152_Felix Newman,1,factual,141,-19.75
+fact_00152_Felix Newman,2,factual,38,-25.375
+fact_00152_Felix Newman,3,factual,130,-8.25
+fact_00152_Felix Newman,4,factual,135,-18.25
+fact_00152_Felix Newman,5,factual,122,-22.125
+fact_00152_Felix Newman,6,factual,151,-26.75
+fact_00152_Felix Newman,7,factual,133,-19.25
+fact_00154_Earl Garrison,0,factual,1,-23.125
+fact_00154_Earl Garrison,1,factual,29,-29.875
+fact_00154_Earl Garrison,2,factual,110,-8.62499
+fact_00154_Earl Garrison,3,factual,45,-26.875
+fact_00154_Earl Garrison,4,factual,121,-27.5625
+fact_00154_Earl Garrison,5,factual,134,-27.8125
+fact_00154_Earl Garrison,6,factual,107,-26.6875
+fact_00154_Earl Garrison,7,factual,1,-23.125
+fact_00162_Aleksandar Kolarov,0,factual,82,-29.4375
+fact_00162_Aleksandar Kolarov,1,factual,18,-28.1875
+fact_00162_Aleksandar Kolarov,2,factual,110,-22.75
+fact_00162_Aleksandar Kolarov,3,factual,118,-26.875
+fact_00162_Aleksandar Kolarov,4,factual,48,-21.625
+fact_00162_Aleksandar Kolarov,5,factual,124,-27.75
+fact_00162_Aleksandar Kolarov,6,factual,71,-19.625
+fact_00162_Aleksandar Kolarov,7,factual,21,-28.25
+fact_00163_Alexandre Hohagen,0,factual,110,-22.5
+fact_00163_Alexandre Hohagen,1,factual,134,-24.625
+fact_00163_Alexandre Hohagen,2,factual,87,-30.25
+fact_00163_Alexandre Hohagen,3,factual,28,-21.875
+fact_00163_Alexandre Hohagen,4,factual,36,-29.0625
+fact_00163_Alexandre Hohagen,5,factual,57,-25.8125
+fact_00163_Alexandre Hohagen,6,factual,133,-25.3125
+fact_00163_Alexandre Hohagen,7,factual,99,-27.0
+fact_00166_Emcee N.I.C.E.,0,factual,106,-27.5625
+fact_00166_Emcee N.I.C.E.,1,factual,135,-22.125
+fact_00166_Emcee N.I.C.E.,2,factual,119,-2.0
+fact_00166_Emcee N.I.C.E.,3,factual,37,-30.375
+fact_00166_Emcee N.I.C.E.,4,factual,126,-16.625
+fact_00166_Emcee N.I.C.E.,5,factual,137,-14.375
+fact_00166_Emcee N.I.C.E.,6,factual,109,-15.875
+fact_00166_Emcee N.I.C.E.,7,factual,109,-26.9375
+fact_00181_Chris Woakes,0,factual,139,-28.375
+fact_00181_Chris Woakes,1,factual,108,-27.5625
+fact_00181_Chris Woakes,2,factual,140,-27.9375
+fact_00181_Chris Woakes,3,factual,87,-28.1875
+fact_00181_Chris Woakes,4,factual,132,-28.125
+fact_00181_Chris Woakes,5,factual,22,-19.875
+fact_00181_Chris Woakes,6,factual,124,-25.4375
+fact_00181_Chris Woakes,7,factual,143,-24.0
+fact_00182_Diosdado Cabello,0,factual,122,-21.25
+fact_00182_Diosdado Cabello,1,factual,134,-21.75
+fact_00182_Diosdado Cabello,2,factual,111,-21.25
+fact_00182_Diosdado Cabello,3,factual,122,-28.5625
+fact_00182_Diosdado Cabello,4,factual,119,-27.1875
+fact_00182_Diosdado Cabello,5,factual,116,-25.0
+fact_00182_Diosdado Cabello,6,factual,1,-27.5
+fact_00182_Diosdado Cabello,7,factual,123,-23.375
+fact_00184_Dana Awartani,0,factual,118,-13.625
+fact_00184_Dana Awartani,1,factual,138,9.75
+fact_00184_Dana Awartani,2,factual,17,-26.875
+fact_00184_Dana Awartani,3,factual,110,-16.5
+fact_00184_Dana Awartani,4,factual,118,-19.25
+fact_00184_Dana Awartani,5,factual,112,-30.3125
+fact_00184_Dana Awartani,6,factual,119,-28.0
+fact_00184_Dana Awartani,7,factual,120,-28.5625
+fact_00185_Brianna Keilar,0,factual,0,-16.37499
+fact_00185_Brianna Keilar,1,factual,125,-4.25
+fact_00185_Brianna Keilar,2,factual,134,-29.0625
+fact_00185_Brianna Keilar,3,factual,128,-12.75
+fact_00185_Brianna Keilar,4,factual,108,-21.25
+fact_00185_Brianna Keilar,5,factual,124,-26.1875
+fact_00185_Brianna Keilar,6,factual,119,-30.5625
+fact_00185_Brianna Keilar,7,factual,120,-25.625
+fact_00188_Cédric Bakambu,0,factual,115,-19.625
+fact_00188_Cédric Bakambu,1,factual,116,-28.5625
+fact_00188_Cédric Bakambu,2,factual,123,-27.5
+fact_00188_Cédric Bakambu,3,factual,119,-25.3125
+fact_00188_Cédric Bakambu,4,factual,1,-27.6875
+fact_00188_Cédric Bakambu,5,factual,106,-18.375
+fact_00188_Cédric Bakambu,6,factual,91,-25.1875
+fact_00188_Cédric Bakambu,7,factual,86,-30.125
+fact_00193_Bobby Fischer,0,factual,99,-28.75
+fact_00193_Bobby Fischer,1,factual,128,-28.1875
+fact_00193_Bobby Fischer,2,factual,135,-29.75
+fact_00193_Bobby Fischer,3,factual,117,-27.75
+fact_00193_Bobby Fischer,4,factual,1,-27.1875
+fact_00193_Bobby Fischer,5,factual,124,-23.5625
+fact_00193_Bobby Fischer,6,factual,90,-5.0
+fact_00193_Bobby Fischer,7,factual,132,-19.0
+fact_00198_Benjamin Lawrence Reid,0,factual,15,-30.625
+fact_00198_Benjamin Lawrence Reid,1,factual,121,-28.0625
+fact_00198_Benjamin Lawrence Reid,2,factual,116,-14.875
+fact_00198_Benjamin Lawrence Reid,3,factual,111,-28.25
+fact_00198_Benjamin Lawrence Reid,4,factual,125,-24.375
+fact_00198_Benjamin Lawrence Reid,5,factual,44,-29.1875
+fact_00198_Benjamin Lawrence Reid,6,factual,87,-10.875
+fact_00198_Benjamin Lawrence Reid,7,factual,118,-12.5
+fact_00199_Djimon Hounsou,0,factual,115,-26.9375
+fact_00199_Djimon Hounsou,1,factual,1,-28.75
+fact_00199_Djimon Hounsou,2,factual,81,-28.1875
+fact_00199_Djimon Hounsou,3,factual,59,-24.5625
+fact_00199_Djimon Hounsou,4,factual,1,-28.75
+fact_00199_Djimon Hounsou,5,factual,114,-27.125
+fact_00199_Djimon Hounsou,6,factual,30,-26.75
+fact_00199_Djimon Hounsou,7,factual,36,-26.3125
+fact_00202_Ahsee Tuala,0,factual,58,2.0
+fact_00202_Ahsee Tuala,1,factual,100,-28.5625
+fact_00202_Ahsee Tuala,2,factual,135,-23.75
+fact_00202_Ahsee Tuala,3,factual,58,-29.875
+fact_00202_Ahsee Tuala,4,factual,103,-26.3125
+fact_00202_Ahsee Tuala,5,factual,130,-25.125
+fact_00202_Ahsee Tuala,6,factual,128,-7.5
+fact_00202_Ahsee Tuala,7,factual,1,-27.5625
+fact_00204_Don DeLillo,0,factual,118,-28.375
+fact_00204_Don DeLillo,1,factual,0,-18.25
+fact_00204_Don DeLillo,2,factual,122,-17.625
+fact_00204_Don DeLillo,3,factual,105,-23.0
+fact_00204_Don DeLillo,4,factual,111,-29.1875
+fact_00204_Don DeLillo,5,factual,120,-16.125
+fact_00204_Don DeLillo,6,factual,127,-23.0
+fact_00204_Don DeLillo,7,factual,117,-29.5625
+fact_00207_Elizabeth Inglis,0,factual,113,-10.625
+fact_00207_Elizabeth Inglis,1,factual,12,-22.375
+fact_00207_Elizabeth Inglis,2,factual,108,-27.9375
+fact_00207_Elizabeth Inglis,3,factual,119,-19.375
+fact_00207_Elizabeth Inglis,4,factual,125,-13.375
+fact_00207_Elizabeth Inglis,5,factual,131,-29.1875
+fact_00207_Elizabeth Inglis,6,factual,123,-29.3125
+fact_00207_Elizabeth Inglis,7,factual,123,-16.875
+fact_00208_Fifi Cooper,0,factual,13,-20.0
+fact_00208_Fifi Cooper,1,factual,109,-23.625
+fact_00208_Fifi Cooper,2,factual,129,-6.75
+fact_00208_Fifi Cooper,3,factual,136,-22.5
+fact_00208_Fifi Cooper,4,factual,124,-26.4375
+fact_00208_Fifi Cooper,5,factual,25,-22.625
+fact_00208_Fifi Cooper,6,factual,79,-25.8125
+fact_00208_Fifi Cooper,7,factual,12,-28.1875
+fact_00223_Ahmed Mumin Warfa,0,factual,111,-29.6875
+fact_00223_Ahmed Mumin Warfa,1,factual,124,-24.75
+fact_00223_Ahmed Mumin Warfa,2,factual,120,-27.3125
+fact_00223_Ahmed Mumin Warfa,3,factual,127,-23.75
+fact_00223_Ahmed Mumin Warfa,4,factual,127,-6.5
+fact_00223_Ahmed Mumin Warfa,5,factual,110,-13.25
+fact_00223_Ahmed Mumin Warfa,6,factual,26,-24.25
+fact_00223_Ahmed Mumin Warfa,7,factual,127,-25.3125
+fact_00226_Dewi Sartika,0,factual,44,-30.9375
+fact_00226_Dewi Sartika,1,factual,122,-26.1875
+fact_00226_Dewi Sartika,2,factual,123,-28.5
+fact_00226_Dewi Sartika,3,factual,121,-13.5
+fact_00226_Dewi Sartika,4,factual,124,-25.625
+fact_00226_Dewi Sartika,5,factual,111,-4.5
+fact_00226_Dewi Sartika,6,factual,104,-27.625
+fact_00226_Dewi Sartika,7,factual,74,-11.75
+fact_00227_Alf Garland,0,factual,150,-28.75
+fact_00227_Alf Garland,1,factual,123,3.0
+fact_00227_Alf Garland,2,factual,29,-29.5625
+fact_00227_Alf Garland,3,factual,124,-20.125
+fact_00227_Alf Garland,4,factual,106,-8.125
+fact_00227_Alf Garland,5,factual,121,-22.625
+fact_00227_Alf Garland,6,factual,115,-29.75
+fact_00227_Alf Garland,7,factual,82,-27.9375
+fact_00230_Abdul Ilah Khatib,0,factual,32,-28.625
+fact_00230_Abdul Ilah Khatib,1,factual,139,-19.0
+fact_00230_Abdul Ilah Khatib,2,factual,118,-28.8125
+fact_00230_Abdul Ilah Khatib,3,factual,113,-2.0
+fact_00230_Abdul Ilah Khatib,4,factual,106,-28.875
+fact_00230_Abdul Ilah Khatib,5,factual,104,-28.3125
+fact_00230_Abdul Ilah Khatib,6,factual,108,-28.1875
+fact_00230_Abdul Ilah Khatib,7,factual,87,-28.5625
+fact_00239_Bif Naked,0,factual,131,-28.6875
+fact_00239_Bif Naked,1,factual,71,-29.5625
+fact_00239_Bif Naked,2,factual,86,-27.375
+fact_00239_Bif Naked,3,factual,113,-27.625
+fact_00239_Bif Naked,4,factual,2,-27.1875
+fact_00239_Bif Naked,5,factual,16,-25.75
+fact_00239_Bif Naked,6,factual,18,-23.375
+fact_00239_Bif Naked,7,factual,86,-29.25
+fact_00245_Dominique Blake,0,factual,116,-27.75
+fact_00245_Dominique Blake,1,factual,125,-26.8125
+fact_00245_Dominique Blake,2,factual,91,-28.1875
+fact_00245_Dominique Blake,3,factual,139,-21.875
+fact_00245_Dominique Blake,4,factual,125,-27.125
+fact_00245_Dominique Blake,5,factual,110,-29.0625
+fact_00245_Dominique Blake,6,factual,114,-24.875
+fact_00245_Dominique Blake,7,factual,117,-25.0
+fact_00247_Diafra Sakho,0,factual,122,-29.9375
+fact_00247_Diafra Sakho,1,factual,20,-27.0
+fact_00247_Diafra Sakho,2,factual,101,-21.875
+fact_00247_Diafra Sakho,3,factual,148,-26.625
+fact_00247_Diafra Sakho,4,factual,104,-3.75
+fact_00247_Diafra Sakho,5,factual,141,-28.4375
+fact_00247_Diafra Sakho,6,factual,96,-27.3125
+fact_00247_Diafra Sakho,7,factual,101,-29.4375
+fact_00249_Fahadh Faasil,0,factual,126,-25.5625
+fact_00249_Fahadh Faasil,1,factual,17,-27.75
+fact_00249_Fahadh Faasil,2,factual,115,-26.9375
+fact_00249_Fahadh Faasil,3,factual,140,-29.375
+fact_00249_Fahadh Faasil,4,factual,105,-22.875
+fact_00249_Fahadh Faasil,5,factual,131,-26.625
+fact_00249_Fahadh Faasil,6,factual,36,-26.25
+fact_00249_Fahadh Faasil,7,factual,103,-23.125
+fact_00250_Dr. Dre,0,factual,125,-20.25
+fact_00250_Dr. Dre,1,factual,127,-24.875
+fact_00250_Dr. Dre,2,factual,92,-27.625
+fact_00250_Dr. Dre,3,factual,111,-30.125
+fact_00250_Dr. Dre,4,factual,134,-29.1875
+fact_00250_Dr. Dre,5,factual,105,-22.75
+fact_00250_Dr. Dre,6,factual,150,-28.8125
+fact_00250_Dr. Dre,7,factual,28,-29.5
+fact_00255_Caitlin Lowe,0,factual,116,-24.625
+fact_00255_Caitlin Lowe,1,factual,125,-27.75
+fact_00255_Caitlin Lowe,2,factual,103,-23.75
+fact_00255_Caitlin Lowe,3,factual,121,-29.375
+fact_00255_Caitlin Lowe,4,factual,116,-29.0
+fact_00255_Caitlin Lowe,5,factual,98,13.875
+fact_00255_Caitlin Lowe,6,factual,128,-12.75
+fact_00255_Caitlin Lowe,7,factual,136,-27.875
+fact_00257_Camille Paulus,0,factual,117,-24.125
+fact_00257_Camille Paulus,1,factual,128,-22.625
+fact_00257_Camille Paulus,2,factual,119,-27.125
+fact_00257_Camille Paulus,3,factual,122,-17.625
+fact_00257_Camille Paulus,4,factual,49,-28.3125
+fact_00257_Camille Paulus,5,factual,139,-24.8125
+fact_00257_Camille Paulus,6,factual,112,-28.75
+fact_00257_Camille Paulus,7,factual,119,-26.0
+fact_00258_Charley Boorman,0,factual,115,-29.125
+fact_00258_Charley Boorman,1,factual,58,-28.4375
+fact_00258_Charley Boorman,2,factual,111,-29.4375
+fact_00258_Charley Boorman,3,factual,82,-26.625
+fact_00258_Charley Boorman,4,factual,115,-26.0
+fact_00258_Charley Boorman,5,factual,46,-16.625
+fact_00258_Charley Boorman,6,factual,61,-23.9375
+fact_00258_Charley Boorman,7,factual,121,-23.0
+fact_00260_Douglas Wood (engineer),0,factual,13,-27.0625
+fact_00260_Douglas Wood (engineer),1,factual,34,-9.875
+fact_00260_Douglas Wood (engineer),2,factual,120,-24.25
+fact_00260_Douglas Wood (engineer),3,factual,1,-25.9375
+fact_00260_Douglas Wood (engineer),4,factual,127,-24.375
+fact_00260_Douglas Wood (engineer),5,factual,150,-30.6875
+fact_00260_Douglas Wood (engineer),6,factual,122,-25.5
+fact_00260_Douglas Wood (engineer),7,factual,107,-20.875
+fact_00263_Billy Snedden,0,factual,98,-29.75
+fact_00263_Billy Snedden,1,factual,116,-19.625
+fact_00263_Billy Snedden,2,factual,110,-28.9375
+fact_00263_Billy Snedden,3,factual,132,-23.375
+fact_00263_Billy Snedden,4,factual,131,-29.9375
+fact_00263_Billy Snedden,5,factual,128,-24.5
+fact_00263_Billy Snedden,6,factual,37,-26.5625
+fact_00263_Billy Snedden,7,factual,100,-27.3125
+fact_00264_Esteban Espíndola,0,factual,117,-19.875
+fact_00264_Esteban Espíndola,1,factual,96,-24.375
+fact_00264_Esteban Espíndola,2,factual,154,-27.6875
+fact_00264_Esteban Espíndola,3,factual,137,-28.3125
+fact_00264_Esteban Espíndola,4,factual,121,-27.6875
+fact_00264_Esteban Espíndola,5,factual,82,-21.25
+fact_00264_Esteban Espíndola,6,factual,120,-22.0
+fact_00264_Esteban Espíndola,7,factual,113,-22.3125
+fact_00270_Daniel Ek,0,factual,124,-26.1875
+fact_00270_Daniel Ek,1,factual,1,-28.625
+fact_00270_Daniel Ek,2,factual,103,-29.4375
+fact_00270_Daniel Ek,3,factual,53,-28.3125
+fact_00270_Daniel Ek,4,factual,1,-28.625
+fact_00270_Daniel Ek,5,factual,121,-28.875
+fact_00270_Daniel Ek,6,factual,131,-24.6875
+fact_00270_Daniel Ek,7,factual,89,-26.625
+fact_00275_Belisarius,0,factual,143,-27.625
+fact_00275_Belisarius,1,factual,104,-14.875
+fact_00275_Belisarius,2,factual,107,-29.8125
+fact_00275_Belisarius,3,factual,120,-27.125
+fact_00275_Belisarius,4,factual,4,-28.5625
+fact_00275_Belisarius,5,factual,0,-16.0
+fact_00275_Belisarius,6,factual,0,-16.0
+fact_00275_Belisarius,7,factual,0,-16.0
+fact_00276_Carol Dweck,0,factual,65,-24.125
+fact_00276_Carol Dweck,1,factual,124,-30.5
+fact_00276_Carol Dweck,2,factual,71,-30.3125
+fact_00276_Carol Dweck,3,factual,141,-27.0625
+fact_00276_Carol Dweck,4,factual,126,17.875
+fact_00276_Carol Dweck,5,factual,0,-14.25
+fact_00276_Carol Dweck,6,factual,129,-30.0
+fact_00276_Carol Dweck,7,factual,113,-28.875
+fact_00286_Amr Diab,0,factual,108,-25.0
+fact_00286_Amr Diab,1,factual,76,-30.3125
+fact_00286_Amr Diab,2,factual,109,-30.375
+fact_00286_Amr Diab,3,factual,34,-28.3125
+fact_00286_Amr Diab,4,factual,115,-28.3125
+fact_00286_Amr Diab,5,factual,120,-30.0625
+fact_00286_Amr Diab,6,factual,120,-26.0625
+fact_00286_Amr Diab,7,factual,99,-11.625
+fact_00296_Akbar Hossain,0,factual,138,-28.625
+fact_00296_Akbar Hossain,1,factual,122,-10.5
+fact_00296_Akbar Hossain,2,factual,105,-22.125
+fact_00296_Akbar Hossain,3,factual,123,-27.3125
+fact_00296_Akbar Hossain,4,factual,139,-26.3125
+fact_00296_Akbar Hossain,5,factual,70,-28.6875
+fact_00296_Akbar Hossain,6,factual,92,-28.125
+fact_00296_Akbar Hossain,7,factual,119,-19.5
+fact_00300_Coco Chanel,0,factual,123,-17.0
+fact_00300_Coco Chanel,1,factual,78,-26.25
+fact_00300_Coco Chanel,2,factual,57,-17.0
+fact_00300_Coco Chanel,3,factual,120,-29.0
+fact_00300_Coco Chanel,4,factual,118,-28.3125
+fact_00300_Coco Chanel,5,factual,64,-30.0
+fact_00300_Coco Chanel,6,factual,116,-27.5
+fact_00300_Coco Chanel,7,factual,106,-20.375
+fact_00302_Enamul Haque (engineer),0,factual,79,-13.125
+fact_00302_Enamul Haque (engineer),1,factual,119,-26.625
+fact_00302_Enamul Haque (engineer),2,factual,136,-24.0
+fact_00302_Enamul Haque (engineer),3,factual,20,-27.75
+fact_00302_Enamul Haque (engineer),4,factual,136,-28.0625
+fact_00302_Enamul Haque (engineer),5,factual,123,-22.0
+fact_00302_Enamul Haque (engineer),6,factual,123,-27.25
+fact_00302_Enamul Haque (engineer),7,factual,1,-25.375
+fact_00304_Abdelhamid Shabana,0,factual,42,-17.0
+fact_00304_Abdelhamid Shabana,1,factual,105,-27.6875
+fact_00304_Abdelhamid Shabana,2,factual,1,-26.0
+fact_00304_Abdelhamid Shabana,3,factual,76,-26.4375
+fact_00304_Abdelhamid Shabana,4,factual,116,-25.875
+fact_00304_Abdelhamid Shabana,5,factual,28,-4.75
+fact_00304_Abdelhamid Shabana,6,factual,117,-27.6875
+fact_00304_Abdelhamid Shabana,7,factual,124,-27.875
+fact_00307_Abdullahi Mohammad Ahmad Hassan,0,factual,109,-29.6875
+fact_00307_Abdullahi Mohammad Ahmad Hassan,1,factual,26,-26.625
+fact_00307_Abdullahi Mohammad Ahmad Hassan,2,factual,116,-25.625
+fact_00307_Abdullahi Mohammad Ahmad Hassan,3,factual,9,-27.75
+fact_00307_Abdullahi Mohammad Ahmad Hassan,4,factual,117,-15.75
+fact_00307_Abdullahi Mohammad Ahmad Hassan,5,factual,109,-28.1875
+fact_00307_Abdullahi Mohammad Ahmad Hassan,6,factual,21,-28.875
+fact_00307_Abdullahi Mohammad Ahmad Hassan,7,factual,7,-29.9375
+fact_00309_Diego Godín,0,factual,128,-30.0
+fact_00309_Diego Godín,1,factual,112,-11.125
+fact_00309_Diego Godín,2,factual,127,-28.5
+fact_00309_Diego Godín,3,factual,124,-11.375
+fact_00309_Diego Godín,4,factual,118,-26.5
+fact_00309_Diego Godín,5,factual,129,-27.75
+fact_00309_Diego Godín,6,factual,129,-28.875
+fact_00309_Diego Godín,7,factual,85,-15.125
+fact_00312_Adel Emam,0,factual,5,-29.25
+fact_00312_Adel Emam,1,factual,104,-29.0625
+fact_00312_Adel Emam,2,factual,122,-28.9375
+fact_00312_Adel Emam,3,factual,148,-28.625
+fact_00312_Adel Emam,4,factual,131,-29.25
+fact_00312_Adel Emam,5,factual,0,-18.625
+fact_00312_Adel Emam,6,factual,131,-29.3125
+fact_00312_Adel Emam,7,factual,126,-6.0
+fact_00315_Billy Conigliaro,0,factual,122,-29.8125
+fact_00315_Billy Conigliaro,1,factual,19,-24.5
+fact_00315_Billy Conigliaro,2,factual,138,-29.0625
+fact_00315_Billy Conigliaro,3,factual,50,-21.875
+fact_00315_Billy Conigliaro,4,factual,102,-26.375
+fact_00315_Billy Conigliaro,5,factual,138,-29.5625
+fact_00315_Billy Conigliaro,6,factual,119,-30.3125
+fact_00315_Billy Conigliaro,7,factual,128,-28.0
+fact_00316_Arif Mohammad Khan,0,factual,88,-26.5
+fact_00316_Arif Mohammad Khan,1,factual,118,9.75
+fact_00316_Arif Mohammad Khan,2,factual,123,-12.375
+fact_00316_Arif Mohammad Khan,3,factual,138,-25.625
+fact_00316_Arif Mohammad Khan,4,factual,116,-5.875
+fact_00316_Arif Mohammad Khan,5,factual,110,-29.1875
+fact_00316_Arif Mohammad Khan,6,factual,137,-21.5
+fact_00316_Arif Mohammad Khan,7,factual,121,0.5
+fact_00321_Bob Marley,0,factual,120,-30.1875
+fact_00321_Bob Marley,1,factual,124,-26.25
+fact_00321_Bob Marley,2,factual,131,-27.6875
+fact_00321_Bob Marley,3,factual,110,-29.0625
+fact_00321_Bob Marley,4,factual,109,-23.25
+fact_00321_Bob Marley,5,factual,110,-27.1875
+fact_00321_Bob Marley,6,factual,135,-27.5625
+fact_00321_Bob Marley,7,factual,117,-29.6875
+fact_00328_Dana Ashbrook,0,factual,77,-24.0
+fact_00328_Dana Ashbrook,1,factual,47,-29.6875
+fact_00328_Dana Ashbrook,2,factual,102,-26.5625
+fact_00328_Dana Ashbrook,3,factual,118,-25.25
+fact_00328_Dana Ashbrook,4,factual,99,-29.3125
+fact_00328_Dana Ashbrook,5,factual,144,-23.5
+fact_00328_Dana Ashbrook,6,factual,133,-27.5625
+fact_00328_Dana Ashbrook,7,factual,9,-23.5
+fact_00332_Cha Eun-woo,0,factual,6,-27.875
+fact_00332_Cha Eun-woo,1,factual,111,-27.9375
+fact_00332_Cha Eun-woo,2,factual,1,-27.25
+fact_00332_Cha Eun-woo,3,factual,1,-27.25
+fact_00332_Cha Eun-woo,4,factual,123,-28.25
+fact_00332_Cha Eun-woo,5,factual,149,-28.875
+fact_00332_Cha Eun-woo,6,factual,78,-25.9375
+fact_00332_Cha Eun-woo,7,factual,114,-19.625
+fact_00333_Abdul Halik Hudu,0,factual,54,-5.0
+fact_00333_Abdul Halik Hudu,1,factual,88,-27.5
+fact_00333_Abdul Halik Hudu,2,factual,105,-28.25
+fact_00333_Abdul Halik Hudu,3,factual,128,-26.875
+fact_00333_Abdul Halik Hudu,4,factual,40,-27.25
+fact_00333_Abdul Halik Hudu,5,factual,113,-10.875
+fact_00333_Abdul Halik Hudu,6,factual,118,-25.3125
+fact_00333_Abdul Halik Hudu,7,factual,57,-25.5
+fact_00335_Carl Braun (obstetrician),0,factual,109,-28.6875
+fact_00335_Carl Braun (obstetrician),1,factual,114,-12.125
+fact_00335_Carl Braun (obstetrician),2,factual,124,-23.875
+fact_00335_Carl Braun (obstetrician),3,factual,133,-3.25
+fact_00335_Carl Braun (obstetrician),4,factual,119,-26.375
+fact_00335_Carl Braun (obstetrician),5,factual,132,-27.5
+fact_00335_Carl Braun (obstetrician),6,factual,91,-25.25
+fact_00335_Carl Braun (obstetrician),7,factual,118,-22.5
+fact_00343_Ameyaw Debrah,0,factual,111,-10.875
+fact_00343_Ameyaw Debrah,1,factual,128,-23.0
+fact_00343_Ameyaw Debrah,2,factual,139,-25.9375
+fact_00343_Ameyaw Debrah,3,factual,67,-22.0
+fact_00343_Ameyaw Debrah,4,factual,115,-29.75
+fact_00343_Ameyaw Debrah,5,factual,115,-16.75
+fact_00343_Ameyaw Debrah,6,factual,131,-8.125
+fact_00343_Ameyaw Debrah,7,factual,91,-28.0625
+fact_00344_Cleopatra,0,factual,120,-20.625
+fact_00344_Cleopatra,1,factual,91,-29.375
+fact_00344_Cleopatra,2,factual,119,-29.4375
+fact_00344_Cleopatra,3,factual,46,-28.25
+fact_00344_Cleopatra,4,factual,0,-12.99999
+fact_00344_Cleopatra,5,factual,96,-26.75
+fact_00344_Cleopatra,6,factual,0,-12.99999
+fact_00344_Cleopatra,7,factual,82,-26.75
+fact_00345_Ana Cláudia Bolzan,0,factual,116,-6.75
+fact_00345_Ana Cláudia Bolzan,1,factual,90,-27.0
+fact_00345_Ana Cláudia Bolzan,2,factual,133,-11.0
+fact_00345_Ana Cláudia Bolzan,3,factual,127,-20.0
+fact_00345_Ana Cláudia Bolzan,4,factual,117,-23.0
+fact_00345_Ana Cláudia Bolzan,5,factual,54,-14.375
+fact_00345_Ana Cláudia Bolzan,6,factual,16,-25.8125
+fact_00345_Ana Cláudia Bolzan,7,factual,120,-25.5
+fact_00347_Evgeny Shalunov,0,factual,32,-28.4375
+fact_00347_Evgeny Shalunov,1,factual,85,-30.0
+fact_00347_Evgeny Shalunov,2,factual,107,-26.875
+fact_00347_Evgeny Shalunov,3,factual,119,-18.5
+fact_00347_Evgeny Shalunov,4,factual,99,-22.125
+fact_00347_Evgeny Shalunov,5,factual,120,-12.0
+fact_00347_Evgeny Shalunov,6,factual,130,-23.25
+fact_00347_Evgeny Shalunov,7,factual,90,-13.875
+fact_00348_Charles Allen (jurist),0,factual,83,-28.75
+fact_00348_Charles Allen (jurist),1,factual,21,-24.875
+fact_00348_Charles Allen (jurist),2,factual,97,-28.5625
+fact_00348_Charles Allen (jurist),3,factual,1,-21.5
+fact_00348_Charles Allen (jurist),4,factual,118,-29.0625
+fact_00348_Charles Allen (jurist),5,factual,110,-23.0
+fact_00348_Charles Allen (jurist),6,factual,144,-24.375
+fact_00348_Charles Allen (jurist),7,factual,110,-29.0625
+fact_00349_Deyverson,0,factual,123,-20.25
+fact_00349_Deyverson,1,factual,127,-28.3125
+fact_00349_Deyverson,2,factual,46,-11.25
+fact_00349_Deyverson,3,factual,123,-23.875
+fact_00349_Deyverson,4,factual,115,-27.0625
+fact_00349_Deyverson,5,factual,134,-12.25
+fact_00349_Deyverson,6,factual,9,-27.5
+fact_00349_Deyverson,7,factual,140,-23.8125
+fact_00351_Cris Cyborg,0,factual,138,-23.375
+fact_00351_Cris Cyborg,1,factual,37,-23.625
+fact_00351_Cris Cyborg,2,factual,1,-21.625
+fact_00351_Cris Cyborg,3,factual,120,-25.25
+fact_00351_Cris Cyborg,4,factual,128,-28.9375
+fact_00351_Cris Cyborg,5,factual,126,-27.9375
+fact_00351_Cris Cyborg,6,factual,135,-25.5625
+fact_00351_Cris Cyborg,7,factual,107,-25.75
+fact_00354_Bobby Thomson,0,factual,119,-27.1875
+fact_00354_Bobby Thomson,1,factual,123,-12.25
+fact_00354_Bobby Thomson,2,factual,101,-26.125
+fact_00354_Bobby Thomson,3,factual,6,-28.0625
+fact_00354_Bobby Thomson,4,factual,84,-29.25
+fact_00354_Bobby Thomson,5,factual,77,-28.9375
+fact_00354_Bobby Thomson,6,factual,125,-24.375
+fact_00354_Bobby Thomson,7,factual,48,-23.125
+fact_00356_Eric Winter,0,factual,117,-28.8125
+fact_00356_Eric Winter,1,factual,122,-27.9375
+fact_00356_Eric Winter,2,factual,139,-27.6875
+fact_00356_Eric Winter,3,factual,129,-12.375
+fact_00356_Eric Winter,4,factual,88,-12.125
+fact_00356_Eric Winter,5,factual,111,-29.625
+fact_00356_Eric Winter,6,factual,81,-26.5
+fact_00356_Eric Winter,7,factual,109,-22.375
+fact_00362_Aert van der Neer,0,factual,97,-27.4375
+fact_00362_Aert van der Neer,1,factual,130,-27.4375
+fact_00362_Aert van der Neer,2,factual,68,-28.5625
+fact_00362_Aert van der Neer,3,factual,119,2.5
+fact_00362_Aert van der Neer,4,factual,107,-17.5
+fact_00362_Aert van der Neer,5,factual,119,-28.25
+fact_00362_Aert van der Neer,6,factual,118,-0.5
+fact_00362_Aert van der Neer,7,factual,59,-27.375
+fact_00364_Blanca Errázuriz,0,factual,97,-18.875
+fact_00364_Blanca Errázuriz,1,factual,1,-27.875
+fact_00364_Blanca Errázuriz,2,factual,120,-27.3125
+fact_00364_Blanca Errázuriz,3,factual,1,-27.875
+fact_00364_Blanca Errázuriz,4,factual,126,-14.875
+fact_00364_Blanca Errázuriz,5,factual,115,-24.625
+fact_00364_Blanca Errázuriz,6,factual,123,-29.25
+fact_00364_Blanca Errázuriz,7,factual,131,-15.5
+fact_00366_Deitrick Haddon,0,factual,1,-28.5
+fact_00366_Deitrick Haddon,1,factual,10,-28.125
+fact_00366_Deitrick Haddon,2,factual,35,-25.8125
+fact_00366_Deitrick Haddon,3,factual,123,-25.75
+fact_00366_Deitrick Haddon,4,factual,116,-10.75
+fact_00366_Deitrick Haddon,5,factual,100,-17.0
+fact_00366_Deitrick Haddon,6,factual,138,-28.0
+fact_00366_Deitrick Haddon,7,factual,24,-9.5
+fact_00367_Andreas Ivanschitz,0,factual,95,-20.625
+fact_00367_Andreas Ivanschitz,1,factual,129,0.5
+fact_00367_Andreas Ivanschitz,2,factual,102,-26.0
+fact_00367_Andreas Ivanschitz,3,factual,133,-28.875
+fact_00367_Andreas Ivanschitz,4,factual,19,-20.5
+fact_00367_Andreas Ivanschitz,5,factual,71,-27.0625
+fact_00367_Andreas Ivanschitz,6,factual,88,-18.75
+fact_00367_Andreas Ivanschitz,7,factual,127,-29.125
+fact_00368_Clancy Brown,0,factual,135,-21.125
+fact_00368_Clancy Brown,1,factual,125,-29.625
+fact_00368_Clancy Brown,2,factual,107,-28.625
+fact_00368_Clancy Brown,3,factual,53,-27.375
+fact_00368_Clancy Brown,4,factual,51,-14.125
+fact_00368_Clancy Brown,5,factual,122,-25.75
+fact_00368_Clancy Brown,6,factual,104,-27.125
+fact_00368_Clancy Brown,7,factual,123,-26.75
+fact_00371_Carrie Ann Inaba,0,factual,107,-27.375
+fact_00371_Carrie Ann Inaba,1,factual,136,-26.5
+fact_00371_Carrie Ann Inaba,2,factual,130,-28.3125
+fact_00371_Carrie Ann Inaba,3,factual,130,-22.75
+fact_00371_Carrie Ann Inaba,4,factual,25,-29.625
+fact_00371_Carrie Ann Inaba,5,factual,1,-21.5
+fact_00371_Carrie Ann Inaba,6,factual,1,-21.5
+fact_00371_Carrie Ann Inaba,7,factual,1,-21.5
+fact_00374_Cicero,0,factual,104,-28.75
+fact_00374_Cicero,1,factual,125,-28.3125
+fact_00374_Cicero,2,factual,98,-26.6875
+fact_00374_Cicero,3,factual,119,-28.5625
+fact_00374_Cicero,4,factual,69,-27.5625
+fact_00374_Cicero,5,factual,98,-23.875
+fact_00374_Cicero,6,factual,112,-8.625
+fact_00374_Cicero,7,factual,111,-29.9375
+fact_00376_14th Dalai Lama,0,factual,22,-29.4375
+fact_00376_14th Dalai Lama,1,factual,118,-30.375
+fact_00376_14th Dalai Lama,2,factual,1,-27.9375
+fact_00376_14th Dalai Lama,3,factual,22,-28.6875
+fact_00376_14th Dalai Lama,4,factual,126,-23.375
+fact_00376_14th Dalai Lama,5,factual,108,-29.9375
+fact_00376_14th Dalai Lama,6,factual,81,-25.625
+fact_00376_14th Dalai Lama,7,factual,63,-27.0
+fact_00377_Christian Almeida,0,factual,124,-31.375
+fact_00377_Christian Almeida,1,factual,23,-27.9375
+fact_00377_Christian Almeida,2,factual,122,-26.9375
+fact_00377_Christian Almeida,3,factual,125,2.5
+fact_00377_Christian Almeida,4,factual,117,-1.99999
+fact_00377_Christian Almeida,5,factual,116,-4.0
+fact_00377_Christian Almeida,6,factual,133,-18.25
+fact_00377_Christian Almeida,7,factual,18,-25.3125
+fact_00378_Arthur Wakefield,0,factual,138,-28.3125
+fact_00378_Arthur Wakefield,1,factual,138,-26.625
+fact_00378_Arthur Wakefield,2,factual,124,-24.125
+fact_00378_Arthur Wakefield,3,factual,35,-16.0
+fact_00378_Arthur Wakefield,4,factual,99,-26.0625
+fact_00378_Arthur Wakefield,5,factual,132,-27.8125
+fact_00378_Arthur Wakefield,6,factual,110,-29.0
+fact_00378_Arthur Wakefield,7,factual,3,-27.0625
+fact_00384_Andry Rajoelina,0,factual,98,-28.25
+fact_00384_Andry Rajoelina,1,factual,145,-25.625
+fact_00384_Andry Rajoelina,2,factual,101,-26.0
+fact_00384_Andry Rajoelina,3,factual,29,-21.125
+fact_00384_Andry Rajoelina,4,factual,128,-26.4375
+fact_00384_Andry Rajoelina,5,factual,125,-28.0
+fact_00384_Andry Rajoelina,6,factual,121,-17.625
+fact_00384_Andry Rajoelina,7,factual,121,-28.875
+fact_00394_Danny Almonte,0,factual,133,-28.8125
+fact_00394_Danny Almonte,1,factual,104,-24.625
+fact_00394_Danny Almonte,2,factual,126,-25.6875
+fact_00394_Danny Almonte,3,factual,127,-18.5
+fact_00394_Danny Almonte,4,factual,133,-28.0625
+fact_00394_Danny Almonte,5,factual,44,-26.1875
+fact_00394_Danny Almonte,6,factual,131,-21.75
+fact_00394_Danny Almonte,7,factual,137,-28.4375
+fact_00396_Andy Middleton,0,factual,1,-26.625
+fact_00396_Andy Middleton,1,factual,120,-29.0625
+fact_00396_Andy Middleton,2,factual,122,-24.5
+fact_00396_Andy Middleton,3,factual,79,-28.9375
+fact_00396_Andy Middleton,4,factual,143,-28.8125
+fact_00396_Andy Middleton,5,factual,122,-22.25
+fact_00396_Andy Middleton,6,factual,136,-28.8125
+fact_00396_Andy Middleton,7,factual,122,-27.75
+fact_00397_Anderson Silva,0,factual,135,-26.0
+fact_00397_Anderson Silva,1,factual,1,-27.6875
+fact_00397_Anderson Silva,2,factual,128,-28.4375
+fact_00397_Anderson Silva,3,factual,60,-23.0
+fact_00397_Anderson Silva,4,factual,124,-25.125
+fact_00397_Anderson Silva,5,factual,9,-25.6875
+fact_00397_Anderson Silva,6,factual,18,-28.25
+fact_00397_Anderson Silva,7,factual,131,-21.25
+fact_00399_Edgar Bennett,0,factual,54,-24.5
+fact_00399_Edgar Bennett,1,factual,110,-24.625
+fact_00399_Edgar Bennett,2,factual,1,-28.25
+fact_00399_Edgar Bennett,3,factual,130,-25.625
+fact_00399_Edgar Bennett,4,factual,72,-26.5625
+fact_00399_Edgar Bennett,5,factual,128,-11.625
+fact_00399_Edgar Bennett,6,factual,114,-22.375
+fact_00399_Edgar Bennett,7,factual,115,-19.75
+fact_00401_Balázs Bekő,0,factual,1,-27.875
+fact_00401_Balázs Bekő,1,factual,139,-29.125
+fact_00401_Balázs Bekő,2,factual,17,-23.625
+fact_00401_Balázs Bekő,3,factual,134,-22.0
+fact_00401_Balázs Bekő,4,factual,1,-27.9375
+fact_00401_Balázs Bekő,5,factual,86,-24.5
+fact_00401_Balázs Bekő,6,factual,134,-26.3125
+fact_00401_Balázs Bekő,7,factual,118,-28.125
+fact_00404_Abraham Ancer,0,factual,1,-22.0
+fact_00404_Abraham Ancer,1,factual,11,-27.125
+fact_00404_Abraham Ancer,2,factual,32,-25.625
+fact_00404_Abraham Ancer,3,factual,119,-25.3125
+fact_00404_Abraham Ancer,4,factual,112,-11.5
+fact_00404_Abraham Ancer,5,factual,133,-28.0625
+fact_00404_Abraham Ancer,6,factual,108,-27.375
+fact_00404_Abraham Ancer,7,factual,126,-27.0625
+fact_00418_A. K. Ramanujan,0,factual,38,-28.0
+fact_00418_A. K. Ramanujan,1,factual,116,-20.5
+fact_00418_A. K. Ramanujan,2,factual,5,-26.9375
+fact_00418_A. K. Ramanujan,3,factual,51,-25.0
+fact_00418_A. K. Ramanujan,4,factual,2,-27.6875
+fact_00418_A. K. Ramanujan,5,factual,95,-27.8125
+fact_00418_A. K. Ramanujan,6,factual,119,-22.5
+fact_00418_A. K. Ramanujan,7,factual,139,-28.875
+fact_00420_Carlos Ghosn,0,factual,17,-28.5625
+fact_00420_Carlos Ghosn,1,factual,46,-24.0
+fact_00420_Carlos Ghosn,2,factual,122,-23.0
+fact_00420_Carlos Ghosn,3,factual,53,-26.8125
+fact_00420_Carlos Ghosn,4,factual,119,-26.875
+fact_00420_Carlos Ghosn,5,factual,118,-24.0
+fact_00420_Carlos Ghosn,6,factual,125,-24.625
+fact_00420_Carlos Ghosn,7,factual,51,-18.25
+fact_00421_Anurag Kashyap,0,factual,109,-23.625
+fact_00421_Anurag Kashyap,1,factual,133,-27.75
+fact_00421_Anurag Kashyap,2,factual,116,-29.875
+fact_00421_Anurag Kashyap,3,factual,112,-22.875
+fact_00421_Anurag Kashyap,4,factual,116,-25.5
+fact_00421_Anurag Kashyap,5,factual,98,-23.875
+fact_00421_Anurag Kashyap,6,factual,113,-25.6875
+fact_00421_Anurag Kashyap,7,factual,120,-26.8125
+fact_00425_Angela Bairstow,0,factual,82,-29.0
+fact_00425_Angela Bairstow,1,factual,38,-23.5
+fact_00425_Angela Bairstow,2,factual,59,-29.3125
+fact_00425_Angela Bairstow,3,factual,122,-24.75
+fact_00425_Angela Bairstow,4,factual,96,-6.0
+fact_00425_Angela Bairstow,5,factual,120,-29.0625
+fact_00425_Angela Bairstow,6,factual,30,-29.75
+fact_00425_Angela Bairstow,7,factual,46,-26.625
+fact_00427_Ernestine Eckstein,0,factual,125,-23.25
+fact_00427_Ernestine Eckstein,1,factual,70,-29.5
+fact_00427_Ernestine Eckstein,2,factual,107,-30.5625
+fact_00427_Ernestine Eckstein,3,factual,126,-12.875
+fact_00427_Ernestine Eckstein,4,factual,103,-24.75
+fact_00427_Ernestine Eckstein,5,factual,113,-24.25
+fact_00427_Ernestine Eckstein,6,factual,48,-24.875
+fact_00427_Ernestine Eckstein,7,factual,117,-26.375
+fact_00430_Ezekiel Elliott,0,factual,120,-2.5
+fact_00430_Ezekiel Elliott,1,factual,2,-28.0625
+fact_00430_Ezekiel Elliott,2,factual,127,-18.125
+fact_00430_Ezekiel Elliott,3,factual,25,-25.5
+fact_00430_Ezekiel Elliott,4,factual,2,-28.0625
+fact_00430_Ezekiel Elliott,5,factual,120,-27.6875
+fact_00430_Ezekiel Elliott,6,factual,83,-21.375
+fact_00430_Ezekiel Elliott,7,factual,71,-23.125
+fact_00433_Aaron Burr,0,factual,1,-26.9375
+fact_00433_Aaron Burr,1,factual,67,-26.0625
+fact_00433_Aaron Burr,2,factual,130,-13.125
+fact_00433_Aaron Burr,3,factual,116,-23.5
+fact_00433_Aaron Burr,4,factual,114,-28.0
+fact_00433_Aaron Burr,5,factual,135,-25.125
+fact_00433_Aaron Burr,6,factual,152,-22.25
+fact_00433_Aaron Burr,7,factual,54,-22.0
+fact_00444_Charles B. McVay III,0,factual,127,-22.5
+fact_00444_Charles B. McVay III,1,factual,79,-27.75
+fact_00444_Charles B. McVay III,2,factual,115,-25.4375
+fact_00444_Charles B. McVay III,3,factual,74,-22.875
+fact_00444_Charles B. McVay III,4,factual,112,-28.9375
+fact_00444_Charles B. McVay III,5,factual,120,-28.25
+fact_00444_Charles B. McVay III,6,factual,128,-13.125
+fact_00444_Charles B. McVay III,7,factual,116,-16.375
+fact_00448_Carol Chell,0,factual,111,-25.625
+fact_00448_Carol Chell,1,factual,129,-22.75
+fact_00448_Carol Chell,2,factual,12,-28.5
+fact_00448_Carol Chell,3,factual,28,-25.5
+fact_00448_Carol Chell,4,factual,95,-19.875
+fact_00448_Carol Chell,5,factual,106,-27.5
+fact_00448_Carol Chell,6,factual,108,-24.875
+fact_00448_Carol Chell,7,factual,125,-28.6875
+fact_00449_Alen Omić,0,factual,1,-27.875
+fact_00449_Alen Omić,1,factual,115,-8.5
+fact_00449_Alen Omić,2,factual,132,-29.1875
+fact_00449_Alen Omić,3,factual,139,-28.1875
+fact_00449_Alen Omić,4,factual,78,-29.5
+fact_00449_Alen Omić,5,factual,121,-19.0
+fact_00449_Alen Omić,6,factual,127,-17.75
+fact_00449_Alen Omić,7,factual,126,-29.6875
+fact_00452_Alice Torriani,0,factual,110,11.875
+fact_00452_Alice Torriani,1,factual,122,-23.4375
+fact_00452_Alice Torriani,2,factual,130,-12.25
+fact_00452_Alice Torriani,3,factual,124,-13.375
+fact_00452_Alice Torriani,4,factual,11,-21.625
+fact_00452_Alice Torriani,5,factual,49,-26.4375
+fact_00452_Alice Torriani,6,factual,123,-7.25
+fact_00452_Alice Torriani,7,factual,109,-30.0625
+fact_00454_Albert Outler,0,factual,117,-24.875
+fact_00454_Albert Outler,1,factual,117,-21.125
+fact_00454_Albert Outler,2,factual,129,-27.6875
+fact_00454_Albert Outler,3,factual,130,-4.5
+fact_00454_Albert Outler,4,factual,130,-11.875
+fact_00454_Albert Outler,5,factual,112,-21.375
+fact_00454_Albert Outler,6,factual,123,-13.31239
+fact_00454_Albert Outler,7,factual,106,-17.75
+fact_00459_Felician of Foligno,0,factual,122,-25.625
+fact_00459_Felician of Foligno,1,factual,1,-26.375
+fact_00459_Felician of Foligno,2,factual,123,-28.625
+fact_00459_Felician of Foligno,3,factual,29,-20.75
+fact_00459_Felician of Foligno,4,factual,24,-17.125
+fact_00459_Felician of Foligno,5,factual,8,-25.875
+fact_00459_Felician of Foligno,6,factual,138,-24.375
+fact_00459_Felician of Foligno,7,factual,113,-24.625
+fact_00460_Annie Landouw,0,factual,27,-28.625
+fact_00460_Annie Landouw,1,factual,112,-22.875
+fact_00460_Annie Landouw,2,factual,119,-25.0
+fact_00460_Annie Landouw,3,factual,11,-29.4375
+fact_00460_Annie Landouw,4,factual,112,-28.5625
+fact_00460_Annie Landouw,5,factual,123,-27.5625
+fact_00460_Annie Landouw,6,factual,122,-22.625
+fact_00460_Annie Landouw,7,factual,120,-25.1875
+fact_00462_Bhāskara I,0,factual,64,-29.5625
+fact_00462_Bhāskara I,1,factual,116,-27.1875
+fact_00462_Bhāskara I,2,factual,106,-26.4375
+fact_00462_Bhāskara I,3,factual,58,-29.75
+fact_00462_Bhāskara I,4,factual,113,-17.5
+fact_00462_Bhāskara I,5,factual,102,-26.25
+fact_00462_Bhāskara I,6,factual,103,-27.1875
+fact_00462_Bhāskara I,7,factual,132,-29.1875
+fact_00464_Damon Herriman,0,factual,130,-28.9375
+fact_00464_Damon Herriman,1,factual,101,-29.25
+fact_00464_Damon Herriman,2,factual,152,-22.5
+fact_00464_Damon Herriman,3,factual,121,-25.4375
+fact_00464_Damon Herriman,4,factual,136,-21.75
+fact_00464_Damon Herriman,5,factual,139,-27.875
+fact_00464_Damon Herriman,6,factual,151,-27.8125
+fact_00464_Damon Herriman,7,factual,118,-24.875
+fact_00466_Feroze Gandhi,0,factual,1,-27.75
+fact_00466_Feroze Gandhi,1,factual,6,-27.8125
+fact_00466_Feroze Gandhi,2,factual,18,-26.9375
+fact_00466_Feroze Gandhi,3,factual,114,-28.0625
+fact_00466_Feroze Gandhi,4,factual,94,-28.1875
+fact_00466_Feroze Gandhi,5,factual,125,-30.3125
+fact_00466_Feroze Gandhi,6,factual,111,-25.5
+fact_00466_Feroze Gandhi,7,factual,130,-28.0625
+fact_00471_D. B. Nihalsinghe,0,factual,1,-22.75
+fact_00471_D. B. Nihalsinghe,1,factual,133,-29.9375
+fact_00471_D. B. Nihalsinghe,2,factual,105,-22.125
+fact_00471_D. B. Nihalsinghe,3,factual,155,-26.1875
+fact_00471_D. B. Nihalsinghe,4,factual,129,-22.75
+fact_00471_D. B. Nihalsinghe,5,factual,113,-26.8125
+fact_00471_D. B. Nihalsinghe,6,factual,93,-28.4375
+fact_00471_D. B. Nihalsinghe,7,factual,1,-22.75
+fact_00478_F. Gwynplaine MacIntyre,0,factual,144,-27.25
+fact_00478_F. Gwynplaine MacIntyre,1,factual,110,-28.1875
+fact_00478_F. Gwynplaine MacIntyre,2,factual,111,-20.0
+fact_00478_F. Gwynplaine MacIntyre,3,factual,98,-18.625
+fact_00478_F. Gwynplaine MacIntyre,4,factual,136,-29.25
+fact_00478_F. Gwynplaine MacIntyre,5,factual,105,-21.125
+fact_00478_F. Gwynplaine MacIntyre,6,factual,100,-7.125
+fact_00478_F. Gwynplaine MacIntyre,7,factual,97,-30.25
+fact_00486_Fidel Castro,0,factual,1,-22.875
+fact_00486_Fidel Castro,1,factual,116,-8.375
+fact_00486_Fidel Castro,2,factual,21,-11.24999
+fact_00486_Fidel Castro,3,factual,132,-25.25
+fact_00486_Fidel Castro,4,factual,124,-24.25
+fact_00486_Fidel Castro,5,factual,124,-18.125
+fact_00486_Fidel Castro,6,factual,123,-13.25
+fact_00486_Fidel Castro,7,factual,112,-20.75
+fact_00489_Bir Hambir,0,factual,1,-23.125
+fact_00489_Bir Hambir,1,factual,7,-26.6875
+fact_00489_Bir Hambir,2,factual,129,-28.9375
+fact_00489_Bir Hambir,3,factual,110,-29.3125
+fact_00489_Bir Hambir,4,factual,70,-27.6875
+fact_00489_Bir Hambir,5,factual,33,-27.75
+fact_00489_Bir Hambir,6,factual,94,-24.875
+fact_00489_Bir Hambir,7,factual,111,-29.25
+fact_00491_Avraham Eilam-Amzallag,0,factual,145,-28.25
+fact_00491_Avraham Eilam-Amzallag,1,factual,98,-7.0
+fact_00491_Avraham Eilam-Amzallag,2,factual,102,-23.375
+fact_00491_Avraham Eilam-Amzallag,3,factual,97,-23.75
+fact_00491_Avraham Eilam-Amzallag,4,factual,101,-19.625
+fact_00491_Avraham Eilam-Amzallag,5,factual,116,-29.25
+fact_00491_Avraham Eilam-Amzallag,6,factual,126,-22.375
+fact_00491_Avraham Eilam-Amzallag,7,factual,127,1.0
+fact_00492_Date Narikuni,0,factual,119,-18.625
+fact_00492_Date Narikuni,1,factual,124,-25.375
+fact_00492_Date Narikuni,2,factual,121,-21.625
+fact_00492_Date Narikuni,3,factual,122,-22.75
+fact_00492_Date Narikuni,4,factual,121,-12.875
+fact_00492_Date Narikuni,5,factual,96,-26.4375
+fact_00492_Date Narikuni,6,factual,127,-16.25
+fact_00492_Date Narikuni,7,factual,129,-28.3125
+fact_00495_Ariel Behar,0,factual,113,-29.0
+fact_00495_Ariel Behar,1,factual,127,-26.3125
+fact_00495_Ariel Behar,2,factual,67,-29.1875
+fact_00495_Ariel Behar,3,factual,18,-17.375
+fact_00495_Ariel Behar,4,factual,35,-22.875
+fact_00495_Ariel Behar,5,factual,9,-28.8125
+fact_00495_Ariel Behar,6,factual,123,-3.5
+fact_00495_Ariel Behar,7,factual,1,-26.9375
+fact_00498_DeAnna Bennett,0,factual,108,-25.4375
+fact_00498_DeAnna Bennett,1,factual,2,-27.25
+fact_00498_DeAnna Bennett,2,factual,95,-29.0
+fact_00498_DeAnna Bennett,3,factual,127,-21.625
+fact_00498_DeAnna Bennett,4,factual,131,-20.0
+fact_00498_DeAnna Bennett,5,factual,90,-27.4375
+fact_00498_DeAnna Bennett,6,factual,116,-27.5625
+fact_00498_DeAnna Bennett,7,factual,125,-20.5
+g4fs4z,0,creative,137,-3.75
+g4fs4z,1,creative,121,-17.625
+g4fs4z,2,creative,142,-15.375
+g4fs4z,3,creative,150,-24.625
+g4fs4z,4,creative,119,-27.4375
+g4fs4z,5,creative,159,0.5
+g4fs4z,6,creative,135,-19.5
+g4fs4z,7,creative,120,-28.125
+gyp3c3,0,creative,80,-27.3125
+gyp3c3,1,creative,143,-20.25
+gyp3c3,2,creative,144,-28.875
+gyp3c3,3,creative,151,-16.5
+gyp3c3,4,creative,165,-10.5
+gyp3c3,5,creative,144,-26.5
+gyp3c3,6,creative,126,-20.75
+gyp3c3,7,creative,127,-13.25
+hmsv36,0,creative,152,-26.625
+hmsv36,1,creative,52,-10.75
+hmsv36,2,creative,148,-7.25
+hmsv36,3,creative,145,-16.625
+hmsv36,4,creative,146,-2.25
+hmsv36,5,creative,55,-2.0
+hmsv36,6,creative,107,-26.8125
+hmsv36,7,creative,143,-22.375
+hrkod1,0,creative,150,-22.125
+hrkod1,1,creative,136,-12.375
+hrkod1,2,creative,141,-27.0625
+hrkod1,3,creative,127,-26.875
+hrkod1,4,creative,32,-15.375
+hrkod1,5,creative,143,-27.125
+hrkod1,6,creative,165,-14.5
+hrkod1,7,creative,132,-20.875
+irdp6g,0,creative,147,-30.0625
+irdp6g,1,creative,130,-27.375
+irdp6g,2,creative,124,-29.6875
+irdp6g,3,creative,7,-30.5
+irdp6g,4,creative,67,-29.25
+irdp6g,5,creative,133,-28.875
+irdp6g,6,creative,104,-26.6875
+irdp6g,7,creative,139,-29.5625
+iuj8br,0,creative,151,-26.9375
+iuj8br,1,creative,159,-24.25
+iuj8br,2,creative,9,-26.5
+iuj8br,3,creative,158,-24.375
+iuj8br,4,creative,111,-28.875
+iuj8br,5,creative,137,-27.1875
+iuj8br,6,creative,82,-25.5
+iuj8br,7,creative,142,-27.8125
+jizn99,0,creative,132,-26.25
+jizn99,1,creative,131,-28.3125
+jizn99,2,creative,133,-23.875
+jizn99,3,creative,59,-28.6875
+jizn99,4,creative,95,-27.125
+jizn99,5,creative,146,-28.3125
+jizn99,6,creative,141,-23.5
+jizn99,7,creative,139,-23.125
+jjrido,0,creative,20,-25.25
+jjrido,1,creative,142,-13.0
+jjrido,2,creative,108,-17.62499
+jjrido,3,creative,142,-21.0
+jjrido,4,creative,138,-19.625
+jjrido,5,creative,140,-15.0
+jjrido,6,creative,141,-27.5
+jjrido,7,creative,125,-19.875
+llrdyo,0,creative,166,-9.625
+llrdyo,1,creative,36,-14.375
+llrdyo,2,creative,156,-21.75
+llrdyo,3,creative,161,-27.75
+llrdyo,4,creative,135,-29.3125
+llrdyo,5,creative,145,-16.87499
+llrdyo,6,creative,144,-21.625
+llrdyo,7,creative,158,-25.25
+lvcurd,0,creative,156,-25.0
+lvcurd,1,creative,160,-25.5
+lvcurd,2,creative,141,-11.0
+lvcurd,3,creative,95,-29.0625
+lvcurd,4,creative,157,-14.375
+lvcurd,5,creative,144,-26.4375
+lvcurd,6,creative,168,0.5
+lvcurd,7,creative,148,-6.5
+m70bt5,0,creative,137,-3.25
+m70bt5,1,creative,130,-26.875
+m70bt5,2,creative,5,-21.375
+m70bt5,3,creative,144,-15.0
+m70bt5,4,creative,142,-19.5
+m70bt5,5,creative,135,-24.75
+m70bt5,6,creative,122,-22.625
+m70bt5,7,creative,142,-28.9375
+mjrz7h,0,creative,66,-24.125
+mjrz7h,1,creative,139,-19.0
+mjrz7h,2,creative,107,-29.25
+mjrz7h,3,creative,158,-7.125
+mjrz7h,4,creative,121,-12.125
+mjrz7h,5,creative,10,-4.0
+mjrz7h,6,creative,151,-3.0
+mjrz7h,7,creative,109,-11.875
+neutral_bio_000,0,neutral,0,-8.37499
+neutral_bio_000,1,neutral,30,-18.375
+neutral_bio_000,2,neutral,6,-9.625
+neutral_bio_000,3,neutral,125,-28.25
+neutral_bio_000,4,neutral,28,-27.625
+neutral_bio_000,5,neutral,128,-24.0
+neutral_bio_000,6,neutral,24,-19.0
+neutral_bio_000,7,neutral,135,-26.5
+neutral_bio_001,0,neutral,3,-20.37499
+neutral_bio_001,1,neutral,3,-20.37499
+neutral_bio_001,2,neutral,149,-14.25
+neutral_bio_001,3,neutral,138,-23.625
+neutral_bio_001,4,neutral,136,-27.125
+neutral_bio_001,5,neutral,3,-20.37499
+neutral_bio_001,6,neutral,103,-14.125
+neutral_bio_001,7,neutral,144,-27.125
+neutral_bio_002,0,neutral,53,-27.5
+neutral_bio_002,1,neutral,145,-28.625
+neutral_bio_002,2,neutral,1,-20.99999
+neutral_bio_002,3,neutral,131,-26.6875
+neutral_bio_002,4,neutral,127,-6.0
+neutral_bio_002,5,neutral,1,-20.99999
+neutral_bio_002,6,neutral,141,-25.5
+neutral_bio_002,7,neutral,142,-29.625
+neutral_bio_003,0,neutral,146,-16.75
+neutral_bio_003,1,neutral,148,-24.625
+neutral_bio_003,2,neutral,131,-15.875
+neutral_bio_003,3,neutral,36,-27.5
+neutral_bio_003,4,neutral,151,-27.0
+neutral_bio_003,5,neutral,99,-29.5625
+neutral_bio_003,6,neutral,0,-8.62499
+neutral_bio_003,7,neutral,33,-25.8125
+neutral_bio_004,0,neutral,138,-18.25
+neutral_bio_004,1,neutral,140,-24.5
+neutral_bio_004,2,neutral,130,-20.75
+neutral_bio_004,3,neutral,17,-27.5
+neutral_bio_004,4,neutral,134,-24.25
+neutral_bio_004,5,neutral,28,-26.875
+neutral_bio_004,6,neutral,6,-26.5
+neutral_bio_004,7,neutral,126,-23.75
+neutral_bio_005,0,neutral,142,-23.25
+neutral_bio_005,1,neutral,3,-26.375
+neutral_bio_005,2,neutral,132,-30.375
+neutral_bio_005,3,neutral,142,-30.1875
+neutral_bio_005,4,neutral,122,-29.375
+neutral_bio_005,5,neutral,3,-26.375
+neutral_bio_005,6,neutral,158,-24.75
+neutral_bio_005,7,neutral,135,-26.875
+neutral_bio_006,0,neutral,138,-11.75
+neutral_bio_006,1,neutral,148,-18.125
+neutral_bio_006,2,neutral,134,-25.5
+neutral_bio_006,3,neutral,123,-22.75
+neutral_bio_006,4,neutral,17,-15.875
+neutral_bio_006,5,neutral,130,-22.8125
+neutral_bio_006,6,neutral,134,-24.0
+neutral_bio_006,7,neutral,143,-27.4375
+neutral_bio_007,0,neutral,3,-17.87499
+neutral_bio_007,1,neutral,96,-26.8125
+neutral_bio_007,2,neutral,3,-17.87499
+neutral_bio_007,3,neutral,46,-13.375
+neutral_bio_007,4,neutral,3,-17.87499
+neutral_bio_007,5,neutral,132,-17.875
+neutral_bio_007,6,neutral,129,-15.625
+neutral_bio_007,7,neutral,86,-29.0
+neutral_bio_008,0,neutral,21,-19.625
+neutral_bio_008,1,neutral,145,-24.9375
+neutral_bio_008,2,neutral,28,-19.125
+neutral_bio_008,3,neutral,115,-8.375
+neutral_bio_008,4,neutral,144,-19.25
+neutral_bio_008,5,neutral,151,-5.0
+neutral_bio_008,6,neutral,1,-14.62499
+neutral_bio_008,7,neutral,135,-29.0
+neutral_bio_009,0,neutral,155,-15.875
+neutral_bio_009,1,neutral,123,-27.25
+neutral_bio_009,2,neutral,155,-28.4375
+neutral_bio_009,3,neutral,142,-23.5
+neutral_bio_009,4,neutral,126,-26.375
+neutral_bio_009,5,neutral,133,-29.25
+neutral_bio_009,6,neutral,155,-26.875
+neutral_bio_009,7,neutral,123,-29.3125
+neutral_bio_010,0,neutral,122,-18.25
+neutral_bio_010,1,neutral,3,-28.0625
+neutral_bio_010,2,neutral,3,-28.0625
+neutral_bio_010,3,neutral,129,-26.625
+neutral_bio_010,4,neutral,114,-5.0
+neutral_bio_010,5,neutral,107,-28.6875
+neutral_bio_010,6,neutral,126,-10.25
+neutral_bio_010,7,neutral,133,-26.8125
+neutral_bio_011,0,neutral,126,-28.0625
+neutral_bio_011,1,neutral,4,-26.375
+neutral_bio_011,2,neutral,135,-29.125
+neutral_bio_011,3,neutral,129,-28.5625
+neutral_bio_011,4,neutral,4,-26.375
+neutral_bio_011,5,neutral,145,-27.375
+neutral_bio_011,6,neutral,135,-26.3125
+neutral_bio_011,7,neutral,139,-18.75
+neutral_bio_012,0,neutral,142,-24.625
+neutral_bio_012,1,neutral,147,-25.375
+neutral_bio_012,2,neutral,139,-26.6875
+neutral_bio_012,3,neutral,120,-27.625
+neutral_bio_012,4,neutral,0,-12.87499
+neutral_bio_012,5,neutral,136,-24.9375
+neutral_bio_012,6,neutral,131,-26.4375
+neutral_bio_012,7,neutral,132,-26.0
+neutral_bio_013,0,neutral,0,-10.49999
+neutral_bio_013,1,neutral,24,-27.0
+neutral_bio_013,2,neutral,139,-28.75
+neutral_bio_013,3,neutral,17,-26.625
+neutral_bio_013,4,neutral,0,-10.49999
+neutral_bio_013,5,neutral,130,-27.25
+neutral_bio_013,6,neutral,128,-26.8125
+neutral_bio_013,7,neutral,0,-10.49999
+neutral_bio_014,0,neutral,73,-28.6875
+neutral_bio_014,1,neutral,5,-27.0625
+neutral_bio_014,2,neutral,81,-28.5
+neutral_bio_014,3,neutral,138,-26.8125
+neutral_bio_014,4,neutral,156,-28.0
+neutral_bio_014,5,neutral,144,-29.0625
+neutral_bio_014,6,neutral,133,-27.3125
+neutral_bio_014,7,neutral,145,-27.9375
+neutral_bio_015,0,neutral,0,-10.75
+neutral_bio_015,1,neutral,0,-10.75
+neutral_bio_015,2,neutral,129,-26.1875
+neutral_bio_015,3,neutral,0,-10.75
+neutral_bio_015,4,neutral,142,-9.125
+neutral_bio_015,5,neutral,116,-27.6875
+neutral_bio_015,6,neutral,132,-30.125
+neutral_bio_015,7,neutral,7,-27.875
+neutral_bio_016,0,neutral,3,-12.99999
+neutral_bio_016,1,neutral,123,-29.6875
+neutral_bio_016,2,neutral,144,-21.25
+neutral_bio_016,3,neutral,44,-25.125
+neutral_bio_016,4,neutral,3,-12.99999
+neutral_bio_016,5,neutral,147,-24.875
+neutral_bio_016,6,neutral,133,-13.125
+neutral_bio_016,7,neutral,3,-12.99999
+neutral_bio_017,0,neutral,52,-28.25
+neutral_bio_017,1,neutral,56,-29.4375
+neutral_bio_017,2,neutral,142,-29.0625
+neutral_bio_017,3,neutral,140,-21.375
+neutral_bio_017,4,neutral,144,-29.625
+neutral_bio_017,5,neutral,145,-22.25
+neutral_bio_017,6,neutral,48,-27.375
+neutral_bio_017,7,neutral,121,-28.3125
+neutral_bio_018,0,neutral,17,-17.37499
+neutral_bio_018,1,neutral,140,-26.5625
+neutral_bio_018,2,neutral,59,-24.375
+neutral_bio_018,3,neutral,133,-21.25
+neutral_bio_018,4,neutral,108,-23.5
+neutral_bio_018,5,neutral,132,-13.75
+neutral_bio_018,6,neutral,139,-20.5
+neutral_bio_018,7,neutral,142,-13.75
+neutral_bio_019,0,neutral,3,-22.75
+neutral_bio_019,1,neutral,134,-29.5625
+neutral_bio_019,2,neutral,156,-28.25
+neutral_bio_019,3,neutral,87,-28.25
+neutral_bio_019,4,neutral,140,-12.125
+neutral_bio_019,5,neutral,115,-26.25
+neutral_bio_019,6,neutral,125,-23.625
+neutral_bio_019,7,neutral,117,-25.625
+neutral_bio_020,0,neutral,114,-27.0625
+neutral_bio_020,1,neutral,137,-27.0
+neutral_bio_020,2,neutral,79,-29.125
+neutral_bio_020,3,neutral,73,-24.8125
+neutral_bio_020,4,neutral,0,-9.24999
+neutral_bio_020,5,neutral,21,-29.0625
+neutral_bio_020,6,neutral,136,-29.4375
+neutral_bio_020,7,neutral,131,-29.8125
+neutral_bio_021,0,neutral,3,-23.0625
+neutral_bio_021,1,neutral,79,-14.375
+neutral_bio_021,2,neutral,148,-10.5
+neutral_bio_021,3,neutral,139,-8.25
+neutral_bio_021,4,neutral,3,-23.0625
+neutral_bio_021,5,neutral,117,-28.5625
+neutral_bio_021,6,neutral,130,-25.875
+neutral_bio_021,7,neutral,113,-28.4375
+neutral_bio_022,0,neutral,127,-2.0
+neutral_bio_022,1,neutral,51,-25.0
+neutral_bio_022,2,neutral,134,-18.375
+neutral_bio_022,3,neutral,146,-30.75
+neutral_bio_022,4,neutral,100,-28.75
+neutral_bio_022,5,neutral,145,0.5
+neutral_bio_022,6,neutral,130,-12.25
+neutral_bio_022,7,neutral,132,-30.0
+neutral_bio_023,0,neutral,1,-26.125
+neutral_bio_023,1,neutral,141,-23.125
+neutral_bio_023,2,neutral,1,-26.125
+neutral_bio_023,3,neutral,1,-26.125
+neutral_bio_023,4,neutral,141,-25.625
+neutral_bio_023,5,neutral,133,-28.125
+neutral_bio_023,6,neutral,65,-25.625
+neutral_bio_023,7,neutral,130,-26.3125
+neutral_bio_024,0,neutral,151,-23.875
+neutral_bio_024,1,neutral,153,-28.625
+neutral_bio_024,2,neutral,116,-18.125
+neutral_bio_024,3,neutral,113,-27.875
+neutral_bio_024,4,neutral,142,-29.375
+neutral_bio_024,5,neutral,125,-26.4375
+neutral_bio_024,6,neutral,107,-9.749
+neutral_bio_024,7,neutral,134,-23.75
+neutral_bio_025,0,neutral,0,-9.24999
+neutral_bio_025,1,neutral,86,-18.375
+neutral_bio_025,2,neutral,105,-21.625
+neutral_bio_025,3,neutral,16,-15.125
+neutral_bio_025,4,neutral,0,-9.24999
+neutral_bio_025,5,neutral,0,-9.24999
+neutral_bio_025,6,neutral,0,-9.24999
+neutral_bio_025,7,neutral,0,-9.24999
+neutral_bio_026,0,neutral,138,-17.875
+neutral_bio_026,1,neutral,4,-27.1875
+neutral_bio_026,2,neutral,19,-26.625
+neutral_bio_026,3,neutral,4,-27.1875
+neutral_bio_026,4,neutral,25,-21.875
+neutral_bio_026,5,neutral,9,-19.75
+neutral_bio_026,6,neutral,141,-26.125
+neutral_bio_026,7,neutral,115,-29.25
+neutral_bio_027,0,neutral,129,-28.9375
+neutral_bio_027,1,neutral,152,-10.5
+neutral_bio_027,2,neutral,3,-24.0
+neutral_bio_027,3,neutral,3,-24.0
+neutral_bio_027,4,neutral,58,-28.3125
+neutral_bio_027,5,neutral,3,-24.0
+neutral_bio_027,6,neutral,123,-12.25
+neutral_bio_027,7,neutral,3,-24.0
+neutral_bio_028,0,neutral,1,-28.6875
+neutral_bio_028,1,neutral,144,-26.3125
+neutral_bio_028,2,neutral,1,-28.6875
+neutral_bio_028,3,neutral,108,-29.3125
+neutral_bio_028,4,neutral,1,-28.6875
+neutral_bio_028,5,neutral,7,-25.9375
+neutral_bio_028,6,neutral,136,-22.125
+neutral_bio_028,7,neutral,103,-27.75
+neutral_bio_029,0,neutral,150,-10.5
+neutral_bio_029,1,neutral,138,-20.75
+neutral_bio_029,2,neutral,134,-16.125
+neutral_bio_029,3,neutral,153,-28.125
+neutral_bio_029,4,neutral,140,-25.8125
+neutral_bio_029,5,neutral,34,-25.125
+neutral_bio_029,6,neutral,131,-6.0
+neutral_bio_029,7,neutral,136,-23.125
+neutral_bio_030,0,neutral,139,-20.75
+neutral_bio_030,1,neutral,144,-7.62491
+neutral_bio_030,2,neutral,16,-13.24999
+neutral_bio_030,3,neutral,117,-28.8125
+neutral_bio_030,4,neutral,138,-9.625
+neutral_bio_030,5,neutral,136,-22.875
+neutral_bio_030,6,neutral,129,-23.125
+neutral_bio_030,7,neutral,148,-5.75
+neutral_bio_031,0,neutral,153,-26.1875
+neutral_bio_031,1,neutral,147,-29.375
+neutral_bio_031,2,neutral,4,-29.1875
+neutral_bio_031,3,neutral,139,-28.125
+neutral_bio_031,4,neutral,148,-28.5
+neutral_bio_031,5,neutral,143,-30.3125
+neutral_bio_031,6,neutral,0,-10.87499
+neutral_bio_031,7,neutral,147,-26.625
+neutral_bio_032,0,neutral,125,-5.75
+neutral_bio_032,1,neutral,130,-28.3125
+neutral_bio_032,2,neutral,146,-18.0
+neutral_bio_032,3,neutral,0,-9.12499
+neutral_bio_032,4,neutral,23,-28.25
+neutral_bio_032,5,neutral,0,-9.12499
+neutral_bio_032,6,neutral,127,-30.0
+neutral_bio_032,7,neutral,85,-11.0
+neutral_bio_033,0,neutral,106,-27.5
+neutral_bio_033,1,neutral,139,-26.125
+neutral_bio_033,2,neutral,1,-14.625
+neutral_bio_033,3,neutral,129,-1.75
+neutral_bio_033,4,neutral,154,-26.875
+neutral_bio_033,5,neutral,146,-29.3125
+neutral_bio_033,6,neutral,133,-14.125
+neutral_bio_033,7,neutral,1,-14.625
+neutral_bio_034,0,neutral,5,-27.25
+neutral_bio_034,1,neutral,139,-20.25
+neutral_bio_034,2,neutral,132,-29.5
+neutral_bio_034,3,neutral,140,-23.375
+neutral_bio_034,4,neutral,5,-27.25
+neutral_bio_034,5,neutral,151,-29.4375
+neutral_bio_034,6,neutral,15,-26.3125
+neutral_bio_034,7,neutral,5,-27.25
+neutral_bio_035,0,neutral,138,-23.375
+neutral_bio_035,1,neutral,1,-23.4375
+neutral_bio_035,2,neutral,149,-29.375
+neutral_bio_035,3,neutral,132,-28.6875
+neutral_bio_035,4,neutral,1,-23.4375
+neutral_bio_035,5,neutral,141,-25.5
+neutral_bio_035,6,neutral,24,-29.25
+neutral_bio_035,7,neutral,134,-30.5
+neutral_bio_036,0,neutral,129,-28.75
+neutral_bio_036,1,neutral,99,-28.625
+neutral_bio_036,2,neutral,153,-29.3125
+neutral_bio_036,3,neutral,126,-29.3125
+neutral_bio_036,4,neutral,118,-21.5
+neutral_bio_036,5,neutral,123,-29.4375
+neutral_bio_036,6,neutral,115,-17.375
+neutral_bio_036,7,neutral,0,-9.49999
+neutral_bio_037,0,neutral,99,-24.375
+neutral_bio_037,1,neutral,149,-26.1875
+neutral_bio_037,2,neutral,124,-26.75
+neutral_bio_037,3,neutral,147,-8.75
+neutral_bio_037,4,neutral,102,-26.3125
+neutral_bio_037,5,neutral,4,-25.125
+neutral_bio_037,6,neutral,4,-25.125
+neutral_bio_037,7,neutral,16,-20.625
+neutral_bio_038,0,neutral,146,-28.75
+neutral_bio_038,1,neutral,142,-24.5
+neutral_bio_038,2,neutral,31,-23.125
+neutral_bio_038,3,neutral,135,-20.125
+neutral_bio_038,4,neutral,4,-28.9375
+neutral_bio_038,5,neutral,144,-28.75
+neutral_bio_038,6,neutral,136,-29.25
+neutral_bio_038,7,neutral,19,-28.0
+neutral_bio_039,0,neutral,156,-13.25
+neutral_bio_039,1,neutral,4,-26.1875
+neutral_bio_039,2,neutral,151,-27.8125
+neutral_bio_039,3,neutral,131,-28.5625
+neutral_bio_039,4,neutral,128,-24.6875
+neutral_bio_039,5,neutral,30,-29.5625
+neutral_bio_039,6,neutral,14,-28.5625
+neutral_bio_039,7,neutral,70,-20.5
+neutral_nar_000,0,neutral,140,-22.0
+neutral_nar_000,1,neutral,148,-25.875
+neutral_nar_000,2,neutral,4,-7.25
+neutral_nar_000,3,neutral,4,-7.25
+neutral_nar_000,4,neutral,127,-7.375
+neutral_nar_000,5,neutral,83,-29.375
+neutral_nar_000,6,neutral,4,-7.25
+neutral_nar_000,7,neutral,72,-26.875
+neutral_nar_001,0,neutral,134,-28.375
+neutral_nar_001,1,neutral,2,-23.75
+neutral_nar_001,2,neutral,129,-28.5
+neutral_nar_001,3,neutral,121,-25.75
+neutral_nar_001,4,neutral,2,-23.75
+neutral_nar_001,5,neutral,124,-25.625
+neutral_nar_001,6,neutral,2,-23.75
+neutral_nar_001,7,neutral,125,-28.8125
+neutral_nar_002,0,neutral,118,-28.0
+neutral_nar_002,1,neutral,60,-21.125
+neutral_nar_002,2,neutral,155,-28.5625
+neutral_nar_002,3,neutral,141,-25.875
+neutral_nar_002,4,neutral,145,-26.625
+neutral_nar_002,5,neutral,142,-27.0625
+neutral_nar_002,6,neutral,1,-15.99999
+neutral_nar_002,7,neutral,146,-28.4375
+neutral_nar_003,0,neutral,2,-26.25
+neutral_nar_003,1,neutral,94,-21.125
+neutral_nar_003,2,neutral,139,-29.125
+neutral_nar_003,3,neutral,2,-26.25
+neutral_nar_003,4,neutral,2,-26.25
+neutral_nar_003,5,neutral,128,-29.5625
+neutral_nar_003,6,neutral,154,-23.625
+neutral_nar_003,7,neutral,134,-28.4375
+neutral_nar_004,0,neutral,4,-13.0
+neutral_nar_004,1,neutral,137,-13.75
+neutral_nar_004,2,neutral,133,-23.875
+neutral_nar_004,3,neutral,4,-13.0
+neutral_nar_004,4,neutral,4,-13.0
+neutral_nar_004,5,neutral,4,-13.0
+neutral_nar_004,6,neutral,131,-5.5
+neutral_nar_004,7,neutral,143,-27.125
+neutral_nar_005,0,neutral,162,-17.375
+neutral_nar_005,1,neutral,142,-27.25
+neutral_nar_005,2,neutral,4,-7.5
+neutral_nar_005,3,neutral,4,-7.5
+neutral_nar_005,4,neutral,131,-25.8125
+neutral_nar_005,5,neutral,4,-7.5
+neutral_nar_005,6,neutral,149,-23.0
+neutral_nar_005,7,neutral,142,-24.75
+neutral_nar_006,0,neutral,2,-25.5
+neutral_nar_006,1,neutral,2,-25.5
+neutral_nar_006,2,neutral,114,-30.0
+neutral_nar_006,3,neutral,148,-26.0
+neutral_nar_006,4,neutral,135,-26.9375
+neutral_nar_006,5,neutral,12,-25.875
+neutral_nar_006,6,neutral,2,-25.5
+neutral_nar_006,7,neutral,82,-31.0625
+neutral_nar_007,0,neutral,4,-11.5
+neutral_nar_007,1,neutral,4,-11.5
+neutral_nar_007,2,neutral,139,-12.125
+neutral_nar_007,3,neutral,4,-11.5
+neutral_nar_007,4,neutral,39,-21.5
+neutral_nar_007,5,neutral,4,-11.5
+neutral_nar_007,6,neutral,141,-27.0625
+neutral_nar_007,7,neutral,4,-11.5
+neutral_nar_008,0,neutral,67,-17.625
+neutral_nar_008,1,neutral,19,-22.0
+neutral_nar_008,2,neutral,105,-21.625
+neutral_nar_008,3,neutral,1,-3.49999
+neutral_nar_008,4,neutral,1,-3.49999
+neutral_nar_008,5,neutral,1,-3.49999
+neutral_nar_008,6,neutral,1,-3.49999
+neutral_nar_008,7,neutral,1,-3.49999
+neutral_nar_009,0,neutral,2,-26.375
+neutral_nar_009,1,neutral,133,-29.4375
+neutral_nar_009,2,neutral,90,-28.8125
+neutral_nar_009,3,neutral,102,-30.0
+neutral_nar_009,4,neutral,137,-26.25
+neutral_nar_009,5,neutral,10,-26.9375
+neutral_nar_009,6,neutral,137,-25.625
+neutral_nar_009,7,neutral,138,-25.6875
+neutral_nar_010,0,neutral,108,-27.625
+neutral_nar_010,1,neutral,4,-20.25
+neutral_nar_010,2,neutral,122,-25.5625
+neutral_nar_010,3,neutral,154,-24.5
+neutral_nar_010,4,neutral,4,-20.25
+neutral_nar_010,5,neutral,4,-20.25
+neutral_nar_010,6,neutral,64,-27.625
+neutral_nar_010,7,neutral,4,-20.25
+neutral_nar_011,0,neutral,127,-20.875
+neutral_nar_011,1,neutral,77,6.50581
+neutral_nar_011,2,neutral,3,-25.5
+neutral_nar_011,3,neutral,31,-22.625
+neutral_nar_011,4,neutral,152,-20.25
+neutral_nar_011,5,neutral,136,-27.875
+neutral_nar_011,6,neutral,140,-28.9375
+neutral_nar_011,7,neutral,3,-25.5
+neutral_nar_012,0,neutral,114,-28.0625
+neutral_nar_012,1,neutral,160,-14.625
+neutral_nar_012,2,neutral,101,-26.375
+neutral_nar_012,3,neutral,2,-26.875
+neutral_nar_012,4,neutral,150,-26.0
+neutral_nar_012,5,neutral,2,-26.875
+neutral_nar_012,6,neutral,2,-26.875
+neutral_nar_012,7,neutral,154,-24.25
+neutral_nar_013,0,neutral,136,-6.24999
+neutral_nar_013,1,neutral,1,-16.37499
+neutral_nar_013,2,neutral,133,-24.75
+neutral_nar_013,3,neutral,146,-25.5
+neutral_nar_013,4,neutral,148,-18.875
+neutral_nar_013,5,neutral,35,-19.625
+neutral_nar_013,6,neutral,36,-22.125
+neutral_nar_013,7,neutral,1,-16.37499
+neutral_nar_014,0,neutral,0,-11.37499
+neutral_nar_014,1,neutral,1,-14.49999
+neutral_nar_014,2,neutral,0,-11.37499
+neutral_nar_014,3,neutral,0,-11.37499
+neutral_nar_014,4,neutral,0,-11.37499
+neutral_nar_014,5,neutral,0,-11.37499
+neutral_nar_014,6,neutral,0,-11.37499
+neutral_nar_014,7,neutral,0,-11.37499
+neutral_nar_015,0,neutral,18,-24.875
+neutral_nar_015,1,neutral,128,-24.875
+neutral_nar_015,2,neutral,116,-26.8125
+neutral_nar_015,3,neutral,28,-28.9375
+neutral_nar_015,4,neutral,1,-11.49999
+neutral_nar_015,5,neutral,1,-11.49999
+neutral_nar_015,6,neutral,1,-11.49999
+neutral_nar_015,7,neutral,1,-11.49999
+neutral_nar_016,0,neutral,4,-13.625
+neutral_nar_016,1,neutral,4,-13.625
+neutral_nar_016,2,neutral,4,-13.625
+neutral_nar_016,3,neutral,142,-0.5
+neutral_nar_016,4,neutral,4,-13.625
+neutral_nar_016,5,neutral,153,-11.75
+neutral_nar_016,6,neutral,137,-27.4375
+neutral_nar_016,7,neutral,80,-27.4375
+neutral_nar_017,0,neutral,64,-15.25
+neutral_nar_017,1,neutral,147,-26.75
+neutral_nar_017,2,neutral,141,-15.75
+neutral_nar_017,3,neutral,4,-22.25
+neutral_nar_017,4,neutral,139,-16.5
+neutral_nar_017,5,neutral,148,-23.25
+neutral_nar_017,6,neutral,4,-22.25
+neutral_nar_017,7,neutral,4,-22.25
+neutral_nar_018,0,neutral,135,-23.6875
+neutral_nar_018,1,neutral,0,-12.49999
+neutral_nar_018,2,neutral,0,-12.49999
+neutral_nar_018,3,neutral,0,-12.49999
+neutral_nar_018,4,neutral,0,-12.49999
+neutral_nar_018,5,neutral,119,-29.8125
+neutral_nar_018,6,neutral,131,-29.25
+neutral_nar_018,7,neutral,62,-28.25
+neutral_nar_019,0,neutral,1,-15.49999
+neutral_nar_019,1,neutral,141,-28.5625
+neutral_nar_019,2,neutral,39,-28.75
+neutral_nar_019,3,neutral,47,-25.5
+neutral_nar_019,4,neutral,1,-15.49999
+neutral_nar_019,5,neutral,1,-15.49999
+neutral_nar_019,6,neutral,1,-15.49999
+neutral_nar_019,7,neutral,150,-22.625
+neutral_nar_020,0,neutral,3,-18.625
+neutral_nar_020,1,neutral,140,-27.125
+neutral_nar_020,2,neutral,155,-24.125
+neutral_nar_020,3,neutral,3,-18.625
+neutral_nar_020,4,neutral,3,-18.625
+neutral_nar_020,5,neutral,3,-18.625
+neutral_nar_020,6,neutral,3,-18.625
+neutral_nar_020,7,neutral,3,-18.625
+neutral_nar_021,0,neutral,149,-26.625
+neutral_nar_021,1,neutral,73,-23.875
+neutral_nar_021,2,neutral,56,-5.75
+neutral_nar_021,3,neutral,4,-17.875
+neutral_nar_021,4,neutral,4,-17.875
+neutral_nar_021,5,neutral,4,-17.875
+neutral_nar_021,6,neutral,4,-17.875
+neutral_nar_021,7,neutral,4,-17.875
+neutral_nar_022,0,neutral,56,-20.0
+neutral_nar_022,1,neutral,135,-23.5
+neutral_nar_022,2,neutral,104,-27.125
+neutral_nar_022,3,neutral,3,-15.625
+neutral_nar_022,4,neutral,121,-23.75
+neutral_nar_022,5,neutral,3,-15.625
+neutral_nar_022,6,neutral,3,-15.625
+neutral_nar_022,7,neutral,141,2.5
+neutral_nar_023,0,neutral,35,-27.6875
+neutral_nar_023,1,neutral,134,-28.5625
+neutral_nar_023,2,neutral,0,-12.37499
+neutral_nar_023,3,neutral,0,-12.37499
+neutral_nar_023,4,neutral,147,-29.5
+neutral_nar_023,5,neutral,0,-12.37499
+neutral_nar_023,6,neutral,0,-12.37499
+neutral_nar_023,7,neutral,0,-12.37499
+neutral_nar_024,0,neutral,108,-10.375
+neutral_nar_024,1,neutral,87,-28.9375
+neutral_nar_024,2,neutral,1,-15.375
+neutral_nar_024,3,neutral,1,-15.375
+neutral_nar_024,4,neutral,1,-15.375
+neutral_nar_024,5,neutral,131,-28.75
+neutral_nar_024,6,neutral,135,-24.125
+neutral_nar_024,7,neutral,1,-15.375
+neutral_nar_025,0,neutral,120,-24.125
+neutral_nar_025,1,neutral,125,-26.8125
+neutral_nar_025,2,neutral,97,-25.5625
+neutral_nar_025,3,neutral,125,-29.125
+neutral_nar_025,4,neutral,132,-25.25
+neutral_nar_025,5,neutral,0,-19.0
+neutral_nar_025,6,neutral,0,-19.0
+neutral_nar_025,7,neutral,128,-26.0625
+neutral_nar_026,0,neutral,0,-9.62499
+neutral_nar_026,1,neutral,40,-24.875
+neutral_nar_026,2,neutral,115,-25.75
+neutral_nar_026,3,neutral,0,-9.62499
+neutral_nar_026,4,neutral,129,-22.375
+neutral_nar_026,5,neutral,138,-29.25
+neutral_nar_026,6,neutral,127,-29.0
+neutral_nar_026,7,neutral,53,-26.125
+neutral_nar_027,0,neutral,5,-16.875
+neutral_nar_027,1,neutral,5,-16.875
+neutral_nar_027,2,neutral,5,-16.875
+neutral_nar_027,3,neutral,5,-16.875
+neutral_nar_027,4,neutral,5,-16.875
+neutral_nar_027,5,neutral,5,-16.875
+neutral_nar_027,6,neutral,5,-16.875
+neutral_nar_027,7,neutral,122,-19.375
+neutral_nar_028,0,neutral,136,-27.4375
+neutral_nar_028,1,neutral,1,-13.12498
+neutral_nar_028,2,neutral,141,-28.125
+neutral_nar_028,3,neutral,131,-19.5
+neutral_nar_028,4,neutral,154,-29.5625
+neutral_nar_028,5,neutral,1,-13.12498
+neutral_nar_028,6,neutral,141,-29.0
+neutral_nar_028,7,neutral,156,-27.6875
+neutral_nar_029,0,neutral,130,-18.24999
+neutral_nar_029,1,neutral,1,-1.99999
+neutral_nar_029,2,neutral,1,-1.99999
+neutral_nar_029,3,neutral,1,-1.99999
+neutral_nar_029,4,neutral,1,-1.99999
+neutral_nar_029,5,neutral,139,-29.0
+neutral_nar_029,6,neutral,1,-1.99999
+neutral_nar_029,7,neutral,1,-1.99999
+neutral_nar_030,0,neutral,29,-25.25
+neutral_nar_030,1,neutral,96,-27.25
+neutral_nar_030,2,neutral,1,-19.625
+neutral_nar_030,3,neutral,118,-23.875
+neutral_nar_030,4,neutral,135,-27.1875
+neutral_nar_030,5,neutral,1,-19.625
+neutral_nar_030,6,neutral,16,-28.6875
+neutral_nar_030,7,neutral,125,-25.625
+neutral_nar_031,0,neutral,141,-17.625
+neutral_nar_031,1,neutral,103,-27.875
+neutral_nar_031,2,neutral,130,-26.1875
+neutral_nar_031,3,neutral,3,-14.5
+neutral_nar_031,4,neutral,3,-14.5
+neutral_nar_031,5,neutral,3,-14.5
+neutral_nar_031,6,neutral,3,-14.5
+neutral_nar_031,7,neutral,3,-14.5
+neutral_nar_032,0,neutral,138,-26.25
+neutral_nar_032,1,neutral,16,-29.1875
+neutral_nar_032,2,neutral,4,-21.875
+neutral_nar_032,3,neutral,4,-21.875
+neutral_nar_032,4,neutral,4,-21.875
+neutral_nar_032,5,neutral,4,-21.875
+neutral_nar_032,6,neutral,4,-21.875
+neutral_nar_032,7,neutral,37,-27.125
+neutral_nar_033,0,neutral,106,-25.875
+neutral_nar_033,1,neutral,1,-17.24999
+neutral_nar_033,2,neutral,1,-17.24999
+neutral_nar_033,3,neutral,1,-17.24999
+neutral_nar_033,4,neutral,1,-17.24999
+neutral_nar_033,5,neutral,150,-26.6875
+neutral_nar_033,6,neutral,125,-28.8125
+neutral_nar_033,7,neutral,49,-10.49999
+neutral_nar_034,0,neutral,3,-18.375
+neutral_nar_034,1,neutral,138,-24.25
+neutral_nar_034,2,neutral,31,-19.625
+neutral_nar_034,3,neutral,3,-18.375
+neutral_nar_034,4,neutral,33,-27.625
+neutral_nar_034,5,neutral,150,-24.125
+neutral_nar_034,6,neutral,137,-27.375
+neutral_nar_034,7,neutral,120,-28.625
+neutral_nar_035,0,neutral,4,-16.25
+neutral_nar_035,1,neutral,135,-21.25
+neutral_nar_035,2,neutral,4,-16.25
+neutral_nar_035,3,neutral,4,-16.25
+neutral_nar_035,4,neutral,4,-16.25
+neutral_nar_035,5,neutral,153,-14.5
+neutral_nar_035,6,neutral,158,-15.12499
+neutral_nar_035,7,neutral,80,-24.25
+neutral_nar_036,0,neutral,134,-26.5
+neutral_nar_036,1,neutral,3,-21.0
+neutral_nar_036,2,neutral,3,-21.0
+neutral_nar_036,3,neutral,127,-18.125
+neutral_nar_036,4,neutral,3,-21.0
+neutral_nar_036,5,neutral,107,-10.625
+neutral_nar_036,6,neutral,126,-24.6875
+neutral_nar_036,7,neutral,151,-20.625
+neutral_nar_037,0,neutral,1,-16.62499
+neutral_nar_037,1,neutral,1,-16.62499
+neutral_nar_037,2,neutral,135,-28.5
+neutral_nar_037,3,neutral,1,-16.62499
+neutral_nar_037,4,neutral,150,-27.4375
+neutral_nar_037,5,neutral,133,-27.25
+neutral_nar_037,6,neutral,1,-16.62499
+neutral_nar_037,7,neutral,142,-29.625
+neutral_nar_038,0,neutral,127,-18.375
+neutral_nar_038,1,neutral,1,-15.375
+neutral_nar_038,2,neutral,1,-15.375
+neutral_nar_038,3,neutral,1,-15.375
+neutral_nar_038,4,neutral,1,-15.375
+neutral_nar_038,5,neutral,1,-15.375
+neutral_nar_038,6,neutral,1,-15.375
+neutral_nar_038,7,neutral,1,-15.375
+neutral_nar_039,0,neutral,22,-24.125
+neutral_nar_039,1,neutral,4,-22.0
+neutral_nar_039,2,neutral,4,-22.0
+neutral_nar_039,3,neutral,146,-19.25
+neutral_nar_039,4,neutral,143,-17.49993
+neutral_nar_039,5,neutral,4,-22.0
+neutral_nar_039,6,neutral,31,-28.3125
+neutral_nar_039,7,neutral,133,-19.125
+neutral_ncs_000,0,neutral,126,-21.875
+neutral_ncs_000,1,neutral,143,-19.75
+neutral_ncs_000,2,neutral,132,-19.625
+neutral_ncs_000,3,neutral,139,-27.4375
+neutral_ncs_000,4,neutral,10,-22.625
+neutral_ncs_000,5,neutral,12,-28.875
+neutral_ncs_000,6,neutral,61,-27.8125
+neutral_ncs_000,7,neutral,152,-28.75
+neutral_ncs_001,0,neutral,73,-24.5
+neutral_ncs_001,1,neutral,91,-30.625
+neutral_ncs_001,2,neutral,5,-26.3125
+neutral_ncs_001,3,neutral,140,-27.625
+neutral_ncs_001,4,neutral,141,-14.125
+neutral_ncs_001,5,neutral,124,-23.5625
+neutral_ncs_001,6,neutral,151,-26.0625
+neutral_ncs_001,7,neutral,5,-26.3125
+neutral_ncs_002,0,neutral,0,-14.99999
+neutral_ncs_002,1,neutral,99,-27.375
+neutral_ncs_002,2,neutral,132,-29.0625
+neutral_ncs_002,3,neutral,0,-14.99999
+neutral_ncs_002,4,neutral,139,-28.875
+neutral_ncs_002,5,neutral,134,-19.125
+neutral_ncs_002,6,neutral,141,-29.625
+neutral_ncs_002,7,neutral,127,-22.625
+neutral_ncs_003,0,neutral,147,-23.375
+neutral_ncs_003,1,neutral,0,-11.37499
+neutral_ncs_003,2,neutral,136,-12.75
+neutral_ncs_003,3,neutral,150,-1.75
+neutral_ncs_003,4,neutral,58,-27.125
+neutral_ncs_003,5,neutral,152,-10.75
+neutral_ncs_003,6,neutral,107,-27.3125
+neutral_ncs_003,7,neutral,35,-29.6875
+neutral_ncs_004,0,neutral,38,-30.125
+neutral_ncs_004,1,neutral,0,-12.74999
+neutral_ncs_004,2,neutral,0,-12.74999
+neutral_ncs_004,3,neutral,6,-30.375
+neutral_ncs_004,4,neutral,105,-29.0625
+neutral_ncs_004,5,neutral,24,-29.375
+neutral_ncs_004,6,neutral,141,-29.0
+neutral_ncs_004,7,neutral,150,-27.5
+neutral_ncs_005,0,neutral,0,-10.99999
+neutral_ncs_005,1,neutral,151,-29.8125
+neutral_ncs_005,2,neutral,0,-10.99999
+neutral_ncs_005,3,neutral,129,-28.9375
+neutral_ncs_005,4,neutral,0,-10.99999
+neutral_ncs_005,5,neutral,0,-10.99999
+neutral_ncs_005,6,neutral,107,-30.1875
+neutral_ncs_005,7,neutral,3,-29.25
+neutral_ncs_006,0,neutral,0,-12.12499
+neutral_ncs_006,1,neutral,102,-28.125
+neutral_ncs_006,2,neutral,0,-12.12499
+neutral_ncs_006,3,neutral,116,-29.5625
+neutral_ncs_006,4,neutral,61,-28.9375
+neutral_ncs_006,5,neutral,8,-29.875
+neutral_ncs_006,6,neutral,111,-24.5
+neutral_ncs_006,7,neutral,134,-30.25
+neutral_ncs_007,0,neutral,1,-28.1875
+neutral_ncs_007,1,neutral,122,-29.0625
+neutral_ncs_007,2,neutral,1,-28.1875
+neutral_ncs_007,3,neutral,142,-27.4375
+neutral_ncs_007,4,neutral,134,-21.25
+neutral_ncs_007,5,neutral,123,-24.875
+neutral_ncs_007,6,neutral,135,-10.875
+neutral_ncs_007,7,neutral,123,-17.75
+neutral_ncs_008,0,neutral,1,-18.87499
+neutral_ncs_008,1,neutral,138,-26.6875
+neutral_ncs_008,2,neutral,132,-24.125
+neutral_ncs_008,3,neutral,106,-25.4375
+neutral_ncs_008,4,neutral,155,-29.5
+neutral_ncs_008,5,neutral,1,-18.87499
+neutral_ncs_008,6,neutral,152,-26.4375
+neutral_ncs_008,7,neutral,137,-24.375
+neutral_ncs_009,0,neutral,153,-27.5
+neutral_ncs_009,1,neutral,128,-21.0
+neutral_ncs_009,2,neutral,107,-26.0
+neutral_ncs_009,3,neutral,76,-14.24999
+neutral_ncs_009,4,neutral,140,-30.0625
+neutral_ncs_009,5,neutral,61,-28.625
+neutral_ncs_009,6,neutral,151,-27.5625
+neutral_ncs_009,7,neutral,122,-29.25
+neutral_ncs_010,0,neutral,18,-28.375
+neutral_ncs_010,1,neutral,152,-23.125
+neutral_ncs_010,2,neutral,67,-30.0625
+neutral_ncs_010,3,neutral,123,-28.3125
+neutral_ncs_010,4,neutral,139,-27.9375
+neutral_ncs_010,5,neutral,129,-28.625
+neutral_ncs_010,6,neutral,142,-23.875
+neutral_ncs_010,7,neutral,0,-14.87499
+neutral_ncs_011,0,neutral,112,-28.125
+neutral_ncs_011,1,neutral,126,-25.875
+neutral_ncs_011,2,neutral,118,-29.5625
+neutral_ncs_011,3,neutral,31,-28.6875
+neutral_ncs_011,4,neutral,133,-27.6875
+neutral_ncs_011,5,neutral,121,-29.6875
+neutral_ncs_011,6,neutral,155,-28.5625
+neutral_ncs_011,7,neutral,93,-28.9375
+neutral_ncs_012,0,neutral,2,-18.87499
+neutral_ncs_012,1,neutral,148,-4.25
+neutral_ncs_012,2,neutral,144,-28.75
+neutral_ncs_012,3,neutral,144,-20.75
+neutral_ncs_012,4,neutral,126,-27.75
+neutral_ncs_012,5,neutral,109,-27.875
+neutral_ncs_012,6,neutral,144,-20.25
+neutral_ncs_012,7,neutral,141,-29.25
+neutral_ncs_013,0,neutral,1,-25.0
+neutral_ncs_013,1,neutral,1,-25.0
+neutral_ncs_013,2,neutral,134,-25.0
+neutral_ncs_013,3,neutral,5,-17.49999
+neutral_ncs_013,4,neutral,144,-26.3125
+neutral_ncs_013,5,neutral,145,-28.5
+neutral_ncs_013,6,neutral,134,-28.625
+neutral_ncs_013,7,neutral,5,-24.875
+neutral_ncs_014,0,neutral,137,-27.875
+neutral_ncs_014,1,neutral,146,-26.0
+neutral_ncs_014,2,neutral,77,-27.3125
+neutral_ncs_014,3,neutral,146,-26.875
+neutral_ncs_014,4,neutral,145,-23.875
+neutral_ncs_014,5,neutral,87,-30.5625
+neutral_ncs_014,6,neutral,156,-22.625
+neutral_ncs_014,7,neutral,0,-8.62499
+neutral_ncs_015,0,neutral,1,-10.49999
+neutral_ncs_015,1,neutral,142,-25.75
+neutral_ncs_015,2,neutral,1,-10.49999
+neutral_ncs_015,3,neutral,122,-23.625
+neutral_ncs_015,4,neutral,15,-25.5625
+neutral_ncs_015,5,neutral,81,-29.375
+neutral_ncs_015,6,neutral,128,-27.375
+neutral_ncs_015,7,neutral,36,-28.9375
+neutral_ncs_016,0,neutral,148,-11.125
+neutral_ncs_016,1,neutral,128,-17.24999
+neutral_ncs_016,2,neutral,25,-29.0625
+neutral_ncs_016,3,neutral,1,-18.74998
+neutral_ncs_016,4,neutral,1,-18.74998
+neutral_ncs_016,5,neutral,1,-18.74998
+neutral_ncs_016,6,neutral,122,-28.125
+neutral_ncs_016,7,neutral,143,-24.375
+neutral_ncs_017,0,neutral,0,-10.49999
+neutral_ncs_017,1,neutral,132,-19.5
+neutral_ncs_017,2,neutral,20,-8.75
+neutral_ncs_017,3,neutral,138,-29.25
+neutral_ncs_017,4,neutral,0,-10.49999
+neutral_ncs_017,5,neutral,46,-24.0
+neutral_ncs_017,6,neutral,129,-29.1875
+neutral_ncs_017,7,neutral,118,-15.75
+neutral_ncs_018,0,neutral,135,-27.6875
+neutral_ncs_018,1,neutral,152,-26.125
+neutral_ncs_018,2,neutral,69,-23.0
+neutral_ncs_018,3,neutral,120,-29.1875
+neutral_ncs_018,4,neutral,4,-26.4375
+neutral_ncs_018,5,neutral,131,-22.375
+neutral_ncs_018,6,neutral,137,-13.0
+neutral_ncs_018,7,neutral,150,-26.3125
+neutral_ncs_019,0,neutral,145,-23.875
+neutral_ncs_019,1,neutral,1,-22.12499
+neutral_ncs_019,2,neutral,143,-25.875
+neutral_ncs_019,3,neutral,1,-22.12499
+neutral_ncs_019,4,neutral,115,-23.375
+neutral_ncs_019,5,neutral,1,-22.12499
+neutral_ncs_019,6,neutral,127,-0.25
+neutral_ncs_019,7,neutral,148,-27.25
+neutral_ncs_020,0,neutral,1,-15.37498
+neutral_ncs_020,1,neutral,129,-15.625
+neutral_ncs_020,2,neutral,143,-17.75
+neutral_ncs_020,3,neutral,93,-25.875
+neutral_ncs_020,4,neutral,141,-26.6875
+neutral_ncs_020,5,neutral,38,-13.25
+neutral_ncs_020,6,neutral,144,-24.5
+neutral_ncs_020,7,neutral,1,-15.37498
+neutral_ncs_021,0,neutral,67,-29.6875
+neutral_ncs_021,1,neutral,142,-26.25
+neutral_ncs_021,2,neutral,1,-19.62499
+neutral_ncs_021,3,neutral,24,-28.0
+neutral_ncs_021,4,neutral,39,-27.5625
+neutral_ncs_021,5,neutral,47,-28.0625
+neutral_ncs_021,6,neutral,134,-2.25
+neutral_ncs_021,7,neutral,1,-19.62499
+neutral_ncs_022,0,neutral,132,-28.9375
+neutral_ncs_022,1,neutral,153,-29.5625
+neutral_ncs_022,2,neutral,1,-27.4375
+neutral_ncs_022,3,neutral,127,-26.0625
+neutral_ncs_022,4,neutral,125,-29.1875
+neutral_ncs_022,5,neutral,138,-28.1875
+neutral_ncs_022,6,neutral,1,-27.4375
+neutral_ncs_022,7,neutral,1,-27.4375
+neutral_ncs_023,0,neutral,130,-20.75
+neutral_ncs_023,1,neutral,42,-24.0
+neutral_ncs_023,2,neutral,129,-25.6875
+neutral_ncs_023,3,neutral,138,-11.625
+neutral_ncs_023,4,neutral,115,-3.25
+neutral_ncs_023,5,neutral,148,-22.625
+neutral_ncs_023,6,neutral,19,-26.5
+neutral_ncs_023,7,neutral,93,-27.0
+neutral_ncs_024,0,neutral,106,-27.875
+neutral_ncs_024,1,neutral,119,-30.1875
+neutral_ncs_024,2,neutral,1,-17.37498
+neutral_ncs_024,3,neutral,149,-27.875
+neutral_ncs_024,4,neutral,142,-29.1875
+neutral_ncs_024,5,neutral,1,-17.37498
+neutral_ncs_024,6,neutral,149,-26.0
+neutral_ncs_024,7,neutral,146,-25.0
+neutral_ncs_025,0,neutral,1,-26.25
+neutral_ncs_025,1,neutral,132,-24.1875
+neutral_ncs_025,2,neutral,37,6.25
+neutral_ncs_025,3,neutral,65,1.0
+neutral_ncs_025,4,neutral,101,-30.125
+neutral_ncs_025,5,neutral,121,-12.375
+neutral_ncs_025,6,neutral,140,-28.625
+neutral_ncs_025,7,neutral,131,-29.375
+neutral_ncs_026,0,neutral,0,-14.24999
+neutral_ncs_026,1,neutral,88,-27.5625
+neutral_ncs_026,2,neutral,54,-27.4375
+neutral_ncs_026,3,neutral,136,-28.25
+neutral_ncs_026,4,neutral,77,-29.5625
+neutral_ncs_026,5,neutral,115,-29.8125
+neutral_ncs_026,6,neutral,141,-29.25
+neutral_ncs_026,7,neutral,115,-26.4375
+neutral_ncs_027,0,neutral,97,-29.0
+neutral_ncs_027,1,neutral,93,-29.75
+neutral_ncs_027,2,neutral,97,-27.75
+neutral_ncs_027,3,neutral,135,-19.875
+neutral_ncs_027,4,neutral,149,-15.75
+neutral_ncs_027,5,neutral,144,-28.75
+neutral_ncs_027,6,neutral,1,-27.0625
+neutral_ncs_027,7,neutral,144,-24.375
+neutral_ncs_028,0,neutral,134,-19.375
+neutral_ncs_028,1,neutral,2,-24.25
+neutral_ncs_028,2,neutral,131,-29.25
+neutral_ncs_028,3,neutral,2,-24.25
+neutral_ncs_028,4,neutral,139,-27.1875
+neutral_ncs_028,5,neutral,2,-24.25
+neutral_ncs_028,6,neutral,2,-24.25
+neutral_ncs_028,7,neutral,134,-28.0
+neutral_ncs_029,0,neutral,124,-27.875
+neutral_ncs_029,1,neutral,139,-26.75
+neutral_ncs_029,2,neutral,133,-29.375
+neutral_ncs_029,3,neutral,152,-29.625
+neutral_ncs_029,4,neutral,135,-27.125
+neutral_ncs_029,5,neutral,81,-27.0
+neutral_ncs_029,6,neutral,148,-28.3125
+neutral_ncs_029,7,neutral,49,-30.6875
+neutral_ncs_030,0,neutral,145,-27.625
+neutral_ncs_030,1,neutral,137,-23.875
+neutral_ncs_030,2,neutral,59,-28.0
+neutral_ncs_030,3,neutral,126,-27.875
+neutral_ncs_030,4,neutral,1,-24.125
+neutral_ncs_030,5,neutral,147,-29.25
+neutral_ncs_030,6,neutral,143,-27.5
+neutral_ncs_030,7,neutral,145,-29.4375
+neutral_ncs_031,0,neutral,120,-14.75
+neutral_ncs_031,1,neutral,143,-28.875
+neutral_ncs_031,2,neutral,23,-16.75
+neutral_ncs_031,3,neutral,130,-23.0
+neutral_ncs_031,4,neutral,1,-25.31249
+neutral_ncs_031,5,neutral,122,-10.87499
+neutral_ncs_031,6,neutral,41,-25.125
+neutral_ncs_031,7,neutral,18,-26.4375
+neutral_ncs_032,0,neutral,2,-25.375
+neutral_ncs_032,1,neutral,146,-24.0625
+neutral_ncs_032,2,neutral,32,-27.25
+neutral_ncs_032,3,neutral,2,-25.375
+neutral_ncs_032,4,neutral,80,-28.5625
+neutral_ncs_032,5,neutral,2,-25.375
+neutral_ncs_032,6,neutral,121,-26.0
+neutral_ncs_032,7,neutral,58,-24.375
+neutral_ncs_033,0,neutral,130,-13.75
+neutral_ncs_033,1,neutral,1,-20.49999
+neutral_ncs_033,2,neutral,128,-29.0
+neutral_ncs_033,3,neutral,140,-18.0
+neutral_ncs_033,4,neutral,84,-22.125
+neutral_ncs_033,5,neutral,121,-28.875
+neutral_ncs_033,6,neutral,132,-24.8125
+neutral_ncs_033,7,neutral,150,-14.375
+neutral_ncs_034,0,neutral,0,-17.99999
+neutral_ncs_034,1,neutral,150,-14.625
+neutral_ncs_034,2,neutral,103,-29.0625
+neutral_ncs_034,3,neutral,0,-17.99999
+neutral_ncs_034,4,neutral,138,-28.375
+neutral_ncs_034,5,neutral,107,-28.5625
+neutral_ncs_034,6,neutral,134,-24.0
+neutral_ncs_034,7,neutral,144,-13.875
+neutral_ncs_035,0,neutral,130,-26.8125
+neutral_ncs_035,1,neutral,30,-28.75
+neutral_ncs_035,2,neutral,98,-28.0
+neutral_ncs_035,3,neutral,150,-29.625
+neutral_ncs_035,4,neutral,95,-28.25
+neutral_ncs_035,5,neutral,145,-16.125
+neutral_ncs_035,6,neutral,144,-19.0
+neutral_ncs_035,7,neutral,154,-28.625
+neutral_ncs_036,0,neutral,1,-17.62499
+neutral_ncs_036,1,neutral,141,-26.3125
+neutral_ncs_036,2,neutral,139,-27.0625
+neutral_ncs_036,3,neutral,145,-29.5
+neutral_ncs_036,4,neutral,1,-17.62499
+neutral_ncs_036,5,neutral,1,-17.62499
+neutral_ncs_036,6,neutral,137,-27.75
+neutral_ncs_036,7,neutral,28,-20.5
+neutral_ncs_037,0,neutral,54,-27.5625
+neutral_ncs_037,1,neutral,145,-22.0
+neutral_ncs_037,2,neutral,5,-28.0625
+neutral_ncs_037,3,neutral,164,-21.875
+neutral_ncs_037,4,neutral,25,-30.25
+neutral_ncs_037,5,neutral,128,-24.25
+neutral_ncs_037,6,neutral,137,-25.625
+neutral_ncs_037,7,neutral,69,-26.9375
+neutral_ncs_038,0,neutral,28,-27.6875
+neutral_ncs_038,1,neutral,130,-24.3125
+neutral_ncs_038,2,neutral,149,-28.375
+neutral_ncs_038,3,neutral,4,-24.75
+neutral_ncs_038,4,neutral,12,-24.625
+neutral_ncs_038,5,neutral,143,-19.0
+neutral_ncs_038,6,neutral,144,-14.25
+neutral_ncs_038,7,neutral,4,-24.75
+neutral_ncs_039,0,neutral,137,-28.5
+neutral_ncs_039,1,neutral,142,-10.875
+neutral_ncs_039,2,neutral,122,-25.25
+neutral_ncs_039,3,neutral,138,-25.8125
+neutral_ncs_039,4,neutral,128,-28.8125
+neutral_ncs_039,5,neutral,122,-25.4375
+neutral_ncs_039,6,neutral,145,-28.5
+neutral_ncs_039,7,neutral,130,-25.375
+neutral_qa_000,0,neutral,142,-29.75
+neutral_qa_000,1,neutral,102,-27.3125
+neutral_qa_000,2,neutral,1,-11.87499
+neutral_qa_000,3,neutral,17,-19.25
+neutral_qa_000,4,neutral,7,-20.625
+neutral_qa_000,5,neutral,149,-28.125
+neutral_qa_000,6,neutral,30,-23.5
+neutral_qa_000,7,neutral,160,-26.875
+neutral_qa_001,0,neutral,1,-18.24999
+neutral_qa_001,1,neutral,1,-18.24999
+neutral_qa_001,2,neutral,1,-18.24999
+neutral_qa_001,3,neutral,1,-18.24999
+neutral_qa_001,4,neutral,14,-28.1875
+neutral_qa_001,5,neutral,1,-18.24999
+neutral_qa_001,6,neutral,152,-18.75
+neutral_qa_001,7,neutral,115,-28.375
+neutral_qa_002,0,neutral,1,-24.4375
+neutral_qa_002,1,neutral,152,-19.125
+neutral_qa_002,2,neutral,136,-24.125
+neutral_qa_002,3,neutral,127,-28.625
+neutral_qa_002,4,neutral,74,-12.5
+neutral_qa_002,5,neutral,1,-24.4375
+neutral_qa_002,6,neutral,32,-25.625
+neutral_qa_002,7,neutral,11,-28.0
+neutral_qa_003,0,neutral,93,-29.625
+neutral_qa_003,1,neutral,111,-28.25
+neutral_qa_003,2,neutral,113,-18.0
+neutral_qa_003,3,neutral,0,-8.74999
+neutral_qa_003,4,neutral,140,-28.6875
+neutral_qa_003,5,neutral,136,-23.375
+neutral_qa_003,6,neutral,141,-28.8125
+neutral_qa_003,7,neutral,28,-26.875
+neutral_qa_004,0,neutral,110,-13.875
+neutral_qa_004,1,neutral,141,-26.125
+neutral_qa_004,2,neutral,142,-28.25
+neutral_qa_004,3,neutral,0,-13.12499
+neutral_qa_004,4,neutral,33,-25.125
+neutral_qa_004,5,neutral,153,-0.5
+neutral_qa_004,6,neutral,145,-22.6875
+neutral_qa_004,7,neutral,144,-25.3125
+neutral_qa_005,0,neutral,4,-20.375
+neutral_qa_005,1,neutral,101,-22.8125
+neutral_qa_005,2,neutral,59,-13.5
+neutral_qa_005,3,neutral,143,-23.875
+neutral_qa_005,4,neutral,157,-23.5
+neutral_qa_005,5,neutral,4,-20.375
+neutral_qa_005,6,neutral,13,-20.625
+neutral_qa_005,7,neutral,90,-25.5
+neutral_qa_006,0,neutral,161,-16.0
+neutral_qa_006,1,neutral,134,-26.75
+neutral_qa_006,2,neutral,0,-11.49999
+neutral_qa_006,3,neutral,150,-25.5625
+neutral_qa_006,4,neutral,152,-25.25
+neutral_qa_006,5,neutral,0,-11.49999
+neutral_qa_006,6,neutral,0,-11.49999
+neutral_qa_006,7,neutral,0,-11.49999
+neutral_qa_007,0,neutral,139,-28.9375
+neutral_qa_007,1,neutral,100,-29.5625
+neutral_qa_007,2,neutral,131,-25.0
+neutral_qa_007,3,neutral,149,-26.0
+neutral_qa_007,4,neutral,151,-18.75
+neutral_qa_007,5,neutral,144,-7.25
+neutral_qa_007,6,neutral,130,-25.25
+neutral_qa_007,7,neutral,140,-27.75
+neutral_qa_008,0,neutral,120,-29.0625
+neutral_qa_008,1,neutral,151,-23.0
+neutral_qa_008,2,neutral,140,-24.5
+neutral_qa_008,3,neutral,150,-16.875
+neutral_qa_008,4,neutral,160,-23.0
+neutral_qa_008,5,neutral,0,-14.12499
+neutral_qa_008,6,neutral,0,-14.12499
+neutral_qa_008,7,neutral,0,-14.12499
+neutral_qa_009,0,neutral,12,-25.9375
+neutral_qa_009,1,neutral,130,-29.1875
+neutral_qa_009,2,neutral,136,-30.1875
+neutral_qa_009,3,neutral,148,-22.625
+neutral_qa_009,4,neutral,27,-26.5625
+neutral_qa_009,5,neutral,1,-17.99999
+neutral_qa_009,6,neutral,138,-11.125
+neutral_qa_009,7,neutral,42,-29.375
+neutral_qa_010,0,neutral,74,5.12503
+neutral_qa_010,1,neutral,141,-19.25
+neutral_qa_010,2,neutral,144,-28.3125
+neutral_qa_010,3,neutral,138,-22.125
+neutral_qa_010,4,neutral,155,-25.6875
+neutral_qa_010,5,neutral,150,-8.5
+neutral_qa_010,6,neutral,48,-20.625
+neutral_qa_010,7,neutral,1,-22.5
+neutral_qa_011,0,neutral,140,-24.25
+neutral_qa_011,1,neutral,156,-19.875
+neutral_qa_011,2,neutral,112,-28.625
+neutral_qa_011,3,neutral,152,-22.25
+neutral_qa_011,4,neutral,146,-20.125
+neutral_qa_011,5,neutral,41,-20.875
+neutral_qa_011,6,neutral,91,-26.25
+neutral_qa_011,7,neutral,140,-14.75
+neutral_qa_012,0,neutral,1,-21.99999
+neutral_qa_012,1,neutral,5,-29.6875
+neutral_qa_012,2,neutral,143,-27.875
+neutral_qa_012,3,neutral,114,-22.875
+neutral_qa_012,4,neutral,21,-27.3125
+neutral_qa_012,5,neutral,86,-20.125
+neutral_qa_012,6,neutral,132,-25.75
+neutral_qa_012,7,neutral,139,-28.0625
+neutral_qa_013,0,neutral,1,-23.37499
+neutral_qa_013,1,neutral,145,-17.0
+neutral_qa_013,2,neutral,1,-23.37499
+neutral_qa_013,3,neutral,1,-23.37499
+neutral_qa_013,4,neutral,88,-29.625
+neutral_qa_013,5,neutral,1,-23.37499
+neutral_qa_013,6,neutral,2,-27.3125
+neutral_qa_013,7,neutral,147,-17.875
+neutral_qa_014,0,neutral,137,-8.875
+neutral_qa_014,1,neutral,132,-29.9375
+neutral_qa_014,2,neutral,0,-15.12499
+neutral_qa_014,3,neutral,122,-29.5
+neutral_qa_014,4,neutral,0,-15.12499
+neutral_qa_014,5,neutral,0,-15.12499
+neutral_qa_014,6,neutral,110,-26.625
+neutral_qa_014,7,neutral,134,-30.25
+neutral_qa_015,0,neutral,46,-29.1875
+neutral_qa_015,1,neutral,142,-20.75
+neutral_qa_015,2,neutral,144,-29.25
+neutral_qa_015,3,neutral,126,-27.0625
+neutral_qa_015,4,neutral,49,-27.6875
+neutral_qa_015,5,neutral,129,-24.125
+neutral_qa_015,6,neutral,113,-29.5
+neutral_qa_015,7,neutral,65,-25.125
+neutral_qa_016,0,neutral,144,-25.25
+neutral_qa_016,1,neutral,142,-16.75
+neutral_qa_016,2,neutral,1,-28.9375
+neutral_qa_016,3,neutral,145,-27.0625
+neutral_qa_016,4,neutral,66,-25.9375
+neutral_qa_016,5,neutral,136,-23.625
+neutral_qa_016,6,neutral,141,-26.125
+neutral_qa_016,7,neutral,81,-24.0
+neutral_qa_017,0,neutral,139,10.875
+neutral_qa_017,1,neutral,137,-8.375
+neutral_qa_017,2,neutral,139,-27.9375
+neutral_qa_017,3,neutral,156,-26.4375
+neutral_qa_017,4,neutral,147,-27.3125
+neutral_qa_017,5,neutral,143,-4.0
+neutral_qa_017,6,neutral,142,-29.25
+neutral_qa_017,7,neutral,145,-14.75
+neutral_qa_018,0,neutral,1,-15.12499
+neutral_qa_018,1,neutral,142,-24.9375
+neutral_qa_018,2,neutral,132,-20.0
+neutral_qa_018,3,neutral,140,-11.0
+neutral_qa_018,4,neutral,139,1.75
+neutral_qa_018,5,neutral,1,-15.12499
+neutral_qa_018,6,neutral,40,2.0
+neutral_qa_018,7,neutral,139,-25.0
+neutral_qa_019,0,neutral,1,-20.625
+neutral_qa_019,1,neutral,142,-26.6875
+neutral_qa_019,2,neutral,151,2.25
+neutral_qa_019,3,neutral,144,9.25
+neutral_qa_019,4,neutral,152,18.5
+neutral_qa_019,5,neutral,142,-22.625
+neutral_qa_019,6,neutral,150,-25.0
+neutral_qa_019,7,neutral,130,-14.0
+neutral_qa_020,0,neutral,1,-20.875
+neutral_qa_020,1,neutral,1,-20.875
+neutral_qa_020,2,neutral,140,-23.375
+neutral_qa_020,3,neutral,135,-26.9375
+neutral_qa_020,4,neutral,114,-26.0625
+neutral_qa_020,5,neutral,1,-20.875
+neutral_qa_020,6,neutral,1,-20.875
+neutral_qa_020,7,neutral,138,-27.8125
+neutral_qa_021,0,neutral,133,-17.0
+neutral_qa_021,1,neutral,112,-26.375
+neutral_qa_021,2,neutral,146,-12.125
+neutral_qa_021,3,neutral,24,-21.125
+neutral_qa_021,4,neutral,24,-27.0625
+neutral_qa_021,5,neutral,5,-28.0625
+neutral_qa_021,6,neutral,139,-27.8125
+neutral_qa_021,7,neutral,143,-29.875
+neutral_qa_022,0,neutral,87,-27.5
+neutral_qa_022,1,neutral,27,-27.625
+neutral_qa_022,2,neutral,2,-19.5
+neutral_qa_022,3,neutral,135,-21.5
+neutral_qa_022,4,neutral,157,-12.0
+neutral_qa_022,5,neutral,43,-27.9375
+neutral_qa_022,6,neutral,62,-29.3125
+neutral_qa_022,7,neutral,2,-19.5
+neutral_qa_023,0,neutral,146,-18.875
+neutral_qa_023,1,neutral,138,-12.375
+neutral_qa_023,2,neutral,137,0.0
+neutral_qa_023,3,neutral,127,-27.5
+neutral_qa_023,4,neutral,133,-22.625
+neutral_qa_023,5,neutral,3,-26.6875
+neutral_qa_023,6,neutral,3,-26.6875
+neutral_qa_023,7,neutral,63,-28.4375
+neutral_qa_024,0,neutral,1,-16.74999
+neutral_qa_024,1,neutral,1,-16.74999
+neutral_qa_024,2,neutral,1,-16.74999
+neutral_qa_024,3,neutral,152,-22.5
+neutral_qa_024,4,neutral,154,-29.625
+neutral_qa_024,5,neutral,1,-16.74999
+neutral_qa_024,6,neutral,133,-27.6875
+neutral_qa_024,7,neutral,145,-14.25
+neutral_qa_025,0,neutral,107,-30.375
+neutral_qa_025,1,neutral,129,-24.875
+neutral_qa_025,2,neutral,124,-9.0
+neutral_qa_025,3,neutral,0,-8.99999
+neutral_qa_025,4,neutral,0,-8.99999
+neutral_qa_025,5,neutral,132,-8.25
+neutral_qa_025,6,neutral,128,-27.125
+neutral_qa_025,7,neutral,129,-24.5
+neutral_qa_026,0,neutral,150,-7.5
+neutral_qa_026,1,neutral,144,-25.375
+neutral_qa_026,2,neutral,96,-29.6875
+neutral_qa_026,3,neutral,97,-27.1875
+neutral_qa_026,4,neutral,133,-9.875
+neutral_qa_026,5,neutral,1,-20.37499
+neutral_qa_026,6,neutral,145,-29.4375
+neutral_qa_026,7,neutral,129,-19.0
+neutral_qa_027,0,neutral,1,-28.125
+neutral_qa_027,1,neutral,153,-27.6875
+neutral_qa_027,2,neutral,123,-29.0
+neutral_qa_027,3,neutral,144,-26.6875
+neutral_qa_027,4,neutral,130,-8.125
+neutral_qa_027,5,neutral,119,-28.0625
+neutral_qa_027,6,neutral,101,-25.5
+neutral_qa_027,7,neutral,1,-28.125
+neutral_qa_028,0,neutral,2,-20.24999
+neutral_qa_028,1,neutral,2,-20.24999
+neutral_qa_028,2,neutral,135,-19.5
+neutral_qa_028,3,neutral,131,-27.3125
+neutral_qa_028,4,neutral,100,-19.375
+neutral_qa_028,5,neutral,150,-28.1875
+neutral_qa_028,6,neutral,143,-19.75
+neutral_qa_028,7,neutral,151,-27.3125
+neutral_qa_029,0,neutral,94,-27.75
+neutral_qa_029,1,neutral,119,-26.3125
+neutral_qa_029,2,neutral,1,-21.875
+neutral_qa_029,3,neutral,139,-13.0
+neutral_qa_029,4,neutral,78,-22.625
+neutral_qa_029,5,neutral,100,-24.125
+neutral_qa_029,6,neutral,130,-5.75
+neutral_qa_029,7,neutral,50,3.0
+neutral_qa_030,0,neutral,159,-23.875
+neutral_qa_030,1,neutral,153,-27.3125
+neutral_qa_030,2,neutral,83,-28.125
+neutral_qa_030,3,neutral,141,-27.1875
+neutral_qa_030,4,neutral,3,-16.0
+neutral_qa_030,5,neutral,143,-27.625
+neutral_qa_030,6,neutral,5,-22.75
+neutral_qa_030,7,neutral,100,-29.25
+neutral_qa_031,0,neutral,1,-26.6875
+neutral_qa_031,1,neutral,139,-11.5
+neutral_qa_031,2,neutral,139,-23.75
+neutral_qa_031,3,neutral,89,3.0
+neutral_qa_031,4,neutral,29,-23.375
+neutral_qa_031,5,neutral,1,-26.6875
+neutral_qa_031,6,neutral,27,-26.625
+neutral_qa_031,7,neutral,126,-17.875
+neutral_qa_032,0,neutral,140,-27.875
+neutral_qa_032,1,neutral,1,-8.5
+neutral_qa_032,2,neutral,99,-29.1875
+neutral_qa_032,3,neutral,144,-27.9375
+neutral_qa_032,4,neutral,123,-27.5
+neutral_qa_032,5,neutral,158,-29.25
+neutral_qa_032,6,neutral,65,-13.5
+neutral_qa_032,7,neutral,137,-18.25
+neutral_qa_033,0,neutral,135,-27.75
+neutral_qa_033,1,neutral,113,-26.9375
+neutral_qa_033,2,neutral,160,-23.875
+neutral_qa_033,3,neutral,67,-29.8125
+neutral_qa_033,4,neutral,0,-12.87499
+neutral_qa_033,5,neutral,0,-12.87499
+neutral_qa_033,6,neutral,0,-12.87499
+neutral_qa_033,7,neutral,75,-24.125
+neutral_qa_034,0,neutral,1,-21.25
+neutral_qa_034,1,neutral,150,-29.4375
+neutral_qa_034,2,neutral,139,-25.625
+neutral_qa_034,3,neutral,105,-27.4375
+neutral_qa_034,4,neutral,1,-21.25
+neutral_qa_034,5,neutral,132,-28.25
+neutral_qa_034,6,neutral,141,-29.5
+neutral_qa_034,7,neutral,146,-24.625
+neutral_qa_035,0,neutral,1,-23.75
+neutral_qa_035,1,neutral,1,-23.75
+neutral_qa_035,2,neutral,145,-23.0
+neutral_qa_035,3,neutral,125,-29.4375
+neutral_qa_035,4,neutral,131,-29.25
+neutral_qa_035,5,neutral,132,-27.0625
+neutral_qa_035,6,neutral,129,-17.375
+neutral_qa_035,7,neutral,1,-23.75
+neutral_qa_036,0,neutral,131,-23.1875
+neutral_qa_036,1,neutral,138,-5.99998
+neutral_qa_036,2,neutral,128,-27.625
+neutral_qa_036,3,neutral,150,-25.0
+neutral_qa_036,4,neutral,145,-27.0625
+neutral_qa_036,5,neutral,143,-15.125
+neutral_qa_036,6,neutral,24,-30.375
+neutral_qa_036,7,neutral,1,-18.87499
+neutral_qa_037,0,neutral,101,-19.25
+neutral_qa_037,1,neutral,2,-21.375
+neutral_qa_037,2,neutral,144,-26.0
+neutral_qa_037,3,neutral,136,-28.6875
+neutral_qa_037,4,neutral,2,-21.375
+neutral_qa_037,5,neutral,137,-17.875
+neutral_qa_037,6,neutral,132,-25.0625
+neutral_qa_037,7,neutral,140,-25.5
+neutral_qa_038,0,neutral,123,-24.9375
+neutral_qa_038,1,neutral,94,-26.875
+neutral_qa_038,2,neutral,137,-29.4375
+neutral_qa_038,3,neutral,29,-27.25
+neutral_qa_038,4,neutral,1,-24.37499
+neutral_qa_038,5,neutral,156,-27.8125
+neutral_qa_038,6,neutral,137,-29.0
+neutral_qa_038,7,neutral,112,-26.9375
+neutral_qa_039,0,neutral,120,-27.4375
+neutral_qa_039,1,neutral,104,-3.75
+neutral_qa_039,2,neutral,8,-9.12499
+neutral_qa_039,3,neutral,0,-14.24999
+neutral_qa_039,4,neutral,87,-22.625
+neutral_qa_039,5,neutral,64,-24.875
+neutral_qa_039,6,neutral,0,-14.24999
+neutral_qa_039,7,neutral,0,-14.24999
+neutral_sum_000,0,neutral,1,-16.87499
+neutral_sum_000,1,neutral,1,-16.87499
+neutral_sum_000,2,neutral,161,-26.8125
+neutral_sum_000,3,neutral,128,-22.25
+neutral_sum_000,4,neutral,145,10.0
+neutral_sum_000,5,neutral,1,-16.87499
+neutral_sum_000,6,neutral,118,-28.4375
+neutral_sum_000,7,neutral,138,-25.5
+neutral_sum_001,0,neutral,129,-28.8125
+neutral_sum_001,1,neutral,143,-27.375
+neutral_sum_001,2,neutral,143,-25.0625
+neutral_sum_001,3,neutral,126,-28.625
+neutral_sum_001,4,neutral,139,-26.3125
+neutral_sum_001,5,neutral,0,-11.62499
+neutral_sum_001,6,neutral,116,-27.9375
+neutral_sum_001,7,neutral,65,-28.125
+neutral_sum_002,0,neutral,108,-27.75
+neutral_sum_002,1,neutral,133,-11.5
+neutral_sum_002,2,neutral,128,-30.375
+neutral_sum_002,3,neutral,93,-19.25
+neutral_sum_002,4,neutral,138,-26.5
+neutral_sum_002,5,neutral,0,-12.62499
+neutral_sum_002,6,neutral,137,-10.125
+neutral_sum_002,7,neutral,141,-8.25
+neutral_sum_003,0,neutral,137,-21.875
+neutral_sum_003,1,neutral,142,-26.5625
+neutral_sum_003,2,neutral,133,-28.0625
+neutral_sum_003,3,neutral,13,-16.0
+neutral_sum_003,4,neutral,143,-28.9375
+neutral_sum_003,5,neutral,143,-23.75
+neutral_sum_003,6,neutral,110,-30.5625
+neutral_sum_003,7,neutral,1,-23.5
+neutral_sum_004,0,neutral,1,-17.87499
+neutral_sum_004,1,neutral,94,-26.4375
+neutral_sum_004,2,neutral,1,-17.87499
+neutral_sum_004,3,neutral,91,-30.0
+neutral_sum_004,4,neutral,140,-22.75
+neutral_sum_004,5,neutral,126,-19.125
+neutral_sum_004,6,neutral,1,-17.87499
+neutral_sum_004,7,neutral,1,-17.87499
+neutral_sum_005,0,neutral,5,-23.0625
+neutral_sum_005,1,neutral,84,-17.0
+neutral_sum_005,2,neutral,5,-23.0625
+neutral_sum_005,3,neutral,136,-26.25
+neutral_sum_005,4,neutral,141,-29.875
+neutral_sum_005,5,neutral,5,-23.0625
+neutral_sum_005,6,neutral,153,-13.5
+neutral_sum_005,7,neutral,17,-18.0
+neutral_sum_006,0,neutral,124,-27.3125
+neutral_sum_006,1,neutral,121,-28.5625
+neutral_sum_006,2,neutral,125,-19.625
+neutral_sum_006,3,neutral,1,-24.625
+neutral_sum_006,4,neutral,1,-24.625
+neutral_sum_006,5,neutral,138,-19.125
+neutral_sum_006,6,neutral,1,-24.625
+neutral_sum_006,7,neutral,140,-24.4375
+neutral_sum_007,0,neutral,51,-26.4375
+neutral_sum_007,1,neutral,149,-25.0
+neutral_sum_007,2,neutral,132,-23.875
+neutral_sum_007,3,neutral,135,-25.0625
+neutral_sum_007,4,neutral,44,-28.25
+neutral_sum_007,5,neutral,1,-20.99999
+neutral_sum_007,6,neutral,133,-29.8125
+neutral_sum_007,7,neutral,140,-22.625
+neutral_sum_008,0,neutral,18,-25.5625
+neutral_sum_008,1,neutral,12,-11.12499
+neutral_sum_008,2,neutral,108,-27.4375
+neutral_sum_008,3,neutral,2,-18.99999
+neutral_sum_008,4,neutral,147,-14.875
+neutral_sum_008,5,neutral,2,-18.99999
+neutral_sum_008,6,neutral,2,-18.99999
+neutral_sum_008,7,neutral,150,-17.25
+neutral_sum_009,0,neutral,7,-4.49999
+neutral_sum_009,1,neutral,132,-24.75
+neutral_sum_009,2,neutral,127,-28.4375
+neutral_sum_009,3,neutral,117,-25.5
+neutral_sum_009,4,neutral,136,-26.4375
+neutral_sum_009,5,neutral,109,-21.625
+neutral_sum_009,6,neutral,157,3.0
+neutral_sum_009,7,neutral,86,-24.5
+neutral_sum_010,0,neutral,1,-15.125
+neutral_sum_010,1,neutral,137,-17.5
+neutral_sum_010,2,neutral,80,-21.375
+neutral_sum_010,3,neutral,89,-4.5
+neutral_sum_010,4,neutral,134,-26.6875
+neutral_sum_010,5,neutral,1,-15.125
+neutral_sum_010,6,neutral,148,-25.625
+neutral_sum_010,7,neutral,141,-28.4375
+neutral_sum_011,0,neutral,155,11.125
+neutral_sum_011,1,neutral,33,-15.25
+neutral_sum_011,2,neutral,127,-11.25
+neutral_sum_011,3,neutral,126,-25.75
+neutral_sum_011,4,neutral,148,-20.375
+neutral_sum_011,5,neutral,140,-6.375
+neutral_sum_011,6,neutral,140,-28.4375
+neutral_sum_011,7,neutral,136,-21.375
+neutral_sum_012,0,neutral,155,-27.1875
+neutral_sum_012,1,neutral,1,-28.6875
+neutral_sum_012,2,neutral,129,-24.75
+neutral_sum_012,3,neutral,115,-23.125
+neutral_sum_012,4,neutral,143,-19.25
+neutral_sum_012,5,neutral,127,-27.0
+neutral_sum_012,6,neutral,145,-27.9375
+neutral_sum_012,7,neutral,135,-19.375
+neutral_sum_013,0,neutral,1,-18.37499
+neutral_sum_013,1,neutral,144,-21.625
+neutral_sum_013,2,neutral,125,-23.75
+neutral_sum_013,3,neutral,60,-27.0625
+neutral_sum_013,4,neutral,140,-20.25
+neutral_sum_013,5,neutral,125,-30.0
+neutral_sum_013,6,neutral,123,-29.0
+neutral_sum_013,7,neutral,127,-26.5625
+neutral_sum_014,0,neutral,118,-28.5625
+neutral_sum_014,1,neutral,113,-18.125
+neutral_sum_014,2,neutral,131,-19.25
+neutral_sum_014,3,neutral,102,-25.5
+neutral_sum_014,4,neutral,1,-25.0
+neutral_sum_014,5,neutral,132,-25.3125
+neutral_sum_014,6,neutral,92,-26.5
+neutral_sum_014,7,neutral,126,-19.625
+neutral_sum_015,0,neutral,152,-26.0625
+neutral_sum_015,1,neutral,61,-25.4375
+neutral_sum_015,2,neutral,124,-27.875
+neutral_sum_015,3,neutral,1,-20.125
+neutral_sum_015,4,neutral,1,-20.125
+neutral_sum_015,5,neutral,1,-20.125
+neutral_sum_015,6,neutral,1,-20.125
+neutral_sum_015,7,neutral,114,-27.8125
+neutral_sum_016,0,neutral,131,-24.875
+neutral_sum_016,1,neutral,149,-30.5
+neutral_sum_016,2,neutral,132,-27.1875
+neutral_sum_016,3,neutral,137,-8.375
+neutral_sum_016,4,neutral,127,-29.0625
+neutral_sum_016,5,neutral,98,5.25
+neutral_sum_016,6,neutral,42,-29.75
+neutral_sum_016,7,neutral,146,-30.0
+neutral_sum_017,0,neutral,152,-19.5
+neutral_sum_017,1,neutral,143,-15.74999
+neutral_sum_017,2,neutral,24,-24.625
+neutral_sum_017,3,neutral,143,-24.5
+neutral_sum_017,4,neutral,0,-9.62499
+neutral_sum_017,5,neutral,145,-28.9375
+neutral_sum_017,6,neutral,145,-28.9375
+neutral_sum_017,7,neutral,149,-5.75
+neutral_sum_018,0,neutral,128,-15.625
+neutral_sum_018,1,neutral,48,-19.875
+neutral_sum_018,2,neutral,128,-29.625
+neutral_sum_018,3,neutral,134,-27.625
+neutral_sum_018,4,neutral,133,-23.875
+neutral_sum_018,5,neutral,115,-25.375
+neutral_sum_018,6,neutral,1,-18.24999
+neutral_sum_018,7,neutral,1,-18.24999
+neutral_sum_019,0,neutral,3,-19.99999
+neutral_sum_019,1,neutral,136,-24.875
+neutral_sum_019,2,neutral,150,-18.75
+neutral_sum_019,3,neutral,122,-29.8125
+neutral_sum_019,4,neutral,149,-27.875
+neutral_sum_019,5,neutral,152,-8.875
+neutral_sum_019,6,neutral,83,-27.5625
+neutral_sum_019,7,neutral,136,-27.1875
+neutral_sum_020,0,neutral,0,-16.49999
+neutral_sum_020,1,neutral,34,-28.5
+neutral_sum_020,2,neutral,137,-28.0
+neutral_sum_020,3,neutral,137,-22.375
+neutral_sum_020,4,neutral,0,-16.49999
+neutral_sum_020,5,neutral,140,-7.0
+neutral_sum_020,6,neutral,0,-16.49999
+neutral_sum_020,7,neutral,140,-7.125
+neutral_sum_021,0,neutral,112,-26.25
+neutral_sum_021,1,neutral,147,-19.625
+neutral_sum_021,2,neutral,118,-19.125
+neutral_sum_021,3,neutral,131,-23.75
+neutral_sum_021,4,neutral,147,-27.8125
+neutral_sum_021,5,neutral,64,-19.25
+neutral_sum_021,6,neutral,138,-5.75
+neutral_sum_021,7,neutral,126,-3.5
+neutral_sum_022,0,neutral,108,-24.0
+neutral_sum_022,1,neutral,27,-11.5
+neutral_sum_022,2,neutral,133,-12.375
+neutral_sum_022,3,neutral,128,-24.375
+neutral_sum_022,4,neutral,140,-25.25
+neutral_sum_022,5,neutral,99,-24.0
+neutral_sum_022,6,neutral,2,-14.75
+neutral_sum_022,7,neutral,2,-14.75
+neutral_sum_023,0,neutral,136,-27.5
+neutral_sum_023,1,neutral,155,-28.125
+neutral_sum_023,2,neutral,143,-27.25
+neutral_sum_023,3,neutral,116,-29.0
+neutral_sum_023,4,neutral,1,-19.24999
+neutral_sum_023,5,neutral,121,-28.0625
+neutral_sum_023,6,neutral,128,-19.625
+neutral_sum_023,7,neutral,41,-24.125
+neutral_sum_024,0,neutral,135,-11.5
+neutral_sum_024,1,neutral,145,-22.875
+neutral_sum_024,2,neutral,136,-16.75
+neutral_sum_024,3,neutral,136,-28.0625
+neutral_sum_024,4,neutral,136,-28.6875
+neutral_sum_024,5,neutral,128,-15.75
+neutral_sum_024,6,neutral,133,-18.375
+neutral_sum_024,7,neutral,137,-14.25
+neutral_sum_025,0,neutral,42,-10.75
+neutral_sum_025,1,neutral,128,-11.0
+neutral_sum_025,2,neutral,138,-22.5
+neutral_sum_025,3,neutral,103,-28.9375
+neutral_sum_025,4,neutral,134,-20.625
+neutral_sum_025,5,neutral,126,-21.375
+neutral_sum_025,6,neutral,135,-24.25
+neutral_sum_025,7,neutral,147,-12.25
+neutral_sum_026,0,neutral,29,-8.0
+neutral_sum_026,1,neutral,142,-12.5
+neutral_sum_026,2,neutral,1,-17.24999
+neutral_sum_026,3,neutral,142,-20.375
+neutral_sum_026,4,neutral,142,-27.0625
+neutral_sum_026,5,neutral,126,-28.3125
+neutral_sum_026,6,neutral,156,-9.49999
+neutral_sum_026,7,neutral,45,-20.375
+neutral_sum_027,0,neutral,146,-28.8125
+neutral_sum_027,1,neutral,140,-24.125
+neutral_sum_027,2,neutral,59,-28.5
+neutral_sum_027,3,neutral,143,-20.0
+neutral_sum_027,4,neutral,156,-28.3125
+neutral_sum_027,5,neutral,140,-27.625
+neutral_sum_027,6,neutral,161,-20.625
+neutral_sum_027,7,neutral,117,-28.875
+neutral_sum_028,0,neutral,129,-28.6875
+neutral_sum_028,1,neutral,0,-13.99999
+neutral_sum_028,2,neutral,0,-13.99999
+neutral_sum_028,3,neutral,131,-30.4375
+neutral_sum_028,4,neutral,154,-23.625
+neutral_sum_028,5,neutral,16,-30.0625
+neutral_sum_028,6,neutral,145,-24.25
+neutral_sum_028,7,neutral,105,-27.3125
+neutral_sum_029,0,neutral,122,-22.5
+neutral_sum_029,1,neutral,119,-24.5
+neutral_sum_029,2,neutral,115,-29.75
+neutral_sum_029,3,neutral,139,-28.375
+neutral_sum_029,4,neutral,140,-26.8125
+neutral_sum_029,5,neutral,154,-23.0
+neutral_sum_029,6,neutral,48,-26.5625
+neutral_sum_029,7,neutral,81,-27.25
+neutral_sum_030,0,neutral,1,-19.62499
+neutral_sum_030,1,neutral,142,-28.5
+neutral_sum_030,2,neutral,1,-19.62499
+neutral_sum_030,3,neutral,1,-19.62499
+neutral_sum_030,4,neutral,35,-29.5
+neutral_sum_030,5,neutral,1,-19.62499
+neutral_sum_030,6,neutral,134,-25.75
+neutral_sum_030,7,neutral,135,-28.9375
+neutral_sum_031,0,neutral,145,-26.875
+neutral_sum_031,1,neutral,152,-23.625
+neutral_sum_031,2,neutral,23,-26.875
+neutral_sum_031,3,neutral,36,-17.25
+neutral_sum_031,4,neutral,9,-29.6875
+neutral_sum_031,5,neutral,113,-28.4375
+neutral_sum_031,6,neutral,34,-12.625
+neutral_sum_031,7,neutral,0,-9.37499
+neutral_sum_032,0,neutral,155,-27.9375
+neutral_sum_032,1,neutral,1,-20.875
+neutral_sum_032,2,neutral,138,-16.0
+neutral_sum_032,3,neutral,1,-20.875
+neutral_sum_032,4,neutral,147,4.0
+neutral_sum_032,5,neutral,128,10.625
+neutral_sum_032,6,neutral,15,-10.75
+neutral_sum_032,7,neutral,1,-20.875
+neutral_sum_033,0,neutral,76,-28.9375
+neutral_sum_033,1,neutral,144,13.375
+neutral_sum_033,2,neutral,152,-17.125
+neutral_sum_033,3,neutral,154,-13.125
+neutral_sum_033,4,neutral,142,-10.375
+neutral_sum_033,5,neutral,130,-28.8125
+neutral_sum_033,6,neutral,107,-24.0
+neutral_sum_033,7,neutral,131,-28.4375
+neutral_sum_034,0,neutral,81,-26.625
+neutral_sum_034,1,neutral,135,-25.4375
+neutral_sum_034,2,neutral,124,-13.75
+neutral_sum_034,3,neutral,86,-25.5
+neutral_sum_034,4,neutral,129,-23.0
+neutral_sum_034,5,neutral,128,-5.25
+neutral_sum_034,6,neutral,1,-25.875
+neutral_sum_034,7,neutral,129,-26.625
+neutral_sum_035,0,neutral,1,-19.74999
+neutral_sum_035,1,neutral,146,-24.9375
+neutral_sum_035,2,neutral,144,-25.0
+neutral_sum_035,3,neutral,130,-28.25
+neutral_sum_035,4,neutral,122,-29.5625
+neutral_sum_035,5,neutral,155,-26.375
+neutral_sum_035,6,neutral,110,-18.25
+neutral_sum_035,7,neutral,1,-19.74999
+neutral_sum_036,0,neutral,151,-25.625
+neutral_sum_036,1,neutral,122,-18.125
+neutral_sum_036,2,neutral,140,-30.0625
+neutral_sum_036,3,neutral,132,-21.375
+neutral_sum_036,4,neutral,1,-20.74999
+neutral_sum_036,5,neutral,122,-27.375
+neutral_sum_036,6,neutral,110,-15.0
+neutral_sum_036,7,neutral,1,-20.74999
+neutral_sum_037,0,neutral,137,-27.0625
+neutral_sum_037,1,neutral,12,-27.6875
+neutral_sum_037,2,neutral,1,-28.25
+neutral_sum_037,3,neutral,49,-28.125
+neutral_sum_037,4,neutral,1,-28.25
+neutral_sum_037,5,neutral,120,-29.6875
+neutral_sum_037,6,neutral,141,-29.625
+neutral_sum_037,7,neutral,39,-28.125
+neutral_sum_038,0,neutral,142,-21.5
+neutral_sum_038,1,neutral,2,-16.875
+neutral_sum_038,2,neutral,2,-16.875
+neutral_sum_038,3,neutral,2,-16.875
+neutral_sum_038,4,neutral,67,-29.0625
+neutral_sum_038,5,neutral,126,-25.6875
+neutral_sum_038,6,neutral,154,-28.4375
+neutral_sum_038,7,neutral,146,-22.0
+neutral_sum_039,0,neutral,128,-28.9375
+neutral_sum_039,1,neutral,119,-25.0
+neutral_sum_039,2,neutral,124,-29.6875
+neutral_sum_039,3,neutral,152,-5.5
+neutral_sum_039,4,neutral,114,-22.5
+neutral_sum_039,5,neutral,34,-12.24999
+neutral_sum_039,6,neutral,15,-21.49999
+neutral_sum_039,7,neutral,150,-17.375
