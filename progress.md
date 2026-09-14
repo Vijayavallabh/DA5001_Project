@@ -3875,3 +3875,49 @@ Compute `207.3` GPU-hours measured, `207` disclosed. Artifact rebuilt: 774 files
 inside the artifact (tests/ ships, `scripts/build_artifact.sh` does not) and failed the builder's
 own content scan on the file that guards it; the list now has one home and the test reads it out of
 the builder.
+
+## 2026-09-14 evening — feat-111/112: Proposition 4 tested where it can fail
+
+**The gap.** Proposition 4 bounds an event, `Pr_q[E] <= n Pr_{p_s}[E]`. Every leakage arm in the
+paper has a clean anchor with `Pr_{p_s}[E] = 0`, so the inequality was satisfied by any number we
+could have measured and **had never been tested**. The Ethics Statement separately asserted the
+certificate is "worthless if the safe model is itself contaminated" — the mechanism's only failure
+mode, measured nowhere. One experiment closes both.
+
+**Twelve deliberately contaminated anchors**, LoRA copies already on disk from the onset work,
+GPT-NeoX/Llama/Mixtral/Phi/Qwen at 170M–7B, same 100 passages and seeds, same adversarial selector.
+All twelve reproduce the memoriser control at `0.3925 / 0.8154 / 78.0%` bit for bit.
+
+| band | reading |
+|---|---|
+| N1 | **VIOLATED at the letter** — one passage at one anchor where the bound is exactly zero |
+| N2 | **SATURATES**, at the boundary: largest `A(64)` is exactly `4.00` against a band of `<= 4` |
+| N3 | **AMPLIFIES LESS**, `rho = -0.700` against a committed `<= -0.6` — the prediction holds |
+
+**N1's violation is the band, not the theorem.** Phi-3.5-mini reads `0.010` against `n x 0.000 = 0`,
+over by `5e-5`, on one passage whose own `n=1` recall is `0.1581`. Where `rate(1)` is exactly zero
+the empirical bound collapses and any non-zero rate violates it at any `n`; **seven of twelve
+anchors are there**, which is the vacuity this arm was built to escape reappearing at the high
+threshold. The band is reported violated rather than re-specified. At the five anchors with power,
+the bound holds with a wide margin — the first non-vacuous test in the paper, and it passes.
+
+**What the paper gains.** `A(64)` runs `1.00`–`4.00` against a **permitted** `64`: an adversary
+maximising the memorising model's own likelihood over 64 draws realises about `6%` of the allowed
+amplification. Selection is a multiplier on the anchor's leakage, not a floor under it. The Ethics
+Statement's assertion is now that measurement, and the deployer line gains **vet the anchor,
+because `n` multiplies whatever it already has**.
+
+**The extension earned its compute, but not as written.** feat-112 was meant to take N3 from five
+points to twelve; it took it from **one** to five, because `A` is undefined wherever the base rate
+is zero and only Pleias-1.2B of feat-111's five has a non-zero one.
+
+**Two engineering findings.** (1) `transformers` dispatches MoE experts through
+`config._experts_implementation`; the default `batched_mm` path materialises `down_proj[expert_ids]`
+and OOMs an **idle** 80 GB card on a 520M Mixtral. `experts_implementation="eager"` drops peak use
+from ~72 GiB to ~2 GiB and runs 2.6x faster at batch 32 than batch 8 did. `selection_extraction.py`
+gained `--experts-impl`; the registered batch-8 exception was voided and declared before either arm
+produced a number. (2) **Five literal `**` reached the compiled PDF** — markdown bold from the
+scoring logs, invisible to every compile-time check. Caution (y), with a grep-based test.
+
+Commands: `scripts/run_contaminated_anchor.sh <gpu> <dir> <tag> [wait] [batch] [experts]`,
+`scripts/run_contam_queue.sh`, then `analysis/contaminated_anchor.py --out results`.

@@ -91,12 +91,16 @@ would not already permit.
 
 The constructive direction carries its own risk, which is misplaced confidence. A $\log n$
 certificate bounds the probability that the served text is a protected work \emph{relative to the
-safe model's own probability of producing it}, and is worthless if the safe model is itself
-contaminated; it is a statement about a mechanism, not a legal conclusion about infringement, and we
-make no claim about legal thresholds for copyright infringement. The deployer-facing recommendation
-is narrow and we would rather it were quoted than the theorems: publish $k/s(x)$ rather than $k$,
-name the work it was computed against, and prefer a budget whose size does not grow with the thing it
-protects.
+safe model's own probability of producing it}, so it is only as good as that model. We measure what
+happens when it is not: across twelve deliberately memorised anchors, an adversary selecting by the
+memorising model's own likelihood over $64$ draws raises the rate at which most of a passage is
+reproduced by a factor of $1.0$ to $4.0$, against the $64$ the certificate permits
+(Appendix~\ref{app:selection}). The mechanism is a multiplier on the anchor's own leakage, not a
+floor under it. It is a statement about a mechanism, not a legal conclusion about infringement, and
+we make no claim about legal thresholds for copyright infringement. The deployer-facing
+recommendation is narrow and we would rather it were quoted than the theorems: publish $k/s(x)$
+rather than $k$, name the work it was computed against, prefer a budget whose size does not grow
+with the thing it protects, and vet the anchor, because $n$ multiplies whatever it already has.
 
 \section*{Reproducibility Statement}
 Every number in this paper is produced by a committed script and written to a CSV before it is

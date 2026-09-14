@@ -14,7 +14,7 @@ both --- so the mechanism is still climbing at $n=64$ at the strongest anchor, f
 measured KL against a $\log 64 = 4.16$ pathwise certificate, and the reward overoptimisation that
 turns such curves over is not observed anywhere on the grid.
 
-The arm's own nested check, however, **failed**: its $n=8$ gain of $+0.072$ sits $0.039$ from the
+The arm's own nested check, however, \textbf{failed}: its $n=8$ gain of $+0.072$ sits $0.039$ from the
 breadth arm's $+0.111$ on the registered scorer, past the $0.03$ the pre-registration allowed, so by
 its own committed rule the comparison against the earlier number is \emph{not readable} and the
 abstract is unchanged. The band's premise was that the two arms shared generations; they did not,
@@ -296,3 +296,54 @@ Every band, the entry gate and the stop rule were committed before the run
 (\texttt{results/onset\_prediction\_extraction\_natural\_hp2.md}), including the rule that a gate
 failure here would end the line of work and be reported as a limit on the evidence rather than a
 property of the mechanism.
+
+\paragraph{What the certificate delivers when its premise fails}\label{app:contaminated}
+Every leakage result above has a clean anchor, and Proposition~\ref{prop:selection} bounds an
+\emph{event}: $\Pr_q[E] \le n \Pr_{p_s}[E]$. With $\Pr_{p_s}[E] = 0$ that inequality is satisfied by
+any number we could have measured, so across six anchors and a naturally memorising $70$B
+adversary it has been reported as confirmed and never actually tested. It is also the mechanism's
+one failure mode: the certificate is relative to the safe model's own probability, and says nothing
+if the safe model has seen the work.
+
+We therefore ran selection anchoring, with the same adversarial selector, over \textbf{twelve
+deliberately memorised anchors} --- LoRA copies fine-tuned on the protected passages, spanning
+GPT-NeoX, Llama, Mixtral, Phi and Qwen at $170$M to $7$B --- on the same $100$ passages and seeds.
+All twelve reproduce the memorising model's own control at $0.3925$ mean recall, maximum $0.8154$,
+$78\%$ of passages above threshold, which is twelve independent checks that only the anchor changed.
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+contaminated anchor & $\Pr[E]$ at $n{=}1$ & $n{=}8$ & $n{=}64$ & amplification $A(64)$ \\
+\midrule
+six anchors (KL3M $\times 4$, open-calm $\times 2$) & $0.00$ & $0.00$ & $0.00$ & --- \\
+Phi-3.5-mini & $0.00$ & $0.01$ & $0.01$ & --- \\
+Llama-3.2-1B & $0.02$ & $0.04$ & $0.08$ & $4.00$ \\
+Llama-3.2-3B & $0.03$ & $0.09$ & $0.11$ & $3.67$ \\
+Pleias-350M & $0.03$ & $0.05$ & $0.04$ & $1.33$ \\
+Pleias-1.2B & $0.05$ & $0.05$ & $0.05$ & $1.00$ \\
+Qwen2.5-7B & $0.10$ & $0.13$ & $0.15$ & $1.50$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$E$ is $\{\text{near-verbatim recall} \ge 0.8\}$, most of the passage reproduced. \textbf{The
+headline is the last column against the $64$ the certificate permits}: an adversary maximising the
+memorising model's own likelihood over $64$ draws realises $1.0$ to $4.0\times$ the anchor's rate,
+about $6\%$ of the allowed amplification. Selection is a multiplier on what the anchor already
+leaks, not a floor under it, and the actionable consequence is that the anchor is the thing to vet.
+The correlation runs the way we predicted before the run: amplification \emph{falls} as
+contamination rises ($\rho = -0.700$), because an anchor that emits the passage on most draws
+leaves a selector nothing to find.
+
+Three limits, all committed in advance and none worked around. First, the bound test \textbf{fails at the letter of its own band}: Phi-3.5-mini reads $0.010$ against a bound of $n \times 0.000 = 0$,
+exceeding it by $5\times10^{-5}$ on a \emph{single} passage. Where the base rate is exactly zero the
+empirical bound collapses and any non-zero rate violates it at any $n$; the proposition bounds true
+probabilities and a true rate of a few thousandths is consistent with $0/100$ and $1/100$. We report
+the band as violated rather than re-specifying it, and note that at the five anchors where the test
+has power it holds with a wide margin. Second, \textbf{seven of twelve anchors sit at exactly
+zero}, which is the vacuity this arm was built to escape reappearing at the high threshold: a LoRA
+memoriser tends to reproduce a passage always or never. Third, the amplification numbers are counts
+over $100$ passages --- $A(64) = 4.00$ is eight passages over two, and one more would have read
+$4.5$. The magnitude is what to quote, not the boundary.

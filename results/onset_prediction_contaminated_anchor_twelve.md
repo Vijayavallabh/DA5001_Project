@@ -134,3 +134,36 @@ carried into the paper. The excluded alternative it must not become is "changing
 
 The abandoned `batched_mm` logs are kept as
 `output/logs/contam_kl3m{520m,37b}_batchedmm_abandoned.log`.
+
+### Scoring, 2026-09-14
+
+All twelve arms landed. **N1, N2 and N3 are scored once, over twelve anchors, in
+`results/onset_prediction_contaminated_anchor.md`** --- the excluded alternative here forbids
+reading feat-111's bands at five and these at twelve and taking whichever is more favourable, so
+there is one reading and it is the twelve-anchor one. Summary:
+
+| band | reading |
+|---|---|
+| N1 | **VIOLATED** at the letter, on one passage at one anchor where the bound is exactly zero; the test has no power at the seven anchors with `rate(1) = 0`, and holds with a wide margin at the five where it does |
+| N2 | **SATURATES**, at the boundary: largest `A(64)` is exactly `4.00` against a band of `<= 4`, and that ratio is `8` passages over `2` |
+| N3 | **AMPLIFIES LESS**, `rho = -0.700` against the committed `<= -0.6` --- the prediction holds |
+
+### Did the extension earn its compute?
+
+Yes, and not in the way it was written to. It was written to take N3 from five points to twelve. It
+took N3 from **one** point to **five**: `A(64)` is undefined wherever the `E_08` base rate is zero,
+and of feat-111's original five anchors only Pleias-1.2B has a non-zero one. Without the seven
+added anchors there would have been a single point and no coefficient at all.
+
+What it did not buy is the twelve-point axis promised above. Seven of twelve anchors sit at an
+`E_08` base rate of exactly zero, which is the vacuity problem this whole line of work was built to
+escape, reappearing at the high threshold. That is stated in the scoring log rather than worked
+around, and it is the honest limit of the design: **to test a probability bound you need an event
+the anchor produces sometimes, and a LoRA memoriser either produces it constantly or not at all.**
+
+### The declared deviation, as executed
+
+Both MoE anchors ran at batch `32` with `--experts-impl eager`, as declared above before either
+produced a number. Both reproduce the memoriser control at `0.3925 / 0.8154 / 78.0%`, bit for bit
+with the other ten --- which is the check that the deviation cost nothing: a batch or kernel change
+that had perturbed the shared control would show here, and it does not.
