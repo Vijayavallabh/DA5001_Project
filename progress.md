@@ -3789,3 +3789,51 @@ existence, a directory named `torchinductor_$USER` that no content grep could se
 excluded, and a size guard plus a path-name anonymity scan now catch the class.
 
 Compute is `190.6` GPU-hours measured, `191` disclosed.
+
+## 2026-09-14 morning — feat-105 scored, feat-107 wired, feat-108 opened
+
+**feat-105 done.** TriviaQA `rc.nocontext`, 500 validation questions, 5-shot at Comma-7B, the same
+`n` grid and the same two rules as the GSM8K arm. Metric gate PASS (`0.0133` of samples yield no
+answer line, against a `10%` ceiling). Bands as committed: **W1 SC LIFTS** (`+0.054 [+0.026,
++0.082]` at `n=64`, `0.280 -> 0.334`), **W2 FLAT** (`-0.014 [-0.046, +0.018]`), **W3** Spearman
+`+0.982` for majority vote and `-0.607` for the reward, **W4 prediction HOLDS** (`+0.054` is below
+GSM8K's `+0.222`, by `4.2x`), **W5** fires "W1 lifts, W2 flat". The reward is worse than flat: at
+`n=16` its interval excludes zero on the wrong side, `-0.038 [-0.068, -0.008]`, so selecting by the
+paper's own scorer on a knowledge task is worse than taking the anchor's first draw. Across the two
+tasks the two rules differ by `3.4x` and then **in sign**, which is the sharpest form the support
+ceiling has taken; it is in Section 6 and in Limitations, and the abstract is unchanged.
+Command: `scripts/run_verifiable_tqa.sh` -> `results/selection_verifiable_tqa_comma7b.csv`.
+
+**Caution (u): batch size is part of the seed.** `selection_extraction.py` draws its `k=-1`
+memoriser baseline by *sampling*, and `generate()` consumes the RNG per chunk, so
+`run_breadth_leakage.sh --batch-size 64` produced a different draw: baseline `0.3925 -> 0.4434`,
+`ge_0p01` `78% -> 85%`, agreeing with the other three anchors on **24/100** passages where they
+agree with each other on **100/100**. The leakage column itself read `0.0000` as registered; what
+breaks is the *comparison*, because that baseline is the positive control and
+`test_the_memoriser_baseline_is_identical_at_every_anchor` was written to catch a different bug
+that moves it by the same `0.04`. Both new anchors relaunched at the default `32`; the discarded
+CSVs are in `output/abandoned_batch64/` and the reason is in feat-107's scoring log.
+
+**feat-107 in progress.** `selection_breadth.py` now carries six anchors, the two new ones chosen as
+*controlled* contrasts rather than extra scatter: Comma-7B (1T tokens) is Comma-7B's architecture,
+size and corpus at half the training tokens, and Pleias-3B is Pleias-1.2B's family at `2.5x` the
+parameters. Section 6's "at all four anchors" is now bounded by the leakage arms on disk and pinned
+to the registered set only once that set is complete, so a running anchor no longer forces an
+intermediate edit that C4 forbids.
+
+**feat-108 opened.** The paper measures both mechanisms' leakage and never on one footing, and the
+two pipelines' shared control disagrees: the same memoriser on the same 100 `attack_train` passages
+and seeds reads `0.4921` in `composition_8b_kl.csv` and `0.3925` in `selection_extraction.csv`. The
+likely cause is generation length (`|target|` about 260 against 200 scored on a full-length
+reference, capping `nv_recall` at about `0.77` by construction), but likely is not diagnosed, so G0
+is a gate: if the two `k=-1` rows still differ by more than `0.02` after both arms re-run at one
+length, **no joint table is built**. Bands and all four consequences in
+`results/onset_prediction_leakage_headtohead.md`; launcher `scripts/run_leakage_headtohead.sh`,
+queued last on GPU 0.
+
+**Manuscript.** Section 6 reports both judge-free tasks and both rules including the negative one;
+Limitations' "the scorer binds before the anchor does" now cites a `3.4x` gap on GSM8K and a sign
+flip on TriviaQA; the contributions bullet says the gain is also exact match with no judge on a
+reasoning task and a knowledge task. Reproducibility Statement: thirty-eight logs. Build `exit=0`,
+`overfull=0`, `unresolved=0`, page 10 body-free. Numeric audit `2,266` literals, 1 expected miss.
+394 tests.
