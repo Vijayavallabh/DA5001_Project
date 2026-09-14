@@ -2,12 +2,11 @@
 
 ## Current objective
 
-Two arms are in progress, each with its bands committed before its run:
+One arm is in progress, each with its bands committed before its run:
 
 - **feat-107** — the breadth arm at **six** anchors, adding Comma-7B (1T tokens) and Pleias-3B (`results/onset_prediction_selection_breadth_six.md`). **C4 is scored**: both new leakage arms read `0.0000` at every `n` with the memoriser control reproduced bit for bit on 100/100 passages, so Section 6 says six anchors. C1--C3 wait on the two generations, queued on GPU 0.
-- **feat-108** — the **leakage head-to-head**: both mechanisms on one set of 100 passages with one control, after the two existing pipelines' `k=-1` rows were found to disagree (`0.4921` against `0.3925`) (`results/onset_prediction_leakage_headtohead.md`). GPU 4. G0 can cost us the joint table and is written that way.
 
-Closed this session: **feat-103** (GATE FAILED -- the reference was a 100-token seed, caution (v)), **feat-104** (third pair, REPLICATES, and the metered decoder resolves at no budget), **feat-105** (TriviaQA judge-free: majority vote lifts, the paper's own reward falls), **feat-106** (the judge-free head-to-head we predicted we would lose, and did), **feat-109** (INVALID -- the registered command returned the wrong novel, caution (w)) and **feat-110** (**the natural memoriser, NO LEAK** -- the 70B recovers `0.2475` unaided and reproduces two of fifty passages in full; selection under its own likelihood recovers `0.0000`, so Limitations drops the sentence about whose memoriser it is).
+Closed this session: **feat-103** (GATE FAILED -- the reference was a 100-token seed, caution (v)), **feat-104** (third pair, REPLICATES, and the metered decoder resolves at no budget), **feat-105** (TriviaQA judge-free: majority vote lifts, the paper's own reward falls), **feat-106** (the judge-free head-to-head we predicted we would lose, and did), **feat-109** (INVALID -- the registered command returned the wrong novel, caution (w)) and **feat-108** (G0 UNMATCHED -- the two pipelines' controls differ by `0.0493` at matched length, so **no joint leakage table is built**; the residual is in Appendix J) and **feat-110** (**the natural memoriser, NO LEAK** -- the 70B recovers `0.2475` unaided and reproduces two of fifty passages in full; selection under its own likelihood recovers `0.0000`, so Limitations drops the sentence about whose memoriser it is).
 
 The paper is v7. It argues one claim and exhibits a mechanism on the other side of it:
 

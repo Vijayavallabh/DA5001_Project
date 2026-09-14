@@ -203,3 +203,30 @@ do at $k\ge10$. The order comparison in Table~\ref{tab:orders} is at matched bud
 arms carry $n=150$; Appendix~\ref{app:matched} repeats it at matched \emph{utility} without a
 judge on twelve pairs in seven families, where the ranking is non-monotone in $\alpha$, reverses
 on nine of them, and is predicted by nothing measured.
+
+\paragraph{The two leakage measurements cannot be put on one axis, and we tried}
+Section~\ref{sec:experiments} reports the metered decoder's extraction onset and selection
+anchoring's zero recall in two places with two pipelines, and a reader of the released CSVs will
+notice that the two pipelines disagree about the one quantity they share. The same memorising
+model, the same $100$ passages, the same $20$-token seeds and the same temperature read $0.4921$ in
+\texttt{composition\_8b\_kl.csv} and $0.3925$ in \texttt{selection\_extraction.csv}. We
+pre-registered a gate to decide whether a joint table could honestly be built
+(\texttt{results/onset\_prediction\_leakage\_headtohead.md}): re-run both arms at one generation
+length, and require their two memoriser-alone rows to agree within $0.02$.
+
+They do not. At a matched $300$ tokens the two read $0.4921$ and $0.4428$, a residual of $0.0493$,
+so \textbf{no joint table is built} and no ratio is quoted across the two files. What the arm does
+establish is that neither pipeline is wrong. Generation length accounts for half the original
+discrepancy exactly as predicted --- lengthening the selection arm from $200$ to $300$ tokens moved
+its control from $0.3925$ to $0.4428$, because at $200$ tokens against a full-length reference
+near-verbatim recall is capped near $0.77$ by construction --- and the residual has two candidate
+causes the arm cannot separate: \texttt{generate} consumes the sampler's randomness per step, so
+changing the token budget changes the draw as well as the length, and the metered arm decodes each
+passage's own target length while the selection arm decodes a flat $300$. Both measure a sampled
+memoriser correctly and they sample different trajectories.
+
+The consequence for the paper is narrow and we prefer to state it than to have it inferred: every
+leakage number here is read against a control produced by \emph{its own} pipeline, the two
+mechanisms' leakage is never divided one by the other, and the comparison this paper makes between
+them is about what they \emph{spend}, which is measured on one axis, and not about what they leak,
+which is not.

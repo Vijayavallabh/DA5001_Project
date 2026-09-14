@@ -1074,12 +1074,12 @@
     {
       "id": "feat-108",
       "title": "The two mechanisms' leakage, on one set of passages with one control",
-      "status": "in-progress",
+      "status": "done",
       "depends_on": [
         "feat-087"
       ],
       "description": "The paper measures the metered decoder's extraction onset (Section 4) and selection anchoring's zero recall (Section 6) in two places with two controls, and the controls disagree: the same memorising model on the same 100 attack_train passages, the same 20-token seeds and the same temperature reads 0.4921 in composition_8b_kl.csv and 0.3925 in selection_extraction.csv. The likely cause is generation length -- composition_attack.py --modes single decodes |target| tokens, about 260, and selection_extraction.py decodes 200 against the same full-length reference, capping its nv_recall at about 0.77 by construction. This arm re-runs both at one length on one passage set and gates on the two k=-1 rows agreeing to 0.02 BEFORE any band is read; under UNMATCHED no joint table is built and the residual is reported instead. Bands in results/onset_prediction_leakage_headtohead.md.",
-      "evidence": "scripts/run_leakage_headtohead.sh queued on GPU 0; scoring pending."
+      "evidence": "scripts/run_leakage_headtohead.sh 4 (GPU 4, [l2l] selection exit=0 at 10:02) -> results/h2h/composition{,_summary}.csv and results/leakage_len300{,_per_passage}.csv. G0 UNMATCHED: at a matched 300 tokens the two memoriser-alone controls read 0.4921 (composition_attack, max_new_tokens=|target|) and 0.4428 (selection_extraction, flat 300), a residual of 0.0493 against a registered 0.02. The pre-registered consequence applies: NO joint table is built and no ratio is quoted across the two CSVs; the residual goes in Appendix J. The length hypothesis was half right and that is what is claimed -- lengthening the selection arm from 200 to 300 tokens moved its control 0.3925 -> 0.4428, closing 50.5% of the original 0.0996 gap in the predicted direction, because at 200 tokens against a full-length reference nv_recall is capped near 0.77 by construction. The residual has two candidate causes the arm cannot separate and both are disclosed: generate() consumes the RNG per step so changing the token budget changes the draw (caution (u) on a different knob), and the metered arm decodes each passage's own target length while the selection arm decodes a flat 300. What it settles: neither pipeline is wrong. Scoring log: results/onset_prediction_leakage_headtohead.md."
     },
     {
       "id": "feat-109",

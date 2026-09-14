@@ -94,3 +94,57 @@ rests on the spend and the utility, which is where it already rests.
   have no counterpart in Arm B; only `single` is comparable.
 
 ## Scoring log
+
+## Scoring, 2026-09-14 --- G0 reads UNMATCHED, and no joint table is built
+
+Run: `scripts/run_leakage_headtohead.sh 4`, GPU 4, `[l2l] metered exit=0`, `[l2l] selection exit=0
+at 10:02`. Outputs `results/h2h/composition{,_summary}.csv` and `results/leakage_len300{,_per_passage}.csv`.
+
+### G0 --- the comparability gate
+
+| arm | `k=-1` / `n=-1`, the memoriser alone | |
+|---|---|---|
+| A, `composition_attack.py --modes single` | `0.4921` | `max_new_tokens = |target|`, mean about `260` |
+| B, `selection_extraction.py --max-new-tokens 300` | `0.4428` | fixed `300` |
+
+`|0.4921 - 0.4428| = 0.0493` against a registered `0.02`. **UNMATCHED.**
+
+**The pre-registered consequence applies: no joint table is built.** The paper keeps the two
+leakage measurements separate, each against its own control, and this residual goes in
+Appendix~J as a limit on how far they can be compared. No ratio is quoted across the two CSVs.
+
+### The hypothesis was half right, which is why the gate was a gate
+
+Generation length was the named suspect and it accounts for **half** the discrepancy: lengthening
+Arm B from `200` to `300` tokens moved its control from `0.3925` to `0.4428`, closing `0.0503` of
+the original `0.0996` gap in the predicted direction. That is a real effect --- at `200` tokens
+against a full-length reference, `nv_recall` is capped near `0.77` by construction --- and it is
+not the whole effect.
+
+Two candidates remain for the residual `0.0493`, and this arm cannot separate them:
+
+1. **The draw changed.** `generate()` consumes the RNG per sampling step, so raising
+   `max_new_tokens` from `200` to `300` gives a different sampled trajectory even at a fixed seed
+   and batch size --- the same mechanism as caution (u), on a different knob. Arm B's `k=-1` is a
+   sampled arm, so part of the `0.0503` move is a fresh draw rather than extra tokens.
+2. **The lengths are still not matched.** Arm A decodes each passage's own `|target|` (mean about
+   `260`, max `296`); Arm B decodes a flat `300` for every passage. They agree on no passage
+   exactly.
+
+Distinguishing them needs a third run at a per-passage length, which this pre-registration's
+excluded alternatives forbid after seeing a number, and which would in any case be a third draw.
+
+### What is not claimed
+
+No joint table, no cross-arm ratio, and no statement of the form "the metered decoder leaks $X$
+where selection leaks $0.0000$" built on these two CSVs. Arm A's own numbers stay internally
+valid --- at `k=20` it recovers `0.4759` mean recall for `761.3` realised nats against the
+unconstrained model's `0.4921`, and at `k \in \{0.5, 1\}` it recovers `0.0000` --- and Arm B's stay
+internally valid, and the paper reports each beside its own control as it already did.
+
+### The one thing the arm settles
+
+It settles that the `0.4921`-against-`0.3925` discrepancy noted in the pre-registration is **not**
+a defect in either pipeline: both measure a sampled memoriser correctly, and they differ because
+they decode different numbers of tokens and therefore draw different trajectories. That was worth
+knowing before a reviewer found the two numbers in the released CSVs and drew a worse conclusion.
