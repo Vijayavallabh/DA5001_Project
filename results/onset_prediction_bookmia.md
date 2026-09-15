@@ -1,6 +1,6 @@
 # A third protected corpus: does the onset split survive a second replication?
 
-**Design, grid, entry gate and bands committed 2026-09-15 14:3x, while the three memorisers were
+**Design, grid, entry gate and bands committed 2026-09-15 14:27, while the three memorisers were
 still in epoch 1 of 40 and before any `s_s`, `s_r` or prediction for this corpus existed.** Nothing
 above `## Scoring log` is edited after that line is written. The parameter-free P1 predictions are
 appended in a second commit, also before any sweep decodes a token; git records both orderings.
