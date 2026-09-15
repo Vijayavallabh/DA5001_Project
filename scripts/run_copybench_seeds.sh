@@ -23,11 +23,16 @@ export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
 # inherit its corner's recipe or it is not a ladder on that corner at all.
 CBPAIR="${CBPAIR:-kl3m520m}"
 case "$CBPAIR" in
+  # MAXLEN: 0 means auto = max(token length). For KL3M-520M auto reproduces the corner's recorded
+  # 679 exactly, so 0 is right. For Pleias-1.2B auto gives 342 while its corner records 448, so the
+  # corner was given an explicit --max-len and we pass the same. Nothing is truncated at either
+  # value (max(lens)=342 < 448) and padding is dynamic per batch, so the training is identical --
+  # this matches the recorded field so a later reader diffing recipe.json sees no discrepancy.
   kl3m520m) BASE=alea-institute/kl3m-002-520m; PFX=memc_kl3m520m; SFX=finec_kl3m520m
-            BATCH=2; ACCUM=4; STOP=0.02
+            BATCH=2; ACCUM=4; STOP=0.02; MAXLEN=0
             GRID="-1 0 1.6 1.8 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.0 3.4" ;;
   pleias12b) BASE=PleIAs/Pleias-1.2b-Preview; PFX=memc_pleias12b; SFX=finec_pleias12b
-            BATCH=4; ACCUM=2; STOP=0.03
+            BATCH=4; ACCUM=2; STOP=0.03; MAXLEN=448
             GRID="-1 0 2 2.4 2.6 2.7 2.8 2.9 3 3.2 3.6" ;;
   *) echo "CBPAIR must be kl3m520m or pleias12b"; exit 2 ;;
 esac
@@ -40,7 +45,7 @@ for sd in "$@"; do
   .venv/bin/python recipes/finetune_memorizing.py \
     --base "$BASE" --tokenizer "$BASE" --data data --splits attack_train val \
     --target-modules all-linear --no-chat --epochs 40 --seed "$sd" --lr 3e-4 --rank 128 \
-    --batch "$BATCH" --accum "$ACCUM" --max-len 0 --stop-loss "$STOP" --out "$mem" \
+    --batch "$BATCH" --accum "$ACCUM" --max-len "$MAXLEN" --stop-loss "$STOP" --out "$mem" \
     || { set +x; echo "FAILED finetune seed=$sd"; exit 1; }
   set +x
   echo "=== $CBPAIR seed=$sd  sweep ($(date +%H:%M)) ==="
