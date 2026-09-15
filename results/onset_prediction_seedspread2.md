@@ -72,3 +72,26 @@ second card is explicitly extended, no re-grid, no re-threshold, no swapping to 
 KL3M is unhelpful, and no dropping a seed that lands awkwardly.
 
 ## Scoring log
+
+### Amendment, 2026-09-16 03:25, recorded before any result of this arm exists
+
+The section above says: *"No third seed for this pair unless the six-hour window that opened the
+second card is explicitly extended."* At `03:23` the user directed that the spare capacity be used
+--- the cards are running at `6`--`11` GiB of `79`, so the limit was never memory --- and KL3M's
+fine-tune is measured at `79` s/epoch against the `177` s this arm was budgeted at. Two further
+seeds, `3` and `4`, are therefore added, co-located one per card.
+
+This is recorded here rather than by editing the clause, because the file forbids editing anything
+above its scoring log. Three facts make the addition auditable rather than convenient:
+
+1. **No result exists.** Both KL3M fine-tunes are at epoch `4` of `40` and no sweep has begun, so
+   nothing about the answer is known and the extra seeds cannot have been chosen to chase one.
+2. **The committed primary is untouched.** It compares KL3M's span over seeds `{0, 1, 2}` against
+   Pleias' span over the same three, and it still does. Seeds `3` and `4` enter only a **secondary**
+   spread over all five points, reported beside the primary and never in place of it.
+3. **Spans are not comparable across different `n`**, which is the whole reason the like-for-like
+   rule exists; adding points to one pair and not the other is exactly the error that rule prevents,
+   so the extra seeds are barred from the comparison by construction rather than by intention.
+
+The entry gate, the grid, the threshold and every band above are unchanged.
+
