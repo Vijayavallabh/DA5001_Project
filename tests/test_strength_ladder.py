@@ -169,7 +169,7 @@ def test_the_second_pair_uses_its_own_corner_and_its_own_s_x():
     Pleias' s_x would rescale every ratio and the two pairs would not be comparable at all."""
     import csv
     from analysis.strength_ladder import PAIRS, KL3M_CORNER, KL3M_S_X, S_X, CORNER
-    assert set(PAIRS) == {"pleias", "kl3m"}
+    assert set(PAIRS) == {"pleias", "kl3m", "kl3m_cb"}
     assert PAIRS["kl3m"]["axes"].keys() == {"seeds"}, "kl3m has no epoch ladder and must not claim one"
     assert KL3M_CORNER in [r for _, r in PAIRS["kl3m"]["axes"]["seeds"]]
     assert KL3M_CORNER != CORNER[0] and abs(KL3M_S_X - S_X) > 0.5
@@ -193,14 +193,16 @@ def test_the_extra_seeds_cannot_enter_the_committed_primary():
     """Seeds 3 and 4 were added mid-arm under a recorded amendment. A span grows with the number of
     draws, so letting them into the cross-pair comparison would favour the very conclusion the arm
     tests. The primary is pinned to the three seeds BOTH pairs have."""
-    from analysis.strength_ladder import PAIRS, PRIMARY_SEEDS
+    from analysis.strength_ladder import PAIRS, PRIMARY_SEEDS, seed_of
     kl3m = [lab for lab, _ in PAIRS["kl3m"]["axes"]["seeds"]]
     pleias = [lab for lab, _ in PAIRS["pleias"]["axes"]["seeds"]]
-    assert len(kl3m) == 5 and len(pleias) == 4, (kl3m, pleias)
-    # the primary set exists in full on BOTH pairs -- that is what makes it like-for-like
-    for labs in (kl3m, pleias):
-        assert set(PRIMARY_SEEDS) <= set(labs), (PRIMARY_SEEDS, labs)
-    assert len(PRIMARY_SEEDS) == 3
+    cb = [lab for lab, _ in PAIRS["kl3m_cb"]["axes"]["seeds"]]
+    assert len(kl3m) == 5 and len(pleias) == 4 and len(cb) == 3, (kl3m, pleias, cb)
+    # the primary set exists in full on EVERY pair -- that is what makes it like-for-like, and it
+    # is keyed on the seed NUMBER so a pair's label wording cannot quietly exclude it
+    assert PRIMARY_SEEDS == (0, 1, 2)
+    for labs in (kl3m, pleias, cb):
+        assert set(PRIMARY_SEEDS) <= {seed_of(l) for l in labs}, (PRIMARY_SEEDS, labs)
     src = open(os.path.join(ROOT, "analysis/strength_ladder.py"), encoding="utf-8").read()
     assert "never in place of it" in src, "the secondary must be labelled as a secondary"
     # and the amendment is on record, below the scoring log where amendments belong
@@ -208,3 +210,37 @@ def test_the_extra_seeds_cannot_enter_the_committed_primary():
     head, _, tail = txt.partition("\n## Scoring log")
     assert "seed" in tail and "Amendment" in tail, "the amendment must be BELOW the scoring log"
     assert "Amendment" not in head, "nothing above the scoring log may be edited"
+
+
+def test_the_copybench_pair_reproduces_the_nine_pair_table_row():
+    """This arm's whole point is that it is IN Section 4's table. If its corner did not reproduce
+    that table's own ratio, the ladder would be measuring something else."""
+    import csv
+    from analysis.strength_ladder import PAIRS, CB_CORNER, CB_S_X
+    assert CB_CORNER in [r for _, r in PAIRS["kl3m_cb"]["axes"]["seeds"]]
+    row = next(r for r in csv.DictReader(open(os.path.join(ROOT, "results/onset_ci.csv")))
+               if r["pair"] == "KL3M-520M + mem. KL3M-520M" and r["mode"] == "single")
+    assert abs(float(row["s_x"]) - CB_S_X) < 1e-9, (row["s_x"], CB_S_X)
+    # the grid in the runner is the table's own, not one we picked
+    sh = open(os.path.join(ROOT, "scripts/run_copybench_seeds.sh"), encoding="utf-8").read()
+    grid = re.search(r'^GRID="([^"]+)"', sh, re.M).group(1).split()
+    assert grid[:2] == ["-1", "0"], "both mandatory baselines"
+    # compare as numbers: the CSV stores budgets through %g, so it writes "2" where the CLI
+    # string says "2.0". composition_attack.py parses --k-values to float and never puts the raw
+    # string in a path (unlike h1.py -- caution (o)), so the two spellings are the same grid.
+    assert [float(g) for g in grid[2:]] == [float(g) for g in row["k_grid"].split()], \
+        (grid[2:], row["k_grid"])
+    # and the fine-tune flags match the table memoriser's recipe.json, field by field
+    import json
+    r = json.load(open(os.path.join(ROOT, "output/phase5/mem_kl3m-002-520m/recipe.json")))
+    assert r["splits"] == ["attack_train", "val"] and "--splits attack_train val" in sh
+    # Compare the VALUES, not their spelling: the script writes "3e-4" where recipe.json records
+    # 0.0003. Both are the same number, and pinning the spelling would fail on a cosmetic edit
+    # while passing on a real change of value -- the wrong way round.
+    for flag, val in (("--rank", r["rank"]), ("--lr", r["lr"]), ("--epochs", r["epochs"]),
+                      ("--batch", r["batch"]), ("--accum", r["accum"]),
+                      ("--stop-loss", r["stop_loss"])):
+        m = re.search(rf"{re.escape(flag)}\s+(\S+)", sh)
+        assert m, flag
+        assert float(m.group(1)) == float(val), (flag, m.group(1), val)
+    assert r["base"] in sh and r["target_modules"] in sh and r["no_chat"] is True and "--no-chat" in sh

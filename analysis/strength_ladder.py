@@ -28,7 +28,7 @@ Writes <out>/strength_ladder.csv. No GPU.
 """
 from __future__ import annotations
 
-import argparse, csv, itertools, os, sys
+import argparse, csv, itertools, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.onset import crossing, curve            # noqa: E402
@@ -57,6 +57,11 @@ S_X = 3.048079572669047      # Pleias-1.2B on BookMIA, results/onset_theory_book
 # OWN corner grid -- no licensed extension, because its no-crossing there was 0.0%.
 KL3M_S_X = 2.4316326727999997
 KL3M_CORNER = "output/phase5/fineb_kl3m520m"
+# The same anchor on CopyBench -- the pair that is IN the nine-pair table of Section 4, so this one
+# tests the claim directly instead of by analogy. Its s(x) and grid are the table's own, from
+# results/onset_ci.csv; the corner is the run the table quotes.
+CB_S_X = 2.4147499999999997
+CB_CORNER = "output/phase5/fine_kl3m520m"
 PAIRS = {
     "pleias": dict(s_x=S_X, axes=None),          # axes filled in below from AXES
     "kl3m": dict(s_x=KL3M_S_X, axes={"seeds": [
@@ -69,6 +74,10 @@ PAIRS = {
         ("seed=3", "output/phase5/fineb_kl3m_s3"),
         ("seed=4", "output/phase5/fineb_kl3m_s4"),
         ("seed=0 (feat-120)", KL3M_CORNER)]}),
+    "kl3m_cb": dict(s_x=CB_S_X, axes={"seeds": [
+        ("seed=1", "output/phase5/finec_kl3m520m_s1"),
+        ("seed=2", "output/phase5/finec_kl3m520m_s2"),
+        ("seed=0 (the table's own)", CB_CORNER)]}),
 }
 PAIRS["pleias"]["axes"] = AXES
 ENTRY_GATE = 0.10            # AGENTS.md caution (a): SAMPLED, never greedy
@@ -80,7 +89,15 @@ SPAN_REFUTES, STRENGTH_SPAN_MIN = 0.10, 3.0
 SEED_SPAN_NOISE, SEED_SPAN_STRENGTH, EPOCH_SPAN_MEASURED = 0.20, 0.10, 0.4721
 # results/onset_prediction_seedspread2.md fixes the cross-pair comparison at these three seeds for
 # BOTH pairs, because max-minus-min grows with the number of draws and the pairs have different n.
-PRIMARY_SEEDS = ("seed=0 (feat-120)", "seed=1", "seed=2")
+# The rule is about seed NUMBERS, not label text: every pair's committed primary is seeds 0, 1, 2,
+# which is the set all three pairs have, so no span is ever read against a span of different n.
+PRIMARY_SEEDS = (0, 1, 2)
+
+
+def seed_of(label):
+    """The seed a point is, or None if the point is not on a seed axis."""
+    m = re.match(r"seed=(\d+)", label)
+    return int(m.group(1)) if m else None
 
 
 def baseline(path, k):
@@ -184,16 +201,16 @@ def main():
           f"(floor at n={len(ok)} is {1/len(list(itertools.permutations(range(len(ok))))) * 2:.3f})")
 
     if a.axis == "seeds":
-        prim = [r for r in ok if r["point"] in PRIMARY_SEEDS]
+        prim = [r for r in ok if seed_of(r["point"]) in PRIMARY_SEEDS]
         if len(prim) == len(PRIMARY_SEEDS):
             pv = [r["ratio"] for r in prim]
-            print(f"\n  PRIMARY, the committed like-for-like span over {list(PRIMARY_SEEDS)}:"
+            print(f"\n  PRIMARY, the committed like-for-like span over {[r['point'] for r in prim]}:"
                   f" {max(pv) - min(pv):.4f}  ({min(pv):.4f} to {max(pv):.4f})")
             if len(ok) > len(prim):
                 print(f"  secondary, all {len(ok)} points: {span_ratio:.4f}  -- reported beside the "
                       "primary and never in place of it, because a span grows with n")
         else:
-            print(f"\n  the committed primary needs {list(PRIMARY_SEEDS)}; only "
+            print(f"\n  the committed primary needs three of {list(PRIMARY_SEEDS)}; only "
                   f"{[r['point'] for r in prim]} entered")
         print(f"\n  read against feat-121's epoch-only span of {EPOCH_SPAN_MEASURED} on the same cell")
         if span_ratio >= SEED_SPAN_NOISE:

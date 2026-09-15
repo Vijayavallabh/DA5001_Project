@@ -23,6 +23,22 @@ name. Neither has produced a single sweep yet, so no number from either exists.
 |---|---|---|---|
 | Pleias-1.2B seeds | `onset_prediction_seedspread.md` | seeds 1, 2, 3 in series | GPU 2, alone |
 | KL3M-520M seeds | `onset_prediction_seedspread2.md` | seeds 1+3 / seeds 2+4 | GPU 4, GPU 1 |
+| KL3M-520M **CopyBench** seeds | `onset_prediction_seedspread_copybench.md` | seeds 1 / 2 | GPU 4, GPU 1 |
+
+**Arm 3 is the one that matters most and was added last.** Every other seed measurement is on
+BookMIA, while the claim they qualify is about the **nine-pair CopyBench table**. This replaces the
+analogy with a direct measurement on `KL3M-520M + mem. KL3M-520M`, which is *in* that table, is one
+of the two pairs whose interval excludes `1`, is the fine-tokenizer pair the split is built on, and
+has `0.0%` no-crossing so there is no grid-ceiling escape. **If its ratio is stable across seeds,
+the sentence now in Limitations and `appendix_robustness.tex` is too broad and must be narrowed.**
+Its corner reproduces the table's own row (`1.0531` against the published `1.0532`, `k=-1` `0.5188`),
+which a test asserts.
+
+Its protocol survives in **no log** — caution (v)'s situation. `recipe.json` gave the fine-tune in
+full, and the sweep's corpus was **proven, not inferred**: rebuilding `--split attack_train
+--limit 100` through `load_prompt_corpus` reproduces the swept prompt ids exactly and in order, and
+the launched run then printed `608 excerpts` and `max-len auto: 679`, matching the recipe's own
+`n_texts` and `max_len`. Anything short of that match would have made the arm unbuildable.
 
 **Arm 1, the Pleias seed ladder**, is the control feat-121 forbade itself from adding after the
 fact. `--epochs 40` fixed — the recipe **every published memoriser in this paper uses** — varying
@@ -67,8 +83,10 @@ AGENTS.md. `scripts/run_strength_ladder.sh` takes `GPU` as an override whose **d
 the standing rule quoted inside the script, so the fallback needs no memory. **GPU 0 was another
 user's throughout (62.6 GiB in use) and was never taken.**
 
-**Co-location is measured, not assumed:** two jobs on one A100 cost **~19%** each
-(93–95 s/epoch against 79 solo), so a shared card yields ~1.68× the throughput. The Pleias arm was
+**Co-location is measured, not assumed, and its return falls:** two jobs on one A100 cost ~19%
+each (93–95 s/epoch against 79 solo → ~1.68× throughput); at **three** jobs the same work runs at
+117 s/epoch, **1.48×** slower than solo, so the card delivers ~2.0× rather than 3×. Adding a fourth
+would very likely not pay. The Pleias arm was
 deliberately left alone on GPU 2 and runs at 1.03×. Cards sit at 11–13 GiB of 79 — memory was never
 the constraint, SM occupancy is.
 
@@ -385,7 +403,7 @@ and both are labelled where they appear.
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
 | tests | **483 passed**, `./init.sh` exit 0 |
-| pre-registrations | **50**; 48 scored, `onset_prediction_seedspread.md` and `onset_prediction_seedspread2.md` committed-and-running |
+| pre-registrations | **51**; 48 scored, three committed-and-running: `onset_prediction_seedspread.md`, `onset_prediction_seedspread2.md`, `onset_prediction_seedspread_copybench.md` |
 | numeric audit | 3,197 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
 | compute | **247.6** measured, disclosed as **"at most 248"** (≈7.7 of it is gated shells polling with no card); fine-tune bound **40** |
 | artifact | **871** files, `MANIFEST.sha256` verified |
