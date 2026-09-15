@@ -187,3 +187,24 @@ def test_the_second_pair_uses_its_own_corner_and_its_own_s_x():
                                                            "composition_summary.csv")))
           if r["mode"] == "single" and r["L"] == "0"]
     assert "4.6" not in ks and "-1.0" in ks and "0.0" in ks, ks
+
+
+def test_the_extra_seeds_cannot_enter_the_committed_primary():
+    """Seeds 3 and 4 were added mid-arm under a recorded amendment. A span grows with the number of
+    draws, so letting them into the cross-pair comparison would favour the very conclusion the arm
+    tests. The primary is pinned to the three seeds BOTH pairs have."""
+    from analysis.strength_ladder import PAIRS, PRIMARY_SEEDS
+    kl3m = [lab for lab, _ in PAIRS["kl3m"]["axes"]["seeds"]]
+    pleias = [lab for lab, _ in PAIRS["pleias"]["axes"]["seeds"]]
+    assert len(kl3m) == 5 and len(pleias) == 4, (kl3m, pleias)
+    # the primary set exists in full on BOTH pairs -- that is what makes it like-for-like
+    for labs in (kl3m, pleias):
+        assert set(PRIMARY_SEEDS) <= set(labs), (PRIMARY_SEEDS, labs)
+    assert len(PRIMARY_SEEDS) == 3
+    src = open(os.path.join(ROOT, "analysis/strength_ladder.py"), encoding="utf-8").read()
+    assert "never in place of it" in src, "the secondary must be labelled as a secondary"
+    # and the amendment is on record, below the scoring log where amendments belong
+    txt = open(os.path.join(ROOT, "results/onset_prediction_seedspread2.md"), encoding="utf-8").read()
+    head, _, tail = txt.partition("\n## Scoring log")
+    assert "seed" in tail and "Amendment" in tail, "the amendment must be BELOW the scoring log"
+    assert "Amendment" not in head, "nothing above the scoring log may be edited"

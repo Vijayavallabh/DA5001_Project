@@ -62,6 +62,12 @@ PAIRS = {
     "kl3m": dict(s_x=KL3M_S_X, axes={"seeds": [
         ("seed=1", "output/phase5/fineb_kl3m_s1"),
         ("seed=2", "output/phase5/fineb_kl3m_s2"),
+        # seeds 3 and 4 were added at 03:25 under the amendment recorded in
+        # results/onset_prediction_seedspread2.md, before any result of the arm existed. They are
+        # barred from the COMMITTED primary, which is the {0,1,2} span, because a five-point span
+        # is not a three-point span and Pleias has three.
+        ("seed=3", "output/phase5/fineb_kl3m_s3"),
+        ("seed=4", "output/phase5/fineb_kl3m_s4"),
         ("seed=0 (feat-120)", KL3M_CORNER)]}),
 }
 PAIRS["pleias"]["axes"] = AXES
@@ -72,6 +78,9 @@ SPAN_REFUTES, STRENGTH_SPAN_MIN = 0.10, 3.0
 # committed in results/onset_prediction_seedspread.md before any seed memoriser existed, and read
 # against feat-121's MEASURED epoch-only span of 0.4721 on the identical pair, corpus and grid
 SEED_SPAN_NOISE, SEED_SPAN_STRENGTH, EPOCH_SPAN_MEASURED = 0.20, 0.10, 0.4721
+# results/onset_prediction_seedspread2.md fixes the cross-pair comparison at these three seeds for
+# BOTH pairs, because max-minus-min grows with the number of draws and the pairs have different n.
+PRIMARY_SEEDS = ("seed=0 (feat-120)", "seed=1", "seed=2")
 
 
 def baseline(path, k):
@@ -175,6 +184,17 @@ def main():
           f"(floor at n={len(ok)} is {1/len(list(itertools.permutations(range(len(ok))))) * 2:.3f})")
 
     if a.axis == "seeds":
+        prim = [r for r in ok if r["point"] in PRIMARY_SEEDS]
+        if len(prim) == len(PRIMARY_SEEDS):
+            pv = [r["ratio"] for r in prim]
+            print(f"\n  PRIMARY, the committed like-for-like span over {list(PRIMARY_SEEDS)}:"
+                  f" {max(pv) - min(pv):.4f}  ({min(pv):.4f} to {max(pv):.4f})")
+            if len(ok) > len(prim):
+                print(f"  secondary, all {len(ok)} points: {span_ratio:.4f}  -- reported beside the "
+                      "primary and never in place of it, because a span grows with n")
+        else:
+            print(f"\n  the committed primary needs {list(PRIMARY_SEEDS)}; only "
+                  f"{[r['point'] for r in prim]} entered")
         print(f"\n  read against feat-121's epoch-only span of {EPOCH_SPAN_MEASURED} on the same cell")
         if span_ratio >= SEED_SPAN_NOISE:
             verdict = (f"RUN-TO-RUN VARIATION: changing only the seed moves the ratio by "
