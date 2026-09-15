@@ -231,4 +231,5 @@ sel_scaling,output/logs/sel_scaling.log,1,2026-09-11 23:33,2026-09-12 02:51,3.3,
 surprisal_cdf_9,output/logs/surprisal_cdf_9.log,1,2026-09-11 18:33,2026-09-11 18:34,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 tqa_headtohead,output/logs/tqa_headtohead.log,1,2026-09-14 07:16,2026-09-14 09:04,1.8,1.8,log_birth,0.0,scanned; traced sleeps removed
 verifiable_comma7b,output/logs/verifiable_comma7b.log,1,2026-09-12 22:04,2026-09-13 04:57,6.88,6.88,log_birth,0.0,scanned; traced sleeps removed
+verifiable_scorer_scale,output/logs/verifiable_scorer_scale.log,1,2026-09-15 11:53,2026-09-15 12:47,0.9,0.9,log_birth,0.0,scanned; traced sleeps removed
 verifiable_tqa,output/logs/verifiable_tqa.log,1,2026-09-14 07:11,2026-09-14 07:39,0.48,0.48,log_birth,0.0,scanned; traced sleeps removed

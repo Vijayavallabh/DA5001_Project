@@ -245,7 +245,12 @@ def main():
     ap.add_argument("--reps", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=8801)
     ap.add_argument("--skip-risky", action="store_true")
-    ap.add_argument("--tag", default="")
+    ap.add_argument("--tag", default="",
+                    help="names the GENERATION files and the workload; changing it regenerates")
+    ap.add_argument("--reward-tag", default="",
+                    help="names the reward cache and the output CSV only, so a second scorer can "
+                         "re-score the SAME cached generations without regenerating them. Empty by "
+                         "default, which reproduces every path this script wrote before feat-118.")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
@@ -282,7 +287,7 @@ def main():
     print(f"[verif] no answer extracted in {empty:.4f} of samples", flush=True)
 
     # The pointwise reward, cached: n_max scores per problem, computed once.
-    rw_path = os.path.join(a.out, f"selection_verifiable_rewards{a.tag}.csv")
+    rw_path = os.path.join(a.out, f"selection_verifiable_rewards{a.tag}{a.reward_tag}.csv")
     if not os.path.exists(rw_path):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -309,7 +314,8 @@ def main():
 
     rows = []
     base = {}
-    for rule in ("majority vote (self-consistency)", "pointwise reward (Qwen2.5-7B)"):
+    reward_rule = f"pointwise reward ({a.reward_model.split('/')[-1].replace('-Instruct', '')})"
+    for rule in ("majority vote (self-consistency)", reward_rule):
         for n in [x for x in N_GRID if x <= a.max_n]:
             correct = []
             for it in items:
@@ -344,7 +350,7 @@ def main():
                          acc_hi95=round(hi, 4), gain="", gain_lo95="", gain_hi95="",
                          spearman_acc_logn=""))
 
-    path = os.path.join(a.out, f"selection_verifiable{a.tag}.csv")
+    path = os.path.join(a.out, f"selection_verifiable{a.tag}{a.reward_tag}.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
         w.writeheader()

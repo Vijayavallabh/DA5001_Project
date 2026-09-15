@@ -167,8 +167,9 @@ $7.6156$B & $+0.1065$ & $61.29\times$ & $n=16$, $15.32\times$ \\
 
 \noindent No band was committed on the cost column, so it is post hoc; the crossing rule is taken
 verbatim from the arm above and applied unchanged to scorers that arm did not have. A $1.5$B scorer
-reaches $87.3\%$ of the $7.6$B scorer's gain for $35.2\%$ of its serving cost, so the $61.3\times$
-this paper concedes is the price of the scorer we happened to use and not of the mechanism.
+reaches $87.3\%$ of the $7.6$B scorer's gain for $35.2\%$ of its serving cost, so on this workload
+the $61.3\times$ is the price of the scorer we happened to use and not of the mechanism --- a
+reading the next paragraph tests without a judge and does not reproduce.
 \textbf{One instability we do not hide}: a crossing \emph{cell} is a thresholded statistic and
 inherits none of the stability the gains showed. The $7.6$B scorer's crossing sits at $n=8$ and
 $7.66\times$ in one pass and $n=16$ and $15.32\times$ in the other, because \texttt{sel7b\_n8} read
@@ -183,6 +184,51 @@ large step is $0.5$B to $1.5$B and the small ones are above it. The certificate 
 throughout and was never at risk: $q(y)\le n\,p_s(y)$ holds for any score, so every one of these
 $24$ cells is certified at $\log n$ whatever the scorer costs or achieves. What the scorer decides
 is not whether the guarantee holds but whether anything is bought with it.
+
+\paragraph{The same question without a judge, where it answers differently}\label{app:judgefreescale}
+Every number in the paragraph above comes from a pairwise judge this paper measures at $0.24$--$0.35$
+order consistency and calls unusable. GSM8K exact match has no judge: the answer is a number and the
+grader is \texttt{==}. We re-scored the same $500 \times 64$ cached Comma-7B candidates with all four
+rewards and read accuracy at each $n$, bands committed first. Majority vote is carried alongside
+because it needs no reward model at all, and because all four runs must reproduce it exactly --- they
+do, which pins the cached-generation path and not merely the arithmetic.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+scorer & $n{=}2$ & $4$ & $8$ & $16$ & $32$ & $64$ \\
+\midrule
+$0.5$B & $0.336$ & $0.320$ & $0.302$ & $0.312$ & $0.332$ & $0.316$ \\
+$1.5$B & $0.330$ & $0.316$ & $0.318$ & $0.332$ & $0.324$ & $0.310$ \\
+$3$B & $0.334$ & $0.334$ & $0.320$ & $0.338$ & $0.344$ & $0.356$ \\
+$7.6$B & $0.352$ & $0.344$ & $0.364$ & $0.356$ & $0.380$ & $\mathbf{0.386}$ \\
+\midrule
+majority vote & $0.320$ & $0.392$ & $0.466$ & $0.500$ & $0.546$ & $\mathbf{0.542}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent All arms start from the $n=1$ anchor's $0.320$. Scorer scale matters here too --- $7.6$B
+over $0.5$B at $n=64$ is $+0.0700\,[+0.0300,+0.1120]$, paired over the 500 problems --- but
+\textbf{it is not bought where the judge said it was}. The first step, $1.5$B over $0.5$B, is
+$-0.0060\,[-0.0500,+0.0360]$ against the judged $+0.0700\,[+0.0500,+0.0900]$, and none of the three
+adjacent steps resolves on its own ($3$B over $1.5$B is $+0.0460\,[+0.0000,+0.0920]$, a boundary and
+not a finding; $7.6$B over $3$B is $+0.0300\,[-0.0140,+0.0740]$). The two axes agree that scorer
+scale is worth seven to eight points end to end --- $+0.0835$ judged, $+0.0700$ here --- and
+disagree completely about where in the range it is bought: all of it in the first step with a judge,
+gradually and with the largest scorer still the best without one.
+
+On TriviaQA, committed in advance as a secondary so it could not become a rescue, there is no scorer
+effect at any scale: $7.6$B over $0.5$B is $+0.0040\,[-0.0300,+0.0380]$ and every reward arm
+\emph{declines} in $n$ while majority vote rises to $0.334$. We predicted agreement on both tasks
+and got it on neither.
+
+Two things survive this and are stronger for it. The paper's claim that utility is the scorer's and
+the certificate is the mechanism's is now measured \emph{without} an instrument: $+0.0700$ of exact
+match turns on the scorer alone while $\log n$ is identical throughout. And majority vote --- no
+reward model, same certificate --- reaches $0.546$ where the best reward reaches $0.386$, so where
+an answer is checkable the scorer-free rule is the better one, now at four scorer scales rather than
+one.
 
 \paragraph{Vetting the anchor: the premise is measurable, and we measured it}\label{app:vetting}
 Proposition~\ref{prop:selection} bounds $\Pr_q[E]$ by $n\Pr_{p_s}[E]$, so everything rests on the

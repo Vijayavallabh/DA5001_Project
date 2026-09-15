@@ -116,7 +116,14 @@ def test_limitations_carries_the_committed_consequence_of_f1_and_f3():
         "the surviving open question -- where the capability bar sits -- is not stated"
     assert "intrinsic at the scales we tested" not in close, \
         "feat-117 refuted this; saturation by 1.5B means the cost is the scorer's, not the mechanism's"
-    assert "saturates by $1.5$B" in close, "the replacement claim is missing"
+    # feat-118 then refuted the REPLACEMENT as a general claim: on GSM8K exact match a 1.5B scorer
+    # buys nothing and the largest is still the best. The 1.5B figure may therefore appear only
+    # attributed to the workload it was measured on, and the disagreement must appear with it --
+    # this sentence is a deployer-facing recommendation and the two axes we can measure disagree.
+    assert "saturates by $1.5$B" not in close, \
+        "feat-118 refuted saturation as a general claim; it may not be stated unqualified"
+    assert "on the judged workload" in close, "the 1.5B figure is not attributed to its workload"
+    assert "nothing on GSM8K" in close, "the judge-free disagreement is not stated beside it"
 
 
 def test_the_conceded_compute_ratios_were_not_softened_by_the_failed_rescue():

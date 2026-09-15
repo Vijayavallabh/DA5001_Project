@@ -16,8 +16,8 @@ majority vote on GSM8K and \emph{loses} accuracy on TriviaQA.
 \noindent\textbf{And it is paid for in compute, which no nat measures.} Selection needs $n=64$, at
 $61.3\times$ the metered decoder's forward-pass cost, to reach $+0.1045$. The gain is the
 \emph{scorer's} capability, not the mechanism's: a $0.5$B scorer buys the same $\log n$ and never
-reaches the meter, while capability saturates by $1.5$B, which reaches $87\%$ of the $7.6$B gain for
-$35\%$ of the cost (Appendix~\ref{app:saturation}). The price is the scorer we chose and not the
+reaches the meter, while a $1.5$B scorer buys $87\%$ of the $7.6$B gain on the judged workload and
+nothing on GSM8K (Appendices~\ref{app:saturation},~\ref{app:judgefreescale}). The price is the scorer we chose and not the
 mechanism, and where that bar sits is open. The corpus is sixteen English novels, judged levels are
 position-dominated, and the quantitative half is open: how close a policy of the shape
 Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier.

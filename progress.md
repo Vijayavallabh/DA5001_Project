@@ -197,6 +197,60 @@ Commands: `analysis/scorer_scale.py --out results` (GPU 0),
 `analysis/scorer_agreement.py --scale --out results`.
 
 
+### 2026-09-15, feat-118: the saturation result does not survive without the judge
+
+feat-117's saturation finding was about to become the paper's one deployer-facing recommendation --
+*use a `1.5`B scorer, keep `87%` of the gain, pay `35%` of the cost* -- and every number in it came
+from a pairwise judge this paper measures at `0.24`-`0.35` order consistency and calls UNUSABLE.
+GSM8K exact match has no judge. Same `500 x 64` cached Comma-7B candidates, all four rewards, bands
+committed at `8b97871` before the run, TriviaQA committed with them so it could not become a
+post-hoc rescue. Six reward passes, no generation, `scripts/run_verifiable_scorer_scale.sh`.
+
+**H0 `MATCHES`**, and a second check came free: majority vote touches no reward model, so all four
+per-scorer runs must reproduce it exactly, and they do -- `0.320/0.320/0.392/0.466/0.500/0.546/0.542`
+on GSM8K in every one. That pins the whole cached-generation path, not just the arithmetic.
+
+**H3 = `DISAGREES, OTHER` on GSM8K and `DISAGREES, NO SCORER EFFECT` on TriviaQA, against my
+committed `AGREES` on both.** Scorer scale does matter without a judge -- `7.6`B over `0.5`B at
+`n=64` is `+0.0700 [+0.0300,+0.1120]` -- but it is **not bought where the judge said it was**. The
+first step, `1.5`B over `0.5`B, is `-0.0060 [-0.0500,+0.0360]` here against the judged
+`+0.0700 [+0.0500,+0.0900]`; no adjacent step resolves on its own (`3`B over `1.5`B is
+`+0.0460 [+0.0000,+0.0920]`, a boundary and not a finding); and the largest scorer is still the
+best at `n=64`. On TriviaQA there is no scorer effect at any scale and every reward arm *declines*
+in `n`.
+
+**The two axes agree on the total and disagree on the shape.** Scorer scale is worth seven to eight
+points end to end on both -- `+0.0835` judged, `+0.0700` judge-free -- and where it is bought is
+completely different: all of it in the first step with a judge, gradually and still rising at
+`7.6`B without one.
+
+**Consequence applied as committed.** GSM8K's `DISAGREES, OTHER` takes the `LATER SATURATION`
+action: the `87%`/`35%` sentence is **qualified to the judged workload** in Section 2 and
+Limitations rather than withdrawn, because GSM8K's H1 separates and scorer scale does matter. It is
+not stated as a general property of the mechanism, and `tests/test_compute_matched.py` now forbids
+the unqualified form and requires the disagreement beside it. New appendix
+`app:judgefreescale` carries both tasks.
+
+Two things are stronger for this. The paper's central claim is now measured **without** an
+instrument: `+0.0700` of GSM8K exact match turns on the scorer alone while `log n` is identical
+throughout -- utility is the scorer's, the certificate is the mechanism's. And majority vote, which
+needs no reward model and carries the same `log n`, reaches `0.546` where the best reward reaches
+`0.386`: where an answer is checkable the scorer-free rule is the better one, now at four scorer
+scales rather than one.
+
+A latent defect was fixed on the way in: `selection_verifiable.py` hardcoded the reward arm's label
+as the string `pointwise reward (Qwen2.5-7B)`, so `--reward-model` would have silently mislabelled
+every row and made four different scorers indistinguishable in the CSVs. It is derived from the
+checkpoint now, and the new `--reward-tag` names the reward cache and output CSV without touching
+the generation paths. With the defaults the patched script reproduces
+`selection_verifiable_comma7b.csv` byte for byte, verified before the pre-registration was
+committed. The TriviaQA protocol was copied out of `output/logs/verifiable_tqa.log` rather than
+assumed: it is **5-shot**, not the 8-shot default (caution (v)).
+
+Commands: `scripts/run_verifiable_scorer_scale.sh 4`,
+`analysis/verifiable_scorer_scale.py --out results`.
+
+
 ## Status
 
 ### What's Done

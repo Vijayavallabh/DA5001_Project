@@ -1,19 +1,21 @@
-# Session handoff — 2026-09-15 (morning, after feat-117)
+# Session handoff — 2026-09-15 (midday, after feat-118)
 
 ## Current objective
 
-Nothing is running. Tree is clean at `9a1b5c1` on `iclr-2027`, all forty-five pre-registrations in
-`results/` are scored, and the manuscript compiles clean from a deleted PDF.
+Nothing is running. All forty-six pre-registrations in `results/` are scored and the manuscript
+compiles clean from a deleted PDF.
 
-The session did six things, in this order: **reframed the paper to lead with its contribution
+The session did seven things, in this order: **reframed the paper to lead with its contribution
 (v8)**, **answered a referee report by measurement (v9/v10)**, **read the rendered PDF end to end**,
 **ran the paper's own escape hatch from the compute concession and reported that it failed
-(feat-116)**, **found and fixed an 8.8% error in the cost model**, and **ran the follow-up that
-retracted feat-116's headline observation and replaced it with a better one (feat-117)**.
+(feat-116)**, **found and fixed an 8.8% error in the cost model**, **ran the follow-up that
+retracted feat-116's headline observation and replaced it with a better one (feat-117)**, and
+**took that replacement off the judge, where it did not survive either (feat-118)**.
 
-Two claims were retracted this session, both ours, both by arms we designed to test them. That is
-the through-line and it is worth preserving: the paper's method is now visibly applied to the
-paper's own findings.
+Three claims were retracted or qualified this session, all ours, all by arms we designed to test
+them. That is the through-line and it is worth preserving: the paper's method is now visibly
+applied to the paper's own findings, including the one that was about to become its single
+deployer-facing recommendation.
 
 ### v8 / v9 / v10 / the first read-through — history, carried for context
 
@@ -74,7 +76,8 @@ registered it and lost it, and the `log n`-is-not-a-free-knob claim is out of th
 this file. What survives as *description*, not as the registered test, is the shape contrast:
 Spearman(gain, log n) is `0.5429` at `0.5`B and exactly `1.0` at each of `1.5`B, `3`B, `7.6`B.
 
-**The finding it was not built for is larger: capability saturates early.** Of the three adjacent
+**The finding it was not built for is larger: capability saturates early --- on the judged
+axis. feat-118 below took this off the judge and it did not hold.** Of the three adjacent
 steps at `n=64` only the first separates — `1.5`B over `0.5`B `+0.0700 [+0.0500,+0.0900]`, `3`B over
 `1.5`B `+0.0040 [-0.0145,+0.0225]`, `7.6`B over `3`B `+0.0095 [-0.0090,+0.0285]`. A `1.5`B scorer
 reaches **`87.3%`** of the `7.6`B gain for **`35.2%`** of the cost (`21.59x` against `61.29x`), so
@@ -93,6 +96,37 @@ Without a judge, `scorer_scale_agreement.csv` (post hoc, no band) gives the same
 space: Spearman against the `7.6`B reference is `0.1333`, `0.4185`, `0.4926` at `0.5`/`1.5`/`3`B and
 the same-draw rate at `n=64` is `0.052`, `0.132`, `0.228` against `0.016` by chance. Large step at
 the bottom, small ones above it.
+
+### feat-118 — and the replacement does not survive the judge-free axis either
+
+feat-117's saturation result was about to become the paper's one practical recommendation — *use a
+`1.5`B scorer, keep `87%` of the gain, pay `35%` of the cost* — and every number in it came from an
+instrument this paper calls UNUSABLE. GSM8K exact match has no judge. Same `500 × 64` cached
+Comma-7B candidates, all four rewards, bands committed at `8b97871` before the run, with TriviaQA
+committed alongside so it could not become a post-hoc rescue.
+
+**H0 `MATCHES`**, plus a free check: majority vote touches no reward model, so all four per-scorer
+runs must reproduce it exactly — and do, which pins the cached-generation path.
+
+**H3 = `DISAGREES, OTHER` on GSM8K and `DISAGREES, NO SCORER EFFECT` on TriviaQA, against my
+committed `AGREES` on both.** Scorer scale does matter without a judge (`7.6`B over `0.5`B at
+`n=64` is `+0.0700 [+0.0300,+0.1120]`) but **not where the judge said**: the first step, `1.5`B over
+`0.5`B, is `-0.0060 [-0.0500,+0.0360]` against the judged `+0.0700 [+0.0500,+0.0900]`, no adjacent
+step resolves alone, and the largest scorer is still the best. On TriviaQA no scale helps and every
+reward arm *declines* in `n`.
+
+**Both axes agree scorer scale is worth seven to eight points end to end** — `+0.0835` judged,
+`+0.0700` judge-free — **and disagree completely about where it is bought**: all in the first step
+with a judge, gradually and still rising at `7.6`B without one.
+
+Consequence applied as committed: the `87%`/`35%` sentence is **qualified to the judged workload**
+in Section 2 and Limitations rather than withdrawn, since GSM8K's H1 separates. The test that
+pinned it now forbids the unqualified form and requires the disagreement beside it. New appendix
+`app:judgefreescale`.
+
+Stronger for it: the paper's central claim is now measured **without** an instrument — `+0.0700` of
+exact match turns on the scorer alone with `log n` identical throughout — and majority vote, no
+reward model and the same certificate, reaches `0.546` where the best reward reaches `0.386`.
 
 ### The final read-through
 
@@ -114,13 +148,13 @@ and both are labelled where they appear.
 
 | | |
 |---|---|
-| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 53 total |
+| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 54 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **450 passed**, `./init.sh` exit 0 |
-| pre-registrations | **45**, all scored |
-| numeric audit | 2,928 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
-| compute | 222.0 measured over 233 jobs, "approximately 222" disclosed |
-| artifact | 831 files, `MANIFEST.sha256` verified |
+| tests | **458 passed**, `./init.sh` exit 0 |
+| pre-registrations | **46**, all scored |
+| numeric audit | 3,006 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
+| compute | 222.9 measured over 234 jobs, "approximately 223" disclosed |
+| artifact | 849 files, `MANIFEST.sha256` verified |
 | anonymity | 0 "our earlier audit", 0 affiliation; 4 hits, all `(Vijayavallabh, 2026)` and its bib entry |
 
 ## Files changed this session
