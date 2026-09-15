@@ -1,55 +1,74 @@
-# Session handoff — 2026-09-15 (late evening; the strength ladder is RUNNING)
+# Session handoff — 2026-09-16 (early hours, after feat-121)
 
 ## Current objective
 
-**The corpus-vs-memoriser arm is running.** `results/onset_prediction_strength.md` is committed and
-**unscored** — that is the one unscored pre-registration of the forty-eight in `results/`, and this
-line is what `tests/test_preregistration_count.py` checks for. The other forty-seven are scored and
-the manuscript compiles clean.
+Nothing is running, no GPU work is outstanding, and all **forty-eight** pre-registrations in
+`results/` are scored. The manuscript compiles clean at 9 of 9 body pages.
 
-### The strength ladder — is the onset ratio the corpus, or the memoriser? (RUNNING)
+The session ran ten arms. The last two are the ones a fresh reader should start with, because
+together they removed a claim the paper had built a section around:
 
-feat-120 could not settle this, and said so in advance: every memoriser is fine-tuned on the corpus
-it is then measured against, so corpus and strength move together by construction. This breaks that
-by holding the pair and corpus fixed — **Pleias-1.2B on BookMIA, the exact cell that inverted** —
-and varying `--epochs` alone (10, 20, 30), with feat-120's own 40-epoch run as the fourth point.
+- **feat-120** took the onset result to a **third** protected corpus. Two of three committed bands
+  failed; the ordering inverted; the sentence "leakage beginning after the certificate has gone
+  vacuous is a property of the pair" was retracted.
+- **feat-121** asked the question feat-120 could not answer — corpus or memoriser? — and found that
+  **one pair, held at one corpus and one anchor, moves its onset ratio 1.64× more than the entire
+  nine-pair table moves across all nine pairs**, purely by changing how long its memoriser trained.
 
-`scripts/run_strength_ladder.sh 10 20 30`, one queue shell, **GPU 2 only**, fine-tune then sweep in
-series, log `output/logs/strength_ladder.log`. Roughly 5 GPU-h: ~100 s/epoch for 60 epochs, then
-three 16-budget sweeps at ~50 min each. Score with `analysis/strength_ladder.py --out results`
-(written before the numbers exist; it refuses with fewer than three points).
+**Five claims were retracted or qualified this session, all ours, all by arms we built to test
+them.** That is the through-line worth preserving.
 
-**Strength is measured, never assumed.** Every band correlates the ratio against each point's own
-sampled `k=-1` arm, not against the epoch count, so the knob need not be monotone. The lever exists
-because feat-120's memoriser finished at loss `0.1098`, its *worst* of the last three epochs
-(`0.0493` → `0.0768` → `0.1098`): its weakness is largely where a fixed budget landed in the
-oscillation.
+### feat-121 — corpus or memoriser? **INCONCLUSIVE on the committed metric, and the measurement is the finding**
 
-**Bands** (`n = 4`, exact-`p` floor 1/12, so nothing can reach significance and none is claimed):
-`rho <= -0.8` with ratio span `>= 0.15` → strength explains it; ratio span `< 0.10` with strength
-span `>= 3x` → it does not, and feat-120's retraction stands unqualified; otherwise inconclusive.
-Plus a band that can **void the arm**: strengths spanning less than `3x` means the knob failed to
-make a ladder and the result is uninformative whatever `rho` reads.
+Pleias-1.2B on BookMIA, the exact cell that inverted, with three further memorisers differing in
+`--epochs` alone (10, 20, 30) and feat-120's own 40-epoch run as the fourth point. Everything else
+identical; strength **measured** by each point's own sampled `k=-1` arm, never read off the knob.
 
-**Committed in advance, and the part that matters most:** *no outcome restores the retracted
-sentence.* If strength explains the ratio, the nine-pair CopyBench table — whose memorisers span
-sampled `k=-1` from `0.2696` to `0.9091` and were never strength-matched — inherits the confound,
-which is a **larger** problem for the onset section than feat-120's failure, not a rescue of it.
-`tests/test_strength_ladder.py` (5) pins that sentence in both the pre-registration and the scorer.
+```
+point        sampled k=-1   onset    ratio   95% CI            no-x
+epochs=10       0.5470      2.669   0.8756  [0.7937, 1.2303]   0.0%
+epochs=20       0.2269      4.108   1.3477  [0.9667, 1.7475]   0.0%
+epochs=30       0.9149      2.923   0.9590  [0.6827, 0.9819]   0.0%
+epochs=40       0.1504      4.006   1.3142  [1.0102, 1.5941]   0.4%
+```
 
-The session did nine things: reframed the paper to lead with its contribution (v8), answered a
-referee report by measurement (v9/v10), read the rendered PDF end to end, ran the paper's own escape
-hatch from the compute concession and reported that it failed (feat-116), found and fixed an 8.8%
-error in the cost model, ran the follow-up that retracted feat-116's headline and replaced it
-(feat-117), took that replacement off the judge where it did not survive either (feat-118), priced
-the scorer-free instance and found it both cheapest and best (feat-119), and **took the onset
-result to a third protected corpus, where two of three committed bands failed and a published claim
-was retracted (feat-120)**.
+- **The arm is valid**: the knob produced a `6.08x` strength span against a committed `3x`.
+- **Committed verdict INCONCLUSIVE**: band 1 needed `rho <= -0.8` **and** span `>= 0.15`. The span
+  fired at `0.4721`; `rho` did not, at `-0.600` (exact `p = 0.4167`, floor `0.083`).
+- **The knob is not monotone and the design never assumed it was** — 20 epochs gave a *weaker*
+  memoriser than 10, which is why every band correlates against measured strength.
+- **What needs no band**: a spread of `0.4721` within one pair against the nine-pair table's whole
+  `0.2874`. It reproduces both ends of that range alone, and the property the tokenizer split turns
+  on flips sign inside the pair — `[0.68, 0.98]` at the strongest memoriser, `[1.01, 1.59]` at the
+  weakest, non-overlapping. (The extremes comparison is POST HOC; the spread was committed.)
 
-**Four claims were retracted or qualified this session, all ours, all by arms we designed to test
-them.** That is the through-line and it is worth preserving. feat-120 is the sharpest instance: the
-paper had said, on two agreeing corpora, that leakage beginning after the certificate has gone
-vacuous is a property of the pair. A third corpus inverted the ordering and the sentence is gone.
+**Not resolved, and stated as plainly as the finding:** strength versus run-to-run variation of the
+fine-tune. Four epoch counts are four optimisation trajectories, and the control — several seeds at
+one epoch count — is forbidden by the pre-registration after the fact. **Both readings cost the
+same**: if strength, the nine-pair table is confounded by a variable it never controlled (its own
+memorisers span sampled `k=-1` from `0.2696` to `0.9091`); if noise, the ratio carries a within-pair
+uncertainty near `0.47` that no bootstrap interval reports and the `0.2874` spread sits inside it.
+
+**As pre-committed, no outcome restored the retracted sentence**, and none did.
+
+### A rendering defect no build check can see, found while paying the page budget
+
+A `\label` attached to a `\paragraph` captures no counter, so `\ref` resolves it to the enclosing
+`\section`. Two such refs side by side therefore rendered **in the compiled PDF** as
+`Appendices I, I` and `Appendices I--I`. tectonic exits 0, the overfull count is 0, `??` is 0, and
+the page shows a real appendix letter — just the same one twice. Same class as cautions (y) and (z).
+`tests/test_reference_targets.py` (2) catches it, and was **demonstrated to fail** on the
+reintroduced defect rather than assumed to work. `sec:onset` (23 refs) and `app:bookmia` are the
+same construction and are *correct*, because their enclosing section is the right target.
+
+### Compute is now disclosed as an UPPER bound, and why
+
+`compute_hours.py` bills a log from birth to last write. This session's **gated queue shells poll
+while holding no card** — `bookmia_p1` ~2.63 h, `bookmia_sweep_gpu2` ~2.53 h, `bookmia_sweep_gpu4`
+~2.53 h — so roughly **7.7 of the 247.6 GPU-h is a sleeping shell**. The LLM Usage statement
+therefore says "at most $248$ GPU-hours" rather than "approximately". This is a new over-billing
+mode introduced by this session's gate loops; a future session adding a waiter should either trace
+its sleeps or expect the same inflation.
 
 ### feat-120 — the onset split on a third protected corpus: **TWO OF THREE BANDS FAIL**
 
@@ -304,11 +323,11 @@ and both are labelled where they appear.
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **479 passed**, `./init.sh` exit 0 |
-| pre-registrations | **48**; 47 scored, `onset_prediction_strength.md` committed-and-running |
-| numeric audit | 3,134 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
-| compute | **243.9** measured, "approximately 244" disclosed; fine-tune upper bound 28 → **36** |
-| artifact | **865** files, `MANIFEST.sha256` verified |
+| tests | **481 passed**, `./init.sh` exit 0 |
+| pre-registrations | **48**, all scored |
+| numeric audit | 3,197 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
+| compute | **247.6** measured, disclosed as **"at most 248"** (≈7.7 of it is gated shells polling with no card); fine-tune bound **40** |
+| artifact | **871** files, `MANIFEST.sha256` verified |
 | anonymity | 0 "our earlier audit", 0 affiliation; 4 hits, all `(Vijayavallabh, 2026)` and its bib entry |
 
 ## Files changed this session
@@ -349,6 +368,23 @@ would have silently mislabelled every row and made four scorers indistinguishabl
 defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
 `tests/test_{selection_claims,imitation_cost}.py` updated.
 
+### feat-121 (this session, COMPLETE)
+
+```
+analysis/strength_ladder.py              NEW  correlates ratio vs MEASURED k=-1; refuses < 3 points
+scripts/run_strength_ladder.sh           NEW  one queue shell, GPU 2 only, fine-tune then sweep
+tests/test_strength_ladder.py            NEW  5 tests
+tests/test_reference_targets.py          NEW  2 tests; catches "Appendices I, I"
+results/onset_prediction_strength.md     NEW  committed a9360cb, SCORED 02:30
+results/strength_ladder.csv              NEW  the four points
+~/sub/satml/sections/onset.tex                 body: the level is the claim, the ordering is not
+~/sub/satml/sections/appendix_robustness.tex   NEW subsection with the four-point table
+~/sub/satml/sections/appendix_limitations.tex  the nine-pair table is evidence about the LEVEL
+~/sub/satml/sections/selection.tex             ref fix (one number, pointer preserved)
+~/sub/satml/sections/iclr_closing.tex          ref fix; "residual fifth" sentence cut
+~/sub/satml/iclr_2027.tex                      abstract range; compute -> "at most 248"
+```
+
 ### feat-120 (this session, COMPLETE)
 
 ```
@@ -373,39 +409,36 @@ data/bench/bookmia100_onset{600,100}.jsonl  NEW, gitignored, rebuildable
 
 ## Recommended next step
 
-**Nothing is in flight. The highest-value next move is a read-through of the onset material with
-feat-120's result in hand**, because the retraction is fresh and the surrounding prose was written
-when the claim still stood. Specifically:
+Nothing is in flight. **The highest-value next move is a read-through of Section 4 and its
+appendices with feat-121 in hand**, because the section was written when the nine-pair ratios were
+read as properties of pairs and that reading is now gone. Concretely:
 
-1. `sections/appendix_onset.tex` still says the residual fraction tracks the words a fixed-token
-   seed hands the adversary at `rho = -0.958` over nine CopyBench pairs, quoting `1.166`/`1.053` at
-   7.5 words down to `0.878`--`0.926` at 13.9--15.0. That ordering is a CopyBench statement and is
-   untouched by feat-120 — but a reader arriving from the new "the split does not transfer"
-   paragraph will ask whether the seed-word gradient transfers either, and **we have not tested it**.
-   Either say so explicitly or test it; saying so is free and is the honest minimum.
-2. `sections/appendix_seed.tex` carries the same ratios in three tables (lines ~19--26, ~250,
-   ~311--313) as properties of pairs. They are CopyBench readings and correctly labelled, but the
-   word "pair" now carries less than it did. Worth one pass for overclaiming.
-3. The abstract still leads the vacuity argument with `0.88`--`1.17` and appends `1.31`. Read the
-   rendered abstract aloud once; the appended clause was added under a page budget and may scan
-   badly even though it compiles and fits.
+1. `sections/appendix_onset.tex` still presents the seed-word gradient (`rho = -0.958`, exact
+   `p = 0.0002`) as an explanation of the residual spread across nine pairs. It is a correlation
+   over **nine differently-trained memorisers**, and feat-121 shows one pair traverses more than
+   that whole spread on its own. Limitations now says so; the appendix does not. Either qualify it
+   there too or cut the causal reading. The body sentence was already hedged to "part of the
+   residual tracks…".
+2. `sections/appendix_seed.tex` carries the same ratios in three tables (~19–26, ~250, ~311–313) as
+   per-pair properties, and its "adversary holds >10 words / <=10 words" split (`0.878`–`0.926`
+   against `0.993`–`1.166`) is exactly the structure feat-121 says is not resolvable at that
+   precision. This is the biggest remaining overclaim in the paper.
+3. `results/onset_table.csv` and `sections/appendix_onset.tex`'s nine-pair table would be more
+   honest with a memoriser-strength column (each pair's sampled `k=-1` is already on disk). Zero
+   GPU, and it lets a reader see the confound rather than being told about it.
 
-**If a new arm is wanted instead**, the question feat-120 opened and could not answer is worth more
-than any remaining axis: **is it the corpus or the memoriser?** This design confounds them because
-the memoriser is fine-tuned on the corpus it is measured against. The clean separation is one
-anchor, one corpus, and memorisers of deliberately varied strength (vary `--epochs` or `--rank`
-alone), measuring the onset ratio against sampled `k=-1`. Three or four points on one pair would
-say whether the ratio is a function of memoriser strength, which would reinterpret feat-120's
-failure and parts of the nine-pair table as well. **This is now a one-card job (GPU 2)**; budget
-roughly 5--6 GPU-h for four memorisers plus four sweeps on the committed grid.
+**If a new arm is wanted**, the one feat-121 explicitly could not run is the clean separation:
+several fine-tunes at **one** epoch count under **different seeds**, same pair and corpus. Three or
+four seeds would say whether the `0.47` within-pair spread is memoriser strength or run-to-run
+variation. feat-121's pre-registration forbids folding that into itself, so it needs its own
+pre-registration and its own bands. **One card (GPU 2)**, roughly 4–5 GPU-h.
 
-Two things remain on record as **impossible** rather than unstarted, and a future session should not
-rediscover them. A judge-free head-to-head against the *metered* decoder cannot be run
-(`results/onset_prediction_verifiable.md`): TinyComma is the only openly licensed anchor sharing the
-Llama-3 tokenizer and it scores `0.04` on GSM8K. And the anchor-scale axis is capped by the
-**licensing frontier**, not by compute — Comma-7B is the largest openly licensed base model we can
-obtain, because open-*data* families contain books and would violate the premise the certificate is
-written against.
+Two things remain on record as **impossible** rather than unstarted. A judge-free head-to-head
+against the *metered* decoder cannot be run (`results/onset_prediction_verifiable.md`): TinyComma is
+the only openly licensed anchor sharing the Llama-3 tokenizer and it scores `0.04` on GSM8K. And the
+anchor-scale axis is capped by the **licensing frontier**, not by compute — Comma-7B is the largest
+openly licensed base model we can obtain, because open-*data* families contain books and would
+violate the premise the certificate is written against.
 
 ## What this session added to the record
 

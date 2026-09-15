@@ -4254,3 +4254,48 @@ one corpus, memorisers of varied strength.
 
 **474 tests. 3,134 numeric literals, one expected miss (`64256`). 9 of 9 pages, 55 total, 0 overfull,
 0 `??`. Compute rebilled to 243.9 GPU-hours.**
+
+### feat-121 (2026-09-16): corpus or memoriser? One pair moves 1.64x more than all nine
+
+```
+scripts/run_strength_ladder.sh 10 20 30     # one queue shell, GPU 2 only, ~3.7 GPU-h
+.venv/bin/python analysis/strength_ladder.py --out results
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineb_pleias_e<N>/composition.csv \
+  --s-x 3.048079572669047 --label "Pleias-1.2B (BookMIA, epochs=<N>)" --out results
+```
+
+feat-120 could not separate corpus from memoriser strength, because a memoriser is fine-tuned on the
+corpus it is then measured against. This holds the pair and corpus fixed (Pleias-1.2B on BookMIA,
+the cell that inverted) and varies `--epochs` alone, with feat-120's own 40-epoch run as a fourth
+point. Strength is **measured** by each point's own sampled `k=-1`, never read off the knob --- which
+matters, because the knob is not monotone: 20 epochs gave a weaker memoriser than 10.
+
+```
+point        sampled k=-1   onset    ratio   95% CI            no-x
+epochs=10       0.5470      2.669   0.8756  [0.7937, 1.2303]   0.0%
+epochs=20       0.2269      4.108   1.3477  [0.9667, 1.7475]   0.0%
+epochs=30       0.9149      2.923   0.9590  [0.6827, 0.9819]   0.0%
+epochs=40       0.1504      4.006   1.3142  [1.0102, 1.5941]   0.4%
+```
+
+Arm VALID (`6.08x` strength span against a committed `3x`). **Committed verdict INCONCLUSIVE**: band
+1 needed `rho <= -0.8` AND span `>= 0.15`; the span fired at `0.4721`, `rho` did not at `-0.600`
+(exact `p = 0.4167`). **The measurement that needs no band**: `0.4721` of within-pair spread against
+the nine-pair table's entire `0.2874` --- `1.64x` --- reproducing both ends of that range alone, with
+the property the tokenizer split turns on flipping sign inside the pair (`[0.68, 0.98]` strongest,
+`[1.01, 1.59]` weakest, non-overlapping; that extremes comparison is post hoc, the spread was
+committed). Strength vs run-to-run fine-tune variation is **not** separated and the seed control is
+forbidden after the fact; both readings cost the same, so the conclusion is unchanged.
+
+**Blockers/risks noted, not fixed here.** (i) A `\label` on a `\paragraph` captures no counter, so
+two such refs side by side rendered as `Appendices I, I` and `Appendices I--I` in the compiled PDF
+with exit 0, 0 overfull and 0 `??`. Fixed in two places; `tests/test_reference_targets.py` catches
+the class and was shown to fail on the reintroduced defect. (ii) `compute_hours.py` bills a gated
+queue shell for the hours it spends **polling with no card held** --- ~7.7 of 247.6 GPU-h this
+session --- so the disclosure is now "at most 248" rather than "approximately 244". A future waiter
+should trace its sleeps or expect the same inflation. (iii) `sections/appendix_seed.tex` still
+presents the nine-pair ratios as per-pair properties, including the ">10 words / <=10 words" split;
+that is the biggest remaining overclaim and is named in the handoff's next step.
+
+**481 tests. 3,197 numeric literals, one expected miss (`64256`). 9 of 9 pages, 56 total, 0 overfull,
+0 `??`. Artifact 871 files.**
