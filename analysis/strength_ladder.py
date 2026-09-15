@@ -53,6 +53,18 @@ AXES = {
 }
 POINTS = AXES["epochs"]      # feat-121's default path, unchanged
 S_X = 3.048079572669047      # Pleias-1.2B on BookMIA, results/onset_theory_bookmia.csv
+# A second pair's seed ladder (the strongest BookMIA memoriser and the fine-tokenizer pair), on ITS
+# OWN corner grid -- no licensed extension, because its no-crossing there was 0.0%.
+KL3M_S_X = 2.4316326727999997
+KL3M_CORNER = "output/phase5/fineb_kl3m520m"
+PAIRS = {
+    "pleias": dict(s_x=S_X, axes=None),          # axes filled in below from AXES
+    "kl3m": dict(s_x=KL3M_S_X, axes={"seeds": [
+        ("seed=1", "output/phase5/fineb_kl3m_s1"),
+        ("seed=2", "output/phase5/fineb_kl3m_s2"),
+        ("seed=0 (feat-120)", KL3M_CORNER)]}),
+}
+PAIRS["pleias"]["axes"] = AXES
 ENTRY_GATE = 0.10            # AGENTS.md caution (a): SAMPLED, never greedy
 # committed in results/onset_prediction_strength.md before any of these memorisers existed
 RHO_EXPLAINS, SPAN_EXPLAINS = -0.8, 0.15
@@ -79,6 +91,8 @@ def exact_p(a, b):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--pair", default="pleias", choices=sorted(PAIRS),
+                    help="pleias carries both ladders; kl3m carries the seed ladder only")
     ap.add_argument("--axis", default="epochs", choices=sorted(AXES) + ["pooled"],
                     help="epochs = feat-121; seeds = the seed arm; pooled = the committed "
                          "secondary over both ladders' seven distinct points")
@@ -86,14 +100,19 @@ def main():
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
+    s_x = PAIRS[a.pair]["s_x"]
+    axes = PAIRS[a.pair]["axes"]
+    if a.axis not in axes and a.axis != "pooled":
+        print(f"[sl] pair {a.pair} has no {a.axis} ladder", file=sys.stderr)
+        return 1
     if a.axis == "pooled":
         seen, points = set(), []
-        for ax in ("epochs", "seeds"):
-            for lab, run in AXES[ax]:
+        for ax in sorted(axes):
+            for lab, run in axes[ax]:
                 if run not in seen:
                     seen.add(run); points.append((lab, run))
     else:
-        points = AXES[a.axis]
+        points = axes[a.axis]
 
     rows = []
     for label, run in points:
@@ -108,16 +127,18 @@ def main():
             point=label, run=run, n_grid=len(c),
             k_minus1_recall=gate, k_zero_recall=baseline(path, 0.0),
             entered=(gate is not None and gate >= ENTRY_GATE),
-            s_x=round(S_X, 4), onset_lo=lo, onset_hi=hi,
+            s_x=round(s_x, 4), onset_lo=lo, onset_hi=hi,
             onset=round(est, 4) if est else None,
-            ratio=round(est / S_X, 4) if est else None,
+            ratio=round(est / s_x, 4) if est else None,
             grid=" ".join(f"{k:g}:{v:.3f}" for k, v in c.items())))
 
     if not rows:
         print("[sl] nothing to score", file=sys.stderr)
         return 1
     os.makedirs(a.out, exist_ok=True)
-    name = "strength_ladder.csv" if a.axis == "epochs" else f"strength_ladder_{a.axis}.csv"
+    stem = a.axis if a.pair == "pleias" else f"{a.pair}_{a.axis}"
+    name = "strength_ladder.csv" if (a.pair == "pleias" and a.axis == "epochs") \
+        else f"strength_ladder_{stem}.csv"
     path = os.path.join(a.out, name)
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)

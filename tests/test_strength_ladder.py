@@ -162,3 +162,28 @@ def test_the_seed_bands_in_the_scorer_match_the_committed_ones():
           csv.DictReader(open(os.path.join(ROOT, "results/strength_ladder.csv"))) if r["ratio"]]
     assert abs((max(sl) - min(sl)) - EPOCH_SPAN_MEASURED) < 1e-3, \
         "the two crossing conventions have drifted apart by more than 0.001"
+
+
+def test_the_second_pair_uses_its_own_corner_and_its_own_s_x():
+    """KL3M's ladder must anchor on KL3M's own BookMIA run and divide by KL3M's own s(x). Using
+    Pleias' s_x would rescale every ratio and the two pairs would not be comparable at all."""
+    import csv
+    from analysis.strength_ladder import PAIRS, KL3M_CORNER, KL3M_S_X, S_X, CORNER
+    assert set(PAIRS) == {"pleias", "kl3m"}
+    assert PAIRS["kl3m"]["axes"].keys() == {"seeds"}, "kl3m has no epoch ladder and must not claim one"
+    assert KL3M_CORNER in [r for _, r in PAIRS["kl3m"]["axes"]["seeds"]]
+    assert KL3M_CORNER != CORNER[0] and abs(KL3M_S_X - S_X) > 0.5
+    # both s(x) values round from the theory CSV, once (caution (j))
+    want = {"KL3M-520M": KL3M_S_X, "Pleias-1.2B": S_X}
+    seen = 0
+    for r in csv.DictReader(open(os.path.join(ROOT, "results/onset_theory_bookmia.csv"))):
+        for k, v in want.items():
+            if r["pair"].startswith(k):
+                assert abs(float(r["s_safe_median"]) - v) < 1e-9, (k, r["s_safe_median"], v)
+                seen += 1
+    assert seen == 2
+    # KL3M's corner grid carries NO licensed extension: its no-crossing there was 0.0%
+    ks = [r["k"] for r in csv.DictReader(open(os.path.join(ROOT, KL3M_CORNER,
+                                                           "composition_summary.csv")))
+          if r["mode"] == "single" and r["L"] == "0"]
+    assert "4.6" not in ks and "-1.0" in ks and "0.0" in ks, ks
