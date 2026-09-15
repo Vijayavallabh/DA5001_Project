@@ -1,9 +1,41 @@
-# Session handoff — 2026-09-15 (late evening, after feat-120)
+# Session handoff — 2026-09-15 (late evening; the strength ladder is RUNNING)
 
 ## Current objective
 
-Nothing is running and no GPU work is outstanding. All **forty-seven** pre-registrations in
-`results/` are scored and the manuscript compiles clean.
+**The corpus-vs-memoriser arm is running.** `results/onset_prediction_strength.md` is committed and
+**unscored** — that is the one unscored pre-registration of the forty-eight in `results/`, and this
+line is what `tests/test_preregistration_count.py` checks for. The other forty-seven are scored and
+the manuscript compiles clean.
+
+### The strength ladder — is the onset ratio the corpus, or the memoriser? (RUNNING)
+
+feat-120 could not settle this, and said so in advance: every memoriser is fine-tuned on the corpus
+it is then measured against, so corpus and strength move together by construction. This breaks that
+by holding the pair and corpus fixed — **Pleias-1.2B on BookMIA, the exact cell that inverted** —
+and varying `--epochs` alone (10, 20, 30), with feat-120's own 40-epoch run as the fourth point.
+
+`scripts/run_strength_ladder.sh 10 20 30`, one queue shell, **GPU 2 only**, fine-tune then sweep in
+series, log `output/logs/strength_ladder.log`. Roughly 5 GPU-h: ~100 s/epoch for 60 epochs, then
+three 16-budget sweeps at ~50 min each. Score with `analysis/strength_ladder.py --out results`
+(written before the numbers exist; it refuses with fewer than three points).
+
+**Strength is measured, never assumed.** Every band correlates the ratio against each point's own
+sampled `k=-1` arm, not against the epoch count, so the knob need not be monotone. The lever exists
+because feat-120's memoriser finished at loss `0.1098`, its *worst* of the last three epochs
+(`0.0493` → `0.0768` → `0.1098`): its weakness is largely where a fixed budget landed in the
+oscillation.
+
+**Bands** (`n = 4`, exact-`p` floor 1/12, so nothing can reach significance and none is claimed):
+`rho <= -0.8` with ratio span `>= 0.15` → strength explains it; ratio span `< 0.10` with strength
+span `>= 3x` → it does not, and feat-120's retraction stands unqualified; otherwise inconclusive.
+Plus a band that can **void the arm**: strengths spanning less than `3x` means the knob failed to
+make a ladder and the result is uninformative whatever `rho` reads.
+
+**Committed in advance, and the part that matters most:** *no outcome restores the retracted
+sentence.* If strength explains the ratio, the nine-pair CopyBench table — whose memorisers span
+sampled `k=-1` from `0.2696` to `0.9091` and were never strength-matched — inherits the confound,
+which is a **larger** problem for the onset section than feat-120's failure, not a rescue of it.
+`tests/test_strength_ladder.py` (5) pins that sentence in both the pre-registration and the scorer.
 
 The session did nine things: reframed the paper to lead with its contribution (v8), answered a
 referee report by measurement (v9/v10), read the rendered PDF end to end, ran the paper's own escape
@@ -272,8 +304,8 @@ and both are labelled where they appear.
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **474 passed**, `./init.sh` exit 0 |
-| pre-registrations | **47**, all scored |
+| tests | **479 passed**, `./init.sh` exit 0 |
+| pre-registrations | **48**; 47 scored, `onset_prediction_strength.md` committed-and-running |
 | numeric audit | 3,134 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
 | compute | **243.9** measured, "approximately 244" disclosed; fine-tune upper bound 28 → **36** |
 | artifact | **865** files, `MANIFEST.sha256` verified |
