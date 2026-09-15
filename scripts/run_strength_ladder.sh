@@ -17,21 +17,32 @@
 # four points share one grid and no crossing can sit at a ceiling (caution (g)).
 set -u
 cd "$(dirname "$0")/.."
-export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2
+# GPU is a parameter only while the user has opened a window for a second card;
+# the standing rule in AGENTS.md is one card, GPU 2.
+export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="${GPU:-2}"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
 
-BASE=PleIAs/Pleias-1.2b-Preview
+# PAIR selects the (anchor, tag, grid). Each pair's grid is the one ITS OWN seed-0 BookMIA run was
+# measured on, because the corner has to share a grid with the ladder it anchors. Pleias needed
+# feat-120's licensed extension (43.1% no-crossing); KL3M did not (0.0%) and must not get it.
+PAIR="${PAIR:-pleias}"
+case "$PAIR" in
+  pleias) BASE=PleIAs/Pleias-1.2b-Preview; PTAG=pleias
+          GRID="-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2 4.6 5.3 6.6" ;;
+  kl3m)   BASE=output/phase5/anchor_kl3m-002-520m; PTAG=kl3m
+          GRID="-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2" ;;
+  *) echo "PAIR must be pleias or kl3m"; exit 2 ;;
+esac
 TRAIN=data/bench/bookmia100_onset600.jsonl      # identical to feat-120's training corpus
 SWEEP=data/bench/bookmia100_onset100.jsonl      # identical to feat-120's swept passages
-GRID="-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2 4.6 5.3 6.6"
 
 AXIS="${1:?usage: $0 epochs|seeds <value>...}"; shift
 case "$AXIS" in epochs|seeds) ;; *) echo "axis must be 'epochs' or 'seeds'"; exit 2;; esac
 
 for v in "$@"; do
   if [ "$AXIS" = epochs ]; then ep="$v"; sd=0; tag="e${v}"; else ep=40; sd="$v"; tag="s${v}"; fi
-  mem="output/phase5/memb_pleias_${tag}"
-  out="output/phase5/fineb_pleias_${tag}"
+  mem="output/phase5/memb_${PTAG}_${tag}"
+  out="output/phase5/fineb_${PTAG}_${tag}"
   echo "=== $AXIS=$v  (epochs=$ep seed=$sd)  memoriser ($(date +%H:%M)) ==="
   set -x
   .venv/bin/python recipes/finetune_memorizing.py \

@@ -2,10 +2,17 @@
 
 ## Current objective
 
-**The seed arm is running.** `results/onset_prediction_seedspread.md` is committed and
-**unscored** — the one unscored pre-registration of the forty-nine in `results/`, which is what
-`tests/test_preregistration_count.py` checks for. The other forty-eight are scored and the
-manuscript compiles clean at 9 of 9 body pages.
+**Two seed arms are running**, on three cards. `results/onset_prediction_seedspread.md` and
+`results/onset_prediction_seedspread2.md` are committed and **unscored** — the two unscored
+pre-registrations of the fifty in `results/`, which is what `tests/test_preregistration_count.py`
+checks for. The other forty-eight are scored and the manuscript compiles clean at 9 of 9 body pages.
+
+**THREE CARDS ARE IN USE UNDER A BOUNDED WINDOW.** At 03:13 on 2026-09-16 the user opened the other
+GPUs "for the next 6 hours", i.e. until about **09:13**. That suspends — it does not cancel — the
+one-card rule recorded in AGENTS.md. `scripts/run_strength_ladder.sh` takes `GPU` as an override
+whose **default is 2**, and the standing rule is quoted in the script itself, so the next session
+falls back to one card without having to remember. GPU 0 stayed another user's throughout (16.6 GiB
+free) and was never taken.
 
 ### The seed arm — is the onset ratio reproducible under the paper's own recipe? (RUNNING)
 
@@ -352,7 +359,7 @@ and both are labelled where they appear.
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
 | tests | **483 passed**, `./init.sh` exit 0 |
-| pre-registrations | **49**; 48 scored, `onset_prediction_seedspread.md` committed-and-running |
+| pre-registrations | **50**; 48 scored, `onset_prediction_seedspread.md` and `onset_prediction_seedspread2.md` committed-and-running |
 | numeric audit | 3,197 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
 | compute | **247.6** measured, disclosed as **"at most 248"** (≈7.7 of it is gated shells polling with no card); fine-tune bound **40** |
 | artifact | **871** files, `MANIFEST.sha256` verified |

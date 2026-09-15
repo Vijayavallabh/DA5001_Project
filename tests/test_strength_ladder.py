@@ -48,12 +48,23 @@ def test_the_ladder_shares_one_anchor_one_corpus_and_one_grid():
     assert code.count("--epochs") == 1 and '--epochs "$ep"' in code
     for fixed in ("--rank 128", "--lr 3e-4", "--stop-loss 0.02", "--target-modules all-linear"):
         assert fixed in sh, fixed
-    # one grid for all points, and it must include feat-120's licensed extension
-    grid = re.search(r'^GRID="([^"]+)"', sh, re.M).group(1).split()
-    assert grid[:2] == ["-1", "0"], "both mandatory baselines"
-    for k in ("4.6", "5.3", "6.6"):
-        assert k in grid, f"the licensed extension point {k} is missing"
-    assert sh.count("CUDA_VISIBLE_DEVICES=2") == 1 and "CUDA_DEVICE_ORDER=PCI_BUS_ID" in sh
+    # Every pair's grid must carry both mandatory baselines, and must be the grid ITS OWN corner
+    # run was measured on: Pleias needed feat-120's licensed extension (43.1% no-crossing), KL3M
+    # did not (0.0%) and must not silently acquire it, or its ladder and its corner disagree.
+    grids = {g[0]: g[1].split() for g in re.findall(r'(\w+)\)\s+BASE=\S+;\s+PTAG=\w+\s+'
+                                                    r'GRID="([^"]+)"', sh)}
+    if not grids:      # tolerate reformatting: fall back to every GRID= line, keyed by order
+        grids = {str(i): g.split() for i, g in enumerate(re.findall(r'GRID="([^"]+)"', sh))}
+    assert len(grids) == 2, sorted(grids)
+    for k, g in grids.items():
+        assert g[:2] == ["-1", "0"], (k, "both mandatory baselines")
+    ext = {"4.6", "5.3", "6.6"}
+    has = [set(g) >= ext for g in grids.values()]
+    assert sorted(has) == [False, True], \
+        "exactly one pair (Pleias) should carry the licensed extension points"
+    # one card by default; the GPU override exists only for a window the user opened explicitly
+    assert 'CUDA_VISIBLE_DEVICES="${GPU:-2}"' in sh and "CUDA_DEVICE_ORDER=PCI_BUS_ID" in sh
+    assert "the standing rule in AGENTS.md is one card" in sh
 
 
 def test_the_forty_epoch_point_is_feat_120s_own_merged_run():
