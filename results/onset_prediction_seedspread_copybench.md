@@ -80,3 +80,36 @@ corpus inverting the ordering, which nothing here touches.
 and no dropping a seed that lands awkwardly.
 
 ## Scoring log
+
+### Extension, 2026-09-16 03:53: a second row of the same table, on GPU 2
+
+At `03:51` the user directed that GPU 2 be used as well. This file's design is extended to a
+**second pair of the nine-pair table**, `Pleias-1.2B + mem. Pleias-1.2B`, under identical rules and
+with the same three-point primary. Recorded here rather than by editing above the scoring log.
+
+**Why this pair.** KL3M-520M is the *fine*-tokenizer pillar of the split. Pleias-1.2B is the
+*coarse* pillar: ratio `0.8784` `[0.7891, 0.9600]`, interval excluding `1` from below, no-crossing
+`0.0%`. Between them they are the two sides the tokenizer split is stated as. If both are stable
+across seeds, the table's structure is not a seed artefact and the sentence now in Limitations and
+`appendix_robustness.tex` is too broad; if both move, it is, measured on the table itself.
+
+**No result of any kind exists** at the time of writing: not one of the seven running jobs has
+produced a sweep, so this extension cannot be a response to an answer.
+
+**Its protocol is its own, and that is a finding in itself.** The nine memorisers of the table are
+**not hyperparameter-matched**: `mem_kl3m-002-520m` trained at `batch 2 / accum 4 / stop-loss 0.02`
+and `mem_Pleias-1_2b-Preview` at `batch 4 / accum 2 / stop-loss 0.03`, with `max_len` `679` against
+`448` and `epochs_run` `11` against `30`. Each ladder therefore inherits *its own* corner's recipe,
+read from that corner's `recipe.json`; a ladder trained on the other pair's settings would not be a
+ladder on that corner at all. That the table's rows differ in batch, accumulation and stopping rule
+is worth stating in the paper independently of how these arms score.
+
+Its corpus was proven the same way as KL3M's: rebuilding `--split attack_train --limit 100` through
+`load_prompt_corpus` reproduces `fine_pleias12b/composition.csv`'s prompt ids **exactly and in
+order**. Grid `-1 0 2 2.4 2.6 2.7 2.8 2.9 3 3.2 3.6`, its own, from `results/onset_ci.csv`;
+$s(x) = 3.2094$.
+
+**Bands, entry gate, and everything else above are unchanged and apply to this pair too.** Two
+seeds, `1` and `2`, plus the table's own `seed 0`: a three-point primary, the same `n` as every
+other arm. The same prohibitions hold — no third seed, no re-grid, no re-threshold, no swapping
+pairs, no dropping a seed that lands awkwardly.

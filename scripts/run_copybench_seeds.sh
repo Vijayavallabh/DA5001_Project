@@ -17,21 +17,33 @@ cd "$(dirname "$0")/.."
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="${GPU:-2}"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
 
-BASE=alea-institute/kl3m-002-520m
-GRID="-1 0 1.6 1.8 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.0 3.4"
+# CBPAIR selects the table row. Each row's hyperparameters are ITS OWN, read from that pair's
+# recipe.json -- the nine memorisers in the table are NOT matched: KL3M-520M trained at batch 2 /
+# accum 4 / stop-loss 0.02, Pleias-1.2B at batch 4 / accum 2 / stop-loss 0.03. A ladder must
+# inherit its corner's recipe or it is not a ladder on that corner at all.
+CBPAIR="${CBPAIR:-kl3m520m}"
+case "$CBPAIR" in
+  kl3m520m) BASE=alea-institute/kl3m-002-520m; PFX=memc_kl3m520m; SFX=finec_kl3m520m
+            BATCH=2; ACCUM=4; STOP=0.02
+            GRID="-1 0 1.6 1.8 2.0 2.1 2.2 2.3 2.4 2.6 2.8 3.0 3.4" ;;
+  pleias12b) BASE=PleIAs/Pleias-1.2b-Preview; PFX=memc_pleias12b; SFX=finec_pleias12b
+            BATCH=4; ACCUM=2; STOP=0.03
+            GRID="-1 0 2 2.4 2.6 2.7 2.8 2.9 3 3.2 3.6" ;;
+  *) echo "CBPAIR must be kl3m520m or pleias12b"; exit 2 ;;
+esac
 
 for sd in "$@"; do
-  mem="output/phase5/memc_kl3m520m_s${sd}"
-  out="output/phase5/finec_kl3m520m_s${sd}"
-  echo "=== copybench seed=$sd  memoriser ($(date +%H:%M)) ==="
+  mem="output/phase5/${PFX}_s${sd}"
+  out="output/phase5/${SFX}_s${sd}"
+  echo "=== $CBPAIR seed=$sd  memoriser ($(date +%H:%M)) ==="
   set -x
   .venv/bin/python recipes/finetune_memorizing.py \
     --base "$BASE" --tokenizer "$BASE" --data data --splits attack_train val \
     --target-modules all-linear --no-chat --epochs 40 --seed "$sd" --lr 3e-4 --rank 128 \
-    --batch 2 --accum 4 --max-len 0 --stop-loss 0.02 --out "$mem" \
+    --batch "$BATCH" --accum "$ACCUM" --max-len 0 --stop-loss "$STOP" --out "$mem" \
     || { set +x; echo "FAILED finetune seed=$sd"; exit 1; }
   set +x
-  echo "=== copybench seed=$sd  sweep ($(date +%H:%M)) ==="
+  echo "=== $CBPAIR seed=$sd  sweep ($(date +%H:%M)) ==="
   set -x
   .venv/bin/python analysis/composition_attack.py \
     --safe-model "$BASE" --risky-model "$mem" --split attack_train --limit 100 \
