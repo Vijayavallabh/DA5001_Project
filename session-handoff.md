@@ -1,9 +1,56 @@
-# Session handoff — 2026-09-15 (afternoon, after feat-119)
+# Session handoff — 2026-09-15 (afternoon, feat-120 IN FLIGHT)
 
 ## Current objective
 
-Nothing is running. All forty-six pre-registrations in `results/` are scored and the manuscript
+**feat-120 is in flight.** `results/onset_prediction_bookmia.md` is committed and **unscored** —
+that is the one unscored pre-registration of the forty-seven in `results/`, and this line is what
+`tests/test_preregistration_count.py` checks for. The other forty-six are scored and the manuscript
 compiles clean from a deleted PDF.
+
+### feat-120 — the onset split on a third protected corpus (RUNNING)
+
+Three memorisers are fine-tuning, launched 14:18 on GPUs 2 and 4 by
+`scripts/run_bookmia_memorisers.sh` (one queue shell per card, no PID capture — caution (x)):
+
+```
+queue A, GPU 2, output/logs/bookmia_mem_a.log   kl3m-002-520m, then Pleias-1_2b
+queue B, GPU 4, output/logs/bookmia_mem_b.log   phi35mini
+```
+
+Expect ~2.5 h per queue: BookMIA's `max-len auto` lands at ~1185 tokens against Gutenberg's 395–669,
+so epochs cost 179 s (KL3M) and 219 s (Phi) against 194 s and 81 s on Gutenberg. Padding is dynamic
+per batch (`padding=True` at `recipes/finetune_memorizing.py:124`), so the long tail is not paid on
+every batch. The fine-tune script prints its own sampled-recall entry-gate verdict when it finishes
+(`sampled nv-recall … -> ADMISSIBLE (needs >= 0.10)`), which is caution (a)'s gate, not a greedy one.
+
+**The order from here is the whole point and `scripts/add_pair.sh` deliberately refuses to run the
+sweep for this reason:**
+
+1. memorisers finish
+2. `analysis/onset_theory.py --pairs-file results/onset_theory_pairs_bookmia.tsv --corpus-file
+   data/bench/bookmia100_onset100.jsonl --limit 100 --tag _bookmia` → the parameter-free P1
+   predictions, two teacher-forced forward passes per passage, no decoding
+3. **append those predictions to the pre-registration and COMMIT** — before the sweep exists
+4. `analysis/composition_attack.py` per pair on the committed grid
+   `-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2`, `--corpus-file
+   data/bench/bookmia100_onset100.jsonl --modes single --limit 100`, `--out output/phase5/fineb_<pair>`
+5. `analysis/onset_gutenberg.py --corpus bookmia` and `analysis/onset_ci.py` per pair
+
+The grid was committed at 14:27 while the memorisers were in epoch 1 and no BookMIA `s_s` existed;
+it is the Gutenberg grid verbatim, which is the strongest available evidence it was not shaped to
+bracket this corpus.
+
+**Band 3 is the new one and the reason the arm earns its GPU-hours.** Three readings of the same
+three pairs give each pair a corpus-to-corpus *range*; the claim is that it sits below that pair's
+**CopyBench** bootstrap width (0.2273 / 0.1709 / 0.2866, published in `results/onset_ci.csv` long
+before this run). The two-corpus range so far is 0.0488 / 0.0163 / 0.0228 — 3.5× to 10× inside the
+yardstick, so the band can fail and is worth stating. Bands 1 and 2 are the Gutenberg arm's verbatim,
+because a shared band is the only thing that makes three readings comparable.
+
+**BookMIA's `seen`/`unseen` label plays no role.** Every pair is self-paired — a clean anchor against
+a LoRA copy of itself fine-tuned on exactly these passages — so the confound AGENTS.md records
+(the halves are not a matched pair under an anchor that saw neither) cannot enter. Said in the
+pre-registration too, because a reader will assume otherwise.
 
 The session did eight things, in this order: **reframed the paper to lead with its contribution
 (v8)**, **answered a referee report by measurement (v9/v10)**, **read the rendered PDF end to end**,
