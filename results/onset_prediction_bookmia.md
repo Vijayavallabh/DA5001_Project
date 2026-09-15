@@ -171,3 +171,65 @@ cannot be a decision made after seeing an answer.
 fourth anchor, no fourth corpus. The bands above are the whole of the scoring rule.
 
 ## Scoring log
+
+### Preliminary readings, and why NEITHER band is scored yet, 2026-09-15 21:50
+
+All three sweeps ran on the committed grid. Every pair passes the entry gate on its own **sampled**
+`k=-1` arm, every `k=0` arm reads `0.000` (the anchor alone leaks nothing on BookMIA either), and
+there are **zero per-trajectory violations** across all 33 budgeted cells.
+
+```
+pair            k=-1    k=0    onset   bracket     ratio  95% CI           no-x    pred   pred/meas
+KL3M-520M      0.7326  0.000   2.465  (2.3, 2.5]  1.0138  [0.970, 1.131]   0.0%   2.197    0.891
+Pleias-1.2B    0.1504  0.000   4.006  (3.6, 4.2]  1.3142  [1.004, 1.360]  43.1%   2.614    0.652
+Phi-3.5-mini   0.4425  0.000   2.607  (2.5, 2.7]  0.9920  [0.867, 1.370]   0.0%   2.619    1.004
+```
+
+Read naively this fires band 1's third row (Pleias at `0.652`, outside `[0.7, 1.4]`) and band 2's
+third row (the ordering **inverts** --- coarse-tokenizer Pleias at `1.314` above fine-tokenizer
+KL3M at `1.014`). Those are the two strongest negative outcomes the file commits to, and the paper
+would have to lead with them.
+
+**They are not scored, because both of them rest entirely on the one pair the grid-ceiling rule
+disqualifies.** Pleias-1.2B's bootstrap no-crossing fraction is **43.1%** against `0.0%` and `0.0%`
+for the other two, and its onset lands in the top bracket `(3.6, 4.2]` with an upper bound of
+`4.144`, `0.056` below the ceiling. That is caution (g)'s signature exactly: an interval that is
+narrow *because it is conditioned on the resamples that happened to cross*. Its curve says the same
+thing --- it never leaves the noise floor until the last point:
+
+```
+Pleias-1.2B  1.2:0.000  1.6:0.000  1.9:0.000  2.1:0.000  2.3:0.000  2.5:0.001
+             2.7:0.001  2.9:0.000  3.2:0.006  3.6:0.006  4.2:0.012
+```
+
+It grazes the `0.01` threshold at `k = 4.2` and nowhere else, so "onset `4.006`" is an interpolation
+into the last interval of the grid, not a measurement of where leakage begins.
+
+**The extension is licensed by a rule committed before this arm existed** --- `appendix_seed.tex`'s
+*"extend whenever the no-crossing fraction rises materially above the others, and report both
+grids"*, cited in this file at 14:27 as the single permitted extension. `43.1%` against `0.0%` and
+`0.0%` is that condition. **Committed now, before the extension runs:**
+
+- **Pleias-1.2B only.** The other two are at `0.0%` and are not touched; their readings above stand
+  as final and are not re-run at any grid.
+- **Grid `k in {4.6, 5.3, 6.6}`**, obtained mechanically as the ceiling `4.2` times the same
+  multipliers the KL3M-1.7B precedent used on its own ceiling (`3.2 -> 3.5, 4.0, 5.0`, i.e.
+  `x1.094, x1.25, x1.5625`). Same 100 passages, same seed, same threshold, same `--modes single`.
+  Run into `fineb_pleias12b_ext`, merged into `fineb_pleias12b_full`, **both grids reported**.
+- **What it can change:** the no-crossing fraction, the interval, and whether the point estimate
+  survives. On the one precedent, no-crossing went `4.3% -> 0.0%`, the upper end widened and the
+  onset was **unmoved**; nothing here assumes that repeats.
+- **What it cannot do:** it cannot rescue band 1 or band 2 by fiat. If Pleias' onset holds near
+  `4.0` with the no-crossing at zero, then band 1 fails and band 2 inverts, on a clean grid, and
+  they are reported as failing --- which is what the bands were written for.
+- **What will not happen:** no third grid, no re-threshold, no re-seed, no raising the entry gate
+  after the fact. Pleias' `k=-1` of `0.1504` clears the committed `0.10` and it enters; that it is
+  the weakest of the three is reported as a caveat, never used to exclude it.
+
+**A discrepancy recorded rather than resolved.** The fine-tuner's own post-training check put
+Pleias' sampled recall at `0.457` on 24 *training* excerpts; the sweep's `k=-1` arm on the 100
+swept passages reads `0.1504`. Different sample and different draw, so they are not the same
+quantity, and the gate is the sweep's own `k=-1` (caution (a)). The gap is noted because a weak
+memoriser needs more budget before it can leak, which is the obvious alternative explanation for
+this pair sitting at the top of the grid, and it is not one the extension can settle.
+
