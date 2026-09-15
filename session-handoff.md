@@ -1,149 +1,110 @@
-# Session handoff — 2026-09-15 (afternoon, feat-120 IN FLIGHT)
+# Session handoff — 2026-09-15 (late evening, after feat-120)
 
 ## Current objective
 
-**feat-120 is in flight.** `results/onset_prediction_bookmia.md` is committed and **unscored** —
-that is the one unscored pre-registration of the forty-seven in `results/`, and this line is what
-`tests/test_preregistration_count.py` checks for. The other forty-six are scored and the manuscript
-compiles clean from a deleted PDF.
+Nothing is running and no GPU work is outstanding. All **forty-seven** pre-registrations in
+`results/` are scored and the manuscript compiles clean.
 
-### feat-120 — the onset split on a third protected corpus (RUNNING)
+The session did nine things: reframed the paper to lead with its contribution (v8), answered a
+referee report by measurement (v9/v10), read the rendered PDF end to end, ran the paper's own escape
+hatch from the compute concession and reported that it failed (feat-116), found and fixed an 8.8%
+error in the cost model, ran the follow-up that retracted feat-116's headline and replaced it
+(feat-117), took that replacement off the judge where it did not survive either (feat-118), priced
+the scorer-free instance and found it both cheapest and best (feat-119), and **took the onset
+result to a third protected corpus, where two of three committed bands failed and a published claim
+was retracted (feat-120)**.
 
-Three memorisers are fine-tuning, launched 14:18 on GPUs 2 and 4 by
-`scripts/run_bookmia_memorisers.sh` (one queue shell per card, no PID capture — caution (x)):
+**Four claims were retracted or qualified this session, all ours, all by arms we designed to test
+them.** That is the through-line and it is worth preserving. feat-120 is the sharpest instance: the
+paper had said, on two agreeing corpora, that leakage beginning after the certificate has gone
+vacuous is a property of the pair. A third corpus inverted the ordering and the sentence is gone.
 
-```
-queue A, GPU 2, output/logs/bookmia_mem_a.log   kl3m-002-520m, then Pleias-1_2b
-queue B, GPU 4, output/logs/bookmia_mem_b.log   phi35mini
-```
+### feat-120 — the onset split on a third protected corpus: **TWO OF THREE BANDS FAIL**
 
-Expect ~2.5 h per queue: BookMIA's `max-len auto` lands at ~1185 tokens against Gutenberg's 395–669,
-so epochs cost 179 s (KL3M) and 219 s (Phi) against 194 s and 81 s on Gutenberg. Padding is dynamic
-per batch (`padding=True` at `recipes/finetune_memorizing.py:124`), so the long tail is not paid on
-every batch. The fine-tune script prints its own sampled-recall entry-gate verdict when it finishes
-(`sampled nv-recall … -> ADMISSIBLE (needs >= 0.10)`), which is caution (a)'s gate, not a greedy one.
+**Complete and scored.** All forty-seven pre-registrations are scored; nothing is running; no GPU
+work is outstanding. This arm refuted a claim the paper stated as established, and the manuscript
+now says so in the three places that made it.
 
-**The order from here is the whole point and `scripts/add_pair.sh` deliberately refuses to run the
-sweep for this reason:**
-
-1. memorisers finish
-2. `analysis/onset_theory.py --pairs-file results/onset_theory_pairs_bookmia.tsv --corpus-file
-   data/bench/bookmia100_onset100.jsonl --limit 100 --tag _bookmia` → the parameter-free P1
-   predictions, two teacher-forced forward passes per passage, no decoding
-3. **append those predictions to the pre-registration and COMMIT** — before the sweep exists
-4. `analysis/composition_attack.py` per pair on the committed grid
-   `-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2`, `--corpus-file
-   data/bench/bookmia100_onset100.jsonl --modes single --limit 100`, `--out output/phase5/fineb_<pair>`
-5. `analysis/onset_gutenberg.py --corpus bookmia` and `analysis/onset_ci.py` per pair
-
-**`nvidia-smi` is dead this session and the substitute check matters.** Every call returns
-`Failed to initialize NVML: Driver/library version mismatch (NVML library version: 580.173)` — the
-host driver was updated under running jobs. Torch is unaffected (it logs one `Can't initialize NVML`
-warning and works), so the occupancy check AGENTS.md requires before taking a card has to go through
-the CUDA runtime instead:
+**The design.** Same three anchors that already carried a CopyBench reading and a Gutenberg reading
+— KL3M-520M, Pleias-1.2B, Phi-3.5-mini — given a third memoriser on 600 BookMIA passages
+**stratified round-robin over all 31 books**, swept on a 100-passage prefix of that set. Everything
+held fixed; only the protected work changed, for the second time. Bands 1 and 2 are the Gutenberg
+arm's verbatim; band 3 is new and is what three readings buy that two cannot.
 
 ```
-CUDA_DEVICE_ORDER=PCI_BUS_ID .venv/bin/python -c "
-import torch
-for i in range(torch.cuda.device_count()):
-    free, tot = torch.cuda.mem_get_info(i); print(i, torch.cuda.get_device_name(i), free/2**30)"
+pair            k=-1    k=0    onset   ratio  95% CI           no-x   pred/meas   Gutenberg  novels
+KL3M-520M      0.7326  0.000   2.465  1.0138  [0.970, 1.131]   0.0%     0.891       1.102     1.053
+Pleias-1.2B    0.1504  0.000   4.006  1.3142  [1.010, 1.594]   0.4%     0.652       0.895     0.878
+Phi-3.5-mini   0.4425  0.000   2.607  0.9920  [0.867, 1.370]   0.0%     1.004       0.949     0.926
 ```
 
-Run at 14:35 it reads **gpu 0 free 16.1 GiB, gpu 1 free 5.9 GiB** — roughly 63 and 73 GiB held by
-**another user** — against gpu 2 free 45.0 and gpu 4 free 50.8, which are ours. So 0 and 1 are NOT
-available and the sweeps queue on 2 and 4, the same two cards. This is why feat-120 cannot be
-compressed by fanning out.
+- **Band 1 FAILS.** Pleias' `0.652` is outside the committed `[0.7, 1.4]`. Eq. (req)'s *level*,
+  which transferred to Gutenberg, does not transfer twice.
+- **Band 2 INVERTS — the strongest committed negative, and it fires twice over.** The coarse
+  Pleias pair (`1.3142`) is now *above* the fine KL3M pair (`1.0138`); and KL3M's interval
+  `[0.970, 1.131]` no longer excludes 1, where CopyBench `[1.0163, 1.2436]` and Gutenberg
+  `[1.0744, 1.4227]` both did. That exclusion was the whole basis for "leakage begins after the
+  certificate has gone vacuous", so the sentence is retracted.
+- **Band 3, one pair exceeds.** KL3M and Phi vary across three corpora by `0.0882` and `0.0659`,
+  which is `2.6x` and `4.3x` *inside* their own CopyBench bootstrap widths (`0.2273`, `0.2866`);
+  Pleias varies by `0.4358` against `0.1709`. Corpus-sensitive for one pair, named.
 
-**Timeline: stop forecasting it from the loss curve.** I called the stop-loss twice off short
-stretches and was wrong both times — first "KL3M is closing on 0.02, a few more epochs" while it was
-descending, then "neither will reach it, both run all 40" while it was climbing. What it actually
-did was oscillate and then converge:
+**The grid extension confirmed rather than rescued, and that is the methodological point.** Pleias'
+no-crossing fraction read **43.1%** against `0.0%` and `0.0%`, on a grid whose ceiling its upper
+bound sat `0.056` below — caution (g) exactly. The extension was licensed by `appendix_seed.tex`'s
+rule, cited in the pre-registration at 14:27, with grid `{4.6, 5.3, 6.6}` taken mechanically from
+the KL3M-1.7B precedent's multipliers and committed *before* the run. Result: no-crossing
+`43.1% -> 0.4%`, upper end `1.360 -> 1.594`, onset **unmoved at 4.0058 to four decimals**. The
+reading was never a ceiling artefact; the grid was too short to prove it. Both grids are reported
+(`results/onset_bookmia_committed_grid.csv` holds the unextended scoring).
 
-```
-epoch 16  0.0281      epoch 21  0.1439      epoch 25  0.0210
-epoch 17  0.0297      epoch 22  0.0905      epoch 26  0.0169  -> STOPPED, 26/40
-epoch 19  0.0767      epoch 24  0.0276
-```
+**The confound is measured and does NOT rescue anything.** Pleias' memoriser is much the weakest,
+and its sampled `k=-1` falls `0.909 -> 0.517 -> 0.150` across the three corpora while its ratio
+rises `0.878 -> 0.895 -> 1.314`. But over all nine (pair, corpus) cells the rank correlation is
+`rho = -0.317` at exact `p = 0.4101` — **post hoc, no band, not significant**. A named caveat for
+one pair, not a general account, and never used to set aside a band that fired. Pleias' `0.1504`
+clears the committed `0.10` gate and it enters; the gate was not raised after the fact. Because a
+memoriser is fine-tuned on the corpus it is measured against, this design cannot separate corpus
+from memoriser — a limitation of the design, not a defence of the claim.
 
-A LoRA at `lr 3e-4 rank 128` bounces hard near convergence; three consecutive epochs carry almost no
-information about where it stops. Read the recipe.json `final_loss`, not the curve. The honest
-statement of remaining time is an upper bound from the per-epoch cost (KL3M 177 s, Phi 218 s,
-Pleias ~150 s expected, × at most 40), and nothing tighter.
+**What survives, and it is the paper's actual claim.** Every onset on every pair and every corpus
+still lands within about `1.3x` of `s(x)`, so `prop:threshold` is not bookkeeping. What died is the
+finer structure — which pairs sit above 1 and which below — and the rule now stated in the paper is
+that an onset ratio transfers across corpora to its order of magnitude and no more finely.
 
-**Measured costs, which do not move:** KL3M 177 s/epoch, Phi 218 s/epoch. The three sweeps cost what
-the Gutenberg ones did, 8,000–14,000 s each, on two cards. Total arm ≈ 15 GPU-h, inside the 24 that
-needs asking.
+**Manuscript changes.** `appendix_robustness.tex`'s subsection is retitled "A second corpus, then a
+third" and the retracted sentence is kept *visible as a retraction* beside the evidence that
+refutes it, so a reviewer who read an earlier draft or the pre-registration finds the withdrawal in
+the same place. `appendix_limitations.tex` carries the same retraction. `onset.tex` (body) gains
+"though on two further protected corpora it reaches 1.31 and which pairs exceed 1 changes, so only
+the level transfers". The abstract gains ", and to 1.31 on two further corpora".
 
-**Live state at 15:37.**
+**Two defects of mine this arm, both caught by tests rather than by reading.**
+1. I appended the P1 block with `partition("## Scoring log")` instead of the newline-prefixed form,
+   so it matched the backticked mention in the file's own third sentence and inserted the block
+   mid-sentence — **caution (r) verbatim**, in the one file whose entire purpose is ordering.
+   Repaired; content and commit times unaffected, only placement.
+2. My first abstract rewrite replaced "nine pairs with nine distinct anchors" with "nine anchors and
+   three protected corpora", silently dropping the pair count.
+   `test_abstract_consistency.py::test_the_abstract_the_intro_and_the_onset_section_agree_on_the_pair_count`
+   caught it, which is exactly the drift that test exists for.
 
-| pair | memoriser | state |
-|---|---|---|
-| KL3M-520M | `memb_kl3m-002-520m` | **DONE** — stopped at epoch 26/40, `final_loss` 0.0169, merged model written; its own sampled entry-gate check is running now |
-| Pleias-1.2B | `memb_Pleias-1_2b` | not started; queue A picks it up when KL3M's gate check exits |
-| Phi-3.5-mini | `memb_phi35mini` | epoch 21/40, loss 0.0826 |
+Earlier in the arm I also forecast the fine-tune stop-loss twice off three-epoch stretches and was
+wrong in both directions (KL3M read 0.0281 at epoch 16, 0.1439 at 21, then stopped at 0.0169 at 26).
+**A LoRA at `lr 3e-4 rank 128` oscillates hard near convergence: read `recipe.json`'s `final_loss`,
+never the curve.** Only the per-epoch cost is worth quoting as a forecast.
 
-**The chain, four stages, with exactly one human-judgement step in the middle.**
+**ONE GPU AT A TIME, from 21:00 (user instruction, now in AGENTS.md above the Compute block).** All
+future processes share **GPU 2**. This supersedes the Working Rules allowance that "GPU arms may
+queue in parallel when separate cards are free" — arms may still queue, but on one card, with
+caution (x)'s one-queue-shell repair applying within it. The instruction allowed this arm's two
+in-flight sweeps to finish on 2 and 4; nothing was killed and nothing was queued behind them.
 
-| stage | process | what it does |
-|---|---|---|
-| fine-tunes | 3889105 (GPU 2), 3889104 (GPU 4) | `scripts/run_bookmia_memorisers.sh`, one queue shell per card |
-| P1 | 4002964, `scripts/run_bookmia_p1.sh 4` | waits for all three `recipe.json`, prints each memoriser's sampled gate verdict, runs `onset_theory.py`, then **stops** |
-| **commit the predictions** | **a human, or the next session** | writes the prediction table into the pre-registration above `## Scoring log` and commits — this is what opens the gate |
-| sweeps | 4028209 (GPU 2: kl3m520m→pleias12b), 4028210 (GPU 4: phi35) | poll the gate every 120 s, then run `run_bookmia_sweeps.sh` |
-
-**The gate is checked by git, not remembered.** `scripts/run_bookmia_sweeps.sh` refuses to decode a
-token (exit 2) unless `results/onset_theory_bookmia.csv` is tracked with no uncommitted diff AND the
-pre-registration quotes `pred onset` above its scoring log. Both queue shells have already refused
-once and are looping. `tests/test_bookmia_onset.py` walks all four states in a throwaway git repo —
-missing, untracked, staged-but-uncommitted, committed-but-unquoted — and asserts the fourth
-configuration **passes**, which is caution (p): a gate that fails everything is not a gate.
-
-**ONE GPU AT A TIME, from 21:00 on 2026-09-15 (user instruction, now in AGENTS.md).** All future
-processes share **GPU 2**; no fan-out. The instruction allowed feat-120's two in-flight sweeps to
-finish on GPUs 2 and 4, and they were the last two-card work in this project: every remaining step
-of the arm is CPU-only (`onset_gutenberg.py`, `onset_ci.py` and `recheck_violations.py` read CSV and
-JSONL and none imports torch). Nothing was killed, because nothing was queued behind those two.
-
-**Do not shorten the fine-tunes at their observed minima.** Every flag is copied verbatim from the
-Gutenberg run log, and that identity is the only reason the three corpora are comparable. Changing
-the stopping rule after watching this loss curve would make the third reading incomparable to the
-first two, which is the whole arm. Gutenberg's Phi finished at 0.0935 and still passed the entry
-gate at `k=-1` recall 0.270.
-
-**After the sweeps:** `analysis/onset_gutenberg.py --corpus bookmia --out results` for bands 1 and 2,
-then `analysis/onset_ci.py --comp output/phase5/fineb_<pair>/composition.csv --s-x <s_s>
---label "<pair> (BookMIA)" --out results` per pair for the bootstrap intervals band 3 needs, then
-`analysis/recheck_violations.py --queries output/phase5/fineb_<pair>/queries.jsonl --constraint kl`.
-
-The grid was committed at 14:27 while the memorisers were in epoch 1 and no BookMIA `s_s` existed;
-it is the Gutenberg grid verbatim, which is the strongest available evidence it was not shaped to
-bracket this corpus.
-
-**Band 3 is the new one and the reason the arm earns its GPU-hours.** Three readings of the same
-three pairs give each pair a corpus-to-corpus *range*; the claim is that it sits below that pair's
-**CopyBench** bootstrap width (0.2273 / 0.1709 / 0.2866, published in `results/onset_ci.csv` long
-before this run). The two-corpus range so far is 0.0488 / 0.0163 / 0.0228 — 3.5× to 10× inside the
-yardstick, so the band can fail and is worth stating. Bands 1 and 2 are the Gutenberg arm's verbatim,
-because a shared band is the only thing that makes three readings comparable.
-
-**BookMIA's `seen`/`unseen` label plays no role.** Every pair is self-paired — a clean anchor against
-a LoRA copy of itself fine-tuned on exactly these passages — so the confound AGENTS.md records
-(the halves are not a matched pair under an anchor that saw neither) cannot enter. Said in the
-pre-registration too, because a reader will assume otherwise.
-
-The session did eight things, in this order: **reframed the paper to lead with its contribution
-(v8)**, **answered a referee report by measurement (v9/v10)**, **read the rendered PDF end to end**,
-**ran the paper's own escape hatch from the compute concession and reported that it failed
-(feat-116)**, **found and fixed an 8.8% error in the cost model**, **ran the follow-up that
-retracted feat-116's headline observation and replaced it with a better one (feat-117)**, and
-**took that replacement off the judge, where it did not survive either (feat-118)**, and **priced
-the instance of the mechanism that has no scorer at all, which turns out to be both the cheapest and
-the best where an answer is checkable (feat-119)**.
-
-Three claims were retracted or qualified this session, all ours, all by arms we designed to test
-them. That is the through-line and it is worth preserving: the paper's method is now visibly
-applied to the paper's own findings, including the one that was about to become its single
-deployer-facing recommendation.
+**`nvidia-smi` is dead on this box** — the host driver was updated under running jobs and every call
+returns `Failed to initialize NVML: Driver/library version mismatch (580.173)`. Torch is unaffected,
+so the occupancy check AGENTS.md requires goes through `torch.cuda.mem_get_info` instead. Run at
+14:35 it showed **GPUs 0 and 1 held by another user** (16.1 and 5.9 GiB free), which is why this arm
+ran on 2 and 4 and could not be compressed.
 
 ### v8 / v9 / v10 / the first read-through — history, carried for context
 
@@ -311,11 +272,11 @@ and both are labelled where they appear.
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **473 passed**, `./init.sh` exit 0 |
-| pre-registrations | **47**; 46 scored, `onset_prediction_bookmia.md` committed-and-running (feat-120) |
-| numeric audit | 3,060 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
-| compute | 222.9 measured over 234 jobs, "approximately 223" disclosed — **feat-120 adds ~15 and is not yet billed**; re-run `analysis/compute_hours.py` and update the LLM Usage figure before submission |
-| artifact | 853 files, `MANIFEST.sha256` verified |
+| tests | **474 passed**, `./init.sh` exit 0 |
+| pre-registrations | **47**, all scored |
+| numeric audit | 3,134 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
+| compute | **243.9** measured, "approximately 244" disclosed; fine-tune upper bound 28 → **36** |
+| artifact | **865** files, `MANIFEST.sha256` verified |
 | anonymity | 0 "our earlier audit", 0 affiliation; 4 hits, all `(Vijayavallabh, 2026)` and its bib entry |
 
 ## Files changed this session
@@ -356,7 +317,7 @@ would have silently mislabelled every row and made four scorers indistinguishabl
 defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
 `tests/test_{selection_claims,imitation_cost}.py` updated.
 
-### feat-120 (this session, IN FLIGHT)
+### feat-120 (this session, COMPLETE)
 
 ```
 analysis/build_bookmia_onset_subset.py   NEW  stratified round-robin subset builder
@@ -365,47 +326,54 @@ scripts/run_bookmia_memorisers.sh        NEW  queue shell per card, flags verbat
 scripts/run_bookmia_p1.sh                NEW  waits for all three memorisers, runs P1, STOPS
 scripts/run_bookmia_sweeps.sh            NEW  pair table inside the script; git-checked P1 gate
 tests/test_bookmia_onset.py              NEW  8 tests
-results/onset_prediction_bookmia.md      NEW  committed 14:27, unscored
+scripts/run_bookmia_sweeps.sh            NEW  GATE-BEGIN/GATE-END, git-checked P1 gate
+results/onset_prediction_bookmia.md      NEW  committed 14:27, SCORED 22:05
+results/onset_bookmia.csv                NEW  extended-grid scoring (reading of record)
+results/onset_bookmia_committed_grid.csv NEW  the unextended scoring, as the rule requires
+results/onset_theory_bookmia.csv         NEW  P1, committed dad60ec before any sweep
+~/sub/satml/sections/appendix_robustness.tex   RETRACTION + the third corpus
+~/sub/satml/sections/appendix_limitations.tex  same retraction
+~/sub/satml/sections/onset.tex                 body claim qualified
+~/sub/satml/iclr_2027.tex                      abstract range; compute 223 -> 244
 results/onset_theory_pairs_bookmia.tsv   NEW  label / memoriser / anchor
 data/bench/bookmia100_onset{600,100}.jsonl  NEW, gitignored, rebuildable
 ```
 
 ## Recommended next step
 
-**Finish feat-120, in the order the pipeline forces.** Nothing else should start first: three GPU
-jobs and two gated queue shells are live, and the one thing standing between them and a result is a
-human reading the P1 output and committing it.
+**Nothing is in flight. The highest-value next move is a read-through of the onset material with
+feat-120's result in hand**, because the retraction is fresh and the surrounding prose was written
+when the claim still stood. Specifically:
 
-1. Wait for `output/logs/bookmia_p1.log` to show `=== all three memorisers present ===` followed by
-   the three sampled entry-gate verdicts and `wrote results/onset_theory_bookmia.csv`.
-2. **Check the entry gate before anything else.** A pair enters only if its *sampled* `k=-1` recall
-   is at least `0.10` (caution (a) — greedy recall lies; a 350M memoriser scored 0.708 greedy and
-   0.022 sampled). A pair that fails is excluded from all three bands and reported as excluded: that
-   is a statement about the memoriser, not about the law.
-3. Write the prediction table into `results/onset_prediction_bookmia.md` **above** `## Scoring log`,
-   in the same columns the Gutenberg file uses (`pair  s_s  s_r  pred onset  pred ratio  r(x) q10
-   r(x) q25`), and **commit**. This opens the gate and the two sweep queues start themselves within
-   120 s. Do not edit anything else above that line.
-4. Score with `analysis/onset_gutenberg.py --corpus bookmia` and `analysis/onset_ci.py` per pair.
-5. Then the paper: the third corpus goes wherever Gutenberg's second-corpus result already lives,
-   and band 3 is the new sentence — the corpus-to-corpus range against the within-corpus bootstrap
-   width. Recompile and check 0 `??`, 0 overfull, zero body lines on pdftotext page 10.
+1. `sections/appendix_onset.tex` still says the residual fraction tracks the words a fixed-token
+   seed hands the adversary at `rho = -0.958` over nine CopyBench pairs, quoting `1.166`/`1.053` at
+   7.5 words down to `0.878`--`0.926` at 13.9--15.0. That ordering is a CopyBench statement and is
+   untouched by feat-120 — but a reader arriving from the new "the split does not transfer"
+   paragraph will ask whether the seed-word gradient transfers either, and **we have not tested it**.
+   Either say so explicitly or test it; saying so is free and is the honest minimum.
+2. `sections/appendix_seed.tex` carries the same ratios in three tables (lines ~19--26, ~250,
+   ~311--313) as properties of pairs. They are CopyBench readings and correctly labelled, but the
+   word "pair" now carries less than it did. Worth one pass for overclaiming.
+3. The abstract still leads the vacuity argument with `0.88`--`1.17` and appends `1.31`. Read the
+   rendered abstract aloud once; the appended clause was added under a page budget and may scan
+   badly even though it compiles and fits.
 
-The remaining GPU work after that is roughly 10 GPU-h of sweeps, already queued and gated.
+**If a new arm is wanted instead**, the question feat-120 opened and could not answer is worth more
+than any remaining axis: **is it the corpus or the memoriser?** This design confounds them because
+the memoriser is fine-tuned on the corpus it is measured against. The clean separation is one
+anchor, one corpus, and memorisers of deliberately varied strength (vary `--epochs` or `--rank`
+alone), measuring the onset ratio against sampled `k=-1`. Three or four points on one pair would
+say whether the ratio is a function of memoriser strength, which would reinterpret feat-120's
+failure and parts of the nine-pair table as well. **This is now a one-card job (GPU 2)**; budget
+roughly 5--6 GPU-h for four memorisers plus four sweeps on the committed grid.
 
-Two things are on record as **impossible** rather than unstarted, and a future session should not
+Two things remain on record as **impossible** rather than unstarted, and a future session should not
 rediscover them. A judge-free head-to-head against the *metered* decoder cannot be run
 (`results/onset_prediction_verifiable.md`): TinyComma is the only openly licensed anchor sharing the
 Llama-3 tokenizer and it scores `0.04` on GSM8K. And the anchor-scale axis is capped by the
 **licensing frontier**, not by compute — Comma-7B is the largest openly licensed base model we can
 obtain, because open-*data* families contain books and would violate the premise the certificate is
 written against.
-
-If a session wants a cheap sharpening rather than a new axis: feat-119's table has only the `7.6`B
-reward beside majority vote, because that is what the appendix needed. The `0.5`/`1.5`/`3`B caches
-exist (`selection_verifiable_rewards_*`), so the full four-scorer cost–accuracy frontier is a
-one-line change to `analysis/scorer_free_cost.py` and no GPU. It would not change any claim — every
-reward cell already loses to every majority-vote cell — which is exactly why it was left out.
 
 ## What this session added to the record
 

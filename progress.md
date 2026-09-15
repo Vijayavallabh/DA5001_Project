@@ -4192,3 +4192,65 @@ scoring logs, invisible to every compile-time check. Caution (y), with a grep-ba
 
 Commands: `scripts/run_contaminated_anchor.sh <gpu> <dir> <tag> [wait] [batch] [experts]`,
 `scripts/run_contam_queue.sh`, then `analysis/contaminated_anchor.py --out results`.
+
+### feat-120 (2026-09-15): a third protected corpus, and a retracted claim
+
+```
+.venv/bin/python analysis/build_bookmia_onset_subset.py       # -> data/bench/bookmia100_onset{600,100}.jsonl
+ENV scripts/run_bookmia_memorisers.sh 2 kl3m-002-520m:... Pleias-1_2b:...   # queue A, GPU 2
+ENV scripts/run_bookmia_memorisers.sh 4 phi35mini:...                       # queue B, GPU 4
+ENV .venv/bin/python analysis/onset_theory.py --corpus-file data/bench/bookmia100_onset100.jsonl \
+      --pairs-file results/onset_theory_pairs_bookmia.tsv --limit 100 --tag _bookmia --out results
+# ^ P1, committed at dad60ec BEFORE any sweep; scripts/run_bookmia_sweeps.sh refuses to decode
+#   until that CSV is tracked, clean, and quoted above the scoring log (GATE-BEGIN/GATE-END)
+ENV scripts/run_bookmia_sweeps.sh 2 kl3m520m pleias12b        # grid verbatim from the Gutenberg arm
+ENV scripts/run_bookmia_sweeps.sh 4 phi35
+ENV .venv/bin/python analysis/composition_attack.py --safe-model PleIAs/Pleias-1.2b-Preview \
+      --risky-model output/phase5/memb_Pleias-1_2b --corpus-file data/bench/bookmia100_onset100.jsonl \
+      --k-values 4.6 5.3 6.6 --modes single --limit 100 --out output/phase5/fineb_pleias12b_ext
+# merged into output/phase5/fineb_pleias12b_full; BOTH grids reported
+.venv/bin/python analysis/onset_gutenberg.py --corpus bookmia --out results
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineb_<pair>/composition.csv \
+  --s-x <s_s> --label "<pair> (BookMIA)" --out results
+.venv/bin/python analysis/recheck_violations.py --queries output/phase5/fineb_<pair>/queries.jsonl --constraint kl
+```
+
+Same three anchors that already carried a CopyBench and a Gutenberg reading, so BookMIA is a third
+reading of the same three pairs. 600 passages stratified round-robin over all 31 books of
+`bookmia100_attack_train` (a plain `--limit 100` on that file takes a hundred passages of *1984* —
+caution (w) in a new costume), swept on a 100-passage prefix so every swept passage is one the
+memoriser saw (caution (h)).
+
+```
+pair            k=-1    k=0    onset   ratio  95% CI           no-x   pred/meas   Gutenberg  novels
+KL3M-520M      0.7326  0.000   2.465  1.0138  [0.970, 1.131]   0.0%     0.891       1.102     1.053
+Pleias-1.2B    0.1504  0.000   4.006  1.3142  [1.010, 1.594]   0.4%     0.652       0.895     0.878
+Phi-3.5-mini   0.4425  0.000   2.607  0.9920  [0.867, 1.370]   0.0%     1.004       0.949     0.926
+```
+
+**Band 1 fails** (Pleias `0.652` outside `[0.7, 1.4]`). **Band 2 inverts, twice over**: the coarse
+Pleias pair is now above the fine KL3M pair, and KL3M's interval no longer excludes 1 where it did
+on both earlier corpora. That exclusion was the entire basis for "leakage begins after the
+certificate has gone vacuous", which is **retracted in the manuscript**. **Band 3**: KL3M and Phi
+vary across three corpora by `0.0882` and `0.0659`, `2.6x` and `4.3x` inside their own CopyBench
+bootstrap widths; Pleias by `0.4358` against `0.1709`, corpus-sensitive and named.
+
+The grid-ceiling rule fired on Pleias (no-crossing `43.1%` against `0.0%`/`0.0%`) and the licensed
+extension **confirmed rather than rescued**: `43.1% -> 0.4%`, upper end `1.360 -> 1.594`, onset
+unmoved at `4.0058`. The memoriser-strength confound is measured and post hoc — `rho = -0.317` at
+exact `p = 0.4101` over nine (pair, corpus) cells, not significant — and is reported as a caveat for
+one pair, never used to set aside a band that fired.
+
+What survives is the paper's actual claim: every onset on every pair and corpus lands within about
+`1.3x` of `s(x)`, so `prop:threshold` is not bookkeeping. What died is the finer structure, and the
+paper now says an onset ratio transfers across corpora to its order of magnitude and no more finely.
+
+**Blockers/risks noted, not fixed here.** (i) `nvidia-smi` on this box returns
+`Failed to initialize NVML: Driver/library version mismatch (580.173)` — the host driver was updated
+under running jobs. Torch is unaffected; the occupancy check now goes through
+`torch.cuda.mem_get_info`. (ii) This design cannot separate corpus from memoriser strength, because
+the memoriser is fine-tuned on the corpus it is measured against; the clean experiment is one pair,
+one corpus, memorisers of varied strength.
+
+**474 tests. 3,134 numeric literals, one expected miss (`64256`). 9 of 9 pages, 55 total, 0 overfull,
+0 `??`. Compute rebilled to 243.9 GPU-hours.**
