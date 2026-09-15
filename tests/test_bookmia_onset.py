@@ -127,3 +127,36 @@ def test_the_committed_grid_is_the_gutenberg_grid_verbatim():
     m = re.search(r"`-1 0 ([0-9. ]+)`", head)
     assert m, "the committed grid is no longer quoted in the pre-registration"
     assert m.group(1).split() == grid, (m.group(1).split(), grid)
+
+
+def test_the_sweep_script_agrees_with_the_scorer_and_the_theory_manifest():
+    """A mistyped out-tag is SILENT: onset_gutenberg.py prints 'no sweep at ..., skipping' to
+    stderr and scores the other two, so the arm reads as a two-pair result rather than an error.
+    Same for a mistyped memoriser dir, which the theory manifest and the sweep must agree on."""
+    from analysis.onset_gutenberg import CORPORA
+    sh = open(os.path.join(ROOT, "scripts/run_bookmia_sweeps.sh"), encoding="utf-8").read()
+    rows = re.findall(r'^\s*"([^"]*\|[^"]*)"\s*$', sh, re.M)
+    assert len(rows) == 3, rows
+    table = {}
+    for row in rows:
+        key, tag, safe, risky = (c.strip() for c in row.split("|"))
+        assert key == tag, (key, tag)
+        table[tag] = (safe, risky)
+
+    assert {f"output/phase5/fineb_{t}" for t in table} == {r for _, r, _ in CORPORA["bookmia"][1]}
+
+    manifest = [l.split("\t") for l in
+                open(os.path.join(ROOT, "results/onset_theory_pairs_bookmia.tsv"),
+                     encoding="utf-8").read().splitlines() if l.strip()]
+    assert len(manifest) == 3
+    # the manifest is label, memoriser, ANCHOR -- the same two models the sweep is handed
+    assert {(m[2], m[1]) for m in manifest} == set(table.values())
+    assert {m[0] for m in manifest} == {lab for lab, _, _ in CORPORA["bookmia"][1]}
+
+    # the grid in the script is the one the pre-registration committed, character for character
+    head = open(PREREG, encoding="utf-8").read().partition("\n## Scoring log")[0]
+    g_sh = re.search(r'^GRID="([^"]+)"', sh, re.M)
+    g_md = re.search(r"`(-1 0 [0-9. ]+)`", head)
+    assert g_sh and g_md and g_sh.group(1).split() == g_md.group(1).split()
+    # --queries-out is what recheck_violations.py reads; losing it loses the invariant recheck
+    assert "--queries-out" in sh and "--modes single --limit 100" in sh
