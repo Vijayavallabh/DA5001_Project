@@ -26,15 +26,34 @@ import argparse, csv, itertools, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.onset import crossing, curve  # noqa: E402
 
-# (label in onset_theory_gutenberg.csv, sweep directory, its CopyBench twin in onset.csv)
-PAIRS = [
-    ("KL3M-520M + mem. KL3M-520M (Gutenberg)", "output/phase5/fineg_kl3m520m",
-     "KL3M-520M + mem. KL3M-520M"),
-    ("Pleias-1.2B + mem. Pleias-1.2B (Gutenberg)", "output/phase5/fineg_pleias12b",
-     "Pleias-1.2B + mem. Pleias-1.2B"),
-    ("Phi-3.5-mini + mem. Phi-3.5-mini (Gutenberg)", "output/phase5/fineg_phi35",
-     "Phi-3.5-mini + mem. Phi-3.5-mini"),
-]
+# (label in the corpus's onset_theory CSV, sweep directory, its CopyBench twin in onset.csv).
+# BookMIA added 2026-09-15 (feat-120) as a THIRD reading of the same three pairs: same anchors,
+# same architecture, same settings, same grid, only the protected work changes -- sixteen
+# copyrighted novels, then 50 public-domain books, then 31 books of the BookMIA benchmark. The
+# corpus is a switch and not a fork: every band, gate and threshold below is shared, which is the
+# only way the three readings are comparable.
+CORPORA = {
+    "gutenberg": ("Gutenberg", [
+        ("KL3M-520M + mem. KL3M-520M (Gutenberg)", "output/phase5/fineg_kl3m520m",
+         "KL3M-520M + mem. KL3M-520M"),
+        ("Pleias-1.2B + mem. Pleias-1.2B (Gutenberg)", "output/phase5/fineg_pleias12b",
+         "Pleias-1.2B + mem. Pleias-1.2B"),
+        ("Phi-3.5-mini + mem. Phi-3.5-mini (Gutenberg)", "output/phase5/fineg_phi35",
+         "Phi-3.5-mini + mem. Phi-3.5-mini"),
+    ]),
+    "bookmia": ("BookMIA", [
+        ("KL3M-520M + mem. KL3M-520M (BookMIA)", "output/phase5/fineb_kl3m520m",
+         "KL3M-520M + mem. KL3M-520M"),
+        # _full = the committed grid merged with the {4.6, 5.3, 6.6} extension that
+        # appendix_seed.tex's no-crossing rule licensed (43.1% against 0.0% and 0.0%).
+        # Both grids are reported; results/onset_bookmia_committed_grid.csv is the unextended one.
+        ("Pleias-1.2B + mem. Pleias-1.2B (BookMIA)", "output/phase5/fineb_pleias12b_full",
+         "Pleias-1.2B + mem. Pleias-1.2B"),
+        ("Phi-3.5-mini + mem. Phi-3.5-mini (BookMIA)", "output/phase5/fineb_phi35",
+         "Phi-3.5-mini + mem. Phi-3.5-mini"),
+    ]),
+}
+
 # committed in results/onset_prediction_gutenberg.md before any sweep ran
 BAND_TIGHT, BAND_WIDE, ENTRY_GATE = (0.85, 1.15), (0.7, 1.4), 0.10
 
@@ -63,17 +82,22 @@ def exact_p(a, b):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--theory", default="results/onset_theory_gutenberg.csv")
+    ap.add_argument("--corpus", default="gutenberg", choices=sorted(CORPORA),
+                    help="which protected corpus; selects the pairs, the theory CSV and the "
+                         "output name. The bands are shared by construction.")
+    ap.add_argument("--theory", default=None, help="defaults to onset_theory_<corpus>.csv")
     ap.add_argument("--onset", default="results/onset.csv", help="the CopyBench twins")
     ap.add_argument("--thresh", type=float, default=0.01)
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
+    pretty, pairs = CORPORA[a.corpus]
+    a.theory = a.theory or f"results/onset_theory_{a.corpus}.csv"
 
     th = {r["pair"]: r for r in csv.DictReader(open(a.theory))}
     cb = {r["pair"]: r for r in csv.DictReader(open(a.onset)) if r["mode"] == "single"}
 
     rows = []
-    for label, run, twin in PAIRS:
+    for label, run, twin in pairs:
         path = os.path.join(run, "composition_summary.csv")
         if not os.path.exists(path):
             print(f"[og] no sweep at {path}, skipping {label}", file=sys.stderr)
@@ -107,18 +131,18 @@ def main():
         print("[og] nothing to score", file=sys.stderr)
         return 1
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "onset_gutenberg.csv")
+    path = os.path.join(a.out, f"onset_{a.corpus}.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
-    print("The derived onset on a corpus the law has never seen. Bands committed in")
-    print("results/onset_prediction_gutenberg.md before any of these sweeps decoded a token.\n")
+    print(f"The derived onset on {pretty}, a corpus the law has never seen. Bands committed in")
+    print(f"results/onset_prediction_{a.corpus}.md before any of these sweeps decoded a token.\n")
     print(f"{'pair':30s}{'k=-1':>7s}{'onset':>9s}{'bracket':>14s}{'ratio':>8s}"
           f"{'pred':>8s}{'pred/meas':>11s}{'CopyBench':>11s}")
     for r in rows:
         br = f"({r['onset_lo']},{r['onset_hi']}]" if r["onset_lo"] else "--"
         m = r["pred_over_meas"]
-        print(f"{r['pair'].replace(' (Gutenberg)','')[:29]:30s}{r['k_minus1_recall']:>7.3f}"
+        print(f"{r['pair'].replace(f' ({pretty})','')[:29]:30s}{r['k_minus1_recall']:>7.3f}"
               f"{r['onset']:>9.3f}{br:>14s}{r['ratio']:>8.3f}{r['pred_onset']:>8.3f}"
               f"{m:>11.3f}{(r['copybench_ratio'] or 0):>11.3f}")
     ok = [r for r in rows if r["entered"] and r["pred_over_meas"]]

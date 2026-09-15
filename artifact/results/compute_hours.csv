@@ -164,6 +164,12 @@ b3_leakage,output/logs/b3_leakage.log,1,2026-09-12 16:22,2026-09-12 16:56,0.57,0
 b3_pleias12b,output/logs/b3_pleias12b.log,1,2026-09-12 16:38,2026-09-12 16:55,0.27,0.27,log_birth,0.0,scanned; traced sleeps removed
 b3_tinycomma_v2,output/logs/b3_tinycomma_v2.log,1,2026-09-12 17:00,2026-09-12 17:15,0.25,0.25,log_birth,0.0,scanned; traced sleeps removed
 bookmia_extraction_gate,output/logs/bookmia_extraction_gate.log,1,2026-09-12 22:24,2026-09-12 22:54,0.5,0.5,log_birth,0.0,scanned; traced sleeps removed
+bookmia_mem_a,output/logs/bookmia_mem_a.log,1,2026-09-15 14:18,2026-09-15 17:40,3.37,3.37,log_birth,0.0,scanned; traced sleeps removed
+bookmia_mem_b,output/logs/bookmia_mem_b.log,1,2026-09-15 14:18,2026-09-15 16:16,1.96,1.96,log_birth,0.0,scanned; traced sleeps removed
+bookmia_p1,output/logs/bookmia_p1.log,1,2026-09-15 15:01,2026-09-15 17:40,2.66,2.66,log_birth,0.0,scanned; traced sleeps removed
+bookmia_pleias_ext,output/logs/bookmia_pleias_ext.log,1,2026-09-15 21:46,2026-09-15 21:55,0.15,0.15,log_birth,0.0,scanned; traced sleeps removed
+bookmia_sweep_gpu2,output/logs/bookmia_sweep_gpu2.log,1,2026-09-15 15:10,2026-09-15 21:32,6.37,6.37,log_birth,0.0,scanned; traced sleeps removed
+bookmia_sweep_gpu4,output/logs/bookmia_sweep_gpu4.log,1,2026-09-15 15:10,2026-09-15 21:42,6.53,6.53,log_birth,0.0,scanned; traced sleeps removed
 bp_opencalm1b_seed30,output/logs/bp_opencalm1b_seed30.log,1,2026-09-11 18:55,2026-09-11 18:55,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 bp_opencalm3b_seed30,output/logs/bp_opencalm3b_seed30.log,1,2026-09-11 18:55,2026-09-11 18:56,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 breadth_comma1t,output/logs/breadth_comma1t.log,1,2026-09-14 07:24,2026-09-14 10:01,2.62,2.62,log_birth,0.0,scanned; traced sleeps removed
