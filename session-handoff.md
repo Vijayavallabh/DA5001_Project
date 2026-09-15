@@ -54,12 +54,60 @@ Run at 14:35 it reads **gpu 0 free 16.1 GiB, gpu 1 free 5.9 GiB** — roughly 63
 available and the sweeps queue on 2 and 4, the same two cards. This is why feat-120 cannot be
 compressed by fanning out.
 
-**Measured timeline** (epoch costs from the live logs, Gutenberg twins for the epoch counts):
-KL3M 177 s/epoch and tracking its Gutenberg twin's loss curve, which stopped at epoch ~10, so
-queue A frees around 14:50 and starts Pleias (~150 s/epoch × 40 ≈ 16:30). Phi at 218 s/epoch never
-hit `--stop-loss` on Gutenberg and should run all 40 → ~16:45, which is the critical path. P1 is
-minutes (forward passes only). The three sweeps cost what the Gutenberg ones did, 8,000–14,000 s
-each, two cards, so scoring lands late evening. Total arm ≈ 15 GPU-h, inside the 24 that needs asking.
+**Timeline: stop forecasting it from the loss curve.** I called the stop-loss twice off short
+stretches and was wrong both times — first "KL3M is closing on 0.02, a few more epochs" while it was
+descending, then "neither will reach it, both run all 40" while it was climbing. What it actually
+did was oscillate and then converge:
+
+```
+epoch 16  0.0281      epoch 21  0.1439      epoch 25  0.0210
+epoch 17  0.0297      epoch 22  0.0905      epoch 26  0.0169  -> STOPPED, 26/40
+epoch 19  0.0767      epoch 24  0.0276
+```
+
+A LoRA at `lr 3e-4 rank 128` bounces hard near convergence; three consecutive epochs carry almost no
+information about where it stops. Read the recipe.json `final_loss`, not the curve. The honest
+statement of remaining time is an upper bound from the per-epoch cost (KL3M 177 s, Phi 218 s,
+Pleias ~150 s expected, × at most 40), and nothing tighter.
+
+**Measured costs, which do not move:** KL3M 177 s/epoch, Phi 218 s/epoch. The three sweeps cost what
+the Gutenberg ones did, 8,000–14,000 s each, on two cards. Total arm ≈ 15 GPU-h, inside the 24 that
+needs asking.
+
+**Live state at 15:37.**
+
+| pair | memoriser | state |
+|---|---|---|
+| KL3M-520M | `memb_kl3m-002-520m` | **DONE** — stopped at epoch 26/40, `final_loss` 0.0169, merged model written; its own sampled entry-gate check is running now |
+| Pleias-1.2B | `memb_Pleias-1_2b` | not started; queue A picks it up when KL3M's gate check exits |
+| Phi-3.5-mini | `memb_phi35mini` | epoch 21/40, loss 0.0826 |
+
+**The chain, four stages, with exactly one human-judgement step in the middle.**
+
+| stage | process | what it does |
+|---|---|---|
+| fine-tunes | 3889105 (GPU 2), 3889104 (GPU 4) | `scripts/run_bookmia_memorisers.sh`, one queue shell per card |
+| P1 | 4002964, `scripts/run_bookmia_p1.sh 4` | waits for all three `recipe.json`, prints each memoriser's sampled gate verdict, runs `onset_theory.py`, then **stops** |
+| **commit the predictions** | **a human, or the next session** | writes the prediction table into the pre-registration above `## Scoring log` and commits — this is what opens the gate |
+| sweeps | 4028209 (GPU 2: kl3m520m→pleias12b), 4028210 (GPU 4: phi35) | poll the gate every 120 s, then run `run_bookmia_sweeps.sh` |
+
+**The gate is checked by git, not remembered.** `scripts/run_bookmia_sweeps.sh` refuses to decode a
+token (exit 2) unless `results/onset_theory_bookmia.csv` is tracked with no uncommitted diff AND the
+pre-registration quotes `pred onset` above its scoring log. Both queue shells have already refused
+once and are looping. `tests/test_bookmia_onset.py` walks all four states in a throwaway git repo —
+missing, untracked, staged-but-uncommitted, committed-but-unquoted — and asserts the fourth
+configuration **passes**, which is caution (p): a gate that fails everything is not a gate.
+
+**Do not shorten the fine-tunes at their observed minima.** Every flag is copied verbatim from the
+Gutenberg run log, and that identity is the only reason the three corpora are comparable. Changing
+the stopping rule after watching this loss curve would make the third reading incomparable to the
+first two, which is the whole arm. Gutenberg's Phi finished at 0.0935 and still passed the entry
+gate at `k=-1` recall 0.270.
+
+**After the sweeps:** `analysis/onset_gutenberg.py --corpus bookmia --out results` for bands 1 and 2,
+then `analysis/onset_ci.py --comp output/phase5/fineb_<pair>/composition.csv --s-x <s_s>
+--label "<pair> (BookMIA)" --out results` per pair for the bootstrap intervals band 3 needs, then
+`analysis/recheck_violations.py --queries output/phase5/fineb_<pair>/queries.jsonl --constraint kl`.
 
 The grid was committed at 14:27 while the memorisers were in epoch 1 and no BookMIA `s_s` existed;
 it is the Gutenberg grid verbatim, which is the strongest available evidence it was not shaped to
@@ -257,10 +305,10 @@ and both are labelled where they appear.
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **465 passed**, `./init.sh` exit 0 |
-| pre-registrations | **46**, all scored |
+| tests | **473 passed**, `./init.sh` exit 0 |
+| pre-registrations | **47**; 46 scored, `onset_prediction_bookmia.md` committed-and-running (feat-120) |
 | numeric audit | 3,060 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
-| compute | 222.9 measured over 234 jobs, "approximately 223" disclosed |
+| compute | 222.9 measured over 234 jobs, "approximately 223" disclosed — **feat-120 adds ~15 and is not yet billed**; re-run `analysis/compute_hours.py` and update the LLM Usage figure before submission |
 | artifact | 853 files, `MANIFEST.sha256` verified |
 | anonymity | 0 "our earlier audit", 0 affiliation; 4 hits, all `(Vijayavallabh, 2026)` and its bib entry |
 
@@ -302,10 +350,42 @@ would have silently mislabelled every row and made four scorers indistinguishabl
 defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
 `tests/test_{selection_claims,imitation_cost}.py` updated.
 
+### feat-120 (this session, IN FLIGHT)
+
+```
+analysis/build_bookmia_onset_subset.py   NEW  stratified round-robin subset builder
+analysis/onset_gutenberg.py              PATCHED  --corpus {gutenberg,bookmia}; default byte-identical
+scripts/run_bookmia_memorisers.sh        NEW  queue shell per card, flags verbatim from Gutenberg
+scripts/run_bookmia_p1.sh                NEW  waits for all three memorisers, runs P1, STOPS
+scripts/run_bookmia_sweeps.sh            NEW  pair table inside the script; git-checked P1 gate
+tests/test_bookmia_onset.py              NEW  8 tests
+results/onset_prediction_bookmia.md      NEW  committed 14:27, unscored
+results/onset_theory_pairs_bookmia.tsv   NEW  label / memoriser / anchor
+data/bench/bookmia100_onset{600,100}.jsonl  NEW, gitignored, rebuildable
+```
+
 ## Recommended next step
 
-**BookMIA-50 onset** (~11 GPU-h for 3 pairs) is the largest unstarted item and is moderate value now
-that onset has nine pairs and two corpora. Everything cheaper that was worth doing has been done.
+**Finish feat-120, in the order the pipeline forces.** Nothing else should start first: three GPU
+jobs and two gated queue shells are live, and the one thing standing between them and a result is a
+human reading the P1 output and committing it.
+
+1. Wait for `output/logs/bookmia_p1.log` to show `=== all three memorisers present ===` followed by
+   the three sampled entry-gate verdicts and `wrote results/onset_theory_bookmia.csv`.
+2. **Check the entry gate before anything else.** A pair enters only if its *sampled* `k=-1` recall
+   is at least `0.10` (caution (a) — greedy recall lies; a 350M memoriser scored 0.708 greedy and
+   0.022 sampled). A pair that fails is excluded from all three bands and reported as excluded: that
+   is a statement about the memoriser, not about the law.
+3. Write the prediction table into `results/onset_prediction_bookmia.md` **above** `## Scoring log`,
+   in the same columns the Gutenberg file uses (`pair  s_s  s_r  pred onset  pred ratio  r(x) q10
+   r(x) q25`), and **commit**. This opens the gate and the two sweep queues start themselves within
+   120 s. Do not edit anything else above that line.
+4. Score with `analysis/onset_gutenberg.py --corpus bookmia` and `analysis/onset_ci.py` per pair.
+5. Then the paper: the third corpus goes wherever Gutenberg's second-corpus result already lives,
+   and band 3 is the new sentence — the corpus-to-corpus range against the within-corpus bootstrap
+   width. Recompile and check 0 `??`, 0 overfull, zero body lines on pdftotext page 10.
+
+The remaining GPU work after that is roughly 10 GPU-h of sweeps, already queued and gated.
 
 Two things are on record as **impossible** rather than unstarted, and a future session should not
 rediscover them. A judge-free head-to-head against the *metered* decoder cannot be run
