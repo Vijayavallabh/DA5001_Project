@@ -197,9 +197,13 @@ and both are labelled where they appear.
 **Manuscript.** Every body section rewritten or reordered for v8; `selection.tex` and
 `iclr_closing.tex` rewritten again for the cost frontier and the saturation result; `iclr_intro.tex`
 and the abstract in `iclr_2027.tex` for the compute axis and the reference fix. New appendix
-sections `app:frontier`, `app:saturation` and `app:judgefreescale` in `appendix_selection.tex`,
-alongside the three v9/v10 paragraphs (order-averaged head-to-head, two-order composition, anchor
-vetting); the `app:saturation` paragraph carries a forward pointer to the judge-free rebuttal.
+sections `app:frontier`, `app:saturation`, `app:judgefreescale` and `app:scorerfree` in
+`appendix_selection.tex`, alongside the three v9/v10 paragraphs (order-averaged head-to-head,
+two-order composition, anchor vetting); the `app:saturation` paragraph carries a forward pointer to
+the judge-free rebuttal. Section 2's cost sentence was rewritten three times as the cost story
+changed and ends up saying the simplest true thing: the price is the scorer's, and the cheapest
+scorer is none. The body figure went `0.80 → 0.74 → 0.70\textwidth` paying for those edits, rendered
+and read at each step.
 `appendix_proofs.tex` (duplicate label removed, threshold proof generalised), `appendix_related.tex`
 (Kalai/Chen), `references.bib` (+`panickssery2024llm`).
 
@@ -210,7 +214,13 @@ reward caches `selection_rewards64_qwen{05b,15b,3b}.csv` and
 `selection_verifiable_rewards_{,tqa_}comma7b_qwen{05b,15b,3b}.csv`, and the six per-scorer
 `selection_verifiable{,_tqa}_comma7b_qwen*.csv`. Four pre-registrations:
 `onset_prediction_{order_averaged_h2h,compute_matched,scorer_scale,verifiable_scorer_scale}.md`.
-New `tests/test_{compute_matched,scorer_scale,verifiable_scorer_scale}.py`.
+New `tests/test_{compute_matched,scorer_scale,verifiable_scorer_scale,scorer_free_cost}.py`.
+
+feat-119 added `analysis/scorer_free_cost.py`, `results/scorer_free_cost.csv` and its note; it is a
+**post-hoc join with no committed band**, so the note is `scorer_free_cost_note.md` and
+deliberately *not* an `onset_prediction_*.md` — the same rule feat-115 followed, so a re-analysis
+cannot inflate the pre-registration count. `analysis/serving_cost.py` gained the majority-vote rows
+(`n P_anchor` and no scorer term).
 
 Two existing scripts were patched rather than duplicated. `scripts/snapshot_manuscript.sh` follows
 nested `\input`. `analysis/selection_verifiable.py` gained `--reward-tag`, which names the reward
@@ -260,6 +270,13 @@ cautions are *for*, run twice in one session:
   and a test forbids the unqualified form.
 
 Both retractions are in the appendix in the paper's own voice. That is the habit worth keeping.
+
+feat-119 added a third, about a number rather than a claim: **a figure that will be quoted out of
+context needs its limits attached at every copy.** The scorer-free result is the most quotable thing
+in the paper — *the cheapest instance is also the best* — and it is true only where an answer is
+canonical, only as a cost model rather than a measured head-to-head on that task, and only among
+mechanisms that carry a certificate. Those three limits are in the CSV's own `limits` column, in the
+note and in the appendix, and a test fails if any copy loses them.
 
 Three habits, all earned the hard way here:
 
