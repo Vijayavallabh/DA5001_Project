@@ -2,62 +2,7 @@
 
 **Design, grid, entry gate and bands committed 2026-09-15 14:27, while the three memorisers were
 still in epoch 1 of 40 and before any `s_s`, `s_r` or prediction for this corpus existed.** Nothing
-above `## The P1 predictions, appended 2026-09-15 17:41, before any sweep decoded a token
-
-Computed by `analysis/onset_theory.py` from two teacher-forced forward passes per passage and no
-decoding at all, and committed in the same commit as `results/onset_theory_bookmia.csv`. The design,
-the grid, the entry gate and all three bands above were committed at 14:27, three and a quarter
-hours earlier, when none of these numbers existed.
-
-```
-CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
-  .venv/bin/python analysis/onset_theory.py --corpus-file data/bench/bookmia100_onset100.jsonl \
-    --pairs-file results/onset_theory_pairs_bookmia.tsv --limit 100 --tag _bookmia --out results
-```
-
-```
-pair                          s_s     s_r    pred onset   pred ratio   r(x) q10   r(x) q25
-KL3M-520M (BookMIA)         2.4316  0.2345     2.1971       0.9036      1.8651     2.0006
-Pleias-1.2B (BookMIA)       3.0481  0.4346     2.6135       0.8574      1.9466     2.2418
-Phi-3.5-mini (BookMIA)      2.6283  0.0094     2.6189       0.9964      1.9558     2.2852
-```
-
-Their Gutenberg twins, for the record, since the same three anchors carry them:
-
-```
-pair                          s_s     s_r    pred onset   pred ratio   r(x) q10   r(x) q25
-KL3M-520M (Gutenberg)       2.3665  0.1487     2.2180       0.9372      1.8680     2.0230
-Pleias-1.2B (Gutenberg)     2.8087  0.3453     2.4630       0.8771      1.9570     2.2040
-Phi-3.5-mini (Gutenberg)    2.8488  0.0362     2.8130       0.9873      2.1700     2.3780
-```
-
-**The grid brackets every prediction, and it was fixed before any of them existed.** The committed
-`-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2` puts its lowest budgeted point below every `q10`
-(1.2 against 1.865, 1.947, 1.956) and its top well above every median (4.2 against 2.172, 2.569,
-2.572), with each predicted onset strictly inside. That it brackets is checked, not asserted, and
-it is a property the grid was not given the chance to acquire: it is the Gutenberg arm's grid,
-copied verbatim at 14:27.
-
-**All three pairs pass the entry gate, on sampled recall and not greedy** (caution (a)):
-
-```
-pair            greedy   SAMPLED k=-1   verdict       Gutenberg twin (sampled)
-KL3M-520M       0.947       0.918       ADMISSIBLE          0.578
-Pleias-1.2B     0.809       0.457       ADMISSIBLE          0.517
-Phi-3.5-mini    0.883       0.881       ADMISSIBLE          0.270
-```
-
-Every BookMIA memoriser is at least as strong as its Gutenberg twin and two are far stronger, which
-is worth stating because memoriser strength is what `s_r` measures and therefore what moves the
-prediction. It matters most for Phi-3.5-mini: on Gutenberg it was the marginal pair --- the weakest
-memoriser at 0.270, the widest bootstrap interval, the only nonzero no-crossing fraction and a
-non-monotone tail --- and at 0.881 it is no longer marginal. Its `s_r` is 0.0094, essentially no
-residual surprisal on its own memorised text, which is why P1 puts its predicted ratio at 0.9964.
-
-Nothing above this line is edited from here on, and no band, grid, gate or threshold above was
-touched when this block was added --- only these measurements, which are predictions, were appended.
-
-## Scoring log` is edited after that line is written. The parameter-free P1 predictions are
+above `## Scoring log` is edited after that line is written. The parameter-free P1 predictions are
 appended in a second commit, also before any sweep decodes a token; git records both orderings.
 
 ## Why a third corpus and not a fourth anchor
@@ -170,6 +115,61 @@ cannot be a decision made after seeing an answer.
 **What will not happen.** No second grid beyond that published rule, no re-threshold, no re-seed, no
 fourth anchor, no fourth corpus. The bands above are the whole of the scoring rule.
 
+## The P1 predictions, appended 2026-09-15 17:41, before any sweep decoded a token
+
+Computed by `analysis/onset_theory.py` from two teacher-forced forward passes per passage and no
+decoding at all, and committed in the same commit as `results/onset_theory_bookmia.csv`. The design,
+the grid, the entry gate and all three bands above were committed at 14:27, three and a quarter
+hours earlier, when none of these numbers existed.
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/onset_theory.py --corpus-file data/bench/bookmia100_onset100.jsonl \
+    --pairs-file results/onset_theory_pairs_bookmia.tsv --limit 100 --tag _bookmia --out results
+```
+
+```
+pair                          s_s     s_r    pred onset   pred ratio   r(x) q10   r(x) q25
+KL3M-520M (BookMIA)         2.4316  0.2345     2.1971       0.9036      1.8651     2.0006
+Pleias-1.2B (BookMIA)       3.0481  0.4346     2.6135       0.8574      1.9466     2.2418
+Phi-3.5-mini (BookMIA)      2.6283  0.0094     2.6189       0.9964      1.9558     2.2852
+```
+
+Their Gutenberg twins, for the record, since the same three anchors carry them:
+
+```
+pair                          s_s     s_r    pred onset   pred ratio   r(x) q10   r(x) q25
+KL3M-520M (Gutenberg)       2.3665  0.1487     2.2180       0.9372      1.8680     2.0230
+Pleias-1.2B (Gutenberg)     2.8087  0.3453     2.4630       0.8771      1.9570     2.2040
+Phi-3.5-mini (Gutenberg)    2.8488  0.0362     2.8130       0.9873      2.1700     2.3780
+```
+
+**The grid brackets every prediction, and it was fixed before any of them existed.** The committed
+`-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2` puts its lowest budgeted point below every `q10`
+(1.2 against 1.865, 1.947, 1.956) and its top well above every median (4.2 against 2.172, 2.569,
+2.572), with each predicted onset strictly inside. That it brackets is checked, not asserted, and
+it is a property the grid was not given the chance to acquire: it is the Gutenberg arm's grid,
+copied verbatim at 14:27.
+
+**All three pairs pass the entry gate, on sampled recall and not greedy** (caution (a)):
+
+```
+pair            greedy   SAMPLED k=-1   verdict       Gutenberg twin (sampled)
+KL3M-520M       0.947       0.918       ADMISSIBLE          0.578
+Pleias-1.2B     0.809       0.457       ADMISSIBLE          0.517
+Phi-3.5-mini    0.883       0.881       ADMISSIBLE          0.270
+```
+
+Every BookMIA memoriser is at least as strong as its Gutenberg twin and two are far stronger, which
+is worth stating because memoriser strength is what `s_r` measures and therefore what moves the
+prediction. It matters most for Phi-3.5-mini: on Gutenberg it was the marginal pair --- the weakest
+memoriser at 0.270, the widest bootstrap interval, the only nonzero no-crossing fraction and a
+non-monotone tail --- and at 0.881 it is no longer marginal. Its `s_r` is 0.0094, essentially no
+residual surprisal on its own memorised text, which is why P1 puts its predicted ratio at 0.9964.
+
+Nothing above this line is edited from here on, and no band, grid, gate or threshold above was
+touched when this block was added --- only these measurements, which are predictions, were appended.
+
 ## Scoring log
 
 ### Preliminary readings, and why NEITHER band is scored yet, 2026-09-15 21:50
@@ -232,4 +232,117 @@ swept passages reads `0.1504`. Different sample and different draw, so they are 
 quantity, and the gate is the sweep's own `k=-1` (caution (a)). The gap is noted because a weak
 memoriser needs more budget before it can leak, which is the obvious alternative explanation for
 this pair sitting at the top of the grid, and it is not one the extension can settle.
+
+### Scoring, 2026-09-15 22:05: the extension confirms rather than rescues, and TWO of three bands fail
+
+```
+.venv/bin/python analysis/composition_attack.py --safe-model PleIAs/Pleias-1.2b-Preview \
+  --risky-model output/phase5/memb_Pleias-1_2b --corpus-file data/bench/bookmia100_onset100.jsonl \
+  --k-values 4.6 5.3 6.6 --modes single --limit 100 --out output/phase5/fineb_pleias12b_ext
+# merged into output/phase5/fineb_pleias12b_full; the scorer repointed, BOTH grids reported
+.venv/bin/python analysis/onset_gutenberg.py --corpus bookmia --out results
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineb_pleias12b_full/composition.csv \
+  --s-x 3.048079572669047 --label "Pleias-1.2B (BookMIA, extended grid)" --out results
+```
+
+**The extension behaved exactly as the one precedent said it would, and that settles the pair
+against us.** Recall keeps climbing above the old ceiling --- `4.6:0.026`, `5.3:0.031`, `6.6:0.040`
+--- so the bootstrap resamples have somewhere to cross and the conditioning artefact dissolves:
+
+```
+grid                 onset    ratio    95% CI            no-crossing
+committed (top 4.2)  4.0058   1.3142   [1.004, 1.360]      43.1%
+extended  (top 6.6)  4.0058   1.3142   [1.010, 1.594]       0.4%
+```
+
+The point estimate is **unmoved to four decimals**, the upper end widens, the no-crossing collapses
+to `0.4%`. The reading was never a ceiling artefact; the grid was simply too short to prove it. Zero
+per-trajectory violations in all 300 new queries. `results/onset_bookmia_committed_grid.csv` holds
+the unextended scoring, as the rule requires.
+
+### Band 1 (the level of Eq. (eq:req)): **FAILS**
+
+```
+pair            pred    onset    pred/meas     Gutenberg pred/meas
+KL3M-520M      2.197    2.465      0.891              0.851
+Pleias-1.2B    2.614    4.006      0.652              0.980
+Phi-3.5-mini   2.619    2.607      1.004              1.040
+```
+
+`0.652` is outside the committed `[0.7, 1.4]`, so the third row fires: **the near-determinism
+approximation does not survive a second change of corpus**, and the onset section says so rather
+than Limitations alone. Two of three pairs are fine --- `0.891` and `1.004`, both inside the tight
+`[0.85, 1.15]` --- which is the point: the equation puts the onset in the right place until it does
+not, and nothing in it says which case you are in. **P2 fails on all three** again, as on Gutenberg.
+The direction test gives `rho = -1.00` at exact `p = 0.333`: no information at `n = 3`, and the sign
+is the wrong one, consistent with the seven-pair CopyBench inversion at `-0.18` that already
+refuted it.
+
+### Band 2 (the onset section's central split): **INVERTS** --- the strongest committed negative
+
+```
+pair            ratio   95% CI            tokenizer   CopyBench  Gutenberg
+KL3M-520M      1.0138  [0.970, 1.131]      fine         1.053      1.102
+Pleias-1.2B    1.3142  [1.010, 1.594]      coarse       0.878      0.895
+Phi-3.5-mini   0.9920  [0.867, 1.370]      coarse       0.926      0.949
+```
+
+The third row fires, and it fires **twice over**:
+
+1. **The ordering inverts.** The coarse-tokenizer Pleias pair is now the highest of the three at
+   `1.3142`, above the fine-tokenizer KL3M pair at `1.0138`. On CopyBench and on Gutenberg the fine
+   pair was the highest and the two coarse pairs sat below `1`.
+2. **KL3M's interval no longer excludes 1.** It reads `[0.970, 1.131]` against CopyBench's
+   `[1.0163, 1.2436]` and Gutenberg's `[1.0744, 1.4227]`. That interval excluding `1` is the whole
+   evidential basis for "leakage begins *after* the certificate has gone vacuous", and on the third
+   corpus it does not.
+
+The committed reading is *"two agreeing corpora were a coincidence of two. The paper leads with
+it."* That is what the file says and it is what the paper will do.
+
+### Band 3 (corpus-to-corpus range against within-corpus sampling): **ONE PAIR EXCEEDS**
+
+```
+pair           CopyBench  Gutenberg   BookMIA    range   CopyBench CI width   verdict
+KL3M-520M         1.0532     1.1020    1.0138   0.0882         0.2273         inside
+Pleias-1.2B       0.8784     0.8947    1.3142   0.4358         0.1709         EXCEEDS
+Phi-3.5-mini      0.9261     0.9489    0.9920   0.0659         0.2866         inside
+```
+
+The second row fires: the ratio is a property of the pair for KL3M-520M and Phi-3.5-mini --- whose
+three-corpus ranges are `2.6x` and `4.3x` *inside* their own within-corpus sampling widths --- and
+**corpus-sensitive for Pleias-1.2B, named**. Every onset ratio quoted for that pair carries the
+corpus it was measured on.
+
+### The confound, measured rather than asserted, and it does NOT rescue anything
+
+The pre-registration flagged in advance that a weak memoriser needs more budget before it can leak.
+Pleias' memoriser is by far the weakest here, and its strength falls monotonically across the three
+corpora while its ratio rises monotonically:
+
+```
+pair            sampled k=-1: CopyBench  Gutenberg  BookMIA      onset ratio across the same three
+KL3M-520M                        0.5188     0.5784   0.7326      1.0532  1.1020  1.0138
+Pleias-1.2B                      0.9091     0.5168   0.1504      0.8784  0.8947  1.3142
+Phi-3.5-mini                     0.5660     0.2696   0.4425      0.9261  0.9489  0.9920
+```
+
+Within Pleias the rank correlation is `-1.00`, but `n = 3` has a floor of `1/3` and it carries no
+information. **Across all nine cells it is `rho = -0.317` at exact `p = 0.4101`** --- POST HOC, no
+band, and not significant. So memoriser strength is a real caveat for this one pair and **not** a
+general explanation for the ratio, and it is reported as a caveat and never used to set aside a band
+that fired. Pleias' `k=-1` of `0.1504` clears the committed `0.10` gate; the gate is not raised after
+the fact.
+
+### What this arm establishes, and what it does not
+
+It establishes that the onset section's central split --- fine-tokenizer pairs above `1`, coarse
+below --- **is not a property of the pair**. It held on two corpora and fails on the third, on the
+same three anchors, the same architectures, the same settings, the same seed and the same grid, with
+only the protected work changed. The paper can no longer say the split survives a change of corpus.
+
+It does not establish *why*. Three pairs cannot separate corpus from memoriser strength when the
+memoriser is trained on the corpus, and this design confounds them by construction. That is a
+limitation of the design, stated here and in the paper, not a reason to discount the failure: the
+bands were written to be failed, two of them failed, and they are reported as failed.
 

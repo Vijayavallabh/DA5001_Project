@@ -44,7 +44,10 @@ CORPORA = {
     "bookmia": ("BookMIA", [
         ("KL3M-520M + mem. KL3M-520M (BookMIA)", "output/phase5/fineb_kl3m520m",
          "KL3M-520M + mem. KL3M-520M"),
-        ("Pleias-1.2B + mem. Pleias-1.2B (BookMIA)", "output/phase5/fineb_pleias12b",
+        # _full = the committed grid merged with the {4.6, 5.3, 6.6} extension that
+        # appendix_seed.tex's no-crossing rule licensed (43.1% against 0.0% and 0.0%).
+        # Both grids are reported; results/onset_bookmia_committed_grid.csv is the unextended one.
+        ("Pleias-1.2B + mem. Pleias-1.2B (BookMIA)", "output/phase5/fineb_pleias12b_full",
          "Pleias-1.2B + mem. Pleias-1.2B"),
         ("Phi-3.5-mini + mem. Phi-3.5-mini (BookMIA)", "output/phase5/fineb_phi35",
          "Phi-3.5-mini + mem. Phi-3.5-mini"),

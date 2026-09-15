@@ -143,7 +143,14 @@ def test_the_sweep_script_agrees_with_the_scorer_and_the_theory_manifest():
         assert key == tag, (key, tag)
         table[tag] = (safe, risky)
 
-    assert {f"output/phase5/fineb_{t}" for t in table} == {r for _, r, _ in CORPORA["bookmia"][1]}
+    # the scorer may point at <tag>_full where appendix_seed.tex's no-crossing rule licensed a
+    # grid extension (Pleias-1.2B: 43.1% against 0.0% and 0.0%); both grids stay reported.
+    scorer = {r for _, r, _ in CORPORA["bookmia"][1]}
+    assert {d.replace("_full", "") for d in scorer} == {f"output/phase5/fineb_{t}" for t in table}
+    for d in scorer:
+        if d.endswith("_full"):
+            assert os.path.isdir(os.path.join(ROOT, d.replace("_full", "_ext"))), \
+                f"{d} claims a merged grid but its _ext arm does not exist"
 
     manifest = [l.split("\t") for l in
                 open(os.path.join(ROOT, "results/onset_theory_pairs_bookmia.tsv"),
@@ -173,8 +180,9 @@ def test_the_sweep_gate_refuses_an_uncommitted_p1_and_passes_a_committed_one():
     import tempfile
 
     sh = os.path.join(ROOT, "scripts/run_bookmia_sweeps.sh")
-    gate = open(sh, encoding="utf-8").read().partition("# --- the gate")[2].partition(
-        "# ----------------------------------")[0]
+    body = open(sh, encoding="utf-8").read()
+    gate = body.partition("# GATE-BEGIN")[2].partition("# GATE-END")[0]
+    assert gate.strip() and "GATE-BEGIN" not in gate, "the gate sentinels moved"
     assert "git ls-files --error-unmatch" in gate and "git diff --quiet HEAD" in gate
 
     with tempfile.TemporaryDirectory() as d:
@@ -191,7 +199,12 @@ def test_the_sweep_gate_refuses_an_uncommitted_p1_and_passes_a_committed_one():
 
         theory = os.path.join(d, "results/onset_theory_bookmia.csv")
         prereg = os.path.join(d, "results/onset_prediction_bookmia.md")
-        shutil.copy(PREREG, prereg)          # the real one: no predictions above its scoring log
+        # the real file with its P1 block stripped out -- i.e. the state it was in between 14:27
+        # and 17:41, which is the state the gate has to refuse
+        real = open(PREREG, encoding="utf-8").read()
+        pre_p1 = real.partition("## The P1 predictions")[0] + real.partition("\n## Scoring log")[1]
+        assert "pred onset" not in pre_p1.partition("\n## Scoring log")[0]
+        open(prereg, "w").write(pre_p1)
         run("git", "add", "-A"); run("git", "commit", "-qm", "base")
 
         assert attempt().returncode == 2, "missing theory CSV must refuse"
@@ -206,11 +219,24 @@ def test_the_sweep_gate_refuses_an_uncommitted_p1_and_passes_a_committed_one():
         r = attempt(); assert r.returncode == 2 and "does not quote" in r.stdout, r.stdout
 
         # now the pre-registration quotes the predictions, as it must before any sweep
-        t = open(prereg, encoding="utf-8").read()
-        head, sep, tail = t.partition("\n## Scoring log")
-        open(prereg, "w").write(head + "\n```\npair  s_s  s_r  pred onset  pred ratio\n```\n"
-                                + sep + tail)
+        open(prereg, "w").write(real)          # the genuine committed file, P1 block included
         run("git", "add", "-A"); run("git", "commit", "-qm", "predictions")
         r = attempt()
         assert r.returncode == 0 and "GATE_PASSED" in r.stdout, (r.returncode, r.stdout, r.stderr)
         assert "gate passed: P1 committed at" in r.stdout
+
+
+def test_the_extended_grid_is_the_committed_grid_plus_exactly_the_registered_points():
+    """The extension is licensed by a rule, and its grid was committed before it ran. A merge that
+    silently dropped or duplicated a budget would move the onset without moving anything visible."""
+    import collections as _c
+    full = os.path.join(ROOT, "output/phase5/fineb_pleias12b_full/composition_summary.csv")
+    if not os.path.exists(full):
+        pytest.skip("run the Pleias grid extension first")
+    ks = [r["k"] for r in csv.DictReader(open(full)) if r["mode"] == "single" and r["L"] == "0"]
+    assert len(ks) == len(set(ks)), _c.Counter(ks).most_common(3)   # no double-counted budget
+    got = sorted(float(k) for k in ks)
+    head = open(PREREG, encoding="utf-8").read().partition("\n## Scoring log")[0]
+    committed = [float(x) for x in re.search(r"`(-1 0 [0-9. ]+)`", head).group(1).split()]
+    registered_ext = [4.6, 5.3, 6.6]           # committed in the scoring log before the run
+    assert got == sorted(committed + registered_ext), (got, sorted(committed + registered_ext))
