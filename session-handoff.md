@@ -1,9 +1,37 @@
-# Session handoff — 2026-09-16 (early hours, after feat-121)
+# Session handoff — 2026-09-16 (early hours; the SEED arm is RUNNING)
 
 ## Current objective
 
-Nothing is running, no GPU work is outstanding, and all **forty-eight** pre-registrations in
-`results/` are scored. The manuscript compiles clean at 9 of 9 body pages.
+**The seed arm is running.** `results/onset_prediction_seedspread.md` is committed and
+**unscored** — the one unscored pre-registration of the forty-nine in `results/`, which is what
+`tests/test_preregistration_count.py` checks for. The other forty-eight are scored and the
+manuscript compiles clean at 9 of 9 body pages.
+
+### The seed arm — is the onset ratio reproducible under the paper's own recipe? (RUNNING)
+
+The control feat-121 forbade itself from adding after the fact. Same pair, same corpus, same anchor,
+same 16-point grid, same 100 swept passages; `--epochs 40` fixed — the recipe **every published
+memoriser in this paper uses** — varying `--seed` alone (1, 2, 3), with feat-120's `seed 0` run as
+the fourth point. `finetune_memorizing.py` seeds both the per-epoch data shuffle and the LoRA init,
+and **every memoriser on record, including all nine pairs of the Section 4 table, was trained at
+seed 0**, so the paper has never measured this.
+
+`scripts/run_strength_ladder.sh seeds 1 2 3`, one queue shell, **GPU 2 only**, log
+`output/logs/seed_arm.log`. Roughly 6 GPU-h: 3 × (40 epochs at ~100 s, then a ~50-minute sweep).
+
+The script now takes an **axis**: `epochs <n>...` pins seed 0, `seeds <n>...` pins 40 epochs. Two
+orthogonal ladders sharing feat-120's run as their corner, which is what makes their spans
+comparable. `epochs 10 20 30` still writes the exact directories feat-121 scored.
+
+**Bands**, read against feat-121's measured epoch-only span of `0.4721` on the identical cell:
+seed-only span `>= 0.20` → it is run-to-run variation, and the nine-pair table's `0.2874` of
+structure sits inside the noise of one pair re-trained; `< 0.10` → it is strength, and the table is
+confounded by a measurable variable; otherwise inconclusive. Committed secondary, so it cannot be
+post hoc: pooling both ladders gives **seven** points on one pair, where the exact-`p` floor is
+`1/2520` and this question can reach significance for the first time.
+
+Score with `analysis/strength_ladder.py` once extended to the seed axis (it currently hard-codes
+the epoch POINTS list — extend it, do not duplicate it).
 
 The session ran ten arms. The last two are the ones a fresh reader should start with, because
 together they removed a claim the paper had built a section around:
@@ -323,8 +351,8 @@ and both are labelled where they appear.
 |---|---|
 | manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **481 passed**, `./init.sh` exit 0 |
-| pre-registrations | **48**, all scored |
+| tests | **483 passed**, `./init.sh` exit 0 |
+| pre-registrations | **49**; 48 scored, `onset_prediction_seedspread.md` committed-and-running |
 | numeric audit | 3,197 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
 | compute | **247.6** measured, disclosed as **"at most 248"** (≈7.7 of it is gated shells polling with no card); fine-tune bound **40** |
 | artifact | **871** files, `MANIFEST.sha256` verified |

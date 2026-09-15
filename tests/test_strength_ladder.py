@@ -78,3 +78,32 @@ def test_no_outcome_is_allowed_to_restore_the_retracted_sentence():
     assert "No outcome of this arm restores the retracted sentence" in head
     src = open(os.path.join(ROOT, "analysis/strength_ladder.py"), encoding="utf-8").read()
     assert "does NOT restore" in src and "inherits the confound" in src
+
+
+def test_the_two_ladders_are_orthogonal_and_share_one_corner():
+    """The seed arm only means something if it differs from the epoch arm in exactly one flag and
+    lands on the same grid, same corpus, same passages. Both also share feat-120's run as their
+    corner (epochs=40, seed=0), which is what makes their two spans comparable."""
+    sh = open(os.path.join(ROOT, "scripts/run_strength_ladder.sh"), encoding="utf-8").read()
+    code = "\n".join(l for l in sh.splitlines() if not l.lstrip().startswith("#"))
+    assert 'AXIS="${1:?' in code and "epochs|seeds" in code
+    # the epochs axis pins the seed, the seeds axis pins the epochs -- neither varies two things
+    assert 'ep="$v"; sd=0' in code and 'ep=40; sd="$v"' in code
+    # one fine-tune call and one sweep call, shared by both axes
+    assert code.count("finetune_memorizing.py") == 1 and code.count("composition_attack.py") == 1
+    assert code.count("--seed") == 1 and code.count("--epochs") == 1
+    # the corner: the seed axis's fixed epoch count is the one feat-120 and every published
+    # memoriser in the paper used, not one chosen after seeing feat-121's points
+    import json
+    r = json.load(open(os.path.join(ROOT, "output/phase5/memb_Pleias-1_2b/recipe.json")))
+    assert r["epochs"] == 40 and r.get("seed", 0) == 0
+
+
+def test_the_seed_arm_bands_are_committed_and_say_what_they_license():
+    p = os.path.join(ROOT, "results/onset_prediction_seedspread.md")
+    head = open(p, encoding="utf-8").read().partition("\n## Scoring log")[0]
+    assert "seed-only span **`>= 0.20`**" in head and "seed-only span **`< 0.10`**" in head
+    assert "0.4721" in head, "the band must be read against feat-121's measured epoch-only span"
+    # the secondary is committed in advance, not discovered afterwards
+    assert "Pooling the two ladders" in head and "1/2520" in head
+    assert "No outcome of this arm restores the retracted sentence" in head
