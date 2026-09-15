@@ -1,6 +1,6 @@
 # Is the onset ratio a property of the corpus, or of the memoriser?
 
-**Committed 2026-09-15 22:4x, before any of these memorisers exists.** Nothing above
+**Committed 2026-09-15 22:44, before any of these memorisers exists.** Nothing above
 the scoring-log heading is edited after that line is written.
 
 ## The question feat-120 opened and could not answer
