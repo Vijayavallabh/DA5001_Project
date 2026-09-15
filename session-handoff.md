@@ -98,6 +98,12 @@ once and are looping. `tests/test_bookmia_onset.py` walks all four states in a t
 missing, untracked, staged-but-uncommitted, committed-but-unquoted — and asserts the fourth
 configuration **passes**, which is caution (p): a gate that fails everything is not a gate.
 
+**ONE GPU AT A TIME, from 21:00 on 2026-09-15 (user instruction, now in AGENTS.md).** All future
+processes share **GPU 2**; no fan-out. The instruction allowed feat-120's two in-flight sweeps to
+finish on GPUs 2 and 4, and they were the last two-card work in this project: every remaining step
+of the arm is CPU-only (`onset_gutenberg.py`, `onset_ci.py` and `recheck_violations.py` read CSV and
+JSONL and none imports torch). Nothing was killed, because nothing was queued behind those two.
+
 **Do not shorten the fine-tunes at their observed minima.** Every flag is copied verbatim from the
 Gutenberg run log, and that identity is the only reason the three corpora are comparable. Changing
 the stopping rule after watching this loss curve would make the third reading incomparable to the
