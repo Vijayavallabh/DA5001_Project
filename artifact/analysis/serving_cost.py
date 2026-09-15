@@ -14,6 +14,12 @@ proportional to FLOPs for every arm here, so the ratios are the quantity of inte
   metered decoder   both models at prefill and at every decode step: (P_anchor + P_risky)(L_p + T)
   selection, n      n independent anchor generations, then one scoring PREFILL per candidate:
                     n (P_anchor + P_scorer)(L_p + T)
+  majority vote, n  n independent anchor generations and NOTHING ELSE: n P_anchor (L_p + T).
+                    Self-consistency picks the modal answer, so the "scorer" is a regex over the n
+                    completions and costs no forward pass at all. It carries the same log n
+                    certificate every other selection rule does, and it is the cheapest instance of
+                    the mechanism by a wide margin -- which is only visible once the scorer, and not
+                    the anchor, is identified as what selection actually pays for.
 
 FLOPs is the fair common currency and it is not the whole story in either direction: decode steps
 are memory-bandwidth-bound and poorly utilised while a scoring prefill is compute-bound and runs
@@ -100,6 +106,14 @@ def main():
                          seq_tokens=int(L), cost_bparam_tokens=round(c, 1),
                          ratio_vs_metered=round(c / metered, 2),
                          note="n anchor generations + n scoring prefills"))
+    for n in (1, 2, 4, 8, 16, 32, 64):
+        c = n * P_ANCHOR * L
+        rows.append(dict(mechanism="majority vote (self-consistency, no scorer)", n=n,
+                         scorer="none", seq_tokens=int(L), cost_bparam_tokens=round(c, 1),
+                         ratio_vs_metered=round(c / metered, 2),
+                         note="n anchor generations and a regex; judge-free accuracy is in "
+                              "scorer_free_cost.csv. Needs a canonical answer, so it does not "
+                              "apply to the free-form judged workload."))
     for n in (1, 2, 4, 8, 16, 32, 64):
         c = n * (P_ANCHOR + P_SMALL) * L
         rows.append(dict(mechanism="selection anchoring (small scorer)", n=n,

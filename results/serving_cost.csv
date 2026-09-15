@@ -7,6 +7,13 @@ selection anchoring,8,Qwen2.5-7B,217,16273.6,7.66,n anchor generations + n scori
 selection anchoring,16,Qwen2.5-7B,217,32547.2,15.32,n anchor generations + n scoring prefills
 selection anchoring,32,Qwen2.5-7B,217,65094.4,30.64,n anchor generations + n scoring prefills
 selection anchoring,64,Qwen2.5-7B,217,130188.9,61.29,n anchor generations + n scoring prefills
+"majority vote (self-consistency, no scorer)",1,none,217,381.6,0.18,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
+"majority vote (self-consistency, no scorer)",2,none,217,763.2,0.36,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
+"majority vote (self-consistency, no scorer)",4,none,217,1526.5,0.72,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
+"majority vote (self-consistency, no scorer)",8,none,217,3052.9,1.44,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
+"majority vote (self-consistency, no scorer)",16,none,217,6105.9,2.87,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
+"majority vote (self-consistency, no scorer)",32,none,217,12211.7,5.75,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
+"majority vote (self-consistency, no scorer)",64,none,217,24423.4,11.5,"n anchor generations and a regex; judge-free accuracy is in scorer_free_cost.csv. Needs a canonical answer, so it does not apply to the free-form judged workload."
 selection anchoring (small scorer),1,Qwen2.5-0.5B,217,488.8,0.23,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
 selection anchoring (small scorer),2,Qwen2.5-0.5B,217,977.6,0.46,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"
 selection anchoring (small scorer),4,Qwen2.5-0.5B,217,1955.3,0.92,"feat-116 RAN and refuted the route: see compute_matched.csv, this cost buys no gain the metered decoder does not already have"

@@ -251,6 +251,54 @@ Commands: `scripts/run_verifiable_scorer_scale.sh 4`,
 `analysis/verifiable_scorer_scale.py --out results`.
 
 
+### 2026-09-15, feat-119: the cheapest instance of the mechanism is also the best one
+
+Post hoc and labelled so throughout: no band, no new run, a join over quantities already measured,
+and deliberately not named `onset_prediction_*` so it cannot inflate the count (the rule feat-115
+followed).
+
+feat-114/116/117 established that selection's serving cost is set by the **reward model** and not
+the anchor, which is why the paper concedes `61.3x`. **Majority vote has no reward model.**
+Self-consistency serves the modal answer over the same `n` anchor draws, so its score is a regex and
+costs no forward pass: `n*P_s(L_p+T)` against `n*(P_s+P_f)(L_p+T)`. It carries the identical `log n`
+certificate, because Proposition 1 assumes nothing whatever about the score and a mode is a score.
+The paper has said since v8 that self-consistency is an instance of the mechanism; it had never said
+the instance is also by far the cheapest.
+
+| rule | `n` | cost | GSM8K | TriviaQA |
+|---|---|---|---|---|
+| majority vote | 8 | **`1.44x`** | `0.466` | `0.322` |
+| reward `7.6`B | 2 | `1.92x` | `0.352` | `0.282` |
+| majority vote | 32 | **`5.75x`** | **`0.546`** | `0.328` |
+| reward `7.6`B | 8 | `7.66x` | `0.364` | `0.256` |
+| majority vote | 64 | `11.50x` | `0.542` | `0.334` |
+| reward `7.6`B | 64 | `61.29x` | `0.386` | `0.266` |
+
+**Every scorer-free cell beats every reward cell on both tasks.** At `n=8` it costs `1.44x` and
+reaches `0.466` where the best reward cell costs `61.29x` and reaches `0.386`; at `n=32` it gains
+`3.42x` as much for `9.4%` of the cost. On TriviaQA the reward goes *negative* at every `n >= 8`
+while majority vote rises to `0.334`.
+
+**Three limits are written into the CSV, the note and the appendix**, because this is the kind of
+number that travels badly: it is post hoc; it needs a **canonical answer**, so it does not transfer
+to the free-form judged workload where every other comparison in the paper lives; and no metered
+decoder was run on GSM8K, so the `x metered` column is our standard cost denominator and **not** a
+measured head-to-head on that task.
+
+**And what it must not be read as saying**, also in the appendix: majority vote reaches `0.546`
+against the unconstrained risky model's `0.786` greedy. This is a comparison among mechanisms that
+carry a certificate, not a claim to have beaten the model a certificate exists to bound. Nor does it
+make the reward model pointless --- the judged workload has no mode, and every judged result in the
+paper is a reward-scored arm. What changes is the compute story: `61.3x` is the price of putting a
+reward model in the loop, not the price of the mechanism.
+
+New appendix `app:scorerfree`; Section 2 gains one clause and drops the `1.5`B detail, which
+Limitations and the appendix already carry. The body figure went `0.74 -> 0.70\textwidth` to pay for
+it, rendered at 190dpi and checked --- panels still legible, no new collisions.
+
+Commands: `analysis/serving_cost.py --out results`, `analysis/scorer_free_cost.py --out results`.
+
+
 ## Status
 
 ### What's Done

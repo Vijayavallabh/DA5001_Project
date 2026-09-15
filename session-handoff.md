@@ -1,16 +1,18 @@
-# Session handoff — 2026-09-15 (midday, after feat-118)
+# Session handoff — 2026-09-15 (afternoon, after feat-119)
 
 ## Current objective
 
 Nothing is running. All forty-six pre-registrations in `results/` are scored and the manuscript
 compiles clean from a deleted PDF.
 
-The session did seven things, in this order: **reframed the paper to lead with its contribution
+The session did eight things, in this order: **reframed the paper to lead with its contribution
 (v8)**, **answered a referee report by measurement (v9/v10)**, **read the rendered PDF end to end**,
 **ran the paper's own escape hatch from the compute concession and reported that it failed
 (feat-116)**, **found and fixed an 8.8% error in the cost model**, **ran the follow-up that
 retracted feat-116's headline observation and replaced it with a better one (feat-117)**, and
-**took that replacement off the judge, where it did not survive either (feat-118)**.
+**took that replacement off the judge, where it did not survive either (feat-118)**, and **priced
+the instance of the mechanism that has no scorer at all, which turns out to be both the cheapest and
+the best where an answer is checkable (feat-119)**.
 
 Three claims were retracted or qualified this session, all ours, all by arms we designed to test
 them. That is the through-line and it is worth preserving: the paper's method is now visibly
@@ -128,6 +130,39 @@ Stronger for it: the paper's central claim is now measured **without** an instru
 exact match turns on the scorer alone with `log n` identical throughout — and majority vote, no
 reward model and the same certificate, reaches `0.546` where the best reward reaches `0.386`.
 
+### feat-119 — the cheapest instance is also the best one
+
+Post hoc and labelled so: no band, no new run, a join over quantities already measured, and not
+named `onset_prediction_*` so it cannot inflate the count (feat-115's rule).
+
+feat-114/116/117 established that selection's cost is the **reward model**, not the anchor.
+**Majority vote has no reward model** — self-consistency serves the modal answer over the same `n`
+anchor draws, so its score is a regex and costs no forward pass, and it carries the identical
+`log n` certificate because Proposition 1 assumes nothing about the score and a mode is a score.
+
+| rule | `n` | cost | GSM8K | TriviaQA |
+|---|---|---|---|---|
+| majority vote | 8 | **`1.44x`** | `0.466` | `0.322` |
+| reward `7.6`B | 2 | `1.92x` | `0.352` | `0.282` |
+| majority vote | 32 | **`5.75x`** | **`0.546`** | `0.328` |
+| reward `7.6`B | 64 | `61.29x` | `0.386` | `0.266` |
+
+**Every scorer-free cell beats every reward cell on both tasks** — `3.42x` the gain for `9.4%` of
+the cost at `n=32`, and on TriviaQA the reward goes *negative* at every `n ≥ 8`. So `61.3x` is the
+price of putting a reward model in the loop, not the price of the mechanism.
+
+Three limits travel with the numbers in the CSV, the note and the appendix, because this is the kind
+of figure that gets quoted out of context: post hoc; needs a **canonical answer**, so it does not
+transfer to the free-form judged workload; and no metered decoder ran on GSM8K, so the `x metered`
+column is our cost denominator and not a measured head-to-head. The appendix also states what it
+does **not** say — majority vote reaches `0.546` against the risky model's `0.786` greedy, so this
+is a comparison among mechanisms that carry a certificate, not a claim to beat the model one exists
+to bound.
+
+New appendix `app:scorerfree`; Section 2 gains a clause and drops the `1.5`B detail that Limitations
+and the appendix already carry; the body figure went `0.74 → 0.70\textwidth` to pay for it, rendered
+at 190dpi and checked.
+
 ### The final read-through
 
 All nine body pages read as rendered. Three fixes, one substantive: **the abstract claimed selection
@@ -148,13 +183,13 @@ and both are labelled where they appear.
 
 | | |
 |---|---|
-| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 54 total |
+| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
 | build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **458 passed**, `./init.sh` exit 0 |
+| tests | **465 passed**, `./init.sh` exit 0 |
 | pre-registrations | **46**, all scored |
-| numeric audit | 3,006 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
+| numeric audit | 3,060 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
 | compute | 222.9 measured over 234 jobs, "approximately 223" disclosed |
-| artifact | 849 files, `MANIFEST.sha256` verified |
+| artifact | 853 files, `MANIFEST.sha256` verified |
 | anonymity | 0 "our earlier audit", 0 affiliation; 4 hits, all `(Vijayavallabh, 2026)` and its bib entry |
 
 ## Files changed this session
@@ -187,32 +222,22 @@ defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
 
 ## Recommended next step
 
-**Price the scorer-free instance.** feat-118 surfaced something the paper measured a while ago and
-has never costed. On GSM8K, majority vote reaches `0.546` at `n=32` where the best reward model
-reaches `0.386` at `n=64` --- and majority vote **needs no reward model at all**, so its serving
-cost is `n` anchor generations and nothing else:
+**BookMIA-50 onset** (~11 GPU-h for 3 pairs) is the largest unstarted item and is moderate value now
+that onset has nine pairs and two corpora. Everything cheaper that was worth doing has been done.
 
-| | cost vs the metered decoder | judge-free gain |
-|---|---|---|
-| majority vote, `n=32` | **`5.75x`** | `+0.226` GSM8K exact match |
-| reward selection at `7.6`B, `n=64` | `61.29x` | `+0.066` |
+Two things are on record as **impossible** rather than unstarted, and a future session should not
+rediscover them. A judge-free head-to-head against the *metered* decoder cannot be run
+(`results/onset_prediction_verifiable.md`): TinyComma is the only openly licensed anchor sharing the
+Llama-3 tokenizer and it scores `0.04` on GSM8K. And the anchor-scale axis is capped by the
+**licensing frontier**, not by compute — Comma-7B is the largest openly licensed base model we can
+obtain, because open-*data* families contain books and would violate the premise the certificate is
+written against.
 
-That is `3.4x` the gain for `9%` of the cost, at the same `log n` certificate (`3.466` nats at
-`n=32`). The paper's abstract already says self-consistency is an instance; what it has never said
-is that the instance with no scorer is also by far the cheapest one, and that the `61.3x` it
-concedes is specific to putting a reward model in the loop.
-
-This is arithmetic over quantities already measured --- `serving_cost.py` plus a paragraph, no GPU
---- but it changes a headline, so it wants care rather than speed: it is **post hoc** and must be
-labelled so, it applies only where an answer is canonical (there is no majority over free-form text,
-so it does not transfer to the judged workload), and no metered decoder was run on GSM8K, so the
-ratio is this paper's standard cost model and not a measured head-to-head on that task. State all
-three limits where the number is given.
-
-Second, unchanged: **BookMIA-50 onset** (~11 GPU-h for 3 pairs) is moderate value now that onset has
-nine pairs and two corpora. A judge-free head-to-head against the *metered* decoder remains
-**impossible** and the reason is on record in `results/onset_prediction_verifiable.md`: TinyComma is
-the only openly licensed anchor with the Llama-3 tokenizer and it scores `0.04` on GSM8K.
+If a session wants a cheap sharpening rather than a new axis: feat-119's table has only the `7.6`B
+reward beside majority vote, because that is what the appendix needed. The `0.5`/`1.5`/`3`B caches
+exist (`selection_verifiable_rewards_*`), so the full four-scorer cost–accuracy frontier is a
+one-line change to `analysis/scorer_free_cost.py` and no GPU. It would not change any claim — every
+reward cell already loses to every majority-vote cell — which is exactly why it was left out.
 
 ## What this session added to the record
 

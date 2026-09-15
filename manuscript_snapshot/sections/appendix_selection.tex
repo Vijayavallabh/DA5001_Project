@@ -230,6 +230,55 @@ reward model, same certificate --- reaches $0.546$ where the best reward reaches
 an answer is checkable the scorer-free rule is the better one, now at four scorer scales rather than
 one.
 
+\paragraph{The cheapest instance is also the best one, where an answer is checkable}\label{app:scorerfree}
+Everything above prices selection with a reward model in the loop, and that model is what it costs:
+at $n$ the mechanism runs $n(P_s+P_f)(L_p+T)$ against the metered decoder's $(P_s+P_r)(L_p+T)$, with
+$P_f=7.6$ against $P_s=1.8$. \textbf{Majority vote has no such term.} Self-consistency serves the
+modal answer over the same $n$ anchor draws, so its score is a regex and costs no forward pass:
+$n\,P_s(L_p+T)$. It carries the identical $\log n$ certificate, because Proposition~\ref{prop:selection}
+assumes nothing whatever about the score and a mode is a score. Joining the cost model to the
+accuracies of Section~\ref{sec:experiments} and the paragraph above, sorted by price:
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+rule & $n$ & cost & GSM8K & TriviaQA \\
+\midrule
+majority vote & $8$ & $\mathbf{1.44\times}$ & $0.466$ & $0.322$ \\
+reward $7.6$B & $2$ & $1.92\times$ & $0.352$ & $0.282$ \\
+majority vote & $16$ & $2.87\times$ & $0.500$ & $0.322$ \\
+reward $7.6$B & $4$ & $3.83\times$ & $0.344$ & $0.284$ \\
+majority vote & $32$ & $\mathbf{5.75\times}$ & $\mathbf{0.546}$ & $0.328$ \\
+reward $7.6$B & $8$ & $7.66\times$ & $0.364$ & $0.256$ \\
+majority vote & $64$ & $11.50\times$ & $0.542$ & $0.334$ \\
+reward $7.6$B & $64$ & $61.29\times$ & $0.386$ & $0.266$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Every scorer-free cell beats every reward cell on both tasks. Majority vote at $n=8$ costs
+$1.44\times$ and reaches $0.466$; the best reward cell costs $61.29\times$ and reaches $0.386$. At
+$n=32$ the scorer-free rule gains $3.42\times$ as much for $9.4\%$ of the cost, and on TriviaQA the
+reward goes \emph{negative} at every $n \ge 8$ while majority vote rises to $0.334$. The certificate
+is the same down the column --- $\log n$, $3.466$ nats at $n=32$, against $2000$ certified for the
+metered decoder's median response.
+
+\textbf{Three limits belong with these numbers.} They are \emph{post hoc}: no band was committed,
+because there is no new run, only a join (\texttt{results/scorer\_free\_cost\_note.md}). Majority
+vote needs a \emph{canonical answer}, so this does not transfer to the free-form judged workload
+where every other comparison in this paper lives. And no metered decoder was run on GSM8K, so the
+cost column is our standard denominator and not a measured head-to-head on that task; the accuracy
+columns compare each rule against the same anchor at $n=1$.
+
+Two things this does not say. Majority vote does not reach the unconstrained risky model, which
+scores $0.786$ greedy here against its $0.546$ --- Section~\ref{sec:conclusion} already states that
+an anchor which cannot do the task gains nothing at any $n$, and this is a comparison among
+mechanisms that carry a certificate, not a claim to have beaten the model one exists to bound. And
+it does not make the reward model pointless: the judged workload has no mode, and every judged
+result here is a reward-scored arm. What changes is the compute story. The $61.3\times$ is the price
+of putting a reward model in the loop, not the price of the mechanism, and where an answer is
+checkable a deployer should not pay it.
+
 \paragraph{Vetting the anchor: the premise is measurable, and we measured it}\label{app:vetting}
 Proposition~\ref{prop:selection} bounds $\Pr_q[E]$ by $n\Pr_{p_s}[E]$, so everything rests on the
 anchor's own $\Pr_{p_s}[E]$ being small --- and open-licensed corpora carry only partial provenance

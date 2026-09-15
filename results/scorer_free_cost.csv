@@ -1,0 +1,13 @@
+rule,scorer,n,nats_certified,cost_vs_metered,gsm8k_acc,gsm8k_gain,triviaqa_acc,triviaqa_gain,limits
+majority vote,none,2,0.6931,0.359,0.32,0.0,0.28,0.0,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+majority vote,none,4,1.3863,0.719,0.392,0.072,0.3,0.02,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+majority vote,none,8,2.0794,1.437,0.466,0.146,0.322,0.042,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+7.6B,Qwen2.5-7B,2,0.6931,1.915,0.352,0.032,0.282,0.002,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+majority vote,none,16,2.7726,2.874,0.5,0.18,0.322,0.042,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+7.6B,Qwen2.5-7B,4,1.3863,3.831,0.344,0.024,0.284,0.004,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+majority vote,none,32,3.4657,5.749,0.546,0.226,0.328,0.048,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+7.6B,Qwen2.5-7B,8,2.0794,7.661,0.364,0.044,0.256,-0.024,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+majority vote,none,64,4.1589,11.498,0.542,0.222,0.334,0.054,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+7.6B,Qwen2.5-7B,16,2.7726,15.322,0.356,0.036,0.242,-0.038,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+7.6B,Qwen2.5-7B,32,3.4657,30.644,0.38,0.06,0.252,-0.028,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"
+7.6B,Qwen2.5-7B,64,4.1589,61.289,0.386,0.066,0.266,-0.014,"post hoc; needs a canonical answer; the ratio is the cost model's denominator, not a measured head-to-head on this task"

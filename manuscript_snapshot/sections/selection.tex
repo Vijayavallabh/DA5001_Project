@@ -98,9 +98,10 @@ introduces nothing new. Unlike an $n$-gram blocklist it names no work, so paraph
 works are bounded on the same terms as exact quotation \citep{ippolito2023preventing}.
 
 The price is compute, in a currency no nat measures: at a $7.6$B scorer selection costs
-$61.3\times$ the metered decoder's forward passes at $n=64$. A $1.5$B scorer cuts that to
-$21.6\times$ for $87\%$ of the gain on the judged workload, and buys nothing on GSM8K
-(Appendices~\ref{app:saturation},~\ref{app:judgefreescale}).
+$61.3\times$ the metered decoder's forward passes at $n=64$ --- the price of the reward model,
+not of the mechanism. Majority vote has no scorer term at all: $5.75\times$ at $n=32$, and where an
+answer is checkable it beats every reward cell at any price
+(Appendices~\ref{app:saturation}--\ref{app:scorerfree}).
 
 The obvious objection is that the gain comes from leaving the decode loop rather than from where the
 budget sits, so we granted a metered decoder the same $\log 8$ nats up front. Neither causal
