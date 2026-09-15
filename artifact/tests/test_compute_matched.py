@@ -112,7 +112,8 @@ def test_limitations_carries_the_committed_consequence_of_f1_and_f3():
     close = _tex("sections/iclr_closing.tex")
     assert "scorer's" in close and "capability" in close
     assert "never reaches the meter" in close
-    assert "main open problem" in close
+    assert "where that bar sits is open" in close, \
+        "the surviving open question -- where the capability bar sits -- is not stated"
     assert "intrinsic at the scales we tested" not in close, \
         "feat-117 refuted this; saturation by 1.5B means the cost is the scorer's, not the mechanism's"
     assert "saturates by $1.5$B" in close, "the replacement claim is missing"

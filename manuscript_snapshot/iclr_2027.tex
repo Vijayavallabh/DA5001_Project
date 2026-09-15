@@ -53,11 +53,11 @@ most widely deployed inference-time method already carries one. On the workload 
 decoder spends a measured $171.3$ nats to become judged-better than its own safe model, sixty-four
 draws cost $3.175$ and do better: with position removed by construction and the arms paired,
 $+0.1045$ against $+0.0400$, a difference of $+0.0645$ $[+0.030, +0.0995]$ at one fifty-fourth of
-the divergence --- at four anchors in three families, on AlpacaEval, and on exact match with no
-judge at all. It reproduces no
+the divergence and sixty-one times the forward-pass cost --- at four anchors in three families, on
+AlpacaEval, and on exact match with no judge at all. It reproduces no
 protected passage at any $n \le 64$ --- not when an adversary picks the scorer, and not against a
-$70$B model that memorised the book in pre-training and recovers $0.2475$ unaided. This is
-not luck but the only place left. One line of the chain rule makes a causal policy's sequence budget
+$70$B model that memorised the book in pre-training and recovers $0.2475$ unaided.
+One line of the chain rule makes a causal policy's sequence budget
 the sum of its per-step budgets, so a per-token meter is \emph{vacuous} --- its allowance $K = kT$
 grows with the work, the bound it implies is empty exactly at $K = S(x)$ identically for every
 R\'enyi order, and across nine pairs with nine distinct anchors extraction becomes measurable
