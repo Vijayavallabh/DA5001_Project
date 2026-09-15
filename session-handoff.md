@@ -1,4 +1,4 @@
-# Session handoff — 2026-09-16 (early hours; the SEED arm is RUNNING)
+# Session handoff — 2026-09-16 (early hours; THREE seed arms RUNNING, seven jobs)
 
 ## Current objective
 
@@ -14,10 +14,15 @@ whose **default is 2**, and the standing rule is quoted in the script itself, so
 falls back to one card without having to remember. GPU 0 stayed another user's throughout (16.6 GiB
 free) and was never taken.
 
-### TWO seed arms running on three cards, five jobs — what they are and how to finish them
+### THREE seed arms running on three cards, seven jobs — what they are and how to finish them
 
-Both are committed and **unscored**; they are the two unscored pre-registrations the handoff must
-name. Neither has produced a single sweep yet, so no number from either exists.
+All three are committed and **unscored**; they are the three unscored pre-registrations the handoff
+must name. **None has produced a single sweep yet, so no number from any of them exists** — which is
+also what made the mid-arm amendment to arm 2 auditable rather than convenient.
+
+They answer one question at three levels: does an onset ratio reproduce when nothing changes but the
+seed? Arm 1 on the cell that inverted, arm 2 on a second pair to test whether arm 1 generalises, and
+arm 3 on the CopyBench table the claim is actually about, which removes the analogy step entirely.
 
 | arm | pre-registration | jobs | card(s) |
 |---|---|---|---|
@@ -66,14 +71,21 @@ place of it". `tests/test_strength_ladder.py` asserts the primary set exists in 
 **Scoring, once the sweeps land** (all written before the numbers exist):
 ```
 .venv/bin/python analysis/strength_ladder.py --axis seeds                 # Pleias
-.venv/bin/python analysis/strength_ladder.py --pair kl3m --axis seeds     # KL3M, 5 points, 3-point primary
+.venv/bin/python analysis/strength_ladder.py --pair kl3m --axis seeds     # KL3M BookMIA, 5 points, 3-point primary
+.venv/bin/python analysis/strength_ladder.py --pair kl3m_cb --axis seeds  # KL3M CopyBench = the table's own row
 .venv/bin/python analysis/strength_ladder.py --axis pooled                # the committed secondary
 .venv/bin/python analysis/onset_ci.py --comp output/phase5/fineb_<tag>/composition.csv \
   --s-x <that pair's s_x> --label "<pair> (BookMIA, seed=<n>)" --out results
 ```
-`--pair kl3m` anchors on KL3M's **own** corner run and divides by KL3M's **own** `s(x)` (`2.4316`,
-not Pleias' `3.0481`); using the wrong one rescales every ratio and still looks plausible, which is
-why a test pins both against `results/onset_theory_bookmia.csv`.
+Each `--pair` anchors on **its own** corner run and divides by **its own** `s(x)` — Pleias `3.0481`,
+KL3M/BookMIA `2.4316`, KL3M/CopyBench `2.4148`. Using the wrong one rescales every ratio and still
+looks entirely plausible, which is why tests pin all three against the CSVs they came from.
+
+`PRIMARY_SEEDS` is `(0, 1, 2)` — **seed numbers, not label text**. It was briefly a union of label
+strings, which no single pair could satisfy, so the like-for-like rule would have silently stopped
+applying; `seed_of()` parses the number and a test asserts the set exists in full on all three
+pairs. Arm 2 has five points and arm 3 three; only seeds 0–2 ever enter a cross-pair comparison,
+because a span grows with `n`.
 
 ### The three-card window, and how it closes
 
@@ -454,8 +466,10 @@ analysis/strength_ladder.py              PATCHED  --pair {pleias,kl3m} --axis {e
                                                   default path reproduces feat-121's CSV byte for byte
 scripts/run_strength_ladder.sh           PATCHED  axis + PAIR + GPU (default 2); per-pair grids
 tests/test_strength_ladder.py            11 tests (was 5)
-results/onset_prediction_seedspread.md   NEW  Pleias seeds, committed b8d6397, UNSCORED
-results/onset_prediction_seedspread2.md  NEW  KL3M seeds, committed + amended, UNSCORED
+results/onset_prediction_seedspread.md   NEW  Pleias BookMIA seeds, b8d6397, UNSCORED
+results/onset_prediction_seedspread2.md  NEW  KL3M BookMIA seeds, committed + amended, UNSCORED
+results/onset_prediction_seedspread_copybench.md  NEW  KL3M CopyBench seeds, cb7e1c1, UNSCORED
+scripts/run_copybench_seeds.sh           NEW  protocol recovered from recipe.json + PROVEN corpus
 ```
 
 ### feat-121 (this session, COMPLETE)
@@ -499,30 +513,34 @@ data/bench/bookmia100_onset{600,100}.jsonl  NEW, gitignored, rebuildable
 
 ## Recommended next step
 
-**Finish the two seed arms.** Five GPU jobs are live and nothing else should start. In order:
+**Finish the three seed arms. Start nothing else.** Seven GPU jobs are live and the window closes
+~09:13; after that the default is one card, GPU 2, and the scripts already default there.
 
-1. Wait for the sweeps. Expect the KL3M ladder ~08:30 and the Pleias arm ~08:50 on the measured
-   pace; both inside the window that closes ~09:13. If a job is still running then, it may finish,
-   but **start nothing new on GPUs 1 or 4 afterwards** — the default is one card, GPU 2.
-2. **Check every entry gate first** (caution (a), sampled not greedy). A point below `0.10` is
-   excluded and reported as excluded — a statement about that memoriser, not about the question.
-3. Score with the three commands in the running-arms section above, then `onset_ci.py` per point.
-4. **Report the committed primary before any larger span**, and never let seeds 3–4 into the
-   cross-pair comparison. The scorer enforces this; do not work around it.
-5. Then the paper. The result bears directly on a sentence already in it: Limitations and
-   `appendix_robustness.tex` currently say the nine-pair ratios are not per-pair properties, on the
-   strength of one pair. If KL3M's spread is small, **that sentence is too broad and must be
-   narrowed to the pair it was measured on** — overclaiming toward our own retraction is still
-   overclaiming.
+1. Wait. On the measured pace the fine-tunes land first, then the sweeps, which are the long pole.
+2. **Check every entry gate before reading any ratio** (caution (a), sampled not greedy). A point
+   below `0.10` is excluded and reported as excluded — a statement about that memoriser, not about
+   the question.
+3. Score with the four commands in the running-arms section, then `onset_ci.py` per point for the
+   intervals. **Report each arm's committed primary before any larger span**, and never let arm 2's
+   seeds 3–4 into a cross-pair comparison; the scorer enforces this, do not work around it.
+4. Then the paper, and the outcome that costs us something is the likely one to check first:
+   **`sections/appendix_robustness.tex` and `appendix_limitations.tex` currently say the nine-pair
+   ratios are not per-pair properties, on the strength of one pair on one corpus.** Arm 3 measures
+   that claim on the table itself. If its three-seed span is `< 0.05`, the sentence is too broad and
+   must be narrowed to the pair and corpus it was measured on — overclaiming toward our own
+   retraction is still overclaiming, and the pre-registration commits us to that narrowing.
 
-**The biggest remaining overclaim, independent of these arms**, is `sections/appendix_seed.tex`: it
-presents the nine-pair ratios as per-pair properties in three tables (~19–26, ~250, ~311–313),
-including the ">10 words / <=10 words" split (`0.878`–`0.926` against `0.993`–`1.166`) — exactly the
-structure feat-121 says is not resolvable at that precision. Zero GPU to fix.
+**Zero-GPU work queued behind them**, in value order:
 
-Also zero GPU and worth doing: add a **memoriser-strength column** to the nine-pair table. Every
-pair's sampled `k=-1` is already on disk, so a reader can see the confound rather than being told
-about it.
+- `sections/appendix_seed.tex` still presents the nine-pair ratios as per-pair properties in three
+  tables (~19–26, ~250, ~311–313), including the ">10 words / <=10 words" split (`0.878`–`0.926`
+  against `0.993`–`1.166`). That is the **biggest remaining overclaim in the paper** and feat-121
+  already says that structure is not resolvable at that precision.
+- Add a **memoriser-strength column** to the nine-pair table; every pair's sampled `k=-1` is on
+  disk, so a reader sees the confound instead of being told about it.
+- `sections/appendix_onset.tex` presents the seed-word gradient (`rho = -0.958`) as explaining the
+  residual spread. It is a correlation over nine differently-trained memorisers; Limitations now
+  says so and the appendix does not.
 
 Two things remain on record as **impossible** rather than unstarted. A judge-free head-to-head
 against the *metered* decoder cannot be run (`results/onset_prediction_verifiable.md`): TinyComma is
