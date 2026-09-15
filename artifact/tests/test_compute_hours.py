@@ -70,7 +70,10 @@ def test_committed_summary_matches_the_manuscript_upper_bound():
     if not tex.exists():
         return
     body = tex.read_text(encoding="utf-8")
-    total = re.search(r"approximately \$(\d+)\$ GPU-hours", body)
+    # "approximately" became "at most" on 2026-09-16: the scan bills a gated queue shell for the
+    # hours it spent polling, so ~8 of the total is a sleeping shell holding no card. The figure is
+    # a genuine upper bound and the statement now says so; both wordings are accepted here.
+    total = re.search(r"(?:approximately|at most) \$(\d+)\$ GPU-hours", body)
     share = re.search(r"account for at most \$(\d+)\$ of those hours", body)
     assert total and share, "the LLM-usage compute sentence has moved"
     assert int(total.group(1)) == round(s["total"]), (total.group(1), s["total"])

@@ -234,6 +234,7 @@ sel_decoding,output/logs/sel_decoding.log,1,2026-09-11 21:27,2026-09-11 21:38,0.
 sel_extraction,output/logs/sel_extraction.log,1,2026-09-11 19:54,2026-09-11 20:31,0.61,0.61,log_birth,0.0,scanned; traced sleeps removed
 sel_llama321b,output/logs/sel_llama321b.log,1,2026-09-12 18:46,2026-09-12 20:09,1.38,1.38,log_birth,0.0,scanned; traced sleeps removed
 sel_scaling,output/logs/sel_scaling.log,1,2026-09-11 23:33,2026-09-12 02:51,3.3,3.3,log_birth,0.0,scanned; traced sleeps removed
+strength_ladder,output/logs/strength_ladder.log,1,2026-09-15 22:44,2026-09-16 02:25,3.69,3.69,log_birth,0.0,scanned; traced sleeps removed
 surprisal_cdf_9,output/logs/surprisal_cdf_9.log,1,2026-09-11 18:33,2026-09-11 18:34,0.02,0.02,log_birth,0.0,scanned; traced sleeps removed
 tqa_headtohead,output/logs/tqa_headtohead.log,1,2026-09-14 07:16,2026-09-14 09:04,1.8,1.8,log_birth,0.0,scanned; traced sleeps removed
 verifiable_comma7b,output/logs/verifiable_comma7b.log,1,2026-09-12 22:04,2026-09-13 04:57,6.88,6.88,log_birth,0.0,scanned; traced sleeps removed
