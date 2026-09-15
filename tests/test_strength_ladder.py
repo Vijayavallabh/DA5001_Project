@@ -107,3 +107,47 @@ def test_the_seed_arm_bands_are_committed_and_say_what_they_license():
     # the secondary is committed in advance, not discovered afterwards
     assert "Pooling the two ladders" in head and "1/2520" in head
     assert "No outcome of this arm restores the retracted sentence" in head
+
+
+def test_both_axes_end_on_the_same_corner_run():
+    """The two spans are only comparable because both ladders contain feat-120's run. If the axes
+    ever pointed at different corner directories the numbers would be two unrelated spreads."""
+    from analysis.strength_ladder import AXES, CORNER
+    assert set(AXES) == {"epochs", "seeds"}
+    for ax, pts in AXES.items():
+        assert len(pts) == 4, ax
+        assert CORNER[0] in [r for _, r in pts], f"{ax} does not contain the corner"
+    # and the corner is the merged grid, so it is not sitting at a ceiling the others are not
+    assert CORNER[0].endswith("_full")
+    # the three non-corner runs of each axis are disjoint between axes
+    e = {r for _, r in AXES["epochs"] if r != CORNER[0]}
+    s = {r for _, r in AXES["seeds"] if r != CORNER[0]}
+    assert e and s and not (e & s)
+
+
+def test_the_seed_bands_in_the_scorer_match_the_committed_ones():
+    from analysis.strength_ladder import (SEED_SPAN_NOISE, SEED_SPAN_STRENGTH,
+                                          EPOCH_SPAN_MEASURED)
+    head = open(os.path.join(ROOT, "results/onset_prediction_seedspread.md"),
+                encoding="utf-8").read().partition("\n## Scoring log")[0]
+    assert f"`>= {SEED_SPAN_NOISE:.2f}`" in head, SEED_SPAN_NOISE
+    assert f"`< {SEED_SPAN_STRENGTH:.2f}`" in head, SEED_SPAN_STRENGTH
+    assert f"{EPOCH_SPAN_MEASURED}" in head, "the band must quote feat-121's measured span"
+    # Caution (j): one source, checked mechanically. The paper quotes each point's ratio WITH its
+    # bootstrap interval, and only onset_ci.csv carries both, so the span must come from there too.
+    # strength_ladder.csv interpolates the summary curve instead and reads 0.4714; the two differ by
+    # 0.0007 (0.15%), which is documented in the scorer's docstring and bounded by the second
+    # assertion below. Mixing them is how a number ends up one off in its last digit.
+    import csv
+    ci = {r["pair"]: r for r in csv.DictReader(open(os.path.join(ROOT, "results/onset_ci.csv")))
+          if r["mode"] == "single" and "(BookMIA, epochs=" in r["pair"]}
+    ci["corner"] = next(r for r in csv.DictReader(open(os.path.join(ROOT, "results/onset_ci.csv")))
+                        if r["pair"] == "Pleias-1.2B (BookMIA, extended grid)")
+    v = [float(r["ratio_point"]) for r in ci.values()]
+    assert len(v) == 4, sorted(ci)
+    assert abs((max(v) - min(v)) - EPOCH_SPAN_MEASURED) < 5e-5, (max(v) - min(v), EPOCH_SPAN_MEASURED)
+
+    sl = [float(r["ratio"]) for r in
+          csv.DictReader(open(os.path.join(ROOT, "results/strength_ladder.csv"))) if r["ratio"]]
+    assert abs((max(sl) - min(sl)) - EPOCH_SPAN_MEASURED) < 1e-3, \
+        "the two crossing conventions have drifted apart by more than 0.001"

@@ -37,17 +37,29 @@ from analysis.seed_effect import spearman             # noqa: E402
 # (label, sweep dir). The 40-epoch point is feat-120's own run, already measured and bootstrapped;
 # it is the SAME protocol, so it belongs on the ladder rather than beside it. Its sweep directory is
 # the merged one, because its committed grid needed the licensed extension (caution (g)).
-POINTS = [
-    ("epochs=10", "output/phase5/fineb_pleias_e10"),
-    ("epochs=20", "output/phase5/fineb_pleias_e20"),
-    ("epochs=30", "output/phase5/fineb_pleias_e30"),
-    ("epochs=40 (feat-120)", "output/phase5/fineb_pleias12b_full"),
-]
+CORNER = ("output/phase5/fineb_pleias12b_full", "epochs=40, seed=0 (feat-120)")
+AXES = {
+    # feat-121: vary --epochs at seed 0
+    "epochs": [("epochs=10", "output/phase5/fineb_pleias_e10"),
+               ("epochs=20", "output/phase5/fineb_pleias_e20"),
+               ("epochs=30", "output/phase5/fineb_pleias_e30"),
+               ("epochs=40 (feat-120)", CORNER[0])],
+    # the seed arm: vary --seed at 40 epochs. Both axes end on the SAME corner run, which is what
+    # makes their two spans comparable rather than two unrelated numbers.
+    "seeds":  [("seed=1", "output/phase5/fineb_pleias_s1"),
+               ("seed=2", "output/phase5/fineb_pleias_s2"),
+               ("seed=3", "output/phase5/fineb_pleias_s3"),
+               ("seed=0 (feat-120)", CORNER[0])],
+}
+POINTS = AXES["epochs"]      # feat-121's default path, unchanged
 S_X = 3.048079572669047      # Pleias-1.2B on BookMIA, results/onset_theory_bookmia.csv
 ENTRY_GATE = 0.10            # AGENTS.md caution (a): SAMPLED, never greedy
 # committed in results/onset_prediction_strength.md before any of these memorisers existed
 RHO_EXPLAINS, SPAN_EXPLAINS = -0.8, 0.15
 SPAN_REFUTES, STRENGTH_SPAN_MIN = 0.10, 3.0
+# committed in results/onset_prediction_seedspread.md before any seed memoriser existed, and read
+# against feat-121's MEASURED epoch-only span of 0.4721 on the identical pair, corpus and grid
+SEED_SPAN_NOISE, SEED_SPAN_STRENGTH, EPOCH_SPAN_MEASURED = 0.20, 0.10, 0.4721
 
 
 def baseline(path, k):
@@ -67,12 +79,24 @@ def exact_p(a, b):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--axis", default="epochs", choices=sorted(AXES) + ["pooled"],
+                    help="epochs = feat-121; seeds = the seed arm; pooled = the committed "
+                         "secondary over both ladders' seven distinct points")
     ap.add_argument("--thresh", type=float, default=0.01)
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
+    if a.axis == "pooled":
+        seen, points = set(), []
+        for ax in ("epochs", "seeds"):
+            for lab, run in AXES[ax]:
+                if run not in seen:
+                    seen.add(run); points.append((lab, run))
+    else:
+        points = AXES[a.axis]
+
     rows = []
-    for label, run in POINTS:
+    for label, run in points:
         path = os.path.join(run, "composition_summary.csv")
         if not os.path.exists(path):
             print(f"[sl] no sweep at {path}, skipping {label}", file=sys.stderr)
@@ -93,7 +117,8 @@ def main():
         print("[sl] nothing to score", file=sys.stderr)
         return 1
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "strength_ladder.csv")
+    name = "strength_ladder.csv" if a.axis == "epochs" else f"strength_ladder_{a.axis}.csv"
+    path = os.path.join(a.out, name)
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
@@ -127,6 +152,32 @@ def main():
     print(f"  ratio span             {span_ratio:.4f}  ({min(ratios):.4f} to {max(ratios):.4f})")
     print(f"  rho(sampled k=-1, onset ratio) = {rho:+.3f}, exact p = {p:.4f} "
           f"(floor at n={len(ok)} is {1/len(list(itertools.permutations(range(len(ok))))) * 2:.3f})")
+
+    if a.axis == "seeds":
+        print(f"\n  read against feat-121's epoch-only span of {EPOCH_SPAN_MEASURED} on the same cell")
+        if span_ratio >= SEED_SPAN_NOISE:
+            verdict = (f"RUN-TO-RUN VARIATION: changing only the seed moves the ratio by "
+                       f"{span_ratio:.4f}, at or above the committed {SEED_SPAN_NOISE}. The onset "
+                       "ratio is not reproducible under this paper's own recipe, and the nine-pair "
+                       "table's 0.2874 of between-pair structure sits inside the noise of a single "
+                       "pair re-trained")
+        elif span_ratio < SEED_SPAN_STRENGTH:
+            verdict = (f"STRENGTH, NOT NOISE: the recipe reproduces at a fixed epoch count "
+                       f"({span_ratio:.4f} < {SEED_SPAN_STRENGTH}), so feat-121's "
+                       f"{EPOCH_SPAN_MEASURED} belongs to what the epochs changed, and the "
+                       "nine-pair table is confounded by a variable it never controlled")
+        else:
+            verdict = "INCONCLUSIVE, and reported as inconclusive. No second seed set, no fifth seed"
+        print(f"\n  -> {verdict}")
+        print(f"wrote {path}")
+        return 0
+
+    if a.axis == "pooled":
+        print(f"\n  pooled over both ladders: {len(ok)} distinct points on one pair and one corpus")
+        print(f"  -> rho = {rho:+.3f}, exact p = {p:.4f}. Committed in advance as the secondary; "
+              "reported whatever it says")
+        print(f"wrote {path}")
+        return 0
 
     if span_strength < STRENGTH_SPAN_MIN:
         verdict = (f"UNINFORMATIVE BY CONSTRUCTION: the knob produced a {span_strength:.2f}x "
