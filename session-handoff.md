@@ -36,6 +36,31 @@ sweep for this reason:**
    data/bench/bookmia100_onset100.jsonl --modes single --limit 100`, `--out output/phase5/fineb_<pair>`
 5. `analysis/onset_gutenberg.py --corpus bookmia` and `analysis/onset_ci.py` per pair
 
+**`nvidia-smi` is dead this session and the substitute check matters.** Every call returns
+`Failed to initialize NVML: Driver/library version mismatch (NVML library version: 580.173)` — the
+host driver was updated under running jobs. Torch is unaffected (it logs one `Can't initialize NVML`
+warning and works), so the occupancy check AGENTS.md requires before taking a card has to go through
+the CUDA runtime instead:
+
+```
+CUDA_DEVICE_ORDER=PCI_BUS_ID .venv/bin/python -c "
+import torch
+for i in range(torch.cuda.device_count()):
+    free, tot = torch.cuda.mem_get_info(i); print(i, torch.cuda.get_device_name(i), free/2**30)"
+```
+
+Run at 14:35 it reads **gpu 0 free 16.1 GiB, gpu 1 free 5.9 GiB** — roughly 63 and 73 GiB held by
+**another user** — against gpu 2 free 45.0 and gpu 4 free 50.8, which are ours. So 0 and 1 are NOT
+available and the sweeps queue on 2 and 4, the same two cards. This is why feat-120 cannot be
+compressed by fanning out.
+
+**Measured timeline** (epoch costs from the live logs, Gutenberg twins for the epoch counts):
+KL3M 177 s/epoch and tracking its Gutenberg twin's loss curve, which stopped at epoch ~10, so
+queue A frees around 14:50 and starts Pleias (~150 s/epoch × 40 ≈ 16:30). Phi at 218 s/epoch never
+hit `--stop-loss` on Gutenberg and should run all 40 → ~16:45, which is the critical path. P1 is
+minutes (forward passes only). The three sweeps cost what the Gutenberg ones did, 8,000–14,000 s
+each, two cards, so scoring lands late evening. Total arm ≈ 15 GPU-h, inside the 24 that needs asking.
+
 The grid was committed at 14:27 while the memorisers were in epoch 1 and no BookMIA `s_s` existed;
 it is the Gutenberg grid verbatim, which is the strongest available evidence it was not shaped to
 bracket this corpus.
