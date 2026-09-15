@@ -162,36 +162,52 @@ and both are labelled where they appear.
 **Manuscript.** Every body section rewritten or reordered for v8; `selection.tex` and
 `iclr_closing.tex` rewritten again for the cost frontier and the saturation result; `iclr_intro.tex`
 and the abstract in `iclr_2027.tex` for the compute axis and the reference fix. New appendix
-sections `app:frontier` and `app:saturation` in `appendix_selection.tex`, alongside the three
-v9/v10 paragraphs (order-averaged head-to-head, two-order composition, anchor vetting).
+sections `app:frontier`, `app:saturation` and `app:judgefreescale` in `appendix_selection.tex`,
+alongside the three v9/v10 paragraphs (order-averaged head-to-head, two-order composition, anchor
+vetting); the `app:saturation` paragraph carries a forward pointer to the judge-free rebuttal.
 `appendix_proofs.tex` (duplicate label removed, threshold proof generalised), `appendix_related.tex`
 (Kalai/Chen), `references.bib` (+`panickssery2024llm`).
 
-**Repo.** New `analysis/{order_averaged_h2h,serving_cost,anchor_vetting,compute_matched,scorer_agreement,scorer_scale}.py`;
-new `results/{order_averaged_h2h,serving_cost,anchor_vetting,compute_matched,compute_matched_bands,compute_matched_per_prompt,compute_matched_scorer_agreement,scorer_scale,scorer_scale_bands,scorer_scale_per_prompt,scorer_scale_agreement}.csv`
-plus the reward caches `selection_rewards64_qwen{05b,15b,3b}.csv`; pre-registrations
-`onset_prediction_{order_averaged_h2h,compute_matched,scorer_scale}.md`; new
-`tests/test_{compute_matched,scorer_scale}.py`; `scripts/snapshot_manuscript.sh` follows nested
-`\input`; `tests/test_{selection_claims,imitation_cost}.py` updated.
+**Repo.** New analysis scripts `order_averaged_h2h`, `serving_cost`, `anchor_vetting`,
+`compute_matched`, `scorer_agreement`, `scorer_scale`, `verifiable_scorer_scale`; new launcher
+`scripts/run_verifiable_scorer_scale.sh`. New `results/` CSVs for each of those arms plus the four
+reward caches `selection_rewards64_qwen{05b,15b,3b}.csv` and
+`selection_verifiable_rewards_{,tqa_}comma7b_qwen{05b,15b,3b}.csv`, and the six per-scorer
+`selection_verifiable{,_tqa}_comma7b_qwen*.csv`. Four pre-registrations:
+`onset_prediction_{order_averaged_h2h,compute_matched,scorer_scale,verifiable_scorer_scale}.md`.
+New `tests/test_{compute_matched,scorer_scale,verifiable_scorer_scale}.py`.
+
+Two existing scripts were patched rather than duplicated. `scripts/snapshot_manuscript.sh` follows
+nested `\input`. `analysis/selection_verifiable.py` gained `--reward-tag`, which names the reward
+cache and output CSV without touching the generation paths, and had a latent defect fixed: its
+reward arm's label was the string `pointwise reward (Qwen2.5-7B)` hardcoded, so `--reward-model`
+would have silently mislabelled every row and made four scorers indistinguishable in the CSVs. With
+defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
+`tests/test_{selection_claims,imitation_cost}.py` updated.
 
 ## Recommended next step
 
-**Take the saturation result off the judge.** It is now the session's most useful finding and it
-rests entirely on an instrument this paper itself calls UNUSABLE (order consistency `0.24`–`0.35`).
-There is a judge-free axis that can test it directly, and everything it needs is already on disk:
-`output/phase5/verifiable/anchor_comma7b_n64.jsonl` holds 500 GSM8K problems × 64 anchor
-candidates, and `results/selection_verifiable_rewards_comma7b.csv` is the 7B reward over all 32,000
-of them. Re-score those same candidates with the `0.5`B, `1.5`B and `3`B rewards and read **exact
-match** at each `n` — no judge, no generation, no position bias, roughly `1` GPU-h for three reward
-passes with the scoring itself on CPU.
+**Price the scorer-free instance.** feat-118 surfaced something the paper measured a while ago and
+has never costed. On GSM8K, majority vote reaches `0.546` at `n=32` where the best reward model
+reaches `0.386` at `n=64` --- and majority vote **needs no reward model at all**, so its serving
+cost is `n` anchor generations and nothing else:
 
-That answers what the judged arm can only gesture at: does capability saturate on a task with a
-ground-truth answer, and at the same scale? If it does, the claim that the divergence axis is the
-mechanism's and the utility is the scorer's is established without the instrument Section 3
-distrusts — and `results/selection_verifiable_comma7b.csv` already holds the `n`-sweep for the 7B
-scorer to compare against. It needs its own pre-registration with a band on the saturation step, and
-it should commit in advance to reporting a *non*-saturating judge-free curve as evidence against the
-judged result rather than as a separate phenomenon.
+| | cost vs the metered decoder | judge-free gain |
+|---|---|---|
+| majority vote, `n=32` | **`5.75x`** | `+0.226` GSM8K exact match |
+| reward selection at `7.6`B, `n=64` | `61.29x` | `+0.066` |
+
+That is `3.4x` the gain for `9%` of the cost, at the same `log n` certificate (`3.466` nats at
+`n=32`). The paper's abstract already says self-consistency is an instance; what it has never said
+is that the instance with no scorer is also by far the cheapest one, and that the `61.3x` it
+concedes is specific to putting a reward model in the loop.
+
+This is arithmetic over quantities already measured --- `serving_cost.py` plus a paragraph, no GPU
+--- but it changes a headline, so it wants care rather than speed: it is **post hoc** and must be
+labelled so, it applies only where an answer is canonical (there is no majority over free-form text,
+so it does not transfer to the judged workload), and no metered decoder was run on GSM8K, so the
+ratio is this paper's standard cost model and not a measured head-to-head on that task. State all
+three limits where the number is given.
 
 Second, unchanged: **BookMIA-50 onset** (~11 GPU-h for 3 pairs) is moderate value now that onset has
 nine pairs and two corpora. A judge-free head-to-head against the *metered* decoder remains
@@ -205,12 +221,20 @@ markdown and renders as literal asterisks, **(z)** a `\label` in both body and a
 redirects every `\ref`, **(aa)** `served_prompt()` reconstructs the judge's prompt and disagrees
 across arms in 455 of 500 cases, with judge C disclosed as the opponent's own checkpoint.
 
-feat-116 and feat-117 added no new caution, because every trap they could have hit was already
-written down. What they added is the clearest worked example this project has of the rule the
-cautions exist to serve: **a shape you can see in a table is not a finding until an interval says
-so.** feat-116 read a curve off a table and drew a deployer-facing warning from it; feat-117
-registered the test and the warning did not survive; the appendix says so rather than quietly
-dropping it.
+feat-116, feat-117 and feat-118 added no new caution, because every trap they could have hit was
+already written down. What they added is the clearest worked example this project has of what the
+cautions are *for*, run twice in one session:
+
+- **A shape you can see in a table is not a finding until an interval says so.** feat-116 read a
+  curve off a table and drew a deployer-facing warning from it; feat-117 registered the test and
+  the warning did not survive.
+- **A result measured on one instrument is a claim about that instrument until a second one agrees.**
+  feat-117 replaced the withdrawn warning with capability saturation, which was one step from
+  becoming the paper's only practical recommendation; feat-118 took it to an axis with no judge and
+  the two disagree about where the effect lives. It is qualified in the paper, not quietly dropped,
+  and a test forbids the unqualified form.
+
+Both retractions are in the appendix in the paper's own voice. That is the habit worth keeping.
 
 Three habits, all earned the hard way here:
 
@@ -220,3 +244,6 @@ Three habits, all earned the hard way here:
   box that the page-budget check does not see.
 - **Measure a parameter count, never read it off a model's name.** `Qwen2.5-7B-Instruct` is
   `7.6156`B and pricing it at `7.0` understated a headline number by `8.8%` for two commits.
+- **Open the run log before reusing a protocol** (caution (v), which earned its keep again).
+  TriviaQA was **5-shot**, not the 8-shot default, and a guessed protocol would have compared the
+  new scorers against 7.6B rows produced under different conditions.
