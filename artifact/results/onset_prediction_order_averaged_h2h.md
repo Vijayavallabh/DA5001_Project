@@ -93,6 +93,8 @@ writing it down before the run rather than after.
 
 ## Scoring log
 
+## Scoring, 2026-09-14
+
 **Run.** `output/logs/order_averaged_h2h.log`, GPU 1, 2026-09-14. 4,000 judged pairs (four arms
 x 500 prompts x both orders), judge `microsoft/Phi-3.5-mini-instruct`, no generation.
 
