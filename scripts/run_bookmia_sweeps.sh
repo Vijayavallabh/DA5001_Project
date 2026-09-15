@@ -35,6 +35,24 @@ cd "$(dirname "$0")/.."
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="$GPU"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
 CORPUS=data/bench/bookmia100_onset100.jsonl
+
+# --- the gate -------------------------------------------------------------------------------
+# P1 is parameter-free and needs no decoding, so its predictions must be COMMITTED before the
+# sweep that measures them exists. That is the whole out-of-sample claim, and "I remembered to
+# commit first" is not evidence of it -- git is. This refuses to decode a single token until:
+#   1. results/onset_theory_bookmia.csv is tracked AND has no uncommitted diff, and
+#   2. the pre-registration quotes the predictions ABOVE its "## Scoring log" line.
+# Same discipline as scripts/add_pair.sh, which refuses to run the sweep it sets up.
+THEORY=results/onset_theory_bookmia.csv
+PREREG=results/onset_prediction_bookmia.md
+gate_fail() { echo "GATE REFUSED: $1"; echo "Commit the P1 predictions first; no sweep runs."; exit 2; }
+[ -f "$THEORY" ] || gate_fail "$THEORY does not exist (run scripts/run_bookmia_p1.sh)"
+git ls-files --error-unmatch "$THEORY" >/dev/null 2>&1 || gate_fail "$THEORY is untracked"
+git diff --quiet HEAD -- "$THEORY" || gate_fail "$THEORY has uncommitted changes"
+sed '/^## Scoring log/,$d' "$PREREG" | grep -q 'pred onset' \
+  || gate_fail "$PREREG does not quote the predictions above its scoring log"
+echo "=== gate passed: P1 committed at $(git log -1 --format=%h -- "$THEORY") ==="
+# --------------------------------------------------------------------------------------------
 # committed before any BookMIA s(x) existed; the two baselines are mandatory (AGENTS.md)
 GRID="-1 0 1.2 1.6 1.9 2.1 2.3 2.5 2.7 2.9 3.2 3.6 4.2"
 

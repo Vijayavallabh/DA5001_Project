@@ -160,3 +160,57 @@ def test_the_sweep_script_agrees_with_the_scorer_and_the_theory_manifest():
     assert g_sh and g_md and g_sh.group(1).split() == g_md.group(1).split()
     # --queries-out is what recheck_violations.py reads; losing it loses the invariant recheck
     assert "--queries-out" in sh and "--modes single --limit 100" in sh
+
+
+def test_the_sweep_gate_refuses_an_uncommitted_p1_and_passes_a_committed_one():
+    """The out-of-sample claim IS the ordering: P1 committed, then the sweep. 'I remembered to
+    commit first' is not evidence of that; git is. Caution (p) is the other half -- a gate that
+    fails every configuration is not a gate, so this asserts the PASSING case too.
+
+    Exercised in a throwaway git repo so the real one is never touched."""
+    import shutil
+    import subprocess
+    import tempfile
+
+    sh = os.path.join(ROOT, "scripts/run_bookmia_sweeps.sh")
+    gate = open(sh, encoding="utf-8").read().partition("# --- the gate")[2].partition(
+        "# ----------------------------------")[0]
+    assert "git ls-files --error-unmatch" in gate and "git diff --quiet HEAD" in gate
+
+    with tempfile.TemporaryDirectory() as d:
+        run = lambda *c, **kw: subprocess.run(c, cwd=d, capture_output=True, text=True, **kw)
+        run("git", "init", "-q")
+        run("git", "config", "user.email", "t@t"); run("git", "config", "user.name", "t")
+        os.makedirs(os.path.join(d, "results"))
+        script = os.path.join(d, "gate.sh")
+        with open(script, "w") as fh:
+            fh.write("set -u\n" + gate + "\necho GATE_PASSED\n")
+
+        def attempt():
+            return subprocess.run(["bash", script], cwd=d, capture_output=True, text=True)
+
+        theory = os.path.join(d, "results/onset_theory_bookmia.csv")
+        prereg = os.path.join(d, "results/onset_prediction_bookmia.md")
+        shutil.copy(PREREG, prereg)          # the real one: no predictions above its scoring log
+        run("git", "add", "-A"); run("git", "commit", "-qm", "base")
+
+        assert attempt().returncode == 2, "missing theory CSV must refuse"
+
+        open(theory, "w").write("pair,pred_onset_median\nx,1.0\n")
+        r = attempt(); assert r.returncode == 2 and "untracked" in r.stdout, r.stdout
+
+        run("git", "add", "results/onset_theory_bookmia.csv")
+        r = attempt(); assert r.returncode == 2 and "uncommitted" in r.stdout, r.stdout
+
+        run("git", "commit", "-qm", "p1")
+        r = attempt(); assert r.returncode == 2 and "does not quote" in r.stdout, r.stdout
+
+        # now the pre-registration quotes the predictions, as it must before any sweep
+        t = open(prereg, encoding="utf-8").read()
+        head, sep, tail = t.partition("\n## Scoring log")
+        open(prereg, "w").write(head + "\n```\npair  s_s  s_r  pred onset  pred ratio\n```\n"
+                                + sep + tail)
+        run("git", "add", "-A"); run("git", "commit", "-qm", "predictions")
+        r = attempt()
+        assert r.returncode == 0 and "GATE_PASSED" in r.stdout, (r.returncode, r.stdout, r.stderr)
+        assert "gate passed: P1 committed at" in r.stdout
