@@ -14,44 +14,70 @@ whose **default is 2**, and the standing rule is quoted in the script itself, so
 falls back to one card without having to remember. GPU 0 stayed another user's throughout (16.6 GiB
 free) and was never taken.
 
-### The seed arm — is the onset ratio reproducible under the paper's own recipe? (RUNNING)
+### TWO seed arms running on three cards, five jobs — what they are and how to finish them
 
-The control feat-121 forbade itself from adding after the fact. Same pair, same corpus, same anchor,
-same 16-point grid, same 100 swept passages; `--epochs 40` fixed — the recipe **every published
-memoriser in this paper uses** — varying `--seed` alone (1, 2, 3), with feat-120's `seed 0` run as
-the fourth point. `finetune_memorizing.py` seeds both the per-epoch data shuffle and the LoRA init,
-and **every memoriser on record, including all nine pairs of the Section 4 table, was trained at
-seed 0**, so the paper has never measured this.
+Both are committed and **unscored**; they are the two unscored pre-registrations the handoff must
+name. Neither has produced a single sweep yet, so no number from either exists.
 
-`scripts/run_strength_ladder.sh seeds 1 2 3`, one queue shell, **GPU 2 only**, log
-`output/logs/seed_arm.log`. Roughly 6 GPU-h: 3 × (40 epochs at ~100 s, then a ~50-minute sweep).
+| arm | pre-registration | jobs | card(s) |
+|---|---|---|---|
+| Pleias-1.2B seeds | `onset_prediction_seedspread.md` | seeds 1, 2, 3 in series | GPU 2, alone |
+| KL3M-520M seeds | `onset_prediction_seedspread2.md` | seeds 1+3 / seeds 2+4 | GPU 4, GPU 1 |
 
-The script now takes an **axis**: `epochs <n>...` pins seed 0, `seeds <n>...` pins 40 epochs. Two
-orthogonal ladders sharing feat-120's run as their corner, which is what makes their spans
-comparable. `epochs 10 20 30` still writes the exact directories feat-121 scored.
+**Arm 1, the Pleias seed ladder**, is the control feat-121 forbade itself from adding after the
+fact. `--epochs 40` fixed — the recipe **every published memoriser in this paper uses** — varying
+`--seed` alone, with feat-120's `seed 0` run as the fourth point. `finetune_memorizing.py` seeds
+both the per-epoch data shuffle and the LoRA init, and **every memoriser on record, including all
+nine pairs of the Section 4 table, was trained at seed 0**, so the paper has never measured this.
+Bands, read against feat-121's measured epoch-only span of `0.4721` on the identical cell: span
+`>= 0.20` → run-to-run variation, and the nine-pair table's `0.2874` of structure sits inside the
+noise of one pair re-trained; `< 0.10` → strength; otherwise inconclusive. **Committed secondary:**
+pooling both ladders gives **seven** points on one pair, exact-`p` floor `1/2520` — the first time
+this question can reach significance.
 
-**Bands**, read against feat-121's measured epoch-only span of `0.4721` on the identical cell:
-seed-only span `>= 0.20` → it is run-to-run variation, and the nine-pair table's `0.2874` of
-structure sits inside the noise of one pair re-trained; `< 0.10` → it is strength, and the table is
-confounded by a measurable variable; otherwise inconclusive. Committed secondary, so it cannot be
-post hoc: pooling both ladders gives **seven** points on one pair, where the exact-`p` floor is
-`1/2520` and this question can reach significance for the first time.
+**Arm 2, the KL3M seed ladder**, exists because the paper's new sentence — that the nine-pair ratios
+are not per-pair properties — rests on **one pair**, and that pair is the weakest memoriser in the
+set. KL3M-520M is the adversarial second pair: the fine-tokenizer pair the split was built on, the
+strongest BookMIA memoriser, the one the paper would most like to keep. **If its seed spread is
+small, the sentence we wrote is too broad**, which is overclaiming in the direction of our own
+retraction and still overclaiming.
 
-Score with `analysis/strength_ladder.py` once extended to the seed axis (it currently hard-codes
-the epoch POINTS list — extend it, do not duplicate it).
+**The like-for-like rule is the most important thing in either file.** A span grows with the number
+of draws, so the cross-pair comparison is pinned to the three seeds **both** pairs have — `{0,1,2}`
+— via `PRIMARY_SEEDS` in the scorer, with any larger span printed beside it and labelled "never in
+place of it". `tests/test_strength_ladder.py` asserts the primary set exists in full on both pairs.
 
-The session ran ten arms. The last two are the ones a fresh reader should start with, because
-together they removed a claim the paper had built a section around:
+**Scoring, once the sweeps land** (all written before the numbers exist):
+```
+.venv/bin/python analysis/strength_ladder.py --axis seeds                 # Pleias
+.venv/bin/python analysis/strength_ladder.py --pair kl3m --axis seeds     # KL3M, 5 points, 3-point primary
+.venv/bin/python analysis/strength_ladder.py --axis pooled                # the committed secondary
+.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineb_<tag>/composition.csv \
+  --s-x <that pair's s_x> --label "<pair> (BookMIA, seed=<n>)" --out results
+```
+`--pair kl3m` anchors on KL3M's **own** corner run and divides by KL3M's **own** `s(x)` (`2.4316`,
+not Pleias' `3.0481`); using the wrong one rescales every ratio and still looks plausible, which is
+why a test pins both against `results/onset_theory_bookmia.csv`.
 
-- **feat-120** took the onset result to a **third** protected corpus. Two of three committed bands
-  failed; the ordering inverted; the sentence "leakage beginning after the certificate has gone
-  vacuous is a property of the pair" was retracted.
-- **feat-121** asked the question feat-120 could not answer — corpus or memoriser? — and found that
-  **one pair, held at one corpus and one anchor, moves its onset ratio 1.64× more than the entire
-  nine-pair table moves across all nine pairs**, purely by changing how long its memoriser trained.
+### The three-card window, and how it closes
 
-**Five claims were retracted or qualified this session, all ours, all by arms we built to test
-them.** That is the through-line worth preserving.
+At **03:13** the user opened the other GPUs "for the next 6 hours" (→ ~**09:13**), and at **03:23**
+directed that the spare VRAM be used. This **suspends, does not cancel**, the one-card rule in
+AGENTS.md. `scripts/run_strength_ladder.sh` takes `GPU` as an override whose **default is 2**, with
+the standing rule quoted inside the script, so the fallback needs no memory. **GPU 0 was another
+user's throughout (62.6 GiB in use) and was never taken.**
+
+**Co-location is measured, not assumed:** two jobs on one A100 cost **~19%** each
+(93–95 s/epoch against 79 solo), so a shared card yields ~1.68× the throughput. The Pleias arm was
+deliberately left alone on GPU 2 and runs at 1.03×. Cards sit at 11–13 GiB of 79 — memory was never
+the constraint, SM occupancy is.
+
+**An amendment made mid-arm, and why it is auditable.** `onset_prediction_seedspread2.md` forbade a
+third seed absent an explicit extension, and forbade editing anything above its scoring log. Seeds 3
+and 4 were added at 03:25 and the amendment was therefore recorded **below** that line, with three
+facts: no result of any kind existed (both fine-tunes were at epoch 4/40, no sweep begun); the
+committed primary is untouched; and the extra seeds are barred from the primary **by construction**,
+since spans are not comparable across different `n`.
 
 ### feat-121 — corpus or memoriser? **INCONCLUSIVE on the committed metric, and the measurement is the finding**
 
@@ -403,6 +429,17 @@ would have silently mislabelled every row and made four scorers indistinguishabl
 defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
 `tests/test_{selection_claims,imitation_cost}.py` updated.
 
+### The seed arms (this session, IN FLIGHT)
+
+```
+analysis/strength_ladder.py              PATCHED  --pair {pleias,kl3m} --axis {epochs,seeds,pooled};
+                                                  default path reproduces feat-121's CSV byte for byte
+scripts/run_strength_ladder.sh           PATCHED  axis + PAIR + GPU (default 2); per-pair grids
+tests/test_strength_ladder.py            11 tests (was 5)
+results/onset_prediction_seedspread.md   NEW  Pleias seeds, committed b8d6397, UNSCORED
+results/onset_prediction_seedspread2.md  NEW  KL3M seeds, committed + amended, UNSCORED
+```
+
 ### feat-121 (this session, COMPLETE)
 
 ```
@@ -444,29 +481,30 @@ data/bench/bookmia100_onset{600,100}.jsonl  NEW, gitignored, rebuildable
 
 ## Recommended next step
 
-Nothing is in flight. **The highest-value next move is a read-through of Section 4 and its
-appendices with feat-121 in hand**, because the section was written when the nine-pair ratios were
-read as properties of pairs and that reading is now gone. Concretely:
+**Finish the two seed arms.** Five GPU jobs are live and nothing else should start. In order:
 
-1. `sections/appendix_onset.tex` still presents the seed-word gradient (`rho = -0.958`, exact
-   `p = 0.0002`) as an explanation of the residual spread across nine pairs. It is a correlation
-   over **nine differently-trained memorisers**, and feat-121 shows one pair traverses more than
-   that whole spread on its own. Limitations now says so; the appendix does not. Either qualify it
-   there too or cut the causal reading. The body sentence was already hedged to "part of the
-   residual tracks…".
-2. `sections/appendix_seed.tex` carries the same ratios in three tables (~19–26, ~250, ~311–313) as
-   per-pair properties, and its "adversary holds >10 words / <=10 words" split (`0.878`–`0.926`
-   against `0.993`–`1.166`) is exactly the structure feat-121 says is not resolvable at that
-   precision. This is the biggest remaining overclaim in the paper.
-3. `results/onset_table.csv` and `sections/appendix_onset.tex`'s nine-pair table would be more
-   honest with a memoriser-strength column (each pair's sampled `k=-1` is already on disk). Zero
-   GPU, and it lets a reader see the confound rather than being told about it.
+1. Wait for the sweeps. Expect the KL3M ladder ~08:30 and the Pleias arm ~08:50 on the measured
+   pace; both inside the window that closes ~09:13. If a job is still running then, it may finish,
+   but **start nothing new on GPUs 1 or 4 afterwards** — the default is one card, GPU 2.
+2. **Check every entry gate first** (caution (a), sampled not greedy). A point below `0.10` is
+   excluded and reported as excluded — a statement about that memoriser, not about the question.
+3. Score with the three commands in the running-arms section above, then `onset_ci.py` per point.
+4. **Report the committed primary before any larger span**, and never let seeds 3–4 into the
+   cross-pair comparison. The scorer enforces this; do not work around it.
+5. Then the paper. The result bears directly on a sentence already in it: Limitations and
+   `appendix_robustness.tex` currently say the nine-pair ratios are not per-pair properties, on the
+   strength of one pair. If KL3M's spread is small, **that sentence is too broad and must be
+   narrowed to the pair it was measured on** — overclaiming toward our own retraction is still
+   overclaiming.
 
-**If a new arm is wanted**, the one feat-121 explicitly could not run is the clean separation:
-several fine-tunes at **one** epoch count under **different seeds**, same pair and corpus. Three or
-four seeds would say whether the `0.47` within-pair spread is memoriser strength or run-to-run
-variation. feat-121's pre-registration forbids folding that into itself, so it needs its own
-pre-registration and its own bands. **One card (GPU 2)**, roughly 4–5 GPU-h.
+**The biggest remaining overclaim, independent of these arms**, is `sections/appendix_seed.tex`: it
+presents the nine-pair ratios as per-pair properties in three tables (~19–26, ~250, ~311–313),
+including the ">10 words / <=10 words" split (`0.878`–`0.926` against `0.993`–`1.166`) — exactly the
+structure feat-121 says is not resolvable at that precision. Zero GPU to fix.
+
+Also zero GPU and worth doing: add a **memoriser-strength column** to the nine-pair table. Every
+pair's sampled `k=-1` is already on disk, so a reader can see the confound rather than being told
+about it.
 
 Two things remain on record as **impossible** rather than unstarted. A judge-free head-to-head
 against the *metered* decoder cannot be run (`results/onset_prediction_verifiable.md`): TinyComma is
