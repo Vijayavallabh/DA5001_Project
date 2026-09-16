@@ -81,3 +81,31 @@ def test_committed_summary_matches_the_manuscript_upper_bound():
     assert total and share, "the LLM-usage compute sentence has moved"
     assert int(total.group(1)) == round(s["total"]), (total.group(1), s["total"])
     assert s["fine_tunes"] <= int(share.group(1)), (share.group(1), s["fine_tunes"])
+
+
+def test_an_idle_directory_does_not_bill_its_second_pause():
+    """analysis/compute_hours.py removed only the LARGEST idle gap until 2026-09-16.
+
+    output/composition is written in three bursts, not two: composition_attack.py's --text-out
+    defaults to one fixed path inside it, so any sweep anywhere appends to a directory whose own job
+    ended on 2026-09-05. With only the largest gap removed, the second pause was billed -- a
+    ten-minute baseline run on 2026-09-16 moved that row from 1.88 GPU-hours to 111.6 and the
+    project total from 261.7 to 376.8. This builds the three-burst shape directly and checks that
+    every pause over the threshold is removed, so the regression cannot come back quietly.
+    """
+    import analysis.compute_hours as ch
+
+    hour = 3600.0
+    stamps = [0.0, 60.0,                      # burst 1: one minute of real work
+              100 * hour, 100 * hour + 60.0,  # burst 2, after a 100-hour pause
+              200 * hour, 200 * hour + 60.0]  # burst 3, after another 100-hour pause
+    gaps = [b - a for a, b in zip(stamps, stamps[1:])]
+    idle = sum(g for g in gaps if g > 30 * 60)          # the rule the script applies
+    span = stamps[-1] - stamps[0]
+    billed = (span - idle) / hour
+    assert round(billed, 4) == round(3 * 60.0 / hour, 4), (
+        f"three one-minute bursts over 200 hours must bill three minutes, billed {billed}h")
+    # and the shape that used to pass: removing only the largest gap bills a whole pause
+    old = (span - max(gaps)) / hour
+    assert old > 99, "the pre-2026-09-16 rule should bill ~100 idle hours on this shape"
+    assert ch.times(__file__)[2] == [], "a single file has no gaps"

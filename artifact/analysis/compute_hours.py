@@ -90,16 +90,25 @@ def crtime(path):
 
 
 def times(path):
-    """(birth, last write, largest idle gap in seconds) for a file or a directory tree."""
+    """(birth, last write, every idle gap in seconds) for a file or a directory tree.
+
+    This returned `max(gaps)` until 2026-09-16, which removes the idle time of a directory written
+    in exactly TWO bursts and silently counts every later pause as compute. output/composition is
+    written in three: composition_attack.py's `--text-out` defaults to one fixed path inside it, so
+    ANY sweep anywhere appends a burst to a directory whose own job ended on 2026-09-05. A baseline
+    run on 2026-09-16 did exactly that and moved the row from 1.88 GPU-hours to 111.6, and the
+    project total from 261.7 to 376.8 -- 110 hours of wall clock during which nothing ran.
+    Returning all the gaps lets the caller remove each one over its threshold; with a single long
+    gap that is what `max` already did, so no two-burst job changes.
+    """
     if os.path.isfile(path):
-        return crtime(path) or os.path.getmtime(path), os.path.getmtime(path), 0.0
+        return crtime(path) or os.path.getmtime(path), os.path.getmtime(path), []
     stamps = []
     for root, _, files in os.walk(path):
         for f in files:
             stamps.append(os.path.getmtime(os.path.join(root, f)))
     stamps.sort()
-    gaps = [b - a for a, b in zip(stamps, stamps[1:])]
-    return crtime(path) or stamps[0], stamps[-1], max(gaps, default=0.0)
+    return crtime(path) or stamps[0], stamps[-1], [b - a for a, b in zip(stamps, stamps[1:])]
 
 
 def has_finetune(path):
@@ -131,8 +140,9 @@ def main():
         if not os.path.exists(path):
             print(f"[skip] {name}: {path} missing")
             continue
-        birth, end, gap = times(path)
-        idle = gap if (rule.endswith("-gap") and gap > args.gap_minutes * 60) else 0.0
+        birth, end, gaps = times(path)
+        idle = (sum(g for g in gaps if g > args.gap_minutes * 60)
+                if rule.endswith("-gap") else 0.0)
         if rule.startswith("after:"):
             start = ends[rule.split(":", 1)[1]]
         elif rule.startswith("elapsed:"):

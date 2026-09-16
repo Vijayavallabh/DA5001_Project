@@ -6,6 +6,62 @@
 
 
 
+
+## 2026-09-16 09:05 — the two missing baselines, measured; and a compute bug they exposed
+
+`output/phase4/fine_tc` and `fine_comma` reported six budgets each with **no `k=-1` or `k=0` arm**,
+against Working Rules' mandatory-baselines requirement. Both are now measured.
+
+```
+bash scripts/run_phase4_baselines.sh      # GPU 2, ~18 min, both arms in series
+```
+
+Every flag left at its default, because the defaults are what produce each sweep's own protocol
+line — in particular `--batch-size`, which is part of the seed for a sampled arm (caution (u)).
+
+| run | k=-1 single | previously borrowed from | k=0 single |
+|---|---|---|---|
+| `fine_tc_base` | **0.4921** | `leakage_headtohead` 0.492 | 0.0000 (lcs 1.73) |
+| `fine_comma_base` | **0.7189** | `comp_comma7b` 0.7189 | 0.0000 (lcs 1.93) |
+
+**Both reproduce the borrowed values**, and each run's `[ca]` protocol line is byte-identical to its
+sweep's, so the earlier borrow was sound and is now replaced by a measurement. Six rows each
+(single + oracle L=20/50), n=100, zero invariant violations.
+
+**An external check nobody planned:** the TinyComma anchor alone reads nv-recall 0.000 with LCS
+**1.7 words**, which is He et al.'s own published anchor-alone figure for this model (Table 17:
+"anchor alone: 0%, 1.7"), a Known Truth verified from their PDF. An independent reproduction of a
+number from the audited paper.
+
+The table keeps its daggers. The sweep still ran no baseline of its own, and that is the fact a
+reader needs; the footnote now says the baselines were measured deliberately afterwards rather than
+read off an unrelated arm. `strength_source` reads `baseline run <name>`, not `companion run`.
+The baselines were NOT merged into the sweeps' CSVs: a `composition_summary.csv` stitched from two
+runs is a file no single command produces.
+
+### The compute bug the run exposed
+
+Running them moved the project total from **261.7 to 376.8 GPU-hours** — 115 hours for two
+ten-minute jobs. `analysis/compute_hours.py` removed only the **largest** idle gap (`max(gaps)`),
+which is correct for a directory written in two bursts and silently bills every later pause.
+`output/composition` is written in three: `composition_attack.py`'s `--text-out` defaults to one
+fixed path inside it, so **any** sweep anywhere appends a burst to a directory whose own job ended
+on 2026-09-05. That row read 1.88 GPU-hours, then 111.6.
+
+Fixed to remove every gap over the threshold, which reduces to the old behaviour on any two-burst
+job: exactly one row changed, `output/composition` 111.6 -> 0.7. **Total 265.9 GPU-hours**, fine-tunes
+56.5 over 30 runs. Disclosure updated 262 -> 266 and 52 -> 57; `tests/test_compute_hours.py` gained a
+constructed three-burst case that bills three minutes and fails under the old rule.
+
+### The rule is violated in one more place, not fixed
+
+A scan of every sweep on disk found 22 directories reporting `k>0` without both baselines. Only six
+are real: 8 are grid-extension fragments whose merged parents carry them, 3 are smoke tests, 5 are
+single-k ablations measured against a base arm — and **4 are `output/phase4/renyi_renyi_{1_0,2,4,8}`**,
+which sweep k in {1,3,5} with no baselines and feed Table 3. Left alone; recorded here.
+
+533 tests, init.sh exit 0, artifact 887 files.
+
 ## 2026-09-16 08:25 — seed 3 landed; the committed secondary scored; a mid-run script edit found
 
 The seed arm finished at 08:18. Seed 3: sampled `k=-1` **0.2391**, onset 2.950, ratio **0.9677** —

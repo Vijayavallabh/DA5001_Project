@@ -5,6 +5,8 @@ import csv
 import os
 import re
 
+import pytest
+
 CSV = "results/onset_table.csv"
 from tests.manuscript import tex
 
@@ -171,3 +173,72 @@ def test_the_strength_of_a_row_is_measured_on_that_row_s_own_passages():
         row = next(r for r in csv.DictReader(fh) if r["pair"].startswith("Pleias-350M"))
     assert row["n_passages"] == "458"
     assert ot._n_of(ot.SWEEPS["pleias-350m + mem. pleias-350m"][0]) == 458
+
+
+# ---------------------------------------------------------------------------
+# The two sweeps that never ran their mandated baselines, and the runs that fixed it.
+#
+# Working Rules: every experiment reporting a copying metric at some k also reports k=-1 and k=0 on
+# the same prompts and seeds. output/phase4/fine_tc and fine_comma report six budgets each and ran
+# NEITHER. scripts/run_phase4_baselines.sh measured both on 2026-09-16 at the flags that reproduce
+# each sweep's protocol line, and reproduced to three decimals the values the table had been reading
+# off unrelated arms -- 0.492 and 0.719. These pin that, because the value is only usable while the
+# protocol still matches: a re-run at a different --batch-size would move a SAMPLED k=-1 (caution
+# (u)) and look identical at the CSV.
+BASELINES = {"output/phase4/fine_tc": ("output/phase4/fine_tc_base", 0.492),
+             "output/phase4/fine_comma": ("output/phase4/fine_comma_base", 0.719)}
+
+
+def _single(d, k):
+    with open(os.path.join(ROOT_DIR, d, "composition_summary.csv")) as fh:
+        for r in csv.DictReader(fh):
+            if r["mode"] == "single" and float(r["k"]) == k:
+                return float(r["nv_recall_mean"])
+    return None
+
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+@pytest.mark.parametrize("sweep,pair", list(BASELINES.items()))
+def test_the_missing_baseline_was_measured_not_borrowed(sweep, pair):
+    base, expected = pair
+    assert os.path.isdir(os.path.join(ROOT_DIR, base)), f"{base} missing; run scripts/run_phase4_baselines.sh"
+    k1, k0 = _single(base, -1.0), _single(base, 0.0)
+    assert k1 is not None and k0 is not None, f"{base} lacks a k=-1 or k=0 single arm"
+    assert abs(k1 - expected) < 5e-4, (
+        f"{base} k=-1 is {k1}, not the {expected} it reproduced when measured; the protocol has "
+        "moved (--batch-size is part of the seed for a sampled arm, caution (u))")
+    assert k0 == 0.0, f"{base} k=0 is {k0}; the anchor alone must reproduce nothing"
+
+
+@pytest.mark.parametrize("sweep,pair", list(BASELINES.items()))
+def test_the_baseline_run_shares_its_sweep_s_protocol_line(sweep, pair):
+    """The whole justification for a separate run is that it is the same experiment."""
+    import analysis.onset_table as ot
+    base = pair[0]
+    want, got = ot._protocol(os.path.join(ROOT_DIR, sweep)), ot._protocol(os.path.join(ROOT_DIR, base))
+    assert want and got, f"no protocol line for {sweep} or {base}"
+    assert want == got, f"protocol drift:\n  sweep {want}\n  base  {got}"
+
+
+@pytest.mark.parametrize("sweep,pair", list(BASELINES.items()))
+def test_the_baseline_run_covers_the_modes_its_sweep_swept(sweep, pair):
+    def modes(d):
+        with open(os.path.join(ROOT_DIR, d, "composition_summary.csv")) as fh:
+            return {r["mode"] for r in csv.DictReader(fh)}
+    assert modes(sweep) <= modes(pair[0]), (
+        f"{pair[0]} does not carry a baseline for every mode {sweep} swept")
+
+
+def test_no_table_row_reads_its_baseline_from_an_unrelated_arm():
+    """Before 2026-09-16 these two came from leakage_headtohead and comp_comma7b, which are
+    different experiments that happened to share a protocol line. They now come from runs made
+    for the purpose, and the CSV must say so."""
+    with open(CSV) as fh:
+        for r in csv.DictReader(fh):
+            if r["pair"].startswith("ALL") or not r.get("strength_source"):
+                continue
+            src = r["strength_source"]
+            assert src == "own sweep" or src.startswith("baseline run "), (
+                r["pair"], f"strength read from {src!r}, which is not a dedicated baseline run")

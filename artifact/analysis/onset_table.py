@@ -27,11 +27,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_predictions import canonical, load_measurements  # noqa: E402
 
 
-# canonical pair -> (its own sweep, companion run for the baseline or None).
-# The companion is used ONLY when the sweep has no k=-1 arm, and only if protocols match exactly.
+# canonical pair -> (its own sweep, the run its baseline comes from, or None).
+# Two sweeps never ran a k=-1 or k=0 arm, against Working Rules' mandatory-baselines requirement.
+# scripts/run_phase4_baselines.sh measured both DELIBERATELY on 2026-09-16, at the defaults that
+# reproduce each sweep's own protocol line, and reproduced the values previously borrowed from
+# unrelated arms to three decimals (0.492 and 0.719). The second element is still only consulted
+# when the sweep itself has no baseline, and still only after the protocol lines are asserted equal.
 SWEEPS = {
-    "tinycomma-1.8b + mem. llama-3.1-8b": ("output/phase4/fine_tc", "output/logs/leakage_headtohead.log"),
-    "comma-7b + mem. comma-7b": ("output/phase4/fine_comma", "output/phase4/comp_comma7b.log"),
+    "tinycomma-1.8b + mem. llama-3.1-8b": ("output/phase4/fine_tc", "output/phase4/fine_tc_base"),
+    "comma-7b + mem. comma-7b": ("output/phase4/fine_comma", "output/phase4/fine_comma_base"),
     "kl3m-520m + mem. kl3m-520m": ("output/phase5/fine_kl3m520m", None),
     "phi-3.5-mini + mem. phi-3.5-mini": ("output/phase5/fine_phi35", None),
     "pleias-1.2b + mem. pleias-1.2b": ("output/phase5/fine_pleias12b", None),
@@ -157,7 +161,7 @@ def strength(key, strict=False, n_row=None):
             f"  sweep     {sweep}: {want}\n  companion {companion}: {got}")
     k1, _ = _k_arm(companion, -1.0)
     k0, _ = _k_arm(companion, 0.0)
-    return k1, k0, f"companion run {os.path.basename(companion).replace('.log', '')}"
+    return k1, k0, f"baseline run {os.path.basename(companion).replace('.log', '')}"
 
 
 def main():
