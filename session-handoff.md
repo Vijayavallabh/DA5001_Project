@@ -1,10 +1,10 @@
-# Session handoff — 2026-09-16 17:45 (read-through done; nine defects found and eight fixed; nothing running)
+# Session handoff — 2026-09-16 17:55 (read-through done and committed; nothing running; nothing blocking)
 
 ## Current objective
 
 **None outstanding.** The convergence crossover is closed in both directions and in the paper, and
-the full read-through of the rendered PDF is done --- nine defects, eight fixed, one left as a
-legible cosmetic nit. No job of ours holds a GPU.
+the full read-through of the rendered PDF is done and committed at **`3cd2e37`** --- nine defects,
+eight fixed, one left as a legible cosmetic nit. No job of ours holds a GPU, and the tree is clean.
 
 **56 pre-registrations, all 56 scored. 538 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
 overfull, 0 `??`, body inside 9 pages (page 10 carries only uncounted end matter), 55 total. 3,354
@@ -53,13 +53,15 @@ it is not ours. Caution (ab) in AGENTS.md.
 |---|---|
 | 0, 1, 2 | idle, 14 MiB |
 | 3 | T400 4 GB — **never use** |
-| 4 | **another user**, pid `3703331`, 74 GB, 66% util (`launch.py --config configs/pfd.yaml`) — leave it alone |
+| 4 | **another user**, pid `3703331`, 74 GB, still running at 17:52 (`launch.py --config configs/pfd.yaml`) — leave it alone |
 
 The multi-GPU window opened 10:36 ("for the next 8 hours, use all the gpus") and **expires 18:36
-today**. It is currently **unused and nothing needs it**. It SUSPENDS, not cancels, the one-card
-rule; every launcher takes `GPU` as an override **defaulting to 2**, so when it closes the standing
-rule (everything on GPU 2, in series) restores itself with no action. `CUDA_DEVICE_ORDER=PCI_BUS_ID`
-stays mandatory either way.
+today — about forty minutes from this handoff**. It went **entirely unused after the crossover
+closed at 16:05**, and nothing outstanding needs it. It SUSPENDS, not cancels, the one-card rule;
+every launcher takes `GPU` as an override **defaulting to 2**, so the standing rule (everything on
+GPU 2, in series) restores itself when the window lapses with no action required.
+`CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory either way. **Treat the window as closed**: a new
+session should assume one card unless the user reopens it.
 
 ---
 
@@ -98,7 +100,37 @@ different act from re-running an experiment whose answer one dislikes. Both file
 
 ---
 
-## Closed this session (13 commits since `3f047e8`)
+## The read-through, and the four checks it leaves behind
+
+Everything below was found by **rendering pages to PNG and looking at them**, or by reading a number
+back to its CSV. None of it was visible in the source, and the build was clean throughout: tectonic
+exit 0, 0 overfull, 0 `??` at every step, including while 144 bold spans were silently not bold.
+
+| check | command | must read |
+|---|---|---|
+| bold actually renders | `pdffonts iclr_2027.pdf \| grep -ci bold` | **3** (1 means `times` is back) |
+| no literal tildes from matplotlib | `pdftotext iclr_2027.pdf - \| grep -c '\.~'` | 0 |
+| figures have no collisions | render each figure page to PNG and look | by eye only |
+| numbers round from a CSV once | `.venv/bin/python analysis/audit_numbers.py` | 1 miss, `64256` |
+
+**The transferable lesson is about the tests, not the paper.**
+`tests/test_reference_targets.py` was written for exactly the defect class that got through, and
+caught neither instance. Two reasons, both worth checking in any similar guard: it only looked
+**inside parentheses**, so the same defect in running prose was invisible; and its `_resolve()`
+walked the section files **independently**, so `sec:onset` --- whose file is `\input` *inside*
+`orders.tex` --- resolved to `None`, and every comparison touching it passed vacuously rather than
+failing. A guard that returns `None` for the interesting case is a guard that always passes. It now
+splices `\input` and walks the document in order, and two added tests were each shown to fail on the
+reintroduced defect before being accepted (538 tests, up from 536).
+
+A third instance of the same shape, found while writing those tests: a comment-stripping
+`re.sub(r"^\s*%.*$", "", body, flags=re.M)` applied **after** `body.replace("\n", " ")` matches from
+the first comment to the end of the string and silently empties the whole document. Strip comments
+before joining lines.
+
+---
+
+## Closed this session (14 commits since `3f047e8`)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -112,6 +144,10 @@ different act from re-running an experiment whose answer one dislikes. Both file
 - **All six genuine mandatory-baseline gaps closed:** `fine_tc`, `fine_comma` and the four Rényi
   orders. Rényi scored **CONFIRMED** — 16 arms, 16 exact reproductions of `fine_tc_base`.
 - **The crossover, above.**
+- **A full read-through of the rendered PDF** (`3cd2e37`), which is where the bold defect below came
+  from. Nine defects: the document-wide font failure, four figure defects, the abstract's conflated
+  range, `0.79` sourced from a CI bound rather than an onset, a 3-seed-vs-4-seed comparison, and two
+  cross-references the v8 reorder had silently broken. Eight fixed; the ninth is a legible nit.
 - **A compute bug fixed** that a ten-minute run exposed: `compute_hours.py` removed only the largest
   idle gap, so `output/composition` (a rolling `--text-out` target) billed 110 idle hours. Total
   261.7 → 376.8 → 265.9 → **283.0** as the crossover's own hours landed. Disclosure 262 → **283**,
