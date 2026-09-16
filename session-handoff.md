@@ -1,10 +1,10 @@
-# Session handoff — 2026-09-16 17:55 (read-through done and committed; nothing running; nothing blocking)
+# Session handoff — 2026-09-16 18:35 (read-through done, every defect fixed; nothing running; the GPU window has lapsed)
 
 ## Current objective
 
 **None outstanding.** The convergence crossover is closed in both directions and in the paper, and
-the full read-through of the rendered PDF is done and committed at **`3cd2e37`** --- nine defects,
-eight fixed, one left as a legible cosmetic nit. No job of ours holds a GPU, and the tree is clean.
+the full read-through of the rendered PDF is done --- **nine defects, all nine now fixed**. No job of
+ours holds a GPU and the tree is clean, verified at **`0b93109`**.
 
 **56 pre-registrations, all 56 scored. 538 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
 overfull, 0 `??`, body inside 9 pages (page 10 carries only uncounted end matter), 55 total. 3,354
@@ -49,19 +49,22 @@ it is not ours. Caution (ab) in AGENTS.md.
 
 ## GPU state, and the window
 
+Read at 18:32 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
+nothing):
+
 | card | state |
 |---|---|
-| 0, 1, 2 | idle, 14 MiB |
+| 0 | **another user**, 569 MiB — not ours, check before taking it |
+| 1, 2 | idle, 14 MiB |
 | 3 | T400 4 GB — **never use** |
-| 4 | **another user**, pid `3703331`, 74 GB, still running at 17:52 (`launch.py --config configs/pfd.yaml`) — leave it alone |
+| 4 | **another user**, 59.6 GB, 64% util (`launch.py --config configs/pfd.yaml`) — leave it alone |
 
-The multi-GPU window opened 10:36 ("for the next 8 hours, use all the gpus") and **expires 18:36
-today — about forty minutes from this handoff**. It went **entirely unused after the crossover
-closed at 16:05**, and nothing outstanding needs it. It SUSPENDS, not cancels, the one-card rule;
-every launcher takes `GPU` as an override **defaulting to 2**, so the standing rule (everything on
-GPU 2, in series) restores itself when the window lapses with no action required.
-`CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory either way. **Treat the window as closed**: a new
-session should assume one card unless the user reopens it.
+**The multi-GPU window has lapsed.** It opened 10:36 ("for the next 8 hours, use all the gpus") and
+**expired 18:36 today**, having gone entirely unused after the crossover closed at 16:05. It
+SUSPENDED rather than cancelled the one-card rule, and every launcher takes `GPU` as an override
+**defaulting to 2**, so the standing rule restored itself with no action: **everything on GPU 2, in
+series**, unless the user reopens the window. `CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory either
+way, and GPU 3 is never used.
 
 ---
 
@@ -100,7 +103,7 @@ different act from re-running an experiment whose answer one dislikes. Both file
 
 ---
 
-## The read-through, and the four checks it leaves behind
+## The read-through, and what it leaves behind
 
 Everything below was found by **rendering pages to PNG and looking at them**, or by reading a number
 back to its CSV. None of it was visible in the source, and the build was clean throughout: tectonic
@@ -113,6 +116,22 @@ exit 0, 0 overfull, 0 `??` at every step, including while 144 bold spans were si
 | figures have no collisions | render each figure page to PNG and look | by eye only |
 | legend style keys show their dashes | look at the key, not just the labels | `handlelength` >= 3 |
 | numbers round from a CSV once | `.venv/bin/python analysis/audit_numbers.py` | 1 miss, `64256` |
+
+**Five figure collisions, and no two wanted the same repair.** All are fixed; the value left behind
+is the diagnosis, because "move the legend out" is wrong for three of the five.
+
+| figure | what was wrong | repair |
+|---|---|---|
+| 7 | 12-entry legend taller than its own 2.2in panel; covered the panel, its title and the y-label | legend below the panels |
+| 6 | 9 entries with 9 dotted `s(x)` rules through them; annotation printed under two of them | legend below the panels |
+| 9 | a label that has to stay beside the `y=1` rule it names | opaque `bbox` |
+| 5 | labels spelled out what colour and linestyle already encoded | **factor** 6 into 3 + 2, then share |
+| 2 | legend pinned to `loc="lower right"` --- the corner the `K=S(x)` rule passes through | a different corner |
+
+Figure 5 is the one to remember: moving it out would have resized the figure and reflowed the
+document, and an opaque legend would have hidden most of a dashed curve. Shortening the labels cost
+nothing and removed a duplicate legend as well. Also check the *keys*, not just the label text --- at
+`handlelength=1.8` a style key's marker covers its handle and solid reads the same as dashed.
 
 **The transferable lesson is about the tests, not the paper.**
 `tests/test_reference_targets.py` was written for exactly the defect class that got through, and
@@ -131,7 +150,7 @@ before joining lines.
 
 ---
 
-## Closed this session (14 commits since `3f047e8`)
+## Closed this session (24 commits since `3f047e8`)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -145,10 +164,12 @@ before joining lines.
 - **All six genuine mandatory-baseline gaps closed:** `fine_tc`, `fine_comma` and the four Rényi
   orders. Rényi scored **CONFIRMED** — 16 arms, 16 exact reproductions of `fine_tc_base`.
 - **The crossover, above.**
-- **A full read-through of the rendered PDF** (`3cd2e37`), which is where the bold defect below came
-  from. Nine defects: the document-wide font failure, four figure defects, the abstract's conflated
-  range, `0.79` sourced from a CI bound rather than an onset, a 3-seed-vs-4-seed comparison, and two
-  cross-references the v8 reorder had silently broken. Eight fixed; the ninth is a legible nit.
+- **A full read-through of the rendered PDF** (`3cd2e37`, then `848d201` and `0b93109`), which is
+  where the bold defect above came from. **Nine defects, all fixed**: the document-wide font
+  failure, five figure defects, the abstract's conflated range, `0.79` sourced from a CI bound
+  rather than an onset, a 3-seed-vs-4-seed comparison that broke a rule the paper states two pages
+  earlier, and two cross-references the v8 reorder had silently broken. The last two figures
+  (5 and 2) were fixed after the main commit, on request.
 - **A compute bug fixed** that a ten-minute run exposed: `compute_hours.py` removed only the largest
   idle gap, so `output/composition` (a rolling `--text-out` target) billed 110 idle hours. Total
   261.7 → 376.8 → 265.9 → **283.0** as the crossover's own hours landed. Disclosure 262 → **283**,
@@ -173,22 +194,14 @@ future, repointed to actual commit times.
 
 Nothing is blocking. In descending value:
 
-1. **No figure collisions remain.** All five found by the read-through are fixed, each by a different
-   repair, which is the useful part: Figure 7 and Figure 6 by moving an oversized legend below the
-   panels; Figure 9 by an opaque `bbox` on a label that had to stay beside the rule it names;
-   Figure 5 by *factoring* its six `<corpus>: <rate>` entries into the 3 colours and 2 linestyles
-   they already encode, which shortened them enough to share one row with the right panel; and
-   Figure 2 by moving its legend off `loc="lower right"`, which is exactly where the `K=S(x)` rule
-   lands, into the empty lower left. Reposition, factor, or back it opaquely --- pick by what the
-   panel actually has room for.
-2. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
+1. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
    `onset_ci.csv` hold the same four epochs-ladder onsets and differ (`4.106` vs `4.1078`, `4.0071`
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
    supplies the table's CIs, and it matches on all twelve cells. Nothing tests that the two agree.
    Do not "fix" the paper against `strength_ladder.csv`.
-3. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
+2. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
    own pre-registration. Reinstating them would need a new pre-registration; it is not a gap.
-4. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
+3. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
    `feat-024`; **`feat-016` is human-only and must never be started.**
 
 ### Human-only, and close
