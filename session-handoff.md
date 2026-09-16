@@ -190,38 +190,33 @@ future, repointed to actual commit times.
 
 ---
 
-## IN FLIGHT: the vetting-protocol arm (`onset_prediction_vetting_protocol.md`)
+## SCORED: the vetting-protocol arm (`onset_prediction_vetting_protocol.md`)
 
-**Unscored and running on GPU 2 since 19:11**, seven models in series, expected to drain around
-02:00. `bash scripts/run_vetting_protocol.sh 2`, logs `output/logs/vet_<tag>.log`.
+Ran 19:11--22:23 on GPUs 1 and 2, ~9.8 GPU-hours, **scored 22:30**. Nothing of ours is running now.
 
-**Why it exists.** A reviewer asked why no OLMo/DCLM-scale anchor appears and pointed out that the
-paper argues the exclusion *a priori* while carrying an instrument that settles it empirically.
-Building that arm surfaced a defect in the instrument, which the arm repairs first:
-`anchor_vetting.csv` compared five anchors screened at a **20-token seed with the
-`Complete the prefix:` header attached** --- about fourteen tokens of genuine prefix --- against a
-positive control screened at **a hundred raw tokens**. The same `Llama-3.1-70B` reads `0.0000` under
-the anchors' protocol. So the published "separation complete over eighteen models" separated
-protocols, not models, and this is the screen the Ethics Statement recommends to deployers.
+**It repaired a defect in the paper's newest contribution and answered the reviewer's scale
+question in one arm.** `anchor_vetting.csv` had compared five anchors screened at ~14 genuine prefix
+tokens against a control screened at 100 raw ones; the same `Llama-3.1-70B` reads `0.0000` at the
+anchors' protocol, so "separation complete over eighteen models" was a separation between protocols.
+One protocol, every model in the anchor slot, seeds verified byte-identical to the control's
+(`sha256 8b46267d75766de1` both sides):
 
-**Already corrected in the manuscript, independent of what the arm returns**, because the claim was
-unsupported today: `appendix_selection.tex` now states exactly what the table supports (a separation
-against twelve *fine-tuned* models at fourteen prefix tokens, which the paper itself calls close to
-circular) and the Ethics Statement now says the prefix length must be quoted with the number,
-because at fourteen tokens the screen clears a model that reproduces a passage in full.
+| model | leaking | max recall | band |
+|---|---|---|---|
+| the five licensed anchors | **0.000** | 0.0000 | **A: INSTRUMENT HOLDS** |
+| OLMo-2-7B | 0.040 | 0.2677 | **B: FAILS** |
+| OLMo-2-13B | 0.120 | 0.5659 | **B: FAILS** |
+| Llama-3.1-70B (control) | 0.500 | 1.0000 | — |
 
-**The arm**: one protocol (`--raw-prompt --split test --novel harry_potter --limit 50
---seed-tokens 100 --n-values 1 8 64 --batch-size 8`), applied to the five licensed anchors plus
-**OLMo-2-7B and OLMo-2-13B**. DCLM is not in it --- every published DCLM checkpoint is `openlm`
-format, which transformers 5.16.1 cannot load; the substitution was recorded in the pre-registration
-at 19:20, **before any model ran**. Bands are committed for both the instrument question and the
-reviewer's question, including the two outcomes that cost us most (a licensed anchor leaking; an
-open-data model passing, which would soften our own Section 3 argument).
+Band B failing is the outcome that *helps*: the licensing-frontier argument in Section 3 is now a
+measurement rather than an assertion, which is what the band committed to in advance. Manuscript
+updated in three places (Section 3, `appendix_selection.tex`'s table and prose, the Ethics
+Statement). DCLM is absent — every published checkpoint is `openlm` format, unloadable without a new
+dependency; OLMo-2-13B replaced it, recorded **before any model ran**.
 
-**When it lands:** `.venv/bin/python analysis/anchor_vetting.py --out results`, then score against
-the committed bands. `tests/test_anchor_vetting.py` (new, 3 tests) pins the repair: every row
-declares its protocol, no separation claim spans two protocols, and if the non-circular control has
-no clean anchor beside it then the manuscript must not be claiming a separation.
+**Not registered, do not restate as a result:** contamination rises with scale across the three
+web-trained models (0.040 / 0.120 / 0.500 at 7B / 13B / 70B). Three points, confounded with corpus
+and recipe.
 
 ---
 

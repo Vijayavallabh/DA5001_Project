@@ -9,6 +9,76 @@
 
 
 
+## 2026-09-16 22:40 — the reviewer's scale question, and the instrument defect it surfaced
+
+A reviewer asked why no OLMo/DCLM-scale anchor appears, and noted that the paper argues the
+exclusion *a priori* while carrying an instrument that settles it empirically --- "refuses an
+experiment it has already built the instrument for". Building that experiment showed **the
+instrument did not measure what the paper said it measured.**
+
+**The defect.** `anchor_vetting.csv`'s "separation complete over eighteen models" compared five
+anchors screened at a `20`-token seed **with the `Complete the prefix:` header attached** --- about
+fourteen tokens of the work, caution (t) --- against one positive control screened at **a hundred
+raw tokens**. The same `Llama-3.1-70B` reads `0.0000` under the anchors' protocol
+(`selection_extraction_70b_per_passage.csv`), and so does the 20-token *raw* variant. The published
+gap was between protocols, not models, and the screen as applied to the anchors had **no
+demonstrated power against pre-training memorisation** --- while the Ethics Statement recommends it
+to deployers as a precondition for quoting `log n`.
+
+**Repaired before the arm ran**, because the claim was unsupported either way: `anchor_vetting.py`
+now tags every row with its protocol and refuses to compute a separation across two (it printed *"no
+separation statement possible at this protocol"* for the strong one until the arm landed), and
+`tests/test_anchor_vetting.py` asserts in **both** states --- either a clean anchor sits beside the
+non-circular control, or the manuscript must not be claiming a separation.
+
+**The arm** (`results/onset_prediction_vetting_protocol.md`, bands committed before any download):
+one protocol --- `--raw-prompt --seed-tokens 100`, 50 Harry Potter passages, every model in the
+anchor slot --- on the five licensed anchors plus OLMo-2-7B and OLMo-2-13B. DCLM is absent and the
+substitution was recorded **at 19:20, before any model ran**: every published DCLM checkpoint is
+`openlm` format, unloadable without a new dependency nine days from the deadline.
+
+**Entry gate passed on both conditions.** Seeds rebuilt from both tokenizers and compared:
+50/50 `prompt_id`s, 50/50 seeds and 50/50 targets byte-identical, concatenated seed set hashing
+`sha256 8b46267d75766de1` under both. The assumption that the 8B and 70B Llama-3.1 vocabularies
+agree was checked rather than taken.
+
+| model | provenance | leaking | max recall |
+|---|---|---|---|
+| the five licensed anchors | openly licensed | **0.000** | 0.0000 |
+| OLMo-2-7B | open data | 0.040 (2/50) | 0.2677 |
+| OLMo-2-13B | open data | 0.120 (6/50) | 0.5659 |
+| Llama-3.1-70B (control) | pre-training | 0.500 (25/50) | 1.0000 |
+
+**Band A: INSTRUMENT HOLDS.** All five anchors read zero at the protocol with demonstrated power, so
+the separation now holds *within* one protocol --- the first time the table has supported that.
+
+**Band B: FAILS, which is the outcome that helps the paper.** Both open-data models leak;
+OLMo-2-13B reproduces up to `0.566` of a passage from a corpus that is public and documented. The
+registered reading was that a failure confirms the licensing premise *by measurement* rather than by
+assertion, and Section 3 now says so. The reviewer asked us to include whichever passes: neither
+does. `bookmia.17.73` leaks on both OLMo models, which is what one expects if the passage rather
+than the draw is doing the work.
+
+**Unregistered, flagged as such:** contamination rises with scale across the three web-trained
+models, `0.040`/`0.120`/`0.500` at 7B/13B/70B. Three points, confounded with corpus and recipe,
+reported as a pattern and not a result.
+
+**Cost.** ~9.8 GPU-hours. Run on GPUs 1 and 2 after the user re-opened multi-GPU use at 19:25; the
+card is not a registered parameter and no flag changed. Splitting mid-run needed killing only the
+queue *shell* by PID so its CUDA child finished rather than restarting (caution (c) used
+deliberately) and a **new** launcher rather than an edit to the running one.
+
+**Also this session: caution (c), seventh incident, a new shape.** A waiter whose exit condition was
+`! pgrep -f 'snapshot_download'` can never exit --- the string is in the polling shell's own command
+line --- and it spun 93 minutes past a finished download. A second waiter polled for `queue drained`,
+a string only the launcher I had just killed would write. Four stale background shells found and
+killed by PID; the fifth was correct. Wait on a filesystem condition or a PID, never on the absence
+of a pattern match.
+
+**Verification.** `./init.sh` exit 0, **541 tests**, tectonic exit 0, 0 overfull, 0 `??`, 55 pages,
+bold fonts 3, body inside 9. 3,387 numeric literals with the one expected `64256` miss. The
+markdown-bold guard caught `**...**` in LaTeX I had just written --- caution (y) earning its keep.
+
 ## 2026-09-16 17:40 — the read-through: the paper had no bold at all, and three figures were unreadable
 
 Read the rendered PDF, not the source. **Nine defects, four of them in the figures, and the largest

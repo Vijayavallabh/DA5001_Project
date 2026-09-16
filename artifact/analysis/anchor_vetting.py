@@ -43,6 +43,16 @@ def frac_and_max(rows, field):
     return sum(1 for x in v if x > 0) / len(v), max(v), sum(v) / len(v), len(v)
 
 
+# Every row now carries the protocol it was measured under, because the first version of this table
+# did not and that hid a defect: the five licensed anchors were screened at a 20-token seed with the
+# "Complete the prefix:" header still attached (~14 tokens of genuine prefix, caution (t)) while the
+# positive control was screened at a 100-token RAW prefix. The same 70B reads 0.000 under the
+# anchors' protocol, so the "complete separation" separated protocols, not models. A column that
+# names the protocol makes that impossible to restate by accident.
+SHORT = "20-token seed, header attached"
+LONG = "100-token raw prefix"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -58,7 +68,7 @@ def main():
             continue        # those arms vary the RISKY model; the anchor is the audited one
         rows = list(csv.DictReader(open(p)))
         f, mx, mean, n = frac_and_max(rows, "recall_n1")
-        out.append(dict(model=tag, role="anchor", provenance="openly licensed",
+        out.append(dict(model=tag, role="anchor", provenance="openly licensed", protocol=SHORT,
                         n_passages=n, frac_passages_leaking=round(f, 4),
                         max_recall=round(mx, 4), mean_recall=round(mean, 4),
                         verdict="PASSES" if f == 0.0 else "FAILS"))
@@ -69,7 +79,7 @@ def main():
         rows = list(csv.DictReader(open(p)))
         f, mx, mean, n = frac_and_max(rows, "recall_n1")
         out.append(dict(model=tag, role="anchor", provenance="fine-tuned on these passages",
-                        n_passages=n, frac_passages_leaking=round(f, 4),
+                        protocol=SHORT, n_passages=n, frac_passages_leaking=round(f, 4),
                         max_recall=round(mx, 4), mean_recall=round(mean, 4),
                         verdict="PASSES" if f == 0.0 else "FAILS"))
 
@@ -80,9 +90,25 @@ def main():
         rows = list(csv.DictReader(open(nat)))
         f, mx, mean, n = frac_and_max(rows, "risky_alone_recall")
         out.append(dict(model="Llama-3.1-70B", role="(measured as a model)",
-                        provenance="memorised in pre-training", n_passages=n,
+                        provenance="memorised in pre-training", protocol=LONG, n_passages=n,
                         frac_passages_leaking=round(f, 4), max_recall=round(mx, 4),
                         mean_recall=round(mean, 4), verdict="PASSES" if f == 0.0 else "FAILS"))
+
+    # the one-protocol arm (results/onset_prediction_vetting_protocol.md): every model screened at
+    # the SAME 100-token raw prefix on the same 50 Harry Potter passages, so these rows are
+    # comparable to each other and to the Llama-3.1-70B control, and to nothing above them.
+    PROV = {"olmo2_7b": "open data, not openly licensed",
+            "olmo2_13b": "open data, not openly licensed"}
+    for p in sorted(glob.glob(os.path.join(a.results, "vet_*_per_passage.csv"))):
+        tag = os.path.basename(p).replace("vet_", "").replace("_per_passage.csv", "")
+        rows = list(csv.DictReader(open(p)))
+        # anchor_max_recall is the registered PRIMARY: the max over all 64 draws, which is the
+        # stronger screen and what the existing anchor rows were computed over.
+        f, mx, mean, n = frac_and_max(rows, "anchor_max_recall")
+        out.append(dict(model=tag, role="anchor", provenance=PROV.get(tag, "openly licensed"),
+                        protocol=LONG, n_passages=n, frac_passages_leaking=round(f, 4),
+                        max_recall=round(mx, 4), mean_recall=round(mean, 4),
+                        verdict="PASSES" if f == 0.0 else "FAILS"))
 
     path = os.path.join(a.out, "anchor_vetting.csv")
     with open(path, "w", newline="", encoding="utf-8") as fh:
@@ -94,11 +120,21 @@ def main():
         print(f"  {r['model']:16s} {r['provenance']:28s} leaking on "
               f"{r['frac_passages_leaking']:.3f} of {r['n_passages']:3d}  max {r['max_recall']:.4f}"
               f"  {r['verdict']}")
-    hi_clean = max(r["frac_passages_leaking"] for r in clean)
-    lo_dirty = min(r["frac_passages_leaking"] for r in dirty)
-    print(f"\n  clean anchors leak on at most {hi_clean:.4f} of passages; every model known to have"
-          f" seen the work leaks on at least {lo_dirty:.4f}")
-    print(f"  SEPARATES: {hi_clean < lo_dirty}  ({len(clean)} clean, {len(dirty)} known-contaminated)")
+    # WITHIN a protocol only. Comparing a clean row measured at 14 genuine prefix tokens against a
+    # contaminated one measured at 100 is how the first version of this table claimed a separation
+    # it had not measured.
+    for proto in (SHORT, LONG):
+        c = [r for r in clean if r["protocol"] == proto]
+        d = [r for r in dirty if r["protocol"] == proto]
+        if not c or not d:
+            print(f"\n  [{proto}] {len(c)} clean, {len(d)} known-contaminated"
+                  f" -- no separation statement possible at this protocol")
+            continue
+        hi_clean = max(r["frac_passages_leaking"] for r in c)
+        lo_dirty = min(r["frac_passages_leaking"] for r in d)
+        print(f"\n  [{proto}] clean leak on at most {hi_clean:.4f}; known-contaminated on at least"
+              f" {lo_dirty:.4f}")
+        print(f"  SEPARATES: {hi_clean < lo_dirty}  ({len(c)} clean, {len(d)} known-contaminated)")
     print(f"wrote {path}")
 
 

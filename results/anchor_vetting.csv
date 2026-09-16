@@ -17,3 +17,10 @@ pleias12b,anchor,fine-tuned on these passages,"20-token seed, header attached",1
 pleias350m,anchor,fine-tuned on these passages,"20-token seed, header attached",100,0.98,0.8148,0.6615,FAILS
 qwen25_7b,anchor,fine-tuned on these passages,"20-token seed, header attached",100,0.93,0.8307,0.5643,FAILS
 Llama-3.1-70B,(measured as a model),memorised in pre-training,100-token raw prefix,50,0.5,1.0,0.2475,FAILS
+comma1t,anchor,openly licensed,100-token raw prefix,50,0.0,0.0,0.0,PASSES
+comma7b,anchor,openly licensed,100-token raw prefix,50,0.0,0.0,0.0,PASSES
+kl3m17b,anchor,openly licensed,100-token raw prefix,50,0.0,0.0,0.0,PASSES
+olmo2_13b,anchor,"open data, not openly licensed",100-token raw prefix,50,0.12,0.5659,0.0405,FAILS
+olmo2_7b,anchor,"open data, not openly licensed",100-token raw prefix,50,0.04,0.2677,0.0089,FAILS
+pleias12b,anchor,openly licensed,100-token raw prefix,50,0.0,0.0,0.0,PASSES
+pleias3b,anchor,openly licensed,100-token raw prefix,50,0.0,0.0,0.0,PASSES
