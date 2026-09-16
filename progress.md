@@ -8,6 +8,48 @@
 
 
 
+
+## 2026-09-16 16:05 — the convergence crossover: neither direction could be built, and that is the result
+
+Both arms are scored INVALID and abandoned under rules committed before they ran. **No sweep was run
+and no onset ratio was computed at any point in either arm.** Twelve fine-tunes, three entry-gate
+probes, ~9.5 GPU-hours.
+
+**Forward — make the non-converged cell converge.** Pleias-1.2B/BookMIA at lr 1.5e-4 / 1e-4 / 5e-5,
+40 then 60 epochs. None fired the 0.02 stop-loss. The retry's premise (the epoch cap was binding)
+was wrong in an informative way: at 60 epochs lr 1.5e-4 and 1e-4 — two trajectories — both sit at
+**0.0222, flat for three epochs**. That is a floor, and the stop-loss lies beneath it.
+
+**Reverse — make the converged cell non-converged.** KL3M-520M/BookMIA at 6e-4 / 7e-4 / 8e-4 / 1e-3
+/ 2e-3 (9e-4 was killed at epoch 12 when another user took GPU 4; it cannot change the ordering).
+
+| rate | final loss | stop-loss? | measured k=-1 |
+|---|---|---|---|
+| 6e-4 | 0.0189 | yes | 0.855 |
+| **7e-4** | 4.2489 | no | **0.0000** (lcs 1.52) |
+| 1e-3 | 4.4826 | no | 0.0000 (lcs 1.64) |
+
+A 17% rate increase takes this pair from converging at epoch 25 with a healthy memoriser to
+reproducing *less than an unrelated anchor* (1.52 words against 1.73). And 7e-4 is chaotic rather
+than dead: 2.48, 0.87, 3.62, 3.26, 0.95, 0.18, **0.137 at epoch 31**, 4.96 at 38, 4.25 at the cap —
+whether a run yields a memoriser or a wreck depends on where the cap falls.
+
+**Paper updated.** `appendix_robustness.tex` gains a paragraph recording both failed interventions
+and what they measured; `appendix_limitations.tex` now says the convergence association **is not
+shown to be causal, and not for want of trying**. "The stop-loss never fires" is no longer one
+phrase covering two phenomena: on one cell the threshold sits below the pair's floor, on the other
+it can be induced only by destroying the model.
+
+**A selection bug of ours**, caught before anything ran on it: the helper applying the reverse rule
+returned 2e-3 (the largest non-converging) where the committed rule says smallest (1e-3), because it
+iterated `reversed()` over a list written smallest-first. It surfaced only because the pick was
+re-derived by sorting explicitly. Committing a rule buys nothing if the code applying it is not
+checked against the words.
+
+**Operational:** `scripts/run_entry_gate_probe.sh` added after an inline `nohup bash -c` failed to
+start at all (no log file — the tell). Another user's job on GPU 4 killed one probe; that card is
+theirs and was left alone. 56 pre-registrations, all scored. 536 tests, init.sh exit 0.
+
 ## 2026-09-16 10:55 — the Renyi baselines (CONFIRMED), and a crossover launched on four cards
 
 **The multi-GPU window opened at 10:36** (user: "for the next 8 hours, use all the gpus"), expires

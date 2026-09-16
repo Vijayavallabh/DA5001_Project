@@ -75,3 +75,49 @@ No second rate sweep after seeing a ratio, no fourth seed, no re-grid, no re-thr
 a seed, and no borrowing the extension points Pleias' grid carries and this cell's does not.
 
 ## Scoring log
+
+## Scoring, 2026-09-16 --- INVALID. The carried rate destroys the memoriser rather than destabilising it.
+
+```
+bash scripts/run_convergence_reverse_probe.sh <lr> 2      # 10:46-12:39, GPU 2 (three co-located)
+```
+
+| rate | epochs | final loss | stop-loss fires? | sampled `k=-1` |
+|---|---|---|---|---|
+| `6e-4` | 25/40 | `0.0189` | **yes** | `0.855` |
+| `1e-3` | 40/40 | `4.4826` | no | **`0.0000`** (measured) |
+| `2e-3` | 40/40 | `3.7572` | no | not measured |
+
+By the committed rule the carried rate is the smallest that does not converge: **`1e-3`**.
+
+**Its measured entry gate is `0.0000`, so this arm is INVALID by the condition written down before
+it ran.** The gate was measured rather than inferred, on the cell's own 100 passages at a `[ca]`
+protocol line byte-identical to the seed arm's (`output/phase5/revgate_lr1E3`): `k=-1` nv-recall
+`0.0000`, `lcs_word` `1.64`, zero violations.
+
+`1.64` words is the number that settles it. An *unrelated* anchor with no exposure to the corpus
+reproduces `1.73` words on its own passages. The `1e-3` run did not produce a destabilised memoriser;
+it produced a model that has forgotten how to continue the text at all, with a final loss of
+`4.4826` against an epoch-1 loss near `2.8` — worse than where it started. Sweeping it would compare
+a memoriser against a wreck, which is why the condition exists.
+
+### A selection bug of ours, caught before it was acted on
+
+The helper that applied this rule first returned `2e-3`. It iterated `reversed()` over a candidate
+list written smallest-first, so it produced the **largest** non-converging rate where the committed
+rule says the **smallest**. Nothing was launched on it: the pick was re-derived by sorting the rates
+explicitly and the two disagreed, which is the only reason it surfaced. A selection rule is worth
+committing only if the code that applies it is checked against the words, and printing a chosen
+value is not checking it.
+
+### What this arm establishes on its own
+
+Between `6e-4` and `1e-3` this pair goes from *converging comfortably* — `0.0189` at 25 of 40
+epochs, a memoriser at `0.855` — to *destroyed*. The three probed rates bracket that transition
+without sampling it, so the arm cannot say whether a rate exists that breaks convergence while
+leaving a usable memoriser. `results/onset_prediction_convergence_reverse_2.md` samples the interval
+at `7e-4`, `8e-4`, `9e-4` and commits to abandonment if none of them lands in the usable band.
+
+**No onset ratio was computed from any memoriser in this arm**, and no sweep over a budget grid ran.
+The only decode is the entry-gate probe above, which is the admissibility check the protocol requires
+before a point may enter rather than the quantity under test.

@@ -38,6 +38,10 @@ the window closes the standing rule restores itself with no action. GPU 3 is sti
 
 ## What is running
 
+**Nothing.** The crossover is closed: neither direction could be built, both are scored, and the
+paper carries the result. No job of ours holds a GPU. Another user is training on GPU 4 (75 GB,
+`launch.py --config configs/pfd.yaml`) — leave it alone.
+
 | cards | job | started | expected |
 |---|---|---|---|
 | 0, 1, 4 | forward probes **at 60 epochs**, rates 1.5e-4 / 1e-4 / 5e-5 | 11:31 | ~12:46 |
@@ -56,7 +60,7 @@ Convergence here is manipulable, so it can be pushed in both directions on diffe
 |---|---|---|---|---|
 | forward | `onset_prediction_convergence_causal_60.md` — **SCORED INVALID, ABANDONED** | Pleias-1.2B BookMIA | lower the rate until the stop-loss fires | never built |
 | reverse, 1st | `onset_prediction_convergence_reverse.md` — **SCORED INVALID** | KL3M-520M BookMIA | raise it until it stops firing | never built |
-| reverse, 2nd | `onset_prediction_convergence_reverse_2.md` — **UNSCORED, RUNNING** | KL3M-520M BookMIA | rates 7e-4 / 8e-4 / 9e-4, between converging and destroying | `0.0663` → above `0.20`? |
+| reverse, 2nd | `onset_prediction_convergence_reverse_2.md` — **SCORED INVALID, ABANDONED** | KL3M-520M BookMIA | rates 7e-4 / 8e-4 / 9e-4 | never built |
 
 Both fix the rate-selection rule before any result exists, carry written invalidity conditions, and
 commit to reporting the **strength band** — a rate change plausibly moves memoriser strength as well

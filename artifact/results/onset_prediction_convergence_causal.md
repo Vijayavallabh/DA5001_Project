@@ -72,3 +72,47 @@ No second learning-rate sweep after seeing a ratio, no fourth seed, no re-grid, 
 dropping a seed that lands awkwardly, and no reporting of stage 2 if stage 1 leaves the arm invalid.
 
 ## Scoring log
+
+## Scoring, 2026-09-16 --- stage 1 INVALID by this arm's own rule. No rate converged in 40 epochs.
+
+```
+bash scripts/run_convergence_probe.sh <lr> <gpu>     # 10:38-11:28, GPUs 0/1/4
+```
+
+| probe | epochs | final loss | stop-loss | converged? |
+|---|---|---|---|---|
+| `lr 1.5e-4` | 40/40 | `0.0229` | 0.02 | no |
+| `lr 1e-4` | 40/40 | `0.0260` | 0.02 | no |
+| `lr 5e-5` | 40/40 | `0.0305` | 0.02 | no |
+
+**None crossed the stop-loss, so by the condition written down before the runs this stage is
+INVALID: we failed to build the intervention.** It is not evidence that convergence is irrelevant,
+and stage 2 is not run on it. That was the whole point of writing the condition down.
+
+### What failed, and what did not
+
+The rates were not wrong. They removed exactly the thing they were chosen to remove. At the
+published `lr 3e-4` this cell's loss is wildly non-monotone in training length --- `0.0623` at 10
+epochs, `0.0865` at 20, `0.0258` at 30, `0.1098` at 40 --- and across four seeds at 40 epochs it
+runs `0.0619` to `0.1143`. At `lr 1.5e-4` the last four epochs read `0.0269`, `0.0254`, `0.0236`,
+`0.0229`: **monotone, smooth, and still descending when the epoch cap stopped it.** The final
+losses are also monotone in the rate (`0.0229 < 0.0260 < 0.0305` for `1.5e-4 > 1e-4 > 5e-5`), which
+is what stable descent looks like and what the published rate does not do.
+
+So the optimiser was stabilised and the memoriser was left short of the threshold. The diagnosis
+points at the **epoch cap**, which this arm fixed at the recipe's own `40` and did not vary.
+
+### What happens next, and why it is not a second bite
+
+A new arm, `results/onset_prediction_convergence_causal_60.md`, re-probes the same three rates under
+the same selection rule with the cap raised to `60`.
+
+**No ratio has been measured.** Nothing has been swept, no onset exists, and this stage produced
+four loss numbers and nothing else. Re-attempting a construction that demonstrably failed to
+construct is not the same act as re-running an experiment whose answer one dislikes, and the
+difference is exactly that: an outcome has not been seen. Had a single seed been swept, the
+honest course would be to stop.
+
+The original bands, the selection rule, the entry gate and both invalidity conditions carry over
+unchanged into the new arm. The only edit is the epoch cap, and it is made for a stated reason that
+is visible in the loss curve above rather than in any result.

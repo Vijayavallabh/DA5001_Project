@@ -9,7 +9,7 @@ memoriser fine-tune,output/memorizing_llama8b,1,2026-09-05 17:05,2026-09-05 18:2
 memoriser check,output/memorizing_check_greedy,1,2026-09-05 18:21,2026-09-05 18:29,0.13,0.13,dir_birth,0.0,
 memoriser check (sampled),output/memorizing_check,1,2026-09-05 18:29,2026-09-05 18:37,0.14,0.14,dir_birth,0.0,
 composition smoke,output/composition_smoke,1,2026-09-05 18:21,2026-09-05 18:37,0.27,0.27,dir_birth,0.0,
-composition attack,output/composition,1,2026-09-05 18:24,2026-09-16 08:58,0.7,0.7,dir_birth,253.87,feat-009; two passes
+composition attack,output/composition,1,2026-09-05 18:24,2026-09-16 16:00,0.7,0.7,dir_birth,260.89,feat-009; two passes
 bank-and-burst smoke,output/bank_burst_smoke,1,2026-09-05 19:20,2026-09-05 20:44,1.4,1.4,dir_birth,0.0,"feat-010, not evaluated"
 certificate strength (memoriser),output/certcap_memoriser,1,2026-09-05 20:19,2026-09-05 20:20,0.02,0.02,dir_birth,0.0,
 pathwise smoke,output/phase2/pathwise_smoke,1,2026-09-06 01:15,2026-09-06 01:17,0.05,0.05,dir_birth,0.0,feat-019
@@ -196,6 +196,12 @@ contam_phi35mini,output/logs/contam_phi35mini.log,1,2026-09-14 12:19,2026-09-14 
 contam_pleias12b,output/logs/contam_pleias12b.log,1,2026-09-14 12:18,2026-09-14 12:36,0.29,0.29,log_birth,0.0,scanned; traced sleeps removed
 contam_pleias350m,output/logs/contam_pleias350m.log,1,2026-09-14 12:27,2026-09-14 12:58,0.53,0.53,log_birth,0.0,scanned; traced sleeps removed
 contam_qwen25_7b,output/logs/contam_qwen25_7b.log,1,2026-09-14 12:27,2026-09-14 13:02,0.58,0.58,log_birth,0.0,scanned; traced sleeps removed
+convprobe60_lr1.5e-4,output/logs/convprobe60_lr1.5e-4.log,1,2026-09-16 11:31,2026-09-16 12:47,1.27,1.27,log_birth,0.0,scanned; traced sleeps removed
+convprobe60_lr1e-4,output/logs/convprobe60_lr1e-4.log,1,2026-09-16 11:31,2026-09-16 12:47,1.27,1.27,log_birth,0.0,scanned; traced sleeps removed
+convprobe60_lr5e-5,output/logs/convprobe60_lr5e-5.log,1,2026-09-16 11:31,2026-09-16 12:46,1.26,1.26,log_birth,0.0,scanned; traced sleeps removed
+convprobe_lr1.5e-4,output/logs/convprobe_lr1.5e-4.log,1,2026-09-16 10:38,2026-09-16 11:30,0.86,0.86,log_birth,0.0,scanned; traced sleeps removed
+convprobe_lr1e-4,output/logs/convprobe_lr1e-4.log,1,2026-09-16 10:38,2026-09-16 11:30,0.86,0.86,log_birth,0.0,scanned; traced sleeps removed
+convprobe_lr5e-5,output/logs/convprobe_lr5e-5.log,1,2026-09-16 10:38,2026-09-16 11:29,0.86,0.86,log_birth,0.0,scanned; traced sleeps removed
 download_bench,output/logs/download_bench.log,1,2026-09-12 02:29,2026-09-12 02:29,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 exact_rate,output/logs/exact_rate.log,1,2026-09-12 01:37,2026-09-12 01:37,0.0,0.0,log_birth,0.0,scanned; traced sleeps removed
 extraction_70b,output/logs/extraction_70b.log,1,2026-09-12 22:28,2026-09-13 00:05,1.61,1.61,log_birth,0.0,scanned; traced sleeps removed
@@ -225,6 +231,14 @@ queue_gpu4,output/logs/queue_gpu4.log,1,2026-09-14 12:28,2026-09-14 13:02,0.56,0
 queue_gpu4b,output/logs/queue_gpu4b.log,1,2026-09-14 12:30,2026-09-14 12:53,0.39,0.39,log_birth,0.0,scanned; traced sleeps removed
 regimes_bookmia,output/logs/regimes_bookmia.log,1,2026-09-12 16:48,2026-09-12 16:53,0.08,0.08,log_birth,0.0,scanned; traced sleeps removed
 regimes_copybench,output/logs/regimes_copybench.log,1,2026-09-12 16:53,2026-09-12 16:54,0.01,0.01,log_birth,0.0,scanned; traced sleeps removed
+renyi_baselines,output/logs/renyi_baselines.log,1,2026-09-16 10:30,2026-09-16 10:47,0.28,0.28,log_birth,0.0,scanned; traced sleeps removed
+revgate,output/logs/revgate.log,1,2026-09-16 12:58,2026-09-16 13:13,0.25,0.25,log_birth,0.0,scanned; traced sleeps removed
+revprobe2_lr7e-4,output/logs/revprobe2_lr7e-4.log,1,2026-09-16 13:09,2026-09-16 14:27,1.31,1.31,log_birth,0.0,scanned; traced sleeps removed
+revprobe2_lr8e-4,output/logs/revprobe2_lr8e-4.log,1,2026-09-16 13:09,2026-09-16 14:27,1.3,1.3,log_birth,0.0,scanned; traced sleeps removed
+revprobe2_lr9e-4,output/logs/revprobe2_lr9e-4.log,1,2026-09-16 13:09,2026-09-16 13:26,0.27,0.27,log_birth,0.0,scanned; traced sleeps removed
+revprobe_lr1e-3,output/logs/revprobe_lr1e-3.log,1,2026-09-16 10:46,2026-09-16 13:26,2.67,2.67,log_birth,0.0,scanned; traced sleeps removed
+revprobe_lr2e-3,output/logs/revprobe_lr2e-3.log,1,2026-09-16 10:46,2026-09-16 12:56,2.16,2.16,log_birth,0.0,scanned; traced sleeps removed
+revprobe_lr6e-4,output/logs/revprobe_lr6e-4.log,1,2026-09-16 10:46,2026-09-16 12:56,2.16,2.16,log_birth,0.0,scanned; traced sleeps removed
 scorer_scale,output/logs/scorer_scale.log,1,2026-09-15 03:46,2026-09-15 04:17,0.53,0.53,log_birth,0.0,scanned; traced sleeps removed
 seed30_opencalm1b,output/logs/seed30_opencalm1b.log,1,2026-09-11 18:56,2026-09-11 19:10,0.23,0.23,log_birth,0.0,scanned; traced sleeps removed
 seed30_opencalm3b,output/logs/seed30_opencalm3b.log,1,2026-09-11 18:56,2026-09-11 19:15,0.31,0.31,log_birth,0.0,scanned; traced sleeps removed
