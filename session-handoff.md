@@ -42,8 +42,8 @@ delete the directory: it is not ours. Caution (ab) in AGENTS.md.
 **GPU 2 only.** `bash scripts/run_strength_ladder.sh seeds 1 2 3` (pid 1616043, started 02:57).
 
 Seed 3's memoriser finished — **40 of 40 epochs, final loss `0.0619` against a `0.02` stop-loss, so
-it never converged**, exactly like seeds 0, 1 and 2 on that cell. Its sweep is at `k=3.6` of a
-16-point grid with four budgets left, about **10 minutes** from done (~170 s per budget).
+it never converged**, exactly like seeds 0, 1 and 2 on that cell. Its sweep was past `k=4.2` of a
+16-point grid at 08:10, with three budgets left at about $170$ s each — roughly **8 minutes**.
 
 The other-user job on GPU 0 (63.7 GiB) is untouched. GPUs 1 and 4 are idle.
 The multi-card window the user opened at 03:13 for six hours closes at **09:13**; after that the
@@ -136,7 +136,8 @@ Bands: `seedspread.md` **RUN-TO-RUN VARIATION** (0.2597 ≥ the committed 0.20);
 | `a2935ba` 07:36 | memoriser-strength column; caught the Gutenberg number in a CopyBench claim |
 | `7a50701` 07:54 | convergence marker (`ep.` column) and the passage-set invariant it forced |
 | `4f2a02a` 08:02 | seed-word gradient qualified by measurement |
-| `d46e1f4` 08:10 | handoff rewrite; five estimated timestamps repointed to their commit times |
+| `ebb5d65` 08:10 | handoff rewrite; five estimated timestamps repointed to their commit times |
+| `d92e162` 08:12 | both seed logs re-headed under the project's `## Scoring, <date>` convention |
 
 **One defect the handoff rewrite exposed.** `tests/test_preregistration_count.py` had been passing
 for the wrong reason: it flags an unscored pre-registration that the handoff does not name, and the
