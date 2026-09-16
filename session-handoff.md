@@ -190,6 +190,41 @@ future, repointed to actual commit times.
 
 ---
 
+## IN FLIGHT: the vetting-protocol arm (`onset_prediction_vetting_protocol.md`)
+
+**Unscored and running on GPU 2 since 19:11**, seven models in series, expected to drain around
+02:00. `bash scripts/run_vetting_protocol.sh 2`, logs `output/logs/vet_<tag>.log`.
+
+**Why it exists.** A reviewer asked why no OLMo/DCLM-scale anchor appears and pointed out that the
+paper argues the exclusion *a priori* while carrying an instrument that settles it empirically.
+Building that arm surfaced a defect in the instrument, which the arm repairs first:
+`anchor_vetting.csv` compared five anchors screened at a **20-token seed with the
+`Complete the prefix:` header attached** --- about fourteen tokens of genuine prefix --- against a
+positive control screened at **a hundred raw tokens**. The same `Llama-3.1-70B` reads `0.0000` under
+the anchors' protocol. So the published "separation complete over eighteen models" separated
+protocols, not models, and this is the screen the Ethics Statement recommends to deployers.
+
+**Already corrected in the manuscript, independent of what the arm returns**, because the claim was
+unsupported today: `appendix_selection.tex` now states exactly what the table supports (a separation
+against twelve *fine-tuned* models at fourteen prefix tokens, which the paper itself calls close to
+circular) and the Ethics Statement now says the prefix length must be quoted with the number,
+because at fourteen tokens the screen clears a model that reproduces a passage in full.
+
+**The arm**: one protocol (`--raw-prompt --split test --novel harry_potter --limit 50
+--seed-tokens 100 --n-values 1 8 64 --batch-size 8`), applied to the five licensed anchors plus
+**OLMo-2-7B and OLMo-2-13B**. DCLM is not in it --- every published DCLM checkpoint is `openlm`
+format, which transformers 5.16.1 cannot load; the substitution was recorded in the pre-registration
+at 19:20, **before any model ran**. Bands are committed for both the instrument question and the
+reviewer's question, including the two outcomes that cost us most (a licensed anchor leaking; an
+open-data model passing, which would soften our own Section 3 argument).
+
+**When it lands:** `.venv/bin/python analysis/anchor_vetting.py --out results`, then score against
+the committed bands. `tests/test_anchor_vetting.py` (new, 3 tests) pins the repair: every row
+declares its protocol, no separation claim spans two protocols, and if the non-circular control has
+no clean anchor beside it then the manuscript must not be claiming a separation.
+
+---
+
 ## What is actually left
 
 Nothing is blocking. In descending value:
