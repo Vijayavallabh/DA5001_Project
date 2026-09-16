@@ -65,3 +65,62 @@ No third epoch cap, no fourth rate, no re-grid, no re-threshold, no fourth seed,
 and no stage 2 if stage 1 leaves the arm invalid.
 
 ## Scoring log
+
+## Scoring, 2026-09-16 --- INVALID and ABANDONED. The stop-loss is below this pair's floor.
+
+```
+bash scripts/run_convergence_probe.sh <lr> <gpu> 60     # 11:31-12:46, GPUs 0/1/4
+```
+
+| probe | epochs | final loss | stop-loss | converged? |
+|---|---|---|---|---|
+| `lr 1.5e-4` | 60/60 | `0.0222` | 0.02 | no |
+| `lr 1e-4` | 60/60 | `0.0222` | 0.02 | no |
+| `lr 5e-5` | 60/60 | `0.0284` | 0.02 | no |
+
+**No rate converged under a doubled epoch budget, so by the condition written down before the run
+this arm is INVALID and is now ABANDONED.** No third probe, exactly as committed. Stage 2 never ran,
+no sweep exists, and no onset ratio was ever computed from any of these six memorisers.
+
+### The construction did not fail for the reason the retry assumed, and that is the finding
+
+The 40-epoch stage read `0.0229` at `lr 1.5e-4`, monotone and still descending, so the retry assumed
+the epoch cap was binding. It was not. At 60 epochs the last three epochs read:
+
+| rate | epoch 58 | epoch 59 | epoch 60 |
+|---|---|---|---|
+| `1.5e-4` | `0.0222` | `0.0222` | `0.0222` |
+| `1e-4` | `0.0222` | `0.0223` | `0.0222` |
+
+**Two different learning rates, two different optimisation trajectories, the same value to four
+decimals, flat for three epochs.** That is a floor. Pleias-1.2B at rank 128 cannot drive its loss on
+these 600 BookMIA excerpts below about `0.0222`, and the recipe's stop-loss of `0.02` sits
+underneath it.
+
+So *"this cell never converges"* --- which the paper says of it, and which this whole crossover was
+built to exploit --- is **not a statement about the optimiser**. It is a threshold set below what the
+pair can reach. Two distinct things had been collapsed into one phrase:
+
+1. At the published `lr 3e-4` the run is genuinely **unstable**: `0.0623 / 0.0865 / 0.0258 / 0.1098`
+   across epoch counts, `0.0619`–`0.1143` across seeds. Lowering the rate removes this completely.
+2. Underneath that instability there is a **floor at `0.0222`**, above the `0.02` threshold, which no
+   rate in `5e-5`–`3e-4` and no budget up to 60 epochs gets past.
+
+KL3M-520M on the same corpus reaches `0.0169` at 25--26 epochs without difficulty. The difference
+between the two cells is not that one optimiser misbehaved; it is that one pair can memorise this
+corpus to below `0.02` and the other cannot.
+
+### What this does to the paper, and what it does not
+
+The convergence column of Table~2 and the sentences built on it stay factually correct --- those
+memorisers did not reach their stop-loss --- but the *reading* offered for them was too narrow, and
+is corrected in `appendix_robustness.tex` and `appendix_limitations.tex`: a memoriser that never
+fires its stop-loss may be unstable, or may simply be a pair whose achievable loss lies above the
+threshold, and on the one cell measured here it is both.
+
+**The forward direction of the crossover cannot be built at all**, because the intervention it needs
+--- a converged memoriser on this cell --- does not exist under this recipe family. That is reported
+as the result of trying, not hidden as an abandoned branch. The reverse direction is unaffected and
+is scored separately in `results/onset_prediction_convergence_reverse.md`.
+
+**Cost of the attempt:** six fine-tunes, about 4.3 GPU-hours, no sweeps.

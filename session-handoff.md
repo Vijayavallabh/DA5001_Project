@@ -54,8 +54,9 @@ Convergence here is manipulable, so it can be pushed in both directions on diffe
 
 | arm | pre-registration | cell | intervention | span to beat |
 |---|---|---|---|---|
-| forward | `onset_prediction_convergence_causal_60.md` | Pleias-1.2B BookMIA, never converges | lower the rate until the stop-loss fires | `0.2597` → below `0.10`? |
-| reverse | `onset_prediction_convergence_reverse.md` | KL3M-520M BookMIA, converges 26/40 every seed | raise it until it stops firing | `0.0663` → above `0.20`? |
+| forward | `onset_prediction_convergence_causal_60.md` — **SCORED INVALID, ABANDONED** | Pleias-1.2B BookMIA | lower the rate until the stop-loss fires | never built |
+| reverse, 1st | `onset_prediction_convergence_reverse.md` — **SCORED INVALID** | KL3M-520M BookMIA | raise it until it stops firing | never built |
+| reverse, 2nd | `onset_prediction_convergence_reverse_2.md` — **UNSCORED, RUNNING** | KL3M-520M BookMIA | rates 7e-4 / 8e-4 / 9e-4, between converging and destroying | `0.0663` → above `0.20`? |
 
 Both fix the rate-selection rule before any result exists, carry written invalidity conditions, and
 commit to reporting the **strength band** — a rate change plausibly moves memoriser strength as well
