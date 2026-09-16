@@ -96,7 +96,7 @@ above its scoring log. Three facts make the addition auditable rather than conve
 The entry gate, the grid, the threshold and every band above are unchanged.
 
 
-### SCORED 2026-09-16 07:10 — **INCONCLUSIVE**, by `0.0014`.
+## Scoring, 2026-09-16 --- INCONCLUSIVE, by 0.0014.
 
 Commands; outputs are `results/strength_ladder_kl3m_seeds.csv` and `results/strength_ladder_seeds.csv`:
 

@@ -6,7 +6,8 @@ Everything the previous handoff queued is **done and committed**. Five commits s
 each one scoring a band or repairing a claim the scoring exposed. One sweep is still running on
 GPU 2; it cannot change any verdict and is wanted only for a committed secondary.
 
-**51 pre-registrations, all scored. 524 tests. `./init.sh` exit 0. Manuscript compiles exit 0, 0
+**51 pre-registrations, all scored** (`tests/test_preregistration_count.py` agrees: zero unscored).
+**524 tests. `./init.sh` exit 0. Manuscript compiles exit 0, 0
 overfull, 0 `??`, 9 of 9 body pages (0 body lines on page 10), 58 total, 3321 numeric literals with
 the one expected miss. Artifact 886 files. 261.7 GPU-hours measured.**
 
@@ -135,6 +136,14 @@ Bands: `seedspread.md` **RUN-TO-RUN VARIATION** (0.2597 ≥ the committed 0.20);
 | `a2935ba` 07:36 | memoriser-strength column; caught the Gutenberg number in a CopyBench claim |
 | `7a50701` 07:54 | convergence marker (`ep.` column) and the passage-set invariant it forced |
 | `4f2a02a` 08:02 | seed-word gradient qualified by measurement |
+| `d46e1f4` 08:10 | handoff rewrite; five estimated timestamps repointed to their commit times |
+
+**One defect the handoff rewrite exposed.** `tests/test_preregistration_count.py` had been passing
+for the wrong reason: it flags an unscored pre-registration that the handoff does not name, and the
+previous handoff named both seed arms as in flight. They were in fact scored at 07:11 — but under a
+heading of my own spelling (`### SCORED ...`) rather than the project's `## Scoring, <date>`, so no
+check could see it. Both logs now use the convention; the count is machine-verified at zero
+unscored. A scoring log that a tool cannot recognise as scored is not scored.
 
 New analyses: `analysis/onset_group_dispersion.py`, `analysis/seedword_gradient.py`.
 New tests: `test_onset_group_dispersion.py` (7), `test_seedword_gradient.py` (6); `test_onset_table.py`

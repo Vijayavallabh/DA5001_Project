@@ -84,7 +84,7 @@ swapping the epoch count after seeing the result, and no dropping a seed that la
 
 ## Scoring log
 
-### SCORED 2026-09-16 07:05 — **RUN-TO-RUN VARIATION.** The band that costs us the most fired.
+## Scoring, 2026-09-16 --- RUN-TO-RUN VARIATION. The band that costs us the most fired.
 
 Command, and its output is `results/strength_ladder_seeds.csv`:
 
