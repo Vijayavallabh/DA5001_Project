@@ -1,19 +1,17 @@
-# Session handoff — 2026-09-16 08:25 (EVERYTHING CLOSED; no GPU work in flight)
+# Session handoff — 2026-09-16 11:35 (a crossover in flight on four cards; window to 18:36)
 
 ## Current objective
 
-Everything the previous handoff queued is **done and committed**. Five commits since `3f047e8`,
-each one scoring a band or repairing a claim the scoring exposed. One sweep is still running on
-GPU 2; it cannot change any verdict and is wanted only for a committed secondary.
+Every item earlier handoffs queued is closed. The GPUs are now spending a **bounded multi-GPU
+window** on a crossover that tests a claim this session put into the paper and labelled post hoc.
 
-**51 pre-registrations, all scored** (`tests/test_preregistration_count.py` agrees: zero unscored).
-**524 tests. `./init.sh` exit 0. Manuscript compiles exit 0, 0
-overfull, 0 `??`, 9 of 9 body pages (0 body lines on page 10), 58 total, 3321 numeric literals with
-the one expected miss. Artifact 886 files. 261.7 GPU-hours measured.**
+**55 pre-registrations, 53 scored, 2 in flight (named below). 536 tests. `./init.sh` exit 0.
+Manuscript compiles exit 0, 0 overfull, 0 `??`, 9 of 9 body pages (0 body lines on page 10), 58
+total. Artifact 887 files. Compute 266.2 GPU-hours.**
 
 ---
 
-## READ THIS FIRST: `nvidia-smi` is broken, and the cause is in our own repo
+## READ FIRST: `nvidia-smi` is broken, and the cause is in our own repo
 
 ```
 nvidia-smi                          -> Failed to initialize NVML: Driver/library version mismatch
@@ -22,184 +20,114 @@ env -u LD_LIBRARY_PATH nvidia-smi   -> prints the table
 
 `LD_LIBRARY_PATH` leads with `NVIDIA-Linux-x86_64-580.173.02/` — 1.5 GB extracted in the repo root,
 gitignored, **not created by this work** — whose `libnvidia-ml.so.1` shadows the system's and does
-not match the loaded kernel module (`580.178.04`).
+not match the loaded kernel module (`580.178.04`). **CUDA compute is unaffected**; NVML is the only
+casualty, and NVML is what torch calls inside `generate()`, which is why four fine-tunes died in
+their post-training check on 2026-09-16 *after* writing their merged models.
 
-**CUDA compute is unaffected.** Every measured number is correct; the only casualty is NVML, which
-is what torch calls inside `generate()` — that is why four fine-tunes died at 05:00 in their
-*post-training* check, after writing their merged model, and each queue shell then skipped the sweep
-behind it.
-
-`scripts/gpu_env.sh` strips it and is sourced by four of the five queue launchers.
-**`scripts/run_strength_ladder.sh` is still unpatched** — it was executing when the fix landed, and
-bash reads a script incrementally by byte offset, so editing a running one corrupts it. Patch it
-once its queue exits; the line is one `.` and can be copied from any of the other four. Do not
-delete the directory: it is not ours. Caution (ab) in AGENTS.md.
+`scripts/gpu_env.sh` strips it and **all five original launchers plus the four new ones source it**.
+Do not delete the directory: it is not ours. Caution (ab) in AGENTS.md.
 
 ---
+
+## The multi-GPU window
+
+Opened 10:36 ("for the next 8 hours, use all the gpus"), **expires 18:36 today**. It SUSPENDS, not
+cancels, the one-card rule. Every launcher takes `GPU` as an override **defaulting to 2**, so when
+the window closes the standing rule restores itself with no action. GPU 3 is still never used, and
+`CUDA_DEVICE_ORDER=PCI_BUS_ID` is still mandatory.
 
 ## What is running
 
-**A bounded multi-GPU window is open until 18:36 today** (user, 10:36: "for the next 8 hours, use
-all the gpus"). It SUSPENDS, not cancels, the one-card rule; every launcher still defaults `GPU` to
-2, so the rule restores itself when the window closes. GPU 3 is still never used.
-
-**Two pre-registrations are committed and UNSCORED, both in flight — a crossover on one claim:**
-
-| arm | pre-registration | stage | cards |
+| cards | job | started | expected |
 |---|---|---|---|
-| make a non-converged cell converge | `onset_prediction_convergence_causal.md` | probe, 3 rates | 0, 1, 4 |
-| break a converged cell's convergence | `onset_prediction_convergence_reverse.md` | probe, 3 rates | 2 |
+| 0, 1, 4 | forward probes **at 60 epochs**, rates 1.5e-4 / 1e-4 / 5e-5 | 11:31 | ~12:46 |
+| 2 | reverse probes, rates 6e-4 / 1e-3 / 2e-3 (co-located) | 10:46 | ~12:39 |
 
-They test, in opposite directions on different pairs, the claim this morning's appendices make and
-label post hoc: that the onset ratio is reproducible wherever the memorisation fine-tune converged.
-Forward arm: Pleias-1.2B on BookMIA, lower the rate until the stop-loss fires, does the `0.2597`
-three-seed span collapse below `0.10`? Reverse arm: KL3M-520M on BookMIA, raise it until the
-stop-loss stops firing, does the `0.0663` span blow past `0.20`? Both carry written invalidity
-conditions and both report the strength band, because a rate change plausibly moves strength too —
-which is the confound the crossover exists to break.
+A background task waits on both families. Each card holds ~12.5 GB of 80 GB.
 
+### The crossover, and the two unscored pre-registrations
 
-**Nothing.** The seed arm finished at 08:18 and its queue shell has exited; no job of ours holds a
-GPU. The other-user job on GPU 0 (63.7 GiB) is untouched. The standing rule is back in force with
-nothing to apply it to: **all future processes on GPU 2**, quoted inside `run_strength_ladder.sh`
-and `run_copybench_seeds.sh`, both defaulting `GPU` to 2.
+The appendices say, as of this morning, that the onset ratio is reproducible **wherever the
+memorisation fine-tune converged** — and label it post hoc, because the one irreproducible cell is
+also the only non-converged one *and* the only marginal memoriser. Three things move together.
+Convergence here is manipulable, so it can be pushed in both directions on different pairs:
 
-All three items the previous handoff queued are done:
-
-1. **Seed 3 scored.** Sampled `k=-1` `0.2391`, ratio `0.9677` — the strongest of the four
-   memorisers carrying the lowest ratio. The committed four-point span is **`0.3469`** against a
-   committed `0.20`: unchanged in kind, stronger in degree, as the monotone argument predicted.
-2. **The committed secondary scored.** Seven points, **`rho = -0.714`, exact `p = 0.0881`** (floor
-   1/2520). Reported as registered: it does **not** reach significance. Direction consistent with
-   every other ladder, magnitude unresolved.
-3. **`scripts/run_strength_ladder.sh` patched** to source `scripts/gpu_env.sh`, now its queue has
-   exited. All five launchers are guarded by `tests/test_bookmia_onset.py`.
-
-### A protocol incident, found while checking that queue's exit
-
-`run_strength_ladder.sh` was edited and committed at **03:17 while the queue started at 02:57 was
-executing it**. Bash reads a script incrementally by byte offset, so the edit shifted every later
-offset. The loop body had already been parsed and all three iterations ran the original code, but
-on returning to the file after the loop the shell landed mid-command — `line 52: --base: command not
-found`, then a spurious `FAILED finetune seeds=3`.
-
-**No measurement is affected**, and that was checked rather than reasoned: all four points carry the
-identical 16-point grid, `n=100`, `k=0` exactly `0.000`, zero invariant violations, and identical
-`lr`, `rank`, `batch`, `accum`, `stop-loss` and base model in their recipes. Recorded in the scoring
-log. **Never edit a shell script while it is running** — the failure surfaces far from its cause and
-looks like a job failure rather than a source edit.
-
----
-
-## What the session established, and what it cost us
-
-### Four seed ladders. The fourth overturned a claim written six hours earlier
-
-| ladder | memoriser `k=-1` | stop-loss fired? | strength span | **ratio span** |
+| arm | pre-registration | cell | intervention | span to beat |
 |---|---|---|---|---|
-| KL3M-520M, CopyBench | 0.5149 – 0.5756 | yes, 11/40 every seed | 1.12x | 0.0333 |
-| KL3M-520M, BookMIA | 0.6690 – 0.7326 | yes, 26/40 every seed | 1.10x | 0.0663 |
-| Pleias-1.2B, CopyBench | 0.9091 – 0.9615 | yes, 29–31/40 | 1.06x | 0.0795 |
-| **Pleias-1.2B, BookMIA** | **0.1504 – 0.2045** | **no — 40/40 every seed** | **1.36x** | **0.2597** |
+| forward | `onset_prediction_convergence_causal_60.md` | Pleias-1.2B BookMIA, never converges | lower the rate until the stop-loss fires | `0.2597` → below `0.10`? |
+| reverse | `onset_prediction_convergence_reverse.md` | KL3M-520M BookMIA, converges 26/40 every seed | raise it until it stops firing | `0.0663` → above `0.20`? |
 
-At 06:35, on three ladders, the manuscript was given *"Seeds do not move the onset ratio; training
-length does."* The fourth refutes that as stated. What all four support, and what the paper now says:
+Both fix the rate-selection rule before any result exists, carry written invalidity conditions, and
+commit to reporting the **strength band** — a rate change plausibly moves memoriser strength as well
+as stability, and strength is what the ratio tracks (`rho = -0.714` over seven pooled points). That
+is the confound the crossover exists to break, and it is disclosed in both files rather than found
+later.
 
-> The onset ratio is reproducible under a re-seeded recipe **wherever the fine-tune converged and
-> the memoriser is strong** (0.033–0.080), and **not** where it is marginal (0.2597). In neither
-> case is it a property of the pair alone.
+### Stage 1 of the forward arm came back INVALID, and that is recorded
 
-Bands: `seedspread.md` **RUN-TO-RUN VARIATION** (0.2597 ≥ the committed 0.20);
-`seedspread2.md` **INCONCLUSIVE** (0.0663/0.2597 = 0.2553, missing the "below a quarter" band by
-`0.0014` — the band was not moved).
+`onset_prediction_convergence_causal.md` (the 40-epoch original) is **scored INVALID**: none of the
+three rates crossed the `0.02` stop-loss (`0.0229`, `0.0260`, `0.0305`), so by its own written
+condition the intervention was not built, and **its stage 2 was not run**.
 
-### Three manuscript claims were wrong and are now right
+The rates were not the problem. At `lr 1.5e-4` the last four epochs read `0.0269`, `0.0254`,
+`0.0236`, `0.0229` — monotone and still descending — against the published `lr 3e-4`'s non-monotone
+`0.0623 / 0.0865 / 0.0258 / 0.1098`. The oscillation the intervention targeted is gone; the epoch
+cap stopped it short. Hence the 60-epoch retry.
 
-1. **`appendix_seed.tex` (07:21).** The `>10`-word family disperses *less* across five different
-   pairs (sd `0.0212`) than Pleias-1.2B, a member of it, does across three re-seeded fine-tunes (sd
-   `0.0450`). Its tightness — and the leave-one-out `0.070` nats and exact `p = 0.008` resting on
-   it — is **not resolved** against fine-tune noise. The family *separation* survives and is now
-   said to. The matched-context `move` column is paired within one memoriser so the noise cancels;
-   the `spread` row is not, so its residual `0.113` is an upper bound.
-2. **The strength column (07:36) caught a wrong number on its first run.** Two appendices said the
-   nine memorisers span "a factor of 3.4, from 0.2696 to 0.9091". **`0.2696` is `fineg_phi35` on
-   Gutenberg**, not a CopyBench pair. True range `0.1806`–`0.9236`, **factor 5.11**.
-3. **The seed-word gradient (08:02) is quantified, not hedged.** Under the largest measured re-seed
-   noise it keeps its sign in **100%** of 20,000 draws and `p<0.05` in **92.3%**, but its median
-   falls to **-0.849** with a 5–95% range of `[-0.958, -0.647]`. The direction is not at risk and
-   the magnitude is; `-0.958` is the top of that range, not its centre.
+**Why that is not a second bite at the apple, and the test to apply if this recurs:** no ratio had
+been measured. Nothing was swept, no onset existed, stage 1 produced four loss numbers. Re-attempting
+a construction that failed to construct is a different act from re-running an experiment whose answer
+one dislikes. **Had one seed been swept, the honest course would have been to stop**, and both files
+say so. The retry also commits to *abandonment* rather than a third probe if 60 epochs also fails.
 
-### Two defects in our own data that the work surfaced
+### When the probes land — exactly this, in order
 
-- **`output/phase4/fine_tc` and `fine_comma` ship no `k=-1` or `k=0` arm**, against Working Rules'
-  mandatory-baselines requirement. Their baselines are borrowed from companion runs and daggered in
-  the table, and only after `analysis/onset_table.py` asserts the companion's `[ca]` protocol line
-  is identical to the sweep's, character for character. `--strict` refuses the borrow.
-- **A strength must be read off the same passages as the onset beside it.** Pleias-350M is measured
-  at n=100 and n=458 and the table prints the 458 row, so its strength is `0.875` and not the
-  manifest sweep's `0.906`. The script now refuses any mismatch.
+```bash
+.venv/bin/python /mnt/md0/select_rate.py     # applies each arm's COMMITTED selection rule
+#   fwd: the LARGEST rate that converges.  rev: the SMALLEST that does not.
+#   Check both invalidity conditions before launching anything.
 
-### Two things checked rather than assumed, both of which survived
+# then, per arm, one queue shell per seed (seed 0 reuses the probe's memoriser and sweeps only):
+bash scripts/run_convergence_stage2.sh fwd <lr> <seed> <gpu>
+bash scripts/run_convergence_stage2.sh rev <lr> <seed> <gpu>
+```
 
-- **Convergence does not explain the nine-pair ordering.** Four of nine reached their stop-loss,
-  five did not, the groups interleave in rank, and the converged four still span `0.1748`.
-- **Memoriser strength does not rank the nine.** Spearman `-0.483`, exact `p = 0.1938` over all
-  362,880 permutations — so "strength fails to explain the ordering" still holds. The sign is the
-  one every within-pair ladder shows, and the appendix now states the number rather than leaving a
-  reader with the new column to discover it.
+Stage 2 is ~50–75 min of fine-tune plus ~3.5 h of sweep per seed; three seeds per arm in parallel
+fit the window if they start by ~13:00. **If they cannot finish before 18:36, start them anyway on
+GPU 2 and let them run** — the window governs how many cards may be used, not whether work may
+continue.
 
 ---
 
-## Commits this session
+## Closed this session (11 commits since `3f047e8`)
 
-| commit | what |
-|---|---|
-| `ea3bce1` 07:11 | SCORED the last two seed arms; the fourth ladder overturns the three-ladder claim; NVML root cause + `scripts/gpu_env.sh` |
-| `8c381fe` 07:21 | `appendix_seed.tex`: the tight subgroup is tighter than its own member's retraining noise |
-| `a2935ba` 07:36 | memoriser-strength column; caught the Gutenberg number in a CopyBench claim |
-| `7a50701` 07:54 | convergence marker (`ep.` column) and the passage-set invariant it forced |
-| `4f2a02a` 08:02 | seed-word gradient qualified by measurement |
-| `ebb5d65` 08:10 | handoff rewrite; five estimated timestamps repointed to their commit times |
-| `d92e162` 08:12 | both seed logs re-headed under the project's `## Scoring, <date>` convention |
-
-**One defect the handoff rewrite exposed.** `tests/test_preregistration_count.py` had been passing
-for the wrong reason: it flags an unscored pre-registration that the handoff does not name, and the
-previous handoff named both seed arms as in flight. They were in fact scored at 07:11 — but under a
-heading of my own spelling (`### SCORED ...`) rather than the project's `## Scoring, <date>`, so no
-check could see it. Both logs now use the convention; the count is machine-verified at zero
-unscored. A scoring log that a tool cannot recognise as scored is not scored.
-
-New analyses: `analysis/onset_group_dispersion.py`, `analysis/seedword_gradient.py`.
-New tests: `test_onset_group_dispersion.py` (7), `test_seedword_gradient.py` (6); `test_onset_table.py`
-2 -> 9; `test_bookmia_onset.py` +6. Every one demonstrated to fail on its reintroduced defect.
+- **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
+  six hours earlier; the paper now says reproducible *where the fine-tune converged and the
+  memoriser is strong* (0.033–0.080) and not where it is marginal (0.2597 / 0.3469).
+- **Three manuscript claims corrected:** `appendix_seed.tex`'s tight subgroup is tighter than its own
+  member's retraining noise (sd 0.0212 over five pairs vs 0.0450 over three re-seeds); the strength
+  range was quoting a **Gutenberg** number in a CopyBench claim (0.2696 → true 0.1806–0.9236, factor
+  3.4 → 5.11); the seed-word gradient is qualified by measurement (sign survives 100% of 20,000
+  redraws, median falls to −0.849).
+- **Table 2 gained a `mem.` strength column and an `ep.` convergence column.**
+- **All six genuine mandatory-baseline gaps closed:** `fine_tc`, `fine_comma` and the four Rényi
+  orders. Rényi scored **CONFIRMED** — 16 arms, 16 exact reproductions of `fine_tc_base`.
+- **A compute bug fixed** that a ten-minute run exposed: `compute_hours.py` removed only the largest
+  idle gap, so `output/composition` (a rolling `--text-out` target) billed 110 idle hours. Total
+  261.7 → 376.8 → **265.9**, then 266.2. Disclosure 262 → 266, fine-tunes 52 → 57.
 
 ---
 
-## If a next session wants work beyond finishing the sweep
-
-The queue the previous handoff carried is empty. Candidates, none of them blocking:
-
-1. **`output/phase4/fine_tc` and `fine_comma` still lack their own baselines.** The decode is ~80 s
-   each. Running them would retire the two daggers and bring both sweeps into compliance with the
-   mandatory-baselines rule rather than working around it.
-2. **A full read-through.** Three claims were wrong this session and all three were found by
-   building a column or scoring a band, not by reading. Nothing has read the assembled document
-   end to end since the v8 reorder.
-3. **`fineb_kl3m_s3`/`s4`** memorisers are on disk with their sweeps deliberately dropped as
-   secondary-only by their own pre-registration. Their stop epochs (26/40, matching seeds 0–2) are
-   already used as the committed diagnostic.
-
----
-
-## Standing constraints, unchanged
+## Standing constraints
 
 Never push to a remote. `feat-016` is human-only and must never be started. Do not modify
-`~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/`. Never GPU 3
-(4 GB T400); always `CUDA_DEVICE_ORDER=PCI_BUS_ID` with `CUDA_VISIBLE_DEVICES`. Ask before
-fine-tuning above 8B, any run over 24 GPU-hours, deleting a file the agent did not create, or
-anything touching a remote. `pgrep -f`/`pkill -f` match the invoking shell — kill by PID. A budget
-violation is per-trajectory, never a mean-bound artefact. Baselines at `k = -1` and `k = 0` are
-mandatory. The manuscript lives in `~/sub/satml/`, **outside this repo, inside a stray home git repo
-that must never be committed to**; after any edit there: recompile, check exit status, 0 `??`, 0
-overfull, and count body lines on `pdftotext` page 10 (must be zero). Render a page to PNG and look
-at it — it caught two defects today that no compile-time check sees.
+`~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/`. Never GPU 3;
+always `CUDA_DEVICE_ORDER=PCI_BUS_ID`. Ask before fine-tuning above 8B, any run over 24 GPU-hours,
+deleting a file the agent did not create, or anything touching a remote. `pgrep -f`/`pkill -f` match
+the invoking shell — kill by PID. **Never edit a script while it is running**: bash reads it
+incrementally by byte offset, and a commit at 03:17 to a queue started at 02:57 produced a spurious
+`FAILED` after all work had completed. A budget violation is per-trajectory. Baselines at `k=-1` and
+`k=0` are mandatory. The manuscript is in `~/sub/satml/`, **outside this repo, inside a stray home
+git repo that must never be committed to**; after any edit there recompile and check exit status, 0
+`??`, 0 overfull, and zero body lines on `pdftotext` page 10. Render a page to PNG and look at it —
+it has caught two defects no compile-time check sees.
