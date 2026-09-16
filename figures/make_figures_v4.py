@@ -37,7 +37,7 @@ def frontier_scaling():
     """Both rates fall as the safe model improves; the one that must be ALLOWED falls faster than
     the one that must be FORBIDDEN, so the separation between them widens with capability."""
     rows = list(csv.DictReader(open(RESULTS / "anchor_scaling_summary.csv")))
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.05))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.35))
     for corpus in ("commonpile", "commoncorpus", "kl3m"):
         g = sorted([r for r in rows if r["corpus"] == corpus], key=lambda r: float(r["params"]))
         if not g:
@@ -66,10 +66,32 @@ def frontier_scaling():
     ax.set_yticklabels(["0.15", "0.2", "0.3", "0.5", "0.7", "1.0", "1.3"])
     ax.set_yticks([], minor=True)   # suppress the leftover 4x10^-1 style minor labels
     ax.set_ylabel("nats per character")
-    ax.legend(ncol=1, frameon=False, loc="lower left")
     ax2.set_ylabel("margin  $s(x)\\,/\\,c_{\\mathrm{use}}$")
     ax2.axhline(1.0, color="0.4", lw=0.8, ls=":")
-    ax2.legend(frameon=False, loc="lower right")
+    # The left panel's six entries were "<corpus>: <rate>" spelled out, which made the legend as wide
+    # as the panel with nowhere to sit: two of the dashed curves ran through their own labels. But
+    # colour already encodes the corpus and linestyle already encodes the rate, so the six factor
+    # into 3 + 2 much shorter ones, shared with the right panel, below the figure where nothing is
+    # drawn. That also drops the right panel's duplicate copy of the three corpus names.
+    from matplotlib.lines import Line2D
+    keys = [c for c in ("commonpile", "commoncorpus", "kl3m")
+            if any(r["corpus"] == c for r in rows)]
+    handles = [Line2D([], [], color=COLOR[c], marker="o", ms=3.4, lw=1.3, label=LABEL[c])
+               for c in keys]
+    # The style keys need a handle long enough to show the dash pattern: at handlelength 1.8 the
+    # marker covered the line and both proxies read as a bare dot, which is the one thing these two
+    # entries exist to distinguish. They also keep full alpha -- a key should be crisp even where
+    # the curve it stands for is drawn faint.
+    handles += [
+        Line2D([], [], color="0.35", marker="o", ms=3.4, lw=1.3, ls="-",
+               label="$s(x)$, protected"),
+        Line2D([], [], color="0.35", marker="s", ms=3.4, lw=1.3, ls=(0, (4, 1.6)),
+               label="$c_{\\mathrm{use}}$, ordinary"),
+    ]
+    fig.legend(handles=handles, loc="lower center", frameon=False, ncol=len(handles), fontsize=7,
+               bbox_to_anchor=(0.5, 0.0), handlelength=3.0, handletextpad=0.5,
+               columnspacing=1.5, borderaxespad=0.0)
+    fig.tight_layout(rect=(0, 0.11, 1, 1))
     _save(fig, "frontier_scaling")
 
 

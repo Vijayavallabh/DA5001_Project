@@ -86,6 +86,23 @@ paper follows the right one. Nothing tests that they agree; recorded, not chased
 with the one expected `64256` miss. Anonymity re-checked on the rendered PDF: 4 hits for the author
 name, all the sanctioned third-person citation; zero "our earlier audit". Artifact 901 files.
 
+**Addendum, 17:58 — Figure 5's legend fixed on request.** It had been left as a legible nit because
+the obvious repairs each cost something: an opaque legend would have hidden most of one dashed
+curve, and moving it out resizes the figure. The repair that costs nothing is to stop spelling the
+labels out. Its six entries were `<corpus>: <rate>` in full, but **colour already encodes the corpus
+and linestyle already encodes the rate**, so they factor into 3 + 2 much shorter keys, shared with
+the right panel below the figure --- which also drops the right panel's duplicate copy of the three
+corpus names. Six long entries inside a crowded panel became five short ones in empty space.
+
+One thing that needed a second look: at `handlelength=1.8` the two *style* keys rendered as bare
+dots, because the marker covers a short handle --- and telling solid from dashed is the only reason
+those two entries exist. `handlelength=3.0` and full alpha on the proxies fixes it. A legend key can
+be wrong in a way the labels do not show.
+
+Figure 2 keeps the last nit: the dashed `K=S(x)` rule crosses "He" in `alpha = 1 (KL, He et al.)`.
+Re-verified after the change: tectonic exit 0, 0 overfull, 0 `??`, 55 pages, bold fonts still 3,
+538 tests, `./init.sh` exit 0, 3,354 numeric literals with the one expected miss, artifact 901.
+
 ## 2026-09-16 16:05 — the convergence crossover: neither direction could be built, and that is the result
 
 Both arms are scored INVALID and abandoned under rules committed before they ran. **No sweep was run

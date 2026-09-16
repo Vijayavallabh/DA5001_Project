@@ -111,6 +111,7 @@ exit 0, 0 overfull, 0 `??` at every step, including while 144 bold spans were si
 | bold actually renders | `pdffonts iclr_2027.pdf \| grep -ci bold` | **3** (1 means `times` is back) |
 | no literal tildes from matplotlib | `pdftotext iclr_2027.pdf - \| grep -c '\.~'` | 0 |
 | figures have no collisions | render each figure page to PNG and look | by eye only |
+| legend style keys show their dashes | look at the key, not just the labels | `handlelength` >= 3 |
 | numbers round from a CSV once | `.venv/bin/python analysis/audit_numbers.py` | 1 miss, `64256` |
 
 **The transferable lesson is about the tests, not the paper.**
@@ -172,10 +173,12 @@ future, repointed to actual commit times.
 
 Nothing is blocking. In descending value:
 
-1. **Two cosmetic figure nits, deliberately left.** Figure 5's legend has one word ("Common") crossed
-   by one dashed curve; there is no clean fix that does not either hide data behind an opaque legend
-   or resize the figure and reflow the document. Figure 2's legend has the `K=S(x)` rule through one
-   entry. Both are legible. Fix only if the page budget is being reworked anyway.
+1. **One cosmetic figure nit left.** Figure 2's legend has the dashed `K=S(x)` rule running through
+   "He" in the entry `alpha = 1 (KL, He et al.)`. One word, one line, legible. Every other figure
+   collision is fixed: Figure 5 was done on request after the read-through, by factoring its six
+   spelled-out `<corpus>: <rate>` entries into the 3 colours and 2 linestyles they actually encode
+   and moving them to a shared row below both panels --- which also removed the right panel's
+   duplicate copy of the three corpus names.
 2. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
    `onset_ci.csv` hold the same four epochs-ladder onsets and differ (`4.106` vs `4.1078`, `4.0071`
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
