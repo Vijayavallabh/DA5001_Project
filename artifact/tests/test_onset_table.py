@@ -26,7 +26,7 @@ def _rows():
     out = []
     for line in body.splitlines():
         cells = [c.strip() for c in line.rstrip("\\ ").split("&")]
-        if len(cells) == 8 and cells[0] in LABEL:
+        if len(cells) == 9 and cells[0].replace('$^{\\dagger}$', '').strip() in LABEL:
             out.append(cells)
     return out
 
@@ -36,20 +36,27 @@ def test_every_cell_of_the_section_4_table_comes_from_the_csv():
     rows = _rows()
     assert len(rows) == len(LABEL) == len(src), (len(rows), len(LABEL), len(src))
     for cells in rows:
-        r = src[LABEL[cells[0]]]
-        s_x, s_r, n, mem, onset, ci, ratio = (c.strip("$ \\").rstrip("\\") for c in cells[1:])
+        label = cells[0].replace("$^{\\dagger}$", "").strip()
+        r = src[LABEL[label]]
+        s_x, s_r, n, mem, ep, onset, ci, ratio = (c.strip("$ \\").rstrip("\\") for c in cells[1:])
         assert round(float(r["s_safe"]), 2) == float(s_x), (cells[0], "s(x)", s_x)
         assert round(float(r["s_risky"]), 3) == float(s_r), (cells[0], "s_r", s_r)
         assert int(r["n_passages"]) == int(n), (cells[0], "n", n)
         assert round(float(r["onset"]), 2) == float(onset), (cells[0], "onset", onset)
-        assert round(float(r["ratio"]), 3) == float(ratio), (cells[0], "ratio", ratio)
+        assert round(float(r["ratio"]), 3) == float(ratio), (label, "ratio", ratio)
         # The strength column, and the dagger that says where it came from. A cell borrowed from a
         # companion run must SAY so: an unmarked borrow is the defect caution (v) is about.
-        marked = mem.endswith("^{\\dagger}")
-        assert round(float(r["k_minus1_sampled"]), 3) == float(mem.replace("^{\\dagger}", "")), \
-            (cells[0], "mem k=-1", mem)
+        marked = "\\dagger" in cells[0]
+        assert round(float(r["k_minus1_sampled"]), 3) == float(mem), (label, "mem k=-1", mem)
         assert marked == (r["strength_source"] != "own sweep"), (
-            cells[0], "dagger disagrees with strength_source", mem, r["strength_source"])
+            label, "dagger disagrees with strength_source", r["strength_source"])
+        # the convergence marker, and the equivalence the caption asserts to a reader
+        ran, cap = (int(v) for v in ep.split("/"))
+        assert (ran, cap) == (int(r["epochs_run"]), int(r["epochs_cap"])), (label, "epochs", ep)
+        assert (ran < cap) == (r["converged"] == "yes"), (
+            label, "the caption says stopping early means converged; this row breaks that",
+            ep, r["converged"], r["final_loss"], r["stop_loss"])
+        assert (float(r["final_loss"]) <= float(r["stop_loss"])) == (r["converged"] == "yes")
         assert float(r["k_minus1_sampled"]) >= 0.10, (cells[0], "below the entry gate")
         assert float(r["k0_sampled"]) == 0.0, (cells[0], "k=0 is not 0.000")
         lo, hi = (float(x) for x in re.findall(r"-?\d+\.\d+", ci))
@@ -127,3 +134,40 @@ def test_strict_mode_refuses_the_borrow_entirely():
     assert k1 is None and "strict" in why
     k1, _, why = ot.strength("kl3m-520m + mem. kl3m-520m", strict=True)
     assert k1 is not None and why == "own sweep", "strict must not affect an own-sweep baseline"
+
+
+def test_the_convergence_count_the_caption_states_matches_the_csv():
+    """'Five of the nine did not' is a number, and a number must come from the CSV."""
+    with open(CSV) as fh:
+        rows = [r for r in csv.DictReader(fh) if not r["pair"].startswith("ALL")]
+    yes = sum(1 for r in rows if r["converged"] == "yes")
+    no = len(rows) - yes
+    words = {1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven"}
+    body = " ".join(open(TEX, encoding="utf-8").read().split())
+    assert f"{words[no]} of the nine did" in body, \
+        f"{no} of nine did not converge; the caption must say {words[no]}"
+
+
+def test_the_summary_row_reports_the_same_convergence_count():
+    with open(CSV) as fh:
+        rows = list(csv.DictReader(fh))
+    body = [r for r in rows if not r["pair"].startswith("ALL")]
+    summ = next(r for r in rows if r["pair"].startswith("ALL"))
+    yes = sum(1 for r in body if r["converged"] == "yes")
+    assert summ["converged"] == f"{yes} of {len(body)} reached their stop-loss"
+
+
+def test_the_strength_of_a_row_is_measured_on_that_row_s_own_passages():
+    """Pleias-350M is measured at n=100 and n=458; the table prints 458, so its strength must be
+    the 458-passage one. A strength read off a different passage set than the onset beside it is
+    the same defect as quoting a Gutenberg number in a CopyBench claim."""
+    import analysis.onset_table as ot
+    for key, (sweep, _) in ot.SWEEPS.items():
+        if sweep.endswith(".log"):
+            continue
+        n = ot._n_of(sweep)
+        assert n is not None, f"{key}: {sweep} has no single-mode rows"
+    with open(CSV) as fh:
+        row = next(r for r in csv.DictReader(fh) if r["pair"].startswith("Pleias-350M"))
+    assert row["n_passages"] == "458"
+    assert ot._n_of(ot.SWEEPS["pleias-350m + mem. pleias-350m"][0]) == 458

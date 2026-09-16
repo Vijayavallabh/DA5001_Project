@@ -149,8 +149,9 @@ fallback needs no memory.
    not a CopyBench pair. True range `0.1806`–`0.9236`, **factor 5.11**, corrected in both.
    Also surfaced that `output/phase4/fine_tc` and `fine_comma` ship **no `k=-1`/`k=0` arm of their
    own**, against the mandatory-baselines rule; their cells are daggered and borrowed from companion
-   runs only after the `[ca]` protocol lines are asserted identical. A convergence marker is still
-   not in the table — the data is in each `recipe.json` and five of nine did not converge.
+   runs only after the `[ca]` protocol lines are asserted identical. **The convergence marker landed
+   at 09:25** as an `ep.` column (epochs run / cap): four of nine reached their stop-loss, and the
+   only seed ladder whose ratio is not reproducible is on a non-converged memoriser.
 3. **Qualify the seed-word gradient** `rho = -0.958` in `appendix_onset.tex`: it is a correlation
    over nine differently-trained, differently-converged memorisers. `appendix_limitations.tex`
    already carries the caveat; the appendix that states the number does not.

@@ -3,6 +3,54 @@
 
 
 
+
+## 2026-09-16 09:25 — the convergence marker, and the passage-set invariant it forced
+
+Table 2 now carries an `ep.` column: what the memorisation fine-tune actually ran against the cap it
+was given. `results/onset_table.csv` gains `memoriser`, `epochs_run`, `epochs_cap`, `stop_loss`,
+`final_loss` and `converged`.
+
+| pair | mem. k=-1 | ep. | stop | final | converged |
+|---|---|---|---|---|---|
+| KL3M-1.7B | 0.411 | 40/40 | 0.02 | 0.0243 | no |
+| Comma-7B | 0.719 | 12/12 | 0.03 | 0.0313 | no |
+| KL3M-520M | 0.519 | 11/40 | 0.02 | 0.0198 | yes |
+| Phi-3.5-mini | 0.566 | 40/40 | 0.02 | 0.0634 | no |
+| Pleias-1.2B | 0.909 | 30/40 | 0.03 | 0.0295 | yes |
+| TinyComma-1.8B | 0.492 | 12/12 | 0.03 | 0.0577 | no |
+| open-calm-1b | 0.181 | 40/40 | 0.02 | 0.0538 | no |
+| open-calm-3b | 0.924 | 21/40 | 0.02 | 0.0195 | yes |
+| Pleias-350M | 0.875 | 16/40 | 0.03 | 0.0294 | yes |
+
+**Four of nine reached their stop-loss.** `epochs_run < epochs_cap` is equivalent to `converged` on
+every row, which is why the column can print epochs and let the caption state the rule; the test
+asserts the equivalence rather than trusting it, so a future row that breaks it fails rather than
+silently misleading a reader.
+
+**The memoriser mapping is read from `results/onset_theory_pairs.tsv`, not hardcoded.** That manifest
+is what `scripts/add_pair.sh` writes at registration, and the binding is not a naming convention:
+`output/memorizing_llama8b` is not `output/phase5/mem_tinycomma`. It also cross-checked the sweep
+mapping added earlier — 8 of 9 agree exactly.
+
+**The ninth forced a new invariant.** The manifest's Pleias-350M sweep is `fine_pleias350m` (n=100),
+but the tabulated row is the n=458 re-measurement, so its strength must come from `n458_pleias350m`
+(0.875) and not from the manifest's sweep (0.906). `analysis/onset_table.py` now refuses any
+strength whose sweep covers a different number of passages than the row it sits in — the same class
+of error as yesterday's Gutenberg number in a CopyBench claim, caught structurally this time.
+Demonstrated to bite by pointing the pair at the n=100 sweep.
+
+**A caption defect caught only by rendering the page.** The draft said the non-reproducible seed
+ladder "is on the cell that never converged", while the table shows Pleias-1.2B at 30/40 CONVERGED.
+Both are true and they are different cells: the ladder is Pleias-1.2B on BookMIA (40/40, never
+converged), not the CopyBench cell tabulated here. Reworded to say so. Also fixed `\emph{ep.}`
+starting a sentence and the inter-word space after both abbreviations.
+
+Width: the ninth column cost 28.95pt of overfull, cleared by `\tabcolsep` 4pt -> 2pt, the header
+`epochs` -> `ep.`, and moving the two daggers off the `mem.` values onto the row labels, which is
+also where they belong — they say which RUN the baseline came from, not what the number is.
+
+`tests/test_onset_table.py` 6 -> 9. 518 tests, init.sh exit 0, artifact 883 files.
+
 ## 2026-09-16 08:50 — the strength column, and the wrong number it caught
 
 `results/onset_table.csv` now carries `k_minus1_sampled`, `k0_sampled` and `strength_source`, and

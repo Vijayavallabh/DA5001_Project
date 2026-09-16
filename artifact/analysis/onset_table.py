@@ -21,7 +21,7 @@ Writes <out>/onset_table.csv. No GPU.
 
 Usage: .venv/bin/python analysis/onset_table.py --out results
 """
-import argparse, csv, os, re, statistics as st, sys
+import argparse, csv, json, os, re, statistics as st, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_predictions import canonical, load_measurements  # noqa: E402
@@ -40,6 +40,44 @@ SWEEPS = {
     "open-calm-3b + mem. open-calm-3b": ("output/phase5/fine_opencalm3b", None),
     "pleias-350m + mem. pleias-350m": ("output/phase5/n458_pleias350m", None),
 }
+
+MANIFEST = "results/onset_theory_pairs.tsv"
+
+
+def memorisers():
+    """canonical pair -> memoriser dir, from the manifest scripts/add_pair.sh writes.
+
+    Hardcoding this mapping would be a second source of truth for something already committed, and
+    the two would drift silently: the sweep and the memoriser are bound at registration time, not
+    by a naming convention (output/memorizing_llama8b is not output/phase5/mem_tinycomma).
+    """
+    out = {}
+    with open(MANIFEST) as fh:
+        for line in fh:
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) >= 2 and parts[0] and not parts[0].startswith("Ladder rung"):
+                out[canonical(parts[0])] = parts[1]
+    return out
+
+
+def convergence(key):
+    """Did the memorisation fine-tune reach its stop-loss, or run out of epochs?
+
+    Five of the nine did not, which is a second variable the table does not control and one the
+    seed ladders showed matters: the only cell whose ratio is not reproducible under re-seeding is
+    the one whose fine-tune never converged. `epochs_run < epochs` is the readable form of the same
+    fact and is what the table prints; the CSV keeps the losses so the equivalence is checkable.
+    """
+    d = memorisers().get(key)
+    if not d or not os.path.exists(os.path.join(d, "recipe.json")):
+        return {}
+    r = json.load(open(os.path.join(d, "recipe.json")))
+    ran, cap = int(r["epochs_run"]), int(r["epochs"])
+    stop, final = float(r["stop_loss"]), float(r["final_loss"])
+    return {"memoriser": d, "epochs_run": ran, "epochs_cap": cap,
+            "stop_loss": stop, "final_loss": round(final, 4),
+            "converged": "yes" if final <= stop else "no"}
+
 
 # The informational insert composition_attack.py prints between the corpus and the seed (caution (b)):
 # it reports how often the CopyBench `reference` field was reached and is NOT part of the protocol.
@@ -76,11 +114,34 @@ def _k_arm(path, k):
     return None, None
 
 
-def strength(key, strict=False):
-    """(sampled k=-1, sampled k=0, provenance) for one pair, or (None, None, reason)."""
+def _n_of(path):
+    summ = path if path.endswith(".csv") else os.path.join(path, "composition_summary.csv")
+    if not os.path.exists(summ):
+        return None
+    for r in csv.DictReader(open(summ)):
+        if r["mode"] == "single":
+            return int(r["n_passages"])
+    return None
+
+
+def strength(key, strict=False, n_row=None):
+    """(sampled k=-1, sampled k=0, provenance) for one pair, or (None, None, reason).
+
+    `n_row` is the tabulated row's passage count, and it is checked rather than trusted. Pleias-350M
+    is measured twice -- 100 passages and 458 -- and the table prints the 458 one, so its strength
+    must come from the 458-passage sweep too (0.875) and not from the manifest's 100-passage sweep
+    (0.906). A strength read off a different passage set than the onset beside it is the same class
+    of error as quoting a Gutenberg number in a CopyBench claim.
+    """
     if key not in SWEEPS:
         return None, None, "no sweep mapped"
     sweep, companion = SWEEPS[key]
+    if n_row is not None and not sweep.endswith(".log"):
+        got = _n_of(sweep)
+        if got is not None and got != n_row:
+            raise SystemExit(
+                f"[table] {key}: sweep {sweep} covers {got} passages but the tabulated row is "
+                f"n={n_row}. The strength and the onset must come from the same passages.")
     k1, _ = _k_arm(sweep, -1.0)
     if k1 is not None:
         k0, _ = _k_arm(sweep, 0.0)
@@ -129,10 +190,13 @@ def main():
             "boot_no_crossing_pct": float(m["boot_no_crossing_pct"]),
             "k_grid": m["k_grid"],
         })
-        k1, k0, src = strength(key, a.strict)
+        k1, k0, src = strength(key, a.strict, n_row=int(m["n_passages"]))
         rows[-1]["k_minus1_sampled"] = "" if k1 is None else round(k1, 4)
         rows[-1]["k0_sampled"] = "" if k0 is None else round(k0, 4)
         rows[-1]["strength_source"] = src
+        conv = convergence(key)
+        for col in ("epochs_run", "epochs_cap", "stop_loss", "final_loss", "converged"):
+            rows[-1][col] = conv.get(col, "")
     if not rows:
         raise SystemExit("[table] no pair has both a prediction and a measurement")
     rows.sort(key=lambda r: r["s_safe"])
@@ -149,6 +213,12 @@ def main():
     meas_k1 = [r["k_minus1_sampled"] for r in rows if r["k_minus1_sampled"] != ""]
     summary["k_minus1_sampled"] = round(min(meas_k1), 4) if meas_k1 else ""
     summary["k0_sampled"] = round(max(meas_k1), 4) if meas_k1 else ""
+    conv_yes = sum(1 for r in rows if r["converged"] == "yes")
+    summary["epochs_run"] = conv_yes
+    summary["epochs_cap"] = len(rows)
+    summary["stop_loss"] = ""
+    summary["final_loss"] = ""
+    summary["converged"] = f"{conv_yes} of {len(rows)} reached their stop-loss"
     summary["strength_source"] = (
         f"lo/hi of {len(meas_k1)} measured; factor {max(meas_k1) / min(meas_k1):.2f}"
         if meas_k1 else "none measured")
