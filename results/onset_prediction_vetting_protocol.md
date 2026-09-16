@@ -100,3 +100,27 @@ If a run fails for a mechanical reason (OOM, a missing tokenizer, a dtype fault)
 identical specification and the failure is recorded here.
 
 ## Scoring log
+
+### Amendment, 2026-09-16 19:20 — DCLM cannot be loaded, and OLMo-2-13B replaces it
+
+Recorded **before any model in this arm was run**, so that the substitution is on the record as a
+mechanical decision and not a convenient one.
+
+`apple/DCLM-Baseline-7B` declares `model_type: openlm` / `OpenLMModel`, which `transformers` 5.16.1
+does not recognise: loading it raises `ValueError: The checkpoint you are trying to load has model
+type 'openlm' but Transformers does not recognize this architecture`. So do
+`apple/DCLM-7B-8k`, `apple/DCLM-Baseline-7B-8k`, `TRI-ML/DCLM-1B` and `TRI-ML/DCLM-1B-v0` --- every
+DCLM checkpoint published is in the `open_lm` format. Loading any of them means adding `open_lm` to
+the environment, and `./init.sh` has to keep running from a clean checkout nine days before the
+paper deadline.
+
+**`allenai/OLMo-2-1124-13B` takes its place** (`model_type: olmo2`, loads natively). This stays
+inside the set the reviewer named --- "OLMo-2-7B/13B and DCLM-baseline checkpoints" --- and answers
+the scale question *better* than DCLM would have, because 13B is the top of the range they asked
+about. The cost is that the open-data evidence is now one family at two sizes rather than two
+families; **no claim about "open-data families" in general may be drawn from it**, and band B's
+third row (the two disagreeing) now means the 7B and the 13B disagreeing.
+
+Everything else in the registration is unchanged: same protocol, same 50 passages, same statistic,
+same bands.
+
