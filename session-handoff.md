@@ -136,11 +136,13 @@ fallback needs no memory.
 
 ## Zero-GPU work queued, in value order
 
-1. **`sections/appendix_seed.tex` is now the biggest remaining overclaim.** It still presents the
-   nine-pair ratios as per-pair properties in three tables (~lines 19–26, ~250, ~311–313), including
-   the ">10 words / ≤10 words" split. Four seed ladders and one epoch ladder now say the per-pair
-   reading is not supported; `appendix_robustness.tex` and `appendix_limitations.tex` have been
-   brought into line and this file has not.
+1. ~~`sections/appendix_seed.tex`~~ **DONE 08:05.** All three places corrected, and the sharpest
+   finding came out of doing it: the `>10`-word family disperses *less* across five different pairs
+   (sd 0.0212) than Pleias-1.2B, a member of it, does across three re-seeded fine-tunes (sd 0.0450),
+   so that family's tightness — and the leave-one-out 0.070 nats and exact `p = 0.008` resting on
+   it — is not resolved against fine-tune noise. The family *separation* survives and is now said to
+   survive. `analysis/onset_group_dispersion.py` -> `results/onset_group_dispersion.csv`;
+   `tests/test_onset_group_dispersion.py` (16) pins every figure and both inequalities.
 2. **Add a memoriser-strength column to the nine-pair table**, and a convergence marker beside it —
    both are already on disk in each `recipe.json` (`final_loss`, `stop_loss`, `epochs_run`), so it
    costs no compute and lets a reader see the confound directly.

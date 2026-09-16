@@ -1,6 +1,48 @@
 # Session Progress Log
 
 
+
+## 2026-09-16 08:05 — appendix_seed.tex: the subgroup was tighter than the noise of one of its members
+
+The last overclaim the handoff named. `sections/appendix_seed.tex` read the nine-pair ratios as
+per-pair properties in three places. The seed ladders re-trained **two of that table's own rows** on
+that table's own corpus, and each ladder's corner reproduces its row's entry, so they are a noise
+floor for the table rather than a number from somewhere adjacent to it:
+
+```
+.venv/bin/python analysis/onset_group_dispersion.py   ->  results/onset_group_dispersion.csv
+```
+
+| subset | n | mean | sd | cv | span |
+|---|---|---|---|---|---|
+| all nine pairs | 9 | 0.9714 | 0.0967 | 9.96% | 0.2874 |
+| adversary holds >10 words | 5 | 0.9007 | 0.0212 | 2.35% | 0.0477 |
+| adversary holds <=10 words | 4 | 1.0597 | 0.0748 | 7.06% | 0.1725 |
+| family mean gap | — | 0.1590 | — | — | — |
+| re-seed Pleias-1.2B, CopyBench | 3 | 0.8509 | 0.0450 | 5.29% | 0.0795 |
+| re-seed KL3M-520M, CopyBench | 3 | 1.0403 | 0.0180 | 1.73% | 0.0333 |
+
+**The `>10`-word family disperses LESS across five different pairs (sd 0.0212) than Pleias-1.2B — a
+member of it — does across three re-seeded fine-tunes (sd 0.0450).** More draws, less than half the
+range. That family's tightness is therefore not resolved against fine-tune noise, and the
+leave-one-out error of 0.070 nats and the exact p = 0.008 computed from it treat nine point
+estimates as carrying no draw. Both are reported as computed, with that limitation stated.
+
+**What survives, and is now said explicitly to survive:** the family *separation*. The means differ
+by 0.159, the `<=10` family's own dispersion (0.0748) is four times the 0.0180 that re-training its
+member KL3M-520M produces, and the all-nine span of 0.2874 clears both floors. The split is larger
+than the noise; the internal tightness of one side of it is not.
+
+Also corrected: the matched-context table's `move` column is one memoriser at two seed lengths, so
+the fine-tune draw is common to both columns and cancels — those interventions are paired and the
+floor does not apply to them — while the `spread` and cv rows are across nine different fine-tunes
+and do carry it, making the residual 0.113 an upper bound rather than a measurement.
+
+`tests/test_onset_group_dispersion.py` (16) pins every quoted figure to the CSV, asserts the
+inequality the retraction rests on, asserts the split still clears the floor, and greps the
+disclosure sentence out of a whitespace-collapsed copy of the source so a reflow cannot silently
+stop the check. Demonstrated to fail on both reintroduced defects.
+
 ## 2026-09-16 07:20 — the fourth seed ladder overturned a claim this session had just written
 
 **Four seed ladders, not three.** `analysis/strength_ladder.py --axis seeds` on each pair, all at
