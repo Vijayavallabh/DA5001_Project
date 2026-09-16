@@ -1,13 +1,21 @@
-# Session handoff — 2026-09-16 11:35 (a crossover in flight on four cards; window to 18:36)
+# Session handoff — 2026-09-16 16:45 (everything closed; nothing running; the window has ~2h left and nothing needs it)
 
 ## Current objective
 
-Every item earlier handoffs queued is closed. The GPUs are now spending a **bounded multi-GPU
-window** on a crossover that tests a claim this session put into the paper and labelled post hoc.
+**None outstanding.** The convergence crossover was the last open question and it is closed in both
+directions, scored, and written into the paper. Every pre-registration is scored. No job of ours
+holds a GPU. What remains is optional and is named under *What is actually left* below.
 
-**55 pre-registrations, 53 scored, 2 in flight (named below). 536 tests. `./init.sh` exit 0.
-Manuscript compiles exit 0, 0 overfull, 0 `??`, 9 of 9 body pages (0 body lines on page 10), 58
-total. Artifact 887 files. Compute 266.2 GPU-hours.**
+**56 pre-registrations, all 56 scored. 536 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
+overfull, 0 `??`, 9 of 9 body pages (page 10 is header + gutter + `Ethics Statement`, zero body
+prose), 58 total. Artifact 901 files. Compute 283.0 GPU-hours, fine-tunes 72.7 over 42 runs.**
+Verified at `3b8f27f` with a clean tree.
+
+> **The count of "unscored" logs is a trap.** `grep '^## Scoring'` reports 18 unscored logs; all 18
+> are scored under the older `## Scored, <claim>` heading. The authority is
+> `tests/test_preregistration_count.py`, whose rule is `"## Scoring, " not in t and "## Scoring log"
+> in t` — i.e. a log is unscored only if it still carries the *boilerplate* heading. Do not "fix"
+> eighteen files on the strength of a grep.
 
 ---
 
@@ -24,87 +32,63 @@ not match the loaded kernel module (`580.178.04`). **CUDA compute is unaffected*
 casualty, and NVML is what torch calls inside `generate()`, which is why four fine-tunes died in
 their post-training check on 2026-09-16 *after* writing their merged models.
 
-`scripts/gpu_env.sh` strips it and **all five original launchers plus the four new ones source it**.
-Do not delete the directory: it is not ours. Caution (ab) in AGENTS.md.
+`scripts/gpu_env.sh` strips it and **every GPU launcher sources it**. Do not delete the directory:
+it is not ours. Caution (ab) in AGENTS.md.
 
 ---
 
-## The multi-GPU window
+## GPU state, and the window
 
-Opened 10:36 ("for the next 8 hours, use all the gpus"), **expires 18:36 today**. It SUSPENDS, not
-cancels, the one-card rule. Every launcher takes `GPU` as an override **defaulting to 2**, so when
-the window closes the standing rule restores itself with no action. GPU 3 is still never used, and
-`CUDA_DEVICE_ORDER=PCI_BUS_ID` is still mandatory.
+| card | state |
+|---|---|
+| 0, 1, 2 | idle, 14 MiB |
+| 3 | T400 4 GB — **never use** |
+| 4 | **another user**, pid `3703331`, 74 GB, 66% util (`launch.py --config configs/pfd.yaml`) — leave it alone |
 
-## What is running
+The multi-GPU window opened 10:36 ("for the next 8 hours, use all the gpus") and **expires 18:36
+today**. It is currently **unused and nothing needs it**. It SUSPENDS, not cancels, the one-card
+rule; every launcher takes `GPU` as an override **defaulting to 2**, so when it closes the standing
+rule (everything on GPU 2, in series) restores itself with no action. `CUDA_DEVICE_ORDER=PCI_BUS_ID`
+stays mandatory either way.
 
-**Nothing.** The crossover is closed: neither direction could be built, both are scored, and the
-paper carries the result. No job of ours holds a GPU. Another user is training on GPU 4 (75 GB,
-`launch.py --config configs/pfd.yaml`) — leave it alone.
+---
 
-| cards | job | started | expected |
+## The convergence crossover: neither direction could be built, and that is the result
+
+The appendices said the onset ratio is reproducible **wherever the memorisation fine-tune
+converged**, labelled post hoc because the one irreproducible cell is also the only non-converged
+one *and* the only marginal memoriser — three things moving together. Convergence is manipulable, so
+the confound was attacked from both sides. Neither side could be built.
+
+| arm | pre-registration | intervention | outcome |
 |---|---|---|---|
-| 0, 1, 4 | forward probes **at 60 epochs**, rates 1.5e-4 / 1e-4 / 5e-5 | 11:31 | ~12:46 |
-| 2 | reverse probes, rates 6e-4 / 1e-3 / 2e-3 (co-located) | 10:46 | ~12:39 |
+| forward | `onset_prediction_convergence_causal.md` (40 ep) → `..._causal_60.md` (60 ep) | Pleias-1.2B/BookMIA: lower the rate until the `0.02` stop-loss fires | **INVALID, ABANDONED.** At 60 epochs `lr 1.5e-4` and `1e-4` both plateau at **`0.0222`**, flat for three epochs. A floor the pair cannot cross, with the stop-loss *underneath* it |
+| reverse | `..._convergence_reverse.md` → `..._reverse_2.md` (rates 7e-4/8e-4/9e-4) | KL3M-520M/BookMIA: raise it until the stop-loss stops firing | **INVALID, ABANDONED.** `6e-4` converges (`0.0189` at ep 25, `k=-1` 0.855). `7e-4` is chaotic (`0.137` at ep 31, then `4.96`, `4.25` at cap) with measured entry gate **`0.0000`**, `lcs_word` `1.52` — *less than the `1.73` an unrelated anchor manages* |
 
-A background task waits on both families. Each card holds ~12.5 GB of 80 GB.
+**What the failure measured, and why it is worth more than the crossover would have been:** *"the
+stop-loss never fires"* is not one phenomenon. On Pleias-1.2B the threshold sits **below the pair's
+achievable floor**; on KL3M-520M it can be moved only by **destroying the model**, and a 17% rate
+change spans the whole distance. That 7e-4 is chaotic rather than dead also means whether a run
+yields a memoriser or a wreck depends on where the epoch cap falls.
 
-### The crossover, and the two unscored pre-registrations
+**No sweep ran and no onset ratio was computed at any point in either arm** — twelve fine-tunes and
+three entry-gate probes, ~9.5 GPU-h, all construction. Every abandonment followed a rule written
+before the runs, and both retries commit to *abandonment* rather than a third probe.
 
-The appendices say, as of this morning, that the onset ratio is reproducible **wherever the
-memorisation fine-tune converged** — and label it post hoc, because the one irreproducible cell is
-also the only non-converged one *and* the only marginal memoriser. Three things move together.
-Convergence here is manipulable, so it can be pushed in both directions on different pairs:
+**In the paper:** `appendix_robustness.tex` carries a paragraph recording both failed interventions
+and the two floors; `appendix_limitations.tex` states the convergence association **is not shown to
+be causal, and not for want of trying**.
 
-| arm | pre-registration | cell | intervention | span to beat |
-|---|---|---|---|---|
-| forward | `onset_prediction_convergence_causal_60.md` — **SCORED INVALID, ABANDONED** | Pleias-1.2B BookMIA | lower the rate until the stop-loss fires | never built |
-| reverse, 1st | `onset_prediction_convergence_reverse.md` — **SCORED INVALID** | KL3M-520M BookMIA | raise it until it stops firing | never built |
-| reverse, 2nd | `onset_prediction_convergence_reverse_2.md` — **SCORED INVALID, ABANDONED** | KL3M-520M BookMIA | rates 7e-4 / 8e-4 / 9e-4 | never built |
+### The test to apply if a stage-1 failure recurs
 
-Both fix the rate-selection rule before any result exists, carry written invalidity conditions, and
-commit to reporting the **strength band** — a rate change plausibly moves memoriser strength as well
-as stability, and strength is what the ratio tracks (`rho = -0.714` over seven pooled points). That
-is the confound the crossover exists to break, and it is disclosed in both files rather than found
-later.
-
-### Stage 1 of the forward arm came back INVALID, and that is recorded
-
-`onset_prediction_convergence_causal.md` (the 40-epoch original) is **scored INVALID**: none of the
-three rates crossed the `0.02` stop-loss (`0.0229`, `0.0260`, `0.0305`), so by its own written
-condition the intervention was not built, and **its stage 2 was not run**.
-
-The rates were not the problem. At `lr 1.5e-4` the last four epochs read `0.0269`, `0.0254`,
-`0.0236`, `0.0229` — monotone and still descending — against the published `lr 3e-4`'s non-monotone
-`0.0623 / 0.0865 / 0.0258 / 0.1098`. The oscillation the intervention targeted is gone; the epoch
-cap stopped it short. Hence the 60-epoch retry.
-
-**Why that is not a second bite at the apple, and the test to apply if this recurs:** no ratio had
-been measured. Nothing was swept, no onset existed, stage 1 produced four loss numbers. Re-attempting
-a construction that failed to construct is a different act from re-running an experiment whose answer
-one dislikes. **Had one seed been swept, the honest course would have been to stop**, and both files
-say so. The retry also commits to *abandonment* rather than a third probe if 60 epochs also fails.
-
-### When the probes land — exactly this, in order
-
-```bash
-.venv/bin/python /mnt/md0/select_rate.py     # applies each arm's COMMITTED selection rule
-#   fwd: the LARGEST rate that converges.  rev: the SMALLEST that does not.
-#   Check both invalidity conditions before launching anything.
-
-# then, per arm, one queue shell per seed (seed 0 reuses the probe's memoriser and sweeps only):
-bash scripts/run_convergence_stage2.sh fwd <lr> <seed> <gpu>
-bash scripts/run_convergence_stage2.sh rev <lr> <seed> <gpu>
-```
-
-Stage 2 is ~50–75 min of fine-tune plus ~3.5 h of sweep per seed; three seeds per arm in parallel
-fit the window if they start by ~13:00. **If they cannot finish before 18:36, start them anyway on
-GPU 2 and let them run** — the window governs how many cards may be used, not whether work may
-continue.
+The 40→60-epoch retry was legitimate and the 60-epoch abandonment was not optional. The line is:
+**had one seed been swept, the honest course would have been to stop.** Stage 1 produced four loss
+numbers and no measurement, so re-attempting a construction that failed *to construct* is a
+different act from re-running an experiment whose answer one dislikes. Both files say so in advance.
 
 ---
 
-## Closed this session (11 commits since `3f047e8`)
+## Closed this session (13 commits since `3f047e8`)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -117,22 +101,66 @@ continue.
 - **Table 2 gained a `mem.` strength column and an `ep.` convergence column.**
 - **All six genuine mandatory-baseline gaps closed:** `fine_tc`, `fine_comma` and the four Rényi
   orders. Rényi scored **CONFIRMED** — 16 arms, 16 exact reproductions of `fine_tc_base`.
+- **The crossover, above.**
 - **A compute bug fixed** that a ten-minute run exposed: `compute_hours.py` removed only the largest
   idle gap, so `output/composition` (a rolling `--text-out` target) billed 110 idle hours. Total
-  261.7 → 376.8 → **265.9**, then 266.2. Disclosure 262 → 266, fine-tunes 52 → 57.
+  261.7 → 376.8 → 265.9 → **283.0** as the crossover's own hours landed. Disclosure 262 → **283**,
+  fine-tunes 52 → **73**.
+
+**Five defects caught in my own work, all before they reached a measurement** — worth reading as a
+set, because each was found by a different kind of check: a selection helper that iterated
+`reversed()` over a smallest-first list and returned the **largest** non-converging rate where the
+committed rule says smallest (caught by re-deriving the pick with an explicit sort); an inline
+`nohup bash -c` that never started (the tell was **no log file at all**, since a redirect creates one
+even on failure — replaced by `scripts/run_entry_gate_probe.sh`); `pgrep -f` matching only its own
+invoking shell for the **sixth** time (real evidence came from log mtime and
+`nvidia-smi --query-compute-apps`, which also revealed another user had taken GPU 4 and killed the
+9e-4 probe); a script edited at 03:17 while a queue started at 02:57 was executing it, producing a
+spurious `FAILED` after all work had completed (bash reads by byte offset — now a standing
+constraint); and five **estimated** timestamps written into `progress.md`, three of them in the
+future, repointed to actual commit times.
+
+---
+
+## What is actually left
+
+Nothing is blocking. In descending value:
+
+1. **A read-through of what changed since the last one.** The previous handoff said "nothing has read
+   the assembled document since the v8 reorder" — **that was wrong**: a full rendered-PDF read-through
+   ran on 2026-09-15 (`progress.md`, *full read-through of the rendered PDF*) and found eight defects,
+   two substantive. What is genuinely unread *as rendered* is everything edited since:
+   `sections/onset.tex`, `selection.tex`, `iclr_closing.tex` (09-16 ~02:40) and
+   `appendix_seed.tex`, `appendix_onset.tex`, `appendix_robustness.tex`, `appendix_limitations.tex`,
+   `iclr_2027.tex` (today). Read those **rendered**, not as source — the 09-15 pass found a
+   figure drawn at 9.4in and printed at 0.88 textwidth with every label at 3–4pt, and no
+   compile-time check sees that class of defect.
+2. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
+   own pre-registration. Reinstating them would need a new pre-registration; it is not a gap.
+3. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
+   `feat-024`; **`feat-016` is human-only and must never be started.**
+
+### Human-only, and close
+
+**ICLR 2027 abstract registration is Sep 18 — two days out; the paper is Sep 25.** Registration and
+submission are human steps the agent must never attempt. The manuscript is submission-ready as it
+stands.
 
 ---
 
 ## Standing constraints
 
 Never push to a remote. `feat-016` is human-only and must never be started. Do not modify
-`~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/`. Never GPU 3;
-always `CUDA_DEVICE_ORDER=PCI_BUS_ID`. Ask before fine-tuning above 8B, any run over 24 GPU-hours,
-deleting a file the agent did not create, or anything touching a remote. `pgrep -f`/`pkill -f` match
-the invoking shell — kill by PID. **Never edit a script while it is running**: bash reads it
-incrementally by byte offset, and a commit at 03:17 to a queue started at 02:57 produced a spurious
-`FAILED` after all work had completed. A budget violation is per-trajectory. Baselines at `k=-1` and
-`k=0` are mandatory. The manuscript is in `~/sub/satml/`, **outside this repo, inside a stray home
-git repo that must never be committed to**; after any edit there recompile and check exit status, 0
-`??`, 0 overfull, and zero body lines on `pdftotext` page 10. Render a page to PNG and look at it —
-it has caught two defects no compile-time check sees.
+`~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/` (the one writable
+path there is `data/gutenberg/`). Never GPU 3; always `CUDA_DEVICE_ORDER=PCI_BUS_ID` with
+`CUDA_VISIBLE_DEVICES`; check for other users before taking a card. Model caches under repo
+`hf_cache/`, never home; keep scratch and logs off `/` and `~`. Ask before fine-tuning above 8B, any
+run over 24 GPU-hours, deleting a file the agent did not create, or anything touching a remote.
+`pgrep -f`/`pkill -f` match the invoking shell — kill by PID, and kill the reparented CUDA child too.
+**Never edit a script while it is running.** A budget violation is per-trajectory, never a mean-bound
+artefact. Baselines at `k=-1` and `k=0` are mandatory. Anonymity: the sole sanctioned self-reference
+is third-person `\cite{vijayavallabh2026audit}` / "an earlier audit", never "our earlier audit". The
+manuscript is in `~/sub/satml/`, **outside this repo, inside a stray home git repo that must never be
+committed to** — always run git with an explicit path into `DA5001_Project`. After any edit there
+recompile and check exit status, 0 `??`, 0 overfull, and zero body prose lines on `pdftotext` page
+10. Render a page to PNG and look at it — it has caught two defects no compile-time check sees.
