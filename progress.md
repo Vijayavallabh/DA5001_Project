@@ -9,6 +9,83 @@
 
 
 
+## 2026-09-16 17:40 — the read-through: the paper had no bold at all, and three figures were unreadable
+
+Read the rendered PDF, not the source. **Nine defects, four of them in the figures, and the largest
+one invisible to every check this project runs.**
+
+**1. `\usepackage{times}` silently suppressed every bold roman glyph in the document.** The ICLR
+template ships that line, but under `tectonic` (XeTeX) it emits no bold face at all: `pdffonts`
+listed `LMRoman10-Regular` and `NimbusSanL-Bold` (the running header) and **nothing else** across
+all 58 pages. So **90 `\paragraph` headings and 54 `\textbf` emphases rendered as ordinary body
+text**, and the body was set in Latin Modern rather than the Times the template asks for. On page 2
+a reader met "...which is what makes it a security claim  Proposition 1 assumes nothing..." --- a
+heading that looks like a missing full stop. Isolated by controlled test:
+
+| preamble | bold roman emitted? |
+|---|---|
+| `article` alone | yes, `LMRoman10-Bold` |
+| `article` + `iclr2027_conference` | yes, `LMRoman10-Bold` |
+| `article` + **`times`** | **none** |
+| `article` + `mathptmx` | **none** |
+| `article` + `newtxtext` | yes, `TeXGyreTermes-Bold` |
+
+Fixed with `newtxtext`, which gives real Times *with* its bold, italic and bold-italic and leaves
+math in Computer Modern --- exactly what a pdflatex build of the template produces. Side effects,
+both good: 58 pages -> 55, and the body now ends comfortably inside its 9. No warning was ever
+emitted; tectonic exited 0 with 0 overfull and 0 `??` throughout. **Do not reinstate `times`.**
+
+**2-5. Four figure defects, none visible in the source.** Figure 7's twelve-entry legend was taller
+than the 2.2in panel it was pinned inside, so it covered the `alpha=2` panel, its title and the
+y-axis label, with every curve running through its text. Figure 6 had the same shape: nine dotted
+`s(x)` rules struck through all nine legend labels, and the right panel printed its "certificate
+vacuous" annotation *underneath* two of its own legend entries. Both now carry one shared legend
+below the panels. Figure 9's y=1 label was struck through by the KL3M-520M arm; moving it left only
+traded one crossing line for two, so it got an opaque backing instead. Figure 1(b)'s legend read
+**`Thm.~1`**: `label=r"$\Lambda^*_s(u)$, Thm.~1"` is a matplotlib string, not LaTeX, and a tilde
+outside `$...$` renders literally. Same class as caution (y). Figure 5 keeps one word crossed by one
+curve --- no fix without hiding data or resizing, and it is legible.
+
+**6. The abstract attributed the ladder range to the nine-pair table.** It read "across nine pairs
+with nine distinct anchors extraction becomes measurable between $0.79$ and $1.35$ of $s(x)$ once
+memorisers vary". The nine pairs span **0.88--1.17** (`onset_table.csv`, min 0.8784, max 1.1658);
+0.80--1.35 is the *ladders*, which are four pairs re-fine-tuned. A reviewer checking Table 2 would
+have found neither endpoint. Now states both populations separately.
+
+**7. `0.79` is in no ladder.** The minimum ladder onset is `0.7989` (`strength_ladder_pleias_cb_seeds.csv`,
+seed=2) -> **0.80**. Every 0.79 in the CSVs is a bootstrap CI bound (`ratio_lo`, `ratio_lo95`), not an
+onset. Corrected in the abstract and `appendix_robustness.tex`.
+
+**8. `appendix_limitations.tex` broke the like-for-like span rule its companion appendix states.** It
+compared three **three**-seed spans (0.033, 0.066, 0.080) against `0.347`, which is the fourth
+ladder's **four**-seed span. `appendix_robustness.tex` gets this right two pages earlier ("a span
+grows with the number of draws, so the two comparisons are kept separate"). The matched three-seed
+span is `0.2597`; the sentence now gives both.
+
+**9. Two cross-reference defects the v8 reorder created.** `appendix_onset.tex` opened "Section 5
+states the nine-pair result in a paragraph and Section 5 the four-order comparison in two" ---
+`onset.tex` is `\input` INSIDE `orders.tex`, so `sec:onset` and `sec:orders` are the same section.
+And the LLM Usage statement rendered "Sections 5 and 3", descending, because the reorder renumbered
+both. `tests/test_reference_targets.py` existed for exactly this class and caught neither: it looked
+only inside parentheses, and its `_resolve()` walked files independently, so `sec:onset` resolved to
+`None` and every check touching it passed vacuously. Two tests added, both shown to fail on the
+reintroduced defects; `_resolve()` now walks the document with `\input` spliced in.
+
+**And one I reported and withdrew.** The epochs-ladder table looked one digit off against
+`strength_ladder.csv`. It is not: it rounds from `onset_ci.csv`, the source that also supplies its
+CIs, and matches it on all twelve cells. **The two committed CSVs disagree** with each other in the
+fourth significant figure on the same four onsets (`4.106` vs `4.1078`, `4.0071` vs `4.0058`). The
+paper follows the right one. Nothing tests that they agree; recorded, not chased.
+
+**Also fixed:** 18 `@misc` bib entries carried both `howpublished = {arXiv preprint arXiv:X}` and
+`note = {arXiv:X}`, so ten rendered references printed the identifier twice
+("arXiv preprint arXiv:2609.01161, 2026. arXiv:2609.01161.").
+
+**Verification.** `./init.sh` exit 0, **538 tests** (536 + 2). tectonic exit 0, 0 overfull, 0 `??`,
+**55 pages**, body inside 9 with page 10 carrying only uncounted end matter. 3,354 numeric literals
+with the one expected `64256` miss. Anonymity re-checked on the rendered PDF: 4 hits for the author
+name, all the sanctioned third-person citation; zero "our earlier audit". Artifact 901 files.
+
 ## 2026-09-16 16:05 — the convergence crossover: neither direction could be built, and that is the result
 
 Both arms are scored INVALID and abandoned under rules committed before they ran. **No sweep was run

@@ -1,15 +1,25 @@
-# Session handoff — 2026-09-16 16:45 (everything closed; nothing running; the window has ~2h left and nothing needs it)
+# Session handoff — 2026-09-16 17:45 (read-through done; nine defects found and eight fixed; nothing running)
 
 ## Current objective
 
-**None outstanding.** The convergence crossover was the last open question and it is closed in both
-directions, scored, and written into the paper. Every pre-registration is scored. No job of ours
-holds a GPU. What remains is optional and is named under *What is actually left* below.
+**None outstanding.** The convergence crossover is closed in both directions and in the paper, and
+the full read-through of the rendered PDF is done --- nine defects, eight fixed, one left as a
+legible cosmetic nit. No job of ours holds a GPU.
 
-**56 pre-registrations, all 56 scored. 536 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
-overfull, 0 `??`, 9 of 9 body pages (page 10 is header + gutter + `Ethics Statement`, zero body
-prose), 58 total. Artifact 901 files. Compute 283.0 GPU-hours, fine-tunes 72.7 over 42 runs.**
-Verified at `3b8f27f` with a clean tree.
+**56 pre-registrations, all 56 scored. 538 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
+overfull, 0 `??`, body inside 9 pages (page 10 carries only uncounted end matter), 55 total. 3,354
+numeric literals, one expected `64256` miss. Artifact 901 files. Compute 283.0 GPU-hours, fine-tunes
+72.7 over 42 runs.**
+
+> **The manuscript now builds with `newtxtext`, not `times`. Never reinstate `times`.** Under
+> tectonic (XeTeX) that package emits **no bold roman at all** --- no warning, exit 0, 0 overfull, 0
+> `??` --- so all 90 `\paragraph` headings and 54 `\textbf` emphases rendered as ordinary body text,
+> and the body was set in Latin Modern rather than the Times the ICLR template asks for. Controlled
+> test: `article` alone and `article`+`iclr2027_conference` both emit `LMRoman10-Bold`; adding
+> `times` (or `mathptmx`) emits none; `newtxtext` gives real Times with its bold, italic and
+> bold-italic and leaves math in Computer Modern, which is what a pdflatex build of the template
+> produces. **The check is one line: `pdffonts iclr_2027.pdf | grep -ci bold` must be `3`, not `1`.**
+> Fixing it also took the document from 58 pages to 55.
 
 > **The count of "unscored" logs is a trap.** `grep '^## Scoring'` reports 18 unscored logs; all 18
 > are scored under the older `## Scored, <claim>` heading. The authority is
@@ -126,25 +136,25 @@ future, repointed to actual commit times.
 
 Nothing is blocking. In descending value:
 
-1. **A read-through of what changed since the last one.** The previous handoff said "nothing has read
-   the assembled document since the v8 reorder" — **that was wrong**: a full rendered-PDF read-through
-   ran on 2026-09-15 (`progress.md`, *full read-through of the rendered PDF*) and found eight defects,
-   two substantive. What is genuinely unread *as rendered* is everything edited since:
-   `sections/onset.tex`, `selection.tex`, `iclr_closing.tex` (09-16 ~02:40) and
-   `appendix_seed.tex`, `appendix_onset.tex`, `appendix_robustness.tex`, `appendix_limitations.tex`,
-   `iclr_2027.tex` (today). Read those **rendered**, not as source — the 09-15 pass found a
-   figure drawn at 9.4in and printed at 0.88 textwidth with every label at 3–4pt, and no
-   compile-time check sees that class of defect.
-2. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
+1. **Two cosmetic figure nits, deliberately left.** Figure 5's legend has one word ("Common") crossed
+   by one dashed curve; there is no clean fix that does not either hide data behind an opaque legend
+   or resize the figure and reflow the document. Figure 2's legend has the `K=S(x)` rule through one
+   entry. Both are legible. Fix only if the page budget is being reworked anyway.
+2. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
+   `onset_ci.csv` hold the same four epochs-ladder onsets and differ (`4.106` vs `4.1078`, `4.0071`
+   vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
+   supplies the table's CIs, and it matches on all twelve cells. Nothing tests that the two agree.
+   Do not "fix" the paper against `strength_ladder.csv`.
+3. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
    own pre-registration. Reinstating them would need a new pre-registration; it is not a gap.
-3. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
+4. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
    `feat-024`; **`feat-016` is human-only and must never be started.**
 
 ### Human-only, and close
 
-**ICLR 2027 abstract registration is Sep 18 — two days out; the paper is Sep 25.** Registration and
-submission are human steps the agent must never attempt. The manuscript is submission-ready as it
-stands.
+**ICLR 2027 abstract registration is Sep 19, 17:30 IST — under three days out; the paper is Sep 25.**
+Registration and submission are human steps the agent must never attempt. The manuscript is
+submission-ready as it stands.
 
 ---
 

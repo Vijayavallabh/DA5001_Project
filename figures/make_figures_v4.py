@@ -131,7 +131,7 @@ def onset_collapse():
     _mks = ["o", "s", "^", "D", "v", "P", "X", "*"]
     P = [(n, c, b, _cols[i % len(_cols)], _mks[i % len(_mks)])
          for i, (n, c, b) in enumerate(_pairs)]
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.05))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.75))
     for name, comp, per, col, mk in P:
         p_ = REPO / comp
         if not p_.exists():
@@ -146,15 +146,22 @@ def onset_collapse():
     ax.set_xlabel("budget $k$ (nats per token)")
     ax.set_ylabel("single-query recall")
     ax.set_title("raw budget", fontsize=8)
-    ax.legend(frameon=False, fontsize=6.0)
     ax2.axvline(1.0, color="0.35", lw=0.9, ls="--")
     ax2.annotate("certificate\nvacuous", xy=(1.0, 0.09), xytext=(1.03, 0.085), fontsize=6.2, color="0.35")
     ax2.set_xlabel("rescaled budget  $k / s(x)$")
     ax2.set_title("rescaled by the vacuity threshold", fontsize=8)
-    ax2.legend(frameon=False, fontsize=6.2)
+    # Two unframed nine-entry legends, one per panel, both inside the axes: the left one had all
+    # nine s(x) rules struck through its labels and the right one printed "certificate vacuous"
+    # underneath two of its own entries. One shared legend below the panels instead -- the labels
+    # differed only in carrying s(x), so the second legend was a duplicate anyway.
+    handles, labels = ax2.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", frameon=False, ncol=3, fontsize=6.2,
+               bbox_to_anchor=(0.5, 0.0), handlelength=1.4, handletextpad=0.4,
+               columnspacing=1.4, borderaxespad=0.0)
     for a_ in (ax, ax2):
         a_.grid(alpha=0.25, lw=0.5)
         a_.set_ylim(bottom=-0.004)
+    fig.tight_layout(rect=(0, 0.20, 1, 1))
     _save(fig, "onset_collapse")
 
 
@@ -209,8 +216,11 @@ def seed_effect():
             labelled = True
 
     ax.axhline(1.0, color="0.3", ls=":", lw=1.0)
+    # The KL3M-520M arm struck through "vacuous above" here, and moving the label to the left edge
+    # only traded one crossing line for two. It has to sit beside the y=1 rule it names, so it gets
+    # an opaque backing instead: the only thing hidden is a short span of one line.
     ax.text(ax.get_xlim()[1], 1.005, "certificate vacuous above", ha="right", va="bottom", fontsize=7,
-            color="0.3")
+            color="0.3", bbox=dict(facecolor="white", edgecolor="none", pad=0.8), zorder=5)
     ax.set_xlabel("words of the work the adversary is given")
     ax.set_ylabel(r"onset $/\ s(x)$")
     ax.legend(fontsize=7, frameon=False, loc="upper right")
@@ -343,7 +353,10 @@ def selection_frontier():
             best = max(best, f)
         return best
     ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
-            label=r"$\Lambda^*_s(u)$, Thm.~1")
+            # NOT "Thm.~1": matplotlib is not LaTeX, so a tilde outside $...$ renders as a literal
+            # tilde. It reached the compiled PDF as "Thm.~1" in the legend of the paper's only
+            # main-text figure. Same class as caution (y) -- a LaTeX habit in a non-LaTeX string.
+            label=r"$\Lambda^*_s(u)$, Thm. 1")
 
     ks = sorted(k for k in j2 if k in price)
     x = [float(price[k]["mean_spend_nats"]) for k in ks]
@@ -468,7 +481,7 @@ def order_no_collapse():
     rows = [r for r in csv.DictReader(open(src))]
     orders = sorted({float(r["alpha"]) for r in rows})
     pairs = sorted({r["pair"] for r in rows})
-    fig, axes = plt.subplots(1, len(orders), figsize=(6.9, 2.15), sharey=True)
+    fig, axes = plt.subplots(1, len(orders), figsize=(6.9, 2.55), sharey=True)
     for ax, o in zip(axes, orders):
         for i, pair in enumerate(pairs):
             c = [(float(r["F"]), float(r["log10_factor"])) for r in rows
@@ -479,10 +492,16 @@ def order_no_collapse():
         ax.axhline(0.0, color="0.4", lw=0.7, ls=":")
         ax.set_title(rf"$\alpha = {o:.0f}$")
     axes[0].set_ylabel(r"$\log_{10}$ times safer, matched utility")
-    axes[0].legend(loc="lower left", frameon=False, ncol=1)
+    # Twelve entries in one column, unframed, inside a 2.2in axes: the legend was taller than the
+    # panel it sat in, so it overflowed onto the alpha=2 title and the y-axis label and every curve
+    # ran through its text. Put it under the panels instead, where nothing is drawn.
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", frameon=False, ncol=6, fontsize=6.5,
+               bbox_to_anchor=(0.5, 0.055), handlelength=1.3, handletextpad=0.4,
+               columnspacing=1.1, borderaxespad=0.0)
     fig.supxlabel("$F$, the fraction of the unconstrained ceiling the audited decoder already has",
-                  fontsize=8, y=0.01)
-    fig.tight_layout(rect=(0, 0.05, 1, 1))
+                  fontsize=8, y=0.008)
+    fig.tight_layout(rect=(0, 0.19, 1, 1))
     _save(fig, "order_no_collapse")
 
 
