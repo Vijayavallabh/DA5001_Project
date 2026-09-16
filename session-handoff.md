@@ -1,591 +1,181 @@
-# Session handoff — 2026-09-16 (early hours; THREE seed arms RUNNING, seven jobs)
+# Session handoff — 2026-09-16 07:20 (all four seed ladders SCORED; one sweep still running)
 
 ## Current objective
 
-**Two seed arms are running**, on three cards. `results/onset_prediction_seedspread.md` and
-`results/onset_prediction_seedspread2.md` are committed and **unscored** — the two unscored
-pre-registrations of the fifty in `results/`, which is what `tests/test_preregistration_count.py`
-checks for. The other forty-eight are scored and the manuscript compiles clean at 9 of 9 body pages.
+The four-ladder seed arm is **complete and scored**, and it **overturned** a claim this same session
+had written into the manuscript six hours earlier. Both corrections are already in the paper. One
+memoriser (`memb_pleias_s3`) is still fine-tuning on GPU 2; it cannot change any verdict and is
+wanted only for the committed seven-point secondary.
 
-**THREE CARDS ARE IN USE UNDER A BOUNDED WINDOW.** At 03:13 on 2026-09-16 the user opened the other
-GPUs "for the next 6 hours", i.e. until about **09:13**. That suspends — it does not cancel — the
-one-card rule recorded in AGENTS.md. `scripts/run_strength_ladder.sh` takes `GPU` as an override
-whose **default is 2**, and the standing rule is quoted in the script itself, so the next session
-falls back to one card without having to remember. GPU 0 stayed another user's throughout (16.6 GiB
-free) and was never taken.
+**51 pre-registrations, all scored. 494 tests. `./init.sh` exit 0. Manuscript compiles exit 0, 0
+overfull, 0 `??`, 9 of 9 body pages (0 body lines on page 10), 57 total, 3241 numeric literals with
+the one expected miss. 261.7 GPU-hours measured.**
 
-### THREE seed arms running on three cards, seven jobs — what they are and how to finish them
+---
 
-All three are committed and **unscored**; they are the three unscored pre-registrations the handoff
-must name. **None has produced a single sweep yet, so no number from any of them exists** — which is
-also what made the mid-arm amendment to arm 2 auditable rather than convenient.
-
-They answer one question at three levels: does an onset ratio reproduce when nothing changes but the
-seed? Arm 1 on the cell that inverted, arm 2 on a second pair to test whether arm 1 generalises, and
-arm 3 on the CopyBench table the claim is actually about, which removes the analogy step entirely.
-
-| arm | pre-registration | jobs | card(s) |
-|---|---|---|---|
-| Pleias-1.2B seeds | `onset_prediction_seedspread.md` | seeds 1, 2, 3 in series | GPU 2, alone |
-| KL3M-520M seeds | `onset_prediction_seedspread2.md` | seeds 1+3 / seeds 2+4 | GPU 4, GPU 1 |
-| KL3M-520M **CopyBench** seeds | `onset_prediction_seedspread_copybench.md` | seeds 1 / 2 | GPU 4, GPU 1 |
-
-**Arm 3 is the one that matters most and was added last.** Every other seed measurement is on
-BookMIA, while the claim they qualify is about the **nine-pair CopyBench table**. This replaces the
-analogy with a direct measurement on `KL3M-520M + mem. KL3M-520M`, which is *in* that table, is one
-of the two pairs whose interval excludes `1`, is the fine-tokenizer pair the split is built on, and
-has `0.0%` no-crossing so there is no grid-ceiling escape. **If its ratio is stable across seeds,
-the sentence now in Limitations and `appendix_robustness.tex` is too broad and must be narrowed.**
-Its corner reproduces the table's own row (`1.0531` against the published `1.0532`, `k=-1` `0.5188`),
-which a test asserts.
-
-Its protocol survives in **no log** — caution (v)'s situation. `recipe.json` gave the fine-tune in
-full, and the sweep's corpus was **proven, not inferred**: rebuilding `--split attack_train
---limit 100` through `load_prompt_corpus` reproduces the swept prompt ids exactly and in order, and
-the launched run then printed `608 excerpts` and `max-len auto: 679`, matching the recipe's own
-`n_texts` and `max_len`. Anything short of that match would have made the arm unbuildable.
-
-**Arm 1, the Pleias seed ladder**, is the control feat-121 forbade itself from adding after the
-fact. `--epochs 40` fixed — the recipe **every published memoriser in this paper uses** — varying
-`--seed` alone, with feat-120's `seed 0` run as the fourth point. `finetune_memorizing.py` seeds
-both the per-epoch data shuffle and the LoRA init, and **every memoriser on record, including all
-nine pairs of the Section 4 table, was trained at seed 0**, so the paper has never measured this.
-Bands, read against feat-121's measured epoch-only span of `0.4721` on the identical cell: span
-`>= 0.20` → run-to-run variation, and the nine-pair table's `0.2874` of structure sits inside the
-noise of one pair re-trained; `< 0.10` → strength; otherwise inconclusive. **Committed secondary:**
-pooling both ladders gives **seven** points on one pair, exact-`p` floor `1/2520` — the first time
-this question can reach significance.
-
-**Arm 2, the KL3M seed ladder**, exists because the paper's new sentence — that the nine-pair ratios
-are not per-pair properties — rests on **one pair**, and that pair is the weakest memoriser in the
-set. KL3M-520M is the adversarial second pair: the fine-tokenizer pair the split was built on, the
-strongest BookMIA memoriser, the one the paper would most like to keep. **If its seed spread is
-small, the sentence we wrote is too broad**, which is overclaiming in the direction of our own
-retraction and still overclaiming.
-
-**The like-for-like rule is the most important thing in either file.** A span grows with the number
-of draws, so the cross-pair comparison is pinned to the three seeds **both** pairs have — `{0,1,2}`
-— via `PRIMARY_SEEDS` in the scorer, with any larger span printed beside it and labelled "never in
-place of it". `tests/test_strength_ladder.py` asserts the primary set exists in full on both pairs.
-
-**Scoring, once the sweeps land** (all written before the numbers exist):
-```
-.venv/bin/python analysis/strength_ladder.py --axis seeds                 # Pleias
-.venv/bin/python analysis/strength_ladder.py --pair kl3m --axis seeds     # KL3M BookMIA, 5 points, 3-point primary
-.venv/bin/python analysis/strength_ladder.py --pair kl3m_cb --axis seeds  # KL3M CopyBench = the table's own row
-.venv/bin/python analysis/strength_ladder.py --axis pooled                # the committed secondary
-.venv/bin/python analysis/onset_ci.py --comp output/phase5/fineb_<tag>/composition.csv \
-  --s-x <that pair's s_x> --label "<pair> (BookMIA, seed=<n>)" --out results
-```
-Each `--pair` anchors on **its own** corner run and divides by **its own** `s(x)` — Pleias `3.0481`,
-KL3M/BookMIA `2.4316`, KL3M/CopyBench `2.4148`. Using the wrong one rescales every ratio and still
-looks entirely plausible, which is why tests pin all three against the CSVs they came from.
-
-`PRIMARY_SEEDS` is `(0, 1, 2)` — **seed numbers, not label text**. It was briefly a union of label
-strings, which no single pair could satisfy, so the like-for-like rule would have silently stopped
-applying; `seed_of()` parses the number and a test asserts the set exists in full on all three
-pairs. Arm 2 has five points and arm 3 three; only seeds 0–2 ever enter a cross-pair comparison,
-because a span grows with `n`.
-
-### The three-card window, and how it closes
-
-At **03:13** the user opened the other GPUs "for the next 6 hours" (→ ~**09:13**), and at **03:23**
-directed that the spare VRAM be used. This **suspends, does not cancel**, the one-card rule in
-AGENTS.md. `scripts/run_strength_ladder.sh` takes `GPU` as an override whose **default is 2**, with
-the standing rule quoted inside the script, so the fallback needs no memory. **GPU 0 was another
-user's throughout (62.6 GiB in use) and was never taken.**
-
-**Co-location is measured, not assumed, and its return falls:** two jobs on one A100 cost ~19%
-each (93–95 s/epoch against 79 solo → ~1.68× throughput); at **three** jobs the same work runs at
-117 s/epoch, **1.48×** slower than solo, so the card delivers ~2.0× rather than 3×. Adding a fourth
-would very likely not pay. The Pleias arm was
-deliberately left alone on GPU 2 and runs at 1.03×. Cards sit at 11–13 GiB of 79 — memory was never
-the constraint, SM occupancy is.
-
-**An amendment made mid-arm, and why it is auditable.** `onset_prediction_seedspread2.md` forbade a
-third seed absent an explicit extension, and forbade editing anything above its scoring log. Seeds 3
-and 4 were added at 03:25 and the amendment was therefore recorded **below** that line, with three
-facts: no result of any kind existed (both fine-tunes were at epoch 4/40, no sweep begun); the
-committed primary is untouched; and the extra seeds are barred from the primary **by construction**,
-since spans are not comparable across different `n`.
-
-### feat-121 — corpus or memoriser? **INCONCLUSIVE on the committed metric, and the measurement is the finding**
-
-Pleias-1.2B on BookMIA, the exact cell that inverted, with three further memorisers differing in
-`--epochs` alone (10, 20, 30) and feat-120's own 40-epoch run as the fourth point. Everything else
-identical; strength **measured** by each point's own sampled `k=-1` arm, never read off the knob.
+## READ THIS FIRST: `nvidia-smi` is broken, and the cause was in our own repo
 
 ```
-point        sampled k=-1   onset    ratio   95% CI            no-x
-epochs=10       0.5470      2.669   0.8756  [0.7937, 1.2303]   0.0%
-epochs=20       0.2269      4.108   1.3477  [0.9667, 1.7475]   0.0%
-epochs=30       0.9149      2.923   0.9590  [0.6827, 0.9819]   0.0%
-epochs=40       0.1504      4.006   1.3142  [1.0102, 1.5941]   0.4%
+nvidia-smi                          -> Failed to initialize NVML: Driver/library version mismatch
+env -u LD_LIBRARY_PATH nvidia-smi   -> prints the table
 ```
 
-- **The arm is valid**: the knob produced a `6.08x` strength span against a committed `3x`.
-- **Committed verdict INCONCLUSIVE**: band 1 needed `rho <= -0.8` **and** span `>= 0.15`. The span
-  fired at `0.4721`; `rho` did not, at `-0.600` (exact `p = 0.4167`, floor `0.083`).
-- **The knob is not monotone and the design never assumed it was** — 20 epochs gave a *weaker*
-  memoriser than 10, which is why every band correlates against measured strength.
-- **What needs no band**: a spread of `0.4721` within one pair against the nine-pair table's whole
-  `0.2874`. It reproduces both ends of that range alone, and the property the tokenizer split turns
-  on flips sign inside the pair — `[0.68, 0.98]` at the strongest memoriser, `[1.01, 1.59]` at the
-  weakest, non-overlapping. (The extremes comparison is POST HOC; the spread was committed.)
+`LD_LIBRARY_PATH` leads with `NVIDIA-Linux-x86_64-580.173.02/` — an extracted driver runfile in the
+repo root, 1.5 GB, gitignored, **not created by this work** — whose `libnvidia-ml.so.1` shadows the
+system's and does not match the loaded kernel module (`580.178.04`).
 
-**Not resolved, and stated as plainly as the finding:** strength versus run-to-run variation of the
-fine-tune. Four epoch counts are four optimisation trajectories, and the control — several seeds at
-one epoch count — is forbidden by the pre-registration after the fact. **Both readings cost the
-same**: if strength, the nine-pair table is confounded by a variable it never controlled (its own
-memorisers span sampled `k=-1` from `0.2696` to `0.9091`); if noise, the ratio carries a within-pair
-uncertainty near `0.47` that no bootstrap interval reports and the `0.2874` spread sits inside it.
+**CUDA compute is completely unaffected.** `torch.cuda.is_available()` is `True`, every number this
+project has measured is correct, and the only casualty is NVML. NVML is what torch's caching
+allocator calls inside `generate()`, which is why four fine-tunes died at 05:00 in their
+*post-training* check, *after* writing their merged model, and each queue shell then skipped the
+sweep behind it (`RuntimeError: NVML_SUCCESS == DriverAPI::get()->nvmlInit_v2_() INTERNAL ASSERT
+FAILED`).
 
-**As pre-committed, no outcome restored the retracted sentence**, and none did.
+Two repairs, both committed: `e4943f3` made the diagnostic unable to fail a run, and **this session
+added `scripts/gpu_env.sh`**, sourced by every GPU launcher, which strips the shadowing directory.
+glibc reads `LD_LIBRARY_PATH` once at exec, so a process cannot fix its own search path — the repair
+has to be in the shell, before python starts. `tests/test_bookmia_onset.py` pins it by *executing*
+it against a poisoned path, not by matching its spelling.
 
-### A rendering defect no build check can see, found while paying the page budget
+- **Do not delete the directory.** It is not ours (escalation rule: never delete a file the agent
+  did not create).
+- **`scripts/run_strength_ladder.sh` is NOT yet patched** — it was executing when the fix landed, and
+  editing a running bash script corrupts it, because bash reads the file incrementally by byte
+  offset. Patch it once its queue exits (one line, copy it from any of the other four).
+- Recorded as caution (ab) in AGENTS.md, now **twenty-eight** live cautions.
 
-A `\label` attached to a `\paragraph` captures no counter, so `\ref` resolves it to the enclosing
-`\section`. Two such refs side by side therefore rendered **in the compiled PDF** as
-`Appendices I, I` and `Appendices I--I`. tectonic exits 0, the overfull count is 0, `??` is 0, and
-the page shows a real appendix letter — just the same one twice. Same class as cautions (y) and (z).
-`tests/test_reference_targets.py` (2) catches it, and was **demonstrated to fail** on the
-reintroduced defect rather than assumed to work. `sec:onset` (23 refs) and `app:bookmia` are the
-same construction and are *correct*, because their enclosing section is the right target.
+---
 
-### Compute is now disclosed as an UPPER bound, and why
+## The result: four seed ladders, and why the fourth changed the paper
 
-`compute_hours.py` bills a log from birth to last write. This session's **gated queue shells poll
-while holding no card** — `bookmia_p1` ~2.63 h, `bookmia_sweep_gpu2` ~2.53 h, `bookmia_sweep_gpu4`
-~2.53 h — so roughly **7.7 of the 247.6 GPU-h is a sleeping shell**. The LLM Usage statement
-therefore says "at most $248$ GPU-hours" rather than "approximately". This is a new over-billing
-mode introduced by this session's gate loops; a future session adding a waiter should either trace
-its sleeps or expect the same inflation.
+One question: does an onset ratio reproduce when nothing changes but `--seed`? Every memoriser on
+record in this paper was trained at seed 0, so the paper had never measured it.
 
-### feat-120 — the onset split on a third protected corpus: **TWO OF THREE BANDS FAIL**
-
-**Complete and scored.** All forty-seven pre-registrations are scored; nothing is running; no GPU
-work is outstanding. This arm refuted a claim the paper stated as established, and the manuscript
-now says so in the three places that made it.
-
-**The design.** Same three anchors that already carried a CopyBench reading and a Gutenberg reading
-— KL3M-520M, Pleias-1.2B, Phi-3.5-mini — given a third memoriser on 600 BookMIA passages
-**stratified round-robin over all 31 books**, swept on a 100-passage prefix of that set. Everything
-held fixed; only the protected work changed, for the second time. Bands 1 and 2 are the Gutenberg
-arm's verbatim; band 3 is new and is what three readings buy that two cannot.
-
-```
-pair            k=-1    k=0    onset   ratio  95% CI           no-x   pred/meas   Gutenberg  novels
-KL3M-520M      0.7326  0.000   2.465  1.0138  [0.970, 1.131]   0.0%     0.891       1.102     1.053
-Pleias-1.2B    0.1504  0.000   4.006  1.3142  [1.010, 1.594]   0.4%     0.652       0.895     0.878
-Phi-3.5-mini   0.4425  0.000   2.607  0.9920  [0.867, 1.370]   0.0%     1.004       0.949     0.926
-```
-
-- **Band 1 FAILS.** Pleias' `0.652` is outside the committed `[0.7, 1.4]`. Eq. (req)'s *level*,
-  which transferred to Gutenberg, does not transfer twice.
-- **Band 2 INVERTS — the strongest committed negative, and it fires twice over.** The coarse
-  Pleias pair (`1.3142`) is now *above* the fine KL3M pair (`1.0138`); and KL3M's interval
-  `[0.970, 1.131]` no longer excludes 1, where CopyBench `[1.0163, 1.2436]` and Gutenberg
-  `[1.0744, 1.4227]` both did. That exclusion was the whole basis for "leakage begins after the
-  certificate has gone vacuous", so the sentence is retracted.
-- **Band 3, one pair exceeds.** KL3M and Phi vary across three corpora by `0.0882` and `0.0659`,
-  which is `2.6x` and `4.3x` *inside* their own CopyBench bootstrap widths (`0.2273`, `0.2866`);
-  Pleias varies by `0.4358` against `0.1709`. Corpus-sensitive for one pair, named.
-
-**The grid extension confirmed rather than rescued, and that is the methodological point.** Pleias'
-no-crossing fraction read **43.1%** against `0.0%` and `0.0%`, on a grid whose ceiling its upper
-bound sat `0.056` below — caution (g) exactly. The extension was licensed by `appendix_seed.tex`'s
-rule, cited in the pre-registration at 14:27, with grid `{4.6, 5.3, 6.6}` taken mechanically from
-the KL3M-1.7B precedent's multipliers and committed *before* the run. Result: no-crossing
-`43.1% -> 0.4%`, upper end `1.360 -> 1.594`, onset **unmoved at 4.0058 to four decimals**. The
-reading was never a ceiling artefact; the grid was too short to prove it. Both grids are reported
-(`results/onset_bookmia_committed_grid.csv` holds the unextended scoring).
-
-**The confound is measured and does NOT rescue anything.** Pleias' memoriser is much the weakest,
-and its sampled `k=-1` falls `0.909 -> 0.517 -> 0.150` across the three corpora while its ratio
-rises `0.878 -> 0.895 -> 1.314`. But over all nine (pair, corpus) cells the rank correlation is
-`rho = -0.317` at exact `p = 0.4101` — **post hoc, no band, not significant**. A named caveat for
-one pair, not a general account, and never used to set aside a band that fired. Pleias' `0.1504`
-clears the committed `0.10` gate and it enters; the gate was not raised after the fact. Because a
-memoriser is fine-tuned on the corpus it is measured against, this design cannot separate corpus
-from memoriser — a limitation of the design, not a defence of the claim.
-
-**What survives, and it is the paper's actual claim.** Every onset on every pair and every corpus
-still lands within about `1.3x` of `s(x)`, so `prop:threshold` is not bookkeeping. What died is the
-finer structure — which pairs sit above 1 and which below — and the rule now stated in the paper is
-that an onset ratio transfers across corpora to its order of magnitude and no more finely.
-
-**Manuscript changes.** `appendix_robustness.tex`'s subsection is retitled "A second corpus, then a
-third" and the retracted sentence is kept *visible as a retraction* beside the evidence that
-refutes it, so a reviewer who read an earlier draft or the pre-registration finds the withdrawal in
-the same place. `appendix_limitations.tex` carries the same retraction. `onset.tex` (body) gains
-"though on two further protected corpora it reaches 1.31 and which pairs exceed 1 changes, so only
-the level transfers". The abstract gains ", and to 1.31 on two further corpora".
-
-**Two defects of mine this arm, both caught by tests rather than by reading.**
-1. I appended the P1 block with `partition("## Scoring log")` instead of the newline-prefixed form,
-   so it matched the backticked mention in the file's own third sentence and inserted the block
-   mid-sentence — **caution (r) verbatim**, in the one file whose entire purpose is ordering.
-   Repaired; content and commit times unaffected, only placement.
-2. My first abstract rewrite replaced "nine pairs with nine distinct anchors" with "nine anchors and
-   three protected corpora", silently dropping the pair count.
-   `test_abstract_consistency.py::test_the_abstract_the_intro_and_the_onset_section_agree_on_the_pair_count`
-   caught it, which is exactly the drift that test exists for.
-
-Earlier in the arm I also forecast the fine-tune stop-loss twice off three-epoch stretches and was
-wrong in both directions (KL3M read 0.0281 at epoch 16, 0.1439 at 21, then stopped at 0.0169 at 26).
-**A LoRA at `lr 3e-4 rank 128` oscillates hard near convergence: read `recipe.json`'s `final_loss`,
-never the curve.** Only the per-epoch cost is worth quoting as a forecast.
-
-**ONE GPU AT A TIME, from 21:00 (user instruction, now in AGENTS.md above the Compute block).** All
-future processes share **GPU 2**. This supersedes the Working Rules allowance that "GPU arms may
-queue in parallel when separate cards are free" — arms may still queue, but on one card, with
-caution (x)'s one-queue-shell repair applying within it. The instruction allowed this arm's two
-in-flight sweeps to finish on 2 and 4; nothing was killed and nothing was queued behind them.
-
-**`nvidia-smi` is dead on this box** — the host driver was updated under running jobs and every call
-returns `Failed to initialize NVML: Driver/library version mismatch (580.173)`. Torch is unaffected,
-so the occupancy check AGENTS.md requires goes through `torch.cuda.mem_get_info` instead. Run at
-14:35 it showed **GPUs 0 and 1 held by another user** (16.1 and 5.9 GiB free), which is why this arm
-ran on 2 and 4 and could not be compressed.
-
-### v8 / v9 / v10 / the first read-through — history, carried for context
-
-v7 argued the dichotomy and reached selection anchoring on page 5. v8 swapped the roles: §2 is
-selection anchoring, §3 its experiments, §4 the dichotomy, §5 the deployed instance. Title is *Two
-Nats, Not Two Thousand: Spending the Copyright Budget on the Draw Instead of the Token*. v9/v10
-answered a 5/10-reject referee report on four counts by measurement — the composition order (192
-pathwise / 332 KL / 2 metered realised / 0 metered certified), feat-113's order-averaged
-head-to-head (**REVERSAL CONFIRMED**, `+0.0645 [+0.030,+0.0995]`, with my pre-registered prediction
-wrong), feat-114's serving cost, and feat-115's anchor vetting over eighteen models. The
-read-through then caught two estimand defects the fixes themselves had introduced. Every section
-from v7 is kept beside its replacement as `*_v7_2026-09-14.tex`.
-
-### feat-116 — the 0.5B scorer does not carry the gain
-
-`serving_cost.csv` carried a row marked `0.5B, NOT RUN`: the arithmetic saying that because the
-reward model dominates the price, a small scorer would cut the cost several-fold. An unmeasured
-counterfactual is the thing this paper exists to object to, so it was pre-registered (`1cc982d`,
-five bands) and run. `Qwen2.5-0.5B-Instruct`, identical template and reward, re-scoring the same
-32,000 cached candidates, both scorers judged over the whole nested grid under feat-113's corrected
-protocol — 8,260 calls, `0.23` GPU-h.
-
-**The route fails and I was wrong on three of four bands.** F1 `FAILS` (`+0.0220 [+0.0000,+0.0440]`
-at `n=64` against a committed `WORKS` in `[0.03,0.09]`), F2 `COSTLY` at `-0.0855`, F4
-`MATCHED-COMPUTE LOSS` at `-0.0395` against a committed `PARITY`, F3 `NO CROSSING`. F3 keeps its
-margin rather than its label in the prose: at `n=16` the small scorer reaches `+0.0395` against the
-meter's `+0.0400`, five ten-thousandths short with the intervals overlapping, so the honest reading
-is *indistinguishable from*, not below.
-
-### The cost model priced its models by their names
-
-Found while measuring the scorers for feat-117. Counted off the loaded checkpoints,
-`Qwen2.5-7B-Instruct` holds **`7.6156`B**, not `7.0`; TinyComma `1.7586`B; Llama-3.1-8B-Instruct
-`8.0303`B. The scorer term is the one selection pays `n` times, so every serving-cost number was
-understated by `8.8%`: **`7.2x` is `7.7x` and `57.5x` is `61.3x`**. Corrected everywhere, including
-the appendix table's twelve cells. feat-116's own docstring warned about this exact class of error
-and I made it anyway on the three constants I did not re-measure. `serving_cost.py` now carries
-measured counts with the reproduction one-liner, and `test_compute_matched.py` fails if any constant
-is ever equal to the round number in its model's name.
-
-### feat-117 — NO TURNOVER FOUND, and what replaced it
-
-feat-116 reported, unregistered, that the 0.5B curve "peaks at `n=16` and falls" and drew from it
-that `log n` is not a free knob. feat-117 put two scales between `0.5`B and `7.6`B
-(`Qwen2.5-1.5B`, `Qwen2.5-3B`), registered the terminal drop `g(64) − g(16)` as the test, and judged
-all four scorers **in one pass** — 10,722 calls, 4,361 distinct served completions, `0.53` GPU-h
-measured. One pass is not a convenience: the comparison is between scorers, and this paper's own
-instrument checks forbid quoting judged levels across passes.
-
-**G0 replicates to `0.001`** on all three reference arms against a gate that allowed `0.04`. That is
-the strongest evidence this paper has that its judged *gains* — taken over a shared control with
-position removed by construction — are stable even though its judged *levels* are not.
-
-**G3 = NO TURNOVER FOUND**, against my committed `BOUNDARY AT 1.5B`. The 0.5B terminal drop is
-`-0.0160 [-0.0340, +0.0010]`: negative, interval containing zero by a thousandth, so `FLAT`. The
-committed consequence was a retraction and it is executed — the appendix says we made the reading,
-registered it and lost it, and the `log n`-is-not-a-free-knob claim is out of the paper and out of
-this file. What survives as *description*, not as the registered test, is the shape contrast:
-Spearman(gain, log n) is `0.5429` at `0.5`B and exactly `1.0` at each of `1.5`B, `3`B, `7.6`B.
-
-**The finding it was not built for is larger: capability saturates early --- on the judged
-axis. feat-118 below took this off the judge and it did not hold.** Of the three adjacent
-steps at `n=64` only the first separates — `1.5`B over `0.5`B `+0.0700 [+0.0500,+0.0900]`, `3`B over
-`1.5`B `+0.0040 [-0.0145,+0.0225]`, `7.6`B over `3`B `+0.0095 [-0.0090,+0.0285]`. A `1.5`B scorer
-reaches **`87.3%`** of the `7.6`B gain for **`35.2%`** of the cost (`21.59x` against `61.29x`), so
-**the `61.3x` the paper concedes is the price of the scorer we happened to use, not of the
-mechanism** — which retracts the other half of feat-116's Limitations sentence, that the cost was
-"intrinsic at the scales we tested". The cost column carries no committed band and is labelled post
-hoc; the crossing rule is feat-116's, applied unchanged.
-
-**One instability recorded rather than hidden.** A crossing *cell* is a thresholded statistic and
-inherits none of the stability the gains showed: the `7.6`B crossing sits at `n=8`/`7.66x` in one
-pass and `n=16`/`15.32x` in the other, because `sel7b_n8` read `+0.0415` then `+0.0360` — `0.0055`
-apart, far inside the judge's floor, but straddling the meter's `+0.0400`. The paper quotes the
-`n=64` column, which moved by `0.001`.
-
-Without a judge, `scorer_scale_agreement.csv` (post hoc, no band) gives the same ordering in reward
-space: Spearman against the `7.6`B reference is `0.1333`, `0.4185`, `0.4926` at `0.5`/`1.5`/`3`B and
-the same-draw rate at `n=64` is `0.052`, `0.132`, `0.228` against `0.016` by chance. Large step at
-the bottom, small ones above it.
-
-### feat-118 — and the replacement does not survive the judge-free axis either
-
-feat-117's saturation result was about to become the paper's one practical recommendation — *use a
-`1.5`B scorer, keep `87%` of the gain, pay `35%` of the cost* — and every number in it came from an
-instrument this paper calls UNUSABLE. GSM8K exact match has no judge. Same `500 × 64` cached
-Comma-7B candidates, all four rewards, bands committed at `8b97871` before the run, with TriviaQA
-committed alongside so it could not become a post-hoc rescue.
-
-**H0 `MATCHES`**, plus a free check: majority vote touches no reward model, so all four per-scorer
-runs must reproduce it exactly — and do, which pins the cached-generation path.
-
-**H3 = `DISAGREES, OTHER` on GSM8K and `DISAGREES, NO SCORER EFFECT` on TriviaQA, against my
-committed `AGREES` on both.** Scorer scale does matter without a judge (`7.6`B over `0.5`B at
-`n=64` is `+0.0700 [+0.0300,+0.1120]`) but **not where the judge said**: the first step, `1.5`B over
-`0.5`B, is `-0.0060 [-0.0500,+0.0360]` against the judged `+0.0700 [+0.0500,+0.0900]`, no adjacent
-step resolves alone, and the largest scorer is still the best. On TriviaQA no scale helps and every
-reward arm *declines* in `n`.
-
-**Both axes agree scorer scale is worth seven to eight points end to end** — `+0.0835` judged,
-`+0.0700` judge-free — **and disagree completely about where it is bought**: all in the first step
-with a judge, gradually and still rising at `7.6`B without one.
-
-Consequence applied as committed: the `87%`/`35%` sentence is **qualified to the judged workload**
-in Section 2 and Limitations rather than withdrawn, since GSM8K's H1 separates. The test that
-pinned it now forbids the unqualified form and requires the disagreement beside it. New appendix
-`app:judgefreescale`.
-
-Stronger for it: the paper's central claim is now measured **without** an instrument — `+0.0700` of
-exact match turns on the scorer alone with `log n` identical throughout — and majority vote, no
-reward model and the same certificate, reaches `0.546` where the best reward reaches `0.386`.
-
-### feat-119 — the cheapest instance is also the best one
-
-Post hoc and labelled so: no band, no new run, a join over quantities already measured, and not
-named `onset_prediction_*` so it cannot inflate the count (feat-115's rule).
-
-feat-114/116/117 established that selection's cost is the **reward model**, not the anchor.
-**Majority vote has no reward model** — self-consistency serves the modal answer over the same `n`
-anchor draws, so its score is a regex and costs no forward pass, and it carries the identical
-`log n` certificate because Proposition 1 assumes nothing about the score and a mode is a score.
-
-| rule | `n` | cost | GSM8K | TriviaQA |
+| ladder | memoriser, sampled `k=-1` | stop-loss fired? | strength span | **ratio span** |
 |---|---|---|---|---|
-| majority vote | 8 | **`1.44x`** | `0.466` | `0.322` |
-| reward `7.6`B | 2 | `1.92x` | `0.352` | `0.282` |
-| majority vote | 32 | **`5.75x`** | **`0.546`** | `0.328` |
-| reward `7.6`B | 64 | `61.29x` | `0.386` | `0.266` |
+| KL3M-520M, CopyBench | 0.5149 – 0.5756 | yes, epoch 11/40 every seed | 1.12x | 0.0333 |
+| KL3M-520M, BookMIA | 0.6690 – 0.7326 | yes, epoch 26/40 every seed | 1.10x | 0.0663 |
+| Pleias-1.2B, CopyBench | 0.9091 – 0.9615 | yes, epochs 29–31/40 | 1.06x | 0.0795 |
+| **Pleias-1.2B, BookMIA** | **0.1504 – 0.2045** | **no — 40/40 every seed** | **1.36x** | **0.2597** |
 
-**Every scorer-free cell beats every reward cell on both tasks** — `3.42x` the gain for `9.4%` of
-the cost at `n=32`, and on TriviaQA the reward goes *negative* at every `n ≥ 8`. So `61.3x` is the
-price of putting a reward model in the loop, not the price of the mechanism.
+read against feat-121's **0.4721** from varying `--epochs` alone on the same cell.
 
-Three limits travel with the numbers in the CSV, the note and the appendix, because this is the kind
-of figure that gets quoted out of context: post hoc; needs a **canonical answer**, so it does not
-transfer to the free-form judged workload; and no metered decoder ran on GSM8K, so the `x metered`
-column is our cost denominator and not a measured head-to-head. The appendix also states what it
-does **not** say — majority vote reaches `0.546` against the risky model's `0.786` greedy, so this
-is a comparison among mechanisms that carry a certificate, not a claim to beat the model one exists
-to bound.
+**After three ladders the reading was "seeds do not move the onset ratio; training length does", and
+that sentence was written into `appendix_limitations.tex` and `appendix_robustness.tex` at 06:35.
+The fourth ladder refutes it as stated.** Both sentences are now replaced. What all four support:
 
-New appendix `app:scorerfree`; Section 2 gains a clause and drops the `1.5`B detail that Limitations
-and the appendix already carry; the body figure went `0.74 → 0.70\textwidth` to pay for it, rendered
-at 190dpi and checked.
+> The onset ratio is reproducible under a re-seeded recipe **wherever the fine-tune converged and the
+> memoriser is strong** (0.033–0.080), and is **not** where the memoriser is marginal (0.2597). In
+> neither case is it a property of the pair alone.
 
-### The final read-through
+The failing ladder fails through *strength*, not through the seed as such: its memoriser barely
+clears our own entry gate of `0.10` (caution (a)), it is the only cell where the stop-loss never
+fires — all 40 epochs at final loss 0.106–0.114 against a 0.02 threshold and 0.017–0.030 elsewhere —
+and it is the only one whose seed moves *strength* by more than 1.12x. Within it the strongest
+memoriser carries the lowest ratio, the same sign feat-121's epoch ladder shows.
 
-All nine body pages read as rendered. Three fixes, one substantive: **the abstract claimed selection
-"does better" at one fifty-fourth of the divergence and never mentioned compute** — which is exactly
-the referee's charge that we chose the axis we win on. It now says "at one fifty-fourth of the
-divergence **and sixty-one times the forward-pass cost**", paid for by cutting a rhetorical sentence
-the introduction argues properly anyway, and the abstract still ends on line 041. Also: the
-contributions bullet cited §3 for a ratio only §2 and the appendix carry, and Limitations named two
-things as open while calling one "the main open problem".
+**The convergence reading is post hoc and is labelled so in both the scoring log and the paper.** The
+spans, the entry gate and the stop-epoch diagnostic were all committed before the runs.
 
-Checked and **not** defects: the `+0.054` in §2 is Table 1's single-order judge-B `n=8` row and the
-placement arms it is compared against share that protocol, 500 prompts, gains over an anchor-alone
-control at the same `2.08` pathwise nats (`results/placement.csv`); the `165.0` nats in the
-composition paragraph is the `k=3` realised KL, a different arm from the `k=10` workload's `171.3`,
-and both are labelled where they appear.
+**Checked rather than assumed: convergence does NOT explain the nine-pair table's ordering.** Four of
+the nine memorisers reached their stop-loss and five did not, and the two groups interleave in rank
+(converged 0.8784 / 0.9203 / 0.9933 / 1.0532; not 0.8870 / 0.8916 / 0.9261 / 1.0266 / 1.1658). The
+converged four still span 0.1748. Restricting to them does not recover a per-pair reading.
 
-## State
+### Band outcomes, each against its own committed pre-registration
 
-| | |
+| pre-registration | verdict |
 |---|---|
-| manuscript | `~/sub/satml/iclr_2027.tex`, **9 of 9 body pages**, 55 total |
-| build | exit 0, **0** overfull, **0** unresolved, **0** literal `**`, page 10 body-free |
-| tests | **483 passed**, `./init.sh` exit 0 |
-| pre-registrations | **51**; 48 scored, three committed-and-running: `onset_prediction_seedspread.md`, `onset_prediction_seedspread2.md`, `onset_prediction_seedspread_copybench.md` |
-| numeric audit | 3,197 literals, 1 expected miss (`64256`, the Comma-7B padded embedding count) |
-| compute | **247.6** measured, disclosed as **"at most 248"** (≈7.7 of it is gated shells polling with no card); fine-tune bound **40** |
-| artifact | **871** files, `MANIFEST.sha256` verified |
-| anonymity | 0 "our earlier audit", 0 affiliation; 4 hits, all `(Vijayavallabh, 2026)` and its bib entry |
+| `onset_prediction_seedspread.md` (Pleias BookMIA) | **RUN-TO-RUN VARIATION** — span 0.2597 ≥ the committed 0.20 |
+| `onset_prediction_seedspread2.md` (KL3M BookMIA, cross-pair) | **INCONCLUSIVE** — 0.0663/0.2597 = 0.2553, in between, **missing the "below a quarter" band by 0.0014** |
+| `onset_prediction_seedspread_copybench.md` | scored 06:35: KL3M fires the narrowing band, Pleias inconclusive |
+| `onset_prediction_strength.md` (feat-121, epochs) | scored 02:30: INCONCLUSIVE, `rho = -0.600` |
 
-## Files changed this session
+A band missed by a thousandth is still missed. It was not moved.
 
-**Manuscript.** Every body section rewritten or reordered for v8; `selection.tex` and
-`iclr_closing.tex` rewritten again for the cost frontier and the saturation result; `iclr_intro.tex`
-and the abstract in `iclr_2027.tex` for the compute axis and the reference fix. New appendix
-sections `app:frontier`, `app:saturation`, `app:judgefreescale` and `app:scorerfree` in
-`appendix_selection.tex`, alongside the three v9/v10 paragraphs (order-averaged head-to-head,
-two-order composition, anchor vetting); the `app:saturation` paragraph carries a forward pointer to
-the judge-free rebuttal. Section 2's cost sentence was rewritten three times as the cost story
-changed and ends up saying the simplest true thing: the price is the scorer's, and the cheapest
-scorer is none. The body figure went `0.80 → 0.74 → 0.70\textwidth` paying for those edits, rendered
-and read at each step.
-`appendix_proofs.tex` (duplicate label removed, threshold proof generalised), `appendix_related.tex`
-(Kalai/Chen), `references.bib` (+`panickssery2024llm`).
+### Why the Pleias-BookMIA verdict does not wait on seed 3
 
-**Repo.** New analysis scripts `order_averaged_h2h`, `serving_cost`, `anchor_vetting`,
-`compute_matched`, `scorer_agreement`, `scorer_scale`, `verifiable_scorer_scale`; new launcher
-`scripts/run_verifiable_scorer_scale.sh`. New `results/` CSVs for each of those arms plus the four
-reward caches `selection_rewards64_qwen{05b,15b,3b}.csv` and
-`selection_verifiable_rewards_{,tqa_}comma7b_qwen{05b,15b,3b}.csv`, and the six per-scorer
-`selection_verifiable{,_tqa}_comma7b_qwen*.csv`. Four pre-registrations:
-`onset_prediction_{order_averaged_h2h,compute_matched,scorer_scale,verifiable_scorer_scale}.md`.
-New `tests/test_{compute_matched,scorer_scale,verifiable_scorer_scale,scorer_free_cost}.py`.
+The committed quantity is the span over **four** points. A span is a maximum minus a minimum, so
+adding a point can only hold or widen it: `0.2597` is a lower bound on the four-point span, which is
+therefore already `>= 0.20` whatever seed 3 returns. The verdict is decided; seed 3's number gets
+appended when it lands.
 
-feat-119 added `analysis/scorer_free_cost.py`, `results/scorer_free_cost.csv` and its note; it is a
-**post-hoc join with no committed band**, so the note is `scorer_free_cost_note.md` and
-deliberately *not* an `onset_prediction_*.md` — the same rule feat-115 followed, so a re-analysis
-cannot inflate the pre-registration count. `analysis/serving_cost.py` gained the majority-vote rows
-(`n P_anchor` and no scorer term).
+---
 
-Two existing scripts were patched rather than duplicated. `scripts/snapshot_manuscript.sh` follows
-nested `\input`. `analysis/selection_verifiable.py` gained `--reward-tag`, which names the reward
-cache and output CSV without touching the generation paths, and had a latent defect fixed: its
-reward arm's label was the string `pointwise reward (Qwen2.5-7B)` hardcoded, so `--reward-model`
-would have silently mislabelled every row and made four scorers indistinguishable in the CSVs. With
-defaults it reproduces `selection_verifiable_comma7b.csv` byte for byte.
-`tests/test_{selection_claims,imitation_cost}.py` updated.
+## What is running, and what to do when it finishes
 
-### The seed arms (this session, IN FLIGHT)
+**GPU 2 only.** `bash scripts/run_strength_ladder.sh seeds 1 2 3`, pid 1616043, started 02:57.
+Seeds 1 and 2 are done and scored. Seed 3's memoriser was at epoch 22/40 at 07:20 (~75 s/epoch, it
+will run the full 40 because its stop-loss never fires), so: memoriser done ≈ **07:45**, sweep
+≈ **11:00–11:45**.
 
-```
-analysis/strength_ladder.py              PATCHED  --pair {pleias,kl3m} --axis {epochs,seeds,pooled};
-                                                  default path reproduces feat-121's CSV byte for byte
-scripts/run_strength_ladder.sh           PATCHED  axis + PAIR + GPU (default 2); per-pair grids
-tests/test_strength_ladder.py            11 tests (was 5)
-results/onset_prediction_seedspread.md   NEW  Pleias BookMIA seeds, b8d6397, UNSCORED
-results/onset_prediction_seedspread2.md  NEW  KL3M BookMIA seeds, committed + amended, UNSCORED
-results/onset_prediction_seedspread_copybench.md  NEW  KL3M CopyBench seeds, cb7e1c1, UNSCORED
-scripts/run_copybench_seeds.sh           NEW  protocol recovered from recipe.json + PROVEN corpus
+GPU 0 is another user's (63.7 GiB). GPUs 1 and 4 are idle and ours are off them.
+
+**The multi-card window the user opened at 03:13 "for the next 6 hours" expires ≈ 09:13.** After
+that the standing rule applies again: **all processes on GPU 2**. It is quoted inside
+`run_strength_ladder.sh` and `run_copybench_seeds.sh`, both of which default `GPU` to 2, so the
+fallback needs no memory.
+
+### When seed 3's sweep lands — exactly three things, in order
+
+```bash
+# 1. append seed 3 to the Pleias BookMIA log (the verdict does not change; the number is recorded)
+.venv/bin/python analysis/strength_ladder.py --axis seeds
+
+# 2. the COMMITTED SECONDARY, which needs seven points and has six today
+.venv/bin/python analysis/strength_ladder.py --axis pooled
+#    at six points it reads rho = -0.543, exact p = 0.2972 (floor 1/2520 at n=7).
+#    Do NOT report the six-point value as the secondary: seven is what was registered.
+
+# 3. patch the launcher that could not be patched while it ran
+#    add after the `export HF_HUB_OFFLINE=1 ...` line of scripts/run_strength_ladder.sh:
+#      . scripts/gpu_env.sh   # (cwd is the repo root) strips the stale in-repo driver from LD_LIBRARY_PATH
 ```
 
-### feat-121 (this session, COMPLETE)
+---
 
-```
-analysis/strength_ladder.py              NEW  correlates ratio vs MEASURED k=-1; refuses < 3 points
-scripts/run_strength_ladder.sh           NEW  one queue shell, GPU 2 only, fine-tune then sweep
-tests/test_strength_ladder.py            NEW  5 tests
-tests/test_reference_targets.py          NEW  2 tests; catches "Appendices I, I"
-results/onset_prediction_strength.md     NEW  committed a9360cb, SCORED 02:30
-results/strength_ladder.csv              NEW  the four points
-~/sub/satml/sections/onset.tex                 body: the level is the claim, the ordering is not
-~/sub/satml/sections/appendix_robustness.tex   NEW subsection with the four-point table
-~/sub/satml/sections/appendix_limitations.tex  the nine-pair table is evidence about the LEVEL
-~/sub/satml/sections/selection.tex             ref fix (one number, pointer preserved)
-~/sub/satml/sections/iclr_closing.tex          ref fix; "residual fifth" sentence cut
-~/sub/satml/iclr_2027.tex                      abstract range; compute -> "at most 248"
-```
+## Zero-GPU work queued, in value order
 
-### feat-120 (this session, COMPLETE)
+1. **`sections/appendix_seed.tex` is now the biggest remaining overclaim.** It still presents the
+   nine-pair ratios as per-pair properties in three tables (~lines 19–26, ~250, ~311–313), including
+   the ">10 words / ≤10 words" split. Four seed ladders and one epoch ladder now say the per-pair
+   reading is not supported; `appendix_robustness.tex` and `appendix_limitations.tex` have been
+   brought into line and this file has not.
+2. **Add a memoriser-strength column to the nine-pair table**, and a convergence marker beside it —
+   both are already on disk in each `recipe.json` (`final_loss`, `stop_loss`, `epochs_run`), so it
+   costs no compute and lets a reader see the confound directly.
+3. **Qualify the seed-word gradient** `rho = -0.958` in `appendix_onset.tex`: it is a correlation
+   over nine differently-trained, differently-converged memorisers. `appendix_limitations.tex`
+   already carries the caveat; the appendix that states the number does not.
 
-```
-analysis/build_bookmia_onset_subset.py   NEW  stratified round-robin subset builder
-analysis/onset_gutenberg.py              PATCHED  --corpus {gutenberg,bookmia}; default byte-identical
-scripts/run_bookmia_memorisers.sh        NEW  queue shell per card, flags verbatim from Gutenberg
-scripts/run_bookmia_p1.sh                NEW  waits for all three memorisers, runs P1, STOPS
-scripts/run_bookmia_sweeps.sh            NEW  pair table inside the script; git-checked P1 gate
-tests/test_bookmia_onset.py              NEW  8 tests
-scripts/run_bookmia_sweeps.sh            NEW  GATE-BEGIN/GATE-END, git-checked P1 gate
-results/onset_prediction_bookmia.md      NEW  committed 14:27, SCORED 22:05
-results/onset_bookmia.csv                NEW  extended-grid scoring (reading of record)
-results/onset_bookmia_committed_grid.csv NEW  the unextended scoring, as the rule requires
-results/onset_theory_bookmia.csv         NEW  P1, committed dad60ec before any sweep
-~/sub/satml/sections/appendix_robustness.tex   RETRACTION + the third corpus
-~/sub/satml/sections/appendix_limitations.tex  same retraction
-~/sub/satml/sections/onset.tex                 body claim qualified
-~/sub/satml/iclr_2027.tex                      abstract range; compute 223 -> 244
-results/onset_theory_pairs_bookmia.tsv   NEW  label / memoriser / anchor
-data/bench/bookmia100_onset{600,100}.jsonl  NEW, gitignored, rebuildable
-```
+---
 
-## Recommended next step
+## Files changed this session (since `3f047e8`)
 
-**Finish the three seed arms. Start nothing else.** Seven GPU jobs are live and the window closes
-~09:13; after that the default is one card, GPU 2, and the scripts already default there.
+| file | why |
+|---|---|
+| `scripts/gpu_env.sh` (new) | strips the shadowing driver from `LD_LIBRARY_PATH`; the explanation lives here once |
+| `scripts/run_bookmia_{memorisers,p1,sweeps}.sh`, `run_copybench_seeds.sh` | source it |
+| `tests/test_bookmia_onset.py` | +6 tests; the strip is verified by execution against a poisoned path, and demonstrated to fail on both reintroduced defects |
+| `results/onset_prediction_seedspread.md` | SCORED — run-to-run variation |
+| `results/onset_prediction_seedspread2.md` | SCORED — inconclusive by 0.0014 |
+| `results/strength_ladder_{seeds,kl3m_seeds,pooled}.csv` | the scored ladders |
+| `AGENTS.md` | caution (ab), the NVML root cause; count 27 -> 28 |
+| `~/sub/satml/sections/appendix_robustness.tex` | three-ladder claim replaced by the four-ladder one; nine-pair convergence audit added |
+| `~/sub/satml/sections/appendix_limitations.tex` | same correction, one paragraph |
 
-1. Wait. On the measured pace the fine-tunes land first, then the sweeps, which are the long pole.
-2. **Check every entry gate before reading any ratio** (caution (a), sampled not greedy). A point
-   below `0.10` is excluded and reported as excluded — a statement about that memoriser, not about
-   the question.
-3. Score with the four commands in the running-arms section, then `onset_ci.py` per point for the
-   intervals. **Report each arm's committed primary before any larger span**, and never let arm 2's
-   seeds 3–4 into a cross-pair comparison; the scorer enforces this, do not work around it.
-4. Then the paper, and the outcome that costs us something is the likely one to check first:
-   **`sections/appendix_robustness.tex` and `appendix_limitations.tex` currently say the nine-pair
-   ratios are not per-pair properties, on the strength of one pair on one corpus.** Arm 3 measures
-   that claim on the table itself. If its three-seed span is `< 0.05`, the sentence is too broad and
-   must be narrowed to the pair and corpus it was measured on — overclaiming toward our own
-   retraction is still overclaiming, and the pre-registration commits us to that narrowing.
+The manuscript is **outside this repo** and must never be committed to (caution (d)); it has no
+version control of its own, so its edits live only on disk.
 
-**Zero-GPU work queued behind them**, in value order:
+---
 
-- `sections/appendix_seed.tex` still presents the nine-pair ratios as per-pair properties in three
-  tables (~19–26, ~250, ~311–313), including the ">10 words / <=10 words" split (`0.878`–`0.926`
-  against `0.993`–`1.166`). That is the **biggest remaining overclaim in the paper** and feat-121
-  already says that structure is not resolvable at that precision.
-- Add a **memoriser-strength column** to the nine-pair table; every pair's sampled `k=-1` is on
-  disk, so a reader sees the confound instead of being told about it.
-- `sections/appendix_onset.tex` presents the seed-word gradient (`rho = -0.958`) as explaining the
-  residual spread. It is a correlation over nine differently-trained memorisers; Limitations now
-  says so and the appendix does not.
+## Standing constraints, unchanged
 
-Two things remain on record as **impossible** rather than unstarted. A judge-free head-to-head
-against the *metered* decoder cannot be run (`results/onset_prediction_verifiable.md`): TinyComma is
-the only openly licensed anchor sharing the Llama-3 tokenizer and it scores `0.04` on GSM8K. And the
-anchor-scale axis is capped by the **licensing frontier**, not by compute — Comma-7B is the largest
-openly licensed base model we can obtain, because open-*data* families contain books and would
-violate the premise the certificate is written against.
-
-## What this session added to the record
-
-Cautions stand at **twenty-seven**; three were added earlier in the session — **(y)** `**text**` is
-markdown and renders as literal asterisks, **(z)** a `\label` in both body and appendix silently
-redirects every `\ref`, **(aa)** `served_prompt()` reconstructs the judge's prompt and disagrees
-across arms in 455 of 500 cases, with judge C disclosed as the opponent's own checkpoint.
-
-feat-116, feat-117 and feat-118 added no new caution, because every trap they could have hit was
-already written down. What they added is the clearest worked example this project has of what the
-cautions are *for*, run twice in one session:
-
-- **A shape you can see in a table is not a finding until an interval says so.** feat-116 read a
-  curve off a table and drew a deployer-facing warning from it; feat-117 registered the test and
-  the warning did not survive.
-- **A result measured on one instrument is a claim about that instrument until a second one agrees.**
-  feat-117 replaced the withdrawn warning with capability saturation, which was one step from
-  becoming the paper's only practical recommendation; feat-118 took it to an axis with no judge and
-  the two disagree about where the effect lives. It is qualified in the paper, not quietly dropped,
-  and a test forbids the unqualified form.
-
-Both retractions are in the appendix in the paper's own voice. That is the habit worth keeping.
-
-feat-119 added a third, about a number rather than a claim: **a figure that will be quoted out of
-context needs its limits attached at every copy.** The scorer-free result is the most quotable thing
-in the paper — *the cheapest instance is also the best* — and it is true only where an answer is
-canonical, only as a cost model rather than a measured head-to-head on that task, and only among
-mechanisms that carry a certificate. Those three limits are in the CSV's own `limits` column, in the
-note and in the appendix, and a test fails if any copy loses them.
-
-Three habits, all earned the hard way here:
-
-- **Render the page and look at it.** A figure font change made to buy page space collided the axis
-  labels and put the legend on the data; the build was clean and every automated check passed.
-- **Run the *full* gate after adding any float.** A new appendix table produced a 52.8pt overfull
-  box that the page-budget check does not see.
-- **Measure a parameter count, never read it off a model's name.** `Qwen2.5-7B-Instruct` is
-  `7.6156`B and pricing it at `7.0` understated a headline number by `8.8%` for two commits.
-- **Open the run log before reusing a protocol** (caution (v), which earned its keep again).
-  TriviaQA was **5-shot**, not the 8-shot default, and a guessed protocol would have compared the
-  new scorers against 7.6B rows produced under different conditions.
+Never push to a remote. `feat-016` is human-only and must never be started. Do not modify
+`~/sub/neurips_2026.tex`, `output.zip`, or the committed prompt sets under `data/`. Never GPU 3
+(4 GB T400); always `CUDA_DEVICE_ORDER=PCI_BUS_ID` with `CUDA_VISIBLE_DEVICES`. Ask before
+fine-tuning above 8B, any run over 24 GPU-hours, deleting a file the agent did not create, or
+anything touching a remote. `pgrep -f`/`pkill -f` match the invoking shell — kill by PID. A budget
+violation is per-trajectory, never a mean-bound artefact. Baselines at `k = -1` and `k = 0` are
+mandatory. After any edit under `~/sub/satml/`: recompile, check exit status, 0 `??`, 0 overfull,
+and count body lines on page 10 of `pdftotext` (must be zero).

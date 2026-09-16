@@ -95,3 +95,79 @@ above its scoring log. Three facts make the addition auditable rather than conve
 
 The entry gate, the grid, the threshold and every band above are unchanged.
 
+
+### SCORED 2026-09-16 07:10 — **INCONCLUSIVE**, by `0.0014`.
+
+Commands; outputs are `results/strength_ladder_kl3m_seeds.csv` and `results/strength_ladder_seeds.csv`:
+
+```
+.venv/bin/python analysis/strength_ladder.py --pair kl3m --axis seeds
+.venv/bin/python analysis/strength_ladder.py --axis seeds
+```
+
+| point | sampled `k=-1` | `k=0` | onset | bracket | ratio |
+|---|---|---|---|---|---|
+| seed=1 | 0.6694 | 0.000 | 2.500 | (2.3, 2.5] | 1.0281 |
+| seed=2 | 0.6690 | 0.000 | 2.339 | (2.3, 2.5] | 0.9618 |
+| seed=0 (feat-120) | 0.7326 | 0.000 | 2.465 | (2.3, 2.5] | 1.0138 |
+
+All three clear the entry gate. **KL3M-520M's 3-seed span is `0.0663`; Pleias-1.2B's 3-seed span
+over the same seeds `{0,1,2}` is `0.2597`.** Both three-point spans, both `--epochs 40`, both
+BookMIA, as the like-for-like rule fixed in advance requires. Pleias' fourth seed is still training
+and is not the number KL3M is compared against, exactly as registered.
+
+```
+0.0663 / 0.2597 = 0.2553
+half a Pleias    = 0.1298   KL3M >= it?  no
+a quarter Pleias = 0.0649   KL3M <  it?  no   (by 0.0014)
+=> in between => INCONCLUSIVE
+```
+
+**It lands between the bands by `0.0014` of span, and it is reported as inconclusive.** A band that
+is missed by a thousandth is still missed; moving it now, in either direction, would be choosing the
+answer after seeing it. What can be said without a band is the raw comparison: the second pair's
+seed spread is about **a quarter** of the first's, so the spread is **not** peculiar to one pair in
+the sense of being absent elsewhere, and is **not** shared in the sense of being the same size.
+
+**The committed diagnostic, and it is clean.** KL3M's `seed 0` stopped at epoch `26` of `40` on
+`--stop-loss 0.02`. Every new seed stopped at **26 of 40** as well, at final losses `0.0173`
+(seed 1), `0.0177` (seed 2) — and `0.0181`, `0.0174` for seeds 3 and 4, whose memorisers exist and
+whose sweeps were dropped as secondary-only by this arm's own stop rule — against seed 0's `0.0169`.
+**For this pair the recipe's effective training length is reproducible to the epoch**, so "fixed
+epochs" does fix the amount of training here, and the small ratio span is not hiding a large
+difference in how much training each seed received.
+
+### The contrast that makes the inconclusive verdict informative anyway
+
+The same diagnostic run on the *other* pair is where the two arms combine into something neither
+could say alone. Pleias-1.2B on BookMIA ran the **full 40 of 40 at every seed** and its stop-loss
+`0.02` never fired, at final losses `0.1098` / `0.1143` / `0.1060` — a factor of **six** above
+KL3M's, and above its own threshold. That pair's three seeds are therefore three *different
+under-trained* models rather than three draws of one converged one, its sampled `k=-1` sits at
+`0.15`–`0.20` against KL3M's `0.67`–`0.73` (barely clearing the `0.10` entry gate), and its seed
+moves strength by `1.36x` against KL3M's `1.10x`.
+
+Across all four seed ladders now on record the ordering is monotone in memoriser strength:
+
+| ladder | sampled `k=-1` | stop-loss fired? | strength span | ratio span |
+|---|---|---|---|---|
+| KL3M-520M, CopyBench | 0.5149 – 0.5756 | yes, epoch 11/40 every seed | 1.12x | 0.0333 |
+| KL3M-520M, BookMIA | 0.6690 – 0.7326 | yes, epoch 26/40 every seed | 1.10x | 0.0663 |
+| Pleias-1.2B, CopyBench | 0.9091 – 0.9615 | yes, epochs 29–31/40 | 1.06x | 0.0795 |
+| **Pleias-1.2B, BookMIA** | **0.1504 – 0.2045** | **no, 40/40 every seed** | **1.36x** | **0.2597** |
+
+**This is post hoc and is labelled as such.** No band was committed on convergence, and the split is
+an explanation offered for a result, not a test of one. It is reported because the alternative is to
+report four spans with no account of why one is four times the others.
+
+**What it does NOT show, checked rather than assumed.** Convergence does not explain the nine-pair
+table's *ordering*: four of the nine memorisers reached their stop-loss and five did not, and the
+two groups interleave in rank (converged: `0.8784`, `0.9203`, `0.9933`, `1.0532`; not: `0.8870`,
+`0.8916`, `0.9261`, `1.0266`, `1.1658`). The converged four span `0.1748`, which is *smaller* than
+the `0.2597` one non-converged pair produces from re-seeding alone but is **not separated from it**.
+The table is confounded by training length and now also by convergence; restricting to the converged
+subset does not recover a per-pair reading at this sample size.
+
+**Not done:** no third seed for this pair beyond the memorisers already on disk, no re-grid, no
+re-threshold, no pair swap, no dropped seed, and no band moved by the `0.0014` that would have
+changed the verdict.

@@ -16,6 +16,7 @@ set -u
 cd "$(dirname "$0")/.."
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="${GPU:-2}"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
+. scripts/gpu_env.sh   # (cwd is the repo root) strips the stale in-repo driver from LD_LIBRARY_PATH
 
 # CBPAIR selects the table row. Each row's hyperparameters are ITS OWN, read from that pair's
 # recipe.json -- the nine memorisers in the table are NOT matched: KL3M-520M trained at batch 2 /

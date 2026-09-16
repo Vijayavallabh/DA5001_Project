@@ -83,3 +83,80 @@ recipe and is reported as one rather than treated as a failure of the arm.
 swapping the epoch count after seeing the result, and no dropping a seed that lands awkwardly.
 
 ## Scoring log
+
+### SCORED 2026-09-16 07:05 — **RUN-TO-RUN VARIATION.** The band that costs us the most fired.
+
+Command, and its output is `results/strength_ladder_seeds.csv`:
+
+```
+.venv/bin/python analysis/strength_ladder.py --axis seeds
+```
+
+| point | sampled `k=-1` | `k=0` | onset | bracket | ratio |
+|---|---|---|---|---|---|
+| seed=1 | 0.1581 | 0.000 | 3.215 | (3.2, 3.6] | 1.0549 |
+| seed=2 | 0.2045 | 0.000 | 3.239 | (3.2, 3.6] | 1.0626 |
+| seed=0 (feat-120) | 0.1504 | 0.000 | 4.007 | (3.6, 4.2] | 1.3146 |
+
+All three clear the entry gate, so none is excluded. `k=0` is `0.000` at every point.
+
+**Seed-only ratio span `0.2597` (1.0549 to 1.3146), at or above the committed `0.20`.** Against
+feat-121's epoch-only `0.4721` on the identical pair, corpus, anchor and grid, the seed alone
+reproduces **55%** of what four different epoch counts produced.
+
+**Seed 3 is still fine-tuning and cannot change this verdict.** The committed quantity is the span
+over the four points, and a span is a maximum minus a minimum: adding a fourth point to a set can
+only hold it or widen it, never narrow it. `0.2597` is therefore a lower bound on the four-point
+span, and the four-point span is already `>= 0.20` whatever seed 3 returns. Its number is appended
+below when it lands, and the committed **secondary** — the seven-point pooled Spearman — waits for
+it, because seven points is what was registered and six is not seven.
+
+**The committed diagnostic fired too, and it is the reason the arm reads this way.** The seed-only
+*strength* span is **1.36x** (0.1504 to 0.2045). The pre-registration said in advance that if the
+seed moves sampled `k=-1` materially then "strength" and "seed" are not separable even here, and it
+does: within this ladder `rho(sampled k=-1, ratio) = -0.500`, the same sign as feat-121, with the
+strongest memoriser carrying the lowest ratio. **This arm did not isolate the seed. It re-ran a
+strength ladder with the seed as the knob that moved strength.**
+
+### What the other three ladders say, and why this one is different
+
+This is the fourth seed ladder, not the only one. Read together they do not say "seeds do not move
+the onset ratio", which is what a reading of the first three alone supported and what was briefly
+written into the manuscript before this arm landed:
+
+| ladder | memoriser, sampled `k=-1` | strength span | ratio span |
+|---|---|---|---|
+| KL3M-520M, CopyBench | 0.5149 – 0.5756 | 1.12x | 0.0333 |
+| KL3M-520M, BookMIA | 0.6690 – 0.7326 | 1.10x | 0.0663 |
+| Pleias-1.2B, CopyBench | 0.9091 – 0.9615 | 1.06x | 0.0795 |
+| **Pleias-1.2B, BookMIA** | **0.1504 – 0.2045** | **1.36x** | **0.2597** |
+
+The three reproducible ladders are the three whose memoriser recovers half the passage or more. The
+one that is not reproducible is the one whose memoriser **barely clears this paper's own entry gate
+of 0.10** (caution (a)), and it is also the only one whose seed moves strength by more than 1.12x.
+The ordering is monotone in memoriser strength across all four.
+
+**So the finding is not about seeds.** It is that the onset ratio is a function of memoriser strength
+and inherits that function's noise: where the memoriser is saturated, re-seeding lands within
+`0.033`–`0.080`; where it is marginal, re-seeding moves strength by a third and the ratio by `0.26`.
+Nothing here is evidence that the seed has an effect of its own.
+
+### What this licenses, per the contract written above
+
+The retracted sentence stays retracted; no outcome of this arm could have restored it. Of the three
+consequences written down in advance, the **run-to-run** one is the one that fired, and its stated
+price is paid in full: the nine-pair table is presented as evidence that extraction begins near
+`s(x)` and carries **no per-pair reading at all**. The stronger form written into the manuscript an
+hour before this arm landed — that the ratio "is reproducible for a given pair and a given memoriser
+recipe" — is **withdrawn as stated and replaced** by the strength-conditioned version above, which
+is what all four ladders support.
+
+**A consequence about our own protocol, not in any band, reported because the arm surfaced it.** The
+entry gate of sampled `k=-1 >= 0.10` admits pairs whose onset ratio is a single draw with a spread
+of `0.26`. It was set (caution (a)) to keep out pairs whose greedy recall lies, and it does that;
+it was never validated as a floor for a *stable* onset estimate, and this arm shows it is not one.
+Nothing is re-gated retroactively — that would be choosing the answer — but the limitation is now
+stated in the paper.
+
+**Not done:** no second seed set, no fifth seed, no re-threshold, no re-grid, no swapped epoch
+count, and no seed dropped. Seed 3 is running and will be appended whatever it says.

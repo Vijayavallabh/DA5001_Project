@@ -14,6 +14,7 @@ GPU="${1:?usage: $0 <gpu>}"
 cd "$(dirname "$0")/.."
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="$GPU"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
+. scripts/gpu_env.sh   # (cwd is the repo root) strips the stale in-repo driver from LD_LIBRARY_PATH
 
 MEM=(output/phase5/memb_kl3m-002-520m output/phase5/memb_Pleias-1_2b output/phase5/memb_phi35mini)
 for i in $(seq 1 480); do

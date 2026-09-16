@@ -1,5 +1,60 @@
 # Session Progress Log
 
+
+## 2026-09-16 07:20 — the fourth seed ladder overturned a claim this session had just written
+
+**Four seed ladders, not three.** `analysis/strength_ladder.py --axis seeds` on each pair, all at
+`--epochs 40`, varying only `--seed`:
+
+| ladder | sampled `k=-1` | stop-loss fired? | strength span | ratio span |
+|---|---|---|---|---|
+| KL3M-520M, CopyBench  | 0.5149 – 0.5756 | yes, 11/40 | 1.12x | 0.0333 |
+| KL3M-520M, BookMIA    | 0.6690 – 0.7326 | yes, 26/40 | 1.10x | 0.0663 |
+| Pleias-1.2B, CopyBench| 0.9091 – 0.9615 | yes, 29–31/40 | 1.06x | 0.0795 |
+| Pleias-1.2B, BookMIA  | 0.1504 – 0.2045 | NO — 40/40   | 1.36x | 0.2597 |
+
+against feat-121's 0.4721 from `--epochs` alone on the same cell.
+
+Commands:
+```
+.venv/bin/python analysis/strength_ladder.py --axis seeds                  # Pleias BookMIA
+.venv/bin/python analysis/strength_ladder.py --pair kl3m --axis seeds      # KL3M BookMIA
+.venv/bin/python analysis/strength_ladder.py --pair kl3m_cb --axis seeds
+.venv/bin/python analysis/strength_ladder.py --pair pleias_cb --axis seeds
+.venv/bin/python analysis/strength_ladder.py --axis pooled                 # secondary, 6 of 7 points
+```
+
+**Scored:** `onset_prediction_seedspread.md` RUN-TO-RUN VARIATION (0.2597 >= the committed 0.20);
+`onset_prediction_seedspread2.md` INCONCLUSIVE (0.0663/0.2597 = 0.2553, missing the "below a
+quarter" band by 0.0014 — the band was not moved). All 51 pre-registrations are now scored.
+
+**What was wrong and is now fixed.** At 06:35, on three ladders, the manuscript was given "Seeds do
+not move the onset ratio; training length does." The fourth ladder refutes that as stated. Both
+`appendix_limitations.tex` and `appendix_robustness.tex` now carry the strength-conditioned claim:
+the ratio is reproducible under a re-seeded recipe where the fine-tune converged and the memoriser is
+strong (0.033–0.080) and not where it is marginal (0.2597); in neither case is it a property of the
+pair alone. The failing ladder is the only cell whose stop-loss never fires (final loss 0.106–0.114
+against a 0.02 threshold) and whose memoriser barely clears the 0.10 entry gate.
+
+**Checked, not assumed:** convergence does not explain the nine-pair ordering. Four of nine
+memorisers reached their stop-loss, five did not, the groups interleave in rank, and the converged
+four still span 0.1748. Recorded in the paper as such. The convergence reading is post hoc and is
+labelled so in both scoring logs and in the manuscript.
+
+**ROOT CAUSE of the NVML asserts that killed four fine-tunes at 05:00.** `LD_LIBRARY_PATH` leads with
+`NVIDIA-Linux-x86_64-580.173.02/`, an extracted driver runfile in the repo root (1.5 GB, gitignored,
+not created by this work) whose `libnvidia-ml.so.1` shadows the system's and does not match the
+loaded kernel module 580.178.04. `nvidia-smi` fails; `env -u LD_LIBRARY_PATH nvidia-smi` works; CUDA
+compute is unaffected and every measured number is correct. `scripts/gpu_env.sh` strips it and is
+sourced by four of the five queue launchers — `run_strength_ladder.sh` could not be patched because
+it was executing (bash reads a script incrementally by byte offset). Caution (ab) in AGENTS.md.
+`tests/test_bookmia_onset.py` verifies the strip by executing it against a poisoned path.
+
+**State:** 494 tests, `./init.sh` exit 0, manuscript exit 0 / 0 overfull / 0 `??` / 9 of 9 body pages
+(0 body lines on page 10) / 57 total / 3241 literals with the one expected `64256` miss; 261.7
+GPU-hours. `memb_pleias_s3` still fine-tuning on GPU 2; it cannot change any verdict and is wanted
+only for the committed seven-point pooled secondary.
+
 ## Current State
 
 **Last Updated:** 2026-09-15 02:55

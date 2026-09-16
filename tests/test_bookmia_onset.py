@@ -240,3 +240,67 @@ def test_the_extended_grid_is_the_committed_grid_plus_exactly_the_registered_poi
     committed = [float(x) for x in re.search(r"`(-1 0 [0-9. ]+)`", head).group(1).split()]
     registered_ext = [4.6, 5.3, 6.6]           # committed in the scoring log before the run
     assert got == sorted(committed + registered_ext), (got, sorted(committed + registered_ext))
+
+
+# ---------------------------------------------------------------------------
+# The GPU launchers must strip the stale in-repo driver from LD_LIBRARY_PATH.
+#
+# Not a style rule. LD_LIBRARY_PATH here leads with NVIDIA-Linux-x86_64-580.173.02, an extracted
+# runfile in the repo root whose libnvidia-ml.so.1 shadows the system's and does not match the
+# loaded kernel module (580.178.04), so every NVML call fails while CUDA compute succeeds. On
+# 2026-09-16 that killed four fine-tunes AFTER they had written their merged model, in the
+# post-training generate(), and each queue shell then skipped the sweep behind it. glibc reads
+# LD_LIBRARY_PATH once at exec, so the repair only works from the shell -- which is why it is a
+# sourced line in the launcher and not a line of python, and why a test has to guard the launcher.
+LAUNCHERS = (
+    "scripts/run_bookmia_memorisers.sh",
+    "scripts/run_bookmia_p1.sh",
+    "scripts/run_bookmia_sweeps.sh",
+    "scripts/run_copybench_seeds.sh",
+)
+
+
+@pytest.mark.parametrize("name", LAUNCHERS)
+def test_every_gpu_launcher_strips_the_shadowing_driver(name):
+    path = os.path.join(ROOT, name)
+    body = open(path).read()
+    src = [ln for ln in body.splitlines() if "gpu_env.sh" in ln and not ln.lstrip().startswith("#")]
+    assert len(src) == 1, f"{name} must source scripts/gpu_env.sh exactly once, found {len(src)}"
+    # It has to run before the first GPU job, and after the cd that makes the path resolve.
+    cd_at = body.index('cd "$(dirname "$0")/.."')
+    assert cd_at < body.index(src[0]), f"{name} sources gpu_env.sh before cd'ing to the repo root"
+    first_job = body.find(".venv/bin/python")
+    assert first_job == -1 or body.index(src[0]) < first_job, f"{name} launches before the strip"
+
+
+def test_the_strip_actually_removes_the_shadowing_directory():
+    """Run the snippet in a shell with a poisoned path and check what comes out.
+
+    Pinning the grep pattern by spelling would pass on a snippet that strips nothing, so this
+    executes it. The directory name carries a version, and the next driver will have a different
+    one, so the pattern must match the family and not one release.
+    """
+    import subprocess
+
+    poisoned = "/repo/NVIDIA-Linux-x86_64-580.173.02:/usr/local/cuda/lib64:/repo/NVIDIA-Linux-x86_64-999.9:/lib"
+    out = subprocess.run(
+        ["bash", "-c", 'set -u; . scripts/gpu_env.sh; printf %s "$LD_LIBRARY_PATH"'],
+        cwd=ROOT, env={**os.environ, "LD_LIBRARY_PATH": poisoned},
+        capture_output=True, text=True, check=True,
+    ).stdout
+    assert "NVIDIA-Linux-x86_64-" not in out, f"stale driver survived the strip: {out}"
+    assert out.split(":") == ["/usr/local/cuda/lib64", "/lib"], f"strip damaged the path: {out}"
+
+
+def test_the_strip_survives_an_unset_and_an_empty_path():
+    """`set -u` is on in every launcher, so an unset LD_LIBRARY_PATH must not abort the queue."""
+    import subprocess
+
+    for env in ({}, {"LD_LIBRARY_PATH": ""}):
+        base = {k: v for k, v in os.environ.items() if k != "LD_LIBRARY_PATH"}
+        res = subprocess.run(
+            ["bash", "-c", 'set -u; . scripts/gpu_env.sh; printf %s "$LD_LIBRARY_PATH"'],
+            cwd=ROOT, env={**base, **env}, capture_output=True, text=True,
+        )
+        assert res.returncode == 0, f"gpu_env.sh failed under set -u with {env}: {res.stderr}"
+        assert res.stdout == "", f"expected an empty path, got {res.stdout!r}"

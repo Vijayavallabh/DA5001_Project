@@ -63,7 +63,10 @@ def test_committed_summary_matches_the_manuscript_upper_bound():
     s = {r["quantity"]: float(r["gpu_hours"]) for r in csv.DictReader(open(path))}
     # each component is rounded to 1 dp independently of the total, so they can disagree by
     # one rounding unit -- 120.7 + 15.2 reads 135.9 against a total of 135.8.
-    assert abs(s["one_gpu_jobs"] + s["two_gpu_jobs"] - s["total"]) <= 0.1
+    # Three values each rounded to one decimal: the sum of the parts can differ from the rounded
+    # total by up to 0.15 without anything being wrong. It hit exactly 0.1 + float slop on
+    # 2026-09-16 (246.6 + 15.2 vs 261.7). Loosening to 0.15 is the correct bound, not a masked drift.
+    assert abs(s["one_gpu_jobs"] + s["two_gpu_jobs"] - s["total"]) <= 0.15
     assert s["fine_tunes"] <= s["one_gpu_jobs"]
     from tests.manuscript import tex as _tex
     tex = pathlib.Path(_tex("iclr_2027.tex"))

@@ -13,6 +13,7 @@ GPU="${1:?usage: $0 <gpu> <tag:base>...}"; shift
 cd "$(dirname "$0")/.."
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="$GPU"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
+. scripts/gpu_env.sh   # (cwd is the repo root) strips the stale in-repo driver from LD_LIBRARY_PATH
 CORPUS=data/bench/bookmia100_onset600.jsonl
 
 for spec in "$@"; do
