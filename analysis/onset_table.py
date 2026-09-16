@@ -7,14 +7,96 @@ Deriving it by hand is how a table drifts from its evidence, so this writes exac
 quotes, including the choice that matters: when a pair has been measured twice, the higher-n
 measurement is the one tabulated.
 
+Since 2026-09-16 it also carries the memoriser's own sampled k=-1 recall, the column that makes
+the table's confound visible: the nine memorisers are nine different fine-tunes and are not matched
+in strength, and the seed ladders show the onset ratio tracks strength. Strength is taken from the
+pair's OWN sweep wherever that sweep ran a k=-1 arm. Two of the nine did not -- output/phase4/fine_tc
+and fine_comma report recall at several k with no baseline in their own summary, which is a standing
+violation of this project's mandatory-baselines rule -- so for those two it is read from a named
+companion run, and ONLY after asserting that the companion's `[ca]` protocol line is identical to
+the sweep's. Caution (v): a reference number carries its protocol, and a borrow that is not checked
+against the protocol line is a borrow from nowhere. `--strict` refuses the borrow outright.
+
 Writes <out>/onset_table.csv. No GPU.
 
 Usage: .venv/bin/python analysis/onset_table.py --out results
 """
-import argparse, csv, os, statistics as st, sys
+import argparse, csv, os, re, statistics as st, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_predictions import canonical, load_measurements  # noqa: E402
+
+
+# canonical pair -> (its own sweep, companion run for the baseline or None).
+# The companion is used ONLY when the sweep has no k=-1 arm, and only if protocols match exactly.
+SWEEPS = {
+    "tinycomma-1.8b + mem. llama-3.1-8b": ("output/phase4/fine_tc", "output/logs/leakage_headtohead.log"),
+    "comma-7b + mem. comma-7b": ("output/phase4/fine_comma", "output/phase4/comp_comma7b.log"),
+    "kl3m-520m + mem. kl3m-520m": ("output/phase5/fine_kl3m520m", None),
+    "phi-3.5-mini + mem. phi-3.5-mini": ("output/phase5/fine_phi35", None),
+    "pleias-1.2b + mem. pleias-1.2b": ("output/phase5/fine_pleias12b", None),
+    "kl3m-1.7b + mem. kl3m-1.7b": ("output/phase5/fine_kl3m17b_full", None),
+    "open-calm-1b + mem. open-calm-1b": ("output/phase5/fine_opencalm1b_full", None),
+    "open-calm-3b + mem. open-calm-3b": ("output/phase5/fine_opencalm3b", None),
+    "pleias-350m + mem. pleias-350m": ("output/phase5/n458_pleias350m", None),
+}
+
+# The informational insert composition_attack.py prints between the corpus and the seed (caution (b)):
+# it reports how often the CopyBench `reference` field was reached and is NOT part of the protocol.
+_INFO = re.compile(r"; reference reached in \d+/\d+")
+
+
+def _protocol(path):
+    """The one `[ca]` line that fingerprints a run: corpus size, target length, seed, warp."""
+    src = path if path.endswith(".log") else path + ".log"
+    if not os.path.exists(src):
+        return None
+    for line in open(src, errors="replace"):
+        if line.startswith("[ca] ") and " passages;" in line:
+            return _INFO.sub("", line.strip())
+    return None
+
+
+def _k_arm(path, k):
+    """Sampled single-query recall at one budget, from a summary CSV or a run log."""
+    if path.endswith(".log"):
+        tag = "k=-1 single" if k < 0 else "k=0 single"
+        for line in open(path, errors="replace"):
+            if line.startswith(f"[ca] {tag}"):
+                m = re.search(r"nv-recall mean ([0-9.]+)", line)
+                if m:
+                    return float(m.group(1)), 4          # a log prints 3 decimals
+        return None, None
+    summ = os.path.join(path, "composition_summary.csv")
+    if not os.path.exists(summ):
+        return None, None
+    for r in csv.DictReader(open(summ)):
+        if r["mode"] == "single" and float(r["k"]) == k:
+            return float(r["nv_recall_mean"]), 6
+    return None, None
+
+
+def strength(key, strict=False):
+    """(sampled k=-1, sampled k=0, provenance) for one pair, or (None, None, reason)."""
+    if key not in SWEEPS:
+        return None, None, "no sweep mapped"
+    sweep, companion = SWEEPS[key]
+    k1, _ = _k_arm(sweep, -1.0)
+    if k1 is not None:
+        k0, _ = _k_arm(sweep, 0.0)
+        return k1, k0, "own sweep"
+    if companion is None:
+        return None, None, "sweep has no k=-1 arm and no companion is mapped"
+    if strict:
+        return None, None, "sweep has no k=-1 arm (--strict refuses the companion)"
+    want, got = _protocol(sweep), _protocol(companion)
+    if want is None or got is None or want != got:
+        raise SystemExit(
+            f"[table] {key}: refusing to borrow a baseline across protocols.\n"
+            f"  sweep     {sweep}: {want}\n  companion {companion}: {got}")
+    k1, _ = _k_arm(companion, -1.0)
+    k0, _ = _k_arm(companion, 0.0)
+    return k1, k0, f"companion run {os.path.basename(companion).replace('.log', '')}"
 
 
 def main():
@@ -22,6 +104,9 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--ci", default="results/onset_ci.csv")
     ap.add_argument("--theory", default="results/onset_theory.csv")
+    ap.add_argument("--strict", action="store_true",
+                    help="refuse a baseline borrowed from a companion run, even at an "
+                         "identical protocol; those rows then read as not measured")
     a = ap.parse_args()
 
     meas = load_measurements(a.ci)
@@ -44,6 +129,10 @@ def main():
             "boot_no_crossing_pct": float(m["boot_no_crossing_pct"]),
             "k_grid": m["k_grid"],
         })
+        k1, k0, src = strength(key, a.strict)
+        rows[-1]["k_minus1_sampled"] = "" if k1 is None else round(k1, 4)
+        rows[-1]["k0_sampled"] = "" if k0 is None else round(k0, 4)
+        rows[-1]["strength_source"] = src
     if not rows:
         raise SystemExit("[table] no pair has both a prediction and a measurement")
     rows.sort(key=lambda r: r["s_safe"])
@@ -57,6 +146,12 @@ def main():
                "ratio": round(st.mean(ratios), 4),
                "ratio_lo": round(min(ratios), 4), "ratio_hi": round(max(ratios), 4),
                "boot_no_crossing_pct": round(st.pstdev(ratios), 4), "k_grid": "sd in the last column"}
+    meas_k1 = [r["k_minus1_sampled"] for r in rows if r["k_minus1_sampled"] != ""]
+    summary["k_minus1_sampled"] = round(min(meas_k1), 4) if meas_k1 else ""
+    summary["k0_sampled"] = round(max(meas_k1), 4) if meas_k1 else ""
+    summary["strength_source"] = (
+        f"lo/hi of {len(meas_k1)} measured; factor {max(meas_k1) / min(meas_k1):.2f}"
+        if meas_k1 else "none measured")
     os.makedirs(a.out, exist_ok=True)
     with open(os.path.join(a.out, "onset_table.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

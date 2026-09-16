@@ -16,6 +16,7 @@ rather than by eye -- caution (j), which put six of seventy-two cells one off in
 """
 import argparse
 import csv
+import itertools
 import os
 import statistics as st
 
@@ -30,6 +31,40 @@ LADDERS = {
     "reseed_pleias12b_copybench": ("results/strength_ladder_pleias_cb_seeds.csv", "Pleias-1.2B"),
     "reseed_kl3m520m_copybench": ("results/strength_ladder_kl3m_cb_seeds.csv", "KL3M-520M"),
 }
+
+
+def _ranks(v):
+    order = sorted(range(len(v)), key=lambda i: v[i])
+    rk = [0.0] * len(v)
+    for pos, i in enumerate(order):
+        rk[i] = pos + 1.0
+    for val in set(v):                                  # average ties
+        idx = [i for i, u in enumerate(v) if u == val]
+        if len(idx) > 1:
+            m = sum(rk[i] for i in idx) / len(idx)
+            for i in idx:
+                rk[i] = m
+    return rk
+
+
+def spearman(a, b):
+    ra, rb = _ranks(a), _ranks(b)
+    ma, mb = st.mean(ra), st.mean(rb)
+    num = sum((p - ma) * (q - mb) for p, q in zip(ra, rb))
+    den = (sum((p - ma) ** 2 for p in ra) * sum((q - mb) ** 2 for q in rb)) ** 0.5
+    return num / den
+
+
+def exact_p(a, b):
+    """Two-sided permutation p. n=9 is 362,880 permutations -- exact is affordable and asymptotic
+    is not appropriate at this size, which is the whole reason the paper quotes exact p elsewhere."""
+    rho = spearman(a, b)
+    hit = tot = 0
+    for perm in itertools.permutations(range(len(a))):
+        tot += 1
+        if abs(spearman(a, [b[i] for i in perm])) >= abs(rho) - 1e-12:
+            hit += 1
+    return rho, hit / tot
 
 
 def stats(label, values, member=""):
@@ -70,6 +105,21 @@ def main():
     rows.append({"subset": "family_mean_gap", "n": 9, "member_of": "", "mean": round(le - gt, 6),
                  "sd": "", "cv_pct": "", "span": round(le - gt, 6),
                  "lo": round(gt, 6), "hi": round(le, 6)})
+
+    # Does memoriser strength rank the nine? The appendix says it does not, and a reader with the
+    # strength column can now check that, so the number is written down rather than left implicit.
+    strengths, ratios = [], []
+    with open(os.path.join(ROOT, "results/onset_table.csv")) as fh:
+        for r in csv.DictReader(fh):
+            if " + " in r["pair"] and r.get("k_minus1_sampled"):
+                strengths.append(float(r["k_minus1_sampled"]))
+                ratios.append(float(r["ratio"]))
+    if len(strengths) == len(table):
+        rho, pval = exact_p(strengths, ratios)
+        rows.append({"subset": "strength_vs_ratio_spearman", "n": len(strengths), "member_of": "",
+                     "mean": round(rho, 4), "sd": "", "cv_pct": round(pval, 4),
+                     "span": round(max(strengths) / min(strengths), 4),
+                     "lo": round(min(strengths), 4), "hi": round(max(strengths), 4)})
 
     for label, (path, member) in LADDERS.items():
         full = os.path.join(ROOT, path)

@@ -143,9 +143,14 @@ fallback needs no memory.
    it — is not resolved against fine-tune noise. The family *separation* survives and is now said to
    survive. `analysis/onset_group_dispersion.py` -> `results/onset_group_dispersion.csv`;
    `tests/test_onset_group_dispersion.py` (16) pins every figure and both inequalities.
-2. **Add a memoriser-strength column to the nine-pair table**, and a convergence marker beside it —
-   both are already on disk in each `recipe.json` (`final_loss`, `stop_loss`, `epochs_run`), so it
-   costs no compute and lets a reader see the confound directly.
+2. ~~Add a memoriser-strength column to the nine-pair table~~ **DONE 08:50.** Table 2 carries the
+   memoriser's own sampled `k=-1`. It caught a wrong number on its first run: two appendices quoted
+   the range as `0.2696`–`0.9091`, a factor of 3.4, and `0.2696` is `fineg_phi35` on **Gutenberg**,
+   not a CopyBench pair. True range `0.1806`–`0.9236`, **factor 5.11**, corrected in both.
+   Also surfaced that `output/phase4/fine_tc` and `fine_comma` ship **no `k=-1`/`k=0` arm of their
+   own**, against the mandatory-baselines rule; their cells are daggered and borrowed from companion
+   runs only after the `[ca]` protocol lines are asserted identical. A convergence marker is still
+   not in the table — the data is in each `recipe.json` and five of nine did not converge.
 3. **Qualify the seed-word gradient** `rho = -0.958` in `appendix_onset.tex`: it is a correlation
    over nine differently-trained, differently-converged memorisers. `appendix_limitations.tex`
    already carries the caveat; the appendix that states the number does not.

@@ -94,3 +94,18 @@ def test_the_appendix_does_not_still_call_the_subgroup_a_measurement(body):
     assert "not resolved against fine-tune noise" in body
     assert "treat" in body and "point estimates" in body, \
         "the appendix must still disclose that the exact p treats the ratios as noiseless"
+
+
+def test_the_strength_ranking_the_appendix_quotes_rounds_from_the_csv(rows):
+    """Added with the strength column: a reader can now compute this, so we must state it right."""
+    r = rows["strength_vs_ratio_spearman"]
+    rho, pval, factor = float(r["mean"]), float(r["cv_pct"]), float(r["span"])
+    onset = " ".join(open(tex("sections/appendix_onset.tex"), encoding="utf-8").read().split())
+    assert f"Spearman ${rho:.3f}$, exact $p = {pval:.2f}$" in onset, \
+        f"appendix_onset must say Spearman {rho:.3f}, exact p = {pval:.2f}"
+    assert int(r["n"]) == 9
+    # The claim the sentence makes is that strength does NOT rank the pairs. Guard it.
+    assert pval > 0.05, (
+        f"strength now ranks the nine at p={pval}; the appendix says it fails to explain the "
+        "ordering and must be rewritten")
+    assert f"{factor:.1f}" == "5.1", "the strength factor moved; the two appendices quote it"

@@ -2,6 +2,56 @@
 
 
 
+
+## 2026-09-16 08:50 — the strength column, and the wrong number it caught
+
+`results/onset_table.csv` now carries `k_minus1_sampled`, `k0_sampled` and `strength_source`, and
+Table~2 of the manuscript carries the memoriser's own sampled `k=-1` recall.
+
+```
+.venv/bin/python analysis/onset_table.py --out results     # --strict refuses a borrowed baseline
+.venv/bin/python analysis/onset_group_dispersion.py        # + strength_vs_ratio_spearman
+```
+
+| pair | mem. k=-1 | source |
+|---|---|---|
+| open-calm-1b | 0.181 | own sweep |
+| KL3M-1.7B | 0.411 | own sweep |
+| TinyComma-1.8B | 0.492 | companion run `leakage_headtohead` |
+| KL3M-520M | 0.519 | own sweep |
+| Phi-3.5-mini | 0.566 | own sweep |
+| Comma-7B | 0.719 | companion run `comp_comma7b` |
+| Pleias-350M | 0.875 | own sweep |
+| Pleias-1.2B | 0.909 | own sweep |
+| open-calm-3b | 0.924 | own sweep |
+
+**The column caught an error in the manuscript on its first run.** Two appendices said the nine
+memorisers "span a factor of 3.4 in sampled k=-1, from 0.2696 to 0.9091". **0.2696 is
+`output/phase5/fineg_phi35` — Phi-3.5-mini on GUTENBERG**, not one of the nine CopyBench pairs. The
+true range is 0.1806 to 0.9236, **a factor of 5.11**. Corrected in `appendix_robustness.tex` and
+`appendix_limitations.tex`. Nothing could have caught it before, because no CSV carried the column;
+caution (v) in its purest form, a number quoted without its protocol.
+
+**A standing rule is violated by two runs on disk.** `output/phase4/fine_tc` and `fine_comma` report
+recall at several k with **no k=-1 or k=0 arm in their own summary**, against Working Rules'
+"baselines are mandatory". Their baselines exist in companion runs, and `analysis/onset_table.py`
+uses those ONLY after asserting the companion's `[ca]` protocol line is identical to the sweep's,
+character for character, modulo the informational "reference reached in N/M" insert (caution (b)).
+Both matched, including `target length mean 303/260 tokens`, which fingerprints the passage set. The
+two borrowed cells are daggered in the table and the caption says why; `--strict` refuses the borrow
+and leaves them blank.
+
+**Checked, not assumed: the claim beside the table still holds.** Spearman(sampled k=-1, onset
+ratio) over the nine is **-0.483, exact p = 0.1938** (362,880 permutations), so "memorisation
+strength fails to explain the ordering" survives the correction. The sign is the one every
+within-pair ladder shows, and the appendix now states the number rather than leaving a reader with
+the new column to discover it.
+
+`tests/test_onset_table.py` grew from 2 to 6: every strength cell rounds from the CSV, the dagger
+must agree with `strength_source`, every pair must clear the 0.10 entry gate, k=0 must be 0.000, the
+quoted factor must round from the CSV, the literal 0.2696 is banned from all three appendices, and
+a deliberately mismatched companion must be refused. 515 tests, init.sh exit 0.
+
 ## 2026-09-16 08:05 — appendix_seed.tex: the subgroup was tighter than the noise of one of its members
 
 The last overclaim the handoff named. `sections/appendix_seed.tex` read the nine-pair ratios as

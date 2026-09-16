@@ -26,7 +26,7 @@ def _rows():
     out = []
     for line in body.splitlines():
         cells = [c.strip() for c in line.rstrip("\\ ").split("&")]
-        if len(cells) == 7 and cells[0] in LABEL:
+        if len(cells) == 8 and cells[0] in LABEL:
             out.append(cells)
     return out
 
@@ -37,12 +37,21 @@ def test_every_cell_of_the_section_4_table_comes_from_the_csv():
     assert len(rows) == len(LABEL) == len(src), (len(rows), len(LABEL), len(src))
     for cells in rows:
         r = src[LABEL[cells[0]]]
-        s_x, s_r, n, onset, ci, ratio = (c.strip("$ \\").rstrip("\\") for c in cells[1:])
+        s_x, s_r, n, mem, onset, ci, ratio = (c.strip("$ \\").rstrip("\\") for c in cells[1:])
         assert round(float(r["s_safe"]), 2) == float(s_x), (cells[0], "s(x)", s_x)
         assert round(float(r["s_risky"]), 3) == float(s_r), (cells[0], "s_r", s_r)
         assert int(r["n_passages"]) == int(n), (cells[0], "n", n)
         assert round(float(r["onset"]), 2) == float(onset), (cells[0], "onset", onset)
         assert round(float(r["ratio"]), 3) == float(ratio), (cells[0], "ratio", ratio)
+        # The strength column, and the dagger that says where it came from. A cell borrowed from a
+        # companion run must SAY so: an unmarked borrow is the defect caution (v) is about.
+        marked = mem.endswith("^{\\dagger}")
+        assert round(float(r["k_minus1_sampled"]), 3) == float(mem.replace("^{\\dagger}", "")), \
+            (cells[0], "mem k=-1", mem)
+        assert marked == (r["strength_source"] != "own sweep"), (
+            cells[0], "dagger disagrees with strength_source", mem, r["strength_source"])
+        assert float(r["k_minus1_sampled"]) >= 0.10, (cells[0], "below the entry gate")
+        assert float(r["k0_sampled"]) == 0.0, (cells[0], "k=0 is not 0.000")
         lo, hi = (float(x) for x in re.findall(r"-?\d+\.\d+", ci))
         assert round(float(r["ci_lo"]), 2) == lo and round(float(r["ci_hi"]), 2) == hi, (cells[0], ci)
 
@@ -56,3 +65,65 @@ def test_the_prose_range_and_count_match_the_table():
     assert f"between $({min(ratios):.2f}".replace("(", "") in body or \
         f"${min(ratios):.2f}$ and $${max(ratios):.2f}$".replace("$$", "$") in body or \
         f"$0.88$ and $1.17$" in body    # the prose rounds the range to 2 dp
+
+
+# ---------------------------------------------------------------------------
+# The strength range the prose quotes, and the guard that keeps it honest.
+#
+# Until 2026-09-16 two appendices said the nine memorisers "span a factor of 3.4 in sampled k=-1",
+# from 0.2696 to 0.9091. The 0.2696 is output/phase5/fineg_phi35 -- Phi-3.5-mini on GUTENBERG, not
+# one of the nine CopyBench pairs this table is about. Nothing caught it, because no CSV carried the
+# strength column for the table to be checked against. It does now, and so does this.
+import subprocess
+import sys
+
+
+def _measured():
+    with open(CSV) as fh:
+        return [float(r["k_minus1_sampled"]) for r in csv.DictReader(fh)
+                if not r["pair"].startswith("ALL") and r["k_minus1_sampled"]]
+
+
+def test_the_strength_range_the_appendices_quote_rounds_from_the_csv():
+    v = _measured()
+    assert len(v) == 9, f"expected nine measured strengths, got {len(v)}"
+    lo, hi = min(v), max(v)
+    factor = f"{hi / lo:.1f}"
+    rob = " ".join(open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read().split())
+    lim = " ".join(open(tex("sections/appendix_limitations.tex"), encoding="utf-8").read().split())
+    assert f"${lo:.3f}$ to ${hi:.3f}$, a factor of ${factor}$" in rob, \
+        f"appendix_robustness must say {lo:.3f} to {hi:.3f}, a factor of {factor}"
+    assert f"a factor of ${factor}$ in sampled $k=-1$" in lim, \
+        f"appendix_limitations must say a factor of {factor}"
+
+
+def test_no_quoted_strength_comes_from_a_different_corpus():
+    """The specific wrong number, pinned so it cannot come back."""
+    for name in ("sections/appendix_robustness.tex", "sections/appendix_limitations.tex",
+                 "sections/appendix_onset.tex"):
+        body = open(tex(name), encoding="utf-8").read()
+        assert "0.2696" not in body, (
+            f"{name} quotes 0.2696, which is fineg_phi35 on Gutenberg, not a CopyBench pair")
+
+
+def test_a_borrowed_baseline_is_refused_when_the_protocol_differs():
+    """The borrow is only sound because the protocol lines match. Prove the check bites."""
+    code = (
+        "import sys; sys.path.insert(0, '.');\n"
+        "import analysis.onset_table as ot\n"
+        "ot.SWEEPS['comma-7b + mem. comma-7b'] = ("
+        "    'output/phase4/fine_comma', 'output/phase4/fine_tc.log')\n"
+        "ot.strength('comma-7b + mem. comma-7b')\n"
+    )
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                       cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    assert r.returncode != 0, "borrowing across protocols was allowed"
+    assert "refusing to borrow a baseline across protocols" in (r.stdout + r.stderr)
+
+
+def test_strict_mode_refuses_the_borrow_entirely():
+    import analysis.onset_table as ot
+    k1, _, why = ot.strength("comma-7b + mem. comma-7b", strict=True)
+    assert k1 is None and "strict" in why
+    k1, _, why = ot.strength("kl3m-520m + mem. kl3m-520m", strict=True)
+    assert k1 is not None and why == "own sweep", "strict must not affect an own-sweep baseline"
