@@ -169,7 +169,7 @@ def test_the_second_pair_uses_its_own_corner_and_its_own_s_x():
     Pleias' s_x would rescale every ratio and the two pairs would not be comparable at all."""
     import csv
     from analysis.strength_ladder import PAIRS, KL3M_CORNER, KL3M_S_X, S_X, CORNER
-    assert set(PAIRS) == {"pleias", "kl3m", "kl3m_cb"}
+    assert set(PAIRS) == {"pleias", "kl3m", "kl3m_cb", "pleias_cb"}
     assert PAIRS["kl3m"]["axes"].keys() == {"seeds"}, "kl3m has no epoch ladder and must not claim one"
     assert KL3M_CORNER in [r for _, r in PAIRS["kl3m"]["axes"]["seeds"]]
     assert KL3M_CORNER != CORNER[0] and abs(KL3M_S_X - S_X) > 0.5
@@ -223,7 +223,10 @@ def test_the_copybench_pair_reproduces_the_nine_pair_table_row():
     assert abs(float(row["s_x"]) - CB_S_X) < 1e-9, (row["s_x"], CB_S_X)
     # the grid in the runner is the table's own, not one we picked
     sh = open(os.path.join(ROOT, "scripts/run_copybench_seeds.sh"), encoding="utf-8").read()
-    grid = re.search(r'^GRID="([^"]+)"', sh, re.M).group(1).split()
+    # the grid lives inside the kl3m520m branch of the case and is indented, so anchor on the
+    # branch rather than the line start -- and take THAT branch's grid, not whichever comes first
+    branch = sh.partition("kl3m520m)")[2].partition(";;")[0]
+    grid = re.search(r'GRID="([^"]+)"', branch).group(1).split()
     assert grid[:2] == ["-1", "0"], "both mandatory baselines"
     # compare as numbers: the CSV stores budgets through %g, so it writes "2" where the CLI
     # string says "2.0". composition_attack.py parses --k-values to float and never puts the raw
@@ -237,10 +240,18 @@ def test_the_copybench_pair_reproduces_the_nine_pair_table_row():
     # Compare the VALUES, not their spelling: the script writes "3e-4" where recipe.json records
     # 0.0003. Both are the same number, and pinning the spelling would fail on a cosmetic edit
     # while passing on a real change of value -- the wrong way round.
-    for flag, val in (("--rank", r["rank"]), ("--lr", r["lr"]), ("--epochs", r["epochs"]),
-                      ("--batch", r["batch"]), ("--accum", r["accum"]),
-                      ("--stop-loss", r["stop_loss"])):
+    # batch/accum/stop-loss are per-pair shell variables now, so read them from the branch; the
+    # flags that are still literal in the command are checked against the command.
+    for name, val in (("BATCH", r["batch"]), ("ACCUM", r["accum"]), ("STOP", r["stop_loss"])):
+        m = re.search(rf"{name}=(\S+?)[;\s]", branch)
+        assert m, (name, branch[:200])
+        assert float(m.group(1)) == float(val), (name, m.group(1), val)
+    for flag, val in (("--rank", r["rank"]), ("--lr", r["lr"]), ("--epochs", r["epochs"])):
         m = re.search(rf"{re.escape(flag)}\s+(\S+)", sh)
         assert m, flag
         assert float(m.group(1)) == float(val), (flag, m.group(1), val)
+    # and the sweep's safe model is the MATERIALISED anchor, not the fine-tune's base: that
+    # confusion cost two aborted sweeps (kl3m-002-520m ships only pytorch_model.bin)
+    assert "SAFE=output/phase5/anchor_kl3m-002-520m" in branch
+    assert '--safe-model "$SAFE"' in sh and '--base "$BASE"' in sh
     assert r["base"] in sh and r["target_modules"] in sh and r["no_chat"] is True and "--no-chat" in sh

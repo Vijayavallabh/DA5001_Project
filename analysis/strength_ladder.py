@@ -62,6 +62,9 @@ KL3M_CORNER = "output/phase5/fineb_kl3m520m"
 # results/onset_ci.csv; the corner is the run the table quotes.
 CB_S_X = 2.4147499999999997
 CB_CORNER = "output/phase5/fine_kl3m520m"
+# the COARSE pillar of the same split, also in the table: ratio 0.8784 [0.7891, 0.9600]
+CBP_S_X = 3.2094
+CBP_CORNER = "output/phase5/fine_pleias12b"
 PAIRS = {
     "pleias": dict(s_x=S_X, axes=None),          # axes filled in below from AXES
     "kl3m": dict(s_x=KL3M_S_X, axes={"seeds": [
@@ -74,6 +77,10 @@ PAIRS = {
         ("seed=3", "output/phase5/fineb_kl3m_s3"),
         ("seed=4", "output/phase5/fineb_kl3m_s4"),
         ("seed=0 (feat-120)", KL3M_CORNER)]}),
+    "pleias_cb": dict(s_x=CBP_S_X, axes={"seeds": [
+        ("seed=1", "output/phase5/finec_pleias12b_s1"),
+        ("seed=2", "output/phase5/finec_pleias12b_s2"),
+        ("seed=0 (the table's own)", CBP_CORNER)]}),
     "kl3m_cb": dict(s_x=CB_S_X, axes={"seeds": [
         ("seed=1", "output/phase5/finec_kl3m520m_s1"),
         ("seed=2", "output/phase5/finec_kl3m520m_s2"),

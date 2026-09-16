@@ -146,6 +146,25 @@ def main():
     json.dump(vars(args) | {"epochs_run": epoch + 1, "final_loss": mean_loss, "n_texts": len(texts)}, open(os.path.join(args.out, "recipe.json"), "w"), indent=2)
     print(f"[ft] merged model saved to {args.out}", flush=True)
 
+    # The weights are on disk from here, so NOTHING below may fail the run. The block that follows
+    # is a DIAGNOSTIC -- a 24-excerpt greedy/sampled recall reading -- and the entry gate the
+    # analyses actually use is each sweep's own k = -1 arm (AGENTS.md caution (a)), not this.
+    # On 2026-09-16 it killed four completed fine-tunes: with the host's NVML broken by a driver
+    # update under running jobs, torch's caching allocator raises
+    #   RuntimeError: NVML_SUCCESS == DriverAPI::get()->nvmlInit_v2_() INTERNAL ASSERT FAILED
+    # from inside generate(). The merged model had already been written in every case, but the
+    # non-zero exit made each queue shell abort before its sweep. A diagnostic must not be able to
+    # do that.
+    try:
+        _post_training_check(args, model, tok, prompts, random)
+    except Exception as exc:                                   # noqa: BLE001 - deliberately broad
+        print(f"[ft] WARNING: post-training check failed ({type(exc).__name__}: {exc}). "
+              "The merged model and recipe.json are written and valid; the entry gate comes from "
+              "the sweep's own k=-1 arm, so nothing downstream depends on this check.", flush=True)
+    return
+
+
+def _post_training_check(args, model, tok, prompts, random):
     tok.padding_side = "left"
     sample = random.Random(1).sample(prompts, min(args.check, len(prompts)))
 
