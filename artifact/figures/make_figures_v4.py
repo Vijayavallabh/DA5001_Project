@@ -133,7 +133,10 @@ def order_invariance():
     ax.set_ylim(1e-12, 2)
     ax.set_xlabel("sequence budget $K$ (nats)")
     ax.set_ylabel("bound on $\\Pr[\\mathrm{reproduce}\\ x]$")
-    ax.legend(frameon=False, loc="lower right")
+    # "lower right" is exactly where the K = S(x) rule lands (S is at 85% of the x range), so the
+    # dashed line ran through "He" in the first entry. The lower LEFT is empty: the three higher
+    # orders stay below 1e-12 until K ~ 150, and the KL curve is already well up the y-axis there.
+    ax.legend(frameon=False, loc="lower left")
     ax.grid(alpha=0.25, lw=0.5)
     _save(fig, "order_invariance")
 

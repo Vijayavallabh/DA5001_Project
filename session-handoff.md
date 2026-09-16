@@ -173,12 +173,14 @@ future, repointed to actual commit times.
 
 Nothing is blocking. In descending value:
 
-1. **One cosmetic figure nit left.** Figure 2's legend has the dashed `K=S(x)` rule running through
-   "He" in the entry `alpha = 1 (KL, He et al.)`. One word, one line, legible. Every other figure
-   collision is fixed: Figure 5 was done on request after the read-through, by factoring its six
-   spelled-out `<corpus>: <rate>` entries into the 3 colours and 2 linestyles they actually encode
-   and moving them to a shared row below both panels --- which also removed the right panel's
-   duplicate copy of the three corpus names.
+1. **No figure collisions remain.** All five found by the read-through are fixed, each by a different
+   repair, which is the useful part: Figure 7 and Figure 6 by moving an oversized legend below the
+   panels; Figure 9 by an opaque `bbox` on a label that had to stay beside the rule it names;
+   Figure 5 by *factoring* its six `<corpus>: <rate>` entries into the 3 colours and 2 linestyles
+   they already encode, which shortened them enough to share one row with the right panel; and
+   Figure 2 by moving its legend off `loc="lower right"`, which is exactly where the `K=S(x)` rule
+   lands, into the empty lower left. Reposition, factor, or back it opaquely --- pick by what the
+   panel actually has room for.
 2. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
    `onset_ci.csv` hold the same four epochs-ladder onsets and differ (`4.106` vs `4.1078`, `4.0071`
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also

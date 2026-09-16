@@ -99,9 +99,23 @@ dots, because the marker covers a short handle --- and telling solid from dashed
 those two entries exist. `handlelength=3.0` and full alpha on the proxies fixes it. A legend key can
 be wrong in a way the labels do not show.
 
-Figure 2 keeps the last nit: the dashed `K=S(x)` rule crosses "He" in `alpha = 1 (KL, He et al.)`.
+**Addendum, 18:05 — Figure 2 fixed, and no figure collision remains.** Its legend was pinned
+`loc="lower right"`, which is exactly where the `K = S(x)` rule lands: `S = 205` on a `0..240` axis
+is 85% of the way across, so the dashed line ran through "He" in the first entry. The lower **left**
+is empty --- the three higher orders stay under `1e-12` until `K ~ 150` and the KL curve is already
+well up the y-axis by then --- so the legend just moves there.
+
+**All five figure collisions the read-through found are now fixed, each by a different repair**, and
+that is the part worth keeping: Figures 7 and 6 needed the legend moved *below the panels* (more
+entries than the panel had room for); Figure 9 needed an opaque `bbox` (a label that had to stay
+beside the rule it names); Figure 5 needed the labels *factored*, not moved (colour and linestyle
+already carried what the text was spelling out); Figure 2 needed only a different corner. The
+diagnosis is what differs -- reposition, factor, or back it opaquely, chosen by what the panel has
+room for -- and none of the five was visible anywhere but a rendered page.
+
 Re-verified after the change: tectonic exit 0, 0 overfull, 0 `??`, 55 pages, bold fonts still 3,
-538 tests, `./init.sh` exit 0, 3,354 numeric literals with the one expected miss, artifact 901.
+zero literal tildes, 538 tests, `./init.sh` exit 0, 3,354 numeric literals with the one expected
+miss, anonymity 4 sanctioned hits and zero "our earlier audit", artifact 901.
 
 ## 2026-09-16 16:05 — the convergence crossover: neither direction could be built, and that is the result
 
