@@ -5,7 +5,7 @@
 
 
 
-## 2026-09-16 10:05 — the seed-word gradient, qualified by measurement rather than by hedging
+## 2026-09-16 08:02 — the seed-word gradient, qualified by measurement rather than by hedging
 
 `rho = -0.958`, exact `p = 0.0002` is the paper's strongest correlation and it is fitted to nine
 points that are each a single LoRA fine-tune at `--seed 0`. The seed ladders measured what
@@ -41,7 +41,7 @@ qualification and on a median silently restored to -0.958.
 
 524 tests, init.sh exit 0, artifact 883 files.
 
-## 2026-09-16 09:25 — the convergence marker, and the passage-set invariant it forced
+## 2026-09-16 07:54 — the convergence marker, and the passage-set invariant it forced
 
 Table 2 now carries an `ep.` column: what the memorisation fine-tune actually ran against the cap it
 was given. `results/onset_table.csv` gains `memoriser`, `epochs_run`, `epochs_cap`, `stop_loss`,
@@ -88,7 +88,7 @@ also where they belong — they say which RUN the baseline came from, not what t
 
 `tests/test_onset_table.py` 6 -> 9. 518 tests, init.sh exit 0, artifact 883 files.
 
-## 2026-09-16 08:50 — the strength column, and the wrong number it caught
+## 2026-09-16 07:36 — the strength column, and the wrong number it caught
 
 `results/onset_table.csv` now carries `k_minus1_sampled`, `k0_sampled` and `strength_source`, and
 Table~2 of the manuscript carries the memoriser's own sampled `k=-1` recall.
@@ -137,7 +137,7 @@ must agree with `strength_source`, every pair must clear the 0.10 entry gate, k=
 quoted factor must round from the CSV, the literal 0.2696 is banned from all three appendices, and
 a deliberately mismatched companion must be refused. 515 tests, init.sh exit 0.
 
-## 2026-09-16 08:05 — appendix_seed.tex: the subgroup was tighter than the noise of one of its members
+## 2026-09-16 07:21 — appendix_seed.tex: the subgroup was tighter than the noise of one of its members
 
 The last overclaim the handoff named. `sections/appendix_seed.tex` read the nine-pair ratios as
 per-pair properties in three places. The seed ladders re-trained **two of that table's own rows** on
@@ -178,7 +178,7 @@ inequality the retraction rests on, asserts the split still clears the floor, an
 disclosure sentence out of a whitespace-collapsed copy of the source so a reflow cannot silently
 stop the check. Demonstrated to fail on both reintroduced defects.
 
-## 2026-09-16 07:20 — the fourth seed ladder overturned a claim this session had just written
+## 2026-09-16 07:11 — the fourth seed ladder overturned a claim this session had just written
 
 **Four seed ladders, not three.** `analysis/strength_ladder.py --axis seeds` on each pair, all at
 `--epochs 40`, varying only `--seed`:
