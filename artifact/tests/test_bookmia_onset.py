@@ -257,6 +257,7 @@ LAUNCHERS = (
     "scripts/run_bookmia_p1.sh",
     "scripts/run_bookmia_sweeps.sh",
     "scripts/run_copybench_seeds.sh",
+    "scripts/run_strength_ladder.sh",   # patched 2026-09-16 08:20, once its queue had exited
 )
 
 

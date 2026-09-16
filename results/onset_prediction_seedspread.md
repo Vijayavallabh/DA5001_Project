@@ -160,3 +160,61 @@ stated in the paper.
 
 **Not done:** no second seed set, no fifth seed, no re-threshold, no re-grid, no swapped epoch
 count, and no seed dropped. Seed 3 is running and will be appended whatever it says.
+
+### Seed 3 landed 2026-09-16 08:18, and the committed secondary with it
+
+```
+.venv/bin/python analysis/strength_ladder.py --axis seeds    # four points now
+.venv/bin/python analysis/strength_ladder.py --axis pooled   # the committed secondary, seven points
+```
+
+| point | sampled `k=-1` | `k=0` | onset | bracket | ratio |
+|---|---|---|---|---|---|
+| seed=1 | 0.1581 | 0.000 | 3.215 | (3.2, 3.6] | 1.0549 |
+| seed=2 | 0.2045 | 0.000 | 3.239 | (3.2, 3.6] | 1.0626 |
+| **seed=3** | **0.2391** | 0.000 | 2.950 | (2.9, 3.2] | **0.9677** |
+| seed=0 (feat-120) | 0.1504 | 0.000 | 4.007 | (3.6, 4.2] | 1.3146 |
+
+**The committed four-point span is `0.3469`** (0.9677 to 1.3146), against the committed threshold of
+`0.20`. The verdict written above was `0.2597` on three points and is unchanged in kind and stronger
+in degree, which is what the monotone argument said would happen: a span is a maximum minus a
+minimum, so the fourth point could only hold it or widen it, and it widened it.
+
+Seed 3 is the strongest of the four memorisers (`0.2391`) and carries the lowest ratio (`0.9677`),
+the same direction the other three points show. Its fine-tune ran all `40` epochs at a final loss of
+`0.0619` against the `0.02` stop-loss — **it did not converge, exactly like seeds 0, 1 and 2 on this
+cell**, so the convergence reading offered below is unchanged by it.
+
+**Which span belongs where, because the two are not interchangeable.** The four-point `0.3469` is
+this arm's own committed primary and is the number to read against feat-121's epoch ladder, since
+that ladder also has four points — four seeds against four epoch counts is like for like, `0.3469`
+against `0.4721`, so the seed alone reproduces **73%** of what changing the training length did. The
+three-point `0.2597` is the number `onset_prediction_seedspread2.md` compares KL3M against, because
+KL3M has three seeds and a span grows with the number of draws. Neither is quoted in the other's
+place.
+
+### The committed secondary, scored: seven points, exact `p`
+
+Pooling feat-121's four epoch points with this arm's three new seeds gives the seven distinct
+(memoriser, ratio) points registered in advance, sharing the `seed 0`, `40`-epoch corner:
+
+```
+rho(sampled k=-1, onset ratio) = -0.714, exact p = 0.0881   (n = 7, floor 1/2520)
+```
+
+Reported as registered, whatever it says: **it does not reach significance.** The sign is the one
+every ladder in this project shows — a stronger memoriser carries a lower onset ratio — and at seven
+points that is a direction, not a demonstration. It is the better-powered version of the question
+both ladders ask and it answers it the same way the underpowered versions did: consistent in
+direction, unresolved in magnitude.
+
+**A protocol incident on this arm, recorded because the reader of a scoring log should know.** The
+queue shell running these three seeds was started at 02:57 and `scripts/run_strength_ladder.sh` was
+edited and committed at 03:17, while it was executing. Bash reads a script incrementally by byte
+offset, so the edit shifted every later offset; the loop body had already been parsed and all three
+iterations ran the original code, but when the shell returned to the file after the loop it landed
+mid-command and reported `line 52: --base: command not found` followed by a spurious
+`FAILED finetune seeds=3`. **The failure is after all work completed and no measurement is affected**,
+which was checked rather than assumed: all four points carry the identical 16-point grid, `n=100`,
+`k=0` exactly `0.000`, zero invariant violations, and identical `lr`, `rank`, `batch`, `accum`,
+`stop-loss` and base model in their recipes. Never edit a shell script while it is running.

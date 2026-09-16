@@ -5,6 +5,47 @@
 
 
 
+
+## 2026-09-16 08:25 — seed 3 landed; the committed secondary scored; a mid-run script edit found
+
+The seed arm finished at 08:18. Seed 3: sampled `k=-1` **0.2391**, onset 2.950, ratio **0.9677** —
+the strongest of the four memorisers carrying the lowest ratio, the direction every ladder shows.
+Its fine-tune ran 40/40 at final loss 0.0619 against a 0.02 stop-loss: it did not converge, like
+seeds 0, 1 and 2 on that cell.
+
+```
+.venv/bin/python analysis/strength_ladder.py --axis seeds     # four points
+.venv/bin/python analysis/strength_ladder.py --axis pooled    # the committed secondary, seven
+```
+
+**Primary:** the committed four-point span is **0.3469** against a committed threshold of 0.20. The
+verdict is unchanged in kind and stronger in degree — exactly what the monotone argument predicted,
+since a span is a max minus a min and a fourth point can only widen it.
+
+**The committed secondary, scored: rho = -0.714, exact p = 0.0881** over seven points (floor
+1/2520). Reported as registered: it does NOT reach significance. Consistent in direction with every
+other ladder, unresolved in magnitude.
+
+**Which span goes where.** 0.3469 (four seeds) is read against feat-121's four epoch counts —
+four draws against four, so the seed alone is worth 73% of what changing training length did.
+0.2597 (three seeds) is what `seedspread2.md` compares KL3M against, since KL3M has three. The paper
+now keeps the two comparisons separate and says why. Strength range updated 0.150–0.205 -> 0.150–0.239,
+strength span 1.36x -> 1.59x.
+
+**A protocol incident, found while checking the queue's exit.** `scripts/run_strength_ladder.sh` was
+edited and committed at 03:17 while the queue started at 02:57 was executing it. Bash reads a script
+incrementally by byte offset, so the edit shifted every later offset. The loop body had already been
+parsed and all three iterations ran the original code, but on returning to the file after the loop
+the shell landed mid-command: `line 52: --base: command not found`, then a spurious
+`FAILED finetune seeds=3`. **No measurement is affected**, verified rather than assumed: all four
+points carry the identical 16-point grid, n=100, k=0 exactly 0.000, zero invariant violations, and
+identical lr/rank/batch/accum/stop-loss/base in their recipes. Recorded in the scoring log.
+
+`scripts/run_strength_ladder.sh` is now patched to source `scripts/gpu_env.sh` (safe: its queue has
+exited) and is added to the launcher list `tests/test_bookmia_onset.py` guards — all five now.
+
+525 tests, init.sh exit 0, artifact rebuilt.
+
 ## 2026-09-16 08:02 — the seed-word gradient, qualified by measurement rather than by hedging
 
 `rho = -0.958`, exact `p = 0.0002` is the paper's strongest correlation and it is fitted to nine

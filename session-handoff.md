@@ -1,4 +1,4 @@
-# Session handoff — 2026-09-16 08:05 (every queued item closed; one sweep ~10 min from done)
+# Session handoff — 2026-09-16 08:25 (EVERYTHING CLOSED; no GPU work in flight)
 
 ## Current objective
 
@@ -39,32 +39,35 @@ delete the directory: it is not ours. Caution (ab) in AGENTS.md.
 
 ## What is running
 
-**GPU 2 only.** `bash scripts/run_strength_ladder.sh seeds 1 2 3` (pid 1616043, started 02:57).
+**Nothing.** The seed arm finished at 08:18 and its queue shell has exited; no job of ours holds a
+GPU. The other-user job on GPU 0 (63.7 GiB) is untouched. The standing rule is back in force with
+nothing to apply it to: **all future processes on GPU 2**, quoted inside `run_strength_ladder.sh`
+and `run_copybench_seeds.sh`, both defaulting `GPU` to 2.
 
-Seed 3's memoriser finished — **40 of 40 epochs, final loss `0.0619` against a `0.02` stop-loss, so
-it never converged**, exactly like seeds 0, 1 and 2 on that cell. Its sweep was past `k=4.2` of a
-16-point grid at 08:10, with three budgets left at about $170$ s each — roughly **8 minutes**.
+All three items the previous handoff queued are done:
 
-The other-user job on GPU 0 (63.7 GiB) is untouched. GPUs 1 and 4 are idle.
-The multi-card window the user opened at 03:13 for six hours closes at **09:13**; after that the
-standing rule applies again — **all processes on GPU 2**. It is quoted inside
-`run_strength_ladder.sh` and `run_copybench_seeds.sh`, both defaulting `GPU` to 2.
+1. **Seed 3 scored.** Sampled `k=-1` `0.2391`, ratio `0.9677` — the strongest of the four
+   memorisers carrying the lowest ratio. The committed four-point span is **`0.3469`** against a
+   committed `0.20`: unchanged in kind, stronger in degree, as the monotone argument predicted.
+2. **The committed secondary scored.** Seven points, **`rho = -0.714`, exact `p = 0.0881`** (floor
+   1/2520). Reported as registered: it does **not** reach significance. Direction consistent with
+   every other ladder, magnitude unresolved.
+3. **`scripts/run_strength_ladder.sh` patched** to source `scripts/gpu_env.sh`, now its queue has
+   exited. All five launchers are guarded by `tests/test_bookmia_onset.py`.
 
-### The only three things left, in order
+### A protocol incident, found while checking that queue's exit
 
-```bash
-# 1. append seed 3 to the Pleias BookMIA log. The VERDICT CANNOT CHANGE: the committed quantity is
-#    a span over four points, and a span is a max minus a min, so a fourth point can only widen it.
-.venv/bin/python analysis/strength_ladder.py --axis seeds
+`run_strength_ladder.sh` was edited and committed at **03:17 while the queue started at 02:57 was
+executing it**. Bash reads a script incrementally by byte offset, so the edit shifted every later
+offset. The loop body had already been parsed and all three iterations ran the original code, but
+on returning to the file after the loop the shell landed mid-command — `line 52: --base: command not
+found`, then a spurious `FAILED finetune seeds=3`.
 
-# 2. the COMMITTED SECONDARY, which needs seven points and has six until seed 3 lands
-.venv/bin/python analysis/strength_ladder.py --axis pooled
-#    at six points it reads rho = -0.543, exact p = 0.2972 (floor 1/2520 at n=7).
-#    Do NOT report the six-point value as the secondary: seven is what was registered.
-
-# 3. patch the launcher that could not be patched while it ran — after `export HF_HUB_OFFLINE=1 ...`:
-#      . scripts/gpu_env.sh   # (cwd is the repo root) strips the stale in-repo driver from LD_LIBRARY_PATH
-```
+**No measurement is affected**, and that was checked rather than reasoned: all four points carry the
+identical 16-point grid, `n=100`, `k=0` exactly `0.000`, zero invariant violations, and identical
+`lr`, `rank`, `batch`, `accum`, `stop-loss` and base model in their recipes. Recorded in the scoring
+log. **Never edit a shell script while it is running** — the failure surfaces far from its cause and
+looks like a job failure rather than a source edit.
 
 ---
 

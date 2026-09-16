@@ -21,6 +21,7 @@ cd "$(dirname "$0")/.."
 # the standing rule in AGENTS.md is one card, GPU 2.
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="${GPU:-2}"
 export HF_HUB_OFFLINE=1 HF_HUB_CACHE="$PWD/hf_cache"
+. scripts/gpu_env.sh   # (cwd is the repo root) strips the stale in-repo driver from LD_LIBRARY_PATH
 
 # PAIR selects the (anchor, tag, grid). Each pair's grid is the one ITS OWN seed-0 BookMIA run was
 # measured on, because the corner has to share a grid with the ladder it anchors. Pleias needed
