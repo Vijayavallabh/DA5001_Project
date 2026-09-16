@@ -1,0 +1,17 @@
+order,mode,L,k,nv_recall,lcs_word,reference_nv_recall,reference_lcs_word,identical_to_reference,violations
+renyi:1.0,oracle,50,-1.0,0.8074,107.35,0.8074,107.35,yes,0
+renyi:1.0,single,0,-1.0,0.4921,81.34,0.4921,81.34,yes,0
+renyi:1.0,oracle,50,0.0,0.0032,3.79,0.0032,3.79,yes,0
+renyi:1.0,single,0,0.0,0.0,1.73,0.0,1.73,yes,0
+renyi:2,oracle,50,-1.0,0.8074,107.35,0.8074,107.35,yes,0
+renyi:2,single,0,-1.0,0.4921,81.34,0.4921,81.34,yes,0
+renyi:2,oracle,50,0.0,0.0032,3.79,0.0032,3.79,yes,0
+renyi:2,single,0,0.0,0.0,1.73,0.0,1.73,yes,0
+renyi:4,oracle,50,-1.0,0.8074,107.35,0.8074,107.35,yes,0
+renyi:4,single,0,-1.0,0.4921,81.34,0.4921,81.34,yes,0
+renyi:4,oracle,50,0.0,0.0032,3.79,0.0032,3.79,yes,0
+renyi:4,single,0,0.0,0.0,1.73,0.0,1.73,yes,0
+renyi:8,oracle,50,-1.0,0.8074,107.35,0.8074,107.35,yes,0
+renyi:8,single,0,-1.0,0.4921,81.34,0.4921,81.34,yes,0
+renyi:8,oracle,50,0.0,0.0032,3.79,0.0032,3.79,yes,0
+renyi:8,single,0,0.0,0.0,1.73,0.0,1.73,yes,0

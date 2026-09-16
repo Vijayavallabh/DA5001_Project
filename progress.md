@@ -7,6 +7,59 @@
 
 
 
+
+## 2026-09-16 10:55 — the Renyi baselines (CONFIRMED), and a crossover launched on four cards
+
+**The multi-GPU window opened at 10:36** (user: "for the next 8 hours, use all the gpus"), expires
+18:36. Recorded in AGENTS.md above the one-card rule, which it suspends rather than cancels; every
+launcher still defaults `GPU` to 2 so the rule restores itself.
+
+### Renyi baselines: CONFIRMED, 16 arms, 16 exact reproductions
+
+```
+bash scripts/run_renyi_baselines.sh           # 10:30-10:47, GPU 2
+.venv/bin/python analysis/renyi_baselines.py  -> results/renyi_baselines.csv
+```
+
+`output/phase4/renyi_renyi_{1_0,2,4,8}` swept k in {1,3,5} with no baselines. All four orders now
+carry `k=-1` and `k=0` on `single` and `oracle L=50`, and **every one of the sixteen arms reproduces
+`fine_tc_base` exactly** — 0.4921/81.34, 0.8074/107.35, 0.0000/1.73, 0.0032/3.79 — in every compared
+column, as stored rather than to a tolerance, zero violations.
+
+The prediction was committed at 09:15 before the runs existed: at `k=-1` the decoder serves the
+risky model alone and at `k=0` the safe model alone, and `a_patch/factory.py` reads `self.constraint`
+only in the branch that solves under a budget. The RNG route was the one worth testing — these draws
+are sampled — and `oracle L=50`, which re-samples per window, matches to the last decimal at all
+four orders. Table 3's orders can be read against one shared baseline. **All six genuine
+mandatory-baseline gaps found by the scan are now closed.**
+
+### A crossover on this morning's post-hoc claim, running on all four cards
+
+The appendices say the ratio is reproducible *wherever the fine-tune converged*, labelled post hoc
+because the one irreproducible cell is also the only non-converged one and the only marginal
+memoriser. Convergence here is manipulable, so it can be tested in both directions:
+
+| arm | cell | intervention | span to beat |
+|---|---|---|---|
+| forward (`convergence_causal.md`) | Pleias-1.2B BookMIA, never converges | lower the rate until the stop-loss fires | `0.2597` -> below `0.10`? |
+| reverse (`convergence_reverse.md`) | KL3M-520M BookMIA, converges 26/40 every seed | raise it until the stop-loss stops firing | `0.0663` -> above `0.20`? |
+
+Probes launched 10:38 (forward, rates 1.5e-4/1e-4/5e-5 on GPUs 0/1/4) and 10:46 (reverse, rates
+6e-4/1e-3/2e-3 co-located on GPU 2). Both pre-registrations commit the rate-selection rule before
+any result exists, both carry written invalidity conditions, and both commit to reporting the
+strength band — because a rate change plausibly moves memoriser strength as well as stability, which
+is the very confound the crossover exists to break.
+
+**Protocol check that mattered:** both probes' `--max-len 0` auto-resolves to exactly the value each
+cell's own recipe recorded (1186 for KL3M, 1182 for Pleias), so no explicit `--max-len` is needed —
+unlike the Pleias CopyBench corner, where auto gave 342 against a recorded 448.
+
+Two bookkeeping failures were caught by `init.sh` and fixed: the manuscript said "fifty-one
+pre-registration logs" against 54 on disk, and the two in-flight arms were not named in
+`session-handoff.md`, which `tests/test_preregistration_count.py` requires of any unscored log.
+
+536 tests, init.sh exit 0, artifact rebuilt. Compute 266.2 GPU-hours.
+
 ## 2026-09-16 09:05 — the two missing baselines, measured; and a compute bug they exposed
 
 `output/phase4/fine_tc` and `fine_comma` reported six budgets each with **no `k=-1` or `k=0` arm**,

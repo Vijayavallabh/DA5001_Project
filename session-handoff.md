@@ -39,6 +39,26 @@ delete the directory: it is not ours. Caution (ab) in AGENTS.md.
 
 ## What is running
 
+**A bounded multi-GPU window is open until 18:36 today** (user, 10:36: "for the next 8 hours, use
+all the gpus"). It SUSPENDS, not cancels, the one-card rule; every launcher still defaults `GPU` to
+2, so the rule restores itself when the window closes. GPU 3 is still never used.
+
+**Two pre-registrations are committed and UNSCORED, both in flight — a crossover on one claim:**
+
+| arm | pre-registration | stage | cards |
+|---|---|---|---|
+| make a non-converged cell converge | `onset_prediction_convergence_causal.md` | probe, 3 rates | 0, 1, 4 |
+| break a converged cell's convergence | `onset_prediction_convergence_reverse.md` | probe, 3 rates | 2 |
+
+They test, in opposite directions on different pairs, the claim this morning's appendices make and
+label post hoc: that the onset ratio is reproducible wherever the memorisation fine-tune converged.
+Forward arm: Pleias-1.2B on BookMIA, lower the rate until the stop-loss fires, does the `0.2597`
+three-seed span collapse below `0.10`? Reverse arm: KL3M-520M on BookMIA, raise it until the
+stop-loss stops firing, does the `0.0663` span blow past `0.20`? Both carry written invalidity
+conditions and both report the strength band, because a rate change plausibly moves strength too —
+which is the confound the crossover exists to break.
+
+
 **Nothing.** The seed arm finished at 08:18 and its queue shell has exited; no job of ours holds a
 GPU. The other-user job on GPU 0 (63.7 GiB) is untouched. The standing rule is back in force with
 nothing to apply it to: **all future processes on GPU 2**, quoted inside `run_strength_ladder.sh`
