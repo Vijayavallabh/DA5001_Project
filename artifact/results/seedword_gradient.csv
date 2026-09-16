@@ -1,0 +1,6 @@
+arm,reseed_sd,n,trials,rho_median,rho_lo5,rho_hi95,pct_p_under_05,pct_p_under_01,pct_sign_kept,exact_p
+observed,,9,,-0.958,,,,,,0.0002
+reseed_noise_pleias12b_copybench,0.045,9,20000,-0.8488,-0.958,-0.6471,92.3,61.3,100.0,
+reseed_noise_kl3m520m_copybench,0.018,9,20000,-0.9412,-0.9748,-0.8236,100.0,96.1,100.0,
+seed_words_where_converged_yes,,4,,,7.45,14.58,,,,
+seed_words_where_converged_no,,5,,,7.45,15.02,,,,

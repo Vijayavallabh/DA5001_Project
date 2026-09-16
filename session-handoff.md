@@ -152,9 +152,12 @@ fallback needs no memory.
    runs only after the `[ca]` protocol lines are asserted identical. **The convergence marker landed
    at 09:25** as an `ep.` column (epochs run / cap): four of nine reached their stop-loss, and the
    only seed ladder whose ratio is not reproducible is on a non-converged memoriser.
-3. **Qualify the seed-word gradient** `rho = -0.958` in `appendix_onset.tex`: it is a correlation
-   over nine differently-trained, differently-converged memorisers. `appendix_limitations.tex`
-   already carries the caveat; the appendix that states the number does not.
+3. ~~Qualify the seed-word gradient~~ **DONE 10:05.** Quantified rather than hedged: under the
+   largest measured re-seed noise the gradient keeps its sign in 100% of 20,000 draws and `p<0.05`
+   in 92.3%, but its median falls to **-0.849** with a 5–95% range of [-0.958, -0.647]. The
+   direction is not at risk and the magnitude is; `-0.958` is the top of the range, not its centre.
+   Convergence is not a confounder (both groups span 7.45–15.0 words).
+   `analysis/seedword_gradient.py` -> `results/seedword_gradient.csv`.
 
 ---
 

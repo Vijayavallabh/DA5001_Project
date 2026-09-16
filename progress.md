@@ -4,6 +4,43 @@
 
 
 
+
+## 2026-09-16 10:05 — the seed-word gradient, qualified by measurement rather than by hedging
+
+`rho = -0.958`, exact `p = 0.0002` is the paper's strongest correlation and it is fitted to nine
+points that are each a single LoRA fine-tune at `--seed 0`. The seed ladders measured what
+re-training one of those points does, so the question became answerable and had to be asked.
+
+```
+.venv/bin/python analysis/seedword_gradient.py   ->  results/seedword_gradient.csv
+```
+
+Re-drawing all nine ratios under the measured re-seed noise and recomputing the **exact** permutation
+test (the n=9 null is enumerated once over all 362,880 permutations and reused), 20,000 draws, seed 0:
+
+| injected sd | rho median | 5–95% | keeps p<0.05 | keeps p<0.01 | sign kept |
+|---|---|---|---|---|---|
+| 0.0450 (Pleias-1.2B, the larger measured) | **-0.849** | [-0.958, -0.647] | 92.3% | 61.3% | **100%** |
+| 0.0180 (KL3M-520M, the smaller) | -0.941 | [-0.975, -0.824] | 100% | 96.1% | 100% |
+
+**The direction is not at risk and the magnitude is.** `-0.958` is the TOP of the range, not its
+centre. The appendix now quotes the gradient as a rank ordering that survives the noise in its
+points rather than as a coefficient to two decimals, and `appendix_limitations.tex`'s caveat is
+quantified instead of asserted. Both say the check is post hoc; no band was committed on it.
+
+**A confounder the new table columns let a reader test, and it is absent.** Whether the fine-tune
+converged does not track seed words: the four that reached their stop-loss sit at 7.45–14.58 words
+and the five that did not at 7.45–15.02, with one of each at both short-seed levels. The gradient is
+not the converged pairs lined up against the rest.
+
+`tests/test_seedword_gradient.py` (6) pins the observed statistic, asserts the sign survives and the
+median does NOT reach the point estimate, greps both halves of the two-sided reading and the post-hoc
+disclosure out of the source, checks the non-confounding, and runs the script twice to prove a
+sensitivity analysis quoted in a paper is reproducible. Demonstrated to fail on a watered-down
+qualification and on a median silently restored to -0.958.
+
+524 tests, init.sh exit 0, artifact 883 files.
+
 ## 2026-09-16 09:25 — the convergence marker, and the passage-set invariant it forced
 
 Table 2 now carries an `ep.` column: what the memorisation fine-tune actually ran against the cap it
