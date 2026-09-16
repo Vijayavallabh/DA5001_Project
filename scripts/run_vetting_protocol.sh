@@ -33,10 +33,13 @@ run_one() {
   echo "[vet:${TAG}] exit=$? at $(date +%H:%M)" >> "$LOG"
 }
 
-# The two the reviewer asked about go FIRST, so the question they were raised to answer is settled
-# even if the queue is interrupted; the five licensed anchors follow as the instrument check.
+# The open-data models the reviewer asked about go FIRST, so the question they were raised to answer
+# is settled even if the queue is interrupted; the five licensed anchors follow as the instrument
+# check. DCLM is NOT here: every published DCLM checkpoint is `openlm` format, which transformers
+# 5.16.1 cannot load, so OLMo-2-13B takes its place -- declared in the pre-registration's amendment
+# of 19:20, before any model in this arm was run.
 run_one olmo2_7b   allenai/OLMo-2-1124-7B
-run_one dclm_7b    apple/DCLM-Baseline-7B
+run_one olmo2_13b  allenai/OLMo-2-1124-13B
 run_one comma7b    common-pile/comma-v0.1-2t
 run_one comma1t    common-pile/comma-v0.1-1t
 run_one kl3m17b    alea-institute/kl3m-003-1.7b
