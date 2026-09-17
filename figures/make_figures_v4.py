@@ -325,45 +325,51 @@ def selection_frontier():
     # fixed. If this figure must get narrower, shrink figsize too and RENDER THE PAGE.
     F = 6.9 / 5.5
 
-    # ---- panel (a): a budget that scales with the work against one that does not -------------
+    # ---- panel (a): the contribution at a glance -------------------------------------------
+    # The claim is structural, so this panel stays structural: certified budgets against the price
+    # of the work, both as functions of the SAME length. The measured spends belong in panel (b),
+    # whose x-axis is realised divergence -- putting 171.3 nats of ORDINARY-traffic spend on an
+    # axis labelled "length of the protected work" would be the denominator error this paper
+    # spends Section 4 complaining about.
     ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
     s_med = ss[len(ss) // 2]
     s_tot = float(odo[0]["S_total_median"])                  # 849 nats, the median protected target
     t_star = s_tot / s_med                                   # its length in tokens
     T = [10 ** (1 + 0.02 * i) for i in range(101)]           # 10 .. 1000 tokens
+    TOP = 1.2e5
+    # Everything above the band is a budget that exceeds what the work is worth, which is exactly
+    # where Proposition 2 says the certificate stops excluding anything. Shading it is the whole
+    # argument: the red rays enter it and never leave; the blue lines never enter it.
+    axL.fill_between(T, [ss[-1] * t for t in T], TOP, color="#c1443c", alpha=0.07, lw=0)
+    axL.annotate("certificate vacuous", (T[3], 4.2e4), fontsize=6.3 * F, color="#8c3230",
+                 ha="left", va="center")
     axL.fill_between(T, [ss[0] * t for t in T], [ss[-1] * t for t in T],
                      color="0.72", alpha=0.5, lw=0)
     axL.plot(T, [s_med * t for t in T], color="0.25", lw=1.4)
-    # Type large enough to read leaves no room for the prose that used to sit on the rays: at
-    # \textwidth the five multi-line rotated notes collided into an unreadable knot. The panel now
-    # carries the identities only and the caption carries what they mean, which is where a reader
-    # who cannot read 4pt type was going to have to look anyway.
     axL.annotate("$S(x) = s(x)T$", (T[26], s_med * T[26]), fontsize=6.3 * F, color="0.2",
                  rotation=31, rotation_mode="anchor", xytext=(0, 5), textcoords="offset points")
-    # xi picks where each ray carries its own label. 0.5 was at 70, i.e. T=10^2.4=251 tokens,
-    # which is where t_star = 849/s_med puts the median-target rule -- the dash-dot vline
-    # struck the label through. Moved right of the rule. Render the page after changing these.
     for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 85)):
         axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
         axL.annotate(f"$k={k:g}$", (T[xi], k * T[xi]), fontsize=6.3 * F,
                      color="#c1443c", rotation=31, rotation_mode="anchor",
                      xytext=(0, 4), textcoords="offset points")
     import math as _m
-    # log 8 and log 64 are a factor of two apart on an axis spanning five decades, so one label
-    # each collided and the lower one landed on the x-axis. Two lines, one label.
     for n, style in ((64, "--"), (8, "-")):
         axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
+    # e^K is the factor a rights-holder is promised -- 8 and 64 against e^2000 -- and that reading
+    # is in the caption, not here: every in-plot home for it collided, with the x-axis tick labels
+    # below the n=8 line and with the k=0.5 ray above the n=64 one.
     axL.annotate("$\\log n$, $n=8,64$", (T[97], _m.log(64)), fontsize=6.3 * F, ha="right",
                  color="#2f6f9f", xytext=(0, 4), textcoords="offset points")
     axL.axvline(t_star, color="0.5", lw=0.8, ls="-.")
-    # to the RIGHT of the rule: the top-left is where the $S(x)$ ray's own label sits.
-    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 6.0e4), fontsize=6.3 * F,
+    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 5.5e4), fontsize=6.3 * F,
                  color="0.35", ha="left", va="top", xytext=(4, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
-    axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
+    axL.set_xlim(10, 1000); axL.set_ylim(1.0, TOP)
     axL.set_xlabel("length of the protected work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
-    axL.set_title("(a) indexed to the work, and not", fontsize=7.6 * F, loc="left")
+    axL.set_title("(a) $kT$ grows with the work; $\\log n$ does not",
+                  fontsize=7.6 * F, loc="left")
 
     # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
     # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
@@ -415,10 +421,9 @@ def selection_frontier():
     # Headroom for the legend, which now sits upper right: at ylim 0.80 its bottom border cut
     # through the "n=64" label (u=0.578). Every legend move in this panel trades one collision
     # for another unless the panel is given the room -- render the page after touching either.
-    # 0.94, not 0.86: raising the legend to a readable 8.0 (below) made the box taller and it
-    # covered the n=64 label again -- the SAME collision, from changing the size instead of the
-    # corner. The legend size and this number move together.
-    ax.set_ylim(0.37, 0.94)
+    # The legend size and this number move together: a taller box covers the n=64 label, which is
+    # caution (ad) reproduced. 0.90 is the headroom a 7.0 * F legend needs at \textwidth.
+    ax.set_ylim(0.37, 0.90)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
@@ -429,12 +434,11 @@ def selection_frontier():
     # that corner and struck through "Thm. 1" and "selection anchoring" in the compiled PDF
     # (caution (ad)). Upper right is empty -- the curve exits the top by x~0.5 and the anchored
     # cluster tops out at u=0.52 -- and the opaque frame occludes anything that ever reaches it.
-    # 8.0, not 6.6: measured on the compiled page (pdftotext -bbox, advance width against the
-    # same words in body text) this legend printed at about 5.4pt, because the figure is placed
-    # at 0.70\textwidth while F compensates only for \textwidth. Raising F globally is what
-    # broke the layout before, so only the legend moves -- the annotations and ticks that decide
-    # the layout are untouched. RENDER THE PAGE after changing this.
-    ax.legend(fontsize=8.0 * F, frameon=True, framealpha=1.0, edgecolor="none",
+    # 7.0 * F, with the figure printed at \textwidth: F = 6.9/5.5 is exactly the compensation for
+    # that placement, so nominal size is printed size. It was 6.6 at 0.70\textwidth, where it
+    # measured 5.4pt on the page and was briefly raised to 8.0 instead; widening the figure is the
+    # fix that removes the need. RENDER THE PAGE after changing this.
+    ax.legend(fontsize=7.0 * F, frameon=True, framealpha=1.0, edgecolor="none",
               loc="upper right", handlelength=1.6, borderaxespad=0.3)
     for _a in (axL, ax):
         _a.tick_params(labelsize=8 * F)
