@@ -34,7 +34,9 @@ def distinct_styles(n):
     eight-colour and eight-marker list, so the ninth wrapped to index 0 and TinyComma-1.8B and
     open-calm-3b came out as the same blue circle -- two indistinguishable curves in both panels
     of an appendix figure, invisible to every grep and to the compiler (found 2026-09-17 by
-    looking at the rendered figure). seed_effect drew five series from four markers. The comment
+    looking at the rendered figure). seed_effect uses the same construct over a four-marker
+    list but filters its temperature arms out first and draws only three, so it had not yet
+    collided; it takes its styles from here for the same reason. The comment
     on the first said the pair set is "data, not code, so a new admissible pair appears in the
     figure without editing it", which is exactly how it happened.
 
