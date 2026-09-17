@@ -450,10 +450,15 @@ def test_no_selection_bound_is_described_as_a_realisation():
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from analysis.selection_decoding import kl_best_of_n
 
+    # Match the BARE value, not "$value$". The sixth instance of this defect sat in
+    # "$\\log 8 = 2.08$ nats and gives exactly $8$, certified and realised alike" -- selection's
+    # amplification called a realisation where no analysis script measures a realised selection
+    # divergence at all (selection_decoding.csv holds only the closed form). A delimiter-anchored
+    # pattern cannot see it, because 2.08 is inside a larger math group and has no $ of its own.
     vals = set()
     for n in (2, 4, 8, 16, 32, 64, 128, 256):
         for v in (kl_best_of_n(n), math.log(n)):
-            vals |= {f"${v:.4f}$", f"${v:.3f}$", f"${v:.2f}$"}
+            vals |= {f"{v:.4f}", f"{v:.3f}", f"{v:.2f}"}
     real = ("realis", "realiz", "measured", "measurement", "actually spends")
     # "granted" is the one legitimate way a realisation word may sit beside one of these values:
     # a METERED arm granted log 8 nats up front and measured spending exactly them (appendix_proofs)
