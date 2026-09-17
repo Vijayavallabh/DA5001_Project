@@ -16,7 +16,9 @@ Two things it deliberately does NOT report:
     (caution (t): a zero is the easiest kind of bug to mistake for a result). Withdrawn in
     results/onset_prediction_sparse_causal.md, amendment 2, before scoring.
   * anything from the per-step log, which is padded past the end of the generation (caution (s)).
-    Step counts come from the aggregate, and are asserted to add up to the decoded length.
+    Step counts come from the aggregate's three counters, which partition the TRUE decode length
+    because dap/e1.py truncates bd_i with true_gen_len before counting them. They do NOT sum to
+    `generation_length_tokens`, which is raw len(gen_ids) and carries the pad (caution (ah)).
 
 No GPU. Reads output/phase5/{sparse_*,renyi8_k3_full} and results/order_averaged_h2h_*.csv.
 
@@ -56,9 +58,9 @@ def summarise(tag, run_dir, judged):
     rows, meta = arm_rows(run_dir)
     if not rows:
         return None
-    # caution (l): an aggregate counter is not always a summary of the per-step log. Where the three
-    # counters do add to the decoded length they are usable; say so rather than assume it.
-    agree = sum(1 for r in rows if r["act"] + r["forced"] + r["unch"] == r["length"])
+    # The three counters partition the TRUE decode length (dap/e1.py truncates with true_gen_len),
+    # so they are the denominator -- not `generation_length_tokens`, which carries the pad.
+    steps = sum(r["act"] + r["forced"] + r["unch"] for r in rows)
     spend = [r["spend"] for r in rows if r["spend"] is not None]
     act = [r["act"] for r in rows]
     K = meta.get("K")
@@ -75,9 +77,10 @@ def summarise(tag, run_dir, judged):
         binds=("YES" if spend and K and abs(max(spend) - K) < 1e-3 else "no"),
         active_steps_median=st.median(act),
         active_steps_max=max(act),
-        active_share=round(sum(act) / max(sum(r["length"] for r in rows), 1), 5),
-        forced_share=round(sum(r["forced"] for r in rows) / max(sum(r["length"] for r in rows), 1), 4),
-        counters_agree_pct=round(100 * agree / len(rows), 1),
+        decode_steps=steps,
+        active_share=round(sum(act) / max(steps, 1), 5),
+        forced_share=round(sum(r["forced"] for r in rows) / max(steps, 1), 4),
+        pad_share_of_gen_len=round(1 - steps / max(sum(r["length"] for r in rows), 1), 4),
         invariant_violations=sum(0 if r["ok"] else 1 for r in rows),
         gain=g.get("value", ""), gain_lo95=g.get("lo95", ""), gain_hi95=g.get("hi95", ""),
         d3_vs_selection=(round(SELECTION_N64 - float(g["value"]), 4) if g.get("value") != "" and
