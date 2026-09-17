@@ -9,6 +9,62 @@
 
 
 
+## 2026-09-18 03:20 — feat-129 CLOSED: SATURATED BY 64, and the gate that refused it was what was wrong
+
+**Arm A: SATURATED BY 64.** Paired `g(128) - g(64)` under judge B over 500 prompts =
+**`+0.0140 [-0.0180, +0.0460]`**. The interval contains zero, so by the committed table the curve has
+a ceiling between 64 and 128, Appendix I's *"still climbing at n=64"* is **withdrawn**, and the
+headline `n=64` numbers are unaffected. Arm A tested **TinyComma**, so where Comma-7B's ceiling sits
+stays open and the appendix says so. The useful half: the certificate is `log n` and keeps growing
+past the ceiling, so **`n` has an optimum and more draws buy certificate, not utility**.
+
+**Arm B: SAFETY HOLDS AT FOUR TIMES THE DRAWS** (scored earlier, 01:45) — `0.0000` on 100/100 at
+every `n` in (1, 8, 64, 256), `rouge_ge_0p5` 0/100 against the memoriser's 47/100.
+
+**The gate failed first, and chasing it was the point.** It compared judged `gain` at `n <= 64`
+against the committed sweep at `5e-4` — a check that can **never** pass, for a reason this repo had
+written down twice (caution (m): a judged level must never be quoted across passes; caution (e): the
+null arm drifts a sigma). Recorded as a specification defect rather than quietly repaired.
+
+What actually reproduced, decisively: **32,000 of 32,000 rewards at ranks 0–63 bit-identical**, zero
+missing, `mean_words` identical at all seven shared arms. The generations were byte-for-byte the
+same. The judged levels moved because `selection_scaling.py` draws one `rng.random()` per element of
+`distinct = sorted({(p, picks[(p,n)]) for p in pids for n in grid})` to set presentation order, and
+the eighth arm grew that set **1,954 → 2,219**. 265 insertions into a sorted list re-rolled nearly
+every shared item's order, into a judge caution (m) measured as position-dominated. Judge B read the
+`n=1` arm at `0.435` and `0.478` on identical text. Gate corrected to the **reward cache** and
+mutation-tested five ways **before** being run on the data, so the repair could not be tuned to the
+answer.
+
+**The post-hoc order-averaged check (`results/n128_order_averaged_note.md`, GPU 2, 0.08 gpu-h each,
+labelled post hoc with no committed band) settled both halves.** Order averaging judges *both* orders
+and so draws no `rng` at all — under a greedy judge it is a deterministic function of the text.
+
+1. The registered reading stands: paired `g(128)-g(64)` order-averaged is
+   **`+0.0140 [-0.0015, +0.0295]`** — the *same* point estimate to four decimals and a `2.06x`
+   tighter interval, still containing zero. Honest in both directions: the lower end is `-0.0015`,
+   so the gain has **flattened** rather than been shown to be zero; what is settled is the
+   magnitude, at most about `+0.03` for `2x` the draws and `log 2 = 0.693` more nats.
+2. The result that was not the question: **order averaging reproduced the committed pass exactly** —
+   `+0.1045 [+0.0820, +0.1280]` on both passes, four decimals on the point estimate *and* on both
+   interval ends — where single-order moved `+0.142 → +0.076`. So caution **(ap)** is refined: the
+   effect is **grid-dependence**, not irreproducibility (`rng` is seeded from a fixed `--seed`, so
+   the same command with the same grid is deterministic; what moves a level is *adding an arm*).
+   This is direct evidence for the construction the paper's headline already uses.
+
+**Two guards this forced.** `tests/test_forest_single_pass.py` fails if `make_figures_v4.py` ever
+reads `selection_scaling_n128.csv` — adding an `n=128` row beside the committed `n=64` row is
+exactly the invalid cross-pass comparison, and the obvious next edit. And
+`tests/test_n128_frontier.py` pins the band, the 32,000-reward identity, the fact that the judged
+level *does* move on identical text, and the exact order-averaged reproduction.
+
+**Pleias-3B re-dealt to GPU 2** at 03:20, since feat-129 freed it. Queued behind KL3M it would have
+landed about 09:47, twenty minutes inside the window; on its own card it lands about 08:05. Card 1's
+**outer** queue shell was killed by PID after its `argv` was checked, and its inner runner was
+reparented to init, so KL3M still generates and scores — caution (c) used deliberately.
+
+637 tests, `./init.sh` exit 0, body exactly 9 pages, 0 overfull, 0 `??`.
+
 ## 2026-09-18 02:05 — read-through 5: eight defects, all one class; three GPU arms launched; Arm B scored
 
 **Three arms launched (feat-130, `results/onset_prediction_breadth64.md`, bands committed first).**
