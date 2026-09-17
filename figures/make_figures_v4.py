@@ -8,7 +8,7 @@ no GPU, no logs, the analysis scripts own the numbers and this script only draws
 
 Usage: .venv/bin/python figures/make_figures_v4.py [--copy-to /path/to/manuscript/figures]
 """
-import argparse, csv, os, sys
+import argparse, csv, math, os, sys
 from pathlib import Path
 
 import matplotlib
@@ -610,6 +610,147 @@ def imitation_cost():
     _save(fig, "imitation_cost")
 
 
+def selection_forest_rows():
+    """The rows of Figure~\\ref{fig:breadth}, read out of results/*.csv and nothing else.
+
+    Split out of the drawing code on purpose. When a band moves from prose into a figure, the
+    guard that used to grep the prose for it goes quiet and the number becomes unchecked -- which
+    is caution (ag) with the deletion done by a figure instead of a page trim. Tests assert
+    against THIS, so a band is guarded wherever the paper chooses to print it.
+
+    Returns (items, groups): items are (label, (gain, lo, hi), cost_nats, certified, gate_passed),
+    groups are (index the group starts at, group heading).
+    """
+    def rows_of(name):
+        return list(csv.DictReader(open(RESULTS / name)))
+
+    def band(r, g="gain"):
+        return float(r[g]), float(r[f"{g}_lo95"]), float(r[f"{g}_hi95"])
+
+    JB = "Phi-3.5-mini-instruct"
+    breadth = {r["anchor"]: r for r in rows_of("selection_breadth.csv") if JB in r["judge"]}
+    scal64 = next(r for r in rows_of("selection_scaling.csv")
+                  if JB in r["judge"] and int(float(r["n"])) == 64)
+
+    def dom(name, tag=""):
+        rs = [r for r in rows_of(name) if JB in r["judge"]]
+        mx = max(int(float(r["n"])) for r in rs)
+        return next(r for r in rs if int(float(r["n"])) == mx)
+
+    def verif(name, arm, n):
+        return next(r for r in rows_of(name)
+                    if r["arm"].startswith(arm) and int(float(r["n"])) == n)
+
+    # (label, (gain, lo, hi), cost in nats, certified?, entry gate passed)
+    items, groups = [], []
+
+    def add(label, r, cost, certified=True, gate=True, g="gain"):
+        items.append((label, band(r, g), cost, certified, gate))
+
+    groups.append((len(items), "six anchors, 500 in-house prompts, judge B"))
+    for a in ("Pleias-1.2B", "KL3M-1.7B", "Pleias-3B", "Comma-7B (1T tokens)",
+              "TinyComma-1.8B (audited)", "Comma-7B"):
+        r = breadth[a]
+        add(f"{a}, $n=8$", r, math.log(int(float(r["n"]))), gate=r["entry_gate"] == "PASS")
+    add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64))
+
+    groups.append((len(items), "other workloads, judge B, $n = 8$"))
+    add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca.csv"), math.log(8))
+    add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b.csv"), math.log(8))
+    add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench.csv"), math.log(8))
+
+    groups.append((len(items), "exact match, no judge at all, Comma-7B, 500 problems"))
+    V, T = "selection_verifiable_comma7b.csv", "selection_verifiable_tqa_comma7b.csv"
+    add("GSM8K, majority vote, $n=32$", verif(V, "majority", 32), math.log(32))
+    add("GSM8K, pointwise reward, $n=64$", verif(V, "pointwise", 64), math.log(64))
+    add("TriviaQA, majority vote, $n=64$", verif(T, "majority", 64), math.log(64))
+    add("TriviaQA, pointwise reward, $n=16$", verif(T, "pointwise", 16), math.log(16))
+
+    # The comparator. Its gain is a difference of two levels in one judging pass, so it has no
+    # bootstrap interval on record; drawn as a point with no bar and said so in the caption.
+    groups.append((len(items), "what the metered decoder buys, same judge"))
+    js = {r["k"]: r for r in rows_of("judge_separation_v6_judge2.csv") if JB in r["judge"]}
+    anchor_u = float(js["0.0"]["utility"]) if "0.0" in js else 0.4505
+    met = float(js["10.0"]["utility"]) - anchor_u
+    items.append(("metered decoder, $k=10$", (met, None, None), 171.28, False, True))
+    return items, groups
+
+
+def selection_breadth_forest():
+    """Every judged and exact-match gain selection anchoring has been measured at, with its 95%
+    interval and the certificate that bought it, against the metered decoder's best arm.
+
+    This replaces a paragraph. Fifteen effect estimates were being carried as prose, which is a
+    figure's job; read as a forest plot the shape of the evidence is immediate -- positive nearly
+    everywhere for 2 to 4 nats, against 171.3 for the comparator -- and so are the two places it
+    fails, both of which are identifiable rather than mysterious.
+    """
+    items, groups = selection_forest_rows()
+
+    # A group header gets its OWN line. Sharing a line with the row above it is caution (ad) in
+    # miniature: the first draft printed three headers straight through three row labels.
+    starts = dict(groups)
+    slots, y = [], 0.0
+    for i in range(len(items)):
+        if i in starts:
+            y -= 1.0
+            slots.append(("head", y, starts[i]))
+            y -= 0.18
+        y -= 1.0
+        slots.append(("row", y, i))
+    top, bot = -0.2, y - 0.8
+
+    # DRAW AT THE WIDTH IT WILL PRINT AT. The label gutters live outside the axes, and
+    # bbox_inches="tight" expands the canvas to fit them: at figsize 6.9 the saved PDF came out
+    # 9.09in wide, so placing it at ICLR's 5.984in \textwidth shrank everything by 0.658 and 7pt
+    # labels printed at 5.0pt -- caution (aj) again, and neither arithmetic on figsize nor the
+    # advance-width ratio caught it (the ratio compares DejaVu Sans against Times and overstates
+    # by the font-width difference). Reserve the gutters INSIDE a 6.0in canvas instead, so the
+    # shrink is ~1 and a drawn point is a printed point. Measure the SAVED file, never figsize.
+    fig, ax = plt.subplots(figsize=(6.0, 2.62))
+    fig.subplots_adjust(left=0.345, right=0.875, bottom=0.145, top=0.985)
+    # x in AXES fraction, y in data: the label gutters sit outside the data area by construction,
+    # so no interval can ever print through a row label (the first draft's MT-Bench and TriviaQA
+    # bars both did, reaching -0.0875 and -0.068 into a column anchored at -0.052).
+    gut = ax.get_yaxis_transform()
+    for kind, y, payload in slots:
+        if kind == "head":
+            ax.axhline(y + 0.62, color="#cccccc", lw=0.6, zorder=0)
+            ax.text(-0.02, y, payload, ha="right", va="center", fontsize=6.6,
+                    style="italic", color="#555555", transform=gut)
+            continue
+        label, (g, lo, hi), cost, certified, gate = items[payload]
+        neg = hi is not None and hi < 0
+        col = "#b02318" if neg else ("#1f4e79" if certified else "#6b6b6b")
+        if lo is not None:
+            ax.plot([lo, hi], [y, y], color=col, lw=1.3, solid_capstyle="butt", zorder=2)
+            ax.plot([lo, lo, None, hi, hi], [y - .17, y + .17, y, y - .17, y + .17],
+                    color=col, lw=1.0, zorder=2)
+        ax.plot([g], [y], marker="o", ms=4.4, color=col if gate else "white",
+                mec=col, mew=1.2, zorder=3)
+        ax.text(-0.02, y, label, ha="right", va="center", fontsize=6.9, transform=gut)
+        ax.text(1.145, y, f"{cost:.2f}" if certified else f"{cost:.1f} spent",
+                ha="right", va="center", fontsize=6.9, transform=gut,
+                color=col if certified else "#b02318")
+
+    ax.axvline(0, color="black", lw=0.8, ls=(0, (4, 3)), zorder=1)
+    ax.text(1.145, top - 0.5, "certificate, nats", ha="right", va="center", fontsize=6.6,
+            style="italic", color="#555555", transform=gut)
+
+    ax.set_xlim(-0.098, 0.288)
+    ax.set_ylim(bot + 0.25, top)
+    ax.set_yticks([])
+    ax.set_xlabel("gain over the same arm's own anchor-alone control, 95% CI", fontsize=7.6)
+    ax.tick_params(axis="x", labelsize=6.9)
+    ax.set_xticks([-0.05, 0, 0.05, 0.1, 0.15, 0.2, 0.25])
+    for side in ("left", "right", "top"):
+        ax.spines[side].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.grid(axis="x", alpha=0.18, lw=0.5)
+    ax.set_axisbelow(True)
+    _save(fig, "selection_breadth_forest")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
@@ -619,8 +760,8 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               context_intervention, selection_frontier, units_law, order_no_collapse,
-               imitation_cost)
+               context_intervention, selection_frontier, selection_breadth_forest,
+               units_law, order_no_collapse, imitation_cost)
     for fn in figures:
         try:
             fn()

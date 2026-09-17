@@ -91,22 +91,23 @@ def test_extraction_is_zero_at_every_n_in_the_table():
     assert f"${float(rows['-1']['nv_recall_max']):.4f}$" in body
 
 
-def test_the_n_sweep_rows_in_the_table_round_from_selection_scaling_csv():
-    """Table 1 reports GAINS over each arm's own control, not levels: the judge-consistency arm
-    showed an absolute level is largely a statement about slot order. Checked mechanically against
-    the CSV, not by eye (caution (j))."""
+def test_the_n_sweep_arms_round_from_selection_scaling_csv():
+    """These were Table 1 rows until 2026-09-17, when four of its five rows became rows of the
+    forest figure and the table came out. They report GAINS over each arm's own control, never
+    levels: the judge-consistency arm showed an absolute level is largely slot order. Checked
+    mechanically against the CSV wherever the paper prints them (caution (j))."""
     import csv as _csv
-    from tests.manuscript import tex as _tex
+    from tests.manuscript import carries_band, body as _body
     rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
-    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read()
-    want = [("Phi-3.5-mini-instruct", 8, "judge B"), ("Phi-3.5-mini-instruct", 64, "judge B"),
-            ("Meta-Llama-3.1-8B-Instruct", 64, "judge C")]
-    for judge, n, label in want:
+    want = [("Phi-3.5-mini-instruct", 8), ("Phi-3.5-mini-instruct", 64),
+            ("Meta-Llama-3.1-8B-Instruct", 64)]
+    for judge, n in want:
         r = next(x for x in rows if judge in x["judge"] and int(float(x["n"])) == n)
-        cell = ("pointwise reward            & {} & ${}$ & ${:.3f}$ & ${:+.3f}$ & "
-                "$[{:+.3f}, {:+.3f}]$").format(label, n, float(r["kl_nats"]), float(r["gain"]),
-                                               float(r["gain_lo95"]), float(r["gain_hi95"]))
-        assert cell in body, cell
+        assert carries_band(float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"]),
+                            "experiments.tex"), (judge, n, r["gain"])
+    # the measured KL of the headline arm is stated, and is NOT the certificate (log 64 = 4.159)
+    r64 = next(x for x in rows if "Phi-3.5" in x["judge"] and int(float(x["n"])) == 64)
+    assert f"${float(r64['kl_nats']):.3f}$ nats" in _body("experiments.tex"), r64["kl_nats"]
 
 
 def test_no_absolute_judged_level_is_quoted_as_a_comparison():
@@ -356,23 +357,40 @@ def test_the_cross_pass_floor_has_both_measurements():
     assert "cross-pass floor" in apx
 
 
-def test_table_1_does_not_call_a_measured_divergence_a_budget():
-    """Every value in Table 1's cost column is `kl_nats` from selection_scaling.csv -- a REALISED
-    divergence -- and the metered row's $171.3$ is what that decoder spent, not what it published.
-    Its budget at k=10 on a 200-token cap is K = kT_max = 2000, and the distance between 2000 and
-    171.3 is the paper's own argument: Section 2 quotes e^{2000} against e^{171.3} as the tightest
-    factor the accounting implies against the one the spend implies.
+def test_the_cost_column_never_calls_a_measured_divergence_a_budget():
+    """The paper's headline cost column must not present a REALISED divergence as a budget.
 
-    Until 2026-09-17 the column was headed "budget, nats", which asserted the opposite on the
-    paper's headline table -- flattering the baseline by 12x and understating selection's own
-    certificate, log 64 = 4.16, as 3.175. Found in the third read-through; nothing else sees it,
-    because the CELLS were already checked against the CSV and only the header was wrong."""
-    import csv as _csv
-    from tests.manuscript import tex as _tex
-    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read()
-    header = next(ln for ln in body.splitlines() if ln.startswith("scorer & scored by"))
-    assert "budget" not in header.lower(), (header, "a measured KL is not a budget")
-    assert "KL" in header, (header, "the column has to name what it holds")
-    # and the values under it really are the CSV's measured KL, so the header is about them
-    kl = {float(r["kl_nats"]) for r in _csv.DictReader(open("results/selection_scaling.csv"))}
-    assert 3.175 in {round(v, 3) for v in kl} and 1.204 in {round(v, 3) for v in kl}
+    Until 2026-09-17 Table 1's column was headed "budget, nats" while every value in it was
+    `kl_nats` from selection_scaling.csv -- flattering the baseline 12x and understating
+    selection's own certificate, log 64 = 4.159, as 3.175. Found in the third read-through;
+    nothing else saw it, because the CELLS were already checked against the CSV and only the
+    header was wrong.
+
+    Table 1 was then removed -- four of its five rows had become rows of the forest figure -- and
+    the cost column moved into that figure, so this guard moved with it rather than retiring. A
+    guard whose subject moves to another surface and is not followed is a guard that passes by
+    never running (caution (aj)). The figure draws two KINDS of cost and must keep them apart:
+    every selection row is the certificate log n, exact by construction, and the metered row is
+    what that decoder SPENT, against a budget of K = k*T_max = 2000 it never published.
+    """
+    import math as _math
+    from tests.manuscript import _forest, body as _body
+    rows = _forest()
+    certified = [r for r in rows if r[3]]
+    assert len(certified) >= 12, len(certified)
+    for label, _band, cost, _c, _g in certified:
+        n = round(_math.exp(cost))
+        assert abs(cost - _math.log(n)) < 1e-9, (label, cost, n)   # exactly log of an integer
+        assert n & (n - 1) == 0 and 1 <= n <= 1024, (label, n)     # and of a power of two
+        if "$n=" in label:                                         # where the row names n, it agrees
+            assert int(label.split("$n=")[1].split("$")[0]) == n, (label, n)
+    spent = [r for r in rows if not r[3]]
+    assert len(spent) == 1 and "metered" in spent[0][0], spent
+    assert abs(spent[0][2] - 171.28) < 5e-3, spent[0]
+
+    txt = _body("experiments.tex", "selection.tex", "iclr_intro.tex")
+    for bad in ("budget of $171.3$", "budget, nats", "$171.3$-nat budget"):
+        assert bad not in txt, bad
+    # the arm's measured KL and its certificate are both stated, and distinguished
+    assert "$3.175$ nats" in txt and "$4.159$" in txt, \
+        "the headline arm's measured KL and its certificate must both be named"

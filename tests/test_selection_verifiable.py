@@ -126,15 +126,20 @@ def test_the_scored_arm_agrees_with_the_manuscript():
     assert "GSM8K" in body, "the judge-free arm is scored but Section 6 does not report it"
     mv = {int(r["n"]): r for r in rows if r["arm"].startswith("majority")}
     pw = {int(r["n"]): r for r in rows if r["arm"].startswith("pointwise")}
-    # the three numbers Section 6 quotes, each rounded from the CSV once (caution (j))
+    # The two accuracy LEVELS stay in the prose (the figure plots gains, not levels); the two
+    # bands moved into Figure 1's forest plot on 2026-09-17 and are checked wherever the paper
+    # prints them. Every one still rounds from the CSV exactly once, caution (j).
+    from tests.manuscript import carries_band
     assert f"${float(mv[1]['acc']):.3f}$" in body, mv[1]["acc"]
     best_n = max(mv, key=lambda n: float(mv[n]["acc"]))
     assert f"${float(mv[best_n]['acc']):.3f}$" in body, mv[best_n]["acc"]
     g = mv[best_n]
-    assert f"$+{float(g['gain']):.3f}$ $[+{float(g['gain_lo95']):.3f}, " \
-           f"+{float(g['gain_hi95']):.3f}]$" in body, g
+    assert carries_band(float(g["gain"]), float(g["gain_lo95"]), float(g["gain_hi95"]),
+                        "experiments.tex"), g
     r64 = pw[64]
-    assert f"$+{float(r64['gain']):.3f}$" in body, r64["gain"]
+    assert carries_band(float(r64["gain"]), float(r64["gain_lo95"]), float(r64["gain_hi95"]),
+                        "experiments.tex"), r64
+    assert "selection_breadth_forest" in body, "the figure carrying these bands is not included"
     # and the paper must not present majority vote as the registered scorer
     assert "pointwise" in body or "reward" in body
 
@@ -189,10 +194,15 @@ def test_the_knowledge_task_arm_agrees_with_the_manuscript():
 
     body = " ".join(open(tex("sections/experiments.tex")).read().split())
     assert "TriviaQA" in body, "the knowledge-task arm is scored but Section 6 does not report it"
-    assert f"$+{float(top['gain']):.3f}$ $[+{float(top['gain_lo95']):.3f}, " \
-           f"+{float(top['gain_hi95']):.3f}]$ at $n={top['n']}$" in body, top
-    assert f"${float(worst['gain']):.3f}$ $[{float(worst['gain_lo95']):.3f}, " \
-           f"{float(worst['gain_hi95']):.3f}]$ at $n={worst['n']}$" in body, worst
+    from tests.manuscript import carries_band, _forest
+    assert carries_band(float(top["gain"]), float(top["gain_lo95"]), float(top["gain_hi95"]),
+                        "experiments.tex"), top
+    assert carries_band(float(worst["gain"]), float(worst["gain_lo95"]), float(worst["gain_hi95"]),
+                        "experiments.tex"), worst
+    # the two bands carry their n, which used to be in the sentence and is now the row label
+    labels = {lbl for lbl, *_ in _forest()}
+    for r, rule in ((top, "majority vote"), (worst, "pointwise reward")):
+        assert any(f"TriviaQA, {rule}, $n={r['n']}$" == l for l in labels), (rule, r["n"], labels)
 
     # the ratio between the two tasks, quoted as the support ceiling, is not eyeballed
     gsm = list(csv.DictReader(open("results/selection_verifiable_comma7b.csv")))
