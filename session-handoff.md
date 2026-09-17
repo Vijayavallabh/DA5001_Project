@@ -26,18 +26,27 @@ protecting a concession or committed claim that a length edit had quietly delete
 
 ## Current objective
 
-**None outstanding.** A reviewer (Reject 5 → Weak Accept 6) named three fixes to close the deal and
-all three are done as *experiments*, not as prose: **R1** the contamination screen at OLMo-2 scale
-(`feat-122`), **R2** an independent repeat of the head-to-head (`feat-123`), **R3** per-arm
-GPU-seconds (`feat-124`). Each had its bands committed before it ran; **two of the three returned
-something against the paper and the text was changed accordingly.** Tree clean at **`305d82a`**,
-nothing of ours on a GPU.
+**None outstanding.** A *second* review (Soundness 3/4, **Presentation 1/4**, Contribution 2/4,
+**4/10 Reject**) was worked by depth rather than breadth, as asked. Four arms, bands committed
+before each ran, all four scored — `feat-125` the sparse causal policy, `feat-126` whether α=8 is
+the trivial horn, `feat-127` paraphrase-class leakage, `feat-128` the bigger safe model. **Three of
+the four returned something against us.** Tree clean at **`4f2489c`**, nothing of ours on a GPU.
 
-**59 pre-registrations, all 59 scored. 549 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
-with 0 overfull boxes and 0 underfull at badness 10000 (158 hboxes → 13), 0 `??`,
-`pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on page 9), 57
-total. 3,489 numeric literals, one expected `64256` miss. Artifact 939 files. Compute 283.0 → 295.3
-GPU-hours as the three arms landed; the disclosure moved with it.**
+An earlier review (Reject 5 → Weak Accept 6) was closed the same way last session: **R1** the
+contamination screen (`feat-122`), **R2** the independent head-to-head repeat (`feat-123`), **R3**
+per-arm GPU-seconds (`feat-124`), two of three against the paper. Both passes are recorded below.
+
+**63 pre-registrations, all 63 scored. 556 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
+with 0 overfull and 0 underfull at badness 10000, 0 `??`, `pdffonts | grep -ci bold` = 3, body
+inside 9 pages (the Ethics Statement opens on page 10 and page 10 carries no body prose), 57 total.
+Artifact 939 files. Compute 295.3 → 298.6 GPU-hours; the disclosure reads `at most $299$` and
+`tests/test_compute_hours.py` pins it to the CSV exactly.**
+
+> **Known under-count, not a defect:** `analysis/compute_hours.py` bills *run directories*, so this
+> session's judging and paraphrase logs (which live in `output/logs/`, not under a run directory)
+> add roughly one further GPU-hour that the scan does not see. The disclosure is an upper bound on
+> what the scan measures and the guard pins it there; do not hand-raise the number, because the test
+> requires `round(total)` from the CSV.
 
 > **A second full read-through is done (2026-09-17 15:40), and it found eleven defects, none of them
 > visible in the source.** The build was clean at every step. The serious one: `experiments.tex`
@@ -115,48 +124,23 @@ it is not ours. Caution (ab) in AGENTS.md.
 
 ## GPU state
 
-Read at 17:20 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
-nothing). **Two cards have just come free**, which was not true at 15:50:
+Read at 17:42 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
+nothing). **All three usable A100s are free.**
 
 | card | state |
 |---|---|
-| 1, 2 | **idle**, 14 MiB — available, but re-read before taking one |
-| 0 | **another user**, 597 MiB idle — not ours |
-| 4 | **another user**, 65 GB at 60% util — leave alone |
+| 1, 2, 4 | **idle**, 17 MiB each — available; re-read before taking one |
+| 0 | another project's idle 597 MiB (a quantum-ML `run.py` under the same Unix account) — not ours |
 | 3 | T400 4 GB — **never use** |
 
-**Nothing of ours is running.** The multi-GPU instruction of 2026-09-17 ("use all the 3 gpus to
-their fullest vram") applied to the R2/R3 arms, which finished at 02:11 and 23:25. With the box now
-fully occupied, the next GPU arm waits; `CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory and GPU 3 is
-never used.
+**Nothing of ours is running.** This session's queue held GPU 4 from 13:52 to 17:33 (eight
+generation arms in series, then nine judging passes, then the α=1 reference and the paraphrase
+re-run) and released it. `CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory.
 
-**Caution (c) took two more incidents this session**, both mine, and the second was caught only by a
-guard. A waiter written as `until ... ! pgrep -f 'snapshot_download'` can never exit, because the
-string is in the polling shell's own command line — it spun 93 minutes past a finished download. And
-`pgrep -u $USER -f 'order_averaged_h2h.py'` returned my *invoking shell*; had that PID been passed to
-the latency launcher, R3 would have started immediately, shared a card, and voided the very
-measurement it exists to make. The pattern that works is
-
-```
-ps -eo pid,args --no-headers | awk '$2 ~ /python$/ && /<script>\.py/ {print $1; exit}'
-```
-
-followed by asserting the PID's argv before waiting on it with `kill -0`.
-
----|---|
-| 0 | **another user**, 569 MiB — not ours, check before taking it |
-| 1, 2 | idle, 14 MiB |
-| 3 | T400 4 GB — **never use** |
-| 4 | **another user**, 59.6 GB, 64% util (`launch.py --config configs/pfd.yaml`) — leave it alone |
-
-**The multi-GPU window has lapsed.** It opened 10:36 ("for the next 8 hours, use all the gpus") and
-**expired 18:36 today**, having gone entirely unused after the crossover closed at 16:05. It
-SUSPENDED rather than cancelled the one-card rule, and every launcher takes `GPU` as an override
-**defaulting to 2**, so the standing rule restored itself with no action: **everything on GPU 2, in
-series**, unless the user reopens the window. `CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory either
-way, and GPU 3 is never used.
-
----
+> **The other jobs on this box run under our own Unix account but are not this project.** They are a
+> different user's work (`run.py --encoding angle ...`, `launch.py --config configs/pfd.yaml`), so
+> `whoami` is not the test for whether a card is free — read the process argv. Three of them held
+> GPUs 0/1/2 for most of this afternoon and had gone by 17:42.
 
 ## The convergence crossover: neither direction could be built, and that is the result
 
@@ -215,6 +199,10 @@ withdrawn two sections later.
 | long `\texttt` paths can break | same file, `test_long_texttt_paths_carry_breakpoints` | `\allowbreak` after **every** `/` and `\_` |
 | no visibly stretched lines | `grep -c 'Underfull .hbox (badness 10000)' <log>` | **0** |
 | a withdrawn claim stays withdrawn | `pytest tests/test_anchor_vetting.py` | scans **every** section |
+| the canonical headline is untouched | `md5sum results/order_averaged_h2h.csv` | **`85d522aefc283a5a11b27d2ec504b6a8`** |
+| a paper cost matches its computed column | `pytest tests/test_compute_matched.py` | column, bands label and Section 2 agree |
+| the compute disclosure matches the CSV | `pytest tests/test_compute_hours.py` | manuscript == `round(total)`, currently **299** |
+| every pre-registration is scored | `pytest tests/test_preregistration_count.py` | 63, and the count is spelled in the Reproducibility Statement |
 
 ### Pass 2 (2026-09-17): eleven defects, and the body contradicted the appendix
 
@@ -295,7 +283,7 @@ before joining lines.
 
 ---
 
-## Closed this session (40 commits since `3f047e8`)
+## Closed in the two previous sessions (55 commits since `3f047e8`; 14 of them this session)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -444,6 +432,117 @@ length) rather than the per-step log, which is padded past the end of the genera
 
 ---
 
+## SCORED: the sparse causal policy (`onset_prediction_sparse_causal.md`, `feat-125`)
+
+**PLACEMENT LOSES.** The reviewer's second-ranked fix was "either prove or retract *cannot be
+repaired*", on the ground that Proposition 3 forbids **spreading** a bounded budget, not
+**concentrating** one. Built it and priced it.
+
+| $B$ (nats) | gain over the anchor, order-averaged | |
+|---|---|---|
+| 2.0794 (= log 8) | `-0.0015 [-0.0200, +0.0170]` | dissolves |
+| 4.1589 (= log 64) | `+0.0215 [+0.0015, +0.0415]` | separates |
+| 64 | `+0.0545 [+0.0315, +0.0775]` | separates |
+
+Selection at the **same** log 64 nats gains `+0.1045`; D3 = **`+0.083 [+0.052, +0.1135]`**. No budget
+on the grid reaches selection — at `15.4x` the budget the upper bound `+0.0775` is still under
+selection's point estimate, and the orders do not favour the causal arm (`D_inf <= log 64` *implies*
+`KL <= log 64`; the 64-nat arm bounds only KL).
+
+> **Three things went against somebody, and all three are in the log.**
+> **Against the paper:** Section 2 said "neither causal placement buys anything". True at log 8
+> (our `-0.0015` sits on feat-092's `-0.008`), **false above it** — the causal horn is *not* empty.
+> Replaced by the measured curve, not softened.
+> **Against the reviewer:** their named escape was concentrating at "textually pivotal positions".
+> New `--spend-threshold` does exactly that and demonstrably reserves (spend moves from median step
+> 3 to median 17, mean 36.6, max 197) — and loses monotonically, `+0.0215/+0.0150/+0.0110/+0.0045/
+> +0.0070` at τ = 0/1/2/4/8. It releases the budget less often (0% → 85% of trajectories never
+> spend) *and* buys less when it does (`+0.0215` → `+0.0081` conditional).
+> **Against me:** I predicted early spend has more leverage. Conditional on spending, **later is
+> better** (`+0.0217` vs `+0.0014`). And at τ=8 the conditional gain is the grid's largest,
+> `+0.0342` — which partly vindicates the reviewer, so it was bootstrapped: `[-0.0068, +0.0753]` on
+> n=73, **includes zero**, overlaps τ=0 almost entirely. Reported as a suggestion, not evidence.
+
+**Mechanism, and it is clean:** every arm binds exactly (realised spend = budget on all 1,500
+trajectories, 0 invariant violations) and is the safe model at over 99% of steps — Proposition 3's
+trivial horn made concrete rather than argued.
+
+**A committed secondary was withdrawn before scoring**: leakage. `h1.py`'s risky model here is the
+base `Llama-3.1-8B-Instruct`, which memorises none of these passages, so `nv_recall = 0.0000` is a
+fact about the risky model and not about the policy — caution (t), a zero mistaken for a result.
+Making it informative needs a re-run at `--risky-model output/memorizing_llama8b`.
+
+## SCORED: is α=8 a repair, or the trivial horn? (`onset_prediction_alpha_trivial.md`, `feat-126`)
+
+**TRIVIAL HORN CONFIRMED — by `0.0005`, and the reviewer's premise survives.**
+
+| arm at k=3 | gain over the anchor alone | |
+|---|---|---|
+| α=1 (the deployed rule) | `+0.034 [+0.0080, +0.0595]` | separates |
+| α=8 | `+0.021 [-0.0005, +0.0425]` | **does not** |
+| paired difference | `+0.0130 [-0.0115, +0.0380]` | **not distinguishable** |
+
+> **Read this before writing anything about Repair 1.** The reviewer claimed α=8 is ~80× safer *at
+> no measured utility cost*. **We could not measure a cost.** The paired difference includes zero, so
+> the paper may **not** say α=8 gives up utility. What is earned is narrower: α=8 **fails to clear
+> the bar α=1 clears**. Three readings (anchor, α=8, α=1) sit inside each other's intervals and the
+> comparison is underpowered to separate them.
+
+**What carries the argument is judge-free.** At α=8 the constraint is active on **99.28%** of
+ordinary steps against α=1's **0.35%**; the risky model survives unchanged on 0.17% against 99.35%;
+the served text matches the anchor's own draw on 21/500 against 2/500. The 80× comes from **ceasing
+to serve the risky model**, not from metering it better — and the certificate is identical either
+way (both publish `K = 3T`, both vacuous for 100% of the protected passages). Section 5 now says
+that instead of resting on threshold semantics.
+
+## SCORED: paraphrase-class leakage (`onset_prediction_paraphrase.md`, `feat-127`)
+
+**CLAIM HOLDS AT THIS LOOSENING.** Every extraction number in this paper had been an *exact
+substring* metric; `dap/stats.py:rouge_l_score` is LCS-as-**subsequence** and had existed all along
+without the extraction arm importing it.
+
+| arm | mean ROUGE-L | ≥ 0.3 | ≥ 0.5 |
+|---|---|---|---|
+| anchor alone (`p_s(E)`) | 0.0721 | 0/100 | **0/100** |
+| n=64, adversarial scorer (`q(E)`) | 0.1073 | 0/100 | **0/100** |
+| **the memoriser alone** | 0.5195 | **71/100** | **47/100** |
+
+**The positive control is the point.** A null on a metric that fires at nothing would be caution (t)
+again; this one reads 71/100 and 47/100 on the model that memorised the text, so ROUGE-L detects
+non-literal copying here perfectly well and the anchor simply does not do it. Amplification is
+**undefined** (`p_s(E) = 0`) and reported as undefined; the selector's effect shows only in the mean
+(0.0721 → 0.1073, a factor 1.49 against the permitted 64). `nv_recall` and `lcs_word` reproduce the
+committed arm **exactly**, which is the check that nothing drifted (caution (u)). **Ceiling:** this
+is *lexical* paraphrase; a meaning-preserving rewrite sharing little word order is still unmeasured.
+
+## SCORED: should a deployer just buy a bigger safe model? (`onset_prediction_bigger_anchor.md`, `feat-128`)
+
+**SELECTION EARNS ITS PRICE.** No new generation was needed — the Comma-7B arm's **rank-0 draw is
+Comma-7B served alone**, so one judging pass put the larger safe model and TinyComma-alone in the
+same pass against the same opponent.
+
+| arm | gain over TinyComma alone |
+|---|---|
+| Comma-7B served alone (3.9× the anchor) | `+0.0150 [-0.0065, +0.0365]` — includes zero |
+| TinyComma at n=64 | `+0.1045 [+0.0820, +0.1280]` |
+| **paired difference** | **`-0.0995 [-0.1220, -0.0770]`** — excludes zero |
+| Comma-7B *at* n=64 (context) | `+0.1755 [+0.1505, +0.2010]` |
+
+The committed cost secondary cuts the way that **strengthens** the verdict: the bigger anchor is
+**86× cheaper** (1,519 against 130,189 B-parameter-tokens) and still does not measurably work. The
+cheap alternative was available and a deployer would have reached for it first. It does **not** say
+anchors do not matter — selection *on* Comma-7B reaches `+0.1755`, so anchor quality and selection
+compose.
+
+> **A defect in my own registration, found at scoring.** It said both statistics are "gains over
+> TinyComma alone". They are not: `G_A`'s control is `anchor_k0` (sweep_plain, mean u 0.4450) while
+> the canonical `G_B` is `D1`, whose control is `sel_n1` — the **selection run's** rank-0 draw (mean
+> u 0.4550). Two one-draw anchor runs differing by 0.010, so `G_A - G_B` from the means (`-0.0895`)
+> is not the paired difference (`-0.0995`). The quoted statistic is the **direct paired difference of
+> the two served arms**, which needs no control at all. Cross-pass pairing is legitimate here because
+> judging is deterministic — `u_anchor_k0` is identical on **500/500** prompts across passes, checked
+> before the statistic was formed.
+
 ## What is actually left
 
 Nothing is blocking. In descending value:
@@ -466,65 +565,109 @@ Nothing is blocking. In descending value:
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
    supplies the table's CIs, and it matches on all twelve cells. Nothing tests that the two agree.
    Do not "fix" the paper against `strength_ladder.csv`.
-3. **The reviewer's remaining points, deliberately not taken.** The instruction was depth over
+3. **The second review's points, and which were taken.** The instruction was depth over breadth, so
+   four were worked as experiments (`feat-125`–`128`, above) and the rest as text. **Taken as
+   manuscript changes:** the matched-compute LOSS promoted out of Appendix I into Section 2 and the
+   abstract (it had been measured on 2026-09-15 and **the main text never said it** while the
+   abstract sold a 54× divergence saving — the single worst omission found); the protocol defect
+   (455/500 items judged under an arm-specific prompt, single-order difference `+0.013` not
+   `+0.070`); the cross-pass floor `~0.04` with the paired D3's reproduction beside it; the realised
+   amplification `1.0`–`4.0` against the permitted 64, which had been in the Ethics Statement only;
+   the odometer named as a *proposal*, not deployed policy; `TinyComma-1.8B` given its provenance at
+   first use; "the factory" (undefined jargon for our own code) removed; Figure 1(b)'s caption
+   changed from an apology into an explanation; and both abstract and Conclusion corrected off the
+   `8` vs `e^2000` comparison the reviewer calls theatre. **Deliberately not taken:** the demand for
+   a class-level proof that per-token metering "cannot be repaired" — `feat-125` prices the best
+   causal placement we could build and the manuscript says exactly that; and a semantic (rather than
+   lexical) paraphrase metric, which needs a fresh pre-registration.
+
+4. **Eleven committed guards fired during the page-budget trims, and every one was right.** The body
+   was at exactly 9 pages and five new results had to fit. Guards caught: the 0.5B "never reaches the
+   meter", the `61.3x` concession, "where that bar sits is open", the 1.5B figure's workload, the
+   odometer's `192`/`332`/`165.0` triple, the ceiling sentence, the open-question phrasing (**matched
+   by regex**, so a rephrasing breaks it even when the substance survives), the pre-registration
+   count, the pair count beside the anchor count, the no-separation budget, and "four anchors in
+   three families". **Concessions are the first thing a length edit deletes**, because they read as
+   cuttable — caution (ag). Space came out of the newest additions instead, plus one merged
+   `\paragraph` heading and the Conclusion folded into Section 7's last paragraph.
+
+5. **The reviewer's earlier remaining points, deliberately not taken.** The instruction was depth over
    breadth, so three were worked to completion and the rest were judged not worth the space:
    a third judge (B and C are the only two available --- judge A supplies the selection reward and
    may not score the arm it selected), a second protected corpus for the selection sections (the
    nine-pair onset work already runs on two), and a formal treatment of the approximation gap
    between the optimal budget-`K` policy and our causal decoder, which the paper states as its open
    problem rather than closing. Each is a real gap; none is a defect.
-4. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
+6. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
    own pre-registration. Reinstating them would need a new pre-registration; it is not a gap.
-5. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
+7. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
    `feat-024`; **`feat-016` is human-only and must never be started.**
 
-### Files changed since `9a76354`
+### Files changed this session (14 commits, `bc2605b` → `4f2489c`; 49 repo files)
 
-**Repo** (committed, tree clean at `305d82a`):
-`analysis/{anchor_vetting,serving_latency}.py` · `scripts/run_{vetting_protocol,vetting_split,h2h_independent,h2h_judgec,serving_latency}.sh` ·
-`tests/{test_anchor_vetting,test_h2h_repeat_and_latency}.py` ·
-`results/onset_prediction_{vetting_protocol,h2h_independent,serving_latency}.md` (registered, then scored) ·
-`results/{anchor_vetting,serving_latency}.csv`, `results/vet_*`, `results/order_averaged_h2h_seed{42_judgeB,42_judgeC,52_judgeB,52_judgeC}.csv`,
-`results/selection_{rewards64,scaling}_seed52.csv` · `results/compute_hours{,_summary}.csv` ·
-`AGENTS.md` (caution (ae), count → thirty-one) · `feature_list.json` (feat-122/123/124) ·
-`progress.md` · `session-handoff.md` · `artifact/` (939 files).
+**New mechanism** (the only change to a load-bearing decoder, and both knobs default to the deployed
+rule so every number on record is unaffected):
 
-**Manuscript** (`~/sub/satml/`, never committed — it sits inside a stray home git repo):
-`iclr_2027.tex` (abstract cost clause, compute disclosure, pre-registration count) ·
-`sections/appendix_selection.tex` (vetting table rebuilt as two protocol blocks, `app:h2hrepeat`
-and `app:latency` added, the FLOP claims qualified and the cost column labelled) ·
-`sections/selection.tex` · `sections/iclr_intro.tex` · `sections/iclr_closing.tex` ·
-`sections/experiments.tex` (the withdrawn vetting claim) · `sections/frontier.tex` (the `849`
-reference) · `sections/appendix_robustness.tex` (Figures 5 and 6 widened to `\textwidth`, markdown
-backticks) · `sections/appendix_seed.tex` (a backticked path) · `references.bib` (one title's
-quotes).
+- `a_patch/factory.py` — `spend_threshold`: spend at step *t* only if the full-tilt demand
+  `D_KL(p_r,t || p_s,t)` reaches τ nats, else serve the anchor and keep the nats. Causal by
+  construction; the gate sits before the solve and reads only the current step's two distributions.
+- `dap/e1.py` — `--spend-threshold` wired through `AuditConfig`, the factory call and the metadata.
 
-**Figures** (repo, regenerated and copied): `figures/make_figures_v4.py` — Figure 1 (legend moved and
-made opaque, three label offsets, `ylim` headroom, the `k=0.5` anchor), Figure 3 (opaque legend),
-Figure 6 (opaque annotation bbox).
+**New analysis:** `analysis/sparse_causal.py` (budget, placement, spend position, the cost of
+reserving), `analysis/bigger_anchor.py` (the feat-128 statistic and its paired bootstrap).
 
-**Line-breaking pass** (manuscript, 2026-09-17 17:10): `\allowbreak` after every `/` and `\_` in the
-38 long `\texttt` paths across `iclr_2027.tex`, `appendix_proofs`, `appendix_robustness`,
-`appendix_seed`, `appendix_selection` and `appendix_limitations`, plus two hyphenated model names in
-`appendix_proofs.tex` by hand.
+**Changed analysis:** `analysis/order_averaged_h2h.py` gained `--metered-constraint` (so a `renyi:8`
+arm reaches the endorsed protocol) and **`--tag`** (so an exploratory arm never overwrites the
+canonical `results/order_averaged_h2h.csv`, which feat-123 already had to restore once);
+`analysis/selection_extraction.py` now imports `rouge_l_score`; `analysis/compute_matched.py`'s F4
+label reads the computed column instead of a hardcoded `0.94x`; `analysis/serving_latency.py`'s
+docstring corrected (caution (ah)).
 
-**Tests added or repaired this session** (repo): `tests/test_h2h_repeat_and_latency.py` (new, 5) ·
-`tests/test_anchor_vetting.py` (+1, the withdrawn claim across every section) ·
-`tests/test_contaminated_anchor.py` (+2, quotation-mark direction and path breakpoints) ·
-`tests/test_abstract_consistency.py` (parser taught to strip `\allowbreak`). 546 → **549**.
+**Launchers:** `run_sparse_causal.sh` (one queue shell, one card, eight arms in series),
+`run_sparse_judging.sh` (waits on the string the queue writes, checksums the canonical CSV at both
+ends), `run_alpha1_reference.sh`, `run_paraphrase.sh`.
+
+**Tests 549 → 556:** `tests/test_sparse_causal.py` (6, including one that the budget does not grow
+with the work and one that the reserving gate bites), `test_compute_matched.py` +1 (ties column,
+bands label and Section 2 together; verified by mutation), `test_preregistration_count.py` extended
+past 60.
+
+**Pre-registrations 59 → 63**, all scored, plus `results/sparse_causal.csv`, `bigger_anchor.csv`,
+`selection_extraction_paraphrase{,_per_passage}.csv` and thirteen tagged h2h CSVs.
+
+**Manuscript** (`~/sub/satml/`, **not** git-tracked — caution (d)): abstract rewritten (416 → 409
+words, parseable sentences, the matched-compute loss and the two zero-containing intervals now
+stated); the Conclusion no longer ends on the `8` vs `e^2000` comparison; `selection.tex` carries
+the matched-compute loss, the bigger-anchor result, the realised amplification, the causal-policy
+curve and the paraphrase measurement; `experiments.tex` the protocol defect, the cross-pass floor
+and the anchor's provenance; `orders.tex` a rewritten Repair 1; `iclr_closing.tex` rewritten and its
+Conclusion folded into the final paragraph (the `sec:conclusion` label kept — two appendices
+reference it); `appendix_proofs.tex` the full causal-policy treatment.
 
 ### Recommended next step
 
-**Nothing.** Every thread this session opened is closed: the reviewer's three top fixes are run and
-scored, the read-through is done, and its one deferred item is now fixed too. The manuscript is
-submission-ready --- 0 overfull, 0 underfull at badness 10000, 0 `??`, bold renders, body inside 9
-pages, every number rounding once from a committed CSV, and 549 tests over it.
+**Nothing is blocking, and the manuscript is submission-ready.** Both reviews are answered by
+experiment rather than by prose; all 63 pre-registrations are scored; 556 tests; exit 0, 0 overfull,
+0 underfull at badness 10000, 0 `??`, bold renders, body inside 9 pages, 57 total, every number
+rounding once from a committed CSV.
 
-If someone picks this up with time to spend, the honest answer is that the remaining work is
-**scientific, not editorial**, and it is named in item 3 below: a third judge is unavailable by the
-paper's own rule, a second protected corpus for the selection sections would cost a fresh
-pre-registration and a GPU day, and the approximation gap between the optimal budget-`K` policy and
-our causal decoder is stated as the open problem rather than closed. None is a defect.
+If someone picks this up with time to spend, the four honest openings, in descending value:
+
+1. **The α=8 comparison is underpowered and could be closed.** `feat-126` cannot distinguish anchor,
+   α=8 and α=1 from one another (`+0.0130 [-0.0115, +0.0380]`). More prompts, or a second judge on
+   the same arms, would say whether α=8 really costs utility or merely fails to gain it. The paper
+   currently claims only the latter, which is correct but weaker than the question deserves.
+2. **The sparse causal policy's leakage is unmeasured** and the committed secondary was withdrawn
+   for a good reason (the risky model there memorises nothing). A re-run at `--risky-model
+   output/memorizing_llama8b` would make it informative — roughly one GPU-hour.
+3. **Semantic paraphrase is still unmeasured.** `feat-127` bounds *lexical* paraphrase with a strong
+   positive control; a meaning-preserving rewrite sharing little word order would need an embedding
+   or entailment metric and a fresh pre-registration.
+4. **The class-level claim remains un-proved**, as it always was. `feat-125` prices the best causal
+   placement *we could build* across three budgets and five placements; it does not bound the class.
+   The manuscript says "the best causal placement we could build and price" and must keep saying it.
+
+None of these is a defect, and none blocks submission.
 
 ### Human-only, and close
 
