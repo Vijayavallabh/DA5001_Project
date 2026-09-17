@@ -157,3 +157,21 @@ def test_the_held_out_prediction_errors_are_the_current_ones_in_the_order_named(
         "the Gutenberg rank correlation is back in the CopyBench paragraph"
     assert "$-0.42$" in txt, "the nine-pair rank correlation is no longer quoted"
     print("held-out errors in the order named:", quoted)
+
+
+def test_the_reallocation_range_brackets_what_the_table_holds():
+    """"optimal offline reallocation ... buys 3 to 13% at k <= 1 and under 1.4% at k=3", in the
+    repairs table and again in the proofs appendix. Two range claims over 24 cells of
+    marginal_price_table.csv, with no guard: adding a pair or a budget silently widens the range
+    the prose brackets. Verified exact on 2026-09-18 (3.07-13.26% and a 1.33% maximum)."""
+    rows = _rows("marginal_price_table.csv")
+    assert rows, "marginal_price_table.csv is empty"
+    low = [(float(r["gain_ratio"]) - 1) * 100 for r in rows if float(r["k"]) <= 1]
+    high = [(float(r["gain_ratio"]) - 1) * 100 for r in rows if float(r["k"]) == 3]
+    assert low and high, (len(low), len(high))
+    # the prose brackets, not point values: the range must sit inside what is claimed
+    assert 3.0 <= min(low) and max(low) <= 13.0 + 0.5, (min(low), max(low))
+    assert max(high) < 1.4, max(high)
+    txt = body("orders.tex", "appendix_proofs.tex")
+    assert "$3$ to $13\\%$ at $k \\le 1$" in txt, "the low-budget range claim has moved"
+    assert "under $1.4\\%$ at $k=3$" in txt, "the k=3 ceiling claim has moved"
