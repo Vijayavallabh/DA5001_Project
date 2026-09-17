@@ -26,6 +26,18 @@ prompts cannot fill a `--batch-size 64` batch, so it measured the padding --- an
 `GRID` that stops at 64. `n_grid()` now extends by doubling and `tests/test_selection_grid.py` pins
 both halves.
 
+## Two things to do AFTER the arms drain
+
+1. **Score them** — `.venv/bin/python analysis/score_n128.py --out results` — then write the
+   verdict into `results/onset_prediction_n256.md`'s `## Scoring log`, update Appendix I's "still
+   climbing at $n=64$" sentence to whatever the reading says, and close `feat-129`.
+2. **Rebuild the artifact.** It was last built 2026-09-17 13:12 and predates this session's
+   scripts (`analysis/score_n128.py`, `analysis/normaliser_growth.py`,
+   `figures/make_figures_v4.py::selection_forest_rows`, and five new test files). Deferred on
+   purpose: rebuilding now would ship a scorer for results that do not exist yet.
+   `bash scripts/build_artifact.sh artifact`. The reproduction commands are already in
+   `README_artifact.md` under **Phase 7**.
+
 ## The third full read-through is DONE.
 
 Pages 1–10 and Figure 1 read on the **rendered page**, plus appendix pages 21, 24, 26, 43, 44, 46.

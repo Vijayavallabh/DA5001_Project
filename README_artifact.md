@@ -1161,3 +1161,44 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1,2 HF_HUB_OFFLINE=1 HF_HUB_CA
 Every per-step analysis calls `dap.stats.strip_pad_steps` before counting: a generation that ends
 before the cap is padded out to `T_max`, and those positions are not decode steps. Counting them
 inflated the binding fraction and deflated the nats-per-token rate.
+
+### Phase 7 (2026-09-17): the ICLR reframe, and the arms past n = 64
+
+The reframe made the paper figure-driven: Section 3's breadth paragraph became a forest plot over
+every arm selection anchoring has been measured at, and the headline table came out because four of
+its five rows had become rows of that figure. Both are rebuilt from `results/` alone.
+
+```bash
+# every figure, including the forest plot, copied into the manuscript tree
+.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures
+
+# Appendix D's normaliser growth series, which had been hand-maintained and went stale at seven
+# pairs while the paper reported nine. Runs the committed ablation over nested prefixes of the
+# manifest, so the nine-pair row must equal collapse_robustness.csv's normaliser block.
+.venv/bin/python analysis/normaliser_growth.py --out results
+
+# the three committed prediction rules, scored on the pairs held out when they were committed.
+# The held-out set is now seven; quoting the five-pair means is what went stale in the manuscript.
+.venv/bin/python analysis/score_predictions.py --out results \
+  --calibrated-on "TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + mem. Comma-7B"
+
+# every numeric literal in the manuscript, against every value in results/**.csv
+SATML_DIR=~/sub/satml .venv/bin/python analysis/audit_numbers.py --results results
+```
+
+**The arms past `n = 64` (feat-129).** Bands committed in `results/onset_prediction_n256.md`
+before either ran. Generation splits across two cards by prompt class, which changes nothing
+measured: `apply_e1_sampling` caps each class independently (`dap/sampling.py`) and
+`build_trajectory_seeds` hashes only the base seeds and the draw index (`dap/stats.py`), so the
+first 64 draws of a 128-draw pool are the committed 64.
+
+```bash
+bash scripts/run_n128_card1.sh 1    # neutral 200 x 128, then extraction to n=256
+bash scripts/run_n128_card2.sh 2    # creative+factual 300 x 128, then the merge and the scoring
+.venv/bin/python analysis/score_n128.py --out results
+```
+
+`score_n128.py` implements the pre-registration's reading rules and refuses to read any `n > 64`
+number unless the `n <= 64` half reproduces `results/selection_scaling.csv`. Note that `--max-n`
+could not form an arm above 64 until `analysis.selection_scaling.n_grid` replaced a filter over a
+hardcoded grid; at `--max-n 64` it returns exactly the tuple every arm on record was formed with.
