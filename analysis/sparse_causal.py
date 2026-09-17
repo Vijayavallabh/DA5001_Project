@@ -54,6 +54,24 @@ def arm_rows(run_dir):
     return out, meta
 
 
+def spend_positions(run_dir, cap=6000):
+    """WHERE the budget goes, which is the whole point of --spend-threshold. An ACTIVE step is one
+    with a partial tilt (0 < bd < 1): the budget was actually spent there. Pad positions carry
+    bd = 0 (point mass on the pad token, caution (s)) and are excluded by that same test, so the
+    padding never enters these statistics."""
+    pos = []
+    for cls in ORDINARY:
+        for path in glob.glob(os.path.join(run_dir, f"trajectories_k*_{cls}.jsonl")):
+            for line in open(path, encoding="utf-8"):
+                for i, st_ in enumerate(json.loads(line).get("per_step_log") or []):
+                    bd = st_.get("bd")
+                    if bd is not None and 1e-6 < float(bd) < 1 - 1e-6:
+                        pos.append(i)
+                if len(pos) > cap:
+                    return pos
+    return pos
+
+
 def summarise(tag, run_dir, judged):
     rows, meta = arm_rows(run_dir)
     if not rows:
@@ -75,9 +93,20 @@ def summarise(tag, run_dir, judged):
         spend_median=round(st.median(spend), 4) if spend else "",
         spend_max=round(max(spend), 4) if spend else "",
         binds=("YES" if spend and K and abs(max(spend) - K) < 1e-3 else "no"),
+        # The price of reserving: with the bar set high, most trajectories never meet a step that
+        # clears it and are served the pure anchor. Their gain is 0 by construction, so this
+        # fraction is what a high tau actually costs and it must be read beside the gain. The test
+        # is "spent under 1% of its budget", not "spent exactly zero" -- at tau=8, 292 of 1500
+        # trajectories spend exactly 0 but 1301 spend under 0.01 nats, and an exact-zero test would
+        # have reported 19% where the truth is 87%.
+        spent_nothing_pct=(round(100 * sum(1 for x in spend if x < 0.01 * K) / len(spend), 1)
+                           if spend and K else ""),
         active_steps_median=st.median(act),
         active_steps_max=max(act),
         decode_steps=steps,
+        spend_pos_median=(round(st.median(pos), 1) if (pos := spend_positions(run_dir)) else ""),
+        spend_pos_mean=(round(st.mean(pos), 1) if pos else ""),
+        spend_pos_max=(max(pos) if pos else ""),
         active_share=round(sum(act) / max(steps, 1), 5),
         forced_share=round(sum(r["forced"] for r in rows) / max(steps, 1), 4),
         pad_share_of_gen_len=round(1 - steps / max(sum(r["length"] for r in rows), 1), 4),
