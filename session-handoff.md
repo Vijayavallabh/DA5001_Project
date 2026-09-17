@@ -44,13 +44,14 @@ words in body text on the same page**.
 **4/10 Reject**) was worked by depth rather than breadth, as asked. Four arms, bands committed
 before each ran, all four scored — `feat-125` the sparse causal policy, `feat-126` whether α=8 is
 the trivial horn, `feat-127` paraphrase-class leakage, `feat-128` the bigger safe model. **Three of
-the four returned something against us.** Tree clean at **`4f2489c`**, nothing of ours on a GPU.
+the four returned something against us.** That state is superseded by the read-through above:
+tree clean at **`12cd853`**, **567 tests**, nothing of ours on a GPU.
 
 An earlier review (Reject 5 → Weak Accept 6) was closed the same way last session: **R1** the
 contamination screen (`feat-122`), **R2** the independent head-to-head repeat (`feat-123`), **R3**
 per-arm GPU-seconds (`feat-124`), two of three against the paper. Both passes are recorded below.
 
-**63 pre-registrations, all 63 scored. 556 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
+**63 pre-registrations, all 63 scored. 567 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
 with 0 overfull and 0 underfull at badness 10000, 0 `??`, `pdffonts | grep -ci bold` = 3, body
 inside 9 pages (the Ethics Statement opens on page 10 and page 10 carries no body prose), 57 total.
 Artifact 939 files. Compute 295.3 → 298.6 GPU-hours; the disclosure reads `at most $299$` and
@@ -661,7 +662,7 @@ reference it); `appendix_proofs.tex` the full causal-policy treatment.
 ### Recommended next step
 
 **Nothing is blocking, and the manuscript is submission-ready.** Both reviews are answered by
-experiment rather than by prose; all 63 pre-registrations are scored; 556 tests; exit 0, 0 overfull,
+experiment rather than by prose; all 63 pre-registrations are scored; 567 tests; exit 0, 0 overfull,
 0 underfull at badness 10000, 0 `??`, bold renders, body inside 9 pages, 57 total, every number
 rounding once from a committed CSV.
 
