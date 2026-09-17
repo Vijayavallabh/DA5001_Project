@@ -138,3 +138,20 @@ def test_every_repo_path_the_manuscript_cites_exists():
     missing = {p: sorted(w) for p, w in cited.items()
                if not os.path.exists(os.path.join(repo, p))}
     assert not missing, f"cited but absent from the repo: {missing}"
+
+
+def test_every_citation_key_resolves_to_a_bib_entry():
+    """An undefined citation renders as [?], not as ??, so the check the project runs after every
+    edit ("0 unresolved references") does not see it -- and the CFP makes a non-existent reference
+    a desk-reject item. 74 keys against 164 entries as of 2026-09-18."""
+    keys = set()
+    for rel in _build_graph():
+        txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
+        for m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]+)\}", txt):
+            keys |= {k.strip() for k in m.group(1).split(",")}
+    assert len(keys) > 50, (len(keys), "the cite extractor matched almost nothing")
+    bib = os.path.join(DIR, "references.bib")
+    assert os.path.exists(bib), bib
+    entries = set(re.findall(r"@\w+\{([^,]+),", open(bib, encoding="utf-8").read()))
+    missing = sorted(keys - entries)
+    assert not missing, f"cited but not in references.bib: {missing}"
