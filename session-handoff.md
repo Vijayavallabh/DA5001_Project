@@ -1,33 +1,28 @@
-# Session handoff — 2026-09-17 14:30 (a second reviewer; two arms IN FLIGHT on GPU 4 against the two claims that most need it)
+# Session handoff — 2026-09-17 17:40 (a second review, worked by depth; four arms scored, nothing of ours running)
 
-## IN FLIGHT — two arms running, bands committed, neither scored
+## All four arms SCORED (2026-09-17 17:40). Nothing of ours is running.
 
-A second, fuller review arrived (Soundness 3/4, **Presentation 1/4**, Contribution 2/4, **4/10
-Reject**). Working its points by depth rather than breadth. Two arms are on GPU 4 now, and **both
-can cost the paper a claim that is currently in the abstract**:
+A second review (Soundness 3/4, **Presentation 1/4**, Contribution 2/4, **4/10 Reject**) was worked
+by depth. Four arms, every band committed before the run; **three of the four returned something
+against us and the text was changed accordingly.**
 
-- **`results/onset_prediction_sparse_causal.md` (feat-125)** — the sparse causal policy Proposition 3
-  *permits* and the paper never built, which the reviewer names as the reason "cannot be repaired"
-  is not a theorem. `--initial-bank` (feat-092, built and never run) gives a sequence budget constant
-  in T; new `--spend-threshold` decides *where* it goes, causally. Grid: B ∈ {log 8, log 64, 64} at
-  τ=0, and τ ∈ {1,2,4,8} at B=log 64. If a causal policy matches selection at matched budget,
-  **"per-token metering cannot be repaired" is withdrawn.**
-- **`results/onset_prediction_alpha_trivial.md` (feat-126)** — is α=8's 80× extraction cut a repair
-  that works, or a walk onto the trivial horn? The reviewer reads Table 3 as evidence FOR Repair 1
-  and is arithmetically right; the paper's threshold answer does not respond to them. Judged utility
-  of α=8 at k=3 against the anchor alone, 500 prompts. If α=8 holds its utility, **"the three repairs
-  fail where it says they must" is false as written.**
+| arm | verdict | the part that went against us |
+|---|---|---|
+| **feat-125** sparse causal policy | **PLACEMENT LOSES** (D3 `+0.083 [+0.052,+0.1135]`) | Section 2's "neither causal placement buys anything" is **false above log 8** — the causal horn is not empty. Replaced by the measured curve. |
+| **feat-126** is α=8 the trivial horn? | **TRIVIAL HORN CONFIRMED**, by `0.0005` | **No utility cost is measurable** (α=1 − α=8 = `+0.013 [-0.0115,+0.0380]`), so the reviewer's premise survives and the paper may not claim a cost. |
+| **feat-127** paraphrase leakage | **CLAIM HOLDS AT THIS LOOSENING** (`0/100` at ROUGE-L ≥ 0.5) | — (the positive control, memoriser `47/100`, is what makes the null informative) |
+| **feat-128** bigger safe model | **SELECTION EARNS ITS PRICE** (`-0.0995 [-0.1220,-0.0770]`) | — (the bigger anchor is `86×` cheaper and still fails, which strengthens it) |
 
-- **`results/onset_prediction_paraphrase.md` (feat-127)** — the paraphrase claim, which the reviewer
-  correctly says no experiment supports. Every extraction number in the paper is an *exact substring*
-  metric; `rouge_l_score` (LCS as a **subsequence**) has existed in `dap/stats.py` all along and the
-  extraction arm never imported it. Measures the anchor's own base rate at a non-literal event —
-  which is exactly the quantity the certificate multiplies. **Queued behind the two above on GPU 4.**
+**The most serious find was not in the review.** `results/onset_prediction_compute_matched.md` scored
+**MATCHED-COMPUTE LOSS** on 2026-09-15 — held to the metered decoder's own cost, selection gains
+`-0.0395 [-0.0720,-0.0065]` *against* it — and the **main text never said so** while the abstract
+sold a 54× divergence saving. It is now in Section 2 and in the abstract.
 
-- **`results/onset_prediction_bigger_anchor.md` (feat-128)** — the reviewer's other "decides
-  practical relevance" evaluation: at selection's price, should a deployer just serve a **bigger safe
-  model**? Needs no generation — the Comma-7B arm's rank-0 draw already *is* Comma-7B served alone,
-  so one judging pass gives it against the same control and opponent. **Queued.**
+**Three defects found in our own numbers**, all now cautions: a hardcoded `0.94x` label in a CSV
+whose computed column says `0.92` **(ag)**; `generation_length_tokens` is the **padded** length while
+caution (ae) said the opposite **(ah)** (the `35.4×` ratio is unaffected — both denominators are
+asserted equal); and **eleven committed guards** fired across the page-budget trims, every one
+protecting a concession or committed claim that a length edit had quietly deleted.
 
 ## Current objective
 

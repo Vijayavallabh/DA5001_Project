@@ -1248,9 +1248,9 @@
         "feat-092",
         "feat-113"
       ],
-      "status": "in-progress",
+      "status": "done",
       "description": "A reviewer's second-ranked fix: Prop 3 forbids SPREADING a bounded budget, not CONCENTRATING one, and the abstract has said 'cannot be repaired' while Section 4 concedes the gap. feat-092 built the front-loaded placement and scored it (PLACEMENT IS IRRELEVANT, THE CAUSAL HORN IS EMPTY) but front-loading is not CHOOSING -- it spends as soon as the constraint binds. New --spend-threshold tau reserves the bounded budget for steps whose own demand D_KL(p_r||p_s) clears tau: causal, reads only the current step. Grid B in {log 8, log 64, 64} at tau=0 and tau in {1,2,4,8} at B=log 64, judged through the endorsed order-averaged instrument. Bands: results/onset_prediction_sparse_causal.md, with two amendments recorded before scoring (the 'never run' premise was false; the leakage secondary is void because the risky model here memorises nothing).",
-      "evidence": "Running on GPU 4 from 13:52. Smoke: tau=50 spends nothing (active=0), tau=0 is the ungated policy. B=log8 and B=log64 both bind exactly (spend median AND max = B on all 1500 trajectories, 0 invariant violations) and are active at 0.97%/0.92% of decode steps -- Prop 3's trivial horn, realised."
+      "evidence": "PLACEMENT LOSES. Budget curve (order-averaged gain over the anchor, 500 prompts): -0.0015 [-0.0200,+0.0170] at log 8, +0.0215 [+0.0015,+0.0415] at log 64, +0.0545 [+0.0315,+0.0775] at 64. Selection at the same log 64: +0.1045. D3 = +0.083 [+0.052,+0.1135]. Crossing budget NONE ON THE GRID -- at 15.4x the budget the upper bound (+0.0775) is still below selection's point estimate, and selection carries the stronger order (D_inf implies KL). Placement gain NEGATIVE: tau 0/1/2/4/8 -> +0.0215/+0.0150/+0.0110/+0.0045/+0.0070, so the reviewer's own 'pivotal positions' escape loses. AGAINST US: Section 2's 'neither causal placement buys anything' is false above log 8; the causal horn is not empty. results/onset_prediction_sparse_causal.md, results/sparse_causal.csv"
     },
     {
       "id": "feat-126",
@@ -1258,9 +1258,9 @@
       "depends_on": [
         "feat-113"
       ],
-      "status": "in-progress",
+      "status": "done",
       "description": "The reviewer reads Table 3 as evidence FOR Repair 1 -- alpha=8 cuts oracle-window recall 0.0965 -> 0.0012 at matched published budget with distinct-3 unmoved -- and is arithmetically right. The paper answers with certificate semantics, which does not respond. The answer is two columns over (risky unchanged 0.08% vs alpha=1's 99.3%) and is UNMEASURED as utility: distinct-3 is a fluency proxy that cannot see capability loss. Regenerates alpha=8 at k=3 on the full 500-prompt ordinary set (the arm on record is 150 at one seed) and judges it against the anchor alone. Bands: results/onset_prediction_alpha_trivial.md.",
-      "evidence": "Queued on GPU 4 behind feat-125."
+      "evidence": "TRIVIAL HORN CONFIRMED, on a knife-edge. alpha=8 at k=3 gains +0.021 [-0.0005,+0.0425] over the anchor alone (includes zero by 0.0005); alpha=1 gains +0.034 [+0.0080,+0.0595] (excludes zero). THE REVIEWER'S PREMISE SURVIVES: the paired difference is +0.0130 [-0.0115,+0.0380], so NO utility cost is measurable and the paper may not claim one. What carries the argument is judge-free: alpha=8's constraint is active on 99.28% of ordinary steps against alpha=1's 0.35%, risky-unchanged 0.17% against 99.35%, output identical to the anchor on 21/500 against 2/500. results/onset_prediction_alpha_trivial.md"
     },
     {
       "id": "feat-127",
@@ -1268,9 +1268,9 @@
       "depends_on": [
         "feat-087"
       ],
-      "status": "in-progress",
+      "status": "done",
       "description": "Section 2 claims paraphrase is 'bounded on the same terms as exact quotation'. The bound is term-identical but multiplies p_s(E), which for a paraphrase event need not be small -- and every extraction number in this paper is an EXACT SUBSTRING metric (nv_recall, lcs_word), so the sentence has no experiment under it. dap/stats.py:rouge_l_score is LCS as a SUBSEQUENCE and has existed all along; selection_extraction.py never imported it. Measures the anchor's own base rate at ROUGE-L >= 0.3 and 0.5 and the realised amplification at n=64. Bands: results/onset_prediction_paraphrase.md.",
-      "evidence": "Metric wired into the extraction arm; run queued. Calibration already in hand from feat-125: on text that reproduces nothing, rouge_l reads mean 0.09-0.10 and max 0.21, so the committed 0.3/0.5 thresholds sit clear of the no-copying baseline."
+      "evidence": "CLAIM HOLDS AT THIS LOOSENING. Anchor base rate at ROUGE-L >= 0.5 is 0/100, and 0/100 at n=64 under the adversarial scorer, so q/p_s is UNDEFINED and reported as undefined. The positive control is what makes the null informative: the memoriser reads 71/100 at >=0.3 and 47/100 at >=0.5 on the same passages and metric. Selector effect visible in the mean only (0.0721 -> 0.1073, a factor 1.49 against the permitted 64). nv_recall and lcs_word reproduce the committed arm exactly. results/onset_prediction_paraphrase.md, results/selection_extraction_paraphrase.csv"
     },
     {
       "id": "feat-128",
@@ -1278,9 +1278,9 @@
       "depends_on": [
         "feat-095"
       ],
-      "status": "in-progress",
+      "status": "done",
       "description": "The reviewer's other 'decides practical relevance' evaluation, and it appears nowhere in the paper. Needs NO new generation: the Comma-7B selection arm's rank-0 draw IS Comma-7B served alone, so one order_averaged_h2h pass puts the larger safe model and TinyComma-alone in the same pass against the same opponent. Statistic is a gain over a shared control, never a level (caution (m)). Bands: results/onset_prediction_bigger_anchor.md.",
-      "evidence": "Queued. Coverage verified: 500 prompts, 64 draws, rewards and opponent all present."
+      "evidence": "SELECTION EARNS ITS PRICE. Comma-7B served alone (3.9x the anchor) gains +0.0150 [-0.0065,+0.0365] -- includes zero -- against TinyComma at n=64's +0.1045; paired difference -0.0995 [-0.1220,-0.0770], excludes zero. The bigger anchor is 86x CHEAPER (1,519 vs 130,189 B-parameter-tokens) and still does not measurably work. Selection ON Comma-7B reaches +0.1755, so anchor quality and selection compose. No new generation. results/onset_prediction_bigger_anchor.md, results/bigger_anchor.csv"
     }
   ]
 }

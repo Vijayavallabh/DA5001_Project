@@ -67,3 +67,54 @@ does **not** capture a genuine rewrite that preserves meaning while sharing litt
 result here therefore bounds *lexical* paraphrase only, and the manuscript must say exactly that
 rather than claiming paraphrase-class safety in general. The honest ceiling on this arm is that it
 converts an unsupported sentence into a supported narrower one.
+
+## Scoring, 2026-09-17 17:35 — **CLAIM HOLDS AT THIS LOOSENING**, with a positive control that makes the null mean something
+
+Ran 17:15–17:33 on GPU 4 at the arm-on-record's own flags (`--split attack_train --limit 100
+--seed 1234 --seed-tokens 20 --batch-size 32`), writing to a distinct `--prefix` so the canonical
+`results/selection_extraction.csv` was untouched.
+
+**The re-run reproduces the committed arm exactly**, which is the check that nothing else moved
+(caution (u): batch size is part of the seed, so a disagreement here would have been a bug to chase
+rather than a result): `nv_recall` $0.0$ and `lcs_word` $1.59 / 1.93 / 1.85$ at $n = 1/8/64$, and the
+memoriser alone at $0.3925$ mean, $0.8154$ max, $78.0\%$ above $0.01$ --- every figure identical.
+
+| arm | mean ROUGE-L | ROUGE-L $\ge 0.3$ | ROUGE-L $\ge 0.5$ |
+|---|---|---|---|
+| anchor alone, $n=1$ ($p_s(E)$) | $0.0721$ | $0/100$ | $\mathbf{0/100}$ |
+| $n=8$, adversarial scorer | $0.1082$ | $0/100$ | $0/100$ |
+| $n=64$, adversarial scorer ($q(E)$) | $0.1073$ | $0/100$ | $\mathbf{0/100}$ |
+| **the memoriser alone** ($k=-1$) | $0.5195$ | $\mathbf{71/100}$ | $\mathbf{47/100}$ |
+
+### Primary: $p_s(E)$ at ROUGE-L $\ge 0.5$ is $0/100$ --- band 1
+
+The committed reading is **CLAIM HOLDS AT THIS LOOSENING**: at a genuinely non-literal event the
+anchor still never lands, so $64$ times it is still nothing, and Section~2's sentence stands with a
+measurement under it instead of an assertion.
+
+**The positive control is what makes that worth saying.** A null on a metric that fires at nothing
+would be caution (t) all over again --- a zero mistaken for a result. It is not: the same metric,
+the same passages, the same threshold, reads $71/100$ at $\ge 0.3$ and $47/100$ at $\ge 0.5$ on the
+model that memorised the text. **ROUGE-L detects non-literal copying here perfectly well; the anchor
+simply does not do it.**
+
+### Committed secondary: the amplification is **undefined**, and reported as undefined
+
+$p_s(E_{0.3}) = p_s(E_{0.5}) = 0$, so $q/p_s$ is undefined at both thresholds --- reported as
+undefined, not as $1$, exactly as registered. What can be quantified is the selector's effect on the
+*mean*: it raises mean ROUGE-L from $0.0721$ to $0.1073$, a factor of $1.49$ against the $64$ the
+certificate permits. So the adversarial selector does measurably find draws closer to the protected
+text; it is nowhere near enough to reach the event.
+
+### What this does not settle, restated after the fact
+
+ROUGE-L is a **lexical** proxy. It captures reordering, insertion and substitution --- which the
+control shows it does, on this corpus, with force --- and it does **not** capture a rewrite that
+preserves meaning while sharing little word order. The manuscript therefore claims *lexical*
+paraphrase and no more; semantic paraphrase remains unmeasured and is named as such in Limitations.
+
+### Band D honoured
+
+Thresholds were fixed before the run at $0.3$ and $0.5$ and not moved; no other non-literal metric
+was substituted; the $n=64$ column is reported; the scorer, passages and anchor are unchanged; and
+the verbatim numbers are reported beside these rather than in place of them.

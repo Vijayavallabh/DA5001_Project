@@ -5137,3 +5137,34 @@ bash scripts/run_sparse_judging.sh 4     # waits on the string the queue writes,
 opposite (caution (ah), and the `35.4x` ratio is unaffected because the two denominators are
 asserted equal); and eight committed guards fired on the page-budget trim, every one of them
 protecting a concession or a committed claim that a length edit had quietly deleted.
+
+### 2026-09-17 evening — the four arms scored
+
+All four returned, bands committed before each ran, and **three of the four said something against
+the paper**:
+
+- **feat-125 PLACEMENT LOSES.** The causal policy Proposition 3 permits was built (`--initial-bank`
+  plus the new `--spend-threshold`), binds exactly on all 1,500 trajectories per arm with zero
+  violations, and is the safe model at over 99% of steps. Gains `-0.0015` at log 8, `+0.0215` at
+  log 64, `+0.0545` at 64 nats against selection's `+0.1045` at log 64; D3 `+0.083 [+0.052,+0.1135]`.
+  No budget on the grid reaches selection. *Against us:* Section 2's "neither causal placement buys
+  anything" is false above log 8. *Against the reviewer:* reserving at "pivotal positions" — the
+  escape they named — loses monotonically. *Against me:* I predicted early spend has more leverage;
+  conditional on spending, later is better.
+- **feat-126 TRIVIAL HORN CONFIRMED**, by `0.0005`. α=8 `+0.021 [-0.0005,+0.0425]`, α=1
+  `+0.034 [+0.0080,+0.0595]`, paired difference `+0.0130 [-0.0115,+0.0380]` — **no utility cost is
+  measurable**, so the reviewer's premise survives and Section 5 concedes it. The judge-free
+  statistics carry the argument: constraint active on 99.28% of steps against 0.35%.
+- **feat-127 CLAIM HOLDS AT THIS LOOSENING.** Anchor `0/100` at ROUGE-L ≥ 0.5; the memoriser `47/100`
+  on the same passages and metric, which is what makes the null informative rather than caution (t).
+- **feat-128 SELECTION EARNS ITS PRICE.** A 3.9× larger safe model served alone gains
+  `+0.0150 [-0.0065,+0.0365]`, paired difference `-0.0995 [-0.1220,-0.0770]`, at `86×` less compute.
+
+```
+bash scripts/run_sparse_causal.sh 4        # generation, 8 arms in series, 13:52-16:31
+bash scripts/run_sparse_judging.sh 4       # 9 judging passes, 16:31-17:11
+bash scripts/run_alpha1_reference.sh 4     # the alpha=1 reference pass
+bash scripts/run_paraphrase.sh 4           # the non-literal extraction re-run
+.venv/bin/python analysis/sparse_causal.py --out results
+.venv/bin/python analysis/bigger_anchor.py --out results
+```
