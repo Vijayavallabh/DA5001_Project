@@ -24,6 +24,11 @@ can cost the paper a claim that is currently in the abstract**:
   extraction arm never imported it. Measures the anchor's own base rate at a non-literal event —
   which is exactly the quantity the certificate multiplies. **Queued behind the two above on GPU 4.**
 
+- **`results/onset_prediction_bigger_anchor.md` (feat-128)** — the reviewer's other "decides
+  practical relevance" evaluation: at selection's price, should a deployer just serve a **bigger safe
+  model**? Needs no generation — the Comma-7B arm's rank-0 draw already *is* Comma-7B served alone,
+  so one judging pass gives it against the same control and opponent. **Queued.**
+
 ## Current objective
 
 **None outstanding.** A reviewer (Reject 5 → Weak Accept 6) named three fixes to close the deal and

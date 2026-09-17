@@ -100,6 +100,11 @@ def main():
                          "'renyi:8' arm and feat-125 a sparse-causal 'kl' arm through the same path.")
     ap.add_argument("--seed", type=int, default=7717)
     ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the output CSVs. EMPTY writes the CANONICAL "
+                         "results/order_averaged_h2h.csv, which holds the paper's headline -- pass "
+                         "a tag for every exploratory arm so that file is never overwritten "
+                         "(feat-123 had to restore it from a copy; feat-125/126/128 use tags).")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
@@ -191,9 +196,10 @@ def main():
                           "NOISY" if cons[arm] >= 0.50 else "UNUSABLE") for arm in arms]
 
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "order_averaged_h2h.csv"), "w", newline="") as fh:
+    suffix = f"_{a.tag}" if a.tag else ""
+    with open(os.path.join(a.out, f"order_averaged_h2h{suffix}.csv"), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
-    with open(os.path.join(a.out, "order_averaged_h2h_per_prompt.csv"), "w", newline="") as fh:
+    with open(os.path.join(a.out, f"order_averaged_h2h_per_prompt{suffix}.csv"), "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["prompt_id"] + [f"u_{x}" for x in arms] + ["gain_sel", "gain_metered", "diff"])
         for p, x, y, z in zip(pids, dS, dM, dD):
@@ -204,7 +210,7 @@ def main():
               f"[{r['lo95']}, {r['hi95']}]  single-order {r['single_order']}  {r['reading']}")
     print(f"\n  D3 {d3}: selection {gS:+.4f} vs metered {gM:+.4f}, "
           f"difference {gD:+.4f} [{loD:+.4f}, {hiD:+.4f}] over {len(pids)} paired prompts")
-    print(f"wrote {os.path.join(a.out, 'order_averaged_h2h.csv')}")
+    print(f"wrote {os.path.join(a.out, f'order_averaged_h2h{suffix}.csv')}")
 
 
 if __name__ == "__main__":
