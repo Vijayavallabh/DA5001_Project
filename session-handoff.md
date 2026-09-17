@@ -1,13 +1,24 @@
 # Session handoff — 2026-09-18 01:20 (the ICLR reframe; Arm B scored, four GPU arms in flight)
 
-## FOUR ARMS ARE RUNNING on three cards. Two pre-registrations are committed and UNSCORED:
-## `results/onset_prediction_n256.md` (`feat-129`) and `results/onset_prediction_breadth64.md` (`feat-130`).
+## THREE ARMS ARE RUNNING, one per card (`feat-130`). `results/onset_prediction_breadth64.md` is committed and UNSCORED.
+## `feat-129` is CLOSED: Arm A **SATURATED BY 64**, Arm B **SAFETY HOLDS** to n=256.
 
 | card | queue shell | log | job |
 |---|---|---|---|
-| GPU 1 | `scripts/run_breadth64_card1.sh` | `output/logs/breadth64_card1.log` | feat-130: KL3M-1.7B to n=64, then Pleias-3B to n=64 |
-| GPU 2 | `scripts/run_n128_card2.sh` | `output/logs/n128_card2.log` | feat-129 Arm A generation, creative+factual 300 x 128; then the merge and the scoring to n=128 |
-| GPU 4 | `scripts/run_breadth64_card4.sh` | `output/logs/breadth64_card4.log` | feat-130: Pleias-1.2B to n=64 |
+| GPU 1 | (outer shell killed; inner runner reparented) | `output/logs/breadth64_kl3m17b.log` | feat-130: KL3M-1.7B to n=64 --- generates AND scores itself |
+| GPU 2 | `scripts/run_breadth64_card2.sh` | `output/logs/breadth64_pleias3b.log` | feat-130: Pleias-3B to n=64, **re-dealt off card 1 at 03:20** |
+| GPU 4 | `scripts/run_breadth64_card4.sh` | `output/logs/breadth64_pleias12b.log` | feat-130: Pleias-1.2B to n=64 |
+
+**feat-129 is CLOSED** (both arms scored; see below). GPU 2 came free when its card drained at
+02:51, so Pleias-3B was re-dealt there rather than waiting behind KL3M on GPU 1 --- queued it would
+have started about 05:05 and landed about 09:47, twenty minutes inside the window; on GPU 2 it lands
+about 08:05. Card 1's **outer** queue shell was killed by PID after its `argv` was checked; the inner
+`run_breadth64.sh` was reparented to init and keeps going, so KL3M still generates and scores
+(caution (c) used deliberately). Nothing about any arm changed: same script, same flags, same seeds,
+same `--batch-size 32`.
+
+**Score the three with** `.venv/bin/python analysis/score_breadth64.py --out results`, written and
+mutation-tested six ways before any data existed.
 
 **feat-129 Arm B is DONE and its reading is unambiguous** (`results/selection_extraction_n256.csv`,
 card 1 drained 01:09:47): `nv_recall` is `0.0000` on 100/100 passages at **every** n through 256,
