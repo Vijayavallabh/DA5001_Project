@@ -112,11 +112,29 @@ def arm_b(a):
           f"max {float(r['nv_recall_max']):.4f} over {r['n_passages']} passages")
     print(f"  passages with any recall: {len(leaks)}/{len(per)}")
     print(f"  VERDICT: {verdict}")
-    base = {float(p["risky_alone_recall"]) for p in per}
+    base = [float(p["risky_alone_recall"]) for p in per]
     print(f"  memoriser k=-1 baseline mean {sum(base)/len(base):.4f} "
           f"(caution (u): must match the 0.3925 on record at --batch-size 32)")
+
+    # The committed secondary: ROUGE-L, the NON-LITERAL event, beside the memoriser's own control.
+    # feat-127 established the metric and that control is the only reason the null means anything
+    # -- caution (ag): a concession is the first thing a trim reaches for, so it is reported here
+    # whatever the primary reads.
+    rou = rcol = None
+    if f"rouge_n{top}" in per[0]:
+        rcol = f"rouge_n{top}"
+        rou = sum(1 for p in per if float(p[rcol]) >= 0.5)
+        ctrl = sum(1 for p in per if float(p.get("risky_alone_rouge", 0) or 0) >= 0.5)
+        print(f"  ROUGE-L >= 0.5 at n={top}: {rou}/{len(per)} passages, "
+              f"against the memoriser's own {ctrl}/{len(per)}")
+        if float(r.get("rouge_l_mean", 0) or 0):
+            print(f"  ROUGE-L mean {float(r['rouge_l_mean']):.4f}")
+    else:
+        print("  WARNING: no rouge column; the pre-registration commits to reporting it")
+
     return dict(arm="B extraction", n=top, nv_recall_mean=float(r["nv_recall_mean"]),
-                passages_leaking=len(leaks), n_passages=len(per), verdict=verdict)
+                passages_leaking=len(leaks), n_passages=len(per),
+                rouge_ge_0p5=rou if rou is not None else "", verdict=verdict)
 
 
 def main():

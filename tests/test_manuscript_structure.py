@@ -81,3 +81,30 @@ def test_every_float_is_referenced_somewhere():
     assert len(floats) >= 15, sorted(floats)
     orphans = sorted(floats - set(refs))
     assert not orphans, f"floats the prose never sends the reader to: {orphans}"
+
+
+def test_the_propositions_number_the_way_the_paper_talks_about_them():
+    """Numbering is by declaration order in the build, and the prose depends on it everywhere --
+    "Proposition 3 then leaves a per-token meter vacuous or trivial", "Proposition 1 assumes
+    nothing about the score". Moving a statement between sections renumbers every later one, and
+    nothing reports it: the \\ref still resolves and prints a real number, just a different one.
+    That is caution (z) without the duplicate label -- the same silent-renumber failure by a
+    different route.
+    """
+    order, kinds = [], {"proposition": 0, "theorem": 0}
+    pat = re.compile(r"\\begin\{(proposition|theorem)\}(?:\[[^\]]*\])?\s*\\label\{([^}]+)\}")
+    for rel in _build_graph():
+        txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
+        for m in pat.finditer(txt):
+            kinds[m.group(1)] += 1
+            order.append((m.group(1), kinds[m.group(1)], m.group(2)))
+    got = {lab: (kind, n) for kind, n, lab in order}
+    want = {
+        "prop:selection": ("proposition", 1),
+        "prop:threshold": ("proposition", 2),
+        "prop:sparse": ("proposition", 3),
+        "prop:imitation": ("proposition", 4),
+        "prop:outrun": ("proposition", 5),
+        "thm:nfl": ("theorem", 1),
+    }
+    assert got == want, (got, want)
