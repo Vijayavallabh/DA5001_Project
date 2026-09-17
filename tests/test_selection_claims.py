@@ -139,7 +139,13 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     assert dif["reading"] == "REVERSAL CONFIRMED", dif
     assert abs((float(sel["value"]) - float(met["value"])) - float(dif["value"])) < 5e-4
 
-    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    # Scan the body, not one file. Figure 1 moved from Section 3 into the introduction on
+    # 2026-09-17 and took the divergence-ratio claim with it in its caption, at which point a
+    # guard pinned to experiments.tex alone reported the claim missing when it had only moved.
+    # Same lesson as caution (af), in reverse: follow the claim across every section that can
+    # carry it, and keep asserting it exists and matches the CSV.
+    body = " ".join("".join(open(_tex(f"sections/{f}.tex"), encoding="utf-8").read()
+                            for f in ("iclr_intro", "selection", "experiments", "orders")).split())
     m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for \$3.175\$ "
                    r"nats and the metered decoder \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
                    body)
