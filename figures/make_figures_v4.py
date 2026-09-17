@@ -26,6 +26,29 @@ LABEL = {"commonpile": "Common Pile", "commoncorpus": "Common Corpus", "kl3m": "
 COLOR = {"commonpile": "C0", "commoncorpus": "C2", "kl3m": "C3"}
 
 
+def distinct_styles(n):
+    """n (colour, marker) pairs, every one distinct, or an exception.
+
+    Both figures that style a data-driven list of series used `list[i % len(list)]`, which is the
+    one thing you must not do when the list is data: onset_collapse drew NINE pairs from an
+    eight-colour and eight-marker list, so the ninth wrapped to index 0 and TinyComma-1.8B and
+    open-calm-3b came out as the same blue circle -- two indistinguishable curves in both panels
+    of an appendix figure, invisible to every grep and to the compiler (found 2026-09-17 by
+    looking at the rendered figure). seed_effect drew five series from four markers. The comment
+    on the first said the pair set is "data, not code, so a new admissible pair appears in the
+    figure without editing it", which is exactly how it happened.
+
+    Wrapping silently is the defect, so this raises instead."""
+    cols = ["C0", "C3", "C2", "C1", "C4", "C5", "C6", "C8", "C9", "C7"]
+    mks = ["o", "s", "^", "D", "v", "P", "X", "*", "h", "<"]
+    if n > len(cols):
+        raise ValueError(f"{n} series but only {len(cols)} distinct styles; extend the lists "
+                         f"rather than letting them wrap")
+    out = list(zip(cols[:n], mks[:n]))
+    assert len(set(out)) == n, out
+    return out
+
+
 def _save(fig, name):
     for ext in ("pdf", "png"):
         fig.savefig(OUT / f"{name}.{ext}", bbox_inches="tight", dpi=200)
@@ -152,10 +175,8 @@ def onset_collapse():
     # plan v5: the pair set is data, not code -- same manifest analysis/onset.py reads, so a new
     # admissible pair appears in the figure without editing it.
     _pairs = load_pairs(str(REPO / "results" / "onset_pairs.tsv"))
-    _cols = ["C0", "C3", "C2", "C1", "C4", "C5", "C6", "C8"]
-    _mks = ["o", "s", "^", "D", "v", "P", "X", "*"]
-    P = [(n, c, b, _cols[i % len(_cols)], _mks[i % len(_mks)])
-         for i, (n, c, b) in enumerate(_pairs)]
+    _st_ = distinct_styles(len(_pairs))
+    P = [(n, c, b, _st_[i][0], _st_[i][1]) for i, (n, c, b) in enumerate(_pairs)]
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.75))
     for name, comp, per, col, mk in P:
         p_ = REPO / comp
@@ -223,7 +244,8 @@ def seed_effect():
     # would stack at one x and be labelled "seed varied", which is false. They belong on
     # units_law(), which plots against s(x) -- the axis they actually move.
     rows = [r for r in rows if not r["pair"].endswith(" tau")]
-    markers = ["o", "s", "^", "D"]
+    # one marker per series, never wrapped: five series were drawn from four markers
+    markers = [m for _, m in distinct_styles(10)]
     labelled = False   # the first pair in sort order may have a single arm and be skipped below,
                        # so the legend entry has to hang off the first pair actually drawn
     for i, pair in enumerate(sorted({r["pair"] for r in rows})):
