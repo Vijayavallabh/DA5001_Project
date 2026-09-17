@@ -5232,3 +5232,98 @@ bash scripts/run_paraphrase.sh 4           # the non-literal extraction re-run
 .venv/bin/python analysis/sparse_causal.py --out results
 .venv/bin/python analysis/bigger_anchor.py --out results
 ```
+
+## 2026-09-17 late evening — the ICLR reframe, phase 3, and read-through 4 batches 3–4
+
+**The user's direction** (2026-09-17 evening): target an ICLR Oral/Spotlight; lead with the
+contribution rather than reporting hypotheses and outcomes; make the paper figure- and
+table-driven with self-contained captions; negative results appear as steps in the reasoning, not
+as findings. Phases 1 and 2 (Figure 1 to page 2, abstract and intro rewritten, Section 5's three
+repair paragraphs into a table) are committed at `04dfca8` and `1ddcd0d`.
+
+### Phase 3: the breadth paragraph becomes a forest plot, and Table 1 comes out (`fd70dae`)
+
+Section 3's "Four anchors, and where the ceiling binds" carried **fifteen effect estimates as
+prose** — six anchors, three workloads, four exact-match arms, and the metered comparator. As a
+forest plot the shape of the evidence is immediate: positive nearly everywhere for 2 to 4
+certified nats against 171.3 for the comparator, with both failures identifiable. Built by
+`figures/make_figures_v4.py::selection_forest_rows`, which reads `results/*.csv` and nothing else.
+
+Four of Table 1's five rows then duplicated figure rows, so the table came out; its two unique
+facts (judge C at n=64, and the measured KL of 3.175 against a certified 4.159) went into the
+prose beside it. Body returned to exactly 9 pages.
+
+```
+.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures
+SATML_DIR=~/sub/satml .venv/bin/python analysis/audit_numbers.py --results results
+```
+
+**The paper's own hook cited nothing.** "Self-consistency is an instance" appears in the abstract,
+the intro and Section 2, and Wang et al. (2023) was not in `references.bib` at all. Verified
+against the arXiv record and added.
+
+**Two defects found on the way.** A `\ref` in `appendix_selection.tex` pointed at a "served-token
+column of Table 1" that Table 1 never had — the numbers (98.0 → 15.3 tokens) live in
+`selection_decoding.csv`. And the forest figure saved **9.09in wide** because
+`bbox_inches="tight"` encloses the out-of-axes label gutters, so 7pt labels printed at 5.0pt;
+gutters are now inside the canvas and all ten figures were audited against the real `\textwidth`
+of **5.984in** (not the 5.5 caution (af) assumed). New cautions **(ak)** and **(al)**.
+
+**Nine guards were rewired rather than retired.** A band that moves from prose into a figure takes
+its guard with it: `tests/manuscript.py::carries_band` checks prose and figure alike, and each
+rewired guard was mutation-checked in both directions.
+
+### Read-through 4, batch 3: two shape claims their own CSVs refute (`68edf30`)
+
+- **Burstiness.** "The two burstiest pairs sit at onset ratios of 0.887 and 0.892, *mid-range*,
+  while the two highest ratios belong to the *second and third* least bursty." Both halves false:
+  those are the second and third **lowest** of nine, and the two highest ratios belong to the
+  **fifth and sixth** least bursty. Stated correctly it is a stronger claim — the extremes run
+  opposite to the direction Proposition 5 needs.
+- **Held-out prediction errors.** "0.352, 0.251 and 0.481 nats", carried by two appendices, is
+  three defects in one clause: means over the **five** pairs held out when the rules were
+  committed (`prediction_scores.csv` now marks **seven**, giving 0.365/0.507/0.296); printed out
+  of the rule order the preceding sentence names, swapping q25 with the fitted constant; and the
+  `-0.18` rank correlation beside them is the **Gutenberg** arm's number, where the nine CopyBench
+  pairs give `-0.42`, which `score_predictions.py` prints itself.
+
+Command: `.venv/bin/python analysis/score_predictions.py --out results --calibrated-on
+"TinyComma-1.8B + mem. Llama-3.1-8B" "Comma-7B + mem. Comma-7B"`
+
+Five further shape claims were checked and are correct: the scorer-scale Spearman series (0.5429
+recomputes exactly as 1 − 96/210 from `scorer_scale.csv`), the strongest anchor's six-value rise,
+the empty-fraction four, the α-order monotonicity, and the normaliser CV ranking.
+`tests/test_shape_claims.py` guards what caution (ai) says nothing guards.
+
+### Read-through 4, batch 4: nine orphan floats and structural guards (`0b60c37`)
+
+Seven figures and two tables sat in the appendices with real captions that no sentence sent the
+reader to. `tests/test_manuscript_structure.py` walks the build graph from `iclr_2027.tex` and
+asserts no duplicate label (caution (z)), no ref resolving outside the build, and no orphan float.
+
+### feat-129: the frontier past n=64 (IN PROGRESS on GPUs 1 and 2)
+
+Bands committed in `results/onset_prediction_n256.md` **before** either arm ran, and amended once
+— still before either ran and with no number produced — when the sizing was costed properly.
+Two things that amendment records:
+
+- A **4-prompt** throughput smoke measured `0.356` traj/s where the 500-prompt arm on record ran
+  at `2.157`: four prompts cannot fill a `--batch-size 64` batch, so it measured the padding. A
+  throughput probe must run at a prompt count that fills the batch.
+- **`--max-n` could not form the arm the pre-registration named.** `selection_scaling.py` computed
+  its arms as `[n for n in GRID if n <= max_n]` against a hardcoded GRID that stops at 64, so
+  `--max-n 256` would have paid for 256 candidates per prompt and formed no arm above 64 at all.
+  `n_grid()` now extends by doubling and returns exactly the committed tuple at `max_n=64`;
+  `tests/test_selection_grid.py` pins both halves.
+
+Sized against measured rates: Arm A at n=128 (~14.3 gpu-h) and Arm B at n=256 (~3.5), total ~17.8,
+under the 24-gpu-hour escalation threshold. Arm B stays at 256 because
+`selection_extraction.py` draws its pool once at `max(n)` while `selection_scaling.py` pushes
+every candidate through a 7B reward model. Live rates came in better than the basis — 3.92 traj/s
+on neutral and 2.30 on creative+factual.
+
+```
+bash scripts/run_n128_card1.sh 1   # neutral 200 x 128, then Arm B extraction to n=256
+bash scripts/run_n128_card2.sh 2   # creative+factual 300 x 128, then the merge and the scoring
+.venv/bin/python analysis/score_n128.py --out results   # the committed reading rules
+```
