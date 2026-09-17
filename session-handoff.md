@@ -1,4 +1,4 @@
-# Session handoff — 2026-09-17 17:15 (reviewer's three top fixes run and scored; read-through done and its last item closed; nothing of ours is running)
+# Session handoff — 2026-09-17 17:25 (reviewer's three top fixes run and scored; read-through done and its last item closed; nothing of ours is running)
 
 ## Current objective
 
@@ -6,11 +6,11 @@
 all three are done as *experiments*, not as prose: **R1** the contamination screen at OLMo-2 scale
 (`feat-122`), **R2** an independent repeat of the head-to-head (`feat-123`), **R3** per-arm
 GPU-seconds (`feat-124`). Each had its bands committed before it ran; **two of the three returned
-something against the paper and the text was changed accordingly.** Tree clean at **`dae7cf8`**,
+something against the paper and the text was changed accordingly.** Tree clean at **`305d82a`**,
 nothing of ours on a GPU.
 
 **59 pre-registrations, all 59 scored. 549 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
-**0 overfull and 0 underfull at badness 10000** (158 hboxes → 13), 0 `??`,
+with 0 overfull boxes and 0 underfull at badness 10000 (158 hboxes → 13), 0 `??`,
 `pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on page 9), 57
 total. 3,489 numeric literals, one expected `64256` miss. Artifact 939 files. Compute 283.0 → 295.3
 GPU-hours as the three arms landed; the disclosure moved with it.**
@@ -24,7 +24,10 @@ GPU-hours as the three arms landed; the disclosure moved with it.**
 > and 6, shrink `0.494` and `0.638`), three quotation-mark defects in one class, two cross-references
 > pointing at sections that do not contain the number, one sentence fragment, and a FLOP cost table
 > the latency measurement had left unqualified. All fixed; `progress.md` has the full account and
-> AGENTS.md caution **(af)** the two reusable lessons.
+> AGENTS.md caution **(af)** the reusable lessons. **Its one deferred item is closed too**: the 158
+> underfull hboxes (58 visibly stretched) came down to 13, none at badness 10000, by letting the 38
+> long `\texttt{}` paths break after `/` and `\_` — see "What is actually left", item 1, for the two
+> traps that pass hit.
 
 ### What the three arms changed in the paper
 
@@ -88,13 +91,14 @@ it is not ours. Caution (ab) in AGENTS.md.
 
 ## GPU state
 
-Read at 15:50 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
-nothing):
+Read at 17:20 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
+nothing). **Two cards have just come free**, which was not true at 15:50:
 
 | card | state |
 |---|---|
-| 0 | **another user**, 597 MiB idle — not ours, check before taking it |
-| 1, 2, 4 | **another user**, 51–65 GB at 46–63% util — leave alone |
+| 1, 2 | **idle**, 14 MiB — available, but re-read before taking one |
+| 0 | **another user**, 597 MiB idle — not ours |
+| 4 | **another user**, 65 GB at 60% util — leave alone |
 | 3 | T400 4 GB — **never use** |
 
 **Nothing of ours is running.** The multi-GPU instruction of 2026-09-17 ("use all the 3 gpus to
@@ -267,7 +271,7 @@ before joining lines.
 
 ---
 
-## Closed this session (38 commits since `3f047e8`)
+## Closed this session (40 commits since `3f047e8`)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -452,7 +456,7 @@ Nothing is blocking. In descending value:
 
 ### Files changed since `9a76354`
 
-**Repo** (committed, tree clean at `28854af` plus the compute-hours refresh):
+**Repo** (committed, tree clean at `305d82a`):
 `analysis/{anchor_vetting,serving_latency}.py` · `scripts/run_{vetting_protocol,vetting_split,h2h_independent,h2h_judgec,serving_latency}.sh` ·
 `tests/{test_anchor_vetting,test_h2h_repeat_and_latency}.py` ·
 `results/onset_prediction_{vetting_protocol,h2h_independent,serving_latency}.md` (registered, then scored) ·
@@ -472,8 +476,18 @@ backticks) · `sections/appendix_seed.tex` (a backticked path) · `references.bi
 quotes).
 
 **Figures** (repo, regenerated and copied): `figures/make_figures_v4.py` — Figure 1 (legend moved and
-made opaque, three label offsets, `ylim` headroom, the `k=0.5` anchor) and Figure 3 (opaque legend)
-and Figure 6 (opaque annotation bbox).
+made opaque, three label offsets, `ylim` headroom, the `k=0.5` anchor), Figure 3 (opaque legend),
+Figure 6 (opaque annotation bbox).
+
+**Line-breaking pass** (manuscript, 2026-09-17 17:10): `\allowbreak` after every `/` and `\_` in the
+38 long `\texttt` paths across `iclr_2027.tex`, `appendix_proofs`, `appendix_robustness`,
+`appendix_seed`, `appendix_selection` and `appendix_limitations`, plus two hyphenated model names in
+`appendix_proofs.tex` by hand.
+
+**Tests added or repaired this session** (repo): `tests/test_h2h_repeat_and_latency.py` (new, 5) ·
+`tests/test_anchor_vetting.py` (+1, the withdrawn claim across every section) ·
+`tests/test_contaminated_anchor.py` (+2, quotation-mark direction and path breakpoints) ·
+`tests/test_abstract_consistency.py` (parser taught to strip `\allowbreak`). 546 → **549**.
 
 ### Recommended next step
 
