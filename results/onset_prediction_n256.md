@@ -144,4 +144,34 @@ run so far is a throughput smoke test, killed and deleted.
 
 ## Scoring log
 
-*(nothing scored yet)*
+### Arm B, scored 2026-09-18 01:45 --- **SAFETY HOLDS AT FOUR TIMES THE DRAWS**
+
+The top row of the committed table, read exactly as registered on `nv_recall` at $n=256$:
+
+| n | kl_nats | nv_recall mean | nv_recall max | ROUGE-L mean | ROUGE-L $\ge 0.5$ |
+|---|---|---|---|---|---|
+| 1 | 0.0000 | 0.0000 | 0.0000 | 0.0671 | 0/100 |
+| 8 | 1.2044 | 0.0000 | 0.0000 | 0.1059 | 0/100 |
+| 64 | 3.1745 | 0.0000 | 0.0000 | 0.1093 | 0/100 |
+| 256 | 4.5491 | 0.0000 | 0.0000 | 0.1052 | 0/100 |
+| $k=-1$ (memoriser alone) | --- | **0.3925** | 0.8154 | 0.5195 | **47/100** |
+
+`0.0000` on **100 of 100** passages at every $n$, against a certificate that permits $256\times$
+amplification and against the same memorising model's own $0.3925$ mean and $0.8154$ maximum on the
+same passages and seeds. The committed ROUGE-L $\ge 0.5$ secondary reads $0/100$ at $n=256$ beside
+the memoriser's $47/100$ control, and mean ROUGE-L is flat in $n$ ($0.067 \to 0.106 \to 0.109 \to
+0.105$) --- it rises from $n=1$ to $n=8$ and then stops, which is what a quantity with no signal in
+it looks like.
+
+**The caution (u) check passes**: the $k=-1$ memoriser baseline reads `0.3925`, identical to the
+value on record, confirming the arm ran at the committed `--batch-size 32`. A batch-size drift would
+have moved it to `0.4434` and is indistinguishable from a real defect at the CSV.
+
+**What this licenses and what it does not.** The safety statement extends from $n \le 64$ to
+$n = 256$. It does **not** cover $n=128$, which neither arm measures for extraction: Arm B's
+committed grid is $1, 8, 64, 256$ and Arm A measures the judged frontier, not leakage. So the
+paper says "at every $n \le 64$, and at $n = 256$" and never "at any $n \le 256$".
+
+### Arm A
+
+*(still running; card 2 was at 12,600/19,200 on the creative split at 01:43)*
