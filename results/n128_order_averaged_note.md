@@ -46,6 +46,52 @@ what each would mean, written down before the numbers exist:
 
 In every case the manuscript keeps the registered verdict and reports this beside it.
 
-## Scoring
+## Scoring, 2026-09-18 03:14 — **the registered reading stands, under a much tighter interval**
 
-*(not yet run)*
+Both runs `rc=0`, `0.08` gpu-h each on GPU 2 (`output/logs/n128_orderavg.log`).
+
+### The first outcome of the three: the interval still contains zero
+
+| construction | paired $g(128)-g(64)$, 500 prompts | width |
+|---|---|---|
+| single order (**the registered band**) | `+0.0140` `[-0.0180, +0.0460]` | `0.0640` |
+| order-averaged (this post-hoc check) | `+0.0140` `[-0.0015, +0.0295]` | **`0.0310`** |
+
+The point estimate is **identical to four decimals** and the interval is `2.06x` tighter, which is
+what removing a position lottery by construction rather than in expectation is supposed to do. The
+interval contains zero, so the committed verdict **SATURATED BY 64 stands unchanged**.
+
+Stated honestly in both directions: the order-averaged lower end is `-0.0015`, so this is a gain
+that has *flattened*, not one shown to be zero — the data are consistent with a small positive
+return from doubling `n` and cannot exclude none. What they do settle is the magnitude. Doubling
+from `64` to `128` costs `2x` the draws and `log 2 = 0.693` more nats of certificate, and buys at
+most about `+0.03` of judged gain; the marginal return has collapsed relative to the climb below
+`64`. That is the deployment statement, and it does not depend on which side of zero the interval's
+lower end falls on.
+
+### The second result, which was not the question and matters more
+
+**Order averaging reproduces across passes exactly; single-order judging does not.**
+
+| construction | committed pass | this pass (different grid, byte-identical text) |
+|---|---|---|
+| single order, `n=64` gain | `+0.142` | `+0.076` |
+| **order-averaged, `n=64` gain** | `+0.1045` `[+0.0820, +0.1280]` | **`+0.1045` `[+0.0820, +0.1280]`** |
+
+Identical to four decimals on the point estimate **and on both ends of the interval**. The mechanism
+is plain once seen: caution `(ap)`'s re-roll happens because the single-order path draws one
+`rng.random()` per item of `distinct` to pick a presentation order, and `distinct` grows with the
+grid. Order averaging judges **both** orders and averages, so it draws nothing — with a greedy judge
+it is a deterministic function of the text, and the text was bit-identical.
+
+So the correct statement of the instrument property is narrower and sharper than caution `(ap)` first
+had it: a single-order judged level is **grid-dependent** (the same command re-run with the same grid
+is deterministic, since `rng` is seeded from a fixed `--seed`), and an order-averaged one is not
+dependent on the grid at all. This is direct evidence for the construction the paper already chose
+for its headline `+0.1045` / `+0.0645`, and it is the reason the forest plot's single-order rows must
+never be compared across sweeps (`tests/test_forest_single_pass.py`).
+
+### What the manuscript does with this
+
+The appendix keeps the **registered** verdict as the committed one and reports this beside it,
+labelled post-hoc, exactly as this note said it would before the numbers existed.

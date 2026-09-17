@@ -77,3 +77,52 @@ def test_the_appendix_withdrew_the_still_climbing_claim_and_says_where_it_stops(
     assert "\\textsc{saturated by 64}" in txt, "the verdict was trimmed"
     assert "where the strongest anchor's ceiling sits is open" in txt, \
         "the scope concession -- Arm A tested TinyComma, not Comma-7B -- was trimmed"
+
+
+def test_the_post_hoc_order_averaged_check_agrees_and_is_labelled_post_hoc():
+    """Order averaging removes position by CONSTRUCTION, so it draws no rng and is deterministic.
+
+    It reproduced the committed pass exactly at n=64 (+0.1045 [+0.0820, +0.1280] both times) where
+    the single-order construction moved +0.142 -> +0.076 on byte-identical text. That is the
+    evidence for the construction the paper's headline already uses.
+    """
+    import random
+    sys.path.insert(0, ROOT)
+    from analysis.selection_decoding import boot_mean
+
+    def per(n):
+        return {r["prompt_id"]: r
+                for r in _csv(f"order_averaged_h2h_per_prompt__n128oa{n}.csv")}
+    a, b = per(64), per(128)
+    pids = sorted(set(a) & set(b))
+    assert len(pids) == 500, len(pids)
+    d = [float(b[p]["gain_sel"]) - float(a[p]["gain_sel"]) for p in pids]
+    g = sum(d) / len(d)
+    lo, hi = boot_mean(d, random.Random(20260918))
+    assert abs(g - 0.0140) < 5e-4, g
+    assert lo < 0 < hi, (lo, hi, "the order-averaged interval must still contain zero")
+    # and it must be tighter than the single-order one it is reported beside
+    assert (hi - lo) < 0.064 * 0.75, (hi - lo, "the order-averaged interval is no longer tighter")
+
+
+def test_order_averaging_reproduced_across_passes_where_single_order_did_not():
+    def d1(name, arm):
+        return next(r for r in _csv(name)
+                    if r["arm"] == arm and r["quantity"].startswith("D1"))
+    old = d1("order_averaged_h2h.csv", "sel_n64")
+    new = d1("order_averaged_h2h__n128oa64.csv", "sel_n64")
+    for col in ("value", "lo95", "hi95"):
+        assert float(old[col]) == float(new[col]), (col, old[col], new[col],
+                                                    "order averaging is no longer exact across passes")
+    assert abs(float(old["value"]) - 0.1045) < 5e-5, old["value"]
+
+
+def test_the_appendix_reports_the_post_hoc_check_as_post_hoc():
+    txt = body("appendix_selection.tex")
+    assert "Post hoc, with no committed band" in txt, \
+        "the order-averaged check must be labelled post hoc wherever it is quoted"
+    assert "$+0.0140$ $[-0.0015, +0.0295]$" in txt, "the order-averaged band was trimmed"
+    assert "flattened" in txt, "the honest both-directions reading was trimmed"
+    assert "grid-dependent" in txt, "the instrument finding was trimmed"
+    assert "$+0.1045$ $[+0.0820, +0.1280]$ both times" in txt, \
+        "the exact-reproduction evidence for order averaging was trimmed"
