@@ -194,9 +194,9 @@ stronger order at a $15.4\times$ smaller number and buys $1.9\times$ the gain.
 
 ### Committed secondary 2 — the placement gain: **NEGATIVE**
 
-| $\tau$ | $0$ | $1$ | $2$ | $4$ |
-|---|---|---|---|---|
-| $D_2$ | $+0.0215$ | $+0.0150$ | $+0.0110$ | $+0.0045$ |
+| $\tau$ | $0$ | $1$ | $2$ | $4$ | $8$ |
+|---|---|---|---|---|---|
+| $D_2$ | $+0.0215$ | $+0.0150$ | $+0.0110$ | $+0.0045$ | $+0.0070$ |
 
 $\max_\tau D_2 - D_2(\tau{=}0) = 0$: the best placement on the grid is the **greedy front-loader**,
 and every threshold that concentrates harder does worse. **The reviewer's hypothesis is the one this
@@ -211,6 +211,7 @@ positions" was the named escape, and choosing *where* by the natural causal sign
 | $1$ | $2.0\%$ | $+0.0150$ | $+0.0148$ |
 | $2$ | $9.2\%$ | $+0.0110$ | $+0.0121$ |
 | $4$ | $56.8\%$ | $+0.0045$ | $+0.0081$ |
+| $8$ | $85.4\%$ | $+0.0070$ | $+0.0342$ $[-0.0068,+0.0753]$, $n=73$ |
 
 The budget is released less often *and* buys less when released. **A hypothesis of ours died here
 too**: we expected early spending to have more leverage over the rest of the generation, and within
@@ -218,7 +219,16 @@ the $\tau=2$ arm the opposite holds — first spend at step $\le 5$ gains $+0.00
 spend later gains $+0.0217$ ($n=242$). Conditional on spending, later is better. It is the
 never-released mass, not the position, that carries most of the decline.
 
-The likely reason is one the paper already measured: the threshold ranks steps by
+**And the reviewer is partly right, which is reported rather than buried.** At $\tau=8$ the
+conditional gain is the largest on the grid, $+0.0342$ against greedy's $+0.0215$: on the prompts
+where a step genuinely demands $8$ nats, spending it there does look unusually valuable. But the
+interval is $[-0.0068, +0.0753]$ on $n=73$ --- it **includes zero** and overlaps $\tau=0$'s
+$[+0.0020,+0.0415]$ almost entirely, and the subgroup is *selected* (a prompt with a high-demand
+step may be one where deviating helps anyway), so this is a suggestion and not evidence. What is
+solid is the policy-level number: such steps exist on $14.6\%$ of prompts, a deployer cannot choose
+to have them, and selection gains $+0.1045$ on **every** prompt.
+
+The likely reason the rest of the grid declines is one the paper already measured: the threshold ranks steps by
 $D_{\mathrm{KL}}(p_{r,t}\Vert p_{s,t})$, a likelihood-gap signal, and the risky model's own
 likelihood predicts judged quality at AUC $0.526$ — chance (Section~1, Appendix~I). **The reserving
 rule is the same wrong currency**, applied to the choice of step instead of the choice of token.
