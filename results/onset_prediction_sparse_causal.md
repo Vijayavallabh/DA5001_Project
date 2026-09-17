@@ -25,6 +25,33 @@ refills at $10^{-9}$ per step ($2\times10^{-7}$ over $200$ steps, i.e. nothing),
 budget is $B$ --- **constant in $T$**, which is the shape Proposition 1 gives selection and the shape
 Proposition 3 permits. This is `--initial-bank`, built as feat-092 and never until now run.
 
+**Amendment, 2026-09-17 14:45, before any scoring and before the arms finished.** The "Why" above
+was written on a false premise and is corrected here rather than quietly: `--initial-bank` was
+**not** unrun. `results/onset_prediction_placement.md` (feat-092) ran it on these same $500$ prompts
+at $K = 2.0794$ and $K = 20$, against a uniform-rate arm at the same total, and scored it ---
+**P1 PLACEMENT IS IRRELEVANT** (front-loaded $-0.008\,[-0.056,+0.041]$ against uniform
+$-0.032\,[-0.083,+0.016]$, differing by $0.024$ with overlapping intervals) and **P2 THE CAUSAL HORN
+IS EMPTY** (neither separates from the anchor, where selection at the same $2.0794$ nats gains
+$+0.054\,[+0.013,+0.095]$). The reviewer's "never built or bounded" is therefore **too strong, and
+the paper's own appendix already says so** --- which the manuscript must point at when it answers
+them, instead of accepting the premise.
+
+What survives of the objection, and what this arm is now **for**: both existing arms spend **as soon
+as they can**. Front-loading is not choosing; neither arm ever *reserves* budget for a step that
+turns out to want it. "Concentrates $\Theta(1)$ nats at textually pivotal positions" is a
+**reserving** policy, and no such policy has been built. So feat-125 contributes exactly three
+things, and claims only those:
+
+1. **`--spend-threshold`**, the reserving policy --- new, and the shape the reviewer actually names;
+2. **$B = \log 64$**, the budget of the *headline* comparison (selection at $n=64$, $+0.1045$),
+   where the existing arm sits at $n=8$ and $2.08$ nats;
+3. **$B = 64$ nats**, $3.2\times$ beyond the existing $K=20$.
+
+It is judged through `analysis/order_averaged_h2h.py`, the endorsed order-averaged instrument,
+whereas feat-092 used `analysis/placement.py`; the two sets of gains are therefore **not quoted
+across each other** (caution (m)), and feat-092's numbers appear below only with their own
+instrument named.
+
 `--initial-bank` alone is a **greedy front-loader**: it spends as soon as the constraint binds and is
 the anchor thereafter. On a 4-prompt smoke run at $B=\log 64$ it spent at exactly **one** step and was
 forced to the anchor for the remaining $\approx 145$. That is the weakest member of the class and
