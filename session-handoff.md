@@ -1,11 +1,35 @@
-# Session handoff — 2026-09-17 22:45 (the ICLR reframe, and two GPU arms in flight)
+# Session handoff — 2026-09-18 01:20 (the ICLR reframe; Arm B scored, four GPU arms in flight)
 
-## TWO ARMS ARE RUNNING (`feat-129`). `results/onset_prediction_n256.md` is committed and UNSCORED.
+## FOUR ARMS ARE RUNNING on three cards. Two pre-registrations are committed and UNSCORED:
+## `results/onset_prediction_n256.md` (`feat-129`) and `results/onset_prediction_breadth64.md` (`feat-130`).
 
 | card | queue shell | log | job |
 |---|---|---|---|
-| GPU 1 | `scripts/run_n128_card1.sh` | `output/logs/n128_card1.log` | Arm A generation, neutral 200 x 128; then Arm B, extraction to n=256 |
-| GPU 2 | `scripts/run_n128_card2.sh` | `output/logs/n128_card2.log` | Arm A generation, creative+factual 300 x 128; then the merge and the scoring to n=128 |
+| GPU 1 | `scripts/run_breadth64_card1.sh` | `output/logs/breadth64_card1.log` | feat-130: KL3M-1.7B to n=64, then Pleias-3B to n=64 |
+| GPU 2 | `scripts/run_n128_card2.sh` | `output/logs/n128_card2.log` | feat-129 Arm A generation, creative+factual 300 x 128; then the merge and the scoring to n=128 |
+| GPU 4 | `scripts/run_breadth64_card4.sh` | `output/logs/breadth64_card4.log` | feat-130: Pleias-1.2B to n=64 |
+
+**feat-129 Arm B is DONE and its reading is unambiguous** (`results/selection_extraction_n256.csv`,
+card 1 drained 01:09:47): `nv_recall` is `0.0000` on 100/100 passages at **every** n through 256,
+`rouge_ge_0p5_pct` is `0.0` at every n, against the same memoriser's `k=-1` control of `0.3925`
+recall and `47.0%` ROUGE-L >= 0.5 on the same passages. That is the pre-registration's top row,
+**SAFETY HOLDS AT FOUR TIMES THE DRAWS**, against a certificate that permits 256-fold
+amplification. It still has to be written into that log's `## Scoring log` with the rest of feat-129
+when Arm A lands.
+
+**feat-130, launched 01:20, closes a hole a reviewer would find.** The breadth claim is quantified at
+`n=8` and the headline at `n=64`, and only TinyComma and Comma-7B have an `n=64` curve at all --- so
+nothing in the paper says whether the climb to the headline n is a property of the mechanism or of
+the two anchors taken there. The three anchors that stop at `n=8` **and pass the registered entry
+gate** (Pleias-1.2B, KL3M-1.7B, Pleias-3B) are being extended to `n=64`; Comma-1T is excluded
+because the gate fails it at 16.6% empty, not by choice. Read on the paired `g(64) - g(8)` under
+judge B per anchor, against the `+0.088` (TinyComma) and `+0.101` (Comma-7B) the two measured
+anchors give as the effect size. ~11.8 gpu-h total, under the escalation threshold, from rates
+measured off the breadth arm's own logs --- **not** from `compute_hours.csv`, whose `breadth_*` rows
+cover generation and scoring together and whose `sel_scaling` row is log-birth-to-end and so counts
+time spent waiting on another card's generation. Held at `--batch-size 32`, the breadth arm's value
+and **not** `sel_anchor64`'s 64, so draws 0--7 of the 64-draw pool are bit-identical to the committed
+8-draw pool and the `n <= 8` half of each sweep must reproduce its `selection_scaling_<tag>.csv`.
 
 Card 2 waits for card 1 on the **file** `output/phase5/sel_anchor128_neutral/GEN_DONE`, which card 1
 writes only on rc=0 (caution (c): never wait on the absence of a pattern match). Expected

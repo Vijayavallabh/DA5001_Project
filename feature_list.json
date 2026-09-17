@@ -1291,6 +1291,16 @@
       "status": "in-progress",
       "description": "Appendix I says the gain 'rises monotonically ... so the mechanism is still climbing at n=64', which is an unfinished measurement at the edge of its grid, and the safety claim is quantified as 'no protected passage at any n <= 64' against a certificate that permits n-fold amplification. Arm A extends the judged frontier to n=128 (500 prompts, judge B, paired read on g(128) - g(64)); Arm B extends extraction to n=256 on the 100 attack_train passages under the adversarial scorer. Bands committed in results/onset_prediction_n256.md before either ran. Generation splits across GPUs 1 and 2 by prompt class, which changes nothing measured: apply_e1_sampling caps each class independently and build_trajectory_seeds hashes only the base seeds and the draw index. Arm A is gated on the n<=64 half reproducing selection_scaling.csv.",
       "evidence": "PENDING. Launched 2026-09-17 22:16 on GPUs 1 and 2 (scripts/run_n128_card1.sh, run_n128_card2.sh). Measured generation rates 3.92 traj/s (neutral) and 2.30 traj/s (creative+factual) against the 2.157 on record for sel_anchor64, so generation lands at ~6.4 gpu-h against the 8.2 registered. Score with: .venv/bin/python analysis/score_n128.py --out results (written and mutation-tested before either arm produced a number)."
+    },
+    {
+      "id": "feat-130",
+      "title": "Does the breadth of selection anchoring survive to the headline n=64?",
+      "depends_on": [
+        "feat-095"
+      ],
+      "status": "in-progress",
+      "description": "The paper's breadth claim is measured at n=8 (four of six anchors in three families) and its headline at n=64, and only TinyComma and Comma-7B have an n=64 curve at all -- so a reviewer cannot tell whether the climb to the headline n is a property of the mechanism or of the two anchors taken there. Three of the four anchors that stop at n=8 pass the registered entry gate (Pleias-1.2B, KL3M-1.7B, Pleias-3B; Comma-1T fails it at 16.6% empty and is excluded by the gate). This arm extends all three to n=64 on the same 500 prompts, the same pointwise reward, the same two judges and the same seeds, at the breadth arm's --batch-size 32 rather than sel_anchor64's 64, so that draws 0-7 of the 64-draw pool are bit-identical to the committed 8-draw pool and the n<=8 half of each sweep must reproduce its selection_scaling_<tag>.csv. Read on the paired g(64)-g(8) under judge B per anchor; the two anchors already at n=64 give the effect size (+0.088 at TinyComma, +0.101 at Comma-7B). Bands committed in results/onset_prediction_breadth64.md before any arm ran.",
+      "evidence": ""
     }
   ]
 }
