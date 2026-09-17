@@ -1,4 +1,28 @@
-# Session handoff — 2026-09-17 17:25 (reviewer's three top fixes run and scored; read-through done and its last item closed; nothing of ours is running)
+# Session handoff — 2026-09-17 14:30 (a second reviewer; two arms IN FLIGHT on GPU 4 against the two claims that most need it)
+
+## IN FLIGHT — two arms running, bands committed, neither scored
+
+A second, fuller review arrived (Soundness 3/4, **Presentation 1/4**, Contribution 2/4, **4/10
+Reject**). Working its points by depth rather than breadth. Two arms are on GPU 4 now, and **both
+can cost the paper a claim that is currently in the abstract**:
+
+- **`results/onset_prediction_sparse_causal.md` (feat-125)** — the sparse causal policy Proposition 3
+  *permits* and the paper never built, which the reviewer names as the reason "cannot be repaired"
+  is not a theorem. `--initial-bank` (feat-092, built and never run) gives a sequence budget constant
+  in T; new `--spend-threshold` decides *where* it goes, causally. Grid: B ∈ {log 8, log 64, 64} at
+  τ=0, and τ ∈ {1,2,4,8} at B=log 64. If a causal policy matches selection at matched budget,
+  **"per-token metering cannot be repaired" is withdrawn.**
+- **`results/onset_prediction_alpha_trivial.md` (feat-126)** — is α=8's 80× extraction cut a repair
+  that works, or a walk onto the trivial horn? The reviewer reads Table 3 as evidence FOR Repair 1
+  and is arithmetically right; the paper's threshold answer does not respond to them. Judged utility
+  of α=8 at k=3 against the anchor alone, 500 prompts. If α=8 holds its utility, **"the three repairs
+  fail where it says they must" is false as written.**
+
+- **`results/onset_prediction_paraphrase.md` (feat-127)** — the paraphrase claim, which the reviewer
+  correctly says no experiment supports. Every extraction number in the paper is an *exact substring*
+  metric; `rouge_l_score` (LCS as a **subsequence**) has existed in `dap/stats.py` all along and the
+  extraction arm never imported it. Measures the anchor's own base rate at a non-literal event —
+  which is exactly the quantity the certificate multiplies. **Queued behind the two above on GPU 4.**
 
 ## Current objective
 

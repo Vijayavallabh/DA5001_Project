@@ -39,6 +39,10 @@ class AuditConfig:
     # are causal policies under a sequence budget, and they are the two placements Proposition 5
     # separates. 0.0 is the deployed rule exactly.
     initial_bank: float = 0.0
+    # feat-125: WHERE the bounded budget goes, decided causally. None = spend as soon as the
+    # constraint binds (a greedy front-loader); a float tau = spend at step t only if the full-tilt
+    # demand D_KL(p_r,t || p_s,t) reaches tau nats, otherwise serve the anchor and keep the nats.
+    spend_threshold: "float | None" = None
     temperature: float = 1.0
     max_new_tokens: int = 200
     delta: float = 0.05
@@ -99,6 +103,7 @@ class H1AuditRunner:
             log_kl_stats=True,
             constraint=config.constraint,
             initial_bank=config.initial_bank,
+            spend_threshold=config.spend_threshold,
             device=config.device,
             dtype=dtype,
             device_map=config.device_map,
@@ -253,6 +258,7 @@ class H1AuditRunner:
                     "k": k,
                     "K": budget_K(k, self.config.max_new_tokens, self.config.initial_bank),
                     "initial_bank": self.config.initial_bank,
+                    "spend_threshold": self.config.spend_threshold,
                     "T_max": self.config.max_new_tokens,
                     "B_max": None,
                     "n": self.config.prefix_n,
@@ -495,6 +501,11 @@ def parse_args() -> AuditConfig:
                         "negligible k this is the FRONT-LOADED placement of the same sequence "
                         "budget -- the causal policy Proposition 5 permits. Default 0.0 is the "
                         "deployed rule.")
+    p.add_argument("--spend-threshold", type=float, default=None,
+                   help="feat-125: reserve the bounded budget for the steps that want it -- spend "
+                        "at step t only if D_KL(p_r,t || p_s,t) reaches this many nats, else serve "
+                        "the anchor and keep the nats. Causal: reads only the current step. "
+                        "Default None is the deployed rule (spend as soon as the constraint binds).")
     p.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl' (He et al.), 'pathwise' (realised log-ratio, Delta_max-NAF), or 'renyi[:alpha]' (alpha=1 is kl, alpha->inf is the max log-ratio)")
     args = p.parse_args()
 
@@ -513,6 +524,7 @@ def parse_args() -> AuditConfig:
         k_values=tuple(args.k_values), trajectories_per_prompt=args.trajectories_per_prompt,
         seeds=tuple(args.seeds), prefix_n=args.prefix_n, use_prefix_debt=not args.no_prefix_debt,
         initial_bank=args.initial_bank,
+        spend_threshold=args.spend_threshold,
         temperature=args.temperature, max_new_tokens=args.max_new_tokens, delta=args.delta,
         num_classes=args.num_classes, verbose=args.verbose, trust_remote_code=args.trust_remote_code,
         device=args.device, batch_size=args.batch_size, length_bucket_width=args.length_bucket_width,

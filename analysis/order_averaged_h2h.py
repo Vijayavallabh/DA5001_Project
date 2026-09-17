@@ -94,6 +94,10 @@ def main():
     ap.add_argument("--judge", default="microsoft/Phi-3.5-mini-instruct")
     ap.add_argument("--n", type=int, default=64)
     ap.add_argument("--k", type=float, default=10.0)
+    ap.add_argument("--metered-constraint", default="kl",
+                    help="constraint tag of the --metered-dir arm; 'kl' is the deployed rule and "
+                         "the default, so every number on record is unaffected. feat-126 judges a "
+                         "'renyi:8' arm and feat-125 a sparse-causal 'kl' arm through the same path.")
     ap.add_argument("--seed", type=int, default=7717)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--out", default="results")
@@ -107,7 +111,7 @@ def main():
     opp = load_baseline(a.baseline_dir)
     cands = load_candidates(a.sel_dir)
     rewards = load_rewards(a.rewards)
-    metered = lowest_seed(load_arm(a.metered_dir, a.k, "kl"))
+    metered = lowest_seed(load_arm(a.metered_dir, a.k, a.metered_constraint))
     anchor = lowest_seed(load_arm(a.anchor_dir, 0.0, "kl"))
     prompts = true_prompts(a.data_dir)
 
