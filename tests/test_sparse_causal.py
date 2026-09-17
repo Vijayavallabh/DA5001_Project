@@ -115,3 +115,41 @@ def test_the_front_loader_is_the_trivial_horn_by_construction():
     active, forced = greedy
     assert active / max(active + forced, 1) < 0.05, (
         f"the greedy policy must be the safe model at all but O(1) steps, got {active}/{active+forced}")
+
+
+def test_the_threshold_grid_in_the_appendix_rounds_from_the_tagged_csvs():
+    """The five threshold gains are in one sentence of appendix_proofs.tex, and each lives in its
+    own tagged h2h CSV -- so nothing checked them together and nothing checked the claim the
+    sentence made ABOUT them.
+
+    It said the policy "loses monotonically" and then printed +0.0215, +0.0150, +0.0110, +0.0045,
+    +0.0070: the last value rises. Found in the third read-through, 2026-09-17. The same sentence
+    quoted 85% for the never-spend rate, which is the scoring log's PROMPT denominator (1 - 73/500
+    at tau=8) while the committed CSV's `spent_nothing_pct` is over trajectories and reads 86.7 --
+    two denominators for one word. Both are pinned here: the values against their CSVs, in order,
+    and the shape claim against whether the values actually have it."""
+    import csv as _csv
+    import re
+    from tests.manuscript import tex
+    taus = ["0", "1", "2", "4", "8"]
+    gains, never = [], {}
+    sc = {r["arm"]: r for r in _csv.DictReader(open("results/sparse_causal.csv"))}
+    for t in taus:
+        arm = f"sparse_b4.16_t{t}"
+        d2 = next(r for r in _csv.DictReader(open(f"results/order_averaged_h2h_{arm}.csv"))
+                  if r["quantity"].startswith("D2"))
+        gains.append(float(d2["value"]))
+        never[t] = float(sc[arm]["spent_nothing_pct"])
+
+    body = open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().replace("\n", " ")
+    sent = next(s for s in body.split(". ") if r"\tau = 0,1,2,4,8" in s)
+    # the five grid values are the run that immediately precedes the tau list; the same sentence
+    # also carries the conditional pair, so take the values before the marker, not all of them
+    head = sent.split(r"$\tau = 0,1,2,4,8$")[0]
+    printed = [float(x) for x in re.findall(r"\$([+-]\d\.\d+)\$", head)][-len(taus):]
+    assert printed == gains, (printed, gains, "the grid does not match its CSVs")
+    assert f"${never[taus[-1]]}\\%$" in sent, (sent, never, "the never-spend rate is not the CSV's")
+
+    # and the shape claim has to be true of the numbers the same sentence prints
+    falls = all(b < a for a, b in zip(gains, gains[1:]))
+    assert falls == ("monotonic" in sent), (gains, "monotonicity claimed but not measured")
