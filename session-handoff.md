@@ -6,7 +6,7 @@
 all three are done as *experiments*, not as prose: **R1** the contamination screen at OLMo-2 scale
 (`feat-122`), **R2** an independent repeat of the head-to-head (`feat-123`), **R3** per-arm
 GPU-seconds (`feat-124`). Each had its bands committed before it ran; **two of the three returned
-something against the paper and the text was changed accordingly.** Tree clean at **`28854af`**,
+something against the paper and the text was changed accordingly.** Tree clean at **`dae7cf8`**,
 nothing of ours on a GPU.
 
 **59 pre-registrations, all 59 scored. 548 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
@@ -87,12 +87,13 @@ it is not ours. Caution (ab) in AGENTS.md.
 
 ## GPU state
 
-Read at 12:18 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
+Read at 15:50 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
 nothing):
 
 | card | state |
 |---|---|
-| 0, 1, 2, 4 | **all four in use by other users**, 51–57 GB each at 53–64% util — take none of them without checking again |
+| 0 | **another user**, 597 MiB idle — not ours, check before taking it |
+| 1, 2, 4 | **another user**, 51–65 GB at 46–63% util — leave alone |
 | 3 | T400 4 GB — **never use** |
 
 **Nothing of ours is running.** The multi-GPU instruction of 2026-09-17 ("use all the 3 gpus to
@@ -163,11 +164,15 @@ different act from re-running an experiment whose answer one dislikes. Both file
 
 ---
 
-## The read-through, and what it leaves behind
+## Two read-throughs, and what they leave behind
 
-Everything below was found by **rendering pages to PNG and looking at them**, or by reading a number
-back to its CSV. None of it was visible in the source, and the build was clean throughout: tectonic
-exit 0, 0 overfull, 0 `??` at every step, including while 144 bold spans were silently not bold.
+Twenty defects across two passes (nine on 2026-09-16, eleven on 2026-09-17), **every one of them
+found by rendering pages to PNG and looking at them**, or by reading a number back to its CSV. The
+build was clean throughout both: tectonic exit 0, 0 overfull, 0 `??` at every step --- including
+while 144 bold spans were silently not bold, and while Section 3 asserted a claim the appendix had
+withdrawn two sections later.
+
+### The standing check list
 
 | check | command | must read |
 |---|---|---|
@@ -175,7 +180,56 @@ exit 0, 0 overfull, 0 `??` at every step, including while 144 bold spans were si
 | no literal tildes from matplotlib | `pdftotext iclr_2027.pdf - \| grep -c '\.~'` | 0 |
 | figures have no collisions | render each figure page to PNG and look | by eye only |
 | legend style keys show their dashes | look at the key, not just the labels | `handlelength` >= 3 |
+| **figure type is big enough** | `printed width / figsize width` per figure | **>= 0.7** (see (af)) |
 | numbers round from a CSV once | `.venv/bin/python analysis/audit_numbers.py` | 1 miss, `64256` |
+| quotation marks curl the right way | `pytest tests/test_contaminated_anchor.py` | no ASCII `"` and no markdown `` ` `` |
+| a withdrawn claim stays withdrawn | `pytest tests/test_anchor_vetting.py` | scans **every** section |
+
+### Pass 2 (2026-09-17): eleven defects, and the body contradicted the appendix
+
+**The serious one.** `experiments.tex` still read *"the check separates all eighteen models here ...
+and every model known to hold the work at least half"* --- the **withdrawn** cross-protocol claim.
+`feat-122` had rebuilt that table into two protocol blocks, and at the one registered protocol
+OLMo-2-7B's worst passage is `0.2677`, nowhere near half. The appendix and the Ethics Statement were
+corrected when the arm landed; **Section 3 was not, because the test written for that repair only
+scanned `appendix_selection.tex`.** A test written for a repair must scan every section file, not
+the one the arm was about. Now it does, and it also asserts the *positive* half still holds of the
+CSV (every licensed anchor exactly zero, every web-trained model above it).
+
+**Figures: six problems in four figures.** Four collisions of the caution-(ad) kind --- Figure 1(b)'s
+unframed legend sat under the $\Lambda^*$ curve and struck out "Thm. 1" and "selection anchoring";
+its `n=8` was struck by the blue curve and `k=0.5` by the axis spine; Figure 1(a)'s `k=0.5` by the
+median-target rule; Figure 3(a)'s legend by the axvline; Figure 6's "certificate vacuous" by a curve.
+**Moving a legend trades one collision for another:** relocating Figure 1(b)'s to the empty upper
+right put its frame through the `n=64` label, and the panel needed `ylim` headroom as well.
+
+**And two figures were printed at half the size they were drawn.** `frontier_scaling` (Fig 5) was
+`width=0.62\textwidth` on a `figsize=(6.9, ...)` canvas --- a shrink of `0.494`, so its 7pt legend
+printed at `3.5`pt --- and `onset_collapse` (Fig 6) at `0.8` was `0.638`. Both now `\textwidth`.
+`selection_frontier`'s own source comment said "if this figure must get narrower, shrink figsize too
+and RENDER THE PAGE" and it was not followed for its neighbours. It is the only 6.9in figure that
+may be narrower, because it pre-scales type by `F = 6.9/5.5`.
+
+**Three quotation-mark defects, one class.** ASCII `"..."` renders as two *closing* quotes (mine, in
+the new latency paragraph); markdown `` `factual` ``/`` `creative` ``/`` `neutral` `` and
+`` `analysis/seed_effect.py` `` as two *opening* ones; and `references.bib`'s `Probabilistic
+"Copies"` put two closing quotes in the reference list. Now one test greps both shapes --- and its
+first regex was too permissive (it matched across a legitimate `` ``Active'' ... ``loss'' `` pair)
+and its second missed a path, both caught by *running* it rather than reading it.
+
+**Two cross-references pointed at sections that do not contain the number:** `849` is stated in
+Section 2, not Section 5; the intro's new cost clause sent a reader to Section 3 for `61.3x`/`35.4x`,
+which live in Section 2 and Appendix I. One sentence fragment of mine --- *"Measured on one card that
+is $35.4\times$ the wall-clock"* --- parsed as a relative clause on "card".
+
+**A residual the latency arm left behind**, found by reading the appendix rather than by grep: the
+scorer-free table prices majority vote at `5.75x` against the reward model's `61.29x`, and that
+column is **FLOPs**. On the clock the scorer is `9.3%`, so dropping it saves far less than dropping
+parameters suggests. The column is now labelled `cost, FLOPs`, and a new sentence says we measured
+the clock at **one point only** (`n=64`, the `7.6`B scorer) and **do not extrapolate it down the
+column**.
+
+### Pass 1 (2026-09-16): nine defects, including a document-wide font failure
 
 **Five figure collisions, and no two wanted the same repair.** All are fixed; the value left behind
 is the diagnosis, because "move the legend out" is wrong for three of the five.
@@ -210,7 +264,7 @@ before joining lines.
 
 ---
 
-## Closed this session (36 commits since `3f047e8`)
+## Closed this session (38 commits since `3f047e8`)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -230,6 +284,12 @@ before joining lines.
   rather than an onset, a 3-seed-vs-4-seed comparison that broke a rule the paper states two pages
   earlier, and two cross-references the v8 reorder had silently broken. The last two figures
   (5 and 2) were fixed after the main commit, on request.
+- **A second full read-through** (`dae7cf8`), after the three arms had changed the abstract and added
+  two appendix tables. **Eleven defects, all fixed** — the withdrawn vetting claim still standing in
+  Section 3, six figure problems in four figures (four collisions, two figures printed at half the
+  size they were drawn), three quotation-mark defects, two cross-references pointing at sections that
+  do not contain the number, one sentence fragment, and a FLOP cost table the latency measurement had
+  left unqualified. Details above; the two reusable lessons are caution **(af)**.
 - **The reviewer's three top fixes, all as experiments** (`feat-122`/`123`/`124`, sections above).
   Twelve commits, ~13 GPU-hours, three pre-registrations each scored against bands committed before
   its run. Two of the three landed *against* the paper and the text moved: the licensing premise
@@ -353,21 +413,29 @@ length) rather than the per-step log, which is padded past the end of the genera
 
 Nothing is blocking. In descending value:
 
-1. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
+1. **51 lines carry `Underfull \hbox (badness 10000)`** --- visibly stretched interword spacing,
+   caused by long unbreakable `\texttt{}` paths (`results/onset_prediction_*.md` and friends), which
+   force the line before them to stretch across the measure. One reflow on 2026-09-17 took it from
+   58 to 51. A preamble change letting `\texttt` break at `/` and `_` would fix the rest, and was
+   **judged not worth the risk this close to the deadline**: every such line is correct and legible,
+   and the project's stated bar (0 overfull, 0 `??`) is met. If it is taken on, re-render the pages
+   afterwards --- a break inside a path is a new way to be wrong, since a reader cannot tell an
+   inserted hyphen from part of the filename. `grep -c 'Underfull .hbox (badness 10000)' <log>`.
+2. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
    `onset_ci.csv` hold the same four epochs-ladder onsets and differ (`4.106` vs `4.1078`, `4.0071`
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
    supplies the table's CIs, and it matches on all twelve cells. Nothing tests that the two agree.
    Do not "fix" the paper against `strength_ladder.csv`.
-2. **The reviewer's remaining points, deliberately not taken.** The instruction was depth over
+3. **The reviewer's remaining points, deliberately not taken.** The instruction was depth over
    breadth, so three were worked to completion and the rest were judged not worth the space:
    a third judge (B and C are the only two available --- judge A supplies the selection reward and
    may not score the arm it selected), a second protected corpus for the selection sections (the
    nine-pair onset work already runs on two), and a formal treatment of the approximation gap
    between the optimal budget-`K` policy and our causal decoder, which the paper states as its open
    problem rather than closing. Each is a real gap; none is a defect.
-3. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
+4. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
    own pre-registration. Reinstating them would need a new pre-registration; it is not a gap.
-4. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
+5. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
    `feat-024`; **`feat-016` is human-only and must never be started.**
 
 ### Files changed since `9a76354`
@@ -384,8 +452,16 @@ Nothing is blocking. In descending value:
 **Manuscript** (`~/sub/satml/`, never committed — it sits inside a stray home git repo):
 `iclr_2027.tex` (abstract cost clause, compute disclosure, pre-registration count) ·
 `sections/appendix_selection.tex` (vetting table rebuilt as two protocol blocks, `app:h2hrepeat`
-and `app:latency` added, the FLOP claims qualified) · `sections/selection.tex` ·
-`sections/iclr_intro.tex` · `sections/iclr_closing.tex` · `sections/experiments.tex`.
+and `app:latency` added, the FLOP claims qualified and the cost column labelled) ·
+`sections/selection.tex` · `sections/iclr_intro.tex` · `sections/iclr_closing.tex` ·
+`sections/experiments.tex` (the withdrawn vetting claim) · `sections/frontier.tex` (the `849`
+reference) · `sections/appendix_robustness.tex` (Figures 5 and 6 widened to `\textwidth`, markdown
+backticks) · `sections/appendix_seed.tex` (a backticked path) · `references.bib` (one title's
+quotes).
+
+**Figures** (repo, regenerated and copied): `figures/make_figures_v4.py` — Figure 1 (legend moved and
+made opaque, three label offsets, `ylim` headroom, the `k=0.5` anchor) and Figure 3 (opaque legend)
+and Figure 6 (opaque annotation bbox).
 
 ### Recommended next step
 
