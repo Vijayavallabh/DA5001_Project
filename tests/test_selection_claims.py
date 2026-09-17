@@ -357,14 +357,18 @@ def test_the_cross_pass_floor_has_both_measurements():
     assert "cross-pass floor" in apx
 
 
-def test_the_cost_column_never_calls_a_measured_divergence_a_budget():
-    """The paper's headline cost column must not present a REALISED divergence as a budget.
+def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
+    r"""The paper's cost columns must not blur what is BOUNDED with what was MEASURED.
 
-    Until 2026-09-17 Table 1's column was headed "budget, nats" while every value in it was
-    `kl_nats` from selection_scaling.csv -- flattering the baseline 12x and understating
-    selection's own certificate, log 64 = 4.159, as 3.175. Found in the third read-through;
-    nothing else saw it, because the CELLS were already checked against the CSV and only the
-    header was wrong.
+    Two passes were needed. Until 2026-09-17 Table 1's column was headed "budget, nats" while
+    every value in it was `kl_nats` from selection_scaling.csv -- flattering the baseline 12x. The
+    third read-through renamed it "measured KL, nats", which was **also wrong and is corrected
+    here**: `analysis.selection_decoding.kl_best_of_n` returns the CLOSED FORM
+    `log n - (n-1)/n` \citep{beirami2025bestofn}, so 3.1745 at n=64 and 1.2044 at n=8 were never
+    measurements of anything. The same mislabel sat in an appendix table whose column read
+    "realised KL" over four genuinely measured metered rows and three bounded selection rows.
+    Only the metered decoder's 171.3 is a realisation. Same class as cautions (ae) and (ah): the
+    number was right and the quantity named was not.
 
     Table 1 was then removed -- four of its five rows had become rows of the forest figure -- and
     the cost column moved into that figure, so this guard moved with it rather than retiring. A
@@ -391,6 +395,16 @@ def test_the_cost_column_never_calls_a_measured_divergence_a_budget():
     txt = _body("experiments.tex", "selection.tex", "iclr_intro.tex")
     for bad in ("budget of $171.3$", "budget, nats", "$171.3$-nat budget"):
         assert bad not in txt, bad
-    # the arm's measured KL and its certificate are both stated, and distinguished
-    assert "$3.175$ nats" in txt and "$4.159$" in txt, \
-        "the headline arm's measured KL and its certificate must both be named"
+    # both bounds are stated, and neither is called a measurement
+    assert "$3.175$" in txt and "$4.159$" in txt, \
+        "the pathwise certificate and the sharper KL bound must both be named"
+    for bad in ("measured KL from the anchor", "measured KL, nats", "realised KL &"):
+        assert bad not in txt, f"a closed-form bound is being called a measurement: {bad!r}"
+    # and the closed form really is what the CSV holds, so the correction is not cosmetic
+    import csv as _csv, sys as _sys, os as _os
+    _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+    from analysis.selection_decoding import kl_best_of_n
+    rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
+    for r in rows:
+        n = int(float(r["n"]))
+        assert abs(float(r["kl_nats"]) - kl_best_of_n(n)) < 5e-5, (n, r["kl_nats"])
