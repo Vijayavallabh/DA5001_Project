@@ -1,6 +1,6 @@
 # Session handoff — 2026-09-17 22:45 (the ICLR reframe, and two GPU arms in flight)
 
-## TWO ARMS ARE RUNNING. `results/onset_prediction_n256.md` is committed and UNSCORED.
+## TWO ARMS ARE RUNNING (`feat-129`). `results/onset_prediction_n256.md` is committed and UNSCORED.
 
 | card | queue shell | log | job |
 |---|---|---|---|
@@ -10,7 +10,14 @@
 Card 2 waits for card 1 on the **file** `output/phase5/sel_anchor128_neutral/GEN_DONE`, which card 1
 writes only on rc=0 (caution (c): never wait on the absence of a pattern match). Expected
 **~17.8 GPU-hours** total against measured rates, under the 24-hour escalation threshold; the basis
-is the table in `## Compute` of the pre-registration, not an estimate.
+is the table in `## Compute` of the pre-registration, not an estimate. Live rates came in better
+than that basis --- $3.92$ traj/s on neutral and $2.30$ on creative+factual --- so generation
+lands near $6.4$ gpu-h against the $8.2$ registered.
+
+**Score them with** `.venv/bin/python analysis/score_n128.py --out results`, which was written and
+mutation-tested *before* either arm produced a number and implements the committed reading rules:
+Arm A's band is the paired `g(128) - g(64)` under judge B, and it refuses to read any `n > 64`
+number unless the `n <= 64` half reproduces `results/selection_scaling.csv`.
 
 **Two things the sizing turned up, both recorded in that log's `## Amendment`:** a 4-prompt
 throughput smoke measured `0.356` traj/s where the 500-prompt arm on record ran at `2.157` --- four
