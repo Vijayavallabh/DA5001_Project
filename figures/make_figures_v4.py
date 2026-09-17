@@ -162,7 +162,10 @@ def order_invariance():
                                   (8.0, r"$\alpha=8$"), (float("inf"), r"$\alpha=\infty$  (pathwise)")]):
         ax.plot(Ks, [event_bound(S, K, a) for K in Ks], lw=1.4, color=f"C{i}", label=lab)
     ax.axvline(S, color="0.3", lw=0.9, ls="--")
-    ax.annotate(f"$K = S(x)$", xy=(S, 1e-4), xytext=(S * 0.42, 1e-4), fontsize=6.6, color="0.3")
+    # Beside the rule it names, not 120 nats away from it with no arrow (which is where it sat
+    # until 2026-09-17): below 1e-4 the region just left of K = S(x) is empty on every curve.
+    ax.annotate("$K = S(x)$", xy=(S * 1.02, 3e-8), rotation=90, ha="left", va="center",
+                fontsize=6.6, color="0.3")
     ax.set_yscale("log")
     ax.set_ylim(1e-12, 2)
     ax.set_xlabel("sequence budget $K$ (nats)")
