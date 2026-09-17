@@ -43,10 +43,19 @@ def distinct_styles(n):
     Wrapping silently is the defect, so this raises instead."""
     cols = ["C0", "C3", "C2", "C1", "C4", "C5", "C6", "C8", "C9", "C7"]
     mks = ["o", "s", "^", "D", "v", "P", "X", "*", "h", "<"]
-    if n > len(cols):
-        raise ValueError(f"{n} series but only {len(cols)} distinct styles; extend the lists "
-                         f"rather than letting them wrap")
-    out = list(zip(cols[:n], mks[:n]))
+    if n <= len(cols):
+        out = list(zip(cols[:n], mks[:n]))          # distinct colour AND marker
+    else:
+        # Past ten, colour alone cannot separate them, so walk the cross product: every colour
+        # with the first marker, then every colour with the second. The PAIR stays unique, which
+        # is what a reader needs. order_no_collapse drew twelve series as `color=f"C{i}"` with a
+        # fixed marker, and matplotlib wraps C10 to C0 -- so Comma-7B and Qwen2.5-7B, and
+        # KL3M-1.7B and TinyComma-1.8B, were the same blue and the same orange circle across all
+        # three panels. `% len(...)` does not appear anywhere in that code: the wrap is inside
+        # matplotlib's property cycle, which is why a grep for the explicit form missed it.
+        out = [(c, m) for m in mks for c in cols][:n]
+        if n > len(cols) * len(mks):
+            raise ValueError(f"{n} series but only {len(cols) * len(mks)} distinct styles")
     assert len(set(out)) == n, out
     return out
 
@@ -557,14 +566,15 @@ def order_no_collapse():
     rows = [r for r in csv.DictReader(open(src))]
     orders = sorted({float(r["alpha"]) for r in rows})
     pairs = sorted({r["pair"] for r in rows})
+    _sty = distinct_styles(len(pairs))
     fig, axes = plt.subplots(1, len(orders), figsize=(6.9, 2.55), sharey=True)
     for ax, o in zip(axes, orders):
         for i, pair in enumerate(pairs):
             c = [(float(r["F"]), float(r["log10_factor"])) for r in rows
                  if r["pair"] == pair and float(r["alpha"]) == o]
             c.sort()
-            ax.plot([x for x, _ in c], [y for _, y in c], marker="o", ms=2.2, lw=1.0,
-                    color=f"C{i}", label=pair if o == orders[0] else None)
+            ax.plot([x for x, _ in c], [y for _, y in c], marker=_sty[i][1], ms=2.6, lw=1.0,
+                    color=_sty[i][0], label=pair if o == orders[0] else None)
         ax.axhline(0.0, color="0.4", lw=0.7, ls=":")
         ax.set_title(rf"$\alpha = {o:.0f}$")
     axes[0].set_ylabel(r"$\log_{10}$ times safer, matched utility")

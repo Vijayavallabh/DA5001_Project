@@ -31,14 +31,19 @@ def test_styles_are_distinct_and_never_wrap():
         assert len({m for _, m in st}) == n, ("markers repeat", n, st)
 
 
-def test_asking_for_more_than_there_are_raises_rather_than_wrapping():
-    """The defect was silent reuse. Refusing is the whole point."""
+def test_past_ten_the_pair_still_separates_them():
+    """Colour alone runs out at ten. Beyond that the (colour, marker) PAIR must stay unique --
+    that is what a reader uses -- and the function must refuse rather than reuse a pair."""
+    for n in (11, 12, 20, 100):
+        st = distinct_styles(n)
+        assert len(st) == n and len(set(st)) == n, (n, len(set(st)))
+        assert len({c for c, _ in st}) <= 10, n     # colour necessarily repeats
     try:
-        distinct_styles(11)
+        distinct_styles(101)
     except ValueError as e:
-        assert "wrap" in str(e), e
+        assert "distinct styles" in str(e), e
     else:
-        raise AssertionError("distinct_styles(11) must refuse, not wrap")
+        raise AssertionError("distinct_styles(101) must refuse, not wrap")
 
 
 def test_the_collapse_figure_has_a_style_for_every_pair_it_draws():
@@ -57,3 +62,21 @@ def test_the_seed_effect_figure_has_a_marker_for_every_series_it_draws():
              if len([r for r in rows if r["pair"] == p]) >= 2]
     assert len(drawn) == 3, (sorted(drawn), "the series count moved; re-render and look")
     distinct_styles(len(drawn))
+
+
+def test_the_order_figure_has_a_style_for_every_pair_it_draws():
+    """Twelve series, ten colours, one marker: matplotlib wraps C10 to C0, so Comma-7B and
+    Qwen2.5-7B were the same blue circle and KL3M-1.7B and TinyComma-1.8B the same orange one,
+    across all three panels. `% len(...)` appears nowhere in that code -- the wrap is inside
+    matplotlib's own property cycle, which is why grepping for the explicit form missed it and
+    only rendering the figure and looking at it found it (2026-09-17)."""
+    path = os.path.join(ROOT, "results", "order_law.csv")
+    if not os.path.exists(path):
+        path = os.path.join(ROOT, "results", "order_law_summary.csv")
+    rows = list(csv.DictReader(open(path, encoding="utf-8")))
+    pairs = sorted({r["pair"] for r in rows if r.get("pair")})
+    assert len(pairs) >= 11, (len(pairs), "the figure this guards draws twelve")
+    st = distinct_styles(len(pairs))
+    assert len(set(st)) == len(pairs)
+    # and past ten it must be the PAIR that separates them, not the colour alone
+    assert len({c for c, _ in st}) < len(pairs), st
