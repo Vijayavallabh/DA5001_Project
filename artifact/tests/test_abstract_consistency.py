@@ -58,6 +58,10 @@ def test_every_results_file_the_paper_names_exists():
     body = "".join(open(f, encoding="utf-8").read()
                    for f in [tex("iclr_2027.tex")] + sorted(glob.glob(tex("sections/*.tex")))
                    if os.path.basename(f).replace(".tex", "") in SECTIONS or f.endswith("iclr_2027.tex"))
+    # Long paths carry \allowbreak breakpoints after / and \_ so a 50-character \texttt token
+    # cannot strand the line before it (2026-09-17; 158 underfull hboxes -> 13). They are
+    # zero-width and print nothing, but they are inside the path as far as a regex is concerned.
+    body = body.replace("\\allowbreak ", "").replace("\\allowbreak", "")
     named = {n.replace("\\_", "_") for n in re.findall(r"results/([A-Za-z0-9_\\]+)", body)}
     missing = sorted(n for n in named if n and not
                      (os.path.exists(f"results/{n}.csv") or os.path.exists(f"results/{n}.md")))

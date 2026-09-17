@@ -1,4 +1,4 @@
-# Session handoff — 2026-09-17 15:45 (reviewer's three top fixes run and scored; second full read-through done, eleven defects fixed; nothing of ours is running)
+# Session handoff — 2026-09-17 17:15 (reviewer's three top fixes run and scored; read-through done and its last item closed; nothing of ours is running)
 
 ## Current objective
 
@@ -9,10 +9,11 @@ GPU-seconds (`feat-124`). Each had its bands committed before it ran; **two of t
 something against the paper and the text was changed accordingly.** Tree clean at **`dae7cf8`**,
 nothing of ours on a GPU.
 
-**59 pre-registrations, all 59 scored. 548 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
-overfull, 0 `??`, `pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on
-page 9), 57 total. 3,489 numeric literals, one expected `64256` miss. Artifact 939 files. Compute
-283.0 → 295.3 GPU-hours as the three arms landed; the disclosure moved with it.**
+**59 pre-registrations, all 59 scored. 549 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
+**0 overfull and 0 underfull at badness 10000** (158 hboxes → 13), 0 `??`,
+`pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on page 9), 57
+total. 3,489 numeric literals, one expected `64256` miss. Artifact 939 files. Compute 283.0 → 295.3
+GPU-hours as the three arms landed; the disclosure moved with it.**
 
 > **A second full read-through is done (2026-09-17 15:40), and it found eleven defects, none of them
 > visible in the source.** The build was clean at every step. The serious one: `experiments.tex`
@@ -183,6 +184,8 @@ withdrawn two sections later.
 | **figure type is big enough** | `printed width / figsize width` per figure | **>= 0.7** (see (af)) |
 | numbers round from a CSV once | `.venv/bin/python analysis/audit_numbers.py` | 1 miss, `64256` |
 | quotation marks curl the right way | `pytest tests/test_contaminated_anchor.py` | no ASCII `"` and no markdown `` ` `` |
+| long `\texttt` paths can break | same file, `test_long_texttt_paths_carry_breakpoints` | `\allowbreak` after **every** `/` and `\_` |
+| no visibly stretched lines | `grep -c 'Underfull .hbox (badness 10000)' <log>` | **0** |
 | a withdrawn claim stays withdrawn | `pytest tests/test_anchor_vetting.py` | scans **every** section |
 
 ### Pass 2 (2026-09-17): eleven defects, and the body contradicted the appendix
@@ -284,6 +287,10 @@ before joining lines.
   rather than an onset, a 3-seed-vs-4-seed comparison that broke a rule the paper states two pages
   earlier, and two cross-references the v8 reorder had silently broken. The last two figures
   (5 and 2) were fixed after the main commit, on request.
+- **The underfull lines, fixed** (`158 -> 13`, none at badness 10000). One cause for all of them:
+  a 50-character `\texttt{}` path is one unbreakable token. `\allowbreak` after every `/` and `\_`
+  in 38 long paths; it prints nothing, so no break can read as a hyphen. Extending the rule to
+  hyphens made it worse and was reverted; the one hyphen break needed is by hand.
 - **A second full read-through** (`dae7cf8`), after the three arms had changed the abstract and added
   two appendix tables. **Eleven defects, all fixed** — the withdrawn vetting claim still standing in
   Section 3, six figure problems in four figures (four collisions, two figures printed at half the
@@ -413,14 +420,19 @@ length) rather than the per-step log, which is padded past the end of the genera
 
 Nothing is blocking. In descending value:
 
-1. **51 lines carry `Underfull \hbox (badness 10000)`** --- visibly stretched interword spacing,
-   caused by long unbreakable `\texttt{}` paths (`results/onset_prediction_*.md` and friends), which
-   force the line before them to stretch across the measure. One reflow on 2026-09-17 took it from
-   58 to 51. A preamble change letting `\texttt` break at `/` and `_` would fix the rest, and was
-   **judged not worth the risk this close to the deadline**: every such line is correct and legible,
-   and the project's stated bar (0 overfull, 0 `??`) is met. If it is taken on, re-render the pages
-   afterwards --- a break inside a path is a new way to be wrong, since a reader cannot tell an
-   inserted hyphen from part of the filename. `grep -c 'Underfull .hbox (badness 10000)' <log>`.
+1. **Nothing typographic.** The `Underfull \hbox` item that stood here is closed: all 158 had one
+   cause --- a 50-character `\texttt{results/onset\_prediction\_...}` is a single unbreakable token,
+   so TeX moved it whole to the next line and stranded the one before it. `\allowbreak` after every
+   `/` and `\_` in long `\texttt` arguments (38 paths, 6 files) took it to **13, none at badness
+   10000**, with 0 overfull throughout. It prints nothing, so a reader cannot mistake the break for
+   a hyphen. The 13 that remain are two paragraphs TeX genuinely cannot set better: a proof carrying
+   long inline `$D_{\mathrm{KL}}$` expressions, and one bibliography entry. **Do not extend the rule
+   to hyphens** --- it was tried and took badness-10000 lines from 0 back to 7, because more
+   breakpoints move TeX's choices elsewhere; the one hyphen break needed is done by hand in
+   `appendix_proofs.tex`. **And any consumer that greps paths out of the manuscript must strip
+   `\allowbreak` first**, which is how `test_abstract_consistency.py` started reading a filename as
+   `\allowbreak`. Pinned by `test_long_texttt_paths_carry_breakpoints`, which checks every
+   separator.
 2. **Two committed CSVs disagree in the fourth significant figure.** `strength_ladder.csv` and
    `onset_ci.csv` hold the same four epochs-ladder onsets and differ (`4.106` vs `4.1078`, `4.0071`
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
@@ -465,14 +477,16 @@ and Figure 6 (opaque annotation bbox).
 
 ### Recommended next step
 
-**Nothing technical.** The paper is submission-ready, every thread this session opened is closed and
-scored, and the second read-through is done. The one thing left on the table, deliberately: **51
-lines carry `Underfull \hbox (badness 10000)`** — visibly stretched interword spacing, caused by
-long unbreakable `\texttt{}` paths. One reflow took it from 58 to 51. A preamble change letting
-`\texttt` break at `/` and `_` would fix the rest; it was judged not worth the risk this close to
-the deadline, since every such line is correct and legible and the stated bar (0 overfull, 0 `??`)
-is met. If anyone wants it, that is the fix — and re-render the pages afterwards, because a break
-inside a path is a new way to be wrong.
+**Nothing.** Every thread this session opened is closed: the reviewer's three top fixes are run and
+scored, the read-through is done, and its one deferred item is now fixed too. The manuscript is
+submission-ready --- 0 overfull, 0 underfull at badness 10000, 0 `??`, bold renders, body inside 9
+pages, every number rounding once from a committed CSV, and 549 tests over it.
+
+If someone picks this up with time to spend, the honest answer is that the remaining work is
+**scientific, not editorial**, and it is named in item 3 below: a third judge is unavailable by the
+paper's own rule, a second protected corpus for the selection sections would cost a fresh
+pre-registration and a GPU day, and the approximation gap between the optimal budget-`K` policy and
+our causal decoder is stated as the open problem rather than closed. None is a defect.
 
 ### Human-only, and close
 

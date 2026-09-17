@@ -171,3 +171,55 @@ def test_no_ascii_double_quote_reaches_the_manuscript():
                 bad.append(f"{_os.path.relpath(f, root)}:{i}: backtick pair: {body.strip()[:80]}")
     assert not bad, ("quotation marks that render the wrong way round (`` opens, '' closes):\n  "
                      + "\n  ".join(bad))
+
+
+def test_long_texttt_paths_carry_breakpoints():
+    """A 50-character `\\texttt{results/onset_prediction_...}` is one unbreakable token. TeX cannot
+    fit it on a partly-used line, moves it whole to the next, and the line it left behind stretches
+    across the measure: on 2026-09-17 that was 158 underfull hboxes, 58 of them at badness 10000 --
+    about one visibly gappy line per page. `\\allowbreak` after each `/` and each `\\_` is a
+    zero-width, zero-penalty breakpoint that prints NOTHING, so a reader cannot mistake it for a
+    hyphen the way `[htt]{hyphenat}` would let them. It took the count to 13, none at 10000.
+
+    Nothing catches a regression: tectonic exits 0, the overfull count stays 0, `??` stays 0, and
+    the page merely looks loose. Hence this."""
+    import glob as _glob
+    import os as _os
+    import re as _re
+    from tests.manuscript import tex as _tex
+    root = _os.path.dirname(_tex("iclr_2027.tex"))
+    live = [_tex("iclr_2027.tex")]
+    for name in _re.findall(r"\\input\{sections/([a-z_0-9]+)\}",
+                            open(_tex("iclr_2027.tex"), encoding="utf-8").read()):
+        live.append(_os.path.join(root, "sections", f"{name}.tex"))
+    assert len(live) > 10, f"only {len(live)} live files resolved; check the manuscript path"
+
+    def args(s):
+        for m in _re.finditer(r"\\texttt\{", s):
+            i, d = m.end(), 1
+            while i < len(s) and d:
+                if s[i] == "\\":
+                    i += 2
+                    continue
+                d += (s[i] == "{") - (s[i] == "}")
+                i += 1
+            yield s[m.end():i - 1]
+
+    bad, checked = [], 0
+    for f in live:
+        for a in args(open(f, encoding="utf-8").read()):
+            vis = a.replace("\\allowbreak ", "").replace("\\_", "_")
+            if len(vis) <= 20 or not ("/" in vis or "_" in vis):
+                continue
+            checked += 1
+            # EVERY separator, not merely one: the first version of this test only asked whether
+            # the argument contained an \allowbreak anywhere, and passed unchanged when one was
+            # deleted from a path that had four.
+            gaps = len(_re.findall(r"(?:/|\\_)(?!\\allowbreak)", a))
+            if gaps:
+                bad.append(f"{_os.path.relpath(f, root)}: {gaps} separator(s) unbroken in {vis[:55]}")
+    assert checked >= 30, (
+        f"only {checked} long \\texttt paths found; the brace scan has stopped working, and a "
+        "guard that inspects nothing always passes")
+    assert not bad, ("long \\texttt paths with no breakpoint -- each one strands the line before "
+                     "it (\\allowbreak after every / and \\_):\n  " + "\n  ".join(bad))

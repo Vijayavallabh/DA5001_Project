@@ -9,6 +9,58 @@
 
 
 
+## 2026-09-17 17:10 — the underfull lines, fixed: 158 hboxes to 13, none at badness 10000
+
+The one item the read-through left on the table. **All 158 had one cause:** a 50-character
+`\texttt{results/onset\_prediction\_serving\_latency.md}` is a single unbreakable token, so TeX
+cannot fit it on a partly-used line, moves it whole to the next, and the line it left behind
+stretches across the measure. 58 of them were at badness 10000 --- about one visibly gappy line per
+page.
+
+**The repair.** `\allowbreak` after every `/` and every `\_` inside `\texttt` arguments longer than
+twenty visible characters that contain a separator --- 38 paths across 6 live files, inserted
+mechanically with a brace-balanced scan. `\allowbreak` is a zero-width, zero-penalty breakpoint that
+**prints nothing**, which is why it is right here and `\usepackage[htt]{hyphenat}` is wrong: the
+latter inserts a visible hyphen, and a reader cannot tell an inserted hyphen from one that belongs
+to the filename.
+
+| | before | after |
+|---|---|---|
+| `Underfull \hbox` | 158 | **13** |
+| ...at badness 10000 | 58 | **0** |
+| `Overfull \hbox` | 0 | **0** |
+| paths broken across a line | 0 | 15 |
+
+**Two traps, both hit.** First, extending the same rule to hyphens made it **worse** --- 0 back to 7
+badness-10000 lines --- because handing TeX four more breakpoints in paths that were already setting
+fine moved its choices elsewhere. The rule is `/` and `\_` only. The single place a hyphen break is
+genuinely needed is done by hand: a run-in `\paragraph` heading followed by
+`\texttt{Llama-3.2-3B-Instruct}` (21 characters, unbreakable) stranded the heading on a stretched
+line, and that one paragraph accounted for the last 7. Second, the insertion **broke a test's
+parser**: `test_abstract_consistency.py` extracts `results/([A-Za-z0-9_\\]+)` to check every file
+the paper names exists, and with a breakpoint after `results/` it read the filename as
+`\allowbreak`. Any consumer that greps paths out of the manuscript must strip `\allowbreak` first.
+
+**Verified by looking, not by counting.** `pdftotext | grep -ci allowbreak` is `0`, so nothing
+leaked as text, and two of the fifteen breaks were rendered and read: `results/` at a line end with
+`onset_prediction_h2h_independent.md` continuing (p42), and `selection_` with `extraction.csv`
+continuing (p54). Both are monospace with the real separator visible at the break --- the same
+convention a URL breaks under.
+
+**What is left, and why it stays.** 13 underfull hboxes in exactly two paragraphs: a proof in
+`appendix_proofs.tex` carrying long inline `$D_{\mathrm{KL}}(q_t \| p_{s,t})$` expressions TeX
+cannot break (badness 7186), and one bibliography entry (badness 1394). Breaking inline mathematics
+would be a worse defect than a slightly loose line.
+
+`tests/test_contaminated_anchor.py::test_long_texttt_paths_carry_breakpoints` pins it, and checks
+**every** separator: its first version only asked whether the argument contained an `\allowbreak`
+anywhere and passed unchanged when one of four was deleted. It was shown to fail on a single
+deletion before being kept.
+
+**Verified after:** tectonic exit 0, 0 overfull, 0 `??`, bold fonts 3, body still inside 9 pages
+(Ethics opens on page 9), 57 pages, 3,489 numeric literals with the one expected `64256` miss,
+549 tests, `./init.sh` exit 0, artifact 939 files.
+
 ## 2026-09-17 15:40 — the second read-through: eleven defects, none of them visible in the source
 
 Rendered all 57 pages to PNG and read them, plus three automated typographic scans over
