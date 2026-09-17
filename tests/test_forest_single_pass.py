@@ -37,3 +37,28 @@ def test_the_saturation_is_reported_as_a_paired_within_pass_difference():
     txt = body("appendix_selection.tex")
     assert "paired" in txt.lower(), "the appendix must say the read is paired"
     assert "$g(128) - g(64)$" in txt, "the paired quantity must be named as such"
+
+
+def test_a_breadth64_anchor_may_not_be_drawn_beside_its_old_n8_row():
+    """Decided BEFORE feat-130's numbers existed, so the rule is not chosen to suit them.
+
+    The three feat-130 anchors already have an n=8 row in the forest, taken from a grid-1..8 sweep
+    (`selection_scaling_<tag>.csv`). Their new n=64 rows come from a grid-1..64 sweep. Putting the
+    two side by side invites the reader to see a climb, and part of any such climb is the
+    grid-dependence feat-129 measured -- the same anchor's n=8 gain is not the same number under a
+    longer grid (Comma-7B: +0.111 on grid 1..8, +0.072 on grid 1..64).
+
+    So if the figure ever shows an anchor at n=64 from a `*64.csv`, its n=8 row must come from THAT
+    file too. The registered read for feat-130 is already the paired g(64) - g(8) WITHIN the new
+    pass, which is immune to this, and that is where the comparison belongs.
+    """
+    fig = os.path.join(ROOT, "figures", "make_figures_v4.py")
+    src = open(fig, encoding="utf-8").read()
+    for name in ("pleias12b", "kl3m17b", "pleias3b"):
+        new = f"selection_scaling_{name}64.csv"
+        old = f"selection_scaling_{name}.csv"
+        if new in src:
+            assert old not in src, (
+                f"the forest reads both {new} (grid 1..64) and {old} (grid 1..8) for the same "
+                f"anchor. Those two sweeps do not produce comparable single-order gains "
+                f"(caution (ap)). Take both rows from {new}, or show only the paired difference.")
