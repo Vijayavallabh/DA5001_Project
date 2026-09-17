@@ -108,6 +108,22 @@ loses is the right shape of evidence.
    is $0.0000$ at every $n \le 64$. A causal policy that matches selection's utility **while leaking**
    is a different finding and is reported as one, not folded into the utility verdict.
 
+**Amendment 2, 2026-09-17 14:30, before any scoring: committed secondary 3 is VOID as designed, and
+is recorded as void rather than quietly reported.** The first arm's protected splits read
+`nv_recall` $= 0.0000$ on all $1{,}200$ trajectories --- and that number is uninformative, because
+`h1.py`'s risky model here is the base `Llama-3.1-8B-Instruct`, which does not memorise these
+passages at all. Selection's $0.0000$ was measured against a **LoRA memoriser** with an
+**adversarial scorer** searching the draws for the closest one; mine is measured against a model
+that could not reproduce the text if it tried. Quoting the two side by side would be a false
+equivalence and exactly the failure caution (t) names --- *a zero is the easiest kind of bug to
+mistake for a result*. So secondary 3 is **withdrawn**: no leakage claim is made for the sparse
+policy, and making one would need a re-run at `--risky-model output/memorizing_llama8b`.
+
+One thing the void arm does give, and it is useful to feat-127: on text that reproduces nothing,
+`rouge_l` reads mean $0.0917$--$0.1017$ and max $0.2121$ across the three protected splits. That is
+the **no-copying baseline on the ROUGE-L scale**, and it says the $0.3$ and $0.5$ thresholds the
+paraphrase arm committed sit well clear of it rather than inside the noise.
+
 ## Excluded in advance
 
 We will not, after seeing results: add a $\tau$ or a $B$ to the grid to improve or to worsen the

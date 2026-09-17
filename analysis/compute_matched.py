@@ -227,7 +227,9 @@ def main():
 
     d4 = [x - y for x, y in zip(g_of["sel05b_n4"], g_met)]
     m4, (l4, h4) = sum(d4) / len(d4), paired_boot(d4, rng)
-    bands.append(("F4 compute-matched head-to-head (0.94x)", "sel05b_n4 - metered_k10",
+    bands.append((f"F4 compute-matched head-to-head "
+                   f"({next(r['cost_vs_metered'] for r in rows if r['arm'] == 'sel05b_n4'):.2f}x)",
+                   "sel05b_n4 - metered_k10",
                   round(m4, 4), round(l4, 4), round(h4, 4),
                   "MATCHED-COMPUTE PARITY" if l4 <= 0 <= h4 else
                   "MATCHED-COMPUTE WIN" if m4 > 0 else "MATCHED-COMPUTE LOSS"))
