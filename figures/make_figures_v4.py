@@ -629,17 +629,25 @@ def imitation_cost():
     axR.plot([0, 1], [0, 1], color="0.55", lw=1.1, ls="--", label="uniform over steps")
     # k = 3 and k = 20 lie on top of each other, which is the point: once the meter stops binding
     # the shape of the spend stops depending on the cap. Dashed so both are visible.
+    budget_lines = {}
     for k, ls, col in (("0.5", "-", "C0"), ("20", "-", "C2"), ("3", "--", "C1")):
         v = [(float(r["frac_of_steps"]), float(r["frac_of_spend"])) for r in lz if r["k"] == k]
         v.sort()
-        axR.plot([0] + [x for x, _ in v], [0] + [y for _, y in v], lw=1.4, ls=ls, color=col,
-                 label=f"$k = {k}$")
+        budget_lines[k], = axR.plot([0] + [x for x, _ in v], [0] + [y for _, y in v],
+                                    lw=1.4, ls=ls, color=col, label=f"$k = {k}$")
     axR.plot([0, 0.02, 1], [0, 1, 1], color="C3", lw=1.2, ls=":",
              label="what Proposition 5 needs")
     axR.set_xlabel("fraction of steps, busiest first")
     axR.set_ylabel("share of the spend")
     axR.set_title("(b) where it spends it", fontsize=8)
-    axR.legend(frameon=False, loc="lower right")
+    # The DRAW order has to stay 0.5, 20, 3 so the dashed k=3 lands on top of the solid k=20 and
+    # both are visible; the legend does not, and read "k = 0.5, k = 20, k = 3" until 2026-09-17.
+    h, l = axR.get_legend_handles_labels()
+    by = dict(zip(l, h))
+    order = ["uniform over steps"] + [f"$k = {k}$" for k in sorted(budget_lines, key=float)] + \
+            ["what Proposition 5 needs"]
+    assert set(order) == set(l), (order, l)
+    axR.legend([by[x] for x in order], order, frameon=False, loc="lower right")
     axR.grid(alpha=0.25, lw=0.5)
     _save(fig, "imitation_cost")
 
