@@ -418,3 +418,76 @@ def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
     for r in rows:
         n = int(float(r["n"]))
         assert abs(float(r["kl_nats"]) - kl_best_of_n(n)) < 5e-5, (n, r["kl_nats"])
+
+
+def _live_sections():
+    import glob as _glob, os as _os, re as _re
+    from tests.manuscript import DIR as _DIR
+    live = [f for f in _glob.glob(_os.path.join(_DIR, "sections", "*.tex"))
+            if not _re.search(r"_v\d", _os.path.basename(f))]
+    live.append(_os.path.join(_DIR, "iclr_2027.tex"))
+    assert len(live) > 8, live
+    return live
+
+
+def test_no_selection_bound_is_described_as_a_realisation():
+    """A bound near a realisation word must say it is a bound. Structural, not a blocklist.
+
+    The previous version of this check was a list of five exact phrasings ("measured KL, nats",
+    "realised KL &", ...). That is caution (aj)'s shape --- a guard whose trigger is a sentence
+    someone will reword --- and it retired itself exactly that way: the caption of the paper's ONLY
+    main-text figure said "$x$ the \\emph{realised} divergence" over an axis carrying selection's
+    closed-form log n - (n-1)/n beside the meter's genuinely measured 171.3, and not one of the five
+    strings matched. Fifth instance of the same defect, in the most-read caption in the paper.
+
+    So check the property instead of the spelling: wherever a realisation word sits within 160
+    characters of one of selection's closed-form values, a bound word must sit there too. The
+    metered decoder's 171.3 is untouched by this --- it IS a realisation.
+    """
+    import math
+    import os
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from analysis.selection_decoding import kl_best_of_n
+
+    vals = set()
+    for n in (2, 4, 8, 16, 32, 64, 128, 256):
+        for v in (kl_best_of_n(n), math.log(n)):
+            vals |= {f"${v:.4f}$", f"${v:.3f}$", f"${v:.2f}$"}
+    real = ("realis", "realiz", "measured", "measurement", "actually spends")
+    # "granted" is the one legitimate way a realisation word may sit beside one of these values:
+    # a METERED arm granted log 8 nats up front and measured spending exactly them (appendix_proofs)
+    # is a real measurement whose number coincides with a selection bound only because the budget
+    # was set for comparability. It does not excuse the figure-caption defect this test was written
+    # for, which grants nothing and calls a closed form realised.
+    bound = ("bound", "certificate", "certifies", "at most", "permits", "allows",
+             "closed form", "closed-form", "$\\log n$", "\\log n", "granted")
+
+    bad = []
+    for f in _live_sections():
+        txt = " ".join(open(f, encoding="utf-8").read().split())
+        for w in real:
+            start = 0
+            while (i := txt.find(w, start)) != -1:
+                start = i + 1
+                lo, hi = max(0, i - 160), min(len(txt), i + 160)
+                # Clip at table structure. In a tabular the unit that carries the distinction is
+                # the ROW -- appendix_selection's cost table labels each row's own order, and a
+                # flat character window reads the metered row's "measured mean" beside the
+                # selection rows' $2.079$ and $1.204$ and calls it a defect. Prose still gets the
+                # full window, because the caption bug this test exists for spans two sentences.
+                for sep in ("\\\\", "\\midrule", "\\bottomrule", "\\toprule", "\\end{tabular}"):
+                    j = txt.rfind(sep, lo, i)
+                    if j != -1:
+                        lo = max(lo, j + len(sep))
+                    j = txt.find(sep, i, hi)
+                    if j != -1:
+                        hi = min(hi, j)
+                win = txt[lo:hi]
+                if not any(v in win for v in vals):
+                    continue
+                if any(b in win for b in bound):
+                    continue
+                bad.append((os.path.basename(f), w, win.strip()))
+    assert not bad, ("a selection bound is sitting next to a realisation word with nothing "
+                     f"calling it a bound: {bad[:3]}")

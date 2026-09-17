@@ -460,7 +460,11 @@ def selection_frontier():
     # The legend size and this number move together: a taller box covers the n=64 label, which is
     # caution (ad) reproduced. 0.90 is the headroom a 7.0 * F legend needs at \textwidth.
     ax.set_ylim(0.37, 0.90)
-    ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
+    # NOT "realised": only the metered points are measurements. The selection points are the
+    # closed form log n - (n-1)/n, a BOUND, so an axis calling them realised asserts a
+    # measurement nobody made -- cautions (ae)/(ah)/(am), fifth instance. The caption says
+    # which is which; the label must not contradict it.
+    ax.set_xlabel("divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
