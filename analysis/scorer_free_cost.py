@@ -20,6 +20,14 @@ Three limits are written into the output and belong wherever the numbers are quo
   3. No metered decoder was run on GSM8K. The `x metered` column is this paper's standard cost
      denominator (the 200-token workload of serving_cost.py), NOT a measured head-to-head on this
      task. What the judge-free column compares is each rule against the SAME anchor at n=1.
+  4. THE COST COLUMN AND THE ACCURACY COLUMNS ARE NOT THE SAME SYSTEM, and the difference flatters
+     the scorer-free rule. serving_cost.P_ANCHOR is 1.7586 (TinyComma, the audited anchor) while
+     every accuracy here is Comma-7B's, because that is the anchor that clears the floor on these
+     tasks. Drawing is linear in the anchor, so at Comma-7B each majority-vote cell costs 2.59x
+     more (n=32: 5.75x -> 14.90x) while the reward cells barely move (61.29x -> 62.23x), the
+     scorer dominating them either way. The ORDERING is unchanged -- both rules draw from the same
+     anchor -- but the SIZE of the saving is not: at a matched n majority vote is 18.8% of the
+     reward rule at 1.8B and 47.9% at 7.0B. Report both, and put the second beside the accuracies.
 
 And the thing it must not be read as saying: majority vote does not reach the unconstrained risky
 model, which scores 0.786 greedy on these problems against its 0.546. The claim is about the

@@ -19,7 +19,31 @@ carries the identical `log n` certificate, because Proposition 1 assumes nothing
 score and a mode is a score. The paper has said since v8 that self-consistency is an instance of the
 mechanism. It has never said that the instance is also by far the cheapest one.
 
+## Correction, 2026-09-18: the cost column and the accuracy columns are not the same system
+
+Found on read-through 5. `analysis/serving_cost.P_ANCHOR` is `1.7586` --- TinyComma, the **audited**
+anchor --- while every accuracy in the table below is **Comma-7B's**, because Comma-7B is the anchor
+that clears the floor on GSM8K and TriviaQA. Drawing is linear in the anchor, so the cost column
+prices a system that did not produce these accuracies, **in the direction that flatters the
+scorer-free rule**:
+
+| rule | `n` | cost at the audited `1.8`B | cost at Comma-7B |
+|---|---|---|---|
+| majority vote | 8 | `1.44x` | `3.73x` |
+| majority vote | 32 | `5.75x` | `14.90x` |
+| majority vote | 64 | `11.50x` | `29.81x` |
+| reward `7.6`B | 32 | `30.64x` | `31.12x` |
+| reward `7.6`B | 64 | `61.29x` | `62.23x` |
+
+The reward cells barely move because the `7.6`B scorer dominates them at either anchor; the
+majority-vote cells move by `2.59x` because the anchor IS their whole cost. **The ordering survives
+and so does every comparison built on it** --- both rules draw from the same anchor, so the table's
+ranking is unchanged --- but the *size* of the scorer-free saving is not anchor-free: at a matched
+`n` majority vote costs `18.8%` of the reward rule at `1.8`B and `47.9%` at `7.0`B, `2.55x` less of
+a saving. The manuscript now reports both and says which belongs with the accuracies.
+
 ## The table
+
 
 Sorted by serving cost. Accuracies are feat-101's and feat-118's, unchanged; the cost column is the
 model in `analysis/serving_cost.py`, unchanged.
