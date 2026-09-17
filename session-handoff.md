@@ -1,6 +1,25 @@
-# Session handoff — 2026-09-17 19:05 (third read-through complete: twelve defects, five new guards)
+# Session handoff — 2026-09-17 22:45 (the ICLR reframe, and two GPU arms in flight)
 
-## The third full read-through is DONE. Nothing of ours is running.
+## TWO ARMS ARE RUNNING. `results/onset_prediction_n256.md` is committed and UNSCORED.
+
+| card | queue shell | log | job |
+|---|---|---|---|
+| GPU 1 | `scripts/run_n128_card1.sh` | `output/logs/n128_card1.log` | Arm A generation, neutral 200 x 128; then Arm B, extraction to n=256 |
+| GPU 2 | `scripts/run_n128_card2.sh` | `output/logs/n128_card2.log` | Arm A generation, creative+factual 300 x 128; then the merge and the scoring to n=128 |
+
+Card 2 waits for card 1 on the **file** `output/phase5/sel_anchor128_neutral/GEN_DONE`, which card 1
+writes only on rc=0 (caution (c): never wait on the absence of a pattern match). Expected
+**~17.8 GPU-hours** total against measured rates, under the 24-hour escalation threshold; the basis
+is the table in `## Compute` of the pre-registration, not an estimate.
+
+**Two things the sizing turned up, both recorded in that log's `## Amendment`:** a 4-prompt
+throughput smoke measured `0.356` traj/s where the 500-prompt arm on record ran at `2.157` --- four
+prompts cannot fill a `--batch-size 64` batch, so it measured the padding --- and `--max-n` could
+**not form the arm the pre-registration named**, because `selection_scaling.py` filtered a hardcoded
+`GRID` that stops at 64. `n_grid()` now extends by doubling and `tests/test_selection_grid.py` pins
+both halves.
+
+## The third full read-through is DONE.
 
 Pages 1–10 and Figure 1 read on the **rendered page**, plus appendix pages 21, 24, 26, 43, 44, 46.
 **Twelve defects, all fixed**, and five of them were in prose written in the last two days.
@@ -40,7 +59,17 @@ words in body text on the same page**.
 
 ## Current objective
 
-**None outstanding.** A *second* review (Soundness 3/4, **Presentation 1/4**, Contribution 2/4,
+**Finish the ICLR reframe and score the two arms above.** The user's direction (2026-09-17
+evening) is that the paper must lead with its contribution rather than report hypotheses and their
+outcomes, be figure- and table-driven, and carry self-contained captions. Phases 1 and 2 are
+committed: the abstract and introduction now lead with *a certificate whose size does not grow with
+the work*, Figure 1 is the overview figure on page 2, and Section 5's three repair paragraphs became
+Table 2. **What remains:** the fourth appendix read-through is paused at page 22 (pages 23, 25,
+27--42, 45, 47--58 unread); Section 3's four-anchor breadth paragraph is a dot-plot waiting to be
+drawn; and `results/onset_prediction_n256.md` must be scored against its committed bands when the
+two cards drain.
+
+A *second* review (Soundness 3/4, **Presentation 1/4**, Contribution 2/4,
 **4/10 Reject**) was worked by depth rather than breadth, as asked. Four arms, bands committed
 before each ran, all four scored — `feat-125` the sparse causal policy, `feat-126` whether α=8 is
 the trivial horn, `feat-127` paraphrase-class leakage, `feat-128` the bigger safe model. **Three of
@@ -51,7 +80,7 @@ An earlier review (Reject 5 → Weak Accept 6) was closed the same way last sess
 contamination screen (`feat-122`), **R2** the independent head-to-head repeat (`feat-123`), **R3**
 per-arm GPU-seconds (`feat-124`), two of three against the paper. Both passes are recorded below.
 
-**63 pre-registrations, all 63 scored. 567 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
+**64 pre-registrations, 63 scored and `onset_prediction_n256.md` in flight. 580 tests, `./init.sh` exit 0. Manuscript compiles exit 0,
 with 0 overfull and 0 underfull at badness 10000, 0 `??`, `pdffonts | grep -ci bold` = 3, body
 inside 9 pages (the Ethics Statement opens on page 10 and page 10 carries no body prose), 57 total.
 Artifact 939 files. Compute 295.3 → 298.6 GPU-hours; the disclosure reads `at most $299$` and
