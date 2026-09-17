@@ -1,15 +1,41 @@
-# Session handoff — 2026-09-16 18:35 (read-through done, every defect fixed; nothing running; the GPU window has lapsed)
+# Session handoff — 2026-09-17 12:20 (the reviewer's three top fixes are all run and scored; nothing of ours is running; all four A100s belong to other users)
 
 ## Current objective
 
-**None outstanding.** The convergence crossover is closed in both directions and in the paper, and
-the full read-through of the rendered PDF is done --- **nine defects, all nine now fixed**. No job of
-ours holds a GPU and the tree is clean, verified at **`0b93109`**.
+**None outstanding.** A reviewer (Reject 5 → Weak Accept 6) named three fixes to close the deal, and
+all three are done as experiments rather than as prose: **R1** the contamination screen at
+OLMo-2 scale (`feat-122`), **R2** an independent repeat of the head-to-head (`feat-123`), **R3**
+per-arm GPU-seconds (`feat-124`). Each had its bands committed before it ran; two of the three
+returned something **against** the paper and the text was changed accordingly. Tree clean, nothing
+of ours on a GPU.
 
-**56 pre-registrations, all 56 scored. 538 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
-overfull, 0 `??`, body inside 9 pages (page 10 carries only uncounted end matter), 55 total. 3,354
-numeric literals, one expected `64256` miss. Artifact 901 files. Compute 283.0 GPU-hours, fine-tunes
-72.7 over 42 runs.**
+**59 pre-registrations, all 59 scored. 546 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
+overfull, 0 `??`, `pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on
+page 9), 56 total. 3,483 numeric literals, one expected `64256` miss.**
+
+### What the three arms changed in the paper
+
+| | asked | answered | what moved in the text |
+|---|---|---|---|
+| **R1** | screen OLMo-2/DCLM | **Band A holds, Band B fails.** Five licensed anchors `0.000`, OLMo-2-7B `0.040`, OLMo-2-13B `0.120`, 70B control `0.500` | the licensing premise is **measured**, not asserted; Ethics Statement rewritten; DCLM substituted (every checkpoint declares `model_type: openlm`), recorded before any model ran |
+| **R2** | repeat the head-to-head, ideally judge C | **all three new D3 estimates CONFIRMED**; the fresh draw reproduces `+0.0645` to `0.001` | new Appendix I paragraph with the four-row table; a registered expectation (judge C would be harsh) **withdrawn**; arm B's one-sided independence stated as a limit |
+| **R3** | per-arm GPU-seconds | **MODEL HOLDS at `R=35.4x`** (band 30–123) **but the secondary FIRES**: the reward pass is `9.3%` of selection's clock, the draws `90.7%` | the paper's "`61.3x` is the price of the reward model, not the mechanism" was **wrong on a clock** and is corrected in Section 5, Appendix I and the closing; the abstract now quotes the measured ratio |
+
+> **R3 is the one to read first if you are picking this up.** The FLOP model is not merely
+> imprecise, it is **backwards about where the money goes**: scoring 64 candidates is one batched
+> forward pass, drawing them is `64 x 204` sequential decode steps. *With a free scorer selection
+> would still cost `32.1x`.* So "a smaller scorer cuts the price" is true of the FLOP count and close
+> to false of the clock — a `1.5B` scorer can return at most the `9.3%` it occupies. **The lever on
+> serving cost is `n`.** Anywhere the FLOP claim survives it now names FLOPs as its currency, and
+> `tests/test_h2h_repeat_and_latency.py` refuses a version that does not.
+
+> **Both new tables are generated from their CSVs by a test, not transcribed.** They had to be: the
+> first draft of the repeat table rounded four intervals a *second* time and put two of them one out
+> in the last digit (caution (j), again), and both scoring logs quoted the extreme-ratio pair as
+> `[32.9, 38.3]` where the timings give `[32.8, 38.5]`. Every one of the five assertions was checked
+> to **fail** under a deliberate one-digit mutation before being kept — the FLOP-currency guard
+> passed vacuously off a "forward-pass FLOPs" two sentences downstream until its window was
+> tightened to ±70 characters.
 
 > **The manuscript now builds with `newtxtext`, not `times`. Never reinstate `times`.** Under
 > tectonic (XeTeX) that package emits **no bold roman at all** --- no warning, exit 0, 0 overfull, 0
@@ -47,13 +73,35 @@ it is not ours. Caution (ab) in AGENTS.md.
 
 ---
 
-## GPU state, and the window
+## GPU state
 
-Read at 18:32 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
+Read at 12:18 with `env -u LD_LIBRARY_PATH nvidia-smi` (caution (ab) — the bare command returns
 nothing):
 
 | card | state |
 |---|---|
+| 0, 1, 2, 4 | **all four in use by other users**, 51–57 GB each at 53–64% util — take none of them without checking again |
+| 3 | T400 4 GB — **never use** |
+
+**Nothing of ours is running.** The multi-GPU instruction of 2026-09-17 ("use all the 3 gpus to
+their fullest vram") applied to the R2/R3 arms, which finished at 02:11 and 23:25. With the box now
+fully occupied, the next GPU arm waits; `CUDA_DEVICE_ORDER=PCI_BUS_ID` stays mandatory and GPU 3 is
+never used.
+
+**Caution (c) took two more incidents this session**, both mine, and the second was caught only by a
+guard. A waiter written as `until ... ! pgrep -f 'snapshot_download'` can never exit, because the
+string is in the polling shell's own command line — it spun 93 minutes past a finished download. And
+`pgrep -u $USER -f 'order_averaged_h2h.py'` returned my *invoking shell*; had that PID been passed to
+the latency launcher, R3 would have started immediately, shared a card, and voided the very
+measurement it exists to make. The pattern that works is
+
+```
+ps -eo pid,args --no-headers | awk '$2 ~ /python$/ && /<script>\.py/ {print $1; exit}'
+```
+
+followed by asserting the PID's argv before waiting on it with `kill -0`.
+
+---|---|
 | 0 | **another user**, 569 MiB — not ours, check before taking it |
 | 1, 2 | idle, 14 MiB |
 | 3 | T400 4 GB — **never use** |

@@ -9,6 +9,85 @@
 
 
 
+## 2026-09-17 12:15 — the reviewer's other two asks, both answered, one of them against us
+
+Reviewer R2 (repeat the head-to-head independently) and R3 (report per-arm GPU-seconds) ran
+overnight beside the vetting arm. Both were registered with the verdict rule fixed first.
+
+**R2 --- `feat-123`, `results/onset_prediction_h2h_independent.md`.** Two real axes; a third was
+considered and rejected as fake, because `order_averaged_h2h.py --seed` drives only the bootstrap
+resample. Arm A re-scored the same generations under judge C; arm B drew a fresh `n=64` pass
+changing only the base seed tuple `42,43,44 -> 52,53,54`, which `build_trajectory_seeds` hashes into
+the high 16 bits so the trajectory seeds are disjoint by construction. Batch size untouched, since
+batch size is part of the seed of a sampled arm (caution (u)).
+
+| draw | judge | D1 selection | D2 metered | **D3** | verdict |
+|---|---|---|---|---|---|
+| 42 (original) | B | +0.1045 | +0.0400 | **+0.0645** [+0.0300,+0.0995] | — |
+| 42 | C | +0.1360 | +0.0740 | +0.0620 [+0.0165,+0.1075] | CONFIRMED |
+| 52 (fresh) | B | +0.1035 | +0.0400 | +0.0635 [+0.0290,+0.0975] | CONFIRMED |
+| 52 (fresh) | C | +0.1740 | +0.0740 | +0.1000 [+0.0520,+0.1465] | CONFIRMED |
+
+The committed rule was that the headline stands as written only if **all three** confirm. All three
+confirm, and the fresh draw at the same judge reproduces the original to **0.001**. Three things
+are reported against us rather than folded in: the seed-52/judge-C estimate falls just outside the
+original interval on the *favourable* side and is quoted separately; the registration's expectation
+that judge C would be harsh was **wrong** (it raised both gains) and is withdrawn; and arm B
+regenerates the **selection** arm only, which is why D2 is identical down each judge column.
+
+`order_averaged_h2h.py` writes fixed filenames and would have clobbered the committed original, so
+it was backed up before any run and restored after --- `diff` clean.
+
+Commands:
+```
+scripts/run_h2h_judgec.sh 2            # arm A
+scripts/run_h2h_independent.sh 1        # arm B, then both judges
+```
+
+**R3 --- `feat-124`, `results/onset_prediction_serving_latency.md`, `results/serving_latency.csv`.**
+The `61.3x` in the abstract is `analysis/serving_cost.py`'s `(P_s+P_r)(L_p+T)` --- a FLOP proxy
+quoted where a deployer reads a price. Both paths timed on one exclusively-held card, interleaved
+`SEL,MET,MET,SEL` so drift cancels, same 40 prompts, one completion served per prompt in both arms
+so the denominators are equal by construction (**8,179 served tokens each**, counted from
+`aggregate.generation_length_tokens` --- the decoded length, immune to caution (s)).
+
+| path | repeats (s) | mean (s) | s / served token |
+|---|---|---|---|
+| selection n=64, the 64 anchor draws | 824.6, 822.6 | 823.60 | 0.1007 |
+| selection n=64, the reward pass | 85.8, 83.1 | 84.44 | 0.0103 |
+| selection n=64, total | 910.4, 905.7 | 908.03 | 0.1110 |
+| metered k=10 | 23.7, 27.6 | 25.64 | 0.0031 |
+
+**Primary: R = 35.42x, inside the committed band 30--123 --> MODEL HOLDS**, but the FLOP model is
+`1.73x` pessimistic as a price. **Secondary FIRES, and it is the finding that matters: the reward
+pass is 9.3% of selection's wall-clock and the 64 draws are 90.7%** --- the opposite of what the
+parameter counts imply, because scoring 64 candidates is one batched forward pass while drawing them
+is `64 x 204` sequential decode steps. The committed rule was *"if the reward pass is less than half
+the measured selection time, the 'price of the reward model, not of the mechanism' argument is
+weakened and the text must say so"*, so **Section 5, Appendix I and the closing were all corrected**
+and the abstract now quotes the measured ratio in place of the modelled one (length-neutral, caution
+(i)). With a free scorer selection would still cost `32.1x`; the lever on serving cost is `n`, not
+the scorer. Repeat spread 0.52% (SEL) / 15.27% (MET); extremes leave R in `[32.8, 38.5]`.
+
+```
+scripts/run_serving_latency.sh 2 <pid-to-wait-on>
+.venv/bin/python analysis/serving_latency.py --out results
+```
+
+**Two arithmetic slips of my own, found by pinning the tables to their CSVs rather than reading
+them.** The first draft of the repeat table rounded four confidence intervals a *second* time,
+putting two of them one out in the last digit (caution (j) again); and both scoring logs quoted the
+extreme-ratio pair as `[32.9, 38.3]` where the timings give `[32.8, 38.5]`. Neither moves a verdict.
+Both are corrected in the manuscript and in the logs, with a dated note in each log.
+`tests/test_h2h_repeat_and_latency.py` now generates every cell of both tables from the CSV, and
+each of its five assertions was verified to *fail* under a deliberate one-digit mutation before
+being kept --- including the FLOP-currency guard, whose first version passed vacuously off a
+"forward-pass FLOPs" two sentences downstream until the window was tightened.
+
+**Verified after the edits:** tectonic exit 0, 0 overfull, 0 `??`, `pdffonts | grep -ci bold` = 3,
+body still inside 9 pages (Ethics Statement opens on page 9), 56 pages total, 3,483 numeric literals
+with the one expected `64256` miss, 546 tests, `./init.sh` exit 0.
+
 ## 2026-09-16 22:40 — the reviewer's scale question, and the instrument defect it surfaced
 
 A reviewer asked why no OLMo/DCLM-scale anchor appears, and noted that the paper argues the

@@ -1,0 +1,10 @@
+quantity,seconds,per_served_token,reps
+"selection n=64, anchor draws",823.596,0.100696,824.6 822.6
+"selection n=64, reward pass",84.435,0.010323,85.8 83.1
+"selection n=64, total",908.031,0.11102,910.4 905.7
+metered k=10,25.637,0.003135,23.7 27.6
+"ratio, measured",,35.418,
+"ratio, analytical (serving_cost.py)",,61.29,
+reward share of selection wall-clock,,0.093,
+ratio if the scorer were free,,32.125,
+served tokens (both arms),,8179,40 prompts
