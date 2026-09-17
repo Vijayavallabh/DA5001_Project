@@ -1,33 +1,34 @@
-# Session handoff — 2026-09-17 12:20 (the reviewer's three top fixes are all run and scored; nothing of ours is running; all four A100s belong to other users)
+# Session handoff — 2026-09-17 12:45 (the reviewer's three top fixes are run, scored and in the paper; nothing of ours is running; all four A100s belong to other users)
 
 ## Current objective
 
-**None outstanding.** A reviewer (Reject 5 → Weak Accept 6) named three fixes to close the deal, and
-all three are done as experiments rather than as prose: **R1** the contamination screen at
-OLMo-2 scale (`feat-122`), **R2** an independent repeat of the head-to-head (`feat-123`), **R3**
-per-arm GPU-seconds (`feat-124`). Each had its bands committed before it ran; two of the three
-returned something **against** the paper and the text was changed accordingly. Tree clean, nothing
-of ours on a GPU.
+**None outstanding.** A reviewer (Reject 5 → Weak Accept 6) named three fixes to close the deal and
+all three are done as *experiments*, not as prose: **R1** the contamination screen at OLMo-2 scale
+(`feat-122`), **R2** an independent repeat of the head-to-head (`feat-123`), **R3** per-arm
+GPU-seconds (`feat-124`). Each had its bands committed before it ran; **two of the three returned
+something against the paper and the text was changed accordingly.** Tree clean at **`28854af`**,
+nothing of ours on a GPU.
 
 **59 pre-registrations, all 59 scored. 546 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
 overfull, 0 `??`, `pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on
-page 9), 56 total. 3,483 numeric literals, one expected `64256` miss.**
+page 9), 56 total. 3,483 numeric literals, one expected `64256` miss. Artifact 939 files. Compute
+283.0 → 295.3 GPU-hours as the three arms landed; the disclosure moved with it.**
 
 ### What the three arms changed in the paper
 
 | | asked | answered | what moved in the text |
 |---|---|---|---|
-| **R1** | screen OLMo-2/DCLM | **Band A holds, Band B fails.** Five licensed anchors `0.000`, OLMo-2-7B `0.040`, OLMo-2-13B `0.120`, 70B control `0.500` | the licensing premise is **measured**, not asserted; Ethics Statement rewritten; DCLM substituted (every checkpoint declares `model_type: openlm`), recorded before any model ran |
-| **R2** | repeat the head-to-head, ideally judge C | **all three new D3 estimates CONFIRMED**; the fresh draw reproduces `+0.0645` to `0.001` | new Appendix I paragraph with the four-row table; a registered expectation (judge C would be harsh) **withdrawn**; arm B's one-sided independence stated as a limit |
-| **R3** | per-arm GPU-seconds | **MODEL HOLDS at `R=35.4x`** (band 30–123) **but the secondary FIRES**: the reward pass is `9.3%` of selection's clock, the draws `90.7%` | the paper's "`61.3x` is the price of the reward model, not the mechanism" was **wrong on a clock** and is corrected in Section 5, Appendix I and the closing; the abstract now quotes the measured ratio |
+| **R1** | screen OLMo-2/DCLM | **Band A holds, Band B fails.** Five licensed anchors `0.000`, OLMo-2-7B `0.040`, OLMo-2-13B `0.120`, 70B control `0.500` | the licensing premise is **measured**, not asserted; Section 3, the vetting table and the Ethics Statement rewritten; DCLM substituted (every checkpoint declares `model_type: openlm`), recorded before any model ran |
+| **R2** | repeat the head-to-head, ideally judge C | **all three new D3 estimates CONFIRMED**; the fresh draw reproduces `+0.0645` to `0.001` | new Appendix I paragraph `app:h2hrepeat` with the four-row table; a registered expectation (judge C would be harsh) **withdrawn**; arm B's one-sided independence stated as a limit |
+| **R3** | per-arm GPU-seconds | **MODEL HOLDS at `R=35.4x`** (band 30–123) **but the secondary FIRES**: the reward pass is `9.3%` of selection's clock, the draws `90.7%` | the paper's "`61.3x` is the price of the reward model, not the mechanism" was **wrong on a clock** — corrected in Section 5, Appendix I (`app:latency`) and the closing; the abstract now quotes the measured ratio |
 
 > **R3 is the one to read first if you are picking this up.** The FLOP model is not merely
 > imprecise, it is **backwards about where the money goes**: scoring 64 candidates is one batched
 > forward pass, drawing them is `64 x 204` sequential decode steps. *With a free scorer selection
 > would still cost `32.1x`.* So "a smaller scorer cuts the price" is true of the FLOP count and close
 > to false of the clock — a `1.5B` scorer can return at most the `9.3%` it occupies. **The lever on
-> serving cost is `n`.** Anywhere the FLOP claim survives it now names FLOPs as its currency, and
-> `tests/test_h2h_repeat_and_latency.py` refuses a version that does not.
+> serving cost is `n`.** Where the FLOP claim survives it now names FLOPs as its currency, and
+> `tests/test_h2h_repeat_and_latency.py` refuses a version that does not. Caution **(ae)**.
 
 > **Both new tables are generated from their CSVs by a test, not transcribed.** They had to be: the
 > first draft of the repeat table rounded four intervals a *second* time and put two of them one out
@@ -198,7 +199,7 @@ before joining lines.
 
 ---
 
-## Closed this session (24 commits since `3f047e8`)
+## Closed this session (36 commits since `3f047e8`)
 
 - **Four seed ladders scored.** The fourth overturned "seeds do not move the onset ratio", written
   six hours earlier; the paper now says reproducible *where the fine-tune converged and the
@@ -218,6 +219,15 @@ before joining lines.
   rather than an onset, a 3-seed-vs-4-seed comparison that broke a rule the paper states two pages
   earlier, and two cross-references the v8 reorder had silently broken. The last two figures
   (5 and 2) were fixed after the main commit, on request.
+- **The reviewer's three top fixes, all as experiments** (`feat-122`/`123`/`124`, sections above).
+  Twelve commits, ~13 GPU-hours, three pre-registrations each scored against bands committed before
+  its run. Two of the three landed *against* the paper and the text moved: the licensing premise
+  stopped being an assertion, and the cost claim was corrected in four places including the abstract.
+  Also **repaired a defect in the paper's newest contribution** on the way in — `anchor_vetting.csv`
+  had compared two protocols and called it a separation between models.
+- **Compute disclosure `283` → `295` GPU-hours** (`iclr_2027.tex:163`), because the three arms ran.
+  `analysis/compute_hours.py` rewrites `results/compute_hours{,_summary}.csv` every time it is run
+  and `tests/test_compute_hours.py` reads the manuscript back, so the two cannot drift silently.
 - **A compute bug fixed** that a ten-minute run exposed: `compute_hours.py` removed only the largest
   idle gap, so `output/composition` (a rolling `--text-out` target) billed 110 idle hours. Total
   261.7 → 376.8 → 265.9 → **283.0** as the crossover's own hours landed. Disclosure 262 → **283**,
@@ -268,6 +278,66 @@ and recipe.
 
 ---
 
+## SCORED: the independent head-to-head (`onset_prediction_h2h_independent.md`, `feat-123`)
+
+Arm A finished 22:53 on GPU 2, arm B 02:11 on GPU 1. The registration fixed the verdict rule first:
+the headline stands as written **only if all three** new estimates are positive with intervals
+excluding zero.
+
+| draw | judge | D1 selection | D2 metered | **D3** | verdict |
+|---|---|---|---|---|---|
+| 42 (original) | B | `+0.1045` | `+0.0400` | **`+0.0645`** `[+0.0300,+0.0995]` | — |
+| 42 | C | `+0.1360` | `+0.0740` | `+0.0620` `[+0.0165,+0.1075]` | **CONFIRMED** |
+| 52 (fresh) | B | `+0.1035` | `+0.0400` | `+0.0635` `[+0.0290,+0.0975]` | **CONFIRMED** |
+| 52 (fresh) | C | `+0.1740` | `+0.0740` | `+0.1000` `[+0.0520,+0.1465]` | **CONFIRMED** |
+
+All three confirm, and **the fresh draw at the same judge reproduces the original to `0.001`** —
+a stronger answer than the arm was designed to give, since `build_trajectory_seeds` hashes the
+`--seeds` tuple into the high 16 bits, so `52,53,54` gives 64 trajectory seeds disjoint from
+`42,43,44` by construction. **Three things reported against us rather than folded in:** the
+seed-52/judge-C estimate falls just outside the original interval on the *favourable* side and is
+quoted separately; the registration's claim that judge C would be a **harsh** test (it is the fixed
+opponent's own checkpoint, caution (aa)) was **wrong** — it raised both gains — and is withdrawn in
+the paper; and arm B regenerates the **selection** arm only, which is why D2 is identical down each
+judge column, so the independence is generation-level on one side and judge-level on both.
+
+A third "different bootstrap seed" axis was considered and **rejected as fake**:
+`order_averaged_h2h.py --seed` drives only `paired_boot`, not the judging and not the presentation
+order, so it would jiggle CI endpoints and prove nothing.
+
+`order_averaged_h2h.py` writes **fixed filenames** and would have clobbered the committed original.
+It was backed up to `*_seed42_judgeB.csv` before any run, each launcher restores the canonical file
+at the end, and `diff` is clean — `git diff results/order_averaged_h2h.csv` is empty.
+
+---
+
+## SCORED: what `61.3x` costs on a clock (`onset_prediction_serving_latency.md`, `feat-124`)
+
+Ran 22:53--23:25 on GPU 2, exclusively ours, interleaved `SEL,MET,MET,SEL` so drift cancels. Both
+arms serve one completion per prompt over the same 40 prompts — **8,179 served tokens each**, so the
+ratio of seconds-per-served-token *is* the wall-clock ratio, and `serving_latency.py` asserts the
+denominators are equal rather than assuming it.
+
+| path | repeats (s) | mean (s) | s / served token |
+|---|---|---|---|
+| selection n=64, the 64 anchor draws | 824.6, 822.6 | 823.60 | 0.1007 |
+| selection n=64, the reward pass | 85.8, 83.1 | 84.44 | 0.0103 |
+| selection n=64, total | 910.4, 905.7 | 908.03 | 0.1110 |
+| metered k=10 | 23.7, 27.6 | 25.64 | 0.0031 |
+
+**Primary `R = 35.42x`, inside the committed 30–123 band → MODEL HOLDS**, but the FLOP model is
+`1.73x` pessimistic as a price. **Secondary FIRES**, and it is the finding that matters: the
+committed rule was *"if the reward pass is less than half the measured selection time, the 'price of
+the reward model, not of the mechanism' argument is weakened and the text must say so"* — it is
+`9.3%`. Repeat spread `0.52%` (SEL) and `15.27%` (MET, i.e. 3.9 s on a 25 s job, which is why both
+repeats are printed); extremes leave `R` in `[32.8, 38.5]`.
+
+Two design rules the measurement depended on, both now in caution (ae): equal denominators by
+construction, and the served-token count from `aggregate.generation_length_tokens` (the **decoded**
+length) rather than the per-step log, which is padded past the end of the generation (caution (s)).
+
+---
+
 ## What is actually left
 
 Nothing is blocking. In descending value:
@@ -277,10 +347,42 @@ Nothing is blocking. In descending value:
    vs `4.0058`). **The paper follows `onset_ci.csv`, which is correct** --- it is the source that also
    supplies the table's CIs, and it matches on all twelve cells. Nothing tests that the two agree.
    Do not "fix" the paper against `strength_ladder.csv`.
-2. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
+2. **The reviewer's remaining points, deliberately not taken.** The instruction was depth over
+   breadth, so three were worked to completion and the rest were judged not worth the space:
+   a third judge (B and C are the only two available --- judge A supplies the selection reward and
+   may not score the arm it selected), a second protected corpus for the selection sections (the
+   nine-pair onset work already runs on two), and a formal treatment of the approximation gap
+   between the optimal budget-`K` policy and our causal decoder, which the paper states as its open
+   problem rather than closing. Each is a real gap; none is a defect.
+3. **`fineb_kl3m_s1`/`s2` are on disk with sweeps deliberately dropped** as secondary-only by their
    own pre-registration. Reinstating them would need a new pre-registration; it is not a gap.
-3. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
+4. Nothing else. `feat-010`/`011` remain optional and unstarted; `feat-012` is superseded by
    `feat-024`; **`feat-016` is human-only and must never be started.**
+
+### Files changed since `9a76354`
+
+**Repo** (committed, tree clean at `28854af` plus the compute-hours refresh):
+`analysis/{anchor_vetting,serving_latency}.py` · `scripts/run_{vetting_protocol,vetting_split,h2h_independent,h2h_judgec,serving_latency}.sh` ·
+`tests/{test_anchor_vetting,test_h2h_repeat_and_latency}.py` ·
+`results/onset_prediction_{vetting_protocol,h2h_independent,serving_latency}.md` (registered, then scored) ·
+`results/{anchor_vetting,serving_latency}.csv`, `results/vet_*`, `results/order_averaged_h2h_seed{42_judgeB,42_judgeC,52_judgeB,52_judgeC}.csv`,
+`results/selection_{rewards64,scaling}_seed52.csv` · `results/compute_hours{,_summary}.csv` ·
+`AGENTS.md` (caution (ae), count → thirty-one) · `feature_list.json` (feat-122/123/124) ·
+`progress.md` · `session-handoff.md` · `artifact/` (939 files).
+
+**Manuscript** (`~/sub/satml/`, never committed — it sits inside a stray home git repo):
+`iclr_2027.tex` (abstract cost clause, compute disclosure, pre-registration count) ·
+`sections/appendix_selection.tex` (vetting table rebuilt as two protocol blocks, `app:h2hrepeat`
+and `app:latency` added, the FLOP claims qualified) · `sections/selection.tex` ·
+`sections/iclr_intro.tex` · `sections/iclr_closing.tex` · `sections/experiments.tex`.
+
+### Recommended next step
+
+**Nothing technical.** The paper is submission-ready and every thread this session opened is closed
+and scored. If more time is spent on it, the highest-value use is a second full read-through of the
+rendered PDF — the last one found nine defects that no compile-time check could see, and the
+document has since gained two appendix tables and changed its abstract. Render pages to PNG and look
+at them; `grep` sees none of that class.
 
 ### Human-only, and close
 
