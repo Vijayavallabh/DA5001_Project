@@ -141,3 +141,21 @@ difference between them is not cleanly a size effect and nothing here extrapolat
 The control, opponent, judge and prompt set were untouched; no level is quoted across passes (both
 statistics are gains over the shared TinyComma-alone control); no second pair of anchors was
 substituted; and $G_A$ is reported against TinyComma's $n=64$ number, not its $n=8$ one.
+
+### Addendum, 2026-09-17 (third read-through): the committed statistic is now computed, not just logged
+
+The paired difference above was formed by hand at scoring time and lived only in this log, so the
+manuscript would have quoted a number that is in no CSV. `analysis/bigger_anchor.py` now computes
+it, together with the determinism check the pairing depends on, and writes it to
+`results/bigger_anchor.csv`:
+
+```
+G_A - G_B  direct paired difference of the served arms,-0.0995,-0.122,-0.0765,500,
+  "Comma-7B alone minus TinyComma n=64; no control, cross-pass, judging deterministic on 500/500"
+```
+
+The point estimate reproduces exactly. The upper endpoint reads $-0.0765$ against the $-0.0770$
+recorded above --- $5\times10^{-4}$ of bootstrap noise from a different resampling stream, on the
+same 500 paired values. **The manuscript quotes the CSV.** The verdict, the sign and the exclusion
+of zero are unchanged. The $500/500$ control-verdict check that licenses cross-pass pairing is no
+longer a sentence in this log: the script asserts it and refuses to emit the row otherwise.

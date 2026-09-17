@@ -45,6 +45,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--per-prompt", default="results/order_averaged_h2h_per_prompt_comma7b_alone.csv")
+    ap.add_argument("--canonical-per-prompt",
+                    default="results/order_averaged_h2h_per_prompt.csv",
+                    help="the canonical pass, for the cross-pass paired difference")
     ap.add_argument("--seed", type=int, default=7717)
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
@@ -64,6 +67,25 @@ def main():
     loA, hiA = paired_boot(dA, rng)
     loS, hiS = paired_boot(dSel, rng)
 
+    # The committed band is read on the DIFFERENCE of the two gains, and the two gains come from
+    # two passes with two different "anchor sampled once" controls -- this pass's `anchor_k0` (the
+    # sweep_plain draw) and the canonical pass's `sel_n1` (the selection run's own rank-0 draw).
+    # They differ by about 0.010 in mean, so differencing the two means is NOT the paired
+    # difference. The direct paired difference of the two SERVED arms needs no control at all and
+    # is immune to the mismatch. Pairing across passes is sound only because judging is
+    # deterministic, which is asserted here rather than left in a log.
+    canon = {r["prompt_id"]: r for r in csv.DictReader(open(a.canonical_per_prompt,
+                                                           encoding="utf-8"))}
+    shared = [r for r in rows if r["prompt_id"] in canon]
+    assert len(shared) == len(rows), (len(shared), len(rows), "the two passes disagree on prompts")
+    same = sum(float(r[ctrl]) == float(canon[r["prompt_id"]]["u_anchor_k0"]) for r in shared)
+    assert same == len(shared), (
+        same, len(shared), "judging is not deterministic across these passes, so the cross-pass "
+        "pairing below is invalid -- do not quote the difference")
+    dDiff = [float(r[big]) - float(canon[r["prompt_id"]]["u_sel_n64"]) for r in shared]
+    gDiff = sum(dDiff) / len(dDiff)
+    loD, hiD = paired_boot(dDiff, rng)
+
     # the committed reading: does serving the bigger anchor once match TinyComma at n=64?
     verdict = ("BUY THE BIGGER ANCHOR" if gA >= G_B or hiA >= G_B else
                "SELECTION EARNS ITS PRICE")
@@ -75,6 +97,10 @@ def main():
         dict(quantity="Comma-7B n=64, over TinyComma alone", value=round(gSel, 4),
              lo95=round(loS, 4), hi95=round(hiS, 4), n=len(rows),
              note="context: selection ON the bigger anchor"),
+        dict(quantity="G_A - G_B  direct paired difference of the served arms",
+             value=round(gDiff, 4), lo95=round(loD, 4), hi95=round(hiD, 4), n=len(shared),
+             note="Comma-7B alone minus TinyComma n=64; no control, cross-pass, judging determin"
+                  "istic on %d/%d" % (same, len(shared))),
         dict(quantity="verdict", value=verdict, lo95="", hi95="", n=len(rows),
              note="BUY THE BIGGER ANCHOR if G_A >= G_B or its interval reaches G_B"),
     ]

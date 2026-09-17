@@ -2,4 +2,5 @@ quantity,value,lo95,hi95,n,note
 "G_A  Comma-7B alone, over TinyComma alone",0.015,-0.0065,0.0365,500,"the larger safe model, n=1"
 "G_B  TinyComma n=64, over the same control",0.1045,0.082,0.128,500,"on record, results/order_averaged_h2h.csv"
 "Comma-7B n=64, over TinyComma alone",0.1755,0.1505,0.201,500,context: selection ON the bigger anchor
+G_A - G_B  direct paired difference of the served arms,-0.0995,-0.122,-0.0765,500,"Comma-7B alone minus TinyComma n=64; no control, cross-pass, judging deterministic on 500/500"
 verdict,SELECTION EARNS ITS PRICE,,,500,BUY THE BIGGER ANCHOR if G_A >= G_B or its interval reaches G_B
