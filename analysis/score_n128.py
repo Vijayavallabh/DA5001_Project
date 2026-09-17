@@ -35,38 +35,77 @@ def rows(path):
     return list(csv.DictReader(open(path, encoding="utf-8")))
 
 
-def reproduction_gate(new, old, tol=5e-4):
-    """Every arm at n <= 64 must agree with the committed sweep, on every judge."""
+def reward_gate(new_cache, old_cache, top=64):
+    """Ranks 0..top-1 of the new pool must be BIT-IDENTICAL to the committed pool.
+
+    CORRECTED 2026-09-18, after the first version failed on data it should have passed.
+
+    The first version compared judged `gain` across the two passes at a 5e-4 tolerance. That can
+    never pass and should never have been written: the judge is a stochastic instrument whose
+    cross-pass drift this paper measures and prints -- "an identical configuration re-run moves a
+    gain by about 0.04" -- and caution (m) says in terms that an absolute judged level must never be
+    quoted across passes. The gate quoted one. On the real data the null arm's level moved 0.435 ->
+    0.478 under judge B on TEXT THAT WAS BYTE-FOR-BYTE THE SAME, and every gain moved with it.
+
+    What the pre-registration's reproduction ARGUMENT actually established is about generation and
+    reward, not about the judge: build_trajectory_seeds hashes the draw index, E1 seeds per seed
+    group, and the reward items are built prompt-major with 64 and 128 both multiples of the reward
+    batch size -- so ranks 0..63 are the same trajectories and carry the same rewards. That is what
+    this gate now checks, and it is a far stronger check than the one it replaces: 32,000 floats
+    compared exactly rather than 28 summary cells compared loosely.
+
+    The registered band is unaffected either way, because it is the PAIRED g(128) - g(64) computed
+    WITHIN the new pass -- one judging pass, so the between-pass drift cannot reach it.
+    """
+    if new_cache is None or old_cache is None:
+        return None, "one of the two reward caches is missing"
+    k = lambda r: (r["prompt_id"], int(r["rank"]))              # noqa: E731
+    o = {k(r): float(r["reward"]) for r in old_cache}
+    n = {k(r): float(r["reward"]) for r in new_cache if int(r["rank"]) < top}
+    missing = [x for x in o if x not in n]
+    bad = [(x, o[x], n[x]) for x in o if x in n and abs(o[x] - n[x]) > 0]
+    if missing:
+        bad = [(m, o[m], None) for m in missing[:5]] + bad
+    return (not bad), bad
+
+
+def judge_drift(new, old):
+    """Reported, never gated: how far the judge moved on identical text between the two passes."""
     if new is None or old is None:
-        return None, "one of the two sweeps is missing"
+        return []
     key = lambda r: (r["judge"], int(float(r["n"])))            # noqa: E731
     o = {key(r): r for r in old}
-    bad = []
+    out = []
     for r in new:
         k = key(r)
         if k[1] > 64 or k not in o:
             continue
-        for col in ("gain", "gain_lo95", "gain_hi95", "kl_nats"):
-            a, b = float(r[col]), float(o[k][col])
-            if abs(a - b) > tol:
-                bad.append((k, col, a, b))
-    return (not bad), bad
+        out.append((k, float(o[k]["u"]), float(r["u"]),
+                    abs(float(o[k]["mean_words"]) - float(r["mean_words"]))))
+    return out
 
 
 def arm_a(a):
     new = rows(os.path.join(a.out, f"selection_scaling{a.tag}.csv"))
     old = rows(os.path.join(a.out, "selection_scaling.csv"))
-    ok, bad = reproduction_gate(new, old)
+    ok, bad = reward_gate(rows(os.path.join(a.out, f"selection_rewards{a.top}.csv")),
+                          rows(os.path.join(a.out, "selection_rewards64.csv")))
     print("=== Arm A: the judged frontier to n=128 ===")
     if ok is None:
         print(f"  NOT YET SCOREABLE: {bad}")
         return None
-    print(f"  reproduction of the n<=64 half: {'PASS' if ok else 'FAIL'}")
+    print(f"  reproduction of ranks 0-63 (rewards, exact): {'PASS' if ok else 'FAIL'}")
     if not ok:
-        for k, col, x, y in bad[:8]:
-            print(f"    {k} {col}: new {x} vs committed {y}")
+        for x in bad[:8]:
+            print(f"    {x}")
         print("  Per the pre-registration, NO n>64 number is read. Chase the bug.")
         return None
+    drift = judge_drift(new, old)
+    worst = max((abs(b - c), k) for k, b, c, _ in drift) if drift else (0, None)
+    words = max((w for _, _, _, w in drift), default=0.0)
+    print(f"  the judge is NOT reproducible across passes and is not gated on: worst level move "
+          f"{worst[0]:+.4f} at {worst[1]}, on generations whose mean_words differ by {words:.4f}")
+    print("  (the band below is the PAIRED difference within THIS pass, so the drift cannot reach it)")
 
     per = rows(os.path.join(a.out, f"selection_scaling_per_prompt{a.tag}.csv"))
     assert per, "the per-prompt file is required for the PAIRED difference"
@@ -140,6 +179,8 @@ def arm_b(a):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
+    ap.add_argument("--top", type=int, default=128,
+                    help="the reward cache suffix of the new pass")
     ap.add_argument("--tag", default="_n128")
     a = ap.parse_args()
     out = [x for x in (arm_a(a), arm_b(a)) if x]

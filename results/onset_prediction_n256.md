@@ -172,6 +172,79 @@ $n = 256$. It does **not** cover $n=128$, which neither arm measures for extract
 committed grid is $1, 8, 64, 256$ and Arm A measures the judged frontier, not leakage. So the
 paper says "at every $n \le 64$, and at $n = 256$" and never "at any $n \le 256$".
 
-### Arm A
+### Arm A, scored 2026-09-18 02:55 --- **SATURATED BY 64**
 
-*(still running; card 2 was at 12,600/19,200 on the creative split at 01:43)*
+The registered read is the paired $g(128) - g(64)$ under judge~B over the same $500$ prompts:
+
+**$+0.0140$ $[-0.0180, +0.0460]$ --- the interval includes $0$.**
+
+By the committed table that is **SATURATED BY 64**: the curve has a ceiling between $64$ and $128$,
+Appendix~I's "still climbing at $n=64$" is withdrawn and replaced by where it stops, and the headline
+$n=64$ numbers are unaffected.
+
+#### The gate failed as written, and the gate was wrong
+
+The reproduction check refused the arm on first run. It compared judged `gain` at $n \le 64$ against
+`selection_scaling.csv` at a $5\times10^{-4}$ tolerance --- and **that check can never pass**, for a
+reason this repository already had written down twice. Caution~(m): an absolute judged level is
+largely a statement about slot order and *must never be quoted across passes*. Caution~(e): the null
+arm drifts about a sigma between runs. The gate quoted a judged level across passes. That is a defect
+in our own specification, and it is recorded here rather than quietly repaired, because a
+specification defect must be allowed neither to retire a question nor to rescue one.
+
+**What the pre-registration's reproduction *argument* actually established is about generation and
+reward, not the judge**, and that check passes decisively:
+
+| check | result |
+|---|---|
+| rewards at ranks $0$--$63$, new pool vs committed pool | **32,000 of 32,000 bit-identical**, 0 missing |
+| `mean_words` of the served arm, all seven shared arms | identical to the printed precision |
+
+So the trajectories, the selections and the rewards reproduced **exactly**. The gate now checks that
+--- 32,000 floats compared with `==` rather than 28 summary cells compared loosely --- and it was
+mutation-tested in five directions *before* being run on the data, so the repair is not tuned to the
+answer: perturbing one reward by $10^{-6}$ fails it, dropping one rank-0 row fails it, and changing
+only ranks $\ge 64$ correctly does not.
+
+#### Why the judged levels moved, diagnosed rather than assumed
+
+Judge~B scored the $n=1$ arm at $0.435$ in the committed pass and $0.478$ here, on text that is
+byte-for-byte the same. `judge_batch` is greedy (`do_sample=False`), so the judge is deterministic
+given its input --- the input changed. `selection_scaling.py` builds
+`distinct = sorted({(p, picks[(p, n)]) for p in pids for n in grid})` and then draws one
+`rng.random()` **per item in that order** to decide presentation order. Extending the grid by one arm
+grows that set:
+
+| pass | arms | distinct served completions |
+|---|---|---|
+| committed | 7 ($n \le 64$) | **1,954** |
+| this arm | 8 ($n \le 128$) | **2,219** |
+
+$265$ insertions into a *sorted* list shift the random draw for nearly every item after the first
+one, so almost every pair was shown in the opposite order --- and caution~(m) measured exactly what
+that does to this judge: the same two texts win $261$ of $500$ shown second and $24$ shown first.
+
+**The consequence is a property of the instrument worth stating: the judged level of an arm depends
+on which *other* arms are in the sweep.** Two passes that differ only in how far the grid extends
+will disagree on the arms they share, with identical generations. This is not the "identical
+configuration re-run" floor the paper already reports ($\approx 0.04$) --- the configuration differed
+--- so that figure is **not** revised by this arm; this is a distinct and previously unrecorded
+effect, and it is why no number from this pass may be set against a number from the committed pass.
+
+It is also exactly why the registered band is a **paired difference within one pass**. Both arms of
+$g(128) - g(64)$ are judged under the same flip sequence in the same run, so the re-roll cannot reach
+them. The band was chosen correctly even though the gate beside it was not.
+
+#### Committed secondary, reported as promised
+
+The full grid under both judges, from `results/selection_scaling_n128.csv` (this pass; not to be
+compared with the committed pass, for the reason above). Spearman of $u$ against $\log n$ is
+$+0.976$ over 8 arms under judge~A and is reported, not gated.
+
+#### What this licenses
+
+The mechanism does **not** keep climbing indefinitely: at the audited anchor there is a ceiling
+between $n=64$ and $n=128$, measured. Since the certificate is $\log n$ and therefore keeps growing,
+the useful consequence for a deployer is that $n$ has an optimum and it is at most $64$ here --- more
+draws buy certificate and not utility. Arm A tested **TinyComma**; it does not measure Comma-7B past
+$64$, so nothing here says where the strongest anchor's ceiling is.
