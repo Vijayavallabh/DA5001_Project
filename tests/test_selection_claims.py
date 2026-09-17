@@ -348,3 +348,25 @@ def test_the_cross_pass_floor_has_both_measurements():
     apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
     assert "$0.039$" in apx and "$-0.034$" in apx
     assert "cross-pass floor" in apx
+
+
+def test_table_1_does_not_call_a_measured_divergence_a_budget():
+    """Every value in Table 1's cost column is `kl_nats` from selection_scaling.csv -- a REALISED
+    divergence -- and the metered row's $171.3$ is what that decoder spent, not what it published.
+    Its budget at k=10 on a 200-token cap is K = kT_max = 2000, and the distance between 2000 and
+    171.3 is the paper's own argument: Section 2 quotes e^{2000} against e^{171.3} as the tightest
+    factor the accounting implies against the one the spend implies.
+
+    Until 2026-09-17 the column was headed "budget, nats", which asserted the opposite on the
+    paper's headline table -- flattering the baseline by 12x and understating selection's own
+    certificate, log 64 = 4.16, as 3.175. Found in the third read-through; nothing else sees it,
+    because the CELLS were already checked against the CSV and only the header was wrong."""
+    import csv as _csv
+    from tests.manuscript import tex as _tex
+    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read()
+    header = next(ln for ln in body.splitlines() if ln.startswith("scorer & scored by"))
+    assert "budget" not in header.lower(), (header, "a measured KL is not a budget")
+    assert "KL" in header, (header, "the column has to name what it holds")
+    # and the values under it really are the CSV's measured KL, so the header is about them
+    kl = {float(r["kl_nats"]) for r in _csv.DictReader(open("results/selection_scaling.csv"))}
+    assert 3.175 in {round(v, 3) for v in kl} and 1.204 in {round(v, 3) for v in kl}

@@ -172,9 +172,15 @@ def test_the_table_row_for_the_strongest_anchor_matches_the_breadth_csv():
 
 
 def test_the_abstract_claims_the_anchor_count_the_csv_supports():
-    """The abstract says selection "gains judged utility at N anchors in three families". The
-    claim is about anchors that GAIN on the registered scorer, not about how many are in the CSV
-    -- six are measured and four gain -- and the families are the families of those four."""
+    """The abstract says selection repeats "at N of M anchors in three families". The claim is
+    about anchors that GAIN on the registered scorer -- six are measured and four gain -- and the
+    families are the families of those four.
+
+    The denominator is part of the claim. Until 2026-09-17 the abstract said "four anchors in three
+    families ... though two intervals include zero", and the caveat attached to nothing a reader
+    could see: all four quoted anchors exclude zero by construction, and the two that do not are
+    the two the sentence never mentions. Stating M is both shorter and honest, so the guard pins
+    it: writing the numerator alone, or either count wrong, fails here."""
     from tests.manuscript import tex
     abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read().replace("\n", " ")
     fams = {"TinyComma-1.8B (audited)": "Comma", "Comma-7B": "Comma",
@@ -183,7 +189,8 @@ def test_the_abstract_claims_the_anchor_count_the_csv_supports():
     gaining = {r["anchor"] for r in rows()
                if r["judge"] == SCORING_JUDGE and float(r["gain_lo95"]) > 0}
     assert set(fams) == {r["anchor"] for r in rows()}, "an anchor has no family declared"
-    n = len(gaining)
-    word = ["", "one", "two", "three", "four", "five", "six"][n]
-    assert f"{word} anchors in three families" in abstract, (n, word, sorted(gaining))
+    words = ["", "one", "two", "three", "four", "five", "six"]
+    n, total = len(gaining), len(fams)
+    claim = f"{words[n]} of {words[total]} anchors in three families"
+    assert claim in abstract, (claim, sorted(gaining), sorted(fams))
     assert len({fams[a] for a in gaining}) == 3, sorted(gaining)

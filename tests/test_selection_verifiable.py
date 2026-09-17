@@ -141,19 +141,28 @@ def test_the_scored_arm_agrees_with_the_manuscript():
 
 def test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured():
     """The abstract's utility claim was 'judged' alone, which is the first thing a reviewer
-    discounts. It may say 'with no judge at all' only while an exact-match arm exists and lifts."""
+    discounts. It may claim a judge-free axis only while an exact-match arm exists and lifts.
+
+    The trigger matches on "no judge", not on one spelling of the sentence. It used to demand
+    "no judge at all", and the 2026-09-17 abstract rewrite -- which says "needs no judge" -- turned
+    this test into a no-op without failing anything. A conditional guard whose condition is a
+    sentence someone will reword is a guard that retires itself, so a withdrawal now has to be
+    deliberate: drop the claim from Section 3 as well, or edit this test."""
     from tests.manuscript import tex
     absr = " ".join(open(tex("iclr_2027.tex")).read().split())
     absr = absr.split("\\end{abstract}")[0]
-    if "no judge at all" not in absr:
-        return                      # the claim was withdrawn; nothing to pin
+    if "no judge" not in absr:
+        body = open(tex("sections/experiments.tex"), encoding="utf-8").read()
+        assert "Off the judge" not in body, \
+            "the abstract dropped the judge-free claim while Section 3 still makes it"
+        return                      # the claim was withdrawn everywhere; nothing to pin
     import csv as _csv
     rows = list(_csv.DictReader(open("results/selection_verifiable_comma7b.csv")))
     for rule in ("majority", "pointwise"):
         arm = [r for r in rows if r["arm"].startswith(rule) and r["gain_lo95"]]
         best = max(arm, key=lambda r: float(r["gain"]))
         assert float(best["gain_lo95"]) > 0, (rule, best)
-    assert "judged" in absr, "the abstract must still say which of the two metrics is judged"
+    assert "judged" in absr.lower(), "the abstract must still say which of the two metrics is judged"
 
 
 @pytest.mark.skipif(not os.path.exists("results/selection_verifiable_tqa_comma7b.csv"),
