@@ -5102,3 +5102,38 @@ that is the biggest remaining overclaim and is named in the handoff's next step.
 
 **481 tests. 3,197 numeric literals, one expected miss (`64256`). 9 of 9 pages, 56 total, 0 overfull,
 0 `??`. Artifact 871 files.**
+
+## 2026-09-17 afternoon — a second review, worked by depth
+
+A fuller review arrived (Soundness 3/4, **Presentation 1/4**, Contribution 2/4, **4/10 Reject**).
+Selected points worked extensively rather than all points superficially.
+
+**Manuscript, all zero-GPU, all verified against the CSVs that produce the numbers.** The serious
+find: `results/onset_prediction_compute_matched.md` scored **MATCHED-COMPUTE LOSS** on 2026-09-15 —
+held to the metered decoder's own serving cost, selection runs at `n=4` and gains
+`-0.0395 [-0.0720, -0.0065]` *against* it — and **the main text never said so** while the abstract
+sold a 54x divergence saving. Now in Section 2 and in the abstract. Also promoted from appendices:
+the protocol defect (455 of 500 items judged under an arm-specific prompt; the single-order
+difference is `+0.013`, not `+0.070`), the cross-pass floor (`~0.04`, with the paired D3's
+reproduction to `+0.0635` beside it), the realised amplification `1.0`–`4.0` against the permitted
+`64`, and the 0.5B scorer's non-monotonicity in `n`. The abstract was rewritten into parseable
+sentences (416 → 409 words) and the conclusion no longer ends on the `8` vs `e^{2000}` comparison
+the reviewer calls theatre.
+
+**Four arms, bands committed before each ran** (`feat-125`–`128`): the sparse *reserving* causal
+policy the dichotomy permits (new `--spend-threshold`), alpha=8's judged utility against the anchor
+alone, paraphrase-class leakage at a non-literal metric, and the bigger-safe-model baseline. Two of
+the four can cost the paper a claim that is currently in the abstract.
+
+```
+bash scripts/run_sparse_causal.sh 4      # generation queue, one card, jobs in series
+bash scripts/run_sparse_judging.sh 4     # waits on the string the queue writes, then judges
+.venv/bin/python analysis/sparse_causal.py --out results
+```
+
+**Three defects found in our own numbers while doing this**, all recorded as cautions:
+`compute_matched.py` hardcoded a `0.94x` label into a CSV whose computed column said `0.92`
+(caution (ag)); `generation_length_tokens` is the **padded** length and caution (ae) said the
+opposite (caution (ah), and the `35.4x` ratio is unaffected because the two denominators are
+asserted equal); and eight committed guards fired on the page-budget trim, every one of them
+protecting a concession or a committed claim that a length edit had quietly deleted.

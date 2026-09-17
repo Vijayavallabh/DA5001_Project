@@ -1240,6 +1240,47 @@
       "status": "done",
       "description": "The cost headline reaching the abstract is analysis/serving_cost.py's (P_s+P_r)(L_p+T) -- a FLOP proxy quoted where a deployer reads a price. A reviewer asked for GPU-seconds per served token. Both serving paths timed on one exclusively-held card, interleaved SEL,MET,MET,SEL so drift cancels, same 40 prompts, one completion served per prompt in both arms so the denominators are equal by construction. Served tokens counted from aggregate.generation_length_tokens (the decoded length, immune to the per_step_log padding trap of caution (s)).",
       "evidence": "DONE 2026-09-17 00:00 (run 22:53-23:25). Pre-registration results/onset_prediction_serving_latency.md; output results/serving_latency.csv via analysis/serving_latency.py. Both arms 8,179 served tokens. PRIMARY: R = 35.42x, inside the committed band 30-123 -> MODEL HOLDS, but 1.73x pessimistic as a price. SECONDARY FIRES: the reward pass is 9.3% of selection's wall-clock and the 64 draws are 90.7%, so the committed rule 'if the reward pass is less than half the measured selection time, the price-of-the-reward-model argument is weakened and the text must say so' applies -- Section 5, Appendix I and the closing were all corrected, and the abstract now quotes the measured ratio. With a free scorer selection still costs 32.1x; the lever is n, not the scorer. Repeat spread 0.52% (SEL) / 15.27% (MET), extremes R in [32.8, 38.5]. tests/test_h2h_repeat_and_latency.py (5 tests) pins both tables to their CSVs and refuses an unqualified FLOP claim."
+    },
+    {
+      "id": "feat-125",
+      "title": "The sparse causal policy the dichotomy permits, built and priced",
+      "depends_on": [
+        "feat-092",
+        "feat-113"
+      ],
+      "status": "in-progress",
+      "description": "A reviewer's second-ranked fix: Prop 3 forbids SPREADING a bounded budget, not CONCENTRATING one, and the abstract has said 'cannot be repaired' while Section 4 concedes the gap. feat-092 built the front-loaded placement and scored it (PLACEMENT IS IRRELEVANT, THE CAUSAL HORN IS EMPTY) but front-loading is not CHOOSING -- it spends as soon as the constraint binds. New --spend-threshold tau reserves the bounded budget for steps whose own demand D_KL(p_r||p_s) clears tau: causal, reads only the current step. Grid B in {log 8, log 64, 64} at tau=0 and tau in {1,2,4,8} at B=log 64, judged through the endorsed order-averaged instrument. Bands: results/onset_prediction_sparse_causal.md, with two amendments recorded before scoring (the 'never run' premise was false; the leakage secondary is void because the risky model here memorises nothing).",
+      "evidence": "Running on GPU 4 from 13:52. Smoke: tau=50 spends nothing (active=0), tau=0 is the ungated policy. B=log8 and B=log64 both bind exactly (spend median AND max = B on all 1500 trajectories, 0 invariant violations) and are active at 0.97%/0.92% of decode steps -- Prop 3's trivial horn, realised."
+    },
+    {
+      "id": "feat-126",
+      "title": "Is alpha=8's 80x extraction cut a repair, or the trivial horn?",
+      "depends_on": [
+        "feat-113"
+      ],
+      "status": "in-progress",
+      "description": "The reviewer reads Table 3 as evidence FOR Repair 1 -- alpha=8 cuts oracle-window recall 0.0965 -> 0.0012 at matched published budget with distinct-3 unmoved -- and is arithmetically right. The paper answers with certificate semantics, which does not respond. The answer is two columns over (risky unchanged 0.08% vs alpha=1's 99.3%) and is UNMEASURED as utility: distinct-3 is a fluency proxy that cannot see capability loss. Regenerates alpha=8 at k=3 on the full 500-prompt ordinary set (the arm on record is 150 at one seed) and judges it against the anchor alone. Bands: results/onset_prediction_alpha_trivial.md.",
+      "evidence": "Queued on GPU 4 behind feat-125."
+    },
+    {
+      "id": "feat-127",
+      "title": "Paraphrase-class leakage: the claim with no experiment under it",
+      "depends_on": [
+        "feat-087"
+      ],
+      "status": "in-progress",
+      "description": "Section 2 claims paraphrase is 'bounded on the same terms as exact quotation'. The bound is term-identical but multiplies p_s(E), which for a paraphrase event need not be small -- and every extraction number in this paper is an EXACT SUBSTRING metric (nv_recall, lcs_word), so the sentence has no experiment under it. dap/stats.py:rouge_l_score is LCS as a SUBSEQUENCE and has existed all along; selection_extraction.py never imported it. Measures the anchor's own base rate at ROUGE-L >= 0.3 and 0.5 and the realised amplification at n=64. Bands: results/onset_prediction_paraphrase.md.",
+      "evidence": "Metric wired into the extraction arm; run queued. Calibration already in hand from feat-125: on text that reproduces nothing, rouge_l reads mean 0.09-0.10 and max 0.21, so the committed 0.3/0.5 thresholds sit clear of the no-copying baseline."
+    },
+    {
+      "id": "feat-128",
+      "title": "At selection's price, should a deployer just buy a bigger safe model?",
+      "depends_on": [
+        "feat-095"
+      ],
+      "status": "in-progress",
+      "description": "The reviewer's other 'decides practical relevance' evaluation, and it appears nowhere in the paper. Needs NO new generation: the Comma-7B selection arm's rank-0 draw IS Comma-7B served alone, so one order_averaged_h2h pass puts the larger safe model and TinyComma-alone in the same pass against the same opponent. Statistic is a gain over a shared control, never a level (caution (m)). Bands: results/onset_prediction_bigger_anchor.md.",
+      "evidence": "Queued. Coverage verified: 500 prompts, 64 draws, rewards and opponent all present."
     }
   ]
 }
