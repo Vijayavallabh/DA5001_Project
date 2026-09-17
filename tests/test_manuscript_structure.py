@@ -108,3 +108,33 @@ def test_the_propositions_number_the_way_the_paper_talks_about_them():
         "thm:nfl": ("theorem", 1),
     }
     assert got == want, (got, want)
+
+
+def test_every_repo_path_the_manuscript_cites_exists():
+    r"""A \texttt{results/...} naming a file that is not there is a reproducibility defect an
+    artifact reviewer hits on their first click, and nothing in the toolchain looks: tectonic does
+    not resolve paths, and analysis/audit_numbers.py checks numbers, not filenames.
+
+    The extraction is the subtle part. Caution (af) put \allowbreak after every separator inside
+    long \texttt arguments so they can break across a line, and warns that any consumer greping
+    paths out of the manuscript must strip it. Stripping the macro alone is not enough -- it
+    leaves the space that followed it, turning results/onset_prediction_x.md into
+    "results/ onset_ prediction_ x.md", which then "does not exist" for every path at once. That
+    happened on the first run of this check (2026-09-18) and reported 34 false positives.
+    """
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    prefixes = ("results/", "analysis/", "scripts/", "tests/", "dap/", "a_patch/",
+                "figures/", "recipes/", "data/", "output/")
+    cited = {}
+    for rel in _build_graph():
+        txt = " ".join(open(os.path.join(DIR, rel), encoding="utf-8").read().split())
+        for m in re.finditer(r"\\texttt\{([^}]*)\}", txt):
+            raw = re.sub(r"\\allowbreak\s*", "", m.group(1))
+            raw = raw.replace("\\_", "_").replace("\\", "").replace(" ", "")
+            if raw.startswith(prefixes):
+                cited.setdefault(raw, set()).add(rel)
+    assert len(cited) >= 30, (len(cited), "the path extractor matched almost nothing; check "
+                                          "whether \\allowbreak handling has drifted")
+    missing = {p: sorted(w) for p, w in cited.items()
+               if not os.path.exists(os.path.join(repo, p))}
+    assert not missing, f"cited but absent from the repo: {missing}"
