@@ -9,6 +9,80 @@
 
 
 
+## 2026-09-18 02:05 — read-through 5: eight defects, all one class; three GPU arms launched; Arm B scored
+
+**Three arms launched (feat-130, `results/onset_prediction_breadth64.md`, bands committed first).**
+The paper's breadth claim is quantified at `n=8` and its headline at `n=64`, and only TinyComma and
+Comma-7B have an `n=64` curve at all --- so nothing in it distinguishes *the mechanism climbs* from
+*the two anchors we took there climb*. The three anchors that stop at `n=8` **and pass the
+registered entry gate** (Pleias-1.2B, KL3M-1.7B, Pleias-3B) are being extended; Comma-1T is excluded
+because the gate fails it at 16.6% empty, not by choice. GPU 1 runs KL3M then Pleias-3B, GPU 4 runs
+Pleias-1.2B. ~11.8 gpu-h from rates measured off the breadth arm's own logs --- **not** from
+`compute_hours.csv`, whose `breadth_*` rows cover generation and scoring together and whose
+`sel_scaling` row is log-birth-to-end and so bills time spent waiting on another card. Held at
+`--batch-size 32`, the breadth arm's value and not `sel_anchor64`'s 64, so draws 0-7 of the 64-draw
+pool are bit-identical to the committed 8-draw pool and the `n <= 8` half must reproduce its
+`selection_scaling_<tag>.csv` before any `n>8` number is read. `analysis/score_breadth64.py` was
+written and mutation-tested six ways before any data existed.
+
+**feat-129 Arm B scored: SAFETY HOLDS AT FOUR TIMES THE DRAWS.** `nv_recall` `0.0000` on 100/100
+passages at every `n` on the committed grid (1, 8, 64, 256), ROUGE-L >= 0.5 on 0/100 against the
+same memoriser's 47/100, against a certificate permitting `256x`. The caution (u) check passes: the
+`k=-1` baseline reads `0.3925`, identical to the value on record. Promoted into the abstract, both
+intro sentences, Section 3 and the appendix extraction table. The wording is **"at every `n <= 64`,
+and at `n=256`"** and deliberately not "at any `n <= 256`": Arm B's grid skips 128 and Arm A measures
+the frontier rather than leakage, so `n=128` extraction is measured by neither.
+
+**Eight defects, and they are one class: the number is right and the quantity is not named.**
+
+1. **Figure 1's caption and its x-axis label** both said the axis was the *realised* divergence,
+   over a panel carrying selection's closed form beside the meter's genuinely measured `171.3`. The
+   function's own docstring had it right all along; the two surfaces a reviewer reads did not.
+2. **Section 2's headline amplification sentence** --- "gives exactly 8, certified and realised
+   alike" --- asserted a realisation nobody measured. What the paper has is stronger and already
+   proved (tightness: `q(y*) = 1-(1-p)^n -> np`, so no constant below `n` works), so it says that now.
+3. **The guard that should have caught 1 and 2 was a list of five exact phrasings** and neither
+   matched. Replaced by the property: a realisation word within 160 characters of one of selection's
+   closed-form values must have a bound word with it. Three refinements the real text forced --- match
+   the **bare** value (`$\log 8 = 2.08$` puts no `$` around `2.08`), clip the window at **LaTeX row
+   breaks** (a tabular carries the distinction per row), and allow **"granted"** (a metered arm
+   granted `log 8` nats and measured spending exactly them).
+4. **The appendix contradicted itself 580 lines apart.** "the reward overoptimisation that turns such
+   curves over is not observed anywhere on the grid" against that same file's judge-free table:
+   "on TriviaQA its accuracy falls with `n` (Spearman `-0.607`) and at `n=16` the interval excludes
+   zero on the wrong side" --- and the main-text forest plot draws that row **in red**. Scoped to
+   *this* grid and then made to earn the qualifier by naming where overoptimisation does occur, which
+   is why the judge-free headline is majority vote: no scorer to overoptimise against.
+5. **Section 4 claimed pooled monotonicity its own cited figure scopes to within-family.** Pooled by
+   parameter count the margin series is `1.94, 3.45, 2.05, 4.14, 2.31, 4.07, 4.19, 2.37, 4.63, 5.02`
+   and zig-zags, because KL3M's largest model sits below Pleias' smallest.
+6. **`rho = +0.543` is over the two-judge mean**, printed beside a figure captioned "judge B", where
+   the same quantity is **`-0.029`**. The number reproduces exactly (`d^2 = 16`); a reviewer checking
+   it against the one surface the paper shows would have found it wrong.
+7. **The closing's `3.4x` GSM8K ratio named no `n`**, and the ratio runs `3.00, 3.32, 5.00, 3.77,
+   3.36` across the grid --- at the matched `n=32` the appendix itself uses, it is `3.77`.
+8. **The scorer-free cost column prices a different anchor than its accuracy columns**, in the
+   direction that flatters the paper. `serving_cost.P_ANCHOR` is `1.7586` (TinyComma, audited) while
+   every accuracy is Comma-7B's. Majority-vote cells, whose whole cost IS the anchor, are `2.59x`
+   cheaper in the table than in the system that produced the accuracies (`n=32`: `5.75x` against
+   `14.90x`); reward cells barely move (`61.29x -> 62.23x`), the scorer dominating them either way.
+   The ordering survives and so does every claim built on it --- both rules draw from the same anchor
+   --- but the **size** of the saving does not: a matched-`n` majority vote is `18.8%` of the reward
+   rule at 1.8B and `47.9%` at 7.0B. Both are now reported, with the second beside the accuracies.
+
+**Guards: 598 -> 627.** New files `test_overoptimisation_claim.py`, `test_margin_monotonicity.py`,
+`test_extraction_n256.py`, `test_contaminated_amplification.py`, `test_breadth_rho.py`,
+`test_judgefree_ratios.py`, `test_scorer_free_anchor.py`. Every shape claim is now rebuilt from its
+CSVs and checked against the adjective, and three are guarded **both ways** so a qualifier cannot be
+dropped silently: pooled monotonicity must stay false, the TriviaQA turnover must stay real, the
+GSM8K ratio must keep moving with `n`. One guard was weak and its own mutation test caught it --- it
+asked whether a phrase appeared anywhere in the file, and the new paragraph contains the same
+phrase, so deleting it from the caption left it passing on the other occurrence. Now scoped to the
+caption block. Cautions **(an)** and **(ao)** record both lessons.
+
+Verified throughout: `./init.sh` exit 0, 627 tests, body exactly 9 pages (0 body lines on pdftotext
+page 10 before `ETHICS STATEMENT`), 0 overfull, 0 `??`, 3 bold faces.
+
 ## 2026-09-17 19:05 — the third read-through: twelve defects, and two guards that were not guarding
 
 Pages 1-10 and Figure 1 read on the **rendered page**, plus appendix pages 21, 24, 26, 43, 44, 46.
