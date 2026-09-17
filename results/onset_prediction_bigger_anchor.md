@@ -17,7 +17,10 @@ alone needs no certificate at all --- then selection's $35\times$ buys nothing a
 
 `results/onset_prediction_compute_matched.md` already answered the *other* compute question and
 answered it against us (**MATCHED-COMPUTE LOSS**, $-0.0395\,[-0.0720,-0.0065]$ at $n=4$ and
-$0.94\times$, held to the metered decoder's cost). This one is different and untested: not selection
+$0.94\times$, held to the metered decoder's cost). *(That $0.94\times$ is itself wrong and was
+corrected on 2026-09-17 after this registration was committed: `results/compute_matched.csv` computes
+`cost_vs_metered = 0.92`, and the $0.94$ was a hardcoded label --- caution (ag). Left as written here
+because nothing above the scoring rule is edited; the manuscript quotes $0.92$.)* This one is different and untested: not selection
 versus the meter at matched compute, but selection versus **a bigger anchor**.
 
 ## What is measured, and why no new generation is needed
@@ -72,3 +75,69 @@ stance but not an identical training corpus, so a difference between them is not
 *size* effect, and nothing here licenses extrapolation to a third anchor. The honest ceiling is one
 comparison between the two openly licensed anchors this paper actually has --- which is still one
 more than the paper has now, and is the comparison the objection is about.
+
+## Scoring, 2026-09-17 17:15 — **SELECTION EARNS ITS PRICE**
+
+One judging pass, no generation, through `analysis/order_averaged_h2h.py --sel-dir
+output/phase5/sel_comma7b_64 --tag comma7b_alone`: all four arms against one fixed opponent, every
+item in both orders, $500$ prompts shared by every arm. The canonical
+`results/order_averaged_h2h.csv` was not written (md5 `85d522ae…` checked by the launcher at both
+ends and logged INTACT). Statistic computed by `analysis/bigger_anchor.py` $\rightarrow$
+`results/bigger_anchor.csv`.
+
+| arm | gain over TinyComma served alone |
+|---|---|
+| **Comma-7B served alone** ($3.9\times$ the anchor, no scorer, no selection) | $+0.0150$ $[-0.0065, +0.0365]$ |
+| TinyComma at $n=64$ (on record, $G_B$) | $+0.1045$ $[+0.0820, +0.1280]$ |
+| Comma-7B at $n=64$ (context, not a committed band) | $+0.1755$ $[+0.1505, +0.2010]$ |
+
+$G_A = +0.0150$ with an interval that **includes zero**, against $G_B = +0.1045$ whose interval
+excludes it and does not overlap $G_A$'s. The committed band is read on the **difference**, and the
+difference is
+
+$$G_A - G_B = -0.0995\ [-0.1220, -0.0770],$$
+
+negative with its interval excluding zero: the second band, **SELECTION EARNS ITS PRICE** against the
+obvious alternative, and the reviewer's decisive objection is answered with a measurement rather than
+a concession.
+
+**A defect in this registration's own construction, found at scoring and recorded rather than
+smoothed over.** The registration said both statistics are "gains over \emph{TinyComma alone}". They
+are not quite: $G_A$'s control is `anchor_k0` (the `output/sweep_plain` draw, mean $u = 0.4450$),
+while the canonical $G_B$ is `order_averaged_h2h.py`'s $D_1$, whose control is `sel_n1` --- the
+rank-$0$ draw of the *selection* run `output/phase5/sel_anchor64`, mean $u = 0.4550$. Both are
+"the anchor sampled once", from two different generation runs, and they differ by $0.010$ --- well
+inside the cross-pass floor, but enough that $G_A - G_B$ computed from the two means ($-0.0895$) is
+not the paired difference ($-0.0995$). The number quoted above is the **direct paired difference of
+the two served arms**, $u(\text{Comma-7B alone}) - u(\text{TinyComma}, n{=}64)$, which needs no
+control at all and so is immune to the mismatch; pairing it across the two passes is legitimate
+because judging is deterministic (`u_anchor_k0` is identical on $500/500$ prompts across passes,
+checked before the statistic was formed). The verdict is the same under either construction, and
+comfortably so.
+
+### Committed secondary — the cost, and it cuts the way that strengthens the verdict
+
+On the paper's own forward-pass model ($n(P_s + P_f)(L_p+T)$ against $P(L_p+T)$, $L_p+T = 217$):
+selection at $n=64$ costs $130{,}189$ B-parameter-tokens and Comma-7B served alone costs $1{,}519$
+--- the bigger anchor is **$86\times$ cheaper**. The registration said a BUY THE BIGGER ANCHOR
+verdict would be much stronger if the bigger anchor were also cheaper. It is the other verdict, and
+the same fact strengthens *it*: the cheap alternative was available, a deployer would reach for it
+first, and on this workload it does not measurably work.
+
+### What this does and does not settle
+
+It does **not** say anchors do not matter --- selection *on* Comma-7B reaches $+0.1755$, so a better
+anchor and selection compose, and the ceiling Proposition~\ref{prop:selection} names is real. What
+it says is narrower and is the thing that was asked: at this price, on this workload, **spending the
+compute on the draw beats spending it on a bigger safe model**, and the bigger safe model alone is
+not distinguishable from the small one.
+
+And it remains **one comparison, not a scaling law**, exactly as registered: Comma-7B and
+TinyComma-1.8B share a lineage and a licensing stance but not an identical training corpus, so a
+difference between them is not cleanly a size effect and nothing here extrapolates to a third anchor.
+
+### Band D honoured
+
+The control, opponent, judge and prompt set were untouched; no level is quoted across passes (both
+statistics are gains over the shared TinyComma-alone control); no second pair of anchors was
+substituted; and $G_A$ is reported against TinyComma's $n=64$ number, not its $n=8$ one.
