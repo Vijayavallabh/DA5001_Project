@@ -37,6 +37,12 @@ both halves.
    purpose: rebuilding now would ship a scorer for results that do not exist yet.
    `bash scripts/build_artifact.sh artifact`. The reproduction commands are already in
    `README_artifact.md` under **Phase 7**.
+3. **Re-run the compute scan and move the disclosure.** The LLM-usage statement says "at most
+   $299$ GPU-hours" and `tests/test_compute_hours.py` pins it to `round(total)` from
+   `results/compute_hours.csv`, so the guard fails until the manuscript is updated --- which is
+   the intended order, not a problem. These two arms add roughly $16$. Both write real run
+   directories under `output/phase5/`, so the scan sees them (unlike the `output/logs/`-only
+   judging runs noted below). `.venv/bin/python analysis/compute_hours.py`.
 
 ## The third full read-through is DONE.
 
