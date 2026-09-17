@@ -141,3 +141,108 @@ is still corrected: what is earned is "the repairs that have been built, includi
 dichotomy leaves open, all fail --- and here is how far each got."
 
 **This arm can cost the paper its central claim.** That is why it is run.
+
+## Scoring, 2026-09-17 17:05 — **PLACEMENT LOSES**, and the reviewer's own hypothesis is refuted
+
+Generation ran 13:52–16:31 on GPU 4 (eight arms in series, one queue shell, `rc=0` throughout);
+judging 16:31 onward through `analysis/order_averaged_h2h.py`, every arm tagged so the canonical
+`results/order_averaged_h2h.csv` was never written (md5 `85d522ae…` before and after, checked by the
+launcher at both ends).
+
+### The mechanism does what it was built to do
+
+Every arm **binds exactly** — realised spend equals the budget on all $1{,}500$ trajectories, with
+$0$ invariant violations — and every arm is the safe model at over $99\%$ of decode steps, which is
+Proposition~\ref{prop:sparse}'s trivial horn made concrete rather than argued.
+
+| arm | $B$ | $\tau$ | pure-anchor trajectories | active/step | spend position med/mean/max |
+|---|---|---|---|---|---|
+| greedy | $2.0794$ | — | $0.0\%$ | $0.0097$ | $1.0$ / $1.3$ / $120$ |
+| greedy | $4.1589$ | — | $0.0\%$ | $0.0092$ | $3.0$ / $3.1$ / $27$ |
+| reserving | $4.1589$ | $1$ | $2.2\%$ | $0.0091$ | $4.0$ / $5.7$ / $75$ |
+| reserving | $4.1589$ | $2$ | $10.0\%$ | $0.0087$ | $8$ / $18.2$ / $197$ |
+| reserving | $4.1589$ | $4$ | $54.7\%$ | $0.0049$ | $12$ / $27.0$ / $199$ |
+| reserving | $4.1589$ | $8$ | $86.7\%$ | $0.0016$ | $17$ / $36.6$ / $197$ |
+| greedy | $64$ | — | $0.0\%$ | $0.0060$ | $70.0$ / $72.6$ / $176$ |
+
+`--spend-threshold` genuinely **reserves**: the spend moves off the first two tokens (median
+position $1$–$3$, which is the front-loader feat-092 measured) out to median $17$, mean $36.6$,
+max $197$. This is not the front-loaded arm under another name.
+
+### Primary: the budget curve, and the verdict
+
+| $B$ (nats) | $D_2$, the causal policy's order-averaged gain over the anchor | reading |
+|---|---|---|
+| $2.0794$ $(=\log 8)$ | $-0.0015$ $[-0.0200, +0.0170]$ | dissolves |
+| $4.1589$ $(=\log 64)$ | $+0.0215$ $[+0.0015, +0.0415]$ | separates |
+| $64$ | $+0.0545$ $[+0.0315, +0.0775]$ | separates |
+
+Selection at the **same** $\log 64$ nats gains $+0.1045$ $[+0.0820, +0.1280]$. At matched budget
+
+$$D_3 = +0.083\ [+0.052, +0.1135],$$
+
+positive with its interval excluding zero: **PLACEMENT LOSES**, the first committed band.
+
+### Committed secondary 1 — the crossing budget: **NONE ON THE GRID**
+
+No arm's $D_2$ interval covers selection's $+0.1045$. At $64$ nats — $15.4\times$ the budget — the
+causal policy's upper bound is $+0.0775$, still below selection's point estimate. And the orders are
+not comparable in the causal policy's favour: selection certifies
+$D_\infty \le \log 64 = 4.1589$, which **implies** $D_{\mathrm{KL}} \le 4.1589$, while the $B=64$ arm
+certifies only $D_{\mathrm{KL}} \le 64$ and nothing at all in $D_\infty$. Selection carries the
+stronger order at a $15.4\times$ smaller number and buys $1.9\times$ the gain.
+
+### Committed secondary 2 — the placement gain: **NEGATIVE**
+
+| $\tau$ | $0$ | $1$ | $2$ | $4$ |
+|---|---|---|---|---|
+| $D_2$ | $+0.0215$ | $+0.0150$ | $+0.0110$ | $+0.0045$ |
+
+$\max_\tau D_2 - D_2(\tau{=}0) = 0$: the best placement on the grid is the **greedy front-loader**,
+and every threshold that concentrates harder does worse. **The reviewer's hypothesis is the one this
+refutes** — "a sparse causal policy that concentrates $\Theta(1)$ nats at textually pivotal
+positions" was the named escape, and choosing *where* by the natural causal signal buys nothing.
+
+**Why, decomposed rather than asserted.** Reserving hurts twice over:
+
+| $\tau$ | never released | mean gain | gain *conditional on spending* |
+|---|---|---|---|
+| $0$ | $0.0\%$ | $+0.0215$ | $+0.0215$ |
+| $1$ | $2.0\%$ | $+0.0150$ | $+0.0148$ |
+| $2$ | $9.2\%$ | $+0.0110$ | $+0.0121$ |
+| $4$ | $56.8\%$ | $+0.0045$ | $+0.0081$ |
+
+The budget is released less often *and* buys less when released. **A hypothesis of ours died here
+too**: we expected early spending to have more leverage over the rest of the generation, and within
+the $\tau=2$ arm the opposite holds — first spend at step $\le 5$ gains $+0.0014$ ($n=175$), first
+spend later gains $+0.0217$ ($n=242$). Conditional on spending, later is better. It is the
+never-released mass, not the position, that carries most of the decline.
+
+The likely reason is one the paper already measured: the threshold ranks steps by
+$D_{\mathrm{KL}}(p_{r,t}\Vert p_{s,t})$, a likelihood-gap signal, and the risky model's own
+likelihood predicts judged quality at AUC $0.526$ — chance (Section~1, Appendix~I). **The reserving
+rule is the same wrong currency**, applied to the choice of step instead of the choice of token.
+That is an interpretation of a measured coincidence, not a further measurement.
+
+### Against us: "neither causal placement buys anything" is now too strong
+
+Section~2 says exactly that, on feat-092's two budgets. It holds at $\log 8$ — our $-0.0015$ sits on
+feat-092's $-0.008$ — and **fails above it**: at $\log 64$ and at $64$ nats the causal policy
+separates from the anchor with intervals excluding zero. **The causal horn is not empty.** The
+sentence is replaced by the measured curve rather than softened, and the abstract's "cannot be
+repaired" is corrected to what is shown.
+
+### Band D honoured, and one deviation recorded
+
+No $\tau$ or $B$ was added to the grid after seeing a result; the judge, opponent, corpus and $500$
+prompts were untouched; no single-order gain is quoted; $\tau=0$ is reported as the grid's best
+rather than as "the optimal causal policy". **Deviation:** the launcher's header claimed the eight
+passes would give "eight independent $D_1$ estimates" and so measure the cross-pass floor. They do
+not — $D_1$ is byte-identical ($+0.1045$ $[+0.0820,+0.1280]$) in every pass, because the generations,
+the judge and the bootstrap seed are all the same. It is a determinism check, not a replication, and
+no noise floor is read from it.
+
+**What this arm cannot do, restated after the fact.** Seven points do not exhaust an infinite class.
+What is earned is that the best causal placement *we could build and price* — greedy, reserving at
+four thresholds, and at $15.4\times$ the budget — stays below selection throughout. The manuscript
+says that and not "no causal policy can".
