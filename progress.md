@@ -9,6 +9,70 @@
 
 
 
+## 2026-09-17 19:05 — the third read-through: twelve defects, and two guards that were not guarding
+
+Pages 1-10 and Figure 1 read on the **rendered page**, plus appendix pages 21, 24, 26, 43, 44, 46.
+Five of the twelve were in prose written in the previous two days, which is where they live.
+
+**The one that mattered most.** Table 1's cost column was headed `budget, nats`, and every value in
+it is `selection_scaling.csv`'s `kl_nats` --- a *realised* divergence. The metered row's `171.3` is
+what that decoder **spent**; its budget at `k=10` on a 200-token cap is `K = kT_max = 2000`, and the
+distance between the two is the paper's own argument (Section 2 quotes `e^2000` against `e^171.3`).
+The header asserted the opposite on the headline table, flattering the baseline by `12x` and
+understating selection's own certificate, `log 64 = 4.16`, as `3.175`. The cells had been pinned to
+the CSV since the table was built; **only the header was wrong**, which is exactly why nothing saw
+it. Now `measured KL, nats`, guarded.
+
+**The rest, in one line each.**
+
+1. The abstract's first horn dangled: yesterday's trim cut the extraction clause and the pair-count
+   guard's phrase was restored onto the *theorem*, presenting Proposition 2 as a nine-pair finding.
+2. "though two intervals include zero" attached to nothing --- all four quoted anchors exclude zero
+   by construction of the guard. Now "four of six anchors", in abstract and intro.
+4. Units mixed silently: `32` draws at `3.47` (log 32, a certificate) beside `64` at `3.175` (a
+   measured KL). More draws, fewer nats, on the face of the abstract. Every cost names its unit.
+5. The causal-policy appendix said "loses **monotonically**" and printed a series whose last value
+   rises.
+6. The same sentence said "`0%` to `85%` of **trajectories**" --- 85 is the scoring log's *prompt*
+   denominator (`1 - 73/500`); the CSV's trajectory figure is `86.7`.
+7. Section 5's Repair 1 cites Table 3 and gave binding rates that are not Table 3's (`99.3%`/`0.35%`
+   against `99.6%`/`0.4%`), with `99.3` *also* being Table 3's alpha=1 risky-unchanged cell.
+8. The bigger-anchor `\ref` pointed at `app:saturation`, the **scorer**-scale paragraph. feat-128 had
+   no appendix treatment at all. Appendix I now carries the arm.
+9. Its **committed statistic** (`-0.0995`) was formed by hand and lived only in a log.
+   `analysis/bigger_anchor.py` computes it now, and asserts the `500/500` determinism check that
+   licenses cross-pass pairing rather than leaving it in prose.
+10. "Shrinking the scorer `14x`" where its own numbers give `7.6156/0.494 = 15.4`.
+11. "The corpus is sixteen English novels" three pages after "98.7% of 9,870 across a hundred books".
+12. **Figure 1's legend printed at 5.4pt.** `F = 6.9/5.5` compensates for `\textwidth` and the figure
+    sits at `0.70\textwidth`. Caution (af) sanctioned it on reasoning that holds only at
+    `\textwidth`; corrected. 6.6 -> 8.0, and `ylim` 0.86 -> 0.94 because the taller box covered the
+    `n=64` label --- caution (ad) reproduced exactly.
+
+**Two guards were inert.** `test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured`
+triggers on a sentence, and yesterday's rewrite changed `"no judge at all"` to `"needs no judge"`, so
+it returned early and pinned nothing --- silently, because a skipped branch is a pass. Revived on a
+looser trigger it caught its own second bug, a case-sensitive `"judged"` the capitalised sentence
+start would have failed. The anchor-count guard checked only the numerator, which is how defect 2
+survived a page trim.
+
+**Commands.**
+
+```bash
+.venv/bin/python analysis/bigger_anchor.py          # now writes the paired difference + the 500/500 check
+.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures
+cd ~/sub/satml && ~/.local/bin/tectonic -X compile iclr_2027.tex
+```
+
+Regenerating touched ten figure PDFs; nine are byte-different and **pixel-identical** (matplotlib
+metadata), verified by rastering `HEAD`'s copy against the new one at 100 dpi rather than by hashes.
+
+**State.** 567 tests, `./init.sh` exit 0, tectonic exit 0, 0 overfull, 0 `??`,
+`pdffonts | grep -ci bold` = 3, 58 pages, **0 body lines on page 10**, 0 underfull at badness 10000,
+0 markdown bold, 0 trailing hyphens, 0 literal tildes, 0 duplicate proposition labels in live files.
+Five new guards, every one mutation-checked in both directions. Cautions **(ai)** and **(aj)** added,
+**(af)** corrected.
+
 ## 2026-09-17 17:10 — the underfull lines, fixed: 158 hboxes to 13, none at badness 10000
 
 The one item the read-through left on the table. **All 158 had one cause:** a 50-character

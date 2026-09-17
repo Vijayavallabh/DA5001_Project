@@ -1,28 +1,42 @@
-# Session handoff — 2026-09-17 17:40 (a second review, worked by depth; four arms scored, nothing of ours running)
+# Session handoff — 2026-09-17 19:05 (third read-through complete: twelve defects, five new guards)
 
-## All four arms SCORED (2026-09-17 17:40). Nothing of ours is running.
+## The third full read-through is DONE. Nothing of ours is running.
 
-A second review (Soundness 3/4, **Presentation 1/4**, Contribution 2/4, **4/10 Reject**) was worked
-by depth. Four arms, every band committed before the run; **three of the four returned something
-against us and the text was changed accordingly.**
+Pages 1–10 and Figure 1 read on the **rendered page**, plus appendix pages 21, 24, 26, 43, 44, 46.
+**Twelve defects, all fixed**, and five of them were in prose written in the last two days.
 
-| arm | verdict | the part that went against us |
+| # | where | what was wrong |
 |---|---|---|
-| **feat-125** sparse causal policy | **PLACEMENT LOSES** (D3 `+0.083 [+0.052,+0.1135]`) | Section 2's "neither causal placement buys anything" is **false above log 8** — the causal horn is not empty. Replaced by the measured curve. |
-| **feat-126** is α=8 the trivial horn? | **TRIVIAL HORN CONFIRMED**, by `0.0005` | **No utility cost is measurable** (α=1 − α=8 = `+0.013 [-0.0115,+0.0380]`), so the reviewer's premise survives and the paper may not claim a cost. |
-| **feat-127** paraphrase leakage | **CLAIM HOLDS AT THIS LOOSENING** (`0/100` at ROUGE-L ≥ 0.5) | — (the positive control, memoriser `47/100`, is what makes the null informative) |
-| **feat-128** bigger safe model | **SELECTION EARNS ITS PRICE** (`-0.0995 [-0.1220,-0.0770]`) | — (the bigger anchor is `86×` cheaper and still fails, which strengthens it) |
+| 1 | abstract | A dangling modifier from yesterday's page trim presented **Proposition 2's theorem** as an empirical finding over nine pairs. The extraction clause is restored. |
+| 2 | abstract + intro | "though two intervals include zero" attached to nothing a reader could see — all four quoted anchors exclude zero *by construction of the guard*. Now **"four of six anchors"**, shorter and true. |
+| 3 | **Table 1** | The cost column was headed **"budget, nats"** and every value in it is `selection_scaling.csv`'s `kl_nats`, a *realised* divergence. The metered row's `171.3` is what that decoder **spent**; its budget at k=10 is `K = 2000`, and that gap is the paper's own argument. The header flattered the baseline **12×** on the headline table. |
+| 4 | abstract + §3 | Units mixed silently: `32` draws priced at `3.47` (log 32, a certificate) beside `64` draws at `3.175` (a measured KL) — **more draws, fewer nats** on the face of the abstract. Every cost now names its unit. |
+| 5 | appendix B | "loses **monotonically** — +0.0215, +0.0150, +0.0110, +0.0045, +0.0070": the last value **rises**. |
+| 6 | appendix B | "0% to **85%** of *trajectories*" — 85 is the scoring log's **prompt** denominator; the CSV's trajectory figure is `86.7`. One word, two denominators. |
+| 7 | §5 | Repair 1 cites Table 3 and then gave binding rates **that are not Table 3's** (`99.3%`/`0.35%` against the table's `99.6%`/`0.4%`) — and `99.3` is *also* Table 3's α=1 risky-unchanged cell, so it read like a transposed row. |
+| 8 | §2 → appendix | The bigger-anchor `\ref` pointed at `app:saturation`, the **scorer**-scale paragraph. feat-128 — the arm a reviewer called decisive — had **no appendix treatment at all**. Appendix I now carries it. |
+| 9 | results | The **committed statistic** (`-0.0995`) was formed by hand at scoring time and lived only in a log. `analysis/bigger_anchor.py` now computes it *and* asserts the 500/500 determinism check that licenses cross-pass pairing. Manuscript quotes the CSV (`-0.0765`, 5e-4 of bootstrap noise from the log's `-0.0770`). |
+| 10 | appendix I | "Shrinking the scorer **14×**" where its own numbers give `7.6156/0.494 = 15.4`; `14.73` two lines above is a *compute* ratio. Replaced by the two measured sizes. |
+| 11 | §7 | "The corpus is sixteen English novels" three pages after "98.7% of 9,870 across a hundred books". Scoped to "Every extraction number is". |
+| 12 | **Figure 1** | The legend of the paper's only main-text figure printed at **5.4pt**. `F = 6.9/5.5` compensates for `\textwidth`; the figure is placed at `0.70\textwidth`, so it under-compensates by that `0.70`. Caution (af) **sanctioned this on reasoning that only holds at `\textwidth`** and is now corrected. Legend 6.6 → 8.0 (6.5pt measured), `ylim` 0.86 → 0.94 because the taller box covered the `n=64` label — caution (ad) reproduced exactly. |
 
-**The most serious find was not in the review.** `results/onset_prediction_compute_matched.md` scored
-**MATCHED-COMPUTE LOSS** on 2026-09-15 — held to the metered decoder's own cost, selection gains
-`-0.0395 [-0.0720,-0.0065]` *against* it — and the **main text never said so** while the abstract
-sold a 54× divergence saving. It is now in Section 2 and in the abstract.
+**Two guards were not guarding.** `test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured`
+triggered on the literal string `"no judge at all"`; yesterday's abstract rewrite says `"needs no
+judge"`, so it **returned early and pinned nothing** — a skipped branch is a pass. Revived on a
+looser trigger it immediately caught its own *second* bug, a case-sensitive `"judged"`. And the
+anchor-count guard checked only the numerator, which is how defect 2 survived.
 
-**Three defects found in our own numbers**, all now cautions: a hardcoded `0.94x` label in a CSV
-whose computed column says `0.92` **(ag)**; `generation_length_tokens` is the **padded** length while
-caution (ae) said the opposite **(ah)** (the `35.4×` ratio is unaffected — both denominators are
-asserted equal); and **eleven committed guards** fired across the page-budget trims, every one
-protecting a concession or committed claim that a length edit had quietly deleted.
+**Five new guards, every one mutation-checked in both directions**: the Table 1 header against
+`renyi_price`-style CSVs; the threshold grid rebuilt from five tagged CSVs *with its shape claim*;
+§5's binding rates against the table it cites; the bigger-anchor claim end-to-end including **that
+its `\ref` lands on a paragraph about the claim**; and the paraphrase null **with its positive
+control**, which is the clause a page trim reaches for first and the only reason the null means
+anything.
+
+**How to measure printed type** (new, caution (aj)): mediabox arithmetic said 4.2pt and was wrong —
+the box carries padding that is not content. Glyph bbox *height* is useless too (it moves with
+ascenders/descenders). Use `pdftotext -bbox` and **advance width per character against the same
+words in body text on the same page**.
 
 ## Current objective
 
