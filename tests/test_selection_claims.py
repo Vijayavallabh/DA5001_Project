@@ -398,10 +398,20 @@ def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
     # both bounds are stated, and neither is called a measurement
     assert "$3.175$" in txt and "$4.159$" in txt, \
         "the pathwise certificate and the sharper KL bound must both be named"
-    for bad in ("measured KL from the anchor", "measured KL, nats", "realised KL &"):
-        assert bad not in txt, f"a closed-form bound is being called a measurement: {bad!r}"
+    # EVERY live section, not the three the repair was about -- caution (af). The first version
+    # scanned three files and missed a fourth instance in appendix_selection.tex ("for $3.17$
+    # nats of measured KL"), found the same day while reading for something else.
+    import csv as _csv, glob as _glob, re as _re, sys as _sys, os as _os
+    from tests.manuscript import DIR as _DIR
+    _live = [f for f in _glob.glob(_os.path.join(_DIR, "sections", "*.tex"))
+             if not _re.search(r"_v\d", _os.path.basename(f))]
+    _live.append(_os.path.join(_DIR, "iclr_2027.tex"))
+    assert len(_live) > 8, _live
+    _all = " ".join(" ".join(open(f, encoding="utf-8").read().split()) for f in _live)
+    for bad in ("measured KL from the anchor", "measured KL, nats", "realised KL &",
+                "nats of measured KL", "measured KL against"):
+        assert bad not in _all, f"a closed-form bound is being called a measurement: {bad!r}"
     # and the closed form really is what the CSV holds, so the correction is not cosmetic
-    import csv as _csv, sys as _sys, os as _os
     _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
     from analysis.selection_decoding import kl_best_of_n
     rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
