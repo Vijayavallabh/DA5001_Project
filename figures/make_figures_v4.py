@@ -415,7 +415,10 @@ def selection_frontier():
     # Headroom for the legend, which now sits upper right: at ylim 0.80 its bottom border cut
     # through the "n=64" label (u=0.578). Every legend move in this panel trades one collision
     # for another unless the panel is given the room -- render the page after touching either.
-    ax.set_ylim(0.37, 0.86)
+    # 0.94, not 0.86: raising the legend to a readable 8.0 (below) made the box taller and it
+    # covered the n=64 label again -- the SAME collision, from changing the size instead of the
+    # corner. The legend size and this number move together.
+    ax.set_ylim(0.37, 0.94)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
@@ -426,7 +429,12 @@ def selection_frontier():
     # that corner and struck through "Thm. 1" and "selection anchoring" in the compiled PDF
     # (caution (ad)). Upper right is empty -- the curve exits the top by x~0.5 and the anchored
     # cluster tops out at u=0.52 -- and the opaque frame occludes anything that ever reaches it.
-    ax.legend(fontsize=6.6 * F, frameon=True, framealpha=1.0, edgecolor="none",
+    # 8.0, not 6.6: measured on the compiled page (pdftotext -bbox, advance width against the
+    # same words in body text) this legend printed at about 5.4pt, because the figure is placed
+    # at 0.70\textwidth while F compensates only for \textwidth. Raising F globally is what
+    # broke the layout before, so only the legend moves -- the annotations and ticks that decide
+    # the layout are untouched. RENDER THE PAGE after changing this.
+    ax.legend(fontsize=8.0 * F, frameon=True, framealpha=1.0, edgecolor="none",
               loc="upper right", handlelength=1.6, borderaxespad=0.3)
     for _a in (axL, ax):
         _a.tick_params(labelsize=8 * F)
