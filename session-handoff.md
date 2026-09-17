@@ -1,4 +1,4 @@
-# Session handoff — 2026-09-17 12:45 (the reviewer's three top fixes are run, scored and in the paper; nothing of ours is running; all four A100s belong to other users)
+# Session handoff — 2026-09-17 15:45 (reviewer's three top fixes run and scored; second full read-through done, eleven defects fixed; nothing of ours is running)
 
 ## Current objective
 
@@ -9,10 +9,21 @@ GPU-seconds (`feat-124`). Each had its bands committed before it ran; **two of t
 something against the paper and the text was changed accordingly.** Tree clean at **`28854af`**,
 nothing of ours on a GPU.
 
-**59 pre-registrations, all 59 scored. 546 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
+**59 pre-registrations, all 59 scored. 548 tests, `./init.sh` exit 0. Manuscript compiles exit 0, 0
 overfull, 0 `??`, `pdffonts | grep -ci bold` = 3, body inside 9 pages (the Ethics Statement opens on
-page 9), 56 total. 3,483 numeric literals, one expected `64256` miss. Artifact 939 files. Compute
+page 9), 57 total. 3,489 numeric literals, one expected `64256` miss. Artifact 939 files. Compute
 283.0 → 295.3 GPU-hours as the three arms landed; the disclosure moved with it.**
+
+> **A second full read-through is done (2026-09-17 15:40), and it found eleven defects, none of them
+> visible in the source.** The build was clean at every step. The serious one: `experiments.tex`
+> still carried the **withdrawn** cross-protocol vetting claim ("all eighteen models ... every model
+> known to hold the work at least half") that the appendix and the Ethics Statement had already
+> dropped, because the test written for that repair only scanned the appendix. Also four figure
+> collisions (Figures 1, 3, 6), **two figures printed at half the size they were drawn** (Figures 5
+> and 6, shrink `0.494` and `0.638`), three quotation-mark defects in one class, two cross-references
+> pointing at sections that do not contain the number, one sentence fragment, and a FLOP cost table
+> the latency measurement had left unqualified. All fixed; `progress.md` has the full account and
+> AGENTS.md caution **(af)** the two reusable lessons.
 
 ### What the three arms changed in the paper
 
@@ -378,11 +389,14 @@ and `app:latency` added, the FLOP claims qualified) · `sections/selection.tex` 
 
 ### Recommended next step
 
-**Nothing technical.** The paper is submission-ready and every thread this session opened is closed
-and scored. If more time is spent on it, the highest-value use is a second full read-through of the
-rendered PDF — the last one found nine defects that no compile-time check could see, and the
-document has since gained two appendix tables and changed its abstract. Render pages to PNG and look
-at them; `grep` sees none of that class.
+**Nothing technical.** The paper is submission-ready, every thread this session opened is closed and
+scored, and the second read-through is done. The one thing left on the table, deliberately: **51
+lines carry `Underfull \hbox (badness 10000)`** — visibly stretched interword spacing, caused by
+long unbreakable `\texttt{}` paths. One reflow took it from 58 to 51. A preamble change letting
+`\texttt` break at `/` and `_` would fix the rest; it was judged not worth the risk this close to
+the deadline, since every such line is correct and legible and the stated bar (0 overfull, 0 `??`)
+is met. If anyone wants it, that is the fix — and re-render the pages afterwards, because a break
+inside a path is a new way to be wrong.
 
 ### Human-only, and close
 

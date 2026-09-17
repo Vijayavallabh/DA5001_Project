@@ -103,3 +103,41 @@ def test_the_non_circular_control_is_screened_beside_a_clean_anchor():
             f"the pre-training memoriser is screened at '{proto}' and no openly licensed anchor "
             f"is, so the only non-circular half of the separation has nothing to stand against -- "
             f"yet appendix_selection.tex still says {claim!r}")
+
+
+def test_the_withdrawn_cross_protocol_claim_is_gone_from_the_BODY_too():
+    """The repair of 2026-09-16 rebuilt the appendix table into two protocol blocks and dropped
+    "separation complete over eighteen models". Section 3 kept its own copy of that claim for
+    another day, where no test looked: "the check separates all eighteen models here ... and every
+    model known to hold the work at least half". Both halves are false at the one protocol --- the
+    eighteen-model table spans two protocols, and OLMo-2-7B's worst passage is 0.2677, nowhere near
+    half. A withdrawn claim has to be chased through every section that made it, not just the one
+    the arm was about."""
+    from tests.manuscript import tex as _tex
+    rows = _rows()
+    for name in ("sections/experiments.tex", "sections/selection.tex", "sections/iclr_intro.tex",
+                 "sections/appendix_selection.tex", "iclr_2027.tex"):
+        p = _tex(name)
+        if not os.path.exists(p):
+            raise AssertionError(f"cannot check the claim: {p} is missing")
+        body = " ".join(open(p, encoding="utf-8").read().split())
+        assert "eighteen models" not in body, (
+            f"{name} still claims a separation over eighteen models; that table spans two "
+            "protocols and the claim was withdrawn")
+        assert "known to hold the work at least half" not in body, (
+            f"{name} still says every contaminated model reproduces at least half a passage")
+    if not rows:
+        return
+    # and the positive half must remain true of the CSV: at the registered protocol every openly
+    # licensed anchor reads exactly zero and every web-trained model reads above it.
+    proto = "100-token raw prefix"
+    here = [r for r in rows if r["protocol"] == proto]
+    if not here:
+        return
+    clean = [r for r in here if r["provenance"] == "openly licensed"]
+    web = [r for r in here if r["provenance"] != "openly licensed"]
+    assert clean and web, f"the {proto} block no longer holds both kinds"
+    assert all(float(r["frac_passages_leaking"]) == 0.0 for r in clean), \
+        "an openly licensed anchor now leaks; Section 3 says none of them does"
+    assert all(float(r["frac_passages_leaking"]) > 0.0 for r in web), \
+        "a web-trained model now reads zero; Section 3 says every one reads above zero"

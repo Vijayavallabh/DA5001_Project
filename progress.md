@@ -9,6 +9,76 @@
 
 
 
+## 2026-09-17 15:40 — the second read-through: eleven defects, none of them visible in the source
+
+Rendered all 57 pages to PNG and read them, plus three automated typographic scans over
+`pdftotext` output. The build was clean throughout --- tectonic exit 0, 0 overfull, 0 `??`,
+`pdffonts | grep -ci bold` = 3 --- at every step, including while the body asserted a claim the
+paper had withdrawn two sections later.
+
+**The one that mattered.** `sections/experiments.tex:98` still read *"the check separates all
+eighteen models here ... and every model known to hold the work at least half"*. That is the
+**withdrawn** cross-protocol claim: the eighteen-model table was rebuilt into two protocol blocks
+when `feat-122` landed, and at the one registered protocol OLMo-2-7B's worst passage is `0.2677`,
+nowhere near half. The appendix and the Ethics Statement had been corrected; Section 3 had not, and
+`tests/test_anchor_vetting.py` only ever looked at the appendix. It now reads *"at one protocol the
+five openly licensed anchors reproduce none of the 100 passages and every web-trained model reads
+above zero, the 70B in full"*, which is what `anchor_vetting.csv` says, and a new test asserts the
+withdrawn wording is absent from **every** section and that the positive half still holds of the CSV.
+**A withdrawn claim has to be chased through every section that made it.**
+
+**Four figure defects, three of them collisions of the caution-(ad) kind.** Figure 1, the paper's
+only main-text figure: the dotted $\Lambda^*$ curve ran through an unframed legend and struck out
+"Thm. 1" and "selection anchoring"; the blue curve struck out "n = 8"; "k = 0.5" sat on the x-axis
+spine; and in panel (a) the median-target rule struck out its own "k = 0.5" label. Figure 3(a): the
+axvline struck out "what is certified" in the legend. Figure 6: the TinyComma curve ran through
+"certificate vacuous". **Moving a legend trades one collision for another** --- relocating Figure
+1(b)'s to the upper right put its frame through "n = 64" and the panel needed `ylim` headroom as
+well. The repairs used are opaque frames, an opaque bbox, a different label anchor and more room,
+one each.
+
+**Two figures were printed at half the size they were drawn.** `frontier_scaling` (Figure 5) was
+`\includegraphics[width=0.62\textwidth]` on a `figsize=(6.9, ...)` canvas --- a shrink of `0.494`,
+so its 7pt legend printed at `3.5`pt --- and `onset_collapse` (Figure 6) at `0.8` was `0.638`. Both
+are now `\textwidth`. **The rule: a figure drawn at 6.9in is a `\textwidth` figure**, and the only
+6.9in figure that may be narrower is `selection_frontier`, which pre-scales its type by `6.9/5.5`.
+`selection_frontier`'s own source comment said this and was not followed for its neighbours.
+
+**Three quotation-mark defects, one class.** `"a smaller scorer cuts the price"` (ASCII quotes, mine,
+renders as two *closing* quotes); ``` `factual` ```, ``` `creative` ```, ``` `neutral` ``` and
+``` `analysis/seed_effect.py` ``` (markdown code spans, rendering as two *opening* quotes); and
+`references.bib`'s `Probabilistic "Copies"`, which put two closing quotes in the reference list.
+`tests/test_contaminated_anchor.py` now greps for both shapes. Its first regex was too permissive
+and matched across a legitimate ` ``Active'' ... ``loss'' ` pair, and its second missed a path; both
+were found by running it, not by reading it.
+
+**Two cross-references pointed at sections that do not contain the number.**
+`frontier.tex` sent a reader to Section 5 for the `849`-nat median target, which is stated in
+Section 2; the intro's new cost clause sent them to Section 3 for `61.3x`/`35.4x`, which are in
+Section 2 and Appendix I. Both now point where the number is.
+
+**One sentence fragment of mine:** *"Measured on one card that is $35.4\times$ the wall-clock"*
+parses as a relative clause on "card". Now *"Measured on one card, it is..."*.
+
+**A residual the latency measurement left behind**, found by reading the appendix rather than by
+grep: the scorer-free cost table (`app:scorerfree`) prices majority vote at `5.75x` against the
+reward model's `61.29x`, and that column is **FLOPs**. On the clock the scorer is `9.3%`, so
+dropping it saves far less than dropping parameters suggests, and the advantage narrows. The column
+is now labelled `cost, FLOPs`, the paragraph says *"in forward passes"*, and a new sentence points
+at the measurement and states plainly that we measured the clock at **one point only** (`n=64`, the
+`7.6`B scorer) and **do not extrapolate it down the column**.
+
+**Not fixed, and why.** 51 lines carry `Underfull \hbox (badness 10000)` --- visibly stretched
+interword spacing, caused by long unbreakable `\texttt{}` paths. One reflow (moving a
+`results/onset_prediction_*.md` out of the position that forced a whole line to stretch) took it
+from 58 to 51. A preamble change that let `\texttt` break at `/` and `_` would fix the rest, and was
+judged not worth the risk this close to the deadline: it is a mild typographic blemish, the project's
+stated bar (0 overfull, 0 `??`) is met, and every such line is still correct and legible.
+
+**Verified after the pass:** tectonic exit 0, 0 overfull, 0 `??`, bold fonts 3, body still inside 9
+pages (the Ethics Statement opens on page 9), 57 pages total, 3,489 numeric literals with the one
+expected `64256` miss, 548 tests, `./init.sh` exit 0, artifact 939 files.
+
 ## 2026-09-17 12:15 — the reviewer's other two asks, both answered, one of them against us
 
 Reviewer R2 (repeat the head-to-head independently) and R3 (report per-arm GPU-seconds) ran

@@ -139,3 +139,35 @@ def test_the_appendix_quotes_the_amplification_range_and_its_caveats():
     assert "worthless if the safe model is itself contaminated" not in eth
     assert "multiplier on the anchor's own leakage" in eth
     assert "vet the anchor" in eth
+
+
+def test_no_ascii_double_quote_reaches_the_manuscript():
+    """`"` is not a LaTeX quotation mark: it typesets as a CLOSING quote at both ends, so
+    `"a smaller scorer cuts the price"` renders as ''a smaller scorer cuts the price''. One
+    reached the compiled PDF on 2026-09-17, in a sentence quoting the paper's own corrected claim.
+    Same class as caution (y): the build is clean, `??` is zero, the overfull count is zero, and
+    only a reader of the rendered page sees it. Opening is ``, closing is ''."""
+    import glob as _glob
+    import os as _os
+    import re as _re
+    from tests.manuscript import tex as _tex
+    root = _os.path.dirname(_tex("iclr_2027.tex"))
+    files = [_tex("iclr_2027.tex")] + sorted(_glob.glob(_os.path.join(root, "sections", "*.tex")))
+    live = [f for f in files if not _re.search(r"_v\d|preflow", _os.path.basename(f))]
+    assert len(live) > 10, f"only {len(live)} section files resolved; check the manuscript path"
+    bad = []
+    for f in live:
+        # only files the document actually \input's, and only non-comment lines
+        for i, line in enumerate(open(f, encoding="utf-8"), 1):
+            if line.lstrip().startswith("%"):
+                continue
+            body = line.split("%")[0]
+            if '"' in body:
+                bad.append(f"{_os.path.relpath(f, root)}:{i}: {body.strip()[:90]}")
+            # ...and the markdown habit of `code` spans: LaTeX opens a quote on each backtick, so
+            # `factual` renders as 'factual' with BOTH marks curling left. Three reached the
+            # compiled PDF in one sentence of Appendix F. \texttt{} is the house style here.
+            if _re.search(r"(?<!`)`[A-Za-z][A-Za-z0-9_./\\-]*`(?!`)", body):
+                bad.append(f"{_os.path.relpath(f, root)}:{i}: backtick pair: {body.strip()[:80]}")
+    assert not bad, ("quotation marks that render the wrong way round (`` opens, '' closes):\n  "
+                     + "\n  ".join(bad))

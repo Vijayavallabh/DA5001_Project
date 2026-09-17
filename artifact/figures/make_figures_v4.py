@@ -172,7 +172,12 @@ def onset_collapse():
     ax.set_ylabel("single-query recall")
     ax.set_title("raw budget", fontsize=8)
     ax2.axvline(1.0, color="0.35", lw=0.9, ls="--")
-    ax2.annotate("certificate\nvacuous", xy=(1.0, 0.09), xytext=(1.03, 0.085), fontsize=6.2, color="0.35")
+    # An opaque bbox, not a bare annotation: the TinyComma curve climbs straight through
+    # "certificate" here. Moving the text instead only trades one crossing curve for another --
+    # nine series leave no empty corner in this panel (caution (ad)).
+    ax2.annotate("certificate\nvacuous", xy=(1.0, 0.09), xytext=(1.03, 0.085), fontsize=6.2,
+                 color="0.35", zorder=5,
+                 bbox=dict(facecolor="white", edgecolor="none", pad=0.8))
     ax2.set_xlabel("rescaled budget  $k / s(x)$")
     ax2.set_title("rescaled by the vacuity threshold", fontsize=8)
     # Two unframed nine-entry legends, one per panel, both inside the axes: the left one had all
@@ -335,7 +340,10 @@ def selection_frontier():
     # who cannot read 4pt type was going to have to look anyway.
     axL.annotate("$S(x) = s(x)T$", (T[26], s_med * T[26]), fontsize=6.3 * F, color="0.2",
                  rotation=31, rotation_mode="anchor", xytext=(0, 5), textcoords="offset points")
-    for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 70)):
+    # xi picks where each ray carries its own label. 0.5 was at 70, i.e. T=10^2.4=251 tokens,
+    # which is where t_star = 849/s_med puts the median-target rule -- the dash-dot vline
+    # struck the label through. Moved right of the rule. Render the page after changing these.
+    for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 85)):
         axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
         axL.annotate(f"$k={k:g}$", (T[xi], k * T[xi]), fontsize=6.3 * F,
                      color="#c1443c", rotation=31, rotation_mode="anchor",
@@ -390,7 +398,7 @@ def selection_frontier():
     for k, xv, yv in zip(ks, x, y):
         if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
             ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5 * F,
-                        xytext=(6, -3) if k == max(ks) else (6, -8),
+                        xytext=(6, -3) if k == max(ks) else (6, -4),
                         textcoords="offset points")
 
     xs = [max(float(r["kl_nats"]), 1e-3) for r in sweep]
@@ -399,20 +407,27 @@ def selection_frontier():
     for r, xv, yv in zip(sweep, xs, ys):
         if r["n"] in ("1", "8", "64"):
             ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5 * F,
-                        xytext={"1": (4, -10), "64": (7, -4)}.get(r["n"], (-4, 6)),
+                        xytext={"1": (4, -10), "64": (7, -4)}.get(r["n"], (6, -10)),
                         textcoords="offset points")
 
     ax.set_xscale("log")
     ax.set_xlim(3e-4, 8e3)
-    ax.set_ylim(0.38, 0.80)
+    # Headroom for the legend, which now sits upper right: at ylim 0.80 its bottom border cut
+    # through the "n=64" label (u=0.578). Every legend move in this panel trades one collision
+    # for another unless the panel is given the room -- render the page after touching either.
+    ax.set_ylim(0.37, 0.86)
     ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
     # at readable type sizes the long three-line legend was as wide as the axes and sat on the
     # n=64 point whichever corner it was pinned to. The swept variable is on the curve labels.
-    ax.legend(fontsize=6.6 * F, frameon=False, loc="upper left", handlelength=1.6,
-              borderaxespad=0.3)
+    # NOT "upper left" and NOT frameon=False: the dotted Lambda* curve rises through exactly
+    # that corner and struck through "Thm. 1" and "selection anchoring" in the compiled PDF
+    # (caution (ad)). Upper right is empty -- the curve exits the top by x~0.5 and the anchored
+    # cluster tops out at u=0.52 -- and the opaque frame occludes anything that ever reaches it.
+    ax.legend(fontsize=6.6 * F, frameon=True, framealpha=1.0, edgecolor="none",
+              loc="upper right", handlelength=1.6, borderaxespad=0.3)
     for _a in (axL, ax):
         _a.tick_params(labelsize=8 * F)
         _a.xaxis.label.set_size(8 * F)
@@ -560,7 +575,9 @@ def imitation_cost():
     axL.set_xlabel("budget $k$ (nats per token)")
     axL.set_ylabel("nats per token")
     axL.set_title("(a) what the decoder spends", fontsize=8)
-    axL.legend(frameon=False, loc="upper left")
+    # An OPAQUE frame, not frameon=False: the axvline at the imitation rate runs up through the
+    # upper-left corner and struck through "what is certified" in the compiled PDF (caution (ad)).
+    axL.legend(frameon=True, framealpha=1.0, edgecolor="none", loc="upper left", fontsize=6.6)
     axL.grid(alpha=0.25, lw=0.5)
 
     axR.plot([0, 1], [0, 1], color="0.55", lw=1.1, ls="--", label="uniform over steps")
