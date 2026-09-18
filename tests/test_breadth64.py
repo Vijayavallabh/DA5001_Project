@@ -80,9 +80,52 @@ def test_the_appendix_states_the_claim_over_exactly_the_anchors_that_carry_it():
 
 
 def test_the_paired_read_never_quotes_the_committed_breadth_table():
-    """Cross-grid comparison is the error caution (ap) forbids."""
+    """Cross-grid comparison is the error caution (ap) forbids.
+
+    The window is bounded by the NEXT \\paragraph, not by a character count. It was `i : i + 3000`
+    until 2026-09-18, when adding two rows to the table pushed the disclaimer past 3000 and the guard
+    fired on prose that had not changed. A fixed-width window around a claim is caution (an)'s
+    complaint in another dress: it retires itself the first time the paragraph grows.
+    """
     txt = body("appendix_selection.tex")
     i = txt.find("Does the climb to the headline")
-    seg = txt[i:i + 3000]
+    assert i != -1, "the paragraph this guard is about is gone"
+    j = txt.find("\\paragraph", i + 1)
+    seg = txt[i: j if j != -1 else len(txt)]
     assert "none of these numbers is set" in seg, \
         "the appendix must say these numbers are not compared with the committed breadth table"
+
+
+def test_the_two_retained_anchors_are_read_on_the_same_paired_statistic():
+    """The n=64 table rejects three anchors on a paired g(64)-g(8) and keeps two.
+
+    Added 2026-09-18. Until then it kept them on a different statistic -- monotonicity for Comma-7B,
+    the n=128 arm for TinyComma -- so 'climbs' meant one thing in the rows that were rejected and
+    another in the rows that survived. A reviewer checking why KL3M's +0.0650 is not enough while
+    Comma-7B's climb is would have found no comparable number printed. Both are now in the table and
+    both are rebuilt here from their own per-prompt CSVs, so neither can drift from its source.
+    """
+    import csv as _csv
+    import random
+    import sys as _sys
+    _sys.path.insert(0, ROOT)
+    from analysis.selection_decoding import boot_mean
+
+    def paired(tag):
+        p = os.path.join(ROOT, "results", f"selection_scaling_per_prompt{tag}.csv")
+        rows = [r for r in _csv.DictReader(open(p, encoding="utf-8"))
+                if "Phi-3.5-mini-instruct" in r["judge"]]
+        d = [float(r["u_n64"]) - float(r["u_n8"]) for r in rows]
+        g = sum(d) / len(d)
+        lo, hi = boot_mean(d, random.Random(20260918))
+        return g, lo, hi
+
+    txt = body("appendix_selection.tex")
+    for tag, want in (("", (0.0880, 0.0470, 0.1300)), ("_comma7b64", (0.1010, 0.0590, 0.1420))):
+        g, lo, hi = paired(tag)
+        assert abs(g - want[0]) < 5e-4 and abs(lo - want[1]) < 5e-4 and abs(hi - want[2]) < 5e-4, \
+            (tag, g, lo, hi, want)
+        printed = f"${want[0]:+.4f}$ $[{want[1]:+.4f}, {want[2]:+.4f}]$"
+        assert printed in txt, f"{tag}: the table no longer prints {printed}"
+        # and both must exclude zero, or 'climbs' is the wrong word in that row
+        assert lo > 0, (tag, lo)
