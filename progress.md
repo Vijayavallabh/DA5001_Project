@@ -1,6 +1,66 @@
 # Session Progress Log
 
 
+## 2026-09-18 17:10 --- feat-132 **INVALID**: a pre-registered gate caught a pre-registered premise
+
+After `feat-131` narrowed the breadth-at-`n=64` claim to two anchors, the second of them --- Comma-7B
+--- had never been re-drawn. `feat-132` re-drew it and **could not be read**. Its committed integrity
+check failed (draw-0 empty fraction `0.0560` against `0.0940`, tolerance `0.03`), so per the
+pre-registration the band was not computed --- **and it still has not been**, by the scorer or by
+hand. `tests/test_comma7b_seed.py` fails if `results/comma7b_seed_scoring.csv` ever appears. That
+negative fact is what makes the re-run honest rather than a second attempt at a number already seen.
+
+**Chased with the decision rule fixed before any diagnostic ran.** Concentrated in one prompt class
+means a pipeline bug and an invalid arm; spread across three means the tolerance is mis-specified and
+the arm is read at a reduced warrant. Draw-0 empties:
+
+| class | on record (batch 8) | feat-132 (batch 32) | two-proportion `z` |
+|---|---|---|---|
+| creative | `1/150` | `0/150` | `+1.00` |
+| factual | `1/150` | `4/150` | `-1.35` |
+| **neutral** | **`45/200`** | **`24/200`** | **`+2.78`** |
+| total | `47/500` | `28/500` | `+2.28` |
+
+Concentrated, and where empties actually live: `22.5%` in `neutral` against `0.7%` elsewhere. **Not a
+broken card** --- the `n=1` mean completion length agrees to `0.4%` across the two passes (`99.2`
+against `99.6` words on the same 500 prompts), which a wrong model, a wrong corpus or a truncation
+would not survive.
+
+**The cause is a premise of ours.** The arm changed two things where the design intends one: the
+seeds, and `--batch-size 8` $\rightarrow$ `32`. The pre-registration named both in advance and
+asserted of the second that it *"does not change what is being drawn from."* That clause is false. An
+empty generation is EOS at step 0; under left-padded batched generation the step-0 logits depend on
+the padding pattern of the batch a prompt lands in, so batch size shifts the empty **rate**
+systematically where that rate is large and invisibly where it is near zero. `feat-131` could not
+have detected it: its anchor reads `0.000`--`0.002` everywhere, where a `0.03` absolute tolerance is
+unfalsifiable. Caution `(u)` said batch size is part of the seed; **at a rate-valued quantity it is a
+shift, not merely a re-roll**, and caution `(v)` now carries that.
+
+**What it does not do.** Per caution `(w)`, a defect in our own specification must not retire a
+question by counting against a stop rule. This is neither evidence for nor against the climb. The
+breadth-at-`n=64` claim stands exactly where `feat-131` left it --- TinyComma and Comma-7B, with
+Comma-7B's replication **outstanding rather than failed** --- and **no manuscript number changed**.
+
+**The gate had two defects, not one, and both are fixed in `feat-133`.** An absolute tolerance on a
+*rate* is not scale-free. And an aggregate gate on a stratified rate gates the wrong quantity: under
+the corrected two-proportion test `feat-132`'s **total** would have **passed** (`28` in a `26`--`73`
+band) while its **neutral** still **failed** (`24` against `26`--`68`) --- the stratum carried the
+whole signal. `feat-133`'s gate is a two-proportion `z` at the `1%` level on `neutral` **and** total,
+references measured by the scorer's own `empty_counts()` on the arm being replicated. Validated on
+real data in both directions before launch: `z = 0.00` PASS against the reference itself, neutral
+FAIL / total PASS against `feat-132`'s generations.
+
+`feat-133` changes exactly one thing, `--seeds 42 43 44` $\rightarrow$ `52 53 54`, and its launcher
+passes **no** `--batch-size` at all, because `h1.py`'s default of `8` is what the arm on record used.
+A guard asserts the flag's *absence* rather than its value. Cost of the invalid arm, stated plainly:
+`\approx 6.0` gpu-hours.
+
+Producing commands: `scripts/run_comma7bseed_{gen,merge}.sh` (feat-132),
+`scripts/run_comma7bseed8_{gen,merge}.sh` (feat-133),
+`analysis/score_kl3m_seed.py --anchor comma7b|comma7b8 --out results`. Logs:
+`results/onset_prediction_comma7b_seed.md`, `results/onset_prediction_comma7b_seed8.md`.
+
+
 ## 2026-09-18 13:40 --- feat-131 CLOSED: **DOES NOT REPLICATE**, and the claim narrows to two anchors
 
 feat-130's one climbing anchor was re-drawn at seeds `52 53 54`, three GPUs, one prompt class each
