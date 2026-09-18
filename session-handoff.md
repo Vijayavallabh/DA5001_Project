@@ -1,47 +1,44 @@
-# Session handoff — 2026-09-18 08:05 (both GPU arms scored and closed; all cards released)
+# Session handoff — 2026-09-18 13:40 (three arms scored and closed; all cards released)
 
-## ONE ARM IS RUNNING (`feat-131`, three cards). `results/onset_prediction_kl3m_seed.md` is committed and UNSCORED.
-## `feat-129` and `feat-130` are `done`.
+## NOTHING IS RUNNING. `feat-129`, `feat-130` and `feat-131` are `done`; all 66 pre-registrations are scored.
 
-**feat-131: does KL3M-1.7B's CLIMBS reading survive an independent draw?** It is the single
-climbing anchor behind feat-130's PARTIAL, and it carries a reduced warrant. One thing changes ---
-`--seeds 42 43 44` $\rightarrow$ `52 53 54`, disjoint by construction. Generation splits by prompt
-class: **GPU 1 neutral** (`output/logs/kl3mseed_neutral.log`), **GPU 2 creative**, **GPU 4 factual**;
-GPU 1 then merges and scores (`output/logs/kl3mseed_merge.log`). ~4.4 gpu-h, ~2h wall clock.
-Score with `.venv/bin/python analysis/score_kl3m_seed.py --out results`.
+| feature | reading |
+|---|---|
+| `feat-129` Arm A | **SATURATED BY 64** --- paired `g(128)-g(64)` = `+0.0140 [-0.0180, +0.0460]` |
+| `feat-129` Arm B | **SAFETY HOLDS** --- `0.0000` on 100/100 at every `n` in (1, 8, 64, 256) |
+| `feat-130` | **PARTIAL** --- 1 of 3 anchors climbed to `n=64` |
+| `feat-131` | **DOES NOT REPLICATE** --- that one anchor's climb did not survive a disjoint draw |
+| post hoc | order-averaged `g(128)-g(64)` = `+0.0140 [-0.0015, +0.0295]`; registered reading stands |
 
-| feature | reading | where |
-|---|---|---|
-| `feat-129` Arm A | **SATURATED BY 64** --- paired `g(128)-g(64)` = `+0.0140 [-0.0180, +0.0460]` | `results/onset_prediction_n256.md` |
-| `feat-129` Arm B | **SAFETY HOLDS** --- `0.0000` on 100/100 at every `n` in (1, 8, 64, 256) | same |
-| `feat-130` | **PARTIAL** --- 1 of 3 climbs; across five anchors at `n=64` it holds at 3 | `results/onset_prediction_breadth64.md` |
-| post hoc | order-averaged `g(128)-g(64)` = `+0.0140 [-0.0015, +0.0295]`, registered reading stands | `results/n128_order_averaged_note.md` |
+**Where the breadth claim now stands.** The climb to the headline `n=64` is established at
+**TinyComma and Comma-7B only**. KL3M-1.7B read `+0.0650 [+0.0270, +0.1030]` at seeds `42 43 44` and
+`+0.0040 [-0.0330, +0.0400]` at `52 53 54` --- a move of `0.061` --- so by feat-131's committed table
+no anchor outside the two on record climbs reproducibly, and the appendix says so. **The `n=8`
+breadth claim (four of six anchors, three families) is untouched**, since none of this is about `n=8`.
 
-**The one result to carry forward.** The gain rises in `log n` to an **anchor-dependent** ceiling and
-then stops --- below `n=8` at both Pleias anchors, between `64` and `128` at TinyComma --- while the
-certificate `log n` keeps growing. Which `n` is worth paying for is a property of the anchor a
-deployer must measure, not a constant. Three of five anchors measured at `n=64` climb to it
-(TinyComma, Comma-7B, KL3M-1.7B).
+**The instrument lesson, caution (ap), which three arms now support.**
+1. A single-order judged level is **grid-dependent**: adding an arm re-rolls every presentation flip
+   into a position-dominated judge. TinyComma's `n=64` gain read `+0.142` and `+0.076` on
+   byte-identical text (32,000/32,000 rewards bit-identical).
+2. **Order averaging draws no rng and reproduced exactly** --- `+0.1045 [+0.0820, +0.1280]` twice,
+   four decimals on both interval ends.
+3. **But a paired difference is only stable where the effect is large relative to its own interval.**
+   TinyComma at ~2.1 half-widths reproduced to four decimals under a disjoint seed draw; KL3M-1.7B at
+   ~1.7 did not. The construction removes the position lottery; it does not make a marginal reading
+   safe. Do **not** pool a reading with its own failed replication.
 
-**The instrument lesson, now caution (ap), which cost two gate rewrites.** A single-order judged
-level is **grid-dependent**: `selection_scaling.py` draws one `rng.random()` per element of
-`distinct`, which is built over the whole grid, so adding an arm re-rolls the presentation order of
-nearly every shared item into a position-dominated judge. TinyComma's `n=64` gain read `+0.142` and
-`+0.076` on **byte-identical** text (32,000/32,000 rewards bit-identical). **Order averaging draws
-nothing and reproduced exactly** --- `+0.1045 [+0.0820, +0.1280]` on both passes, four decimals on
-the point estimate and both interval ends. So: a reproduction gate belongs on the **reward cache**,
-never on a judged number; and a single-order gain is never compared across sweeps
-(`tests/test_forest_single_pass.py` fails if the forest plot ever reads the `n=128` pass).
-
-**Two defects in our own pre-registrations, recorded rather than repaired.** feat-129's gate compared
-judged `gain` across passes at `5e-4`, which cautions (e) and (m) already forbade. feat-130's
-asserted the committed breadth arms used `--batch-size 32`; true of Pleias-3B, false of the other
-two, which ran before the launcher that passes it existed and took `h1.py`'s default of 8 --- so
-their reproduction check was *inapplicable* rather than failed, waived by an explicit flag, their
-bands marked `warrant=REDUCED`, with Pleias-3B as the bit-exact positive control.
+**Three defects in our own pre-registrations this session, all recorded rather than repaired.**
+feat-129's gate compared judged `gain` across passes at `5e-4`, which cautions (e) and (m) already
+forbade. feat-130's asserted the committed breadth arms used `--batch-size 32`; false for two of
+three, which predate the launcher that passes it. feat-131 therefore wrote **no** bit-identity gate
+at all --- for an independent draw that would be incoherent, not merely wrong --- and used
+distributional checks fixed in advance instead.
 
 ## Recommended next steps, in order
 
+0. **The breadth-at-`n=64` question is now the open one.** Two anchors carry it and a third failed
+   to replicate. Either take a further anchor there with enough draws to clear the marginal band, or
+   state in Limitations that the climb past `n=8` is established at two anchors only.
 1. **Where does Comma-7B's ceiling sit?** The appendix now says outright that it is open. Costs
    ~27 gpu-h at `n=128` on 500 prompts (its `n=64` generation alone was 13.42), so it needs the
    user's approval under the 24-gpu-hour rule, or a design that reuses the existing pool via

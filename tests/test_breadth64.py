@@ -59,14 +59,24 @@ def test_the_waiver_is_recorded_as_a_waiver_and_the_control_is_not():
 
 
 def test_the_appendix_states_the_claim_over_exactly_the_anchors_that_carry_it():
+    """NARROWED 2026-09-18 by feat-131. The one anchor that climbed did not survive a fresh draw,
+    so the committed consequence of DOES NOT REPLICATE applies: the climb to n=64 is established at
+    TinyComma and Comma-7B and nowhere else. This test previously asserted the three-anchor
+    wording; it now asserts the two-anchor one, and that the three-anchor claim is gone."""
     txt = body("appendix_selection.tex")
-    assert "climb to $n=64$ is not universal" in txt, "the PARTIAL consequence was softened"
-    assert "three --- TinyComma, Comma-7B and KL3M-1.7B" in txt, \
-        "the claim must name the anchors it holds at"
+    assert "three --- TinyComma, Comma-7B and KL3M-1.7B" not in txt, \
+        "the three-anchor claim is back, and feat-131 refuted its third anchor"
+    assert "no anchor outside the two already on record\nclimbs reproducibly" in txt.replace(" ", " ") \
+        or "no anchor outside the two already on record climbs reproducibly" in txt, \
+        "the committed consequence of DOES NOT REPLICATE was softened"
+    assert "established at \\textbf{TinyComma and Comma-7B}" in txt, \
+        "the claim must name exactly the two anchors that carry it"
     assert "\\textsc{partial}" in txt, "the committed reading was dropped"
+    assert "\\textsc{does not replicate}" in txt, "the replication verdict was dropped"
     assert "reduced warrant" in txt, "the warrant concession was trimmed"
     assert "inapplicable" in txt, "the reproduction defect was trimmed"
     assert "$\\mathbf{+0.0650}$ $[+0.0270, +0.1030]$" in txt, "the one climbing band was trimmed"
+    assert "$+0.0040$ $[-0.0330, +0.0400]$" in txt, "the replication band was trimmed"
 
 
 def test_the_paired_read_never_quotes_the_committed_breadth_table():

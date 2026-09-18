@@ -109,6 +109,64 @@ trajectories took **4h09** on one card (01:17:51 $\rightarrow$ 05:27:20, $2.14$ 
 $\approx 2$ hours of wall clock. GPU 0 holds another user's $597$ MiB and is not taken; GPU 3 is the
 4 GB T400 and is never used.
 
-## Scoring log
+## Scoring, 2026-09-18 (appended; nothing above is edited)
 
-*(nothing scored yet)*
+*(this section was headed `## Scoring log` when the bands were committed)*
+
+### **DOES NOT REPLICATE**
+
+All three cards `rc=0` (factual 13:08:46, creative 13:14:41, neutral 13:16:39), merged and scored
+13:31:37. `.venv/bin/python analysis/score_kl3m_seed.py --out results`
+$\rightarrow$ `results/kl3m_seed_scoring.csv`.
+
+**Integrity checks pass:** $500$ prompts, $n=1$ empty fraction $0.0000$ against the committed
+$0.0020$ (tolerance $0.03$).
+
+| KL3M-1.7B, paired $g(64)-g(8)$, judge~B, 500 prompts | |
+|---|---|
+| seeds `42 43 44` (`feat-130`, on record) | $+0.0650$ $[+0.0270, +0.1030]$ |
+| seeds `52 53 54` (this arm) | $\mathbf{+0.0040}$ $[-0.0330, +0.0400]$ |
+| $\lvert D_{\text{rep}} - D_{\text{orig}}\rvert$ | $\mathbf{0.0610}$, against the precedent's $0.0000$ |
+
+The interval contains zero, so by the committed table the reading is **DOES NOT REPLICATE**, and its
+consequence applies as written: *"The single CLIMBS reading was a draw-level fluctuation.
+`feat-130`'s PARTIAL is re-read as no anchor outside the two already on record climbs reproducibly,
+and the breadth-at-$n=64$ claim narrows to TinyComma and Comma-7B in the appendix and anywhere else
+it appears."*
+
+### Why the precedent did not carry, which is the useful part
+
+The pre-registration leaned on a strong precedent: at the audited anchor a disjoint seed draw moved
+the judged *levels* ($g(8)$ $+0.054 \rightarrow +0.027$, $g(64)$ $+0.142 \rightarrow +0.115$) and
+left the paired difference at $+0.0880$ **both times, to four decimals**. That is still true. What
+this arm shows is the condition on it:
+
+* TinyComma's difference is $+0.0880$ against an interval half-width of about $0.042$ --- roughly
+  **2.1 half-widths**, an effect large relative to its own noise, and it reproduced exactly.
+* KL3M-1.7B's was $+0.0650$ against a half-width of about $0.038$ --- roughly **1.7 half-widths**,
+  and it did not.
+
+So **a paired difference is stable where the effect is large relative to its interval and not where
+it is marginal.** The precedent was evidence that the *construction* removes the position lottery,
+which it does; it was never evidence that a marginal reading under that construction is safe. This
+arm is the counter-example, and it is a caveat on the precedent as much as a result about KL3M.
+
+We do **not** pool the two draws into a combined estimate. Nothing was pre-registered about pooling,
+the two arms judge disjoint candidate sets, and averaging a reading with its own failed replication
+is the kind of post-hoc rescue this document's `## Excluded in advance` rules out.
+
+### Committed secondary, reported whatever it reads
+
+The full seven-point grid under both judges is in `results/selection_scaling_kl3m17bseed52.csv`.
+Judged **levels** are not compared across the two passes and are not quoted against each other here:
+the two arms select different candidates, so `distinct` and therefore the per-item presentation flip
+differ, which is caution `(ap)`. The paired difference above is the only cross-pass quantity read,
+and it is computed within one pass on each side.
+
+### What this does and does not change
+
+It removes one cell of support, not a claim the paper rests on. The headline is TinyComma at $n=64$
+and the head-to-head against the metered decoder, neither of which this touches; what narrows is the
+*breadth* of the climb to the headline $n$, from three anchors to the two that were already there.
+The $n=8$ breadth claim --- four of six anchors in three families --- is untouched, since nothing
+here is about $n=8$.

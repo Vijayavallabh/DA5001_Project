@@ -1310,8 +1310,8 @@
       "dependencies": [
         "feat-130"
       ],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "scripts/run_kl3mseed_gen.sh on three cards (factual rc=0 13:08:46, creative rc=0 13:14:41, neutral rc=0 13:16:39) then scripts/run_kl3mseed_merge.sh (scoring rc=0 13:31:37), then .venv/bin/python analysis/score_kl3m_seed.py --out results -> results/kl3m_seed_scoring.csv. VERDICT DOES NOT REPLICATE: paired g(64)-g(8) under judge B = +0.0040 [-0.0330, +0.0400] at seeds 52 53 54, against +0.0650 [+0.0270, +0.1030] at 42 43 44; |D_rep - D_orig| = 0.061 where the audited anchor's own seed replication gives 0.0000. Integrity checks PASS (500 prompts, n=1 empty fraction 0.0000 vs the committed 0.0020, tolerance 0.03). Seed sets verified disjoint by construction (3320184832-895 vs 3099394048-111, zero overlap). COMMITTED CONSEQUENCE APPLIED: feat-130's PARTIAL is re-read as 'no anchor outside the two already on record climbs reproducibly' and the breadth-at-n=64 claim is narrowed in sections/appendix_selection.tex to TinyComma and Comma-7B. The n=8 breadth claim (four of six anchors in three families) is untouched. THE TRANSFERABLE LESSON, now in caution (ap): a paired difference is stable where the effect is large relative to its own interval (TinyComma, ~2.1 half-widths, reproduced to four decimals) and not where it is marginal (KL3M-1.7B, ~1.7, moved 0.061). The two draws are NOT pooled -- nothing about pooling was pre-registered and it is the post-hoc rescue the document excludes. 655 tests, init.sh exit 0, body exactly 9 pages."
     }
   ]
 }

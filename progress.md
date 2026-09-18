@@ -1,6 +1,51 @@
 # Session Progress Log
 
 
+## 2026-09-18 13:40 --- feat-131 CLOSED: **DOES NOT REPLICATE**, and the claim narrows to two anchors
+
+feat-130's one climbing anchor was re-drawn at seeds `52 53 54`, three GPUs, one prompt class each
+(GPU 1 factual, GPU 2 creative, GPU 4 neutral; all three `rc=0` at 13:08:46 / 13:14:41 / 13:16:39,
+merged and scored 13:31:37). Same model, same grid, same judge, same 500 prompts, disjoint draws.
+
+| draw | seeds | paired `g(64) - g(8)`, judge B |
+|---|---|---|
+| feat-130, on record | `42 43 44` | `+0.0650 [+0.0270, +0.1030]` |
+| feat-131, replication | `52 53 54` | `+0.0040 [-0.0330, +0.0400]` |
+
+`|D_rep - D_orig| = 0.0610`. The pre-registered precedent is the audited anchor's own seed
+replication, which moved `0.0000` --- four decimals on both interval ends --- so the committed
+reading is DOES NOT REPLICATE. Integrity checks PASS: 500 prompts, `n=1` empty fraction `0.0000`
+against the committed `0.0020` at a `0.03` tolerance, and the two seed sets are disjoint by
+construction (`3320184832`--`895` against `3099394048`--`111`, zero overlap).
+
+**The committed consequence, applied.** feat-130's PARTIAL is re-read as *no anchor outside the two
+already on record climbs reproducibly*, and `sections/appendix_selection.tex` now states the
+breadth-at-`n=64` claim over **TinyComma and Comma-7B**, with the failed replication's band printed
+beside it. **The `n=8` breadth claim is untouched** --- four of six anchors in three families ---
+because none of this is about `n=8`. The two draws are **not** pooled: nothing about pooling was
+pre-registered, and it is exactly the post-hoc rescue the pre-registration excluded in advance.
+
+**Why the arm was worth running, which is the part that generalises.** Caution (ap) already said a
+single-order judged LEVEL is grid-dependent and that order averaging removes the position lottery by
+construction. Both remain true. What this arm adds is the limit: **a paired difference is stable
+where the effect is large relative to its own interval and not where it is marginal.** TinyComma sits
+at about `2.1` half-widths and reproduced exactly; KL3M-1.7B at about `1.7` moved `0.061`. Removing
+the position lottery does not make a marginal reading safe. Caution (ap) in `AGENTS.md` carries it.
+
+**No bit-identity gate, by design.** feat-129's gate compared a judged level across passes, which
+cautions (e) and (m) already forbade, and feat-130's asserted a `--batch-size` that two of its three
+committed anchors predate. For an independent draw a bit-identity gate would be incoherent rather
+than merely wrong --- different seeds produce different text, which is the point of the arm --- so
+this pre-registration wrote distributional integrity checks instead and said so before it ran.
+
+Producing commands: `scripts/run_kl3mseed_gen.sh` (per card), `scripts/run_kl3mseed_merge.sh`,
+`analysis/score_kl3m_seed.py --out results`. Outputs `results/kl3m_seed_scoring.csv`,
+`results/selection_scaling{,_per_prompt}_kl3m17bseed52.csv`,
+`results/selection_rewards64_kl3m17bseed52.csv`. Log: `results/onset_prediction_kl3m_seed.md`.
+Guards: `tests/test_kl3m_seed.py` (4), and `tests/test_breadth64.py` narrowed from three anchors to
+two. 655 tests, `./init.sh` exit 0, body exactly 9 pages, 0 overfull, 0 `??`.
+
+
 
 
 
