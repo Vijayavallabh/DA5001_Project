@@ -127,4 +127,65 @@ creative/factual half, and GPU 3 is the 4 GB T400.
 
 ## Scoring log
 
-*(nothing scored yet)*
+### Scored 2026-09-18 07:55 --- **PARTIAL**
+
+All three arms `rc=0` (kl3m17b 05:41, pleias12b 05:41, pleias3b 07:49).
+`.venv/bin/python analysis/score_breadth64.py --out results --waive-reproduction kl3m17b pleias12b`
+$\rightarrow$ `results/breadth64_scoring.csv`.
+
+| anchor | $g(8)$ | $g(64)$ | paired $g(64)-g(8)$ | reading | warrant |
+|---|---|---|---|---|---|
+| Pleias-1.2B | $+0.083$ | $+0.119$ | $+0.0360$ $[-0.0040, +0.0740]$ | SATURATED BY 8 | reduced |
+| **KL3M-1.7B** | $+0.023$ | $+0.088$ | **$+0.0650$ $[+0.0270, +0.1030]$** | **CLIMBS** | reduced |
+| Pleias-3B | $+0.025$ | $+0.028$ | $+0.0030$ $[-0.0380, +0.0460]$ | SATURATED BY 8 | full |
+
+One of three climbs, so by the committed table the reading is **PARTIAL**: *"Report per anchor which
+climbs and which stops, and state the breadth claim at $n=64$ over exactly the anchors where it
+holds. The $n=8$ claim is unaffected either way."*
+
+**The climb to the headline $n$ is therefore not universal.** Across everything now measured at
+$n=64$ --- TinyComma and Comma-7B on record, these three --- it holds at **three of five**
+(TinyComma, Comma-7B, KL3M-1.7B) and fails at the two Pleias anchors, whose curves are flat from
+$n=8$. Read beside feat-129's **SATURATED BY 64** at TinyComma, the shape that survives is: the gain
+climbs in $\log n$ up to some anchor-dependent ceiling and then stops, and the ceiling is **below
+$n=8$ for some anchors and between $64$ and $128$ for others**. The certificate is $\log n$
+throughout and keeps growing, so where the optimum sits is an anchor-level property a deployer has
+to measure, not a constant.
+
+### The registered reproduction check was inapplicable at two anchors, and that is our defect
+
+The check refused Pleias-1.2B and KL3M-1.7B. Chased before anything was read, it is not a bug in
+either arm:
+
+* `scripts/run_breadth_anchor.sh`, which passes `--batch-size 32`, **did not exist** until commit
+  `94f9e7d` (2026-09-14 07:31, *"raise h1 batch 8 -> 32/48"*, whose own message says the launchers
+  did not pass it before).
+* The committed arms for **KL3M-1.7B and Pleias-1.2B ran 2026-09-12**, before that, so they took
+  `h1.py`'s default `batch_size = 8` (`dap/e1.py:50`).
+* The committed arm for **Pleias-3B ran 2026-09-14 10:39**, after it, at `--batch-size 32`.
+
+Batch size is part of the seed (caution (u)), so ranks $0$--$7$ **cannot** be bit-identical for the
+first two and the check is inapplicable rather than failing. **This pre-registration asserted the
+committed value was $32$ for all three; that premise was false for two of them.** It is recorded
+here, not repaired, for the same reason feat-129's gate defect was: a defect in our own
+specification must be allowed neither to retire a question nor to rescue one.
+
+**What the waiver does and does not license.** The registered band is the paired $g(64)-g(8)$
+computed **within one pass**, from one pool generated in one run at one batch size; it never touches
+the committed arm, so it is unaffected by what that arm's batch size was. What is lost is the
+external confirmation that the pipeline reproduced, so those two anchors are marked **warrant
+reduced** and Pleias-3B --- whose committed arm *did* use batch $32$ and which reproduces
+**bit-exactly** --- stands as the positive control that the pipeline is deterministic. The waiver is
+an explicit flag on the command line, printed with its reason in the output and recorded in the CSV
+as `WAIVED -- batch 8 vs 32`, never a default and never inferred from the mismatch itself.
+
+**Note the verdict does not turn on the waived anchors alone.** The one anchor that CLIMBS is
+waived (KL3M-1.7B) and one that saturates is not (Pleias-3B), so PARTIAL would be the reading on any
+subset containing both a climber and a saturator. It would not be reachable from Pleias-3B alone.
+
+### Committed secondary, reported whatever it reads
+
+Judged levels moved between the two grids at every anchor --- up to $+0.052$ (Pleias-1.2B),
+$+0.054$ (KL3M-1.7B) and $+0.040$ (Pleias-3B) --- which is exactly caution (ap)'s grid-dependence
+measured three more times, and is why no number here is set against the committed breadth CSV. The
+full seven-point grid under both judges is in `results/selection_scaling_<name>64.csv`.

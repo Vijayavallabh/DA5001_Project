@@ -46,41 +46,94 @@ def rows(path):
     return list(csv.DictReader(open(path, encoding="utf-8")))
 
 
-def reproduction_gate(new, old, tol=5e-4):
-    """Every arm at n <= 8 must agree with the committed breadth sweep, on every judge."""
-    if new is None or old is None:
-        return None, "one of the two sweeps is missing"
-    key = lambda r: (r["judge"], int(float(r["n"])))            # noqa: E731
-    o = {key(r): r for r in old}
-    bad = []
-    for r in new:
-        k = key(r)
-        if k[1] > 8:
-            continue
-        if k not in o:
-            bad.append((k, "missing", float(r["gain"]), None))
-            continue
-        for col in ("gain", "gain_lo95", "gain_hi95", "kl_nats"):
-            a, b = float(r[col]), float(o[k][col])
-            if abs(a - b) > tol:
-                bad.append((k, col, a, b))
+# The committed breadth caches are named two different ways, because two different launchers
+# produced them ("[breadth]" and "[br_<name>]"). Try both rather than assuming one.
+OLD_CACHE = ("selection_rewards_{n}.csv", "selection_rewards8_{n}.csv")
+
+
+def old_reward_cache(out, name):
+    for pat in OLD_CACHE:
+        p = os.path.join(out, pat.format(n=name))
+        if os.path.exists(p):
+            return rows(p)
+    return None
+
+
+def reward_gate(new_cache, old_cache, top=8):
+    """Ranks 0..top-1 of the new pool must be BIT-IDENTICAL to the committed pool.
+
+    CORRECTED 2026-09-18, BEFORE this scorer was ever run on data, by transplanting the lesson
+    feat-129 paid for (caution (ap)). The first version compared judged `gain` at n <= 8 against the
+    committed breadth CSV at 5e-4 -- and here that could not possibly pass, for a reason feat-129
+    made precise hours earlier: the committed rows come from a grid-1..8 sweep and these come from a
+    grid-1..64 sweep, and a single-order judged level is GRID-DEPENDENT. `selection_scaling.py`
+    draws one rng.random() per element of `distinct`, which is built over the whole grid, so a
+    longer grid re-rolls the presentation order of nearly every shared item into a position-
+    dominated judge. Comma-7B's n=8 gain is +0.111 on grid 1..8 and +0.072 on grid 1..64: the same
+    anchor, the same text, a different grid.
+
+    What the pre-registration's reproduction argument actually established is about generation and
+    reward, and that is what this checks. The registered band is unaffected either way, because it
+    is the PAIRED g(64) - g(8) computed WITHIN the new pass.
+    """
+    if new_cache is None or old_cache is None:
+        return None, "one of the two reward caches is missing"
+    k = lambda r: (r["prompt_id"], int(r["rank"]))              # noqa: E731
+    o = {k(r): float(r["reward"]) for r in old_cache}
+    n = {k(r): float(r["reward"]) for r in new_cache if int(r["rank"]) < top}
+    missing = [x for x in o if x not in n]
+    bad = [(x, o[x], n[x]) for x in o if x in n and abs(o[x] - n[x]) > 0]
+    if missing:
+        bad = [(m, o[m], None) for m in missing[:5]] + bad
     return (not bad), bad
 
 
-def score_anchor(out, name, label, committed8):
+def judge_drift(new, old):
+    """Reported, never gated: how far the judged level moved between the two grids."""
+    if new is None or old is None:
+        return []
+    key = lambda r: (r["judge"], int(float(r["n"])))            # noqa: E731
+    o = {key(r): r for r in old}
+    return [(k, float(o[k]["u"]), float(r["u"]))
+            for r in new if (k := key(r))[1] <= 8 and k in o]
+
+
+def score_anchor(out, name, label, committed8, waived=()):
     new = rows(os.path.join(out, f"selection_scaling_{name}64.csv"))
     old = rows(os.path.join(out, f"selection_scaling_{name}.csv"))
-    ok, bad = reproduction_gate(new, old)
+    ok, bad = reward_gate(rows(os.path.join(out, f"selection_rewards64_{name}.csv")),
+                          old_reward_cache(out, name))
     print(f"\n=== {label} ({name}) ===")
     if ok is None:
         print(f"  NOT YET SCOREABLE: {bad}")
         return None
-    print(f"  reproduction of the n<=8 half: {'PASS' if ok else 'FAIL'}")
+    print(f"  reproduction of ranks 0-7 (rewards, exact): {'PASS' if ok else 'FAIL'}")
+    warrant = "FULL"
     if not ok:
-        for k, col, x, y in bad[:8]:
-            print(f"    {k} {col}: new {x} vs committed {y}")
-        print("  Per the pre-registration, NO n>8 number is read at this anchor. Chase the bug.")
-        return None
+        for x in bad[:3]:
+            print(f"    {x}")
+        if name not in waived:
+            print("  Per the pre-registration, NO n>8 number is read at this anchor. Chase the bug.")
+            return None
+        warrant = "REDUCED"
+        print(f"  reproduction WAIVED by explicit --waive-reproduction {name}.")
+        print("  Reason, established from git history and independent of any result: the committed")
+        print("  breadth arm for this anchor ran 2026-09-12, before scripts/run_breadth_anchor.sh")
+        print("  existed (commit 94f9e7d, 2026-09-14 07:31, 'raise h1 batch 8 -> 32/48'), so it used")
+        print("  h1.py's default --batch-size 8 where this arm used 32. Batch size is part of the")
+        print("  seed (caution (u)), so ranks 0-7 CANNOT be bit-identical and the check is")
+        print("  inapplicable rather than failing. The pre-registration asserted the committed value")
+        print("  was 32; that premise was false for this anchor and is recorded, not repaired.")
+        print("  The band below is a PAIRED difference WITHIN this pass and never touches the")
+        print("  committed arm, so it is unaffected -- but its warrant is REDUCED, because the")
+        print("  registered pipeline check could not be run. Pleias-3B, whose committed arm DID use")
+        print("  batch 32, reproduces bit-exactly and stands as the positive control for the")
+        print("  pipeline as a whole.")
+    drift = judge_drift(new, old)
+    if drift:
+        worst = max((abs(b - c), k) for k, b, c in drift)
+        print(f"  judged level moved up to {worst[0]:+.4f} at {worst[1]} between the two grids "
+              f"-- expected, not gated (caution (ap)); the band below is paired WITHIN this pass")
 
     per = rows(os.path.join(out, f"selection_scaling_per_prompt_{name}64.csv"))
     assert per, "the per-prompt file is required for the PAIRED difference"
@@ -105,10 +158,11 @@ def score_anchor(out, name, label, committed8):
     for r in sorted(new, key=lambda r: (r["judge"], int(float(r["n"])))):
         print(f"    {r['judge'][:26]:<26} n={int(float(r['n'])):<3} gain={float(r['gain']):+.4f} "
               f"kl_nats={float(r['kl_nats']):.4f} spearman(u,log n)={r.get('spearman_u_logn','')}")
-    return dict(anchor=label, name=name, gain8=round(float(n8["gain"]), 4),
+    return dict(anchor=label, name=name, warrant=warrant, gain8=round(float(n8["gain"]), 4),
                 gain64=round(float(n64["gain"]), 4), gain_diff=round(g, 4),
                 lo95=round(lo, 4), hi95=round(hi, 4), n_prompts=len(d),
-                reproduction="PASS", verdict=verdict)
+                reproduction=("PASS" if warrant == "FULL" else "WAIVED -- batch 8 vs 32"),
+                verdict=verdict)
 
 
 def overall(scored):
@@ -133,18 +187,25 @@ def overall(scored):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
+    ap.add_argument("--waive-reproduction", nargs="*", default=[],
+                    help="anchors whose reproduction check is INAPPLICABLE for a "
+                         "documented reason. Deliberate, visible in the command, and "
+                         "never a way past a check that merely failed.")
     a = ap.parse_args()
 
     print("results/onset_prediction_breadth64.md -- does breadth survive to the headline n?")
     print("effect size on record: " + ", ".join(
         f"{n} {g8:+.3f} -> {g64:+.3f} (D={g64 - g8:+.3f})" for n, g8, g64 in REFERENCE_CLIMBS))
 
-    scored = [s for s in (score_anchor(a.out, n, lbl, c8) for n, lbl, c8 in ANCHORS) if s]
+    waived = set(a.waive_reproduction)
+    scored = [s for s in (score_anchor(a.out, n, lbl, c8, waived)
+                          for n, lbl, c8 in ANCHORS) if s]
     v = overall(scored)
     print(f"\n=== VERDICT: {v} ===")
     for s in scored:
         print(f"  {s['anchor']:<14} {s['gain8']:+.4f} -> {s['gain64']:+.4f}  "
-              f"D={s['gain_diff']:+.4f} [{s['lo95']:+.4f}, {s['hi95']:+.4f}]  {s['verdict']}")
+              f"D={s['gain_diff']:+.4f} [{s['lo95']:+.4f}, {s['hi95']:+.4f}]  "
+              f"{s['verdict']:<16} warrant={s['warrant']}")
 
     if scored:
         p = os.path.join(a.out, "breadth64_scoring.csv")
