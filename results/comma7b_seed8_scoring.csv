@@ -1,0 +1,2 @@
+arm,seeds,n_prompts,gain_diff,lo95,hi95,verdict,orig_gain_diff,distance,ratio_orig,ratio_rep,empty_frac_n1,integrity
+"Comma-7B seed replication (batch 8, corrected)",52 53 54,500,0.088,0.046,0.129,REPLICATES,0.101,0.013,2.43,2.12,0.08,PASS

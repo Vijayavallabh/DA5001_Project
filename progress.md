@@ -1,6 +1,62 @@
 # Session Progress Log
 
 
+## 2026-09-18 23:10 --- feat-133 **REPLICATES**: both anchors the `n=64` claim keeps now survive a fresh draw
+
+The corrected re-run of `feat-132`, changing **one** thing from the arm on record --- `--seeds
+42 43 44` $\rightarrow$ `52 53 54`, with `--batch-size` left unpassed so `h1.py`'s default of `8`
+applies, which is what that arm used. Three cards, all `rc=0`, merged and scored 23:06:27.
+
+| draw | seeds | paired $g(64)-g(8)$, judge B |
+|---|---|---|
+| on record | `42 43 44` | `+0.1010 [+0.0590, +0.1420]` |
+| **replication** | `52 53 54` | **`+0.0880 [+0.0460, +0.1290]`** |
+
+The interval excludes zero, so the committed reading is **REPLICATES**. `|D_rep - D_orig| = 0.0130`
+against the two precedents (`0.0000` at the audited anchor, `0.0610` at KL3M-1.7B). The rebuilt
+integrity gate passes on **both** strata: `500` prompts, neutral `31/200` against the committed
+`45/200` (`z = +1.78`) and total `40/500` against `47/500` (`z = +0.79`).
+
+**The manuscript consequence.** Both of the two anchors the breadth-at-`n=64` claim rests on have now
+been re-drawn under disjoint seeds and both held, so the two the appendix keeps are exactly the two
+whose readings survive a fresh draw and the one it drops is the one whose reading did not. That is a
+stronger position than this morning's, reached without widening a single claim.
+
+**The refinement this arm forced, which is the part that generalises.** `feat-131`'s stability
+criterion was built from two anchors whose fate was already known when it was written. Comma-7B was
+the first anchor whose answer it had not seen: at `2.43` interval half-widths it predicted
+\textsc{replicates}, and it does. **But the three ratios do not order the three distances** ---
+`1.71 -> 0.061`, `2.12 -> 0.000`, `2.43 -> 0.013`. So the rule predicts the **verdict**, whether a
+reading survives a disjoint draw, and *not* how far a number will move; the audited anchor's
+agreement to four decimals is better read as a fortunate draw than as what a stable paired difference
+owes, and `0.013` is the honest scale of the agreement these arms support. Caution `(ap)` carries it.
+
+**And it is the control `feat-132`'s diagnosis needed.** That arm blamed `--batch-size 8 -> 32` for
+its gate failure. This one changes the seeds and not the batch size, so the comparison is clean:
+
+| arm | batch | seeds | neutral draw-0 empties |
+|---|---|---|---|
+| on record | `8` | `42 43 44` | `45/200` |
+| `feat-132` | **`32`** | `52 53 54` | `24/200` (`z = 2.78`, FAIL) |
+| `feat-133` | `8` | `52 53 54` | `31/200` (`z = 1.78`, PASS) |
+
+A fresh seed at the same batch moves the count by `14` and stays inside the gate; adding the batch
+change moves it by `21` and leaves it. The batch effect is now measured rather than argued.
+
+**Compute, and an operational finding.** `15.4` gpu-hours measured against the `13.7` registered, at
+`5.9` h wall. The arm on record ran the same `32,000` trajectories in `13.42` gpu-hours on **one**
+card, so splitting across three bought `2.3x` the wall-clock throughput for `1.15x` the gpu-hours ---
+**a split is not free**, and the next compute table should say so rather than dividing by three.
+
+Producing commands: `scripts/run_comma7bseed8_{gen,merge}.sh`,
+`analysis/score_kl3m_seed.py --anchor comma7b8 --out results`. Outputs
+`results/comma7b_seed8_scoring.csv`, `results/selection_scaling{,_per_prompt}_comma7bseed52b8.csv`,
+`results/selection_rewards64_comma7bseed52b8.csv`. Log:
+`results/onset_prediction_comma7b_seed8.md`. Guards: `tests/test_comma7b_seed8.py` (4), one of which
+asserts the ratios do **not** order the distances, so if they ever do the wording is revisited
+deliberately rather than the paper being left weaker than its evidence.
+
+
 ## 2026-09-18 17:10 --- feat-132 **INVALID**: a pre-registered gate caught a pre-registered premise
 
 After `feat-131` narrowed the breadth-at-`n=64` claim to two anchors, the second of them --- Comma-7B

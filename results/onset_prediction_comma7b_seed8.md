@@ -131,3 +131,85 @@ Checked with `env -u LD_LIBRARY_PATH nvidia-smi` before launch: GPUs 1, 2 and 4 
 **GPU 0 holds another user's $597$ MiB and is not taken**; GPU 3 is the 4 GB T400 and is never used.
 
 ## Scoring log
+
+## Scoring, 2026-09-18 (appended; nothing above is edited)
+
+### **REPLICATES**
+
+All three cards `rc=0` (creative 21:58:04, factual 21:58:26, neutral 22:50:25), merged and scored
+23:06:27. `.venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b8 --out results`.
+
+**Integrity checks PASS, on both strata:**
+
+```
+prompts: 500 (PASS)
+draw-0 empties, neutral   31/200  against the committed 45/200: z = +1.78 -> PASS
+draw-0 empties, total     40/500  against the committed 47/500: z = +0.79 -> PASS
+(reported, not gated) creative    0/150
+(reported, not gated) factual     9/150
+```
+
+**The committed band:**
+
+| draw | seeds | paired $g(64)-g(8)$, judge~B |
+|---|---|---|
+| the arm on record | `42 43 44` | `+0.1010 [+0.0590, +0.1420]` |
+| **this replication** | `52 53 54` | **`+0.0880 [+0.0460, +0.1290]`** |
+
+The interval excludes zero, so by the committed table the reading is **REPLICATES**. Comma-7B's
+climb to $n=64$ survives an independent draw, and **both** anchors the breadth-at-$n=64$ claim rests
+on have now been re-drawn under disjoint seeds and held.
+
+### Committed secondary, reported whatever it reads
+
+$|D_{\text{rep}} - D_{\text{orig}}| = 0.0130$, against the two precedents on record: `0.0000` at the
+audited anchor and `0.0610` at KL3M-1.7B. The ratio $g$ / half-width is `2.43` on the arm on record
+and `2.12` in this draw. The full seven-point grid rises monotonically in both judges (Spearman
+$+1.000$ over seven arms in each), judge~B from `+0.011` at $n=2$ to `+0.151` at $n=64$ and judge~C
+from `+0.112` to `+0.290`. Judged **levels** are not compared across passes and are not quoted here.
+
+### The criterion made an out-of-sample prediction and it held --- with one refinement it did not make
+
+`feat-131` produced the rule *a paired difference is stable where the effect is large relative to its
+own interval and not where it is marginal*, from two anchors whose fate was already known. This arm
+was the first test of it on an anchor whose answer was not. At `2.43` half-widths it predicted
+**REPLICATES**, and that is what it read.
+
+**What the criterion does not do is order the distances**, and this arm says so:
+
+| anchor | $g$ / half-width | $\lvert D_{\text{rep}} - D_{\text{orig}} \rvert$ | reading |
+|---|---|---|---|
+| KL3M-1.7B | `1.71` | `0.0610` | does not replicate |
+| TinyComma-1.8B | `2.12` | `0.0000` | replicates |
+| **Comma-7B** | **`2.43`** | **`0.0130`** | **replicates** |
+
+Comma-7B has the *larger* ratio and the *larger* move. So the rule predicts the **verdict** --- does
+the reading survive a disjoint draw --- and not the size of the shift, and TinyComma's `0.0000` to
+four decimals is better read as a fortunate draw than as what a stable paired difference owes you.
+Stated the other way: `0.0130` is the honest scale of what "stable" buys here, and the paper should
+not lean on the exactness of the TinyComma precedent. Caution `(ap)` is amended accordingly.
+
+### The batch-size finding, corroborated rather than assumed
+
+`feat-132` attributed its gate failure to `--batch-size 8` $\rightarrow$ `32` shifting the draw-0
+empty rate. This arm is the control that argument needed, since it changes the seeds and **not** the
+batch size. Neutral-class draw-0 empties:
+
+| arm | batch | seeds | empties |
+|---|---|---|---|
+| the arm on record | `8` | `42 43 44` | `45/200` |
+| `feat-132` | **`32`** | `52 53 54` | `24/200` ($z = 2.78$, FAIL) |
+| `feat-133` | `8` | `52 53 54` | `31/200` ($z = 1.78$, PASS) |
+
+A fresh seed at the same batch size moves the count by `14` and stays inside the gate; adding the
+batch change moves it by `21` and leaves it. That is consistent with a batch effect on top of seed
+noise, which is what `feat-132`'s scoring log claimed, and it is now measured rather than argued.
+
+### Compute, measured
+
+`17:13` $\rightarrow$ `22:50` on GPU 1 (neutral, `5.62` h), `21:58` on GPUs 2 and 4
+(creative and factual, `4.75` h each), plus `0.27` h to merge and score: **`15.4` gpu-hours**
+against the `13.7` this file registered, at `5.9` hours of wall clock. **Splitting across three
+cards is not free**: the arm on record ran `32,000` trajectories in `13.42` gpu-hours on one card,
+so three cards bought `2.3\times` the wall-clock throughput for `1.15\times` the gpu-hours. Worth
+knowing before the next split; still well under the `24`-gpu-hour threshold.

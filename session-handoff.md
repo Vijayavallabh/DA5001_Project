@@ -1,50 +1,54 @@
-# Session handoff — 2026-09-18 16:50 (feat-132 INVALID; the corrected arm running on three cards)
+# Session handoff — 2026-09-18 23:15 (five arms closed; NOTHING IS RUNNING; all cards released)
 
-## RUNNING: `feat-133` --- `results/onset_prediction_comma7b_seed8.md`
+## Where the breadth-at-`n=64` claim now stands, and why it is stronger than this morning
 
-Comma-7B's seed replication, **corrected protocol**. GPUs 1 (neutral), 2 (creative), 4 (factual),
-merged and scored on GPU 1 by `scripts/run_comma7bseed8_merge.sh`, which waits on the three
-`GEN_DONE` files. ~13.7 gpu-h, ~5.7 h wall. Score with
-`.venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b8 --out results`.
+**Both anchors the claim rests on have been re-drawn under disjoint seeds and both held.**
 
-## `feat-132` is `done` and its verdict is **INVALID** --- read this before re-running anything
+| anchor | paired `g(64)-g(8)` on record | under seeds `52 53 54` | `g`/half-width | reading |
+|---|---|---|---|---|
+| TinyComma-1.8B (audited) | `+0.0880 [+0.0470, +0.1300]` | `+0.0880` | `2.12` | replicates |
+| **Comma-7B** | `+0.1010 [+0.0590, +0.1420]` | `+0.0880 [+0.0460, +0.1290]` | `2.43` | **replicates** |
+| KL3M-1.7B | `+0.0650 [+0.0270, +0.1030]` | `+0.0040 [-0.0330, +0.0400]` | `1.71` | does not |
+| Pleias-1.2B, Pleias-3B | --- | --- | --- | saturated by `8` |
 
-It asked the same question and could not answer it. **Its band was never computed**, which is the
-most important fact about it: the scorer returns before the band when the gate fails, nothing
-computed it by hand, and `tests/test_comma7b_seed.py` fails if `results/comma7b_seed_scoring.csv`
-ever appears. That is what makes `feat-133` an honest re-run rather than a second try at a number
-already seen.
+So the two the appendix keeps are exactly the two whose readings survive a fresh draw, and the one
+it drops is the one whose reading did not. No claim was widened to get there. **The `n=8` breadth
+claim (four of six anchors, three families) is untouched and is now explicitly scoped to `n=8` in
+both the abstract and the introduction**, where it previously sat inside a sentence about
+sixty-four draws and read as an `n=64` result the appendix contradicts.
 
-**What went wrong was a premise of ours, and the arm's own gate caught it.** feat-132 changed TWO
-things where the design intends one --- the seeds and `--batch-size 8 -> 32` --- having asserted in
-advance that batch size *"does not change what is being drawn from."* False. Draw-0 empties:
+## The instrument lesson, now tested out of sample --- caution (ap)
 
-| class | on record (batch 8) | feat-132 (batch 32) | z |
-|---|---|---|---|
-| creative | 1/150 | 0/150 | +1.00 |
-| factual | 1/150 | 4/150 | -1.35 |
-| **neutral** | **45/200** | **24/200** | **+2.78** |
-| total | 47/500 | 28/500 | +2.28 |
+`feat-131` produced *a paired difference is stable where the effect is large relative to its own
+interval and not where it is marginal*, from two anchors whose fate was already known. Comma-7B was
+the first whose answer it had not seen: at `2.43` half-widths it predicted REPLICATES, and it does.
+**But the ratios do not order the distances** --- `1.71 -> 0.061`, `2.12 -> 0.000`, `2.43 -> 0.013`
+--- so the rule predicts the **verdict** and not the size of the shift. `0.013` is the honest scale;
+the audited anchor's agreement to four decimals is a fortunate draw. A guard asserts the
+non-ordering, so if it ever reverses the wording is revisited rather than quietly strengthened.
 
-Concentrated where empties live (22.5% vs 0.7%), and **not** a broken card: the `n=1` mean completion
-length agrees to 0.4% (99.2 vs 99.6 words, same 500 prompts). An empty generation is EOS at step 0,
-and under left-padded batched generation the step-0 logits depend on the batch's padding pattern ---
-so **at a rate-valued quantity batch size is a SHIFT, not merely a re-roll** (caution (u),
-strengthened). feat-131 could not have seen this: its anchor reads 0.000-0.002 everywhere.
+## `feat-132` is `done` and INVALID --- read this before re-running anything
 
-**Per caution (w) this retires nothing.** It is neither evidence for nor against the climb. The
-breadth-at-`n=64` claim stands exactly where feat-131 left it --- TinyComma and Comma-7B, with
-Comma-7B's replication **outstanding rather than failed** --- and no manuscript number changed.
+It asked the same question and could not answer it: it changed the seeds **and** `--batch-size
+8 -> 32`, having asserted in advance that batch size "does not change what is being drawn from".
+False. **Its band was never computed**, by the scorer or by hand, and a test fails if
+`results/comma7b_seed_scoring.csv` ever appears --- which is what made `feat-133` an honest re-run
+rather than a second try at a number already seen. `feat-133` is the control that settles it, since
+it changes the seeds and not the batch: neutral draw-0 empties go `45/200` (on record, batch 8) ->
+`24/200` (feat-132, batch 32, FAIL) -> `31/200` (feat-133, batch 8, PASS). **At a rate-valued
+quantity batch size is a shift, not merely a re-roll** (caution (u)/(v), strengthened).
 
-**The gate was rebuilt, and it had two defects, not one.** An absolute `0.03` on a *rate* is
-unfalsifiable where the rate is 0.002 and tighter than the quantity's own spread where it is 0.09;
-and an aggregate hides the structure --- under the corrected test feat-132's **total** would have
-**passed** (28 in 26-73) while **neutral** still **failed** (24 against 26-68). It is now a
-two-proportion z test at the 1% level on **neutral and total**, references measured by the scorer's
-own code on the arm being replicated. Validated on real data both ways before feat-133 launched:
-`z = 0.00` PASS against the reference itself, neutral FAIL / total PASS against feat-132's data.
+Its gate had two defects and both are fixed: an absolute tolerance on a *rate* is not scale-free,
+and an aggregate hides structure (feat-132's total would have passed the corrected test while its
+neutral failed). The gate is now a two-proportion `z` at the 1% level on **neutral and total**, with
+references measured by the scorer's own code on the arm being replicated.
 
-## `feat-129`--`feat-132` are `done`; 68 logs, 67 scored (feat-133 is the one in flight).
+## Operational finding worth carrying: a three-card split is not free
+
+`32,000` trajectories took `13.42` gpu-h on one card and `15.4` gpu-h split across three, for
+`2.3x` the wall-clock throughput. Budget `1.15x` the gpu-hours for a split, not `1.0x`.
+
+## `feat-129`--`feat-133` are `done`; 68 pre-registration logs, all scored.
 
 | feature | reading |
 |---|---|
