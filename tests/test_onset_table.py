@@ -71,9 +71,15 @@ def test_the_prose_range_and_count_match_the_table():
     ratios = [float(r["ratio"]) for r in src]
     word = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][len(src)]
     assert re.search(rf"\b{word} (?:model )?pairs\b", body), f"the prose does not say {word} pairs"
-    assert f"between $({min(ratios):.2f}".replace("(", "") in body or \
-        f"${min(ratios):.2f}$ and $${max(ratios):.2f}$".replace("$$", "$") in body or \
-        f"$0.88$ and $1.17$" in body    # the prose rounds the range to 2 dp
+    # DERIVED from the CSV, never written out. Until 2026-09-18 this was a disjunction whose last
+    # branch was the literal `f"$0.88$ and $1.17$"` -- a constant, so it passed whatever the ratios
+    # said, and a pair drifting to 1.25 would have left the prose unguarded. Caution (an) (a guard
+    # written as a list of phrasings) on top of caution (ag) (a number nothing computed is a
+    # comment, not data). One branch now, and it is the data's.
+    lo_s, hi_s = f"{min(ratios):.2f}", f"{max(ratios):.2f}"
+    assert f"between ${lo_s}$ and ${hi_s}$" in body, \
+        (f"the prose must print the range the CSV holds: ${lo_s}$ and ${hi_s}$",
+         min(ratios), max(ratios))
 
 
 # ---------------------------------------------------------------------------
