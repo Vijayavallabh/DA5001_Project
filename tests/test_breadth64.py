@@ -129,3 +129,25 @@ def test_the_two_retained_anchors_are_read_on_the_same_paired_statistic():
         assert printed in txt, f"{tag}: the table no longer prints {printed}"
         # and both must exclude zero, or 'climbs' is the wrong word in that row
         assert lo > 0, (tag, lo)
+
+    # caution (j) is about PLACEMENT, not membership: the audit only asks whether a literal is
+    # findable in some CSV, so a right number in a wrong cell passes it. Read the whole row.
+    scal = {"": "TinyComma-1.8B", "_comma7b64": "Comma-7B"}
+    for tag, label in scal.items():
+        rows = {int(float(r["n"])): r for r
+                in _csv.DictReader(open(os.path.join(ROOT, "results",
+                                                     f"selection_scaling{tag}.csv"),
+                                        encoding="utf-8"))
+                if "Phi-3.5-mini-instruct" in r["judge"]}
+        g8, g64 = float(rows[8]["gain"]), float(rows[64]["gain"])
+        row = next((l for l in txt.split("\\\\") if l.strip().startswith(label + " &")), None)
+        assert row, (label, "the row is gone from the table")
+        # BY COLUMN. The first version of this asked whether each value appeared anywhere in the
+        # row, which is membership, not placement -- and its own mutation test proved it: swapping
+        # g(8) and g(64) left both strings present and the check passed. That is caution (j)'s exact
+        # error committed inside the guard written to enforce caution (j).
+        cols = [c.strip() for c in row.split("&")]
+        assert len(cols) >= 5, (label, cols)
+        assert cols[1] == f"${g8:+.3f}$", (label, "g(8) column", cols[1], g8)
+        assert cols[2] == f"${g64:+.3f}$", (label, "g(64) column", cols[2], g64)
+        assert cols[4].strip() == "climbs", (label, "reading column", cols[4])
