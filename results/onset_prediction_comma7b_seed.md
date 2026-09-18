@@ -131,3 +131,80 @@ Checked with `env -u LD_LIBRARY_PATH nvidia-smi` before launch: GPUs 1, 2 and 4 
 **GPU 0 holds another user's `597` MiB and is not taken**; GPU 3 is the 4 GB T400 and is never used.
 
 ## Scoring log
+
+## Scoring, 2026-09-18 (appended; nothing above is edited)
+
+### **INVALID** --- the arm does not clear its committed integrity check, and the cause is a premise of ours
+
+All three cards `rc=0`, merged and scored 16:33:06. The committed integrity check **fails**:
+
+```
+prompts: 500 (PASS)
+n=1 empty fraction: 0.0560 against the committed 0.0940, tolerance 0.03 -> FAIL
+Per the pre-registration, the arm does not clear its integrity checks. Chase it.
+```
+
+**The band was not read.** The scorer returns before computing it, by construction, and it has not
+been computed by hand either --- so nothing below was chosen with knowledge of the answer, and the
+corrected arm cannot be tuned to it. (What was visible in the merge log is the summary CSV's
+judge-**C** levels and gains; the committed band is the paired $g(64)-g(8)$ under judge~B, a
+different quantity, and it remains unread.)
+
+### Chasing it, with the decision rule fixed before the band existed
+
+The rule written down before any diagnostic was run: **concentrated in one prompt class $\rightarrow$
+a pipeline bug, the arm is invalid and must be re-run; spread across all three $\rightarrow$ our
+tolerance is mis-specified and the arm is read at a reduced warrant.** Per class, draw 0:
+
+| class | arm on record (batch 8) | this arm (batch 32) | two-proportion $z$ |
+|---|---|---|---|
+| creative | $1/150 = 0.007$ | $0/150 = 0.000$ | $+1.00$ |
+| factual | $1/150 = 0.007$ | $4/150 = 0.027$ | $-1.35$ |
+| **neutral** | $\mathbf{45/200 = 0.225}$ | $\mathbf{24/200 = 0.120}$ | $\mathbf{+2.78}$ |
+| total | $47/500 = 0.094$ | $28/500 = 0.056$ | $+2.28$ |
+
+Empties are a **neutral-class phenomenon** at this anchor --- $22.5\%$ there against $0.7\%$ in the
+other two --- and the entire gap is there, at $p \approx 0.005$. It is concentrated, so by the rule
+above the arm is **invalid rather than reduced**.
+
+### What it is concentrated *by*, which is the part worth keeping
+
+Not a broken card: the $n=1$ arm's **mean completion length agrees to $0.4\%$** across the two passes
+($99.2$ words against $99.6$ on the same $500$ prompts), which a wrong model, a wrong corpus or a
+truncation would not survive. The two runs differ in exactly two things, and this file named both in
+advance: the seeds, and `--batch-size 8` $\rightarrow$ `32`. About the second it asserted
+
+> *"it is a second, independent re-roll of the same distribution --- it cannot make the two draws
+> less disjoint, and **it does not change what is being drawn from**."*
+
+**The second clause is false, and this arm's own gate is what falsified it.** An empty generation is
+the model emitting end-of-text at step $0$; under left-padded batched generation the step-$0$ logits
+depend on the padding pattern of the batch the prompt lands in, so batch size moves the empty rate
+*systematically* where that rate is large and invisibly where it is near zero. That is why the effect
+appears only in `neutral`, and it is why `feat-131` saw nothing: at KL3M-1.7B the quantity is
+$0.000$--$0.002$ everywhere, so a $0.03$ tolerance there could not have detected a batch effect of
+any size. Caution `(u)` says batch size is part of the seed; the stronger statement this arm supports
+is that **at a rate-valued quantity it is not merely a re-roll but a shift**.
+
+So the arm changed two things where the design intends one, and the second is now measured to move
+the served distribution. It therefore cannot answer the question it was registered to ask --- not
+because the replication failed, but because it is not the comparison it was meant to be.
+
+### Consequence, and what this does NOT do
+
+Per caution `(w)`, **a defect in our own specification must not retire a question by counting against
+a stop rule.** This is not evidence for or against Comma-7B's climb; the question is exactly as open
+as it was this morning. The breadth-at-$n=64$ claim stands where `feat-131` left it --- established
+at TinyComma and Comma-7B, with Comma-7B's replication now *outstanding rather than failed* --- and
+nothing in the manuscript changes on this arm's account.
+
+The corrected arm is `feat-133`: same design, `--batch-size 8` so that **one** thing changes, bands
+committed before it runs, and an integrity check whose tolerance is derived from the quantity's own
+sampling variability rather than copied as a constant. It is registered in
+`results/onset_prediction_comma7b_seed8.md`.
+
+### The compute this cost, stated plainly
+
+$\approx 6.0$ gpu-hours, spent on an arm that cannot be read. It was not wasted in one respect --- it
+is what falsified the premise --- but the premise was ours to check before spending the cards, and
+the check that would have caught it is the one this file's own gate performed afterwards.

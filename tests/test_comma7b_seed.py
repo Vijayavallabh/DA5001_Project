@@ -97,3 +97,57 @@ def test_the_launcher_runs_the_anchor_and_seeds_the_pre_registration_names():
     assert "--max-new-tokens 200" in sh
     # the marker is written only on rc=0, so a failed class cannot be merged (caution (c))
     assert "[ $RC -eq 0 ] && date +%s" in sh
+
+
+def test_feat132_is_recorded_invalid_and_its_band_was_never_read():
+    """The strongest fact about feat-132 is a negative one: its band does not exist.
+
+    A replication that fails its integrity check and then has its band computed 'just to see' is a
+    replication whose re-run can be tuned to the answer. The scorer returns before computing it, and
+    no results file carries it -- which is what makes feat-133 an honest re-run rather than a second
+    attempt at a number already seen.
+    """
+    import glob
+    assert not glob.glob(os.path.join(ROOT, "results", "comma7b_seed_scoring.csv")), \
+        "feat-132's band was computed; it must not be, and feat-133 is now compromised"
+    log = open(os.path.join(ROOT, "results", "onset_prediction_comma7b_seed.md"),
+               encoding="utf-8").read()
+    _head, _sep, scored = log.partition("\n## Scoring, ")
+    assert scored, "feat-132 has no scoring section"
+    assert "INVALID" in scored and "The band was not read" in scored
+
+
+def test_the_corrected_gate_is_scale_free_and_stratified():
+    """Both defects feat-132's gate had, pinned so neither can return.
+
+    An absolute tolerance on a rate is unfalsifiable where the rate is near zero and tighter than the
+    quantity's own spread where it is not; and an aggregate gate on a stratified rate gates the wrong
+    quantity -- feat-132's total would have passed the corrected test while its neutral class failed.
+    """
+    from analysis.score_kl3m_seed import two_proportion_z, Z_CRIT, ANCHORS
+    A = ANCHORS["comma7b8"]
+    assert A["gate"] == "z" and "batch" not in str(A.get("committed_empty_frac", ""))
+    assert set(A["committed_counts"]) == {"neutral", "total"}, \
+        "the gate must be stratified: the aggregate hid feat-132's defect"
+    assert A["committed_counts"] == {"neutral": (45, 200), "total": (47, 500)}
+    # it refuses feat-132's data on neutral and would have let it through on the total alone
+    assert abs(two_proportion_z(45, 200, 24, 200)) > Z_CRIT, "the gate no longer refuses feat-132"
+    assert abs(two_proportion_z(47, 500, 28, 500)) < Z_CRIT, \
+        "if the total alone now fires, the point about stratification is lost -- recheck the claim"
+    # and it does not fire against the arm it references
+    assert two_proportion_z(45, 200, 45, 200) == 0.0
+
+
+def test_the_corrected_launcher_passes_no_batch_size_at_all():
+    """h1.py's default of 8 IS the protocol, because the arm on record passed no flag either.
+
+    Adding --batch-size 32 is precisely what made feat-132 unreadable, so this asserts the flag's
+    absence rather than its value.
+    """
+    sh = open(os.path.join(ROOT, "scripts", "run_comma7bseed8_gen.sh"), encoding="utf-8").read()
+    body = "\n".join(l for l in sh.splitlines() if not l.lstrip().startswith("#"))
+    assert "--batch-size" not in body, \
+        "feat-133's launcher passes --batch-size; the whole point is that it must not"
+    assert "--seeds 52 53 54" in body and "common-pile/comma-v0.1-2t" in body
+    assert "--trajectories-per-prompt 64" in body and "--max-new-tokens 200" in body
+    assert "[ $RC -eq 0 ] && date +%s" in body

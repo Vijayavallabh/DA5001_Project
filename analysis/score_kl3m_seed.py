@@ -29,6 +29,7 @@ Usage: .venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b --out resul
 import argparse
 import csv
 import json
+import math
 import os
 import random
 import sys
@@ -37,7 +38,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.selection_decoding import boot_mean, load_candidates  # noqa: E402
 
 JUDGE_B = "Phi-3.5-mini-instruct"
-EMPTY_TOL = 0.03
+EMPTY_TOL = 0.03          # feat-131/132 only; feat-133 uses the scale-free z gate below
+Z_CRIT = 2.5758           # two-proportion test at the 1% level
 
 # One rule, two arms. feat-132 re-draws Comma-7B the same way feat-131 re-drew KL3M-1.7B, and the
 # strongest available design is for BOTH to be read by this code path rather than by two scorers
@@ -66,6 +68,24 @@ ANCHORS = {
         log="results/onset_prediction_kl3m_seed.md",
         question="does KL3M-1.7B's CLIMBS survive a fresh draw?",
         precedents=(("audited anchor", 0.0000),),
+    ),
+    "comma7b8": dict(
+        # feat-133: the corrected protocol. ONE thing changes from the arm on record -- the seeds --
+        # and --batch-size is left at h1.py's default 8, which is what that arm used. feat-132
+        # changed the batch size too and its own gate caught the consequence; see its scoring log.
+        name="Comma-7B seed replication (batch 8, corrected)",
+        orig_tag="_comma7b64",
+        rep_tag="_comma7bseed52b8",
+        committed_orig=(0.1010, 0.0590, 0.1420),
+        # Rate gate, not an absolute tolerance, and stratified. Counts measured with this script's
+        # own empty_counts() on the arm being replicated (caution (v)).
+        gate="z",
+        committed_counts=dict(neutral=(45, 200), total=(47, 500)),
+        gen_dir="output/phase5/sel_comma7b_64_seed52_b8",
+        out_csv="comma7b_seed8_scoring.csv",
+        log="results/onset_prediction_comma7b_seed8.md",
+        question="does Comma-7B's climb to n=64 survive a fresh draw? (batch 8, one thing changed)",
+        precedents=(("audited anchor", 0.0000), ("KL3M-1.7B", 0.0610)),
     ),
     "comma7b": dict(
         name="Comma-7B seed replication",
@@ -101,6 +121,45 @@ def paired(out, tag, seed=20260918):
     return g, lo, hi, len(d)
 
 
+def empty_counts(gen_dir):
+    """Draw-0 blank counts, TOTAL and PER CLASS.
+
+    Per class because feat-132's aggregate hid the structure: its total would have passed the
+    corrected test below (28 in a 26-73 band) while its `neutral` class failed (24 against 26-68),
+    and neutral is where empties live at that anchor -- 22.5% against 0.7% in the other two. An
+    aggregate gate on a stratified rate is a gate on the wrong quantity.
+    """
+    if not os.path.isdir(gen_dir):
+        return None
+    per, tot = {}, [0, 0]
+    for cls in ("neutral", "creative", "factual"):
+        path = os.path.join(gen_dir, f"trajectories_k0_{cls}.jsonl")
+        if not os.path.exists(path):
+            continue
+        best = {}
+        for line in open(path, encoding="utf-8"):
+            r = json.loads(line)
+            m, a = r["metadata"], r["aggregate"]
+            pid, seed = m["prompt_id"], m["seed"]
+            if pid not in best or seed < best[pid][0]:
+                best[pid] = (seed, a.get("generation") or "")
+        blank = sum(1 for _s, txt in best.values() if not txt.strip())
+        per[cls] = (blank, len(best))
+        tot[0] += blank
+        tot[1] += len(best)
+    return per, tuple(tot)
+
+
+def two_proportion_z(a, na, b, nb):
+    """Scale-free comparison of two rates. An ABSOLUTE tolerance is not: feat-132 committed 0.03,
+    which is unfalsifiable where the rate is 0.002 (KL3M) and tighter than the quantity's own
+    arm-to-arm spread where it is 0.09 (Comma-7B). Same rule, correct at both."""
+    p = (a + b) / (na + nb)
+    if p in (0.0, 1.0):
+        return 0.0
+    return ((a / na) - (b / nb)) / math.sqrt(p * (1 - p) * (1 / na + 1 / nb))
+
+
 def empty_fraction(gen_dir):
     """Share of prompts whose DRAW 0 is blank. load_candidates sorts by seed and the seeds are
     (h << 16) | j, so entry 0 is draw 0 -- the string the n=1 arm serves."""
@@ -132,16 +191,39 @@ def main():
         print(f"  precedent, the same comparison at the {label}: |difference| = {d:.4f}")
 
     print("\n=== integrity checks (distributional; there is no bit-identity gate, by design) ===")
-    ef = empty_fraction(gen_dir)
-    if ef is None:
-        print(f"  NOT YET SCOREABLE: {gen_dir} has no merged generations")
-        return
-    frac, n_prompts = ef
-    ok_prompts = n_prompts == 500
-    ok_empty = abs(frac - A["committed_empty_frac"]) <= EMPTY_TOL
-    print(f"  prompts: {n_prompts} ({'PASS' if ok_prompts else 'FAIL -- expected 500'})")
-    print(f"  n=1 empty fraction: {frac:.4f} against the committed {A['committed_empty_frac']:.4f}, "
-          f"tolerance {EMPTY_TOL} -> {'PASS' if ok_empty else 'FAIL'}")
+    if A.get("gate") == "z":
+        ec = empty_counts(gen_dir)
+        if ec is None:
+            print(f"  NOT YET SCOREABLE: {gen_dir} has no merged generations")
+            return
+        per, tot = ec
+        ok_prompts = tot[1] == 500
+        print(f"  prompts: {tot[1]} ({'PASS' if ok_prompts else 'FAIL -- expected 500'})")
+        strata = dict(per); strata["total"] = tot
+        ok_empty = True
+        for name, (ra, rna) in A["committed_counts"].items():
+            b, nb = strata[name]
+            z = two_proportion_z(ra, rna, b, nb)
+            good = abs(z) < Z_CRIT
+            ok_empty &= good
+            print(f"  draw-0 empties, {name:<8} {b:3d}/{nb:<4d} against the committed "
+                  f"{ra}/{rna}: z = {z:+.2f} -> {'PASS' if good else 'FAIL'}")
+        # reported whatever the gate says, per the pre-registration's committed secondary
+        for cls in sorted(per):
+            if cls not in A["committed_counts"]:
+                print(f"  (reported, not gated) {cls:<9} {per[cls][0]:3d}/{per[cls][1]}")
+    else:
+        ef = empty_fraction(gen_dir)
+        if ef is None:
+            print(f"  NOT YET SCOREABLE: {gen_dir} has no merged generations")
+            return
+        frac, n_prompts = ef
+        ok_prompts = n_prompts == 500
+        ok_empty = abs(frac - A["committed_empty_frac"]) <= EMPTY_TOL
+        print(f"  prompts: {n_prompts} ({'PASS' if ok_prompts else 'FAIL -- expected 500'})")
+        print(f"  n=1 empty fraction: {frac:.4f} against the committed "
+              f"{A['committed_empty_frac']:.4f}, tolerance {EMPTY_TOL} -> "
+              f"{'PASS' if ok_empty else 'FAIL'}")
     if not (ok_prompts and ok_empty):
         print("  Per the pre-registration, the arm does not clear its integrity checks. Chase it.")
         return
@@ -183,7 +265,8 @@ def main():
                distance=round(dist, 4) if dist is not None else None,
                ratio_orig=round(orig[0] / o_half, 2) if o_half else None,
                ratio_rep=round(g / half, 2) if half else None,
-               empty_frac_n1=round(frac, 4), integrity="PASS")
+               empty_frac_n1=round(frac, 4) if A.get("gate") != "z" else round(tot[0] / tot[1], 4),
+               integrity="PASS")
     p = os.path.join(a.out, A["out_csv"])
     with open(p, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out)); w.writeheader(); w.writerow(out)

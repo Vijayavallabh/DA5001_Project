@@ -1,32 +1,50 @@
-# Session handoff — 2026-09-18 14:20 (three arms closed; a fourth running on three cards)
+# Session handoff — 2026-09-18 16:50 (feat-132 INVALID; the corrected arm running on three cards)
 
-## RUNNING: `feat-132`, the Comma-7B seed replication --- `results/onset_prediction_comma7b_seed.md`
+## RUNNING: `feat-133` --- `results/onset_prediction_comma7b_seed8.md`
 
-GPUs 1 (neutral), 2 (creative) and 4 (factual), merged and scored on GPU 1 by
-`scripts/run_comma7bseed_merge.sh`, which waits on the three `GEN_DONE` files the generators write.
-Expected $\approx 13.7$ gpu-hours, $\approx 5.5$ h wall from 14:20. GPU 0 holds another user's
-597 MiB and was not taken; GPU 3 is the T400 and is never used. Score it with
-`.venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b --out results` --- the SAME scorer
-that read `feat-131`, which is the point: one rule, two arms.
+Comma-7B's seed replication, **corrected protocol**. GPUs 1 (neutral), 2 (creative), 4 (factual),
+merged and scored on GPU 1 by `scripts/run_comma7bseed8_merge.sh`, which waits on the three
+`GEN_DONE` files. ~13.7 gpu-h, ~5.7 h wall. Score with
+`.venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b8 --out results`.
 
-**Why it is worth the cards.** `feat-131` narrowed the breadth-at-$n=64$ claim to TinyComma and
-Comma-7B and produced a criterion in doing so --- a paired difference is stable where the effect is
-large relative to its own interval. Comma-7B is the second of the two anchors the claim now rests
-on, has never been re-drawn, and at `2.43` interval half-widths sits above the one ratio that
-replicated (`2.12`). So the arm is at once the only outstanding check on a claim the paper makes and
-the only out-of-sample test of the criterion the paper states. **The criterion predicts REPLICATES.**
-If it does not, the breadth-at-$n=64$ claim rests on the audited anchor alone and the appendix must
-say so in those words --- that consequence is committed in the log, not to be renegotiated.
+## `feat-132` is `done` and its verdict is **INVALID** --- read this before re-running anything
 
-**One defect found before the run, by mutation-testing the gate first.** The integrity check's
-reference was first taken from `selection_breadth.csv`'s $n=8$ column (`0.030`); the $n=64$ arm
-being replicated reads `0.094`, so the gate would have failed a good arm at `0.064` against a `0.03`
-tolerance. Caution `(v)`. `feat-131` wrote its reference the same way and passed only because its
-two arms agree (`0.002` against `0.000`). **The reference for a replication's integrity check must
-be measured on the arm being replicated**, and the committed `feat-131` value is left as it was
-rather than edited after the fact.
+It asked the same question and could not answer it. **Its band was never computed**, which is the
+most important fact about it: the scorer returns before the band when the gate fails, nothing
+computed it by hand, and `tests/test_comma7b_seed.py` fails if `results/comma7b_seed_scoring.csv`
+ever appears. That is what makes `feat-133` an honest re-run rather than a second try at a number
+already seen.
 
-## `feat-129`, `feat-130` and `feat-131` are `done`; 66 of 67 pre-registrations are scored.
+**What went wrong was a premise of ours, and the arm's own gate caught it.** feat-132 changed TWO
+things where the design intends one --- the seeds and `--batch-size 8 -> 32` --- having asserted in
+advance that batch size *"does not change what is being drawn from."* False. Draw-0 empties:
+
+| class | on record (batch 8) | feat-132 (batch 32) | z |
+|---|---|---|---|
+| creative | 1/150 | 0/150 | +1.00 |
+| factual | 1/150 | 4/150 | -1.35 |
+| **neutral** | **45/200** | **24/200** | **+2.78** |
+| total | 47/500 | 28/500 | +2.28 |
+
+Concentrated where empties live (22.5% vs 0.7%), and **not** a broken card: the `n=1` mean completion
+length agrees to 0.4% (99.2 vs 99.6 words, same 500 prompts). An empty generation is EOS at step 0,
+and under left-padded batched generation the step-0 logits depend on the batch's padding pattern ---
+so **at a rate-valued quantity batch size is a SHIFT, not merely a re-roll** (caution (u),
+strengthened). feat-131 could not have seen this: its anchor reads 0.000-0.002 everywhere.
+
+**Per caution (w) this retires nothing.** It is neither evidence for nor against the climb. The
+breadth-at-`n=64` claim stands exactly where feat-131 left it --- TinyComma and Comma-7B, with
+Comma-7B's replication **outstanding rather than failed** --- and no manuscript number changed.
+
+**The gate was rebuilt, and it had two defects, not one.** An absolute `0.03` on a *rate* is
+unfalsifiable where the rate is 0.002 and tighter than the quantity's own spread where it is 0.09;
+and an aggregate hides the structure --- under the corrected test feat-132's **total** would have
+**passed** (28 in 26-73) while **neutral** still **failed** (24 against 26-68). It is now a
+two-proportion z test at the 1% level on **neutral and total**, references measured by the scorer's
+own code on the arm being replicated. Validated on real data both ways before feat-133 launched:
+`z = 0.00` PASS against the reference itself, neutral FAIL / total PASS against feat-132's data.
+
+## `feat-129`, `feat-130`, `feat-131` and `feat-132` are `done`; 67 of 68 pre-registrations are scored.
 
 | feature | reading |
 |---|---|
