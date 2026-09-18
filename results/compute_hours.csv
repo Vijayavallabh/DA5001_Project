@@ -189,6 +189,7 @@ campaign,output/logs/campaign.log,1,2026-09-12 02:34,2026-09-12 04:50,2.26,2.26,
 campaign_gen,output/logs/campaign_gen.log,1,2026-09-12 02:52,2026-09-12 04:46,1.9,1.9,log_birth,0.0,scanned; traced sleeps removed
 comma7bseed8_creative,output/logs/comma7bseed8_creative.log,1,2026-09-18 17:13,2026-09-18 21:58,4.75,4.75,log_birth,0.0,scanned; traced sleeps removed
 comma7bseed8_factual,output/logs/comma7bseed8_factual.log,1,2026-09-18 17:13,2026-09-18 21:58,4.75,4.75,log_birth,0.0,scanned; traced sleeps removed
+comma7bseed8_merge,output/logs/comma7bseed8_merge.log,1,2026-09-18 17:13,2026-09-18 23:06,5.88,5.88,log_birth,0.0,scanned; traced sleeps removed
 comma7bseed8_neutral,output/logs/comma7bseed8_neutral.log,1,2026-09-18 17:13,2026-09-18 22:50,5.62,5.62,log_birth,0.0,scanned; traced sleeps removed
 comma7bseed_creative,output/logs/comma7bseed_creative.log,1,2026-09-18 14:11,2026-09-18 16:03,1.87,1.87,log_birth,0.0,scanned; traced sleeps removed
 comma7bseed_factual,output/logs/comma7bseed_factual.log,1,2026-09-18 14:11,2026-09-18 16:15,2.05,2.05,log_birth,0.0,scanned; traced sleeps removed

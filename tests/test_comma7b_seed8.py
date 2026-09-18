@@ -96,3 +96,26 @@ def test_the_appendix_records_both_replications_and_the_refinement():
     assert "$1.71 \\to 0.061$, $2.12 \\to 0.000$, $2.43 \\to 0.013$" in txt, \
         "the three ratio/distance pairs that make the refinement checkable were trimmed"
     assert "We do not pool the two draws" in txt, "the refusal to pool was trimmed"
+
+
+def test_the_merge_launchers_let_the_odometer_see_their_waiting():
+    """A sentinel-wait shell holds no GPU, and analysis/compute_hours.py already knows that.
+
+    Its traced_sleep() subtracts every `+ sleep N` line a `set -x` trace recorded, precisely so a
+    shell waiting hours on a file is not billed. These three launchers did not trace, so 7.69 idle
+    hours went into the odometer on 2026-09-18 (2.07 h and 5.62 h in two merge shells). The total
+    stayed a true upper bound -- the manuscript says "at most" -- it was just that much looser than
+    the work cost.
+
+    A bare `set -x` does not fix it: xtrace writes to stderr and these are launched with stderr
+    discarded, so the trace would land nowhere the odometer reads. The trace needs its own
+    descriptor on the log, which is what this asserts.
+    """
+    for name in ("run_kl3mseed_merge.sh", "run_comma7bseed_merge.sh", "run_comma7bseed8_merge.sh"):
+        sh = open(os.path.join(ROOT, "scripts", name), encoding="utf-8").read()
+        live = "\n".join(l for l in sh.splitlines() if not l.lstrip().startswith("#"))
+        assert 'exec 9>>"$LOG"' in live and "BASH_XTRACEFD=9" in live, \
+            (name, "the wait is not traced to the log, so the odometer will bill it as GPU time")
+        assert "set -x" in live and "set +x" in live, (name, "trace is never turned off")
+        assert live.index("set -x") < live.index("sleep 60") < live.index("set +x"), \
+            (name, "the sleep loop is outside the traced region")

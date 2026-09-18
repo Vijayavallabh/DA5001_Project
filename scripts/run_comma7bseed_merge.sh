@@ -10,6 +10,19 @@ LOG=output/logs/comma7bseed_merge.log
 MERGED=output/phase5/sel_comma7b_64_seed52
 E="CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache"
 
+# `set -x` so analysis/compute_hours.py can SEE the sleeps. Its `traced_sleep()` subtracts every
+# `+ sleep N` line a trace recorded, precisely so a shell that waits hours on a sentinel file is not
+# billed as GPU time -- and without the trace it is. On 2026-09-18 that put 7.69 idle hours into the
+# odometer across two merge shells (2.07 h and 5.62 h), which the total then carried as "at most".
+# The number stayed a true upper bound; it was just 7.69 h looser than the work actually cost.
+#
+# BASH_XTRACEFD, not a bare `set -x`: xtrace goes to stderr, and these launchers are started with
+# stderr discarded, so a bare `set -x` would write the trace nowhere the odometer can read it. Point
+# the trace at its own descriptor on $LOG, and turn it off again after the wait so the rest of the
+# script's output stays readable.
+exec 9>>"$LOG"
+BASH_XTRACEFD=9
+set -x
 WAITED=0
 for C in neutral creative factual; do
   D=output/phase5/sel_comma7b_64_seed52_$C
@@ -21,6 +34,7 @@ for C in neutral creative factual; do
     fi
   done
 done
+set +x
 echo "[merge] $(date +%H:%M:%S) all three classes done; merging" >> "$LOG"
 mkdir -p "$MERGED"
 for C in neutral creative factual; do

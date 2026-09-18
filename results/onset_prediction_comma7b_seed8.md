@@ -213,3 +213,23 @@ against the `13.7` this file registered, at `5.9` hours of wall clock. **Splitti
 cards is not free**: the arm on record ran `32,000` trajectories in `13.42` gpu-hours on one card,
 so three cards bought `2.3\times` the wall-clock throughput for `1.15\times` the gpu-hours. Worth
 knowing before the next split; still well under the `24`-gpu-hour threshold.
+
+### A defect in our own launcher, found while billing the arm
+
+`analysis/compute_hours.py` already knows a sentinel-wait shell holds no GPU: `traced_sleep()`
+subtracts every `+ sleep N` line a `set -x` trace recorded, "so that an armed chain that waited three
+hours for a file to appear" is not billed. **Our merge launchers never traced**, so the waiting was
+billed as compute --- `2.07` h in `feat-132`'s merge and `5.62` h in this one, **`7.69` gpu-hours of
+idle across the two**. The odometer's total stayed a *true* upper bound and the manuscript says
+"at most", so no claim was ever wrong; the number was simply that much looser than the work cost.
+
+The repair is not a bare `set -x`: xtrace writes to stderr and these launchers run with stderr
+discarded, so the trace would land nowhere the odometer reads. All three merge launchers now point
+the trace at its own descriptor on the log (`exec 9>>"$LOG"; BASH_XTRACEFD=9`) around the wait loop
+only. Verified end to end --- a traced loop writes `+ sleep` lines the odometer's own
+`traced_sleep()` then reads --- and guarded, with the bare-`set -x` form and a mis-scoped trace both
+failing the test.
+
+**The quoted total is unchanged at `366` gpu-hours**, because a paper number rounds from the CSV once
+(caution `(j)`) and the CSV says `366.3`. It is an upper bound that includes `7.69` h of waiting; the
+work itself is about `358.6`.
