@@ -52,3 +52,46 @@ def test_the_closing_levels_reproduce():
     txt = body("iclr_closing.tex")
     for v in ("$0.618$", "$0.190$", "$480$ nats", "$24$-token"):
         assert v in txt, f"the closing lost {v}"
+
+
+def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
+    """'four draws of it beat all 28 reward cells on either task' -- checked against every cell.
+
+    Added 2026-09-18, replacing 'beats every reward cell at any price'. That phrasing had a natural
+    strong reading under which it is FALSE: majority vote over n=2 gains +0.000 on GSM8K, below the
+    best reward cell's +0.066, because two samples have no majority. The claim that survives is
+    sharper and states its denominator (caution (ag)): the n=4 cell already clears the maximum over
+    all 28 reward cells -- four scorers by seven n -- on both checkable tasks.
+
+    Caution (ai): the claim ABOUT a set of numbers is what nothing checks. This rebuilds both sets.
+    """
+    import csv as _csv
+    import glob as _glob
+    import os as _os
+    from tests.manuscript import body
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    cells = {"GSM8K": {"majority": {}, "reward": []}, "TriviaQA": {"majority": {}, "reward": []}}
+    for f in sorted(_glob.glob(_os.path.join(root, "results", "selection_verifiable*.csv"))):
+        task = "TriviaQA" if "_tqa" in _os.path.basename(f) else "GSM8K"
+        for r in _csv.DictReader(open(f, encoding="utf-8")):
+            if not (r.get("gain") or "").strip():
+                continue
+            g, n = float(r["gain"]), int(float(r["n"]))
+            if "major" in r["arm"].lower():
+                cells[task]["majority"][n] = g
+            else:
+                cells[task]["reward"].append(g)
+
+    for task, c in cells.items():
+        assert len(c["reward"]) == 28, (task, len(c["reward"]), "the denominator in the prose is 28")
+        best_reward = max(c["reward"])
+        assert c["majority"][4] > best_reward, (task, c["majority"][4], best_reward)
+        # and every majority cell from 4 up, which is what makes 'four draws' the binding statement
+        assert all(c["majority"][n] > best_reward for n in (4, 8, 16, 32, 64)), (task, c["majority"])
+        # the discarded strong reading really is false, so the rewording was necessary
+        assert c["majority"][2] <= best_reward, \
+            (task, "n=2 no longer undercuts the reward grid; the stronger claim may now be safe")
+
+    txt = body("selection.tex")
+    assert "four draws of it beat all $28$ reward cells on either task" in txt, \
+        "the precise judge-free dominance claim was reworded or trimmed"
