@@ -164,6 +164,11 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 HF_HUB_CACH
 | F3 crossover serving cost | none on the grid | -- | **NO CROSSING** |
 | F4 matched compute, n=4 at 0.94x | `-0.0395` | `[-0.0720, -0.0065]` | **MATCHED-COMPUTE LOSS** |
 
+(Corrected 2026-09-17 14:40: this row read `0.94x` where `results/compute_matched.csv` gives
+`cost_vs_metered = 0.92` for `sel05b_n4`. The scoring log had rounded a second time; the CSV is the
+source and the manuscript quotes `0.92`. No verdict moves --- caution (j) again, and this time the
+prose log was the thing that disagreed with its own table.)
+
 F5 passes first and cleanly, so the rest may be quoted: this pass puts `sel7b_n64` at `+0.1075`
 against feat-113's `+0.1045` and reproduces `metered_k10` at `+0.0400` exactly, both inside the
 `+/-0.04` floor. The frontier is `results/compute_matched.csv`.

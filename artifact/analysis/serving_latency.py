@@ -6,8 +6,15 @@ a FLOP proxy, and it sits in the abstract where a deployer reads a price. A revi
 batched n-sampling amortises heavily and that GPU-seconds per served token is the honest unit.
 
 This parses the timings that scripts/run_serving_latency.sh wrote and divides by the SERVED tokens
-(one completion per prompt in both paths), using `generation_length_tokens` -- the decoded length,
-so it is immune to the per_step_log padding trap of caution (s).
+(one completion per prompt in both paths), using `generation_length_tokens`.
+
+CORRECTION 2026-09-17: that field is `len(gen_ids)` (dap/e1.py:197) and therefore INCLUDES the pad;
+it is not the decoded length, as this docstring and caution (ae) both said. The measured ratio is
+unaffected -- the script asserts the two arms' denominators are equal, so the count cancels exactly
+and R = 908.03/25.64 = 35.42 either way -- and here the metered arm ran all 200 steps with no early
+EOS (counter sum 8,000 against 8,179), so the slack is 2.2%. But the quantity was misnamed, and any
+FUTURE arm needing a true decoded length must sum the three step counters instead, which partition
+it (caution (ah)).
 
 Two findings the analytical model gets wrong, both in results/onset_prediction_serving_latency.md:
 the measured ratio is 35.4x rather than 61.3x, and the reward model is 9.3% of selection's wall-clock

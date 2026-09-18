@@ -46,6 +46,22 @@ Answer:"""
 GRID = (1, 2, 4, 8, 16, 32, 64)
 
 
+def n_grid(max_n):
+    """The arms to form, given --max-n.
+
+    GRID stops at 64 because that is where the committed arm stopped, and --max-n used to only
+    FILTER it: --max-n 256 scored 256 candidates per prompt and then formed no arm above 64 at
+    all, so the flag could not produce what a pre-registration naming n=256 registered (found
+    2026-09-17; same class as caution (w), where the registered corpus was unreachable by any
+    flag). Extend by doubling instead. At max_n=64 this returns exactly the committed tuple, so
+    no arm on record moves."""
+    assert max_n >= 1, max_n
+    grid = [n for n in GRID if n <= max_n]
+    while grid[-1] * 2 <= max_n:
+        grid.append(grid[-1] * 2)
+    return grid
+
+
 def yes_no_ids(tok):
     """Token ids for Yes/No under both the leading-space and bare spellings, so the score does not
     depend on which one the tokenizer happens to prefer after 'Answer:'."""
@@ -128,7 +144,7 @@ def main():
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
-    grid = [n for n in GRID if n <= a.max_n]
+    grid = n_grid(a.max_n)
 
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer

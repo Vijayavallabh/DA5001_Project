@@ -124,10 +124,15 @@ def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
                 want[(bench, r["judge"])] = (float(r["gain"]), float(r["gain_lo95"]),
                                              float(r["gain_hi95"]))
     assert re is not None
-    for judge in ("Meta-Llama-3.1-8B-Instruct", "Phi-3.5-mini-instruct"):
-        g, lo, hi = want[("alpaca", judge)]
-        quoted = f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$"
-        assert quoted in body, (judge, quoted)   # rounds from the CSV, once
+    # Judge B's band is plotted in Figure 1's forest (it moved there on 2026-09-17); judge C's is
+    # carried by the limitations appendix, which is where the two-axis discussion lives. Both must
+    # still round from the CSV exactly once -- caution (j) is unaffected by which surface prints it.
+    from tests.manuscript import carries_band
+    g, lo, hi = want[("alpaca", "Phi-3.5-mini-instruct")]
+    assert carries_band(g, lo, hi, "experiments.tex"), ("judge B", g, lo, hi)
+    g, lo, hi = want[("alpaca", "Meta-Llama-3.1-8B-Instruct")]
+    assert carries_band(g, lo, hi, "appendix_limitations.tex"), ("judge C", g, lo, hi)
+    assert "selection_breadth_forest" in body, "the figure carrying the judge-B band is not included"
 
 
 def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():

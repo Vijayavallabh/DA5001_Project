@@ -8,7 +8,7 @@ no GPU, no logs, the analysis scripts own the numbers and this script only draws
 
 Usage: .venv/bin/python figures/make_figures_v4.py [--copy-to /path/to/manuscript/figures]
 """
-import argparse, csv, os, sys
+import argparse, csv, math, os, sys
 from pathlib import Path
 
 import matplotlib
@@ -24,6 +24,40 @@ plt.rcParams.update({"font.size": 8, "axes.labelsize": 8, "legend.fontsize": 6.6
                      "xtick.labelsize": 7, "ytick.labelsize": 7.5})
 LABEL = {"commonpile": "Common Pile", "commoncorpus": "Common Corpus", "kl3m": "KL3M"}
 COLOR = {"commonpile": "C0", "commoncorpus": "C2", "kl3m": "C3"}
+
+
+def distinct_styles(n):
+    """n (colour, marker) pairs, every one distinct, or an exception.
+
+    Both figures that style a data-driven list of series used `list[i % len(list)]`, which is the
+    one thing you must not do when the list is data: onset_collapse drew NINE pairs from an
+    eight-colour and eight-marker list, so the ninth wrapped to index 0 and TinyComma-1.8B and
+    open-calm-3b came out as the same blue circle -- two indistinguishable curves in both panels
+    of an appendix figure, invisible to every grep and to the compiler (found 2026-09-17 by
+    looking at the rendered figure). seed_effect uses the same construct over a four-marker
+    list but filters its temperature arms out first and draws only three, so it had not yet
+    collided; it takes its styles from here for the same reason. The comment
+    on the first said the pair set is "data, not code, so a new admissible pair appears in the
+    figure without editing it", which is exactly how it happened.
+
+    Wrapping silently is the defect, so this raises instead."""
+    cols = ["C0", "C3", "C2", "C1", "C4", "C5", "C6", "C8", "C9", "C7"]
+    mks = ["o", "s", "^", "D", "v", "P", "X", "*", "h", "<"]
+    if n <= len(cols):
+        out = list(zip(cols[:n], mks[:n]))          # distinct colour AND marker
+    else:
+        # Past ten, colour alone cannot separate them, so walk the cross product: every colour
+        # with the first marker, then every colour with the second. The PAIR stays unique, which
+        # is what a reader needs. order_no_collapse drew twelve series as `color=f"C{i}"` with a
+        # fixed marker, and matplotlib wraps C10 to C0 -- so Comma-7B and Qwen2.5-7B, and
+        # KL3M-1.7B and TinyComma-1.8B, were the same blue and the same orange circle across all
+        # three panels. `% len(...)` does not appear anywhere in that code: the wrap is inside
+        # matplotlib's property cycle, which is why a grep for the explicit form missed it.
+        out = [(c, m) for m in mks for c in cols][:n]
+        if n > len(cols) * len(mks):
+            raise ValueError(f"{n} series but only {len(cols) * len(mks)} distinct styles")
+    assert len(set(out)) == n, out
+    return out
 
 
 def _save(fig, name):
@@ -128,7 +162,10 @@ def order_invariance():
                                   (8.0, r"$\alpha=8$"), (float("inf"), r"$\alpha=\infty$  (pathwise)")]):
         ax.plot(Ks, [event_bound(S, K, a) for K in Ks], lw=1.4, color=f"C{i}", label=lab)
     ax.axvline(S, color="0.3", lw=0.9, ls="--")
-    ax.annotate(f"$K = S(x)$", xy=(S, 1e-4), xytext=(S * 0.42, 1e-4), fontsize=6.6, color="0.3")
+    # Beside the rule it names, not 120 nats away from it with no arrow (which is where it sat
+    # until 2026-09-17): below 1e-4 the region just left of K = S(x) is empty on every curve.
+    ax.annotate("$K = S(x)$", xy=(S * 1.02, 3e-8), rotation=90, ha="left", va="center",
+                fontsize=6.6, color="0.3")
     ax.set_yscale("log")
     ax.set_ylim(1e-12, 2)
     ax.set_xlabel("sequence budget $K$ (nats)")
@@ -152,10 +189,8 @@ def onset_collapse():
     # plan v5: the pair set is data, not code -- same manifest analysis/onset.py reads, so a new
     # admissible pair appears in the figure without editing it.
     _pairs = load_pairs(str(REPO / "results" / "onset_pairs.tsv"))
-    _cols = ["C0", "C3", "C2", "C1", "C4", "C5", "C6", "C8"]
-    _mks = ["o", "s", "^", "D", "v", "P", "X", "*"]
-    P = [(n, c, b, _cols[i % len(_cols)], _mks[i % len(_mks)])
-         for i, (n, c, b) in enumerate(_pairs)]
+    _st_ = distinct_styles(len(_pairs))
+    P = [(n, c, b, _st_[i][0], _st_[i][1]) for i, (n, c, b) in enumerate(_pairs)]
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.9, 2.75))
     for name, comp, per, col, mk in P:
         p_ = REPO / comp
@@ -223,7 +258,8 @@ def seed_effect():
     # would stack at one x and be labelled "seed varied", which is false. They belong on
     # units_law(), which plots against s(x) -- the axis they actually move.
     rows = [r for r in rows if not r["pair"].endswith(" tau")]
-    markers = ["o", "s", "^", "D"]
+    # one marker per series, never wrapped: five series were drawn from four markers
+    markers = [m for _, m in distinct_styles(10)]
     labelled = False   # the first pair in sort order may have a single arm and be skipped below,
                        # so the legend entry has to hang off the first pair actually drawn
     for i, pair in enumerate(sorted({r["pair"] for r in rows})):
@@ -325,45 +361,51 @@ def selection_frontier():
     # fixed. If this figure must get narrower, shrink figsize too and RENDER THE PAGE.
     F = 6.9 / 5.5
 
-    # ---- panel (a): a budget that scales with the work against one that does not -------------
+    # ---- panel (a): the contribution at a glance -------------------------------------------
+    # The claim is structural, so this panel stays structural: certified budgets against the price
+    # of the work, both as functions of the SAME length. The measured spends belong in panel (b),
+    # whose x-axis is realised divergence -- putting 171.3 nats of ORDINARY-traffic spend on an
+    # axis labelled "length of the protected work" would be the denominator error this paper
+    # spends Section 4 complaining about.
     ss = sorted(float(r["s_safe"]) for r in onset)          # nats per token, nine pairs
     s_med = ss[len(ss) // 2]
     s_tot = float(odo[0]["S_total_median"])                  # 849 nats, the median protected target
     t_star = s_tot / s_med                                   # its length in tokens
     T = [10 ** (1 + 0.02 * i) for i in range(101)]           # 10 .. 1000 tokens
+    TOP = 1.2e5
+    # Everything above the band is a budget that exceeds what the work is worth, which is exactly
+    # where Proposition 2 says the certificate stops excluding anything. Shading it is the whole
+    # argument: the red rays enter it and never leave; the blue lines never enter it.
+    axL.fill_between(T, [ss[-1] * t for t in T], TOP, color="#c1443c", alpha=0.07, lw=0)
+    axL.annotate("certificate vacuous", (T[3], 4.2e4), fontsize=6.3 * F, color="#8c3230",
+                 ha="left", va="center")
     axL.fill_between(T, [ss[0] * t for t in T], [ss[-1] * t for t in T],
                      color="0.72", alpha=0.5, lw=0)
     axL.plot(T, [s_med * t for t in T], color="0.25", lw=1.4)
-    # Type large enough to read leaves no room for the prose that used to sit on the rays: at
-    # \textwidth the five multi-line rotated notes collided into an unreadable knot. The panel now
-    # carries the identities only and the caption carries what they mean, which is where a reader
-    # who cannot read 4pt type was going to have to look anyway.
     axL.annotate("$S(x) = s(x)T$", (T[26], s_med * T[26]), fontsize=6.3 * F, color="0.2",
                  rotation=31, rotation_mode="anchor", xytext=(0, 5), textcoords="offset points")
-    # xi picks where each ray carries its own label. 0.5 was at 70, i.e. T=10^2.4=251 tokens,
-    # which is where t_star = 849/s_med puts the median-target rule -- the dash-dot vline
-    # struck the label through. Moved right of the rule. Render the page after changing these.
     for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 85)):
         axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
         axL.annotate(f"$k={k:g}$", (T[xi], k * T[xi]), fontsize=6.3 * F,
                      color="#c1443c", rotation=31, rotation_mode="anchor",
                      xytext=(0, 4), textcoords="offset points")
     import math as _m
-    # log 8 and log 64 are a factor of two apart on an axis spanning five decades, so one label
-    # each collided and the lower one landed on the x-axis. Two lines, one label.
     for n, style in ((64, "--"), (8, "-")):
         axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
+    # e^K is the factor a rights-holder is promised -- 8 and 64 against e^2000 -- and that reading
+    # is in the caption, not here: every in-plot home for it collided, with the x-axis tick labels
+    # below the n=8 line and with the k=0.5 ray above the n=64 one.
     axL.annotate("$\\log n$, $n=8,64$", (T[97], _m.log(64)), fontsize=6.3 * F, ha="right",
                  color="#2f6f9f", xytext=(0, 4), textcoords="offset points")
     axL.axvline(t_star, color="0.5", lw=0.8, ls="-.")
-    # to the RIGHT of the rule: the top-left is where the $S(x)$ ray's own label sits.
-    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 6.0e4), fontsize=6.3 * F,
+    axL.annotate(f"median target,\n$S(x)={s_tot:.0f}$", (t_star, 5.5e4), fontsize=6.3 * F,
                  color="0.35", ha="left", va="top", xytext=(4, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
-    axL.set_xlim(10, 1000); axL.set_ylim(1.0, 1.2e5)
+    axL.set_xlim(10, 1000); axL.set_ylim(1.0, TOP)
     axL.set_xlabel("length of the protected work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
-    axL.set_title("(a) indexed to the work, and not", fontsize=7.6 * F, loc="left")
+    axL.set_title("(a) $kT$ grows with the work; $\\log n$ does not",
+                  fontsize=7.6 * F, loc="left")
 
     # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
     # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
@@ -415,8 +457,14 @@ def selection_frontier():
     # Headroom for the legend, which now sits upper right: at ylim 0.80 its bottom border cut
     # through the "n=64" label (u=0.578). Every legend move in this panel trades one collision
     # for another unless the panel is given the room -- render the page after touching either.
-    ax.set_ylim(0.37, 0.86)
-    ax.set_xlabel("realised divergence from the anchor, nats per trajectory")
+    # The legend size and this number move together: a taller box covers the n=64 label, which is
+    # caution (ad) reproduced. 0.90 is the headroom a 7.0 * F legend needs at \textwidth.
+    ax.set_ylim(0.37, 0.90)
+    # NOT "realised": only the metered points are measurements. The selection points are the
+    # closed form log n - (n-1)/n, a BOUND, so an axis calling them realised asserts a
+    # measurement nobody made -- cautions (ae)/(ah)/(am), fifth instance. The caption says
+    # which is which; the label must not contradict it.
+    ax.set_xlabel("divergence from the anchor, nats per trajectory")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
@@ -426,7 +474,11 @@ def selection_frontier():
     # that corner and struck through "Thm. 1" and "selection anchoring" in the compiled PDF
     # (caution (ad)). Upper right is empty -- the curve exits the top by x~0.5 and the anchored
     # cluster tops out at u=0.52 -- and the opaque frame occludes anything that ever reaches it.
-    ax.legend(fontsize=6.6 * F, frameon=True, framealpha=1.0, edgecolor="none",
+    # 7.0 * F, with the figure printed at \textwidth: F = 6.9/5.5 is exactly the compensation for
+    # that placement, so nominal size is printed size. It was 6.6 at 0.70\textwidth, where it
+    # measured 5.4pt on the page and was briefly raised to 8.0 instead; widening the figure is the
+    # fix that removes the need. RENDER THE PAGE after changing this.
+    ax.legend(fontsize=7.0 * F, frameon=True, framealpha=1.0, edgecolor="none",
               loc="upper right", handlelength=1.6, borderaxespad=0.3)
     for _a in (axL, ax):
         _a.tick_params(labelsize=8 * F)
@@ -521,14 +573,15 @@ def order_no_collapse():
     rows = [r for r in csv.DictReader(open(src))]
     orders = sorted({float(r["alpha"]) for r in rows})
     pairs = sorted({r["pair"] for r in rows})
+    _sty = distinct_styles(len(pairs))
     fig, axes = plt.subplots(1, len(orders), figsize=(6.9, 2.55), sharey=True)
     for ax, o in zip(axes, orders):
         for i, pair in enumerate(pairs):
             c = [(float(r["F"]), float(r["log10_factor"])) for r in rows
                  if r["pair"] == pair and float(r["alpha"]) == o]
             c.sort()
-            ax.plot([x for x, _ in c], [y for _, y in c], marker="o", ms=2.2, lw=1.0,
-                    color=f"C{i}", label=pair if o == orders[0] else None)
+            ax.plot([x for x, _ in c], [y for _, y in c], marker=_sty[i][1], ms=2.6, lw=1.0,
+                    color=_sty[i][0], label=pair if o == orders[0] else None)
         ax.axhline(0.0, color="0.4", lw=0.7, ls=":")
         ax.set_title(rf"$\alpha = {o:.0f}$")
     axes[0].set_ylabel(r"$\log_{10}$ times safer, matched utility")
@@ -583,19 +636,168 @@ def imitation_cost():
     axR.plot([0, 1], [0, 1], color="0.55", lw=1.1, ls="--", label="uniform over steps")
     # k = 3 and k = 20 lie on top of each other, which is the point: once the meter stops binding
     # the shape of the spend stops depending on the cap. Dashed so both are visible.
+    budget_lines = {}
     for k, ls, col in (("0.5", "-", "C0"), ("20", "-", "C2"), ("3", "--", "C1")):
         v = [(float(r["frac_of_steps"]), float(r["frac_of_spend"])) for r in lz if r["k"] == k]
         v.sort()
-        axR.plot([0] + [x for x, _ in v], [0] + [y for _, y in v], lw=1.4, ls=ls, color=col,
-                 label=f"$k = {k}$")
+        budget_lines[k], = axR.plot([0] + [x for x, _ in v], [0] + [y for _, y in v],
+                                    lw=1.4, ls=ls, color=col, label=f"$k = {k}$")
     axR.plot([0, 0.02, 1], [0, 1, 1], color="C3", lw=1.2, ls=":",
              label="what Proposition 5 needs")
     axR.set_xlabel("fraction of steps, busiest first")
     axR.set_ylabel("share of the spend")
     axR.set_title("(b) where it spends it", fontsize=8)
-    axR.legend(frameon=False, loc="lower right")
+    # The DRAW order has to stay 0.5, 20, 3 so the dashed k=3 lands on top of the solid k=20 and
+    # both are visible; the legend does not, and read "k = 0.5, k = 20, k = 3" until 2026-09-17.
+    h, l = axR.get_legend_handles_labels()
+    by = dict(zip(l, h))
+    order = ["uniform over steps"] + [f"$k = {k}$" for k in sorted(budget_lines, key=float)] + \
+            ["what Proposition 5 needs"]
+    assert set(order) == set(l), (order, l)
+    axR.legend([by[x] for x in order], order, frameon=False, loc="lower right")
     axR.grid(alpha=0.25, lw=0.5)
     _save(fig, "imitation_cost")
+
+
+def selection_forest_rows():
+    """The rows of Figure~\\ref{fig:breadth}, read out of results/*.csv and nothing else.
+
+    Split out of the drawing code on purpose. When a band moves from prose into a figure, the
+    guard that used to grep the prose for it goes quiet and the number becomes unchecked -- which
+    is caution (ag) with the deletion done by a figure instead of a page trim. Tests assert
+    against THIS, so a band is guarded wherever the paper chooses to print it.
+
+    Returns (items, groups): items are (label, (gain, lo, hi), cost_nats, certified, gate_passed),
+    groups are (index the group starts at, group heading).
+    """
+    def rows_of(name):
+        return list(csv.DictReader(open(RESULTS / name)))
+
+    def band(r, g="gain"):
+        return float(r[g]), float(r[f"{g}_lo95"]), float(r[f"{g}_hi95"])
+
+    JB = "Phi-3.5-mini-instruct"
+    breadth = {r["anchor"]: r for r in rows_of("selection_breadth.csv") if JB in r["judge"]}
+    scal64 = next(r for r in rows_of("selection_scaling.csv")
+                  if JB in r["judge"] and int(float(r["n"])) == 64)
+
+    def dom(name, tag=""):
+        rs = [r for r in rows_of(name) if JB in r["judge"]]
+        mx = max(int(float(r["n"])) for r in rs)
+        return next(r for r in rs if int(float(r["n"])) == mx)
+
+    def verif(name, arm, n):
+        return next(r for r in rows_of(name)
+                    if r["arm"].startswith(arm) and int(float(r["n"])) == n)
+
+    # (label, (gain, lo, hi), cost in nats, certified?, entry gate passed)
+    items, groups = [], []
+
+    def add(label, r, cost, certified=True, gate=True, g="gain"):
+        items.append((label, band(r, g), cost, certified, gate))
+
+    groups.append((len(items), "six anchors, 500 in-house prompts, judge B"))
+    for a in ("Pleias-1.2B", "KL3M-1.7B", "Pleias-3B", "Comma-7B (1T tokens)",
+              "TinyComma-1.8B (audited)", "Comma-7B"):
+        r = breadth[a]
+        add(f"{a}, $n=8$", r, math.log(int(float(r["n"]))), gate=r["entry_gate"] == "PASS")
+    add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64))
+
+    groups.append((len(items), "other workloads, judge B, $n = 8$"))
+    add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca.csv"), math.log(8))
+    add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b.csv"), math.log(8))
+    add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench.csv"), math.log(8))
+
+    groups.append((len(items), "exact match, no judge at all, Comma-7B, 500 problems"))
+    V, T = "selection_verifiable_comma7b.csv", "selection_verifiable_tqa_comma7b.csv"
+    add("GSM8K, majority vote, $n=32$", verif(V, "majority", 32), math.log(32))
+    add("GSM8K, pointwise reward, $n=64$", verif(V, "pointwise", 64), math.log(64))
+    add("TriviaQA, majority vote, $n=64$", verif(T, "majority", 64), math.log(64))
+    add("TriviaQA, pointwise reward, $n=16$", verif(T, "pointwise", 16), math.log(16))
+
+    # The comparator. Its gain is a difference of two levels in one judging pass, so it has no
+    # bootstrap interval on record; drawn as a point with no bar and said so in the caption.
+    groups.append((len(items), "what the metered decoder buys, same judge"))
+    js = {r["k"]: r for r in rows_of("judge_separation_v6_judge2.csv") if JB in r["judge"]}
+    anchor_u = float(js["0.0"]["utility"]) if "0.0" in js else 0.4505
+    met = float(js["10.0"]["utility"]) - anchor_u
+    items.append(("metered decoder, $k=10$", (met, None, None), 171.28, False, True))
+    return items, groups
+
+
+def selection_breadth_forest():
+    """Every judged and exact-match gain selection anchoring has been measured at, with its 95%
+    interval and the certificate that bought it, against the metered decoder's best arm.
+
+    This replaces a paragraph. Fifteen effect estimates were being carried as prose, which is a
+    figure's job; read as a forest plot the shape of the evidence is immediate -- positive nearly
+    everywhere for 2 to 4 nats, against 171.3 for the comparator -- and so are the two places it
+    fails, both of which are identifiable rather than mysterious.
+    """
+    items, groups = selection_forest_rows()
+
+    # A group header gets its OWN line. Sharing a line with the row above it is caution (ad) in
+    # miniature: the first draft printed three headers straight through three row labels.
+    starts = dict(groups)
+    slots, y = [], 0.0
+    for i in range(len(items)):
+        if i in starts:
+            y -= 1.0
+            slots.append(("head", y, starts[i]))
+            y -= 0.18
+        y -= 1.0
+        slots.append(("row", y, i))
+    top, bot = -0.2, y - 0.8
+
+    # DRAW AT THE WIDTH IT WILL PRINT AT. The label gutters live outside the axes, and
+    # bbox_inches="tight" expands the canvas to fit them: at figsize 6.9 the saved PDF came out
+    # 9.09in wide, so placing it at ICLR's 5.984in \textwidth shrank everything by 0.658 and 7pt
+    # labels printed at 5.0pt -- caution (aj) again, and neither arithmetic on figsize nor the
+    # advance-width ratio caught it (the ratio compares DejaVu Sans against Times and overstates
+    # by the font-width difference). Reserve the gutters INSIDE a 6.0in canvas instead, so the
+    # shrink is ~1 and a drawn point is a printed point. Measure the SAVED file, never figsize.
+    fig, ax = plt.subplots(figsize=(6.0, 2.62))
+    fig.subplots_adjust(left=0.345, right=0.875, bottom=0.145, top=0.985)
+    # x in AXES fraction, y in data: the label gutters sit outside the data area by construction,
+    # so no interval can ever print through a row label (the first draft's MT-Bench and TriviaQA
+    # bars both did, reaching -0.0875 and -0.068 into a column anchored at -0.052).
+    gut = ax.get_yaxis_transform()
+    for kind, y, payload in slots:
+        if kind == "head":
+            ax.axhline(y + 0.62, color="#cccccc", lw=0.6, zorder=0)
+            ax.text(-0.02, y, payload, ha="right", va="center", fontsize=6.6,
+                    style="italic", color="#555555", transform=gut)
+            continue
+        label, (g, lo, hi), cost, certified, gate = items[payload]
+        neg = hi is not None and hi < 0
+        col = "#b02318" if neg else ("#1f4e79" if certified else "#6b6b6b")
+        if lo is not None:
+            ax.plot([lo, hi], [y, y], color=col, lw=1.3, solid_capstyle="butt", zorder=2)
+            ax.plot([lo, lo, None, hi, hi], [y - .17, y + .17, y, y - .17, y + .17],
+                    color=col, lw=1.0, zorder=2)
+        ax.plot([g], [y], marker="o", ms=4.4, color=col if gate else "white",
+                mec=col, mew=1.2, zorder=3)
+        ax.text(-0.02, y, label, ha="right", va="center", fontsize=6.9, transform=gut)
+        ax.text(1.145, y, f"{cost:.2f}" if certified else f"{cost:.1f} spent",
+                ha="right", va="center", fontsize=6.9, transform=gut,
+                color=col if certified else "#b02318")
+
+    ax.axvline(0, color="black", lw=0.8, ls=(0, (4, 3)), zorder=1)
+    ax.text(1.145, top - 0.5, "certificate, nats", ha="right", va="center", fontsize=6.6,
+            style="italic", color="#555555", transform=gut)
+
+    ax.set_xlim(-0.098, 0.288)
+    ax.set_ylim(bot + 0.25, top)
+    ax.set_yticks([])
+    ax.set_xlabel("gain over the same arm's own anchor-alone control, 95% CI", fontsize=7.6)
+    ax.tick_params(axis="x", labelsize=6.9)
+    ax.set_xticks([-0.05, 0, 0.05, 0.1, 0.15, 0.2, 0.25])
+    for side in ("left", "right", "top"):
+        ax.spines[side].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.grid(axis="x", alpha=0.18, lw=0.5)
+    ax.set_axisbelow(True)
+    _save(fig, "selection_breadth_forest")
 
 
 def main():
@@ -607,8 +809,8 @@ def main():
     # copied for two days, and a missing \includegraphics halts tectonic and leaves the previous
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
-               context_intervention, selection_frontier, units_law, order_no_collapse,
-               imitation_cost)
+               context_intervention, selection_frontier, selection_breadth_forest,
+               units_law, order_no_collapse, imitation_cost)
     for fn in figures:
         try:
             fn()

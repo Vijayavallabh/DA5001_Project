@@ -9,6 +9,58 @@
 
 
 
+## 2026-09-18 08:00 — feat-130 CLOSED: the climb to n=64 is NOT universal, and a second spec defect of ours
+
+**PARTIAL.** Paired `g(64) - g(8)` under judge B **within each new pass**:
+
+| anchor | `g(8)` | `g(64)` | paired difference | reading | warrant |
+|---|---|---|---|---|---|
+| Pleias-1.2B | `+0.083` | `+0.119` | `+0.0360 [-0.0040, +0.0740]` | saturated by 8 | reduced |
+| **KL3M-1.7B** | `+0.023` | `+0.088` | **`+0.0650 [+0.0270, +0.1030]`** | **climbs** | reduced |
+| Pleias-3B | `+0.025` | `+0.028` | `+0.0030 [-0.0380, +0.0460]` | saturated by 8 | full |
+
+One of three, so the committed reading is PARTIAL and the claim is now stated over exactly the
+anchors that carry it. **Across the five anchors now measured at `n=64` the climb holds at three**
+— TinyComma, Comma-7B, KL3M-1.7B — **and fails at both Pleias anchors**, flat from `n=8`. Beside
+feat-129's SATURATED BY 64 at the audited anchor, the shape that survives is: the gain rises in
+`log n` to an **anchor-dependent** ceiling and stops — below `n=8` for some anchors, between `64`
+and `128` for others — while the certificate `log n` keeps growing. Which `n` is worth paying for is
+a property of the anchor a deployer must measure, not a constant this paper can supply.
+
+**Our own spec defect, recorded rather than repaired — and found by mutation-testing the gate.**
+The corrected reward gate (transplanted from feat-129 hours earlier, *before* any number was read)
+was mutation-tested on all three anchors first, and `pleias3b` passed M0 while the other two failed
+it. Chasing that: `scripts/run_breadth_anchor.sh`, which passes `--batch-size 32`, **did not exist**
+until commit `94f9e7d` (2026-09-14 07:31, *"raise h1 batch 8 -> 32/48"*). KL3M-1.7B and Pleias-1.2B's
+committed arms ran **2026-09-12**, before it, taking `h1.py`'s default `batch_size = 8`
+(`dap/e1.py:50`); Pleias-3B's ran **2026-09-14 10:39**, after. Batch size is part of the seed
+(caution (u)), so ranks 0–7 **cannot** be bit-identical there and the check is **inapplicable rather
+than failed**. The pre-registration asserted the committed value was 32 for all three; that premise
+was false for two.
+
+The band is a paired difference **within one pass** and never touches the committed arm, so it is
+unaffected; what is lost is external confirmation that the pipeline reproduced. Those two carry
+`warrant=REDUCED`; **Pleias-3B reproduces bit-exactly and is the positive control**. The waiver is
+an explicit `--waive-reproduction` flag, printed with its reason and recorded in the CSV as
+`WAIVED -- batch 8 vs 32` — never a default, never inferred from the mismatch itself. And the
+reading does not turn on the waived pair alone: the climber is waived and a saturator is not, so
+PARTIAL is what any subset containing both would give.
+
+**Bookkeeping closed out.** `compute_hours.py` re-run over all of tonight's arms: **332.3 gpu-h**
+total (from 298.6), fine-tunes unchanged at 72.7; the manuscript's disclosure moved `299 -> 332` and
+its guard passes. Artifact rebuilt — **1,032 files**, 17 MB zip. Anonymity re-verified: the only
+artifact hit is "Indian Institute of Human Brands" inside a FactScore biography prompt (benchmark
+content, and `data/factscore` is read-only), the only two manuscript hits are the sanctioned
+third-person `\citep{vijayavallabh2026audit}`, and the single "our earlier audit" is the LaTeX
+comment that *is* the reminder never to write it.
+
+**Not launched.** Roughly two hours of the user's window remained with three cards free, but the two
+arms that would be worth it — Comma-7B past `n=64` (~27 gpu-h) and a seed replication of the one
+CLIMBS result (~3.3 gpu-h on one card) — do not fit inside it, and starting an arm that cannot
+finish would leave an unscored pre-registration for no gain. Both are the recommended next steps.
+
+651 tests, `./init.sh` exit 0, body exactly 9 pages, 0 overfull, 0 `??`, 3 bold faces.
+
 ## 2026-09-18 03:20 — feat-129 CLOSED: SATURATED BY 64, and the gate that refused it was what was wrong
 
 **Arm A: SATURATED BY 64.** Paired `g(128) - g(64)` under judge B over 500 prompts =

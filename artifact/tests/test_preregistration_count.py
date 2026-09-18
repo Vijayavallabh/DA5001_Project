@@ -23,6 +23,10 @@ WORDS = {12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixte
          40: "forty", **{40 + i: f"forty-{w}" for i, w in enumerate(
              ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]) if w},
          50: "fifty", **{50 + i: f"fifty-{w}" for i, w in enumerate(
+             ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]) if w},
+         60: "sixty", **{60 + i: f"sixty-{w}" for i, w in enumerate(
+             ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]) if w},
+         70: "seventy", **{70 + i: f"seventy-{w}" for i, w in enumerate(
              ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]) if w}}
 
 

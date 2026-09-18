@@ -126,12 +126,22 @@ def test_section6_quotes_the_four_anchor_gains_from_the_breadth_csv():
     b1 = {"Pleias-1.2B", "KL3M-1.7B", "Comma-7B"}
     new = [r for r in rows() if r["anchor"] in b1 and r["judge"] == SCORING_JUDGE]
     assert len(new) == 3, [r["anchor"] for r in new]
+    # These three moved out of the prose and into Figure 1's forest plot on 2026-09-17. The band
+    # is still the paper's claim and still has to round from the CSV once; what changed is which
+    # surface prints it, so the check reads both (tests/manuscript.py::carries_band).
+    from tests.manuscript import carries_band
     for r in new:
         g, lo, hi = (float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"]))
-        assert f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$" in body, (r["anchor"], g, lo, hi)
+        assert carries_band(g, lo, hi, "experiments.tex"), (r["anchor"], g, lo, hi)
     excl = sum(1 for r in new if float(r["gain_lo95"]) > 0)
     assert excl == 2, excl
-    assert "two of three exclude zero on the pre-registered scorer" in body
+    # the claim "two of three exclude zero" is now made by the plot, so assert the plot makes it
+    assert "selection_breadth_forest" in body, "the figure carrying these bands is not included"
+    plotted = {lbl.split(",")[0]: (lo_, hi_) for lbl, (_g, lo_, hi_), *_ in
+               __import__("tests.manuscript", fromlist=["_forest"])._forest() if lo_ is not None}
+    for r in new:
+        assert r["anchor"] in plotted, (r["anchor"], sorted(plotted))
+    assert sum(1 for r in new if plotted[r["anchor"]][0] > 0) == 2, plotted
     best = max(new, key=lambda r: float(r["gain"]))
     assert "Comma-7B" in best["anchor"], best["anchor"]
     # C2 of the six-anchor pre-registration read NO TREND (rho = +0.543 over six), and its
@@ -163,18 +173,28 @@ def test_section6_quotes_the_four_anchor_gains_from_the_breadth_csv():
         assert f"$\\rho = {rho:+.3f}$" in body, f"Section 6 does not quote rho={rho:+.3f}"
 
 
-def test_the_table_row_for_the_strongest_anchor_matches_the_breadth_csv():
-    from tests.manuscript import tex
-    body = open(tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+def test_the_row_for_the_strongest_anchor_matches_the_breadth_csv():
+    """Was a Table 1 cell until 2026-09-17; Table 1's four headline rows became rows of the forest
+    figure and the table came out, so the same band is now checked where the paper plots it."""
+    from tests.manuscript import carries_band, _forest
     r = next(x for x in rows() if x["anchor"] == "Comma-7B" and x["judge"] == SCORING_JUDGE)
     g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
-    assert f"${g:+.3f}$ & $[{lo:+.3f}, {hi:+.3f}]$" in body, (g, lo, hi)
+    assert carries_band(g, lo, hi, "experiments.tex"), (g, lo, hi)
+    # and it is still the largest gain the anchor sweep produces, which is why it is quoted
+    anchors = [x for x in _forest() if x[1][1] is not None and "$n=8$" in x[0]]
+    assert max(anchors, key=lambda x: x[1][0])[0].startswith("Comma-7B,"), anchors
 
 
 def test_the_abstract_claims_the_anchor_count_the_csv_supports():
-    """The abstract says selection "gains judged utility at N anchors in three families". The
-    claim is about anchors that GAIN on the registered scorer, not about how many are in the CSV
-    -- six are measured and four gain -- and the families are the families of those four."""
+    """The abstract says selection repeats "at N of M anchors in three families". The claim is
+    about anchors that GAIN on the registered scorer -- six are measured and four gain -- and the
+    families are the families of those four.
+
+    The denominator is part of the claim. Until 2026-09-17 the abstract said "four anchors in three
+    families ... though two intervals include zero", and the caveat attached to nothing a reader
+    could see: all four quoted anchors exclude zero by construction, and the two that do not are
+    the two the sentence never mentions. Stating M is both shorter and honest, so the guard pins
+    it: writing the numerator alone, or either count wrong, fails here."""
     from tests.manuscript import tex
     abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read().replace("\n", " ")
     fams = {"TinyComma-1.8B (audited)": "Comma", "Comma-7B": "Comma",
@@ -183,7 +203,8 @@ def test_the_abstract_claims_the_anchor_count_the_csv_supports():
     gaining = {r["anchor"] for r in rows()
                if r["judge"] == SCORING_JUDGE and float(r["gain_lo95"]) > 0}
     assert set(fams) == {r["anchor"] for r in rows()}, "an anchor has no family declared"
-    n = len(gaining)
-    word = ["", "one", "two", "three", "four", "five", "six"][n]
-    assert f"{word} anchors in three families" in abstract, (n, word, sorted(gaining))
+    words = ["", "one", "two", "three", "four", "five", "six"]
+    n, total = len(gaining), len(fams)
+    claim = f"{words[n]} of {words[total]} anchors in three families"
+    assert claim in abstract, (claim, sorted(gaining), sorted(fams))
     assert len({fams[a] for a in gaining}) == 3, sorted(gaining)

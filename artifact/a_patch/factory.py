@@ -46,6 +46,7 @@ class AnchoredDecodingFactory:
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
         initial_bank: float = 0.0,
+        spend_threshold: Optional[float] = None,
         meter: str = "token",
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
@@ -191,6 +192,7 @@ class AnchoredDecodingFactory:
             constraint=constraint,
             bank_cap=bank_cap,
             initial_bank=initial_bank,
+            spend_threshold=spend_threshold,
             meter=meter,
             device=device,
         )
@@ -207,6 +209,7 @@ class AnchoredDecodingFactory:
         constraint: str = "kl",
         bank_cap: Optional[float] = None,
         initial_bank: float = 0.0,
+        spend_threshold: Optional[float] = None,
         meter: str = "token",
         verbose: bool = False,
         device: Optional[torch.device] = None,
@@ -260,6 +263,16 @@ class AnchoredDecodingFactory:
         # 0.0 is the deployed rule exactly, so every number on record is unaffected.
         assert initial_bank >= 0.0, "initial_bank must be non-negative"
         self.initial_bank = initial_bank
+        # feat-125: WHERE a bounded budget is placed, decided causally. initial_bank alone yields a
+        # greedy front-loader -- it spends at step 0 and is the anchor thereafter -- which is the
+        # weakest member of the class Proposition 3 permits. A reserving policy holds the budget
+        # until the risky model actually wants it: spend at step t only if the full-tilt demand
+        # D_KL(p_r,t || p_s,t) reaches `spend_threshold` nats, otherwise serve the anchor and keep
+        # the nats. Causal by construction -- the test reads only the current step's two
+        # distributions, never the future. None is the deployed rule exactly, so every number on
+        # record is unaffected.
+        assert spend_threshold is None or spend_threshold >= 0.0, "spend_threshold must be >= 0"
+        self.spend_threshold = spend_threshold
         # feat-064: what the budget is metered in. He et al. meter per TOKEN, so K = k*T_max; but the
         # protected object is text, and a tokenizer that cuts the same passage into twice as many
         # tokens then hands the adversary twice the budget for it. 'char' meters per character, which
@@ -947,6 +960,11 @@ class AnchoredDecodingFactory:
                 else:
                     remaining = (budget_so_far - charged).clamp(min=0.0)
                 k_t = remaining * unfinished_sequences.float()
+                if self.spend_threshold is not None:  # feat-125: reserve for the steps that want it
+                    lpc = F.log_softmax(safe_logits.float(), dim=-1)
+                    lpd = F.log_softmax(risky_logits.float(), dim=-1)
+                    demand = (lpd.exp() * (lpd - lpc)).sum(dim=-1)
+                    k_t = k_t * (demand >= self.spend_threshold).float()
                 if self.constraint == "pathwise":
                     bc, bd, log_pc, log_pd = self._solve_pathwise(safe_logits, risky_logits, k_t)
                 elif self.constraint == "renyi":

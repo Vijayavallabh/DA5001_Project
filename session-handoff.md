@@ -1,83 +1,55 @@
-# Session handoff — 2026-09-18 01:20 (the ICLR reframe; Arm B scored, four GPU arms in flight)
+# Session handoff — 2026-09-18 08:05 (both GPU arms scored and closed; all cards released)
 
-## THREE ARMS ARE RUNNING, one per card (`feat-130`). `results/onset_prediction_breadth64.md` is committed and UNSCORED.
-## `feat-129` is CLOSED: Arm A **SATURATED BY 64**, Arm B **SAFETY HOLDS** to n=256.
+## NOTHING IS RUNNING. `feat-129` and `feat-130` are both `done`; every pre-registration is scored.
 
-| card | queue shell | log | job |
-|---|---|---|---|
-| GPU 1 | (outer shell killed; inner runner reparented) | `output/logs/breadth64_kl3m17b.log` | feat-130: KL3M-1.7B to n=64 --- generates AND scores itself |
-| GPU 2 | `scripts/run_breadth64_card2.sh` | `output/logs/breadth64_pleias3b.log` | feat-130: Pleias-3B to n=64, **re-dealt off card 1 at 03:20** |
-| GPU 4 | `scripts/run_breadth64_card4.sh` | `output/logs/breadth64_pleias12b.log` | feat-130: Pleias-1.2B to n=64 |
+| feature | reading | where |
+|---|---|---|
+| `feat-129` Arm A | **SATURATED BY 64** --- paired `g(128)-g(64)` = `+0.0140 [-0.0180, +0.0460]` | `results/onset_prediction_n256.md` |
+| `feat-129` Arm B | **SAFETY HOLDS** --- `0.0000` on 100/100 at every `n` in (1, 8, 64, 256) | same |
+| `feat-130` | **PARTIAL** --- 1 of 3 climbs; across five anchors at `n=64` it holds at 3 | `results/onset_prediction_breadth64.md` |
+| post hoc | order-averaged `g(128)-g(64)` = `+0.0140 [-0.0015, +0.0295]`, registered reading stands | `results/n128_order_averaged_note.md` |
 
-**feat-129 is CLOSED** (both arms scored; see below). GPU 2 came free when its card drained at
-02:51, so Pleias-3B was re-dealt there rather than waiting behind KL3M on GPU 1 --- queued it would
-have started about 05:05 and landed about 09:47, twenty minutes inside the window; on GPU 2 it lands
-about 08:05. Card 1's **outer** queue shell was killed by PID after its `argv` was checked; the inner
-`run_breadth64.sh` was reparented to init and keeps going, so KL3M still generates and scores
-(caution (c) used deliberately). Nothing about any arm changed: same script, same flags, same seeds,
-same `--batch-size 32`.
+**The one result to carry forward.** The gain rises in `log n` to an **anchor-dependent** ceiling and
+then stops --- below `n=8` at both Pleias anchors, between `64` and `128` at TinyComma --- while the
+certificate `log n` keeps growing. Which `n` is worth paying for is a property of the anchor a
+deployer must measure, not a constant. Three of five anchors measured at `n=64` climb to it
+(TinyComma, Comma-7B, KL3M-1.7B).
 
-**Score the three with** `.venv/bin/python analysis/score_breadth64.py --out results`, written and
-mutation-tested six ways before any data existed.
+**The instrument lesson, now caution (ap), which cost two gate rewrites.** A single-order judged
+level is **grid-dependent**: `selection_scaling.py` draws one `rng.random()` per element of
+`distinct`, which is built over the whole grid, so adding an arm re-rolls the presentation order of
+nearly every shared item into a position-dominated judge. TinyComma's `n=64` gain read `+0.142` and
+`+0.076` on **byte-identical** text (32,000/32,000 rewards bit-identical). **Order averaging draws
+nothing and reproduced exactly** --- `+0.1045 [+0.0820, +0.1280]` on both passes, four decimals on
+the point estimate and both interval ends. So: a reproduction gate belongs on the **reward cache**,
+never on a judged number; and a single-order gain is never compared across sweeps
+(`tests/test_forest_single_pass.py` fails if the forest plot ever reads the `n=128` pass).
 
-**feat-129 Arm B is DONE and its reading is unambiguous** (`results/selection_extraction_n256.csv`,
-card 1 drained 01:09:47): `nv_recall` is `0.0000` on 100/100 passages at **every** n through 256,
-`rouge_ge_0p5_pct` is `0.0` at every n, against the same memoriser's `k=-1` control of `0.3925`
-recall and `47.0%` ROUGE-L >= 0.5 on the same passages. That is the pre-registration's top row,
-**SAFETY HOLDS AT FOUR TIMES THE DRAWS**, against a certificate that permits 256-fold
-amplification. It still has to be written into that log's `## Scoring log` with the rest of feat-129
-when Arm A lands.
+**Two defects in our own pre-registrations, recorded rather than repaired.** feat-129's gate compared
+judged `gain` across passes at `5e-4`, which cautions (e) and (m) already forbade. feat-130's
+asserted the committed breadth arms used `--batch-size 32`; true of Pleias-3B, false of the other
+two, which ran before the launcher that passes it existed and took `h1.py`'s default of 8 --- so
+their reproduction check was *inapplicable* rather than failed, waived by an explicit flag, their
+bands marked `warrant=REDUCED`, with Pleias-3B as the bit-exact positive control.
 
-**feat-130, launched 01:20, closes a hole a reviewer would find.** The breadth claim is quantified at
-`n=8` and the headline at `n=64`, and only TinyComma and Comma-7B have an `n=64` curve at all --- so
-nothing in the paper says whether the climb to the headline n is a property of the mechanism or of
-the two anchors taken there. The three anchors that stop at `n=8` **and pass the registered entry
-gate** (Pleias-1.2B, KL3M-1.7B, Pleias-3B) are being extended to `n=64`; Comma-1T is excluded
-because the gate fails it at 16.6% empty, not by choice. Read on the paired `g(64) - g(8)` under
-judge B per anchor, against the `+0.088` (TinyComma) and `+0.101` (Comma-7B) the two measured
-anchors give as the effect size. ~11.8 gpu-h total, under the escalation threshold, from rates
-measured off the breadth arm's own logs --- **not** from `compute_hours.csv`, whose `breadth_*` rows
-cover generation and scoring together and whose `sel_scaling` row is log-birth-to-end and so counts
-time spent waiting on another card's generation. Held at `--batch-size 32`, the breadth arm's value
-and **not** `sel_anchor64`'s 64, so draws 0--7 of the 64-draw pool are bit-identical to the committed
-8-draw pool and the `n <= 8` half of each sweep must reproduce its `selection_scaling_<tag>.csv`.
+## Recommended next steps, in order
 
-Card 2 waits for card 1 on the **file** `output/phase5/sel_anchor128_neutral/GEN_DONE`, which card 1
-writes only on rc=0 (caution (c): never wait on the absence of a pattern match). Expected
-**~17.8 GPU-hours** total against measured rates, under the 24-hour escalation threshold; the basis
-is the table in `## Compute` of the pre-registration, not an estimate. Live rates came in better
-than that basis --- $3.92$ traj/s on neutral and $2.30$ on creative+factual --- so generation
-lands near $6.4$ gpu-h against the $8.2$ registered.
+1. **Where does Comma-7B's ceiling sit?** The appendix now says outright that it is open. Costs
+   ~27 gpu-h at `n=128` on 500 prompts (its `n=64` generation alone was 13.42), so it needs the
+   user's approval under the 24-gpu-hour rule, or a design that reuses the existing pool via
+   `build_trajectory_seeds`' `start` parameter.
+2. **Replicate the one CLIMBS result.** KL3M-1.7B `+0.0650 [+0.0270, +0.1030]` rests on one seed and
+   carries reduced warrant. A seed replication is ~3.3 gpu-h on one card.
+3. **ICLR abstract registration** --- per AGENTS.md's branch note it was due **2026-09-18**, and
+   `feat-016` is human-only and must never be started by an agent.
 
-**Score them with** `.venv/bin/python analysis/score_n128.py --out results`, which was written and
-mutation-tested *before* either arm produced a number and implements the committed reading rules:
-Arm A's band is the paired `g(128) - g(64)` under judge B, and it refuses to read any `n > 64`
-number unless the `n <= 64` half reproduces `results/selection_scaling.csv`.
+## State
 
-**Two things the sizing turned up, both recorded in that log's `## Amendment`:** a 4-prompt
-throughput smoke measured `0.356` traj/s where the 500-prompt arm on record ran at `2.157` --- four
-prompts cannot fill a `--batch-size 64` batch, so it measured the padding --- and `--max-n` could
-**not form the arm the pre-registration named**, because `selection_scaling.py` filtered a hardcoded
-`GRID` that stops at 64. `n_grid()` now extends by doubling and `tests/test_selection_grid.py` pins
-both halves.
-
-## Two things to do AFTER the arms drain
-
-1. **Score them** — `.venv/bin/python analysis/score_n128.py --out results` — then write the
-   verdict into `results/onset_prediction_n256.md`'s `## Scoring log`, update Appendix I's "still
-   climbing at $n=64$" sentence to whatever the reading says, and close `feat-129`.
-2. **Rebuild the artifact.** It was last built 2026-09-17 13:12 and predates this session's
-   scripts (`analysis/score_n128.py`, `analysis/normaliser_growth.py`,
-   `figures/make_figures_v4.py::selection_forest_rows`, and five new test files). Deferred on
-   purpose: rebuilding now would ship a scorer for results that do not exist yet.
-   `bash scripts/build_artifact.sh artifact`. The reproduction commands are already in
-   `README_artifact.md` under **Phase 7**.
-3. **Re-run the compute scan and move the disclosure.** The LLM-usage statement says "at most
-   $299$ GPU-hours" and `tests/test_compute_hours.py` pins it to `round(total)` from
-   `results/compute_hours.csv`, so the guard fails until the manuscript is updated --- which is
-   the intended order, not a problem. These two arms add roughly $16$. Both write real run
-   directories under `output/phase5/`, so the scan sees them (unlike the `output/logs/`-only
-   judging runs noted below). `.venv/bin/python analysis/compute_hours.py`.
+**651 tests, 65 pre-registration logs, all scored. `./init.sh` exit 0.** Manuscript compiles exit 0,
+body **exactly 9 of 9 pages** (0 body lines on `pdftotext` page 10 before `ETHICS STATEMENT`), 0
+overfull, 0 `??`, 3 bold faces. **3,630 numeric literals audited, one expected miss** (`64256`).
+Compute disclosure updated `299 -> 332` gpu-h and its guard passes. Artifact rebuilt: 1,032 files,
+17 MB. Anonymity re-verified. All four cards released; GPU 0's other user was never touched.
 
 ## The third full read-through is DONE.
 

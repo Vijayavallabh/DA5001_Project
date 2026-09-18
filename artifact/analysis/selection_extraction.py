@@ -28,7 +28,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dap.shared import load_prompt_corpus  # noqa: E402
-from dap.stats import lcs_word, nv_recall  # noqa: E402
+from dap.stats import lcs_word, nv_recall, rouge_l_score  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
 
 HEADER = "Complete the prefix:\n"
@@ -223,14 +223,22 @@ def main():
         s = sc[i * n_max:(i + 1) * n_max]
         rec = [nv_recall(g, p["target"]) for g in cands[i]]
         lcs = [lcs_word(g, p["target"]) for g in cands[i]]
+        # feat-127: the NON-LITERAL event. nv_recall and lcs_word are both exact-substring metrics,
+        # so the whole extraction evaluation has only ever scored verbatim quotation. ROUGE-L is
+        # LCS-as-SUBSEQUENCE, which survives insertions and substitutions, so it is the loose event
+        # the certificate's paraphrase claim is actually about: q(E) <= n p_s(E) is term-identical
+        # for any E, but p_s(E) for a paraphrase event need not be small, and until now was unmeasured.
+        rou = [rouge_l_score(g, p["target"]) for g in cands[i]]
         row = dict(prompt_id=p["prompt_id"], novel=p["novel"],
                    risky_alone_recall=round(nv_recall(solo[i][0], p["target"]), 4),
+                   risky_alone_rouge=round(rouge_l_score(solo[i][0], p["target"]), 4),
                    anchor_mean_recall=round(sum(rec) / len(rec), 4),
                    anchor_max_recall=round(max(rec), 4))
         for n in a.n_values:
             pick = max(range(n), key=lambda j: s[j])
             row[f"recall_n{n}"] = round(rec[pick], 4)
             row[f"lcs_n{n}"] = lcs[pick]
+            row[f"rouge_n{n}"] = round(rou[pick], 4)
         per.append(row)
     for n in a.n_values:
         r = [x[f"recall_n{n}"] for x in per]
@@ -238,11 +246,22 @@ def main():
                          n_passages=len(per), nv_recall_mean=round(st.mean(r), 4),
                          nv_recall_max=round(max(r), 4),
                          lcs_word_mean=round(st.mean(x[f"lcs_n{n}"] for x in per), 2),
+                         rouge_l_mean=round(st.mean(x[f"rouge_n{n}"] for x in per), 4),
+                         rouge_ge_0p3_pct=round(100 * sum(
+                             1 for x in per if x[f"rouge_n{n}"] >= 0.3) / len(per), 1),
+                         rouge_ge_0p5_pct=round(100 * sum(
+                             1 for x in per if x[f"rouge_n{n}"] >= 0.5) / len(per), 1),
                          ge_0p01_pct=round(100 * sum(1 for x in r if x >= 0.01) / len(r), 1)))
     rows.append(dict(n=-1, kl_nats="", n_passages=len(per),
                      nv_recall_mean=round(st.mean(x["risky_alone_recall"] for x in per), 4),
                      nv_recall_max=round(max(x["risky_alone_recall"] for x in per), 4),
-                     lcs_word_mean="", ge_0p01_pct=round(
+                     lcs_word_mean="",
+                     rouge_l_mean=round(st.mean(x["risky_alone_rouge"] for x in per), 4),
+                     rouge_ge_0p3_pct=round(100 * sum(
+                         1 for x in per if x["risky_alone_rouge"] >= 0.3) / len(per), 1),
+                     rouge_ge_0p5_pct=round(100 * sum(
+                         1 for x in per if x["risky_alone_rouge"] >= 0.5) / len(per), 1),
+                     ge_0p01_pct=round(
                          100 * sum(1 for x in per if x["risky_alone_recall"] >= 0.01) / len(per), 1)))
 
     os.makedirs(a.out, exist_ok=True)

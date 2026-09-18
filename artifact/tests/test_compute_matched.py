@@ -194,3 +194,18 @@ def test_the_saturation_finding_rounds_from_the_scorer_scale_csv():
     cost = float(R["sel15b_n64"]["cost_vs_metered"]) / float(R["sel7b_n64"]["cost_vs_metered"])
     assert f"${frac * 100:.1f}\\%$" in apx, round(frac * 100, 1)
     assert f"${cost * 100:.1f}\\%$" in apx, round(cost * 100, 1)
+
+
+def test_the_matched_compute_cost_is_the_one_the_csv_computed():
+    """The F4 band's label was a hardcoded '0.94x' while the same run's compute_matched.csv gave
+    cost_vs_metered = 0.92 for sel05b_n4, and the main text picked up the label rather than the
+    column on 2026-09-17. Caution (j): a paper number rounds from the CSV, once. Every place that
+    quotes this cost must now agree with the column."""
+    cost = next(float(r["cost_vs_metered"]) for r in _rows("results/compute_matched.csv")
+                if r["arm"] == "sel05b_n4")
+    assert cost < 1.0, "F4 is only 'matched compute' if the arm costs no more than the meter"
+    bands = open("results/compute_matched_bands.csv", encoding="utf-8").read()
+    assert f"({cost:.2f}x)" in bands, f"the bands label disagrees with the column ({cost})"
+    body = _tex("sections/selection.tex")          # where a stale label does real damage
+    assert f"${cost:.2f}\\times$ the cost" in body, \
+        f"Section 2 must quote the computed matched-compute cost, {cost:.2f}x"

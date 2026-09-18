@@ -91,22 +91,23 @@ def test_extraction_is_zero_at_every_n_in_the_table():
     assert f"${float(rows['-1']['nv_recall_max']):.4f}$" in body
 
 
-def test_the_n_sweep_rows_in_the_table_round_from_selection_scaling_csv():
-    """Table 1 reports GAINS over each arm's own control, not levels: the judge-consistency arm
-    showed an absolute level is largely a statement about slot order. Checked mechanically against
-    the CSV, not by eye (caution (j))."""
+def test_the_n_sweep_arms_round_from_selection_scaling_csv():
+    """These were Table 1 rows until 2026-09-17, when four of its five rows became rows of the
+    forest figure and the table came out. They report GAINS over each arm's own control, never
+    levels: the judge-consistency arm showed an absolute level is largely slot order. Checked
+    mechanically against the CSV wherever the paper prints them (caution (j))."""
     import csv as _csv
-    from tests.manuscript import tex as _tex
+    from tests.manuscript import carries_band, body as _body
     rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
-    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read()
-    want = [("Phi-3.5-mini-instruct", 8, "judge B"), ("Phi-3.5-mini-instruct", 64, "judge B"),
-            ("Meta-Llama-3.1-8B-Instruct", 64, "judge C")]
-    for judge, n, label in want:
+    want = [("Phi-3.5-mini-instruct", 8), ("Phi-3.5-mini-instruct", 64),
+            ("Meta-Llama-3.1-8B-Instruct", 64)]
+    for judge, n in want:
         r = next(x for x in rows if judge in x["judge"] and int(float(x["n"])) == n)
-        cell = ("pointwise reward            & {} & ${}$ & ${:.3f}$ & ${:+.3f}$ & "
-                "$[{:+.3f}, {:+.3f}]$").format(label, n, float(r["kl_nats"]), float(r["gain"]),
-                                               float(r["gain_lo95"]), float(r["gain_hi95"]))
-        assert cell in body, cell
+        assert carries_band(float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"]),
+                            "experiments.tex"), (judge, n, r["gain"])
+    # the measured KL of the headline arm is stated, and is NOT the certificate (log 64 = 4.159)
+    r64 = next(x for x in rows if "Phi-3.5" in x["judge"] and int(float(x["n"])) == 64)
+    assert f"${float(r64['kl_nats']):.3f}$ nats" in _body("experiments.tex"), r64["kl_nats"]
 
 
 def test_no_absolute_judged_level_is_quoted_as_a_comparison():
@@ -139,7 +140,13 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     assert dif["reading"] == "REVERSAL CONFIRMED", dif
     assert abs((float(sel["value"]) - float(met["value"])) - float(dif["value"])) < 5e-4
 
-    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    # Scan the body, not one file. Figure 1 moved from Section 3 into the introduction on
+    # 2026-09-17 and took the divergence-ratio claim with it in its caption, at which point a
+    # guard pinned to experiments.tex alone reported the claim missing when it had only moved.
+    # Same lesson as caution (af), in reverse: follow the claim across every section that can
+    # carry it, and keep asserting it exists and matches the CSV.
+    body = " ".join("".join(open(_tex(f"sections/{f}.tex"), encoding="utf-8").read()
+                            for f in ("iclr_intro", "selection", "experiments", "orders")).split())
     m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for \$3.175\$ "
                    r"nats and the metered decoder \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
                    body)
@@ -348,3 +355,144 @@ def test_the_cross_pass_floor_has_both_measurements():
     apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
     assert "$0.039$" in apx and "$-0.034$" in apx
     assert "cross-pass floor" in apx
+
+
+def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
+    r"""The paper's cost columns must not blur what is BOUNDED with what was MEASURED.
+
+    Two passes were needed. Until 2026-09-17 Table 1's column was headed "budget, nats" while
+    every value in it was `kl_nats` from selection_scaling.csv -- flattering the baseline 12x. The
+    third read-through renamed it "measured KL, nats", which was **also wrong and is corrected
+    here**: `analysis.selection_decoding.kl_best_of_n` returns the CLOSED FORM
+    `log n - (n-1)/n` \citep{beirami2025bestofn}, so 3.1745 at n=64 and 1.2044 at n=8 were never
+    measurements of anything. The same mislabel sat in an appendix table whose column read
+    "realised KL" over four genuinely measured metered rows and three bounded selection rows.
+    Only the metered decoder's 171.3 is a realisation. Same class as cautions (ae) and (ah): the
+    number was right and the quantity named was not.
+
+    Table 1 was then removed -- four of its five rows had become rows of the forest figure -- and
+    the cost column moved into that figure, so this guard moved with it rather than retiring. A
+    guard whose subject moves to another surface and is not followed is a guard that passes by
+    never running (caution (aj)). The figure draws two KINDS of cost and must keep them apart:
+    every selection row is the certificate log n, exact by construction, and the metered row is
+    what that decoder SPENT, against a budget of K = k*T_max = 2000 it never published.
+    """
+    import math as _math
+    from tests.manuscript import _forest, body as _body
+    rows = _forest()
+    certified = [r for r in rows if r[3]]
+    assert len(certified) >= 12, len(certified)
+    for label, _band, cost, _c, _g in certified:
+        n = round(_math.exp(cost))
+        assert abs(cost - _math.log(n)) < 1e-9, (label, cost, n)   # exactly log of an integer
+        assert n & (n - 1) == 0 and 1 <= n <= 1024, (label, n)     # and of a power of two
+        if "$n=" in label:                                         # where the row names n, it agrees
+            assert int(label.split("$n=")[1].split("$")[0]) == n, (label, n)
+    spent = [r for r in rows if not r[3]]
+    assert len(spent) == 1 and "metered" in spent[0][0], spent
+    assert abs(spent[0][2] - 171.28) < 5e-3, spent[0]
+
+    txt = _body("experiments.tex", "selection.tex", "iclr_intro.tex")
+    for bad in ("budget of $171.3$", "budget, nats", "$171.3$-nat budget"):
+        assert bad not in txt, bad
+    # both bounds are stated, and neither is called a measurement
+    assert "$3.175$" in txt and "$4.159$" in txt, \
+        "the pathwise certificate and the sharper KL bound must both be named"
+    # EVERY live section, not the three the repair was about -- caution (af). The first version
+    # scanned three files and missed a fourth instance in appendix_selection.tex ("for $3.17$
+    # nats of measured KL"), found the same day while reading for something else.
+    import csv as _csv, glob as _glob, re as _re, sys as _sys, os as _os
+    from tests.manuscript import DIR as _DIR
+    _live = [f for f in _glob.glob(_os.path.join(_DIR, "sections", "*.tex"))
+             if not _re.search(r"_v\d", _os.path.basename(f))]
+    _live.append(_os.path.join(_DIR, "iclr_2027.tex"))
+    assert len(_live) > 8, _live
+    _all = " ".join(" ".join(open(f, encoding="utf-8").read().split()) for f in _live)
+    for bad in ("measured KL from the anchor", "measured KL, nats", "realised KL &",
+                "nats of measured KL", "measured KL against"):
+        assert bad not in _all, f"a closed-form bound is being called a measurement: {bad!r}"
+    # and the closed form really is what the CSV holds, so the correction is not cosmetic
+    _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+    from analysis.selection_decoding import kl_best_of_n
+    rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
+    for r in rows:
+        n = int(float(r["n"]))
+        assert abs(float(r["kl_nats"]) - kl_best_of_n(n)) < 5e-5, (n, r["kl_nats"])
+
+
+def _live_sections():
+    import glob as _glob, os as _os, re as _re
+    from tests.manuscript import DIR as _DIR
+    live = [f for f in _glob.glob(_os.path.join(_DIR, "sections", "*.tex"))
+            if not _re.search(r"_v\d", _os.path.basename(f))]
+    live.append(_os.path.join(_DIR, "iclr_2027.tex"))
+    assert len(live) > 8, live
+    return live
+
+
+def test_no_selection_bound_is_described_as_a_realisation():
+    """A bound near a realisation word must say it is a bound. Structural, not a blocklist.
+
+    The previous version of this check was a list of five exact phrasings ("measured KL, nats",
+    "realised KL &", ...). That is caution (aj)'s shape --- a guard whose trigger is a sentence
+    someone will reword --- and it retired itself exactly that way: the caption of the paper's ONLY
+    main-text figure said "$x$ the \\emph{realised} divergence" over an axis carrying selection's
+    closed-form log n - (n-1)/n beside the meter's genuinely measured 171.3, and not one of the five
+    strings matched. Fifth instance of the same defect, in the most-read caption in the paper.
+
+    So check the property instead of the spelling: wherever a realisation word sits within 160
+    characters of one of selection's closed-form values, a bound word must sit there too. The
+    metered decoder's 171.3 is untouched by this --- it IS a realisation.
+    """
+    import math
+    import os
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from analysis.selection_decoding import kl_best_of_n
+
+    # Match the BARE value, not "$value$". The sixth instance of this defect sat in
+    # "$\\log 8 = 2.08$ nats and gives exactly $8$, certified and realised alike" -- selection's
+    # amplification called a realisation where no analysis script measures a realised selection
+    # divergence at all (selection_decoding.csv holds only the closed form). A delimiter-anchored
+    # pattern cannot see it, because 2.08 is inside a larger math group and has no $ of its own.
+    vals = set()
+    for n in (2, 4, 8, 16, 32, 64, 128, 256):
+        for v in (kl_best_of_n(n), math.log(n)):
+            vals |= {f"{v:.4f}", f"{v:.3f}", f"{v:.2f}"}
+    real = ("realis", "realiz", "measured", "measurement", "actually spends")
+    # "granted" is the one legitimate way a realisation word may sit beside one of these values:
+    # a METERED arm granted log 8 nats up front and measured spending exactly them (appendix_proofs)
+    # is a real measurement whose number coincides with a selection bound only because the budget
+    # was set for comparability. It does not excuse the figure-caption defect this test was written
+    # for, which grants nothing and calls a closed form realised.
+    bound = ("bound", "certificate", "certifies", "at most", "permits", "allows",
+             "closed form", "closed-form", "$\\log n$", "\\log n", "granted")
+
+    bad = []
+    for f in _live_sections():
+        txt = " ".join(open(f, encoding="utf-8").read().split())
+        for w in real:
+            start = 0
+            while (i := txt.find(w, start)) != -1:
+                start = i + 1
+                lo, hi = max(0, i - 160), min(len(txt), i + 160)
+                # Clip at table structure. In a tabular the unit that carries the distinction is
+                # the ROW -- appendix_selection's cost table labels each row's own order, and a
+                # flat character window reads the metered row's "measured mean" beside the
+                # selection rows' $2.079$ and $1.204$ and calls it a defect. Prose still gets the
+                # full window, because the caption bug this test exists for spans two sentences.
+                for sep in ("\\\\", "\\midrule", "\\bottomrule", "\\toprule", "\\end{tabular}"):
+                    j = txt.rfind(sep, lo, i)
+                    if j != -1:
+                        lo = max(lo, j + len(sep))
+                    j = txt.find(sep, i, hi)
+                    if j != -1:
+                        hi = min(hi, j)
+                win = txt[lo:hi]
+                if not any(v in win for v in vals):
+                    continue
+                if any(b in win for b in bound):
+                    continue
+                bad.append((os.path.basename(f), w, win.strip()))
+    assert not bad, ("a selection bound is sitting next to a realisation word with nothing "
+                     f"calling it a bound: {bad[:3]}")

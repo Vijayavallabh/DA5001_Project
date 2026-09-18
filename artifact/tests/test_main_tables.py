@@ -69,3 +69,19 @@ def test_the_order_table_matches_the_renyi_sweep_and_price():
         assert _num(c[5]) == rnd(float(p["distinct3"]), 4), (a, "distinct-3")
         seen += 1
     assert seen == 4, seen
+
+
+def test_section_5_quotes_table_3s_own_binding_rates():
+    """Repair 1's paragraph cites Table 3 and then states the binding rates in prose, so the two
+    have to be the same measurement. Until 2026-09-17 they were not: the prose carried the
+    500-prompt re-run (99.3% and 0.35%) while the table carries renyi_price.csv's 150 (99.6% and
+    0.4%). Both are real and the claim is the same either way, but the reader is pointed at the
+    table -- and 99.3 is ALSO the number in Table 3's alpha=1 risky-unchanged cell, so the prose
+    read like a transposed row. The prose now quotes the cells, and this pins it to the CSV they
+    come from."""
+    price = {r["arm"]: r for r in csv.DictReader(open("results/renyi_price.csv"))}
+    body = open(tex("sections/orders.tex"), encoding="utf-8").read().replace("\n", " ")
+    sent = next(s for s in body.split(". ") if "the constraint binds at" in s)
+    for arm, key in (("renyi_8", "active_pct"), ("renyi_1_0", "active_pct")):
+        want = rnd(float(price[arm][key]), 1)
+        assert f"${want}\\%$" in sent, (arm, want, sent)
