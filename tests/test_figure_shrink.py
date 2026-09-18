@@ -72,3 +72,47 @@ def test_every_placed_figure_clears_the_shrink_floor():
     assert not bad, (
         f"figures printing below {FLOOR} of their drawn size: {bad}. Either widen the "
         f"\\includegraphics or shrink the figsize -- and re-measure the SAVED file, not figsize.")
+
+
+def test_figure_1a_label_placement_and_the_data_condition_it_rests_on():
+    """Two rendering collisions in the paper's only main-text figure, and the layout that fixed them.
+
+    Found 2026-09-18 by rendering the compiled page and looking (caution (ad): grep cannot see any
+    of this). `$S(x) = s(x)T$` anchored at T[26] ran straight into `$k=3$` at T[40] -- the two rays
+    are nearly collinear, because s(x) is about 3 nats/token, which is the panel's whole point -- so
+    the page printed the two labels as one smear. Moving k=3 to T[62] then put it on the vertical
+    median-target rule, caution (ad)'s "one collision traded for another"; T[52] is the gap.
+
+    The second is subtler and was measured, not guessed. Every ray has slope 1 on log-log axes, so
+    the gap between rays is constant, while a label rotated to 31 degrees RISES about 0.67 decades
+    over its own length. k=0.5 sits log10(3/0.5) = 0.78 decades below the S(x)/k=3 pair, so its
+    label, drawn above its own ray, put its top edge into both. Anchors were exact -- reading the
+    word boxes out of the figure PDF reproduces the axis transform to 0.05pt -- so what collided was
+    the extent. It is now the one label drawn BELOW its ray.
+
+    A pairwise bbox-overlap test over the figure is not the guard: it reports 27 pairs, nearly all
+    of them two-line annotations whose boxes legitimately share rows. What is worth pinning is the
+    placement and the data condition that made it necessary.
+    """
+    import csv as _csv
+    import os as _os
+    import re as _re
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    src = open(_os.path.join(root, "figures", "make_figures_v4.py"), encoding="utf-8").read()
+
+    m = _re.search(r"for k, style, xi, dy in \((.*?)\):", src, _re.S)
+    assert m, "the k-ray label loop was restructured; re-check the layout against a rendered page"
+    placed = _re.findall(r"\(([\d.]+), \"[^\"]*\", (\d+), (-?\d+)\)", m.group(1))
+    assert [(float(k), int(xi), int(dy)) for k, xi, dy in placed] == \
+        [(10.0, 11, 4), (3.0, 52, 4), (0.5, 85, -4)], placed
+
+    # the condition the layout rests on: S(x)'s slope sits between the k=0.5 and k=10 rays and close
+    # enough to k=3 that their labels cannot share an x. If the data ever moves it out of this band,
+    # the panel needs looking at again rather than silently re-rendering.
+    onset = list(_csv.DictReader(
+        open(_os.path.join(root, "results", "onset_table.csv"), encoding="utf-8")))
+    ss = sorted(float(r["s_safe"]) for r in onset)
+    s_med = ss[len(ss) // 2]
+    assert 2.0 < s_med < 4.0, (s_med, "S(x)'s ray has moved; re-check Figure 1(a)'s label layout")
+    import math as _m
+    assert _m.log10(3.0 / 0.5) > 0.67, "the k=0.5 label would no longer clear the S(x)/k=3 pair"

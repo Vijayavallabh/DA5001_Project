@@ -384,11 +384,26 @@ def selection_frontier():
     axL.plot(T, [s_med * t for t in T], color="0.25", lw=1.4)
     axL.annotate("$S(x) = s(x)T$", (T[26], s_med * T[26]), fontsize=6.3 * F, color="0.2",
                  rotation=31, rotation_mode="anchor", xytext=(0, 5), textcoords="offset points")
-    for k, style, xi in ((10.0, "-", 11), (3.0, "--", 40), (0.5, ":", 85)):
+    # k=3's label sat at T[40], where the "$S(x) = s(x)T$" annotation anchored at T[26] runs into
+    # it: the two lines are nearly collinear here -- s(x) is about 3 nats/token, which is the
+    # paper's point -- so their labels overlap and the compiled page read "S(x) = s(x)T/k = 3" as
+    # one smear. Only a reader of the rendered page sees it (caution (ad)). Moved right to T[52]:
+    # the S(x) label runs from T[26] to about T[44], the median-target rule stands at
+    # t_star (about T[70] on this grid) and k=0.5 sits at T[85], so T[52] is the one gap
+    # between them. T[62] was tried first and put the label on the vertical rule --
+    # caution (ad): moving a label trades one collision for another, so look again.
+    # `dy` is which SIDE of its own ray the label sits on, and it is not cosmetic. Every ray here
+    # has slope 1 on log-log axes, so the gap to the next ray is constant -- while a label rotated
+    # to 31 degrees RISES about 0.67 decades over its own length. k=0.5 sits 0.78 decades under the
+    # S(x)/k=3 pair, so a label placed above its ray runs its top edge into both of them; measured
+    # off the compiled page rather than guessed (caution (aj)): the anchors are exact, the extent is
+    # what collides. Putting that one label below its ray is the only free direction.
+    for k, style, xi, dy in ((10.0, "-", 11, 4), (3.0, "--", 52, 4), (0.5, ":", 85, -4)):
         axL.plot(T, [k * t for t in T], style, color="#c1443c", lw=1.4)
         axL.annotate(f"$k={k:g}$", (T[xi], k * T[xi]), fontsize=6.3 * F,
                      color="#c1443c", rotation=31, rotation_mode="anchor",
-                     xytext=(0, 4), textcoords="offset points")
+                     va="baseline" if dy > 0 else "top",
+                     xytext=(0, dy), textcoords="offset points")
     import math as _m
     for n, style in ((64, "--"), (8, "-")):
         axL.axhline(_m.log(n), color="#2f6f9f", lw=1.5, ls=style)
