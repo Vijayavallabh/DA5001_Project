@@ -1,0 +1,2 @@
+arm,seeds,n_prompts,gain_diff,lo95,hi95,verdict,orig_gain_diff,distance,empty_frac_n1,integrity
+KL3M-1.7B seed replication,52 53 54,500,0.004,-0.033,0.04,DOES NOT REPLICATE,0.065,0.061,0.0,PASS

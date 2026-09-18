@@ -125,7 +125,9 @@ KL3M-1.7B then Pleias-3B ($\approx 7.8$ h wall clock), **GPU 4** takes Pleias-1.
 Both were idle at $14$ MiB at 01:10; GPU 0 holds another user's $597$ MiB, GPU 2 is running Arm A's
 creative/factual half, and GPU 3 is the 4 GB T400.
 
-## Scoring log
+## Scoring, 2026-09-18 (appended; nothing above is edited)
+
+*(this section was headed `## Scoring log` when the bands were committed)*
 
 ### Scored 2026-09-18 07:55 --- **PARTIAL**
 

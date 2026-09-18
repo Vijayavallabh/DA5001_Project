@@ -142,7 +142,9 @@ run so far is a throughput smoke test, killed and deleted.
    it measured $0.356$ traj/s where the $500$-prompt arm on record ran at $2.157$. A throughput
    probe must be run at a prompt count that fills the batch, or it measures the padding.
 
-## Scoring log
+## Scoring, 2026-09-18 (appended; nothing above is edited)
+
+*(this section was headed `## Scoring log` when the bands were committed)*
 
 ### Arm B, scored 2026-09-18 01:45 --- **SAFETY HOLDS AT FOUR TIMES THE DRAWS**
 
