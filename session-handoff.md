@@ -1,6 +1,14 @@
 # Session handoff — 2026-09-18 08:05 (both GPU arms scored and closed; all cards released)
 
-## NOTHING IS RUNNING. `feat-129` and `feat-130` are both `done`; every pre-registration is scored.
+## ONE ARM IS RUNNING (`feat-131`, three cards). `results/onset_prediction_kl3m_seed.md` is committed and UNSCORED.
+## `feat-129` and `feat-130` are `done`.
+
+**feat-131: does KL3M-1.7B's CLIMBS reading survive an independent draw?** It is the single
+climbing anchor behind feat-130's PARTIAL, and it carries a reduced warrant. One thing changes ---
+`--seeds 42 43 44` $\rightarrow$ `52 53 54`, disjoint by construction. Generation splits by prompt
+class: **GPU 1 neutral** (`output/logs/kl3mseed_neutral.log`), **GPU 2 creative**, **GPU 4 factual**;
+GPU 1 then merges and scores (`output/logs/kl3mseed_merge.log`). ~4.4 gpu-h, ~2h wall clock.
+Score with `.venv/bin/python analysis/score_kl3m_seed.py --out results`.
 
 | feature | reading | where |
 |---|---|---|
