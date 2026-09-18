@@ -208,3 +208,28 @@ def test_the_abstract_claims_the_anchor_count_the_csv_supports():
     claim = f"{words[n]} of {words[total]} anchors in three families"
     assert claim in abstract, (claim, sorted(gaining), sorted(fams))
     assert len({fams[a] for a in gaining}) == 3, sorted(gaining)
+
+
+def test_the_abstract_scopes_the_repetition_claim_to_the_n_it_was_measured_at():
+    """The breadth claim is an n=8 result and BOTH the abstract and the intro put it in a sentence
+    about sixty-four draws.
+
+    Added 2026-09-18, after feat-131 made the ambiguity consequential. The sentence reads "sixty-four
+    draws spend at most 3.175 and do better ... repeating at four of six anchors in three families",
+    and the natural reading attaches the repetition to n=64. It is not an n=64 result: four of six
+    anchors gain at n=8, while at n=64 only two anchors have a curve at all, KL3M-1.7B's climb did
+    not survive a disjoint draw, and both Pleias anchors saturate by 8. Before feat-131 this was
+    loose; after it the paper explicitly says the climb past n=8 is established at two anchors, so
+    an unscoped "repeating" in the abstract contradicts the appendix.
+
+    Guard the scope, not the spelling: the claim must carry an n=8 within the same sentence.
+    """
+    from tests.manuscript import tex
+    import os
+    for f in ("iclr_2027.tex", os.path.join("sections", "iclr_intro.tex")):
+        body = open(tex(f), encoding="utf-8").read().replace("\n", " ")
+        i = body.index("four of six anchors in three families")
+        sentence = body[max(0, body.rfind(".", 0, i) + 1): body.index(".", i) + 1]
+        assert "$n=8$" in sentence, \
+            (f"{f}: the breadth claim lost its n=8 scoping and now reads as an n=64 result",
+             " ".join(sentence.split()))

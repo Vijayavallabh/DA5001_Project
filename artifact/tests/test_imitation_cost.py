@@ -271,3 +271,40 @@ def test_no_imitation_csv_was_computed_over_padded_logs():
             i = float(r["imitation_rate_nats_per_token"])
             v = float(r["realised_rate_nats_per_token"])
             assert abs(v / i - 1) < 0.01, (path, i, v, "padding counted as decode steps?")
+
+
+def test_the_linearity_claim_is_scoped_by_the_trajectory_count_it_quotes():
+    """'linear in the step index at every budget (median R^2 >= 0.97)' is TRUE of one prompt class.
+
+    Added 2026-09-18. results/imitation_cost.csv carries two classes: `ordinary` (16,500
+    trajectories, min R^2 0.9794) and `protected` (3,300, min 0.9318). The sentence is correct
+    because its own clause says "over 16,500 logged trajectories" -- but the scope sits three clauses
+    from the adjective it licenses, which is the shape caution (ao) describes. If the arm is ever
+    re-run over both classes, "at every budget" becomes false and nothing else would say so.
+
+    So guard the pair: the count in the prose must select the class the claim holds of.
+    """
+    import csv as _csv
+    import os as _os
+    from collections import defaultdict
+    from tests.manuscript import body
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    by = defaultdict(list)
+    with open(_os.path.join(root, "results", "imitation_cost.csv"), encoding="utf-8") as fh:
+        for r in _csv.DictReader(fh):
+            if r["prompt_class"] == "prompt_class":
+                continue
+            by[r["prompt_class"]].append(
+                (float(r["median_cum_spend_vs_step_r2"]), int(r["n_trajectories"])))
+
+    txt = body("frontier.tex")
+    assert "median $R^2 \\ge 0.97$" in txt, "the linearity qualifier was trimmed"
+    quoted = {c: sum(n for _r, n in v) for c, v in by.items()}
+    assert f"${quoted['ordinary']:,}".replace(",", "{,}") + "$ logged trajectories" in txt, \
+        ("the prose no longer quotes the ordinary class's trajectory count, which is what scopes "
+         "'at every budget'", quoted)
+    assert min(r for r, _n in by["ordinary"]) >= 0.97, by["ordinary"]
+    # and the scope is load-bearing: the other class does NOT clear the bar
+    assert min(r for r, _n in by["protected"]) < 0.97, \
+        ("both classes now clear 0.97, so the claim could be stated unscoped -- revisit the wording "
+         "deliberately rather than leaving it narrower than the evidence", by["protected"])

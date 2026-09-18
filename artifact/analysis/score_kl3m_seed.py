@@ -1,25 +1,35 @@
-"""Score results/onset_prediction_kl3m_seed.md against its committed bands. Zero GPU.
+"""Score a seed replication against its committed bands. Zero GPU.
 
-Written BEFORE the arm produced a number, so the reading rules here are the pre-registration's
-rather than rules chosen after seeing the answer.
+Two arms, ONE rule:
 
-The question: feat-130 read PARTIAL on the strength of exactly one climbing anchor, KL3M-1.7B at
-+0.0650 [+0.0270, +0.1030], which also carries a reduced warrant. This re-draws it with disjoint
-seeds and asks whether CLIMBS survives.
+  --anchor kl3m17b  feat-131, results/onset_prediction_kl3m_seed.md. feat-130 read PARTIAL on the
+                    strength of exactly one climbing anchor, KL3M-1.7B at +0.0650 [+0.0270,
+                    +0.1030], which also carried a reduced warrant. Re-drawn with disjoint seeds:
+                    DOES NOT REPLICATE.
+  --anchor comma7b  feat-132, results/onset_prediction_comma7b_seed.md. After feat-131 the
+                    breadth-at-n=64 claim rests on TinyComma and Comma-7B; Comma-7B has never been
+                    re-drawn, and at 2.43 interval half-widths it is also the out-of-sample test of
+                    the stability criterion feat-131 produced.
+
+Each anchor's constants were committed in its own pre-registration BEFORE that arm produced a
+number, so the reading rules here are the pre-registrations' rather than rules chosen after seeing
+the answer. Scoring both through one code path is deliberate: it is what makes the two readings
+comparable rather than merely similar.
 
 THERE IS DELIBERATELY NO BIT-IDENTITY GATE. Both of this session's earlier pre-registrations wrote a
 reproduction gate that could not pass (cautions (ap) and (u)); here one would be incoherent rather
 than merely wrong, because the arm is an independent draw BY CONSTRUCTION and nothing is supposed to
 match. The integrity checks are distributional and were fixed in the pre-registration: the same 500
-prompts, and an n=1 empty fraction within 0.03 of the committed arm's 0.002. Judged LEVELS are never
+prompts, and an n=1 empty fraction within 0.03 of the committed arm's own. Judged LEVELS are never
 compared across passes -- that is the error caution (ap) exists to prevent -- and the band is the
 PAIRED difference computed within one pass on both sides.
 
-Usage: .venv/bin/python analysis/score_kl3m_seed.py --out results
+Usage: .venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b --out results
 """
 import argparse
 import csv
 import json
+import math
 import os
 import random
 import sys
@@ -28,14 +38,68 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.selection_decoding import boot_mean, load_candidates  # noqa: E402
 
 JUDGE_B = "Phi-3.5-mini-instruct"
-ORIG_TAG = "_kl3m17b64"          # feat-130's arm, seeds 42 43 44
-REP_TAG = "_kl3m17bseed52"       # this arm, seeds 52 53 54
-COMMITTED_ORIG = (0.0650, 0.0270, 0.1030)
-COMMITTED_EMPTY_FRAC = 0.002     # selection_breadth.csv, KL3M-1.7B, empty_frac_n1
-EMPTY_TOL = 0.03
-# The precedent the pre-registration quotes: the audited anchor's own seed replication left the
-# paired difference at +0.0880 under both seed sets while its levels moved.
-PRECEDENT = 0.0000
+EMPTY_TOL = 0.03          # feat-131/132 only; feat-133 uses the scale-free z gate below
+Z_CRIT = 2.5758           # two-proportion test at the 1% level
+
+# One rule, two arms. feat-132 re-draws Comma-7B the same way feat-131 re-drew KL3M-1.7B, and the
+# strongest available design is for BOTH to be read by this code path rather than by two scorers
+# that merely look alike. So the anchor's constants move into a table and everything below is
+# unchanged; `--anchor kl3m17b` is the default, so feat-131's committed invocation is unchanged.
+# Its output gains two derived columns, `ratio_orig` and `ratio_rep` -- the criterion's own quantity,
+# computed from numbers already in that file -- and no band, verdict or measured value moves. The
+# re-run that confirmed this is in the commit that added feat-132.
+#
+# `precedent` is what the SAME comparison gave at the audited anchor, whose two seed draws left the
+# paired difference at +0.0880 to four decimals while its levels moved. For feat-132 the KL3M
+# non-replication is a second precedent and is printed beside it.
+ANCHORS = {
+    "kl3m17b": dict(
+        name="KL3M-1.7B seed replication",
+        orig_tag="_kl3m17b64",              # feat-130's arm, seeds 42 43 44
+        rep_tag="_kl3m17bseed52",           # feat-131, seeds 52 53 54
+        committed_orig=(0.0650, 0.0270, 0.1030),
+        # Left exactly as feat-131 committed it, from selection_breadth.csv's n=8 column. feat-132's
+        # mutation test showed that is the wrong protocol -- the reference must be measured on the
+        # arm being replicated -- and this anchor passed only because its two arms agree (0.002
+        # against 0.000). A committed band is not edited after the fact; see the comma7b entry.
+        committed_empty_frac=0.002,
+        gen_dir="output/phase5/sel_kl3m17b_64_seed52",
+        out_csv="kl3m_seed_scoring.csv",
+        log="results/onset_prediction_kl3m_seed.md",
+        question="does KL3M-1.7B's CLIMBS survive a fresh draw?",
+        precedents=(("audited anchor", 0.0000),),
+    ),
+    "comma7b8": dict(
+        # feat-133: the corrected protocol. ONE thing changes from the arm on record -- the seeds --
+        # and --batch-size is left at h1.py's default 8, which is what that arm used. feat-132
+        # changed the batch size too and its own gate caught the consequence; see its scoring log.
+        name="Comma-7B seed replication (batch 8, corrected)",
+        orig_tag="_comma7b64",
+        rep_tag="_comma7bseed52b8",
+        committed_orig=(0.1010, 0.0590, 0.1420),
+        # Rate gate, not an absolute tolerance, and stratified. Counts measured with this script's
+        # own empty_counts() on the arm being replicated (caution (v)).
+        gate="z",
+        committed_counts=dict(neutral=(45, 200), total=(47, 500)),
+        gen_dir="output/phase5/sel_comma7b_64_seed52_b8",
+        out_csv="comma7b_seed8_scoring.csv",
+        log="results/onset_prediction_comma7b_seed8.md",
+        question="does Comma-7B's climb to n=64 survive a fresh draw? (batch 8, one thing changed)",
+        precedents=(("audited anchor", 0.0000), ("KL3M-1.7B", 0.0610)),
+    ),
+    "comma7b": dict(
+        name="Comma-7B seed replication",
+        orig_tag="_comma7b64",              # the n=64 arm on record, seeds 42 43 44
+        rep_tag="_comma7bseed52",           # feat-132, seeds 52 53 54
+        committed_orig=(0.1010, 0.0590, 0.1420),
+        committed_empty_frac=0.094,         # the n=64 arm ON RECORD, measured; NOT the n=8 column (caution (v))
+        gen_dir="output/phase5/sel_comma7b_64_seed52",
+        out_csv="comma7b_seed_scoring.csv",
+        log="results/onset_prediction_comma7b_seed.md",
+        question="does Comma-7B's climb to n=64 survive a fresh draw?",
+        precedents=(("audited anchor", 0.0000), ("KL3M-1.7B", 0.0610)),
+    ),
+}
 
 
 def rows(path):
@@ -57,6 +121,45 @@ def paired(out, tag, seed=20260918):
     return g, lo, hi, len(d)
 
 
+def empty_counts(gen_dir):
+    """Draw-0 blank counts, TOTAL and PER CLASS.
+
+    Per class because feat-132's aggregate hid the structure: its total would have passed the
+    corrected test below (28 in a 26-73 band) while its `neutral` class failed (24 against 26-68),
+    and neutral is where empties live at that anchor -- 22.5% against 0.7% in the other two. An
+    aggregate gate on a stratified rate is a gate on the wrong quantity.
+    """
+    if not os.path.isdir(gen_dir):
+        return None
+    per, tot = {}, [0, 0]
+    for cls in ("neutral", "creative", "factual"):
+        path = os.path.join(gen_dir, f"trajectories_k0_{cls}.jsonl")
+        if not os.path.exists(path):
+            continue
+        best = {}
+        for line in open(path, encoding="utf-8"):
+            r = json.loads(line)
+            m, a = r["metadata"], r["aggregate"]
+            pid, seed = m["prompt_id"], m["seed"]
+            if pid not in best or seed < best[pid][0]:
+                best[pid] = (seed, a.get("generation") or "")
+        blank = sum(1 for _s, txt in best.values() if not txt.strip())
+        per[cls] = (blank, len(best))
+        tot[0] += blank
+        tot[1] += len(best)
+    return per, tuple(tot)
+
+
+def two_proportion_z(a, na, b, nb):
+    """Scale-free comparison of two rates. An ABSOLUTE tolerance is not: feat-132 committed 0.03,
+    which is unfalsifiable where the rate is 0.002 (KL3M) and tighter than the quantity's own
+    arm-to-arm spread where it is 0.09 (Comma-7B). Same rule, correct at both."""
+    p = (a + b) / (na + nb)
+    if p in (0.0, 1.0):
+        return 0.0
+    return ((a / na) - (b / nb)) / math.sqrt(p * (1 - p) * (1 / na + 1 / nb))
+
+
 def empty_fraction(gen_dir):
     """Share of prompts whose DRAW 0 is blank. load_candidates sorts by seed and the seeds are
     (h << 16) | j, so entry 0 is draw 0 -- the string the n=1 arm serves."""
@@ -72,57 +175,99 @@ def empty_fraction(gen_dir):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
-    ap.add_argument("--gen-dir", default="output/phase5/sel_kl3m17b_64_seed52")
+    ap.add_argument("--anchor", default="kl3m17b", choices=sorted(ANCHORS),
+                    help="which seed replication to score; the default is feat-131's")
+    ap.add_argument("--gen-dir", default=None,
+                    help="override the anchor's merged generation directory")
     a = ap.parse_args()
+    A = ANCHORS[a.anchor]
+    gen_dir = a.gen_dir or A["gen_dir"]
+    orig_band = A["committed_orig"]
 
-    print("results/onset_prediction_kl3m_seed.md -- does KL3M-1.7B's CLIMBS survive a fresh draw?")
-    print(f"  feat-130 on record (seeds 42 43 44): {COMMITTED_ORIG[0]:+.4f} "
-          f"[{COMMITTED_ORIG[1]:+.4f}, {COMMITTED_ORIG[2]:+.4f}]")
-    print(f"  precedent: the audited anchor's own seed replication moved its LEVELS and left its "
-          f"paired difference unchanged to four decimals (|difference| = {PRECEDENT:.4f})")
+    print(f"{A['log']} -- {A['question']}")
+    print(f"  the arm on record (seeds 42 43 44): {orig_band[0]:+.4f} "
+          f"[{orig_band[1]:+.4f}, {orig_band[2]:+.4f}]")
+    for label, d in A["precedents"]:
+        print(f"  precedent, the same comparison at the {label}: |difference| = {d:.4f}")
 
     print("\n=== integrity checks (distributional; there is no bit-identity gate, by design) ===")
-    ef = empty_fraction(a.gen_dir)
-    if ef is None:
-        print(f"  NOT YET SCOREABLE: {a.gen_dir} has no merged generations")
-        return
-    frac, n_prompts = ef
-    ok_prompts = n_prompts == 500
-    ok_empty = abs(frac - COMMITTED_EMPTY_FRAC) <= EMPTY_TOL
-    print(f"  prompts: {n_prompts} ({'PASS' if ok_prompts else 'FAIL -- expected 500'})")
-    print(f"  n=1 empty fraction: {frac:.4f} against the committed {COMMITTED_EMPTY_FRAC:.4f}, "
-          f"tolerance {EMPTY_TOL} -> {'PASS' if ok_empty else 'FAIL'}")
+    if A.get("gate") == "z":
+        ec = empty_counts(gen_dir)
+        if ec is None:
+            print(f"  NOT YET SCOREABLE: {gen_dir} has no merged generations")
+            return
+        per, tot = ec
+        ok_prompts = tot[1] == 500
+        print(f"  prompts: {tot[1]} ({'PASS' if ok_prompts else 'FAIL -- expected 500'})")
+        strata = dict(per); strata["total"] = tot
+        ok_empty = True
+        for name, (ra, rna) in A["committed_counts"].items():
+            b, nb = strata[name]
+            z = two_proportion_z(ra, rna, b, nb)
+            good = abs(z) < Z_CRIT
+            ok_empty &= good
+            print(f"  draw-0 empties, {name:<8} {b:3d}/{nb:<4d} against the committed "
+                  f"{ra}/{rna}: z = {z:+.2f} -> {'PASS' if good else 'FAIL'}")
+        # reported whatever the gate says, per the pre-registration's committed secondary
+        for cls in sorted(per):
+            if cls not in A["committed_counts"]:
+                print(f"  (reported, not gated) {cls:<9} {per[cls][0]:3d}/{per[cls][1]}")
+    else:
+        ef = empty_fraction(gen_dir)
+        if ef is None:
+            print(f"  NOT YET SCOREABLE: {gen_dir} has no merged generations")
+            return
+        frac, n_prompts = ef
+        ok_prompts = n_prompts == 500
+        ok_empty = abs(frac - A["committed_empty_frac"]) <= EMPTY_TOL
+        print(f"  prompts: {n_prompts} ({'PASS' if ok_prompts else 'FAIL -- expected 500'})")
+        print(f"  n=1 empty fraction: {frac:.4f} against the committed "
+              f"{A['committed_empty_frac']:.4f}, tolerance {EMPTY_TOL} -> "
+              f"{'PASS' if ok_empty else 'FAIL'}")
     if not (ok_prompts and ok_empty):
         print("  Per the pre-registration, the arm does not clear its integrity checks. Chase it.")
         return
 
-    rep = paired(a.out, REP_TAG)
+    rep = paired(a.out, A["rep_tag"])
     if rep is None:
-        print(f"\n  NOT YET SCOREABLE: selection_scaling_per_prompt{REP_TAG}.csv is absent or has "
-              f"no n=64 column.")
+        print(f"\n  NOT YET SCOREABLE: selection_scaling_per_prompt{A['rep_tag']}.csv is absent or "
+              f"has no n=64 column.")
         return
     g, lo, hi, n = rep
     verdict = ("REPLICATES" if lo > 0 else "INVERTS" if hi < 0 else "DOES NOT REPLICATE")
-    print(f"\n=== the committed band ===")
+    print("\n=== the committed band ===")
     print(f"  paired g(64) - g(8) over {n} prompts: {g:+.4f} [{lo:+.4f}, {hi:+.4f}]")
     print(f"  VERDICT: {verdict}")
 
-    orig = paired(a.out, ORIG_TAG)
+    orig = paired(a.out, A["orig_tag"])
     dist = abs(g - orig[0]) if orig else None
+    half = (hi - lo) / 2
     if orig:
-        print(f"\n=== committed secondary ===")
-        print(f"  feat-130 recomputed here: {orig[0]:+.4f} [{orig[1]:+.4f}, {orig[2]:+.4f}]")
-        print(f"  |D_rep - D_orig| = {dist:.4f}, against the precedent's {PRECEDENT:.4f}")
-    new = rows(os.path.join(a.out, f"selection_scaling{REP_TAG}.csv")) or []
+        print("\n=== committed secondary ===")
+        print(f"  the arm on record recomputed here: {orig[0]:+.4f} [{orig[1]:+.4f}, {orig[2]:+.4f}]")
+        print(f"  |D_rep - D_orig| = {dist:.4f}, against " +
+              ", ".join(f"{label} {d:.4f}" for label, d in A["precedents"]))
+    # The stability criterion this session wrote into caution (ap): a paired difference is stable
+    # where the effect is large relative to its OWN interval. Reported, never gated -- the verdict
+    # above is the pre-registered reading and this ratio is what the criterion predicted from.
+    o_half = (orig[2] - orig[1]) / 2 if orig else None
+    if o_half:
+        print(f"  g / half-width: {orig[0] / o_half:.2f} on the arm on record, "
+              f"{g / half:.2f} in this draw")
+
+    new = rows(os.path.join(a.out, f"selection_scaling{A['rep_tag']}.csv")) or []
     for r in sorted(new, key=lambda r: (r["judge"], int(float(r["n"])))):
         print(f"    {r['judge'][:26]:<26} n={int(float(r['n'])):<3} gain={float(r['gain']):+.4f}")
 
-    out = dict(arm="KL3M-1.7B seed replication", seeds="52 53 54", n_prompts=n,
+    out = dict(arm=A["name"], seeds="52 53 54", n_prompts=n,
                gain_diff=round(g, 4), lo95=round(lo, 4), hi95=round(hi, 4), verdict=verdict,
                orig_gain_diff=round(orig[0], 4) if orig else None,
                distance=round(dist, 4) if dist is not None else None,
-               empty_frac_n1=round(frac, 4), integrity="PASS")
-    p = os.path.join(a.out, "kl3m_seed_scoring.csv")
+               ratio_orig=round(orig[0] / o_half, 2) if o_half else None,
+               ratio_rep=round(g / half, 2) if half else None,
+               empty_frac_n1=round(frac, 4) if A.get("gate") != "z" else round(tot[0] / tot[1], 4),
+               integrity="PASS")
+    p = os.path.join(a.out, A["out_csv"])
     with open(p, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out)); w.writeheader(); w.writerow(out)
     print(f"\nwrote {p}")
