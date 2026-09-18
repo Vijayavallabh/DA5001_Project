@@ -44,7 +44,7 @@ two-proportion z test at the 1% level on **neutral and total**, references measu
 own code on the arm being replicated. Validated on real data both ways before feat-133 launched:
 `z = 0.00` PASS against the reference itself, neutral FAIL / total PASS against feat-132's data.
 
-## `feat-129`, `feat-130`, `feat-131` and `feat-132` are `done`; 67 of 68 pre-registrations are scored.
+## `feat-129`--`feat-132` are `done`; 68 logs, 67 scored (feat-133 is the one in flight).
 
 | feature | reading |
 |---|---|
