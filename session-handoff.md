@@ -43,10 +43,18 @@ and an aggregate hides structure (feat-132's total would have passed the correct
 neutral failed). The gate is now a two-proportion `z` at the 1% level on **neutral and total**, with
 references measured by the scorer's own code on the arm being replicated.
 
-## Operational finding worth carrying: a three-card split is not free
+## Two operational findings worth carrying
 
-`32,000` trajectories took `13.42` gpu-h on one card and `15.4` gpu-h split across three, for
-`2.3x` the wall-clock throughput. Budget `1.15x` the gpu-hours for a split, not `1.0x`.
+**A three-card split is not free.** `32,000` trajectories took `13.42` gpu-h on one card and `15.4`
+split across three, for `2.3x` the wall-clock throughput. Budget `1.15x` the gpu-hours for a split.
+
+**A sentinel-wait shell must trace its sleeps or the odometer bills them.**
+`analysis/compute_hours.py` subtracts `+ sleep N` lines from a `set -x` trace precisely so a waiting
+chain is not billed as GPU time; our merge launchers did not trace, so `7.69` idle hours went in
+(`2.07` + `5.62`). The total stays a true upper bound --- the manuscript says "at most" --- it was
+just that much looser than the work cost (`366.3` billed, about `358.6` actual). All three launchers
+now trace, and **not** with a bare `set -x`: xtrace goes to stderr, which these launchers discard, so
+it needs its own descriptor on the log (`exec 9>>"$LOG"; BASH_XTRACEFD=9`).
 
 ## `feat-129`--`feat-133` are `done`; 68 pre-registration logs, all scored.
 
