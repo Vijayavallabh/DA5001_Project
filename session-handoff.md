@@ -1,6 +1,32 @@
-# Session handoff — 2026-09-18 13:40 (three arms scored and closed; all cards released)
+# Session handoff — 2026-09-18 14:20 (three arms closed; a fourth running on three cards)
 
-## NOTHING IS RUNNING. `feat-129`, `feat-130` and `feat-131` are `done`; all 66 pre-registrations are scored.
+## RUNNING: `feat-132`, the Comma-7B seed replication --- `results/onset_prediction_comma7b_seed.md`
+
+GPUs 1 (neutral), 2 (creative) and 4 (factual), merged and scored on GPU 1 by
+`scripts/run_comma7bseed_merge.sh`, which waits on the three `GEN_DONE` files the generators write.
+Expected $\approx 13.7$ gpu-hours, $\approx 5.5$ h wall from 14:20. GPU 0 holds another user's
+597 MiB and was not taken; GPU 3 is the T400 and is never used. Score it with
+`.venv/bin/python analysis/score_kl3m_seed.py --anchor comma7b --out results` --- the SAME scorer
+that read `feat-131`, which is the point: one rule, two arms.
+
+**Why it is worth the cards.** `feat-131` narrowed the breadth-at-$n=64$ claim to TinyComma and
+Comma-7B and produced a criterion in doing so --- a paired difference is stable where the effect is
+large relative to its own interval. Comma-7B is the second of the two anchors the claim now rests
+on, has never been re-drawn, and at `2.43` interval half-widths sits above the one ratio that
+replicated (`2.12`). So the arm is at once the only outstanding check on a claim the paper makes and
+the only out-of-sample test of the criterion the paper states. **The criterion predicts REPLICATES.**
+If it does not, the breadth-at-$n=64$ claim rests on the audited anchor alone and the appendix must
+say so in those words --- that consequence is committed in the log, not to be renegotiated.
+
+**One defect found before the run, by mutation-testing the gate first.** The integrity check's
+reference was first taken from `selection_breadth.csv`'s $n=8$ column (`0.030`); the $n=64$ arm
+being replicated reads `0.094`, so the gate would have failed a good arm at `0.064` against a `0.03`
+tolerance. Caution `(v)`. `feat-131` wrote its reference the same way and passed only because its
+two arms agree (`0.002` against `0.000`). **The reference for a replication's integrity check must
+be measured on the arm being replicated**, and the committed `feat-131` value is left as it was
+rather than edited after the fact.
+
+## `feat-129`, `feat-130` and `feat-131` are `done`; 66 of 67 pre-registrations are scored.
 
 | feature | reading |
 |---|---|
