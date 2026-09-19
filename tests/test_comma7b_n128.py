@@ -105,3 +105,45 @@ def test_the_pre_registration_commits_the_band_and_the_consequence():
     # the compute is over the escalation threshold and the file must say so
     assert "24-gpu-hour escalation threshold" in head, \
         "an arm over the threshold must say so where the next reader will see it"
+
+
+def test_the_requeue_shell_reruns_the_registered_protocol_and_waits_safely():
+    """feat-134 was half-killed by another session's GPU job; the requeue must not change the arm.
+
+    The danger in a relaunch is silently becoming a different experiment: a new batch size is a
+    shift at a rate-valued quantity (cautions (u) and (v)) and would make the reproduction gate
+    meaningless. So the requeue owns no generation command of its own -- it invokes the same
+    card3 launcher the pre-registration names, which the test above already pins.
+    """
+    live = _live("run_comma7b128_requeue.sh")
+    assert "--batch-size" not in live, "the requeue passes --batch-size; it must not"
+    assert "h1.py" not in live, \
+        "the requeue must call the committed launcher, not re-spell the generation command"
+    assert "scripts/run_comma7b128_card3.sh" in live, "the requeue does not run the factual card"
+
+    # caution (c), eight incidents: wait on a file or on a string the CURRENT script writes,
+    # never on the absence of a pgrep match.
+    assert "pgrep" not in live and "pkill" not in live, "the requeue waits on a pattern match"
+    assert "GEN_DONE" in live, "the requeue does not wait on the success sentinels"
+    assert "generation rc=0" in live, "the requeue does not wait on a string card2b actually writes"
+
+    # the odometer must be able to subtract the waiting (a bare `set -x` goes to discarded stderr)
+    assert "BASH_XTRACEFD" in live, "the requeue's sleeps are untraced and will bill as GPU time"
+
+    # and it must write the cache the scorer reads, exactly as card2b would have
+    A = ANCHORS["comma7b"]
+    expected = A["old_cache"].replace("64", str(A["top"]), 1)
+    assert f"results/{expected}" in live and f"--tag {A['tag']}" in live, \
+        "the requeue writes a different cache or tag than the scorer reads"
+    assert "--max-n 128" in live
+
+
+def test_the_incident_is_recorded_below_the_committed_line():
+    """A pre-registration's value is that nothing above `## Scoring log` changes after the fact."""
+    txt = open(LOG, encoding="utf-8").read()
+    head, _sep, scored = txt.partition("\n## Scoring log")
+    assert "OOM" not in head and "agenticls" not in head, \
+        "the incident was written into the committed half of the pre-registration"
+    assert "OutOfMemoryError" in scored, "the OOM incident is not recorded in the scoring log"
+    assert "has not been computed or looked at" in scored, \
+        "the log must state that the band was never read, or the rerun is a second attempt"

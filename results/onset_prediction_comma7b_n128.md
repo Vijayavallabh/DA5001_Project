@@ -127,3 +127,41 @@ at this anchor and batch size, not estimates, and they already include the split
 found (three cards bought $2.3\times$ the throughput, not $3\times$).
 
 ## Scoring log
+
+### 2026-09-19 ~10:54--11:08 --- two of three cards OOM-killed by another session; RELAUNCHED, band untouched
+
+**What happened.** Cards 1 (neutral, GPU 2) and 3 (factual, GPU 1) died about an hour in with
+`torch.OutOfMemoryError`. The cause was not this arm: another Claude Code session on the same box
+(`/tmp/claude-1001/-mnt-md0-...-agenticls-claude-only/...`, pids `3133894` and `3133896`, same Unix
+user) took `~51 GB` on each card while our jobs held `27.6 GB`. Card 2b (creative, GPU 4) was
+untouched and is still generating.
+
+**Nothing was read and nothing is contaminated.** `run_comma7b128_card{1,3}.sh` gate the `GEN_DONE`
+sentinel on `rc=0`, so neither was written, and `card2b` is still correctly blocked on them. The
+neutral output directory was empty and the factual one held only the zero-byte placeholders for
+classes it does not generate, so there is no partial data to resume from or to mistake for a
+finished run. No reward cache was written, no `selection_scaling` ran, and **the committed band
+above has not been computed or looked at.** The relaunch is therefore a clean rerun of the same
+protocol, not a second attempt at a number already seen.
+
+**Why the relaunch is protocol-identical.** Same launchers, same `--seeds 42 43 44`, same
+`--trajectories-per-prompt 128`, same caps, and **still no `--batch-size`** --- so `h1.py`'s default
+of 8 is unchanged. Caution (u)/(v): batch size is part of the seed and a shift at a rate-valued
+quantity, so a relaunch that changed it would not be the registered arm. Only the *card* differs,
+and the card is not part of the draw: `dap/stats.py:build_trajectory_seeds` does not depend on the
+device, and `a_patch/factory.py` calls `set_seed(seed)` at the top of every `generate()`.
+
+**What was done.** Neutral relaunched on GPU 1, the only genuinely free card. Factual is queued by
+`scripts/run_comma7b128_requeue.sh` onto the card creative frees, because only one card was free.
+That shell also owns the merge and the scoring, since `card2b`'s wait aborts at 12h and factual
+cannot land inside it; `card2b` was left running rather than edited (never edit a running script),
+and its abort is harmless because its generations are already on disk by then.
+
+**Cost.** The re-run of neutral and factual is paid twice. The ~1h of GPU time the two killed cards
+consumed is real and is billed by `analysis/compute_hours.py` like any other; it bought nothing.
+
+**Operational note for the next arm.** "Free" now has to mean free of *other agent sessions* as
+well as other people --- they run as the same Unix user, so `nvidia-smi` shows them as ours. A
+launcher log line that reads `CARD n DRAINED` is printed unconditionally after `generation rc=$RC`
+and says nothing about success; read the `rc=` line above it, which is what the sentinel is gated
+on.
