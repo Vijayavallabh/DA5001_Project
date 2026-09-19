@@ -1,0 +1,2 @@
+gen_dir,target_model,anchor_model,n_prompts,mean_words,empty_frac,n_empty,mean_words_nonempty,median_words_nonempty,empty_neutral,n_neutral,empty_creative,n_creative,empty_factual,n_factual
+output/phase5/sel_pleias12b_64,PleIAs/Pleias-1.2b-Preview,PleIAs/Pleias-1.2b-Preview,500,127.89,0.0,0,127.89,135.0,0,200,0,150,0,150
