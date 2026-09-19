@@ -19,7 +19,12 @@ def rows():
 
 
 def test_the_appendix_table_rounds_from_the_csv():
-    body = open(tex("sections/appendix_selection.tex"), encoding="utf-8").read()
+    # Whitespace-normalised: the appendix was reflowed on 2026-09-19 and a value can now sit at
+    # the end of one source line with its interval at the start of the next. Joining on whitespace
+    # keeps the assertion exact -- the value and its interval must still be adjacent in the
+    # rendered text -- without pinning where TeX's source lines happen to break.
+    body = " ".join(open(tex("sections/appendix_selection.tex"),
+                         encoding="utf-8").read().split())
     para = body.split(r"\label{app:biggeranchor}")[1].split(r"\paragraph{")[0]
     for key in ("G_A", "G_B", "Comma-7B n=64, over TinyComma alone"):
         r = rows()[key]
@@ -35,7 +40,8 @@ def test_the_committed_difference_is_the_one_the_script_computed():
     r = rows()["G_A - G_B"]
     want = "${:+.4f}\\,[{:+.4f},{:+.4f}]$".format(
         float(r["value"]), float(r["lo95"]), float(r["hi95"]))
-    body = open(tex("sections/appendix_selection.tex"), encoding="utf-8").read()
+    body = " ".join(open(tex("sections/appendix_selection.tex"),
+                         encoding="utf-8").read().split())
     assert want in body, (want, "the appendix does not quote the CSV's difference")
     assert float(r["hi95"]) < 0, "the verdict rests on the interval excluding zero"
 
