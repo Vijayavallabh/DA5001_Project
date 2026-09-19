@@ -364,3 +364,65 @@ read before the threshold was questioned.
 Two further controls are running to make that finding actionable rather than merely true: fp32 against
 bf16 on one host (is the instability precision, as claimed?), and fp32 batch $8$ against fp32 batch
 $16$ (does scoring in fp32 restore a reproducible served completion?).
+
+### 2026-09-19 ~19:10 --- G1: two anchors PASS, one OOMs, and the G1 paragraph's own justification was wrong
+
+**Results, at the protocol byte-identical to `run_vetting_protocol.sh`'s `run_one`, `--batch-size 8`:**
+
+| anchor | $n=1$ | $n=8$ | $n=64$ | $k=-1$ | verdict |
+|---|---|---|---|---|---|
+| Pleias-350M base | $0.0$ | $0.0$ | $0.0$ | $0.0$ | **PASSES** |
+| KL3M-170M base | $0.0$ | $0.0$ | $0.0$ | $0.0$ | **PASSES** |
+| KL3M-520M base | --- | --- | --- | --- | **OOM, did not run** |
+
+`nv_recall_mean`, `nv_recall_max`, `rouge_ge_0p3_pct` and `ge_0p01_pct` are all exactly $0$ for both,
+which sits with the five licensed anchors on record and not with OLMo-2-7B ($0.04$ leaking) or
+OLMo-2-13B ($0.12$).
+
+**A defect in this document's own G1 paragraph, recorded rather than quietly fixed.** It says the
+vetting runs *"with the LoRA memoriser as the positive control **so that a zero is interpretable**"*.
+**That is wrong.** The LoRA memoriser is fine-tuned on `attack_train` + `val`, and this protocol
+scores the held-out `harry_potter` `test` split, which it has never seen (caution (h)) --- so its
+`k=-1` row reads $0.0$ **by construction** and controls nothing. It is the `--risky-model` argument
+the script requires, not a control. The protocol's demonstrated power comes from elsewhere and is on
+record in `results/onset_prediction_vetting_protocol.md`: **Llama-3.1-70B, which memorised the work
+in pre-training, reads $0.500$ of passages leaking with `max_recall` $1.000$ at exactly these flags**,
+and the screen separates OLMo-2 from the licensed anchors. Same class as caution (t): *a zero is the
+easiest kind of bug to mistake for a result*, and I wrote the sentence that would have let it pass.
+
+**So the power is INHERITED, and inheriting it is not good enough on a host this project has never
+used.** Two controls are therefore launched now, with their readings committed **before they run**:
+
+**C4 --- the positive control, on this host.** `unsloth/Meta-Llama-3.1-70B` at the vetting protocol,
+bf16 across two H100s. On record at these exact flags: `0.500` leaking ($25/50$), `max_recall`
+`1.000`. **Committed band: `frac_passages_leaking` $\ge 0.20$ and `max_recall` $\ge 0.50$.** The
+allowance is wide because the measurement is *sampled* and this is different silicon, so an exact
+reproduction is not owed; what is owed is a large non-zero. **If it reads $0$, the vetting pipeline
+has no demonstrated power on this host and all three G1 readings above are uninterpretable and are
+withdrawn.** OLMo-2-7B was considered and rejected as too weak a control: at $2$ of $50$ passages a
+perfect pipeline reads exactly zero about $13\%$ of the time.
+
+**C5 --- the cross-host question, asked in fp32 where it can actually be answered.** The within-host
+fp32-against-bf16 control has now read **mean $\lvert$diff$\rvert$ $0.16586$, max $2.50279$, argmax
+agreeing on $0.95371$** --- so *quantisation alone, on one machine, loses more argmax agreement than
+changing hosts does* ($0.95657$). That is already strong evidence the host was never the variable.
+The decisive test is to remove bf16: re-score the same $32{,}000$ candidates **in fp32 on the local
+box** and compare against the second host's fp32 cache. **Committed prediction: cross-host fp32 mean
+$\lvert$diff$\rvert$ below $0.0166$, a tenth of the within-host bf16-vs-fp32 figure.** And the
+sharper one, stated now because it closes the loop: **if it comes in below $0.01$, then G0a's
+WITHDRAWN threshold would have PASSED in fp32** --- the gate was never wrong about the hosts, it was
+wrong about bf16, and the withdrawal is vindicated as a repair of the premise rather than a
+convenience. If instead cross-host fp32 is of the same order as bf16, the host *is* a distinguishable
+instrument and every arm on it is reported as host-conditional.
+
+**C6 --- KL3M-520M's re-run, with a declared change.** It OOMed at `19.38 GiB` wanted against
+`19.36 GiB` free, with `19.38 GiB` reserved-but-unallocated: fragmentation on the Mixtral expert
+gather, which `scripts/run_contaminated_anchor.sh` already records as exhausting an idle 80 GB card.
+The re-run passes **`--experts-impl eager`**, the flag `selection_extraction.py` exposes for exactly
+these two MoE anchors. Its own help says it is kernel choice and changes no registered parameter
+**"but it does change the sampled draw, so declare it where an arm uses it"** --- so it is declared
+here, before the run: **KL3M-520M's G1 is measured at a different expert kernel from the other two
+anchors, and if it reads non-zero that difference is a live alternative explanation** and the anchor
+is re-run at the default kernel on a card with more headroom before it is called contaminated.
+No allocator flag is set, because that is not a documented kernel choice and its effect on a sampled
+draw is not characterised.
