@@ -78,7 +78,11 @@ def test_every_ref_resolves_inside_the_build():
 def test_every_float_is_referenced_somewhere():
     labels, refs = _labels_and_refs()
     floats = {k for k in labels if k.split(":")[0] in ("fig", "tab")}
-    assert len(floats) >= 15, sorted(floats)
+    # Floor lowered 15 -> 9 on 2026-09-19: the appendix reduction retired appendix_seed (three
+    # figures) and cut eight floats whose content is carried by a table, a proof or the paragraph
+    # beside them. The floor exists only so a broken build graph cannot make this guard vacuous;
+    # the assertion that matters is the next one, that nothing printed is left unreferenced.
+    assert len(floats) >= 9, sorted(floats)
     orphans = sorted(floats - set(refs))
     assert not orphans, f"floats the prose never sends the reader to: {orphans}"
 

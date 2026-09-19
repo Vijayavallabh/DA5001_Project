@@ -97,21 +97,34 @@ def test_the_scoring_log_rounds_from_the_csv():
 
 
 def test_the_appendix_table_rounds_from_the_csv():
-    """Every cell of the second-pair table comes from frontier_pair_llama321b.csv, once."""
+    """Rescoped 2026-09-19. The twelve-cell table left the manuscript with the appendix reduction
+    (appendix 30 -> 25 pages); the arm, its scoring log and its CSV are unchanged. What the paper
+    still prints is the reading -- which arms resolve, in which direction, and what they spent --
+    so that is what is checked against the CSV here, cell by cell where a cell survives.
+    """
     from tests.manuscript import tex
     apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
-    quoted = 0
-    for r in rows():
-        if r["arm"] in ("anchor alone (control)", "selection, n=1", "selection, n=2"):
-            continue
-        g, lo, hi = float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"])
-        cell = f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$"
-        assert cell in apx, (r["judge"], r["arm"], cell)
-        quoted += 1
-    assert quoted == 12, quoted
-    for r in rows():
-        if r["arm"].startswith("metered") and r["judge"] == SCORER:
-            assert f"${float(r['spend_nats']):.1f}$" in apx, r["spend_nats"]
+    metered = [r for r in rows() if r["arm"].startswith("metered") and r["judge"] == SCORER]
+    sel = [r for r in rows() if r["arm"].startswith("selection, n=8") and r["judge"] == SCORER]
+    assert len(metered) == 4 and len(sel) == 1, (len(metered), len(sel))
+    # every metered arm's realised spend is still quoted -- that is the paper's point about this
+    # pair, and it is what the prose reading rests on
+    for r in metered:
+        assert f"${float(r['spend_nats']):.1f}$" in apx, r["spend_nats"]
+    # and the direction of every metered gain is still stated correctly
+    gains = [float(r["gain"]) for r in metered]
+    if all(g < 0 for g in gains):
+        assert "resolves at no budget on either judge" in apx, gains
+        assert f"${min(gains):+.3f}$" in apx and f"${max(gains):+.3f}$" in apx, gains
+    else:
+        assert "genuinely useful here" in apx, gains
+        for r in metered:
+            if float(r["gain"]) > 0 and r["arm"] != "metered, k=0.5":
+                assert f"${float(r['gain']):+.3f}$" in apx, r["arm"]
+    # selection at n=8 beats them for 1.204 nats, quoted with its interval
+    r = sel[0]
+    assert f"${float(r['gain']):+.3f}$ $[{float(r['gain_lo95']):+.3f}, {float(r['gain_hi95']):+.3f}]$" \
+        in apx, (r["arm"], "selection's own cell is no longer quoted")
 
 
 def test_section6_carries_the_second_pair_reversal():

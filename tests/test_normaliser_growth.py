@@ -40,37 +40,25 @@ def test_the_nine_pair_row_is_the_committed_ablation():
         assert round(float(block[key]), 6) == float(last[col]), (key, block[key], last[col])
 
 
-def test_the_seed_table_intro_counts_its_discordances_correctly():
-    """"all three order the nine pairs the way the onset ratio is ordered" was false, and the
-    honest statement is a count of discordant anchor pairs -- computed here rather than trusted.
-    Two anchors share a tokenizer with two others, so granularity predicts nothing between them
-    and those comparisons are excluded rather than counted as agreements."""
+def test_granularity_does_not_order_the_nine_pairs_and_the_count_says_so():
+    """Rescoped 2026-09-19. The sentence this guarded ("of the 34 comparable anchor pairs the ratio
+    is discordant on 2 and the step count on 3") left the manuscript with appendix_seed, retired for
+    the page budget and kept verbatim as sections/appendix_seed_v8_2026-09-19.tex. The claim it had
+    replaced -- "all three order the nine pairs the way the onset ratio is ordered" -- was FALSE, so
+    what must not come back is the stronger version. This now asserts against the CSV that
+    granularity really does fail to order the pairs; a section that claims otherwise fails
+    tests/test_shape_claims.py.
+    """
     import csv as _csv
     import itertools
-    import re
     rs = list(_csv.DictReader(open("results/onset_seed_words.csv", encoding="utf-8")))
     for r in rs:
         r["cpt"], r["ra"] = float(r["chars_per_token"]), float(r["ratio"])
         r["st"] = float(r["steps_to_passage"])
     comparable = [(a, b) for a, b in itertools.combinations(rs, 2) if a["cpt"] != b["cpt"]]
-    # a finer tokenizer (LOWER chars/token) should mean a HIGHER ratio and MORE steps
+    assert len(comparable) == 34, len(comparable)
     disc_ratio = sum((a["cpt"] > b["cpt"]) == (a["ra"] > b["ra"]) for a, b in comparable)
     disc_steps = sum((a["cpt"] > b["cpt"]) == (a["st"] > b["st"]) for a, b in comparable)
-
-    body = open(tex("sections/appendix_seed.tex"), encoding="utf-8").read()
-    flat = " ".join(body.split())
-    # the claim runs from the tokenizer sentence to the table it introduces; it contains a colon
-    # of its own, so it cannot be found by splitting on one
-    sent = flat.split("changes three things at once")[1].split(r"\begin{center}")[0]
-    nums = [int(x) for x in re.findall(r"\$(\d+)\$", sent)]
-    assert nums == [len(comparable), disc_ratio, disc_steps], (nums,
-        [len(comparable), disc_ratio, disc_steps], "the intro's counts are not the CSV's")
-    assert "order the nine pairs the way the onset ratio is ordered" not in sent, \
-        "the refuted exact-ordering claim is back; the table's own second row breaks it"
-
-# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
-# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
-# A guard for a claim the paper does not make protects nothing; recorded here rather than
-# silently deleted, so the removal is visible to the next reader:
-#   test_the_appendix_states_the_flips_the_series_actually_has
-#   test_the_series_the_appendix_prints_is_the_series_the_csv_holds
+    # discordant in both directions: the ordering is a tendency, never exact
+    assert 0 < disc_ratio < len(comparable), disc_ratio
+    assert 0 < disc_steps < len(comparable), disc_steps

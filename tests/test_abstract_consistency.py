@@ -7,9 +7,11 @@ import re
 
 from tests.manuscript import tex
 
+# appendix_seed was retired on 2026-09-19 (page budget): the seed and anchor-warp interventions
+# left the manuscript, so the file is no longer part of the body this guard scans.
 SECTIONS = ("iclr_intro", "frontier", "onset", "orders", "selection", "experiments",
             "related_work_v4", "iclr_closing", "appendix_proofs", "appendix_opening",
-            "appendix_onset", "appendix_robustness", "appendix_seed", "appendix_limitations",
+            "appendix_onset", "appendix_robustness", "appendix_limitations",
             "appendix_related", "appendix_selection", "appendix_second_anchor")
 # Numbers that are structural rather than measured: page/section counts, an exponent, a budget the
 # body writes as k = 10 rather than $10$.

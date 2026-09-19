@@ -280,19 +280,20 @@ def test_the_judgefree_headtohead_agrees_with_the_appendix():
     assert float(best["acc_lo95"]) > float(top["acc_hi95"]), (best["acc_lo95"], top["acc_hi95"])
 
     apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
-    # the table carries every metered arm and the three selection arms Section 6 and the
-    # Limitations lean on; the intermediate n are in the nested grid of Table 6 already
+    # The nine-row table became a paragraph on 2026-09-19 (page budget); the CSV is unchanged and
+    # every accuracy it carried is still printed, the winning arm still with its interval. The
+    # intermediate n are in the nested grid of Table~\ref{tab:judgefree} already.
     shown = [r for r in rows
              if r["mechanism"] == "metered decoder" or r["arm"] in ("n=8", "n=32", "n=64")]
     assert len(shown) == 9, [r["arm"] for r in shown]
     for r in shown:
-        if r["arm"] == "k=-1":
-            assert f"${float(r['acc']):.3f}$ $[{float(r['acc_lo95']):.3f}, " \
-                   f"{float(r['acc_hi95']):.3f}]$" in apx, r["arm"]
-            continue
-        assert f"${float(r['acc']):.3f}$ $[{float(r['acc_lo95']):.3f}, " \
-               f"{float(r['acc_hi95']):.3f}]$" in apx, (r["mechanism"], r["arm"], r["acc"])
-    assert "$480.0$" in apx and "$44.8473$" in apx, "the winning arm's budget is not quoted"
+        assert f"${float(r['acc']):.3f}$" in apx, (r["mechanism"], r["arm"], r["acc"])
+    # the arm that WINS is quoted with its interval, because the concession is about that arm
+    assert f"${float(best['acc']):.3f}$ $[{float(best['acc_lo95']):.3f}, " \
+           f"{float(best['acc_hi95']):.3f}]$" in apx, (best["arm"], "the winning arm lost its interval")
+    assert f"${float(best['acc']) - float(top['acc']):.3f}$" in apx, "the losing margin is not stated"
+    assert "$480$" in apx or "$480.0$" in apx, "the winning arm's certificate is not quoted"
+    assert "$44.8473$" in apx, "the winning arm's realised spend is not quoted"
 
 
 @pytest.mark.skipif(not os.path.exists("results/verifiable_metered_tqa.csv"),

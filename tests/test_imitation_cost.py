@@ -166,19 +166,23 @@ def test_the_limitations_no_longer_call_the_shape_question_open():
     assert "is open" in closing, "the limitation must say that something is open"
 
 
-def test_the_appendix_figure_exists_and_its_caption_numbers_come_from_the_csv():
-    """A missing \\includegraphics halts tectonic and leaves the PREVIOUS pdf in place, which then
-    measures as if nothing were wrong (AGENTS caution (f)). Check the file, not just the caption."""
-    import os
-    from tests.manuscript import tex
-    fig = os.path.join(os.path.dirname(tex("iclr_2027.tex")), "figures", "imitation_cost.pdf")
-    assert os.path.exists(fig), fig
+def test_the_appendix_prose_carries_the_imitation_rate_and_both_shapes():
+    """fig:imitation was cut on 2026-09-19 for the page budget: the table immediately above it
+    carried the same rate-versus-cap series numerically, and the concentration shape its second
+    panel drew is stated in the prose. Caution (f) -- a missing \\includegraphics halts tectonic and
+    leaves the PREVIOUS pdf measurable -- still applies to the figures the document does place, and
+    tests/test_figure_shrink.py checks those; what this guards is that neither shape left the paper
+    with the picture.
+    """
     apx = open(APX, encoding="utf-8").read().replace("\n", " ")
-    assert r"\label{fig:imitation}" in apx
     sat = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
-    m = re.search(r"imitation rate \$([\d.]+)\$ nats per token", apx)
+    m = re.search(r"(?:imitation rate|realised rate stops at) \$([\d.]+)\$ nats per token", apx)
     assert m and abs(float(m.group(1)) - sat) < 5e-4, (m.group(1) if m else None, sat)
-
+    # the second shape: the spend is spread, not concentrated, which is the trivial horn's evidence
+    assert "busiest" in apx and "of the sequence" in apx, \
+        "the concentration shape left the paper with the figure"
+    assert "nowhere near the left axis" in apx, \
+        "the prose no longer says the deployed rule misses the shape Prop 3 requires"
 
 def test_the_lorenz_curves_end_at_one_and_lie_above_the_diagonal():
     """The claim the figure makes with them: the spend is spread over the sequence, barely above
