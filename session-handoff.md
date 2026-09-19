@@ -335,3 +335,49 @@ body lines on page 10. Two guards, one scoped to its arm and one new and guarded
 `feat-134` `neutral`/`factual` generating, `creative` restarted under the supervisor after an
 OOM kill; `feat-135` generating; `feat-136`'s `tc18bsp` counterpart queued under the supervisor
 behind the four claimed cards.
+
+---
+
+## Results in, 2026-09-20 ~04:00
+
+### feat-138 replicates 4 of 4; feat-140's prediction fails 3 of 3; the PAIR is the finding
+
+| what changed | moves observed | verdicts flipped |
+|---|---|---|
+| the seed, same host (`feat-138`) | $0.007$--$0.018$ | **0 of 4** |
+| the host, same seeds (`feat-140`) | $0.018$--$0.070$ | **2 of 3** |
+
+Pleias-3B moved $0.0700$, **beyond** the $0.0610$ that bounds every seed replication on record.
+**A host change is not a re-draw.** Pleias-1.2B ($+0.0560$), Pleias-3B ($+0.0730$) and KL3M-1.7B
+($+0.0470$) were all registered SATURATED and all three CLIMB on host B; I1/I3/I4 pass on each, so
+these are like-for-like and not caution (at)'s defect.
+
+**H2 survives its committed rule** --- no non-Comma anchor clears $2.0$ half-widths, largest $1.80$
+--- **but "non-Comma anchors do not climb" is FALSE and the finding is restated: what separates the
+families is STABILITY, not direction.** Comma sits at $2.07$--$2.43$ and reproduces; every non-Comma
+reading sits below $1.81$ and moves enough to flip itself.
+
+**Stated limit:** both Comma host-transfer arms are blocked by G0b, so there is **no** unblocked
+cross-host Comma comparison and "Comma is stable across hosts" is unsupported.
+
+KL3M-1.7B is at two of three draws saying CLIMBS. Its pre-registration said in advance that this
+leaves its status genuinely open, and that is not revised.
+
+### feat-139 stage 1: three of four sit 3--4x below the judge-free floor
+
+$0.0140$, $0.0180$, $0.0160$ against `FLOOR = 0.05` and Comma-7B's $0.320$; flat across
+$1.2$--$3.0$B. **The conclusion is not declared until KL3M-3.7B is measured** --- the registration
+says four. Stage 2 unstarted for every anchor, as registered.
+
+### Still running
+
+* host B: `kl3m37bhb` (the last ladder arm) and the `kl3m37b` floor probe queued behind it.
+* local: `feat-135` at $69\%$; `feat-134` `neutral`/`factual`/`creative` all restarted by their
+  supervisors after OOM kills from the other agent session; `tc18bsp` **SUCCEEDED**.
+
+### What is NOT resolved
+
+`tc18bhb` fails G0b at $+6.1\%$ even against its proper counterpart `tc18bsp`, and on the repaired
+statistic (length given non-empty) at $+6.5\%$. That is a real cross-host length shift at TinyComma,
+not the pipeline artefact --- the pipeline artefact was the OLD reference. `comma7bhb` fails at
+$+5.3\%$ whose whole content is the empty rate. **Neither band has been computed or looked at.**
