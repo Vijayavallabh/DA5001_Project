@@ -222,17 +222,37 @@ name.
 
 ## Running now
 
-| arm | where | state |
+State as read at **22:35** (clock read, not estimated):
+
+| arm | where | state at 22:35 |
 |---|---|---|
-| feat-134, three classes | local GPUs 1/4 | generating |
-| feat-135 KL3M-3.7B | local GPU 2 | generating |
-| **feat-136 `tc18bsp`** (the missing local counterpart) | **local GPU 2**, pid 438604 | **started 23:15** |
+| feat-134 `neutral` | local GPU 4, pid 4044862 | generating since 16:48 |
+| feat-134 `factual` | local GPU 1, pid 4046231 | generating since 16:48 |
+| **feat-134 `creative`** | --- | **OOM-KILLED 22:28:44**, relaunched under the supervisor |
+| feat-135 KL3M-3.7B | local GPU 2, pid 4134532 | generating |
+| **feat-136 `tc18bsp`** (the missing local counterpart) | local GPU 2 | **OOM-KILLED 20:41:22** after 29 min (started 20:12:22), relaunched |
 | feat-136 `comma7bhb`, `comma1thb`, `pleias350mhb`, `kl3m170mhb`, `kl3m520mhb` | host B | 14--39% |
 | feat-137 `verifiable_comma1t` | host B | generating |
 
-`tc18bsp` is `run_breadth64.sh 2 jacquelinehe/tinycomma-1.8b-llama3-tokenizer tc18bsp` --- the same
-script and flags as the host arm, which is the whole point of it. It must stay **local**: it exists
-to be the local side of a host-transfer comparison.
+`tc18bsp` is `run_breadth64.sh <gpu> jacquelinehe/tinycomma-1.8b-llama3-tokenizer tc18bsp` --- the
+same script and flags as the host arm, which is the whole point of it. It must stay **local**: it
+exists to be the local side of a host-transfer comparison.
+
+### The local box is contended by another agent session, and `h1.py` makes that expensive
+
+Two arms died between 20:41 and 22:28, both to a **different Claude Code session** running as the
+same Unix user out of `~/agenticls` (`keyblind_operators.py`, `learned_probe_nonlinear.py`). At 22:35
+it holds $40.0$ GB on GPU 0 and $24.7$ GB on GPU 1, and the two jobs that did the killing were
+$54.9$ GB (GPU 2, took `tc18bsp`) and $22.1$ GB (GPU 4, took `creative`). That is the **sixth and
+seventh** such kill today.
+
+**What makes it expensive is ours, not theirs: `h1.py` writes a class's trajectories only when the
+class finishes.** All three feat-134 class directories hold nothing but zero-byte files for the
+classes they are not generating, so `creative` lost **12.5 hours** (`09:59` to `22:28`) and left no
+partial output at all. `neutral` and `factual` are each ~6 h in with the same exposure. Do **not**
+patch `h1.py` to flush incrementally while three of its processes are running (never edit a script
+while it runs). The mitigation available now is the supervisor, which waits for a card with
+`MIN_FREE_MIB=34000` free and retries.
 
 ## Recommended next step
 

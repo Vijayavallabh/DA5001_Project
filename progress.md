@@ -1691,6 +1691,39 @@ Commands: `analysis/serving_cost.py --out results`, `analysis/scorer_free_cost.p
 
 ## Blockers / Risks
 
+### 2026-09-19 22:35 --- `h1.py` writes a class only when the class finishes, and the box is contended
+
+**Logged, not fixed.** Three `h1.py` processes are live; never edit a script while it is running.
+
+Two arms were OOM-killed tonight by a **different Claude Code session** running as the same Unix
+user out of `~/agenticls` (`keyblind_operators.py`, `learned_probe_nonlinear.py`): `tc18bsp` at
+`20:41:22` by a $54.9$ GB job on GPU 2, and feat-134's `creative` class at `22:28:44` by a $22.1$ GB
+job on GPU 4. That is the **sixth and seventh** such kill today; `nvidia-smi` shows those processes
+as ours, so "free" means free of other agent sessions too.
+
+**The cost is set by our own code.** `h1.py` accumulates a class's trajectories and writes them when
+the class completes, so every class directory held nothing but zero-byte files for the classes it
+was not generating, and `creative` lost **12.5 hours** (`09:59` to `22:28`) leaving no partial
+output. `neutral` and `factual` were each ~6 h in with the same exposure at the time.
+
+**Risk, stated plainly:** any single OOM costs the whole class, so the probability that a 12-hour
+class finishes is the probability that no neighbour balloons for 12 hours straight, and tonight that
+has failed seven times. The mitigation in place is `scripts/run_comma7b128_supervise.sh` --- it
+waits for an unclaimed card with $34$ GB free, claims it, and retries up to 12 times over 36 hours,
+which turns a kill into a restart rather than a loss of the arm. It does **not** reduce the 12 hours
+a kill costs.
+
+**The fix, when no `h1.py` is running:** flush each prompt's trajectories as they complete rather
+than at class end. That is a change to the generation path every committed arm depends on, so it
+needs its own bit-identity check against an existing arm before it is used for anything the paper
+quotes --- which is why it is logged here instead of done now.
+
+**feat-134 cannot be moved to the second host to escape this.** Its reproduction gate requires ranks
+0--63 of the new reward cache to be bit-identical to `results/selection_rewards64_comma7b.csv`,
+drawn on a local A100; different silicon changes the bf16 reduction order, so the gate could never
+pass there. `scripts/run_comma7b128_supervise.sh` records this in its own header.
+
+
 *(Status line added 2026-09-06 23:19: the entries below are the running record. Resolved since: the 70B is cached (`hf_cache/models--unsloth--Meta-Llama-3.1-70B`, D1), GPUs 0/4 were released for 8B jobs (D2), the batched-EOS utilisation issue was fixed in feat-004, and the decoder's warper guard was removed on 2026-09-06. Still true: `HF_TOKEN` is invalid (use `HF_HUB_OFFLINE=1`), the DGX is unreachable from this account, there is no `pdflatex` (use tectonic), and feat-010 is not testable with the LoRA memoriser.)*
 
 - [ ] Compute: local 4×A100 80GB (GPUs 0 and 4 had ~15 GB in use by other processes on 2026-09-05; GPU 3 is a T400, unusable). DGX 6×H100 via `dgx-gpu` for 70B and sweeps. Llama-3.1-70B base in bf16 (~140 GB) fits on 2 free A100s with `device_map="auto"`, so feat-008's 70B option is feasible locally.
