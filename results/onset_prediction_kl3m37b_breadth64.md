@@ -126,8 +126,6 @@ top of every `generate()`).
 
 ## Scoring log
 
-## Scoring log
-
 **2026-09-19, stage 1 (vetting): G1 PASSES.** `results/vet_kl3m37b_base.csv`, 50 passages at a
 100-token raw prefix, the deployer-side check of Appendix~I run on KL3M-3.7B in the anchor slot:
 
