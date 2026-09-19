@@ -174,3 +174,67 @@ Check `output/logs/comma7b128_card2.log` for `COMMA-7B n=128 ARM DRAINED` and
 
 **Do not** compute either band before its gate passes (the rule both logs carry), and do not set a
 single-order judged level from one sweep against another sweep's (caution (ap)).
+
+---
+
+## Update --- 2026-09-19 late evening
+
+### The 70B positive control PASSED, so feat-136's G1 is interpretable
+
+`unsloth/Meta-Llama-3.1-70B` in the risky slot, at the record's protocol byte for byte: **$0.480$ of
+passages leaking and `max_recall` $0.9924$**, against a committed band of $\ge 0.20$ and $\ge 0.50$
+and a record of $0.500$ / $1.0000$. Both halves PASS and every column lands within a re-draw. The
+vetting pipeline's power on the second host is now **demonstrated rather than inherited**, which is
+what a G1 pass needs: the same code detects a pre-training memoriser on nearly half of the same $50$
+passages while Pleias-350M, KL3M-170M and KL3M-520M read exactly $0.0$. The OLMo-2-7B supplementary
+control stays uninformative and is explicitly not what licenses G1.
+
+### feat-136's first arm is INVALID, and the defect was in our own pre-registration
+
+`tc18bhb` finished and **G0b failed**, $76.5$ words against the registered $72.2$. The cause is not
+hardware: the empty fraction moved the wrong way to explain it ($0.018 \to 0.052$, which pushes a
+mean DOWN) and the non-empty median moved $57 \to 74$. `run_breadth64.sh` self-pairs
+(`--safe-model-path` and `--risky-model-path` get the same model); `sel_anchor64`, the directory the
+$72.2$ came from, pairs the anchor with the 8B risky model and is not a breadth arm. The comparison
+changed the host AND the pipeline, so per caution (w) the arm is **INVALID, not failed**, and its own
+numbers are deliberately not read. **Confined to one arm** --- the gate touches only `role=host`
+arms, and `comma7bhb`'s counterpart is a real breadth arm measuring $99.18$ against its registered
+$99.2$. New caution **(at)**.
+
+The scorer was repaired **before the replacement data existed**: a host arm now names the directory
+it replicates, both the length reference and the local band are derived by the scorer's own code,
+`pairing()` compares `target_model`/`anchor_model` across the two runs, and a structural failure is
+no longer described as an undetermined length drift. Five guards, four mutations, each failing by
+name.
+
+### Also done
+
+* `on_record()` now asserts three things, not one: the delta to `5e-4`, the MARGINAL **verdict**
+  (the only thing caution (ap) lets the half-width ratio predict, so it blocks), and the ratio inside
+  a bootstrap-seed slack guarded in **both** directions --- at least the widest measured ten-seed
+  span, and narrower than the gap between the two closest committed ratios.
+* `g5_ceiling()` and G0b's cross-check printing, both promised in the pre-registration and both
+  previously unimplemented.
+* feat-137's compute correction recorded **in feat-137's own log**, beneath the `## Scoring log`
+  heading rather than by editing the estimate, which line 3 of that file promises is never touched.
+  The registered $\approx 13$ gpu-hours should be $4$--$5$: `compute_hours.csv` already held
+  `verifiable_comma7b` at $6.88$.
+
+## Running now
+
+| arm | where | state |
+|---|---|---|
+| feat-134, three classes | local GPUs 1/4 | generating |
+| feat-135 KL3M-3.7B | local GPU 2 | generating |
+| **feat-136 `tc18bsp`** (the missing local counterpart) | **local GPU 2**, pid 438604 | **started 23:15** |
+| feat-136 `comma7bhb`, `comma1thb`, `pleias350mhb`, `kl3m170mhb`, `kl3m520mhb` | host B | 14--39% |
+| feat-137 `verifiable_comma1t` | host B | generating |
+
+`tc18bsp` is `run_breadth64.sh 2 jacquelinehe/tinycomma-1.8b-llama3-tokenizer tc18bsp` --- the same
+script and flags as the host arm, which is the whole point of it. It must stay **local**: it exists
+to be the local side of a host-transfer comparison.
+
+## Recommended next step
+
+Score `comma7bhb` when it lands (it has a valid counterpart), then `tc18bhb` once `tc18bsp`
+finishes. Do not fold any feat-136 number into the manuscript until its arm passes G0a, G0b and G2.
