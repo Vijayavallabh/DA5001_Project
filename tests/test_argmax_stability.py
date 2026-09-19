@@ -16,7 +16,14 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.selection_argmax_stability import analyse, margin, pick  # noqa: E402
 
-CSV = "results/selection_argmax_stability.csv"
+# Absolute, not relative: a relative path makes every skipif below depend on the CWD, and a test
+# that skips is a test that passes by never running (caution (j)). Running the mutation sweep for
+# the manuscript disclosure from the manuscript directory silently skipped all six CSV-backed guards
+# and reported five green mutations that had proved nothing -- the same shape as the sed pattern that
+# never landed. test_the_csv_path_resolves below is the cheap standing check on it.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CSV = os.path.join(ROOT, "results", "selection_argmax_stability.csv")
+NOTE = os.path.join(ROOT, "results", "selection_argmax_stability_note.md")
 
 
 def _rows():
@@ -28,6 +35,13 @@ def _series(comparison, field):
     rs = sorted((r for r in _rows() if r["comparison"] == comparison),
                 key=lambda r: int(r["n"]))
     return [(int(r["n"]), float(r[field])) for r in rs if r[field] != ""]
+
+
+def test_the_csv_path_resolves_so_the_guards_below_cannot_skip_silently():
+    """Every CSV-backed guard in this file is skipif'd on CSV existing. If that path is ever wrong,
+    they all turn green by never running. This is the one test with no skipif."""
+    assert os.path.exists(CSV), f"{CSV} does not resolve; every guard in this file is skipping"
+    assert os.path.exists(NOTE), NOTE
 
 
 def test_the_nesting_rule_is_selection_scalings_own():
@@ -88,7 +102,7 @@ def test_agreement_falls_with_n_but_is_NOT_monotone_and_the_note_says_plateau():
         vals = [s[n] for n in sorted(s)]
         assert not all(b <= a for a, b in zip(vals, vals[1:])), \
             f"{comp} agreement is now monotone in n; the note says it plateaus -- reword it: {vals}"
-    note = open("results/selection_argmax_stability_note.md", encoding="utf-8").read()
+    note = open(NOTE, encoding="utf-8").read()
     assert "no committed bands" in note
     assert "it is not monotone" in note
 
@@ -115,3 +129,44 @@ def test_precision_alone_is_at_least_as_disruptive_as_changing_hosts():
         pytest.skip("both comparisons are needed")
     assert float(rows["precision"]["agree_frac"]) <= float(rows["host"]["agree_frac"]), \
         "changing hosts now disagrees MORE than changing precision; the note's claim needs revisiting"
+
+
+def _reproducibility_statement():
+    """Just the Reproducibility Statement, not the whole file -- caution (an): a guard satisfied by a
+    DIFFERENT occurrence of its phrase is not guarding its sentence."""
+    from tests.manuscript import tex
+    t = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    i = t.index("Reproducibility Statement")
+    j = t.index("LLM Usage", i)
+    return t[i:j]
+
+
+@pytest.mark.skipif(not os.path.exists(CSV), reason="the stability arm has not been run")
+def test_the_reproducibility_statement_discloses_the_unstable_argmax_with_its_csv_numbers():
+    """A reproducer running the artifact on other hardware WILL serve different completions, and the
+    statement now says so. Every figure it quotes is asserted against the CSV it rounds from, so the
+    disclosure cannot drift from the measurement (caution (j))."""
+    s = _reproducibility_statement()
+    at64 = {r["comparison"]: r for r in _rows() if int(r["n"]) == 64}
+    lo = min(float(r["disagree_pct"]) for r in at64.values())
+    hi = max(float(r["disagree_pct"]) for r in at64.values())
+    assert f"${lo:.1f}$ to ${hi:.1f}\\%$" in s, (lo, hi, "the quoted disagreement range moved")
+    losses = [float(r["reward_loss_all"]) for r in at64.values()]
+    assert f"${min(losses)}$ to ${max(losses)}$" in s, (min(losses), max(losses))
+    margin = max(float(r["mean_margin"]) for r in at64.values())
+    assert f"gap of ${margin:.1f}$" in s, margin
+    assert "bitwise" in s and "bfloat16" in s and "float32" in s
+
+
+@pytest.mark.skipif(not os.path.exists(CSV), reason="the stability arm has not been run")
+def test_the_disclosure_keeps_the_two_clauses_that_stop_it_being_alarming_or_overclaimed():
+    """Two sentences do the real work and are exactly the kind a length edit deletes first
+    (caution (ag)). Without the tie-rule clause the disclosure reads as a hole in the certificate,
+    which it is not. Without the admission that nothing was pre-registered, an exploratory
+    measurement is quietly promoted to a registered one."""
+    s = _reproducibility_statement()
+    assert "any tie rule" in s, "the clause that says the certificate is unaffected is gone"
+    assert "prop:selection" in s, "the disclosure no longer points at the proposition that saves it"
+    assert "no pre-registered interval" in s, \
+        "the admission that this arm registered nothing has been dropped"
+    assert "measured rather than assumed" in s

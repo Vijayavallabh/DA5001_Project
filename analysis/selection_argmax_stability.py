@@ -15,7 +15,9 @@ they cannot re-derive. Nothing in this paper has ever asked whether the argmax i
 Three things are measured per comparison and per n, because the disagreement RATE alone would
 overstate the problem:
 
-  agree_frac      the fraction of prompts whose served candidate is the same under both caches.
+  agree_frac      the fraction of prompts whose served candidate is the same under both caches, and
+                  disagree_pct, its complement as a percentage, stored so that the percentage the
+                  manuscript quotes rounds from this CSV once and not at the point of writing.
   margin          the mean gap between the winning reward and the runner-up, under the reference
                   cache. This is the MECHANISM: the argmax is fragile exactly where the top two
                   candidates are close, and drawing more candidates makes close calls more likely.
@@ -102,6 +104,9 @@ def analyse(ref, oth, max_n=MAX_N):
         out.append(dict(
             n=n, n_prompts=len(full),
             agree_frac=round(agree / len(full), 5),
+            # stored so the manuscript quotes a number that is IN a CSV rather than one derived at
+            # the point of writing (caution (j): a paper number must round from the CSV, once)
+            disagree_pct=round(100 * (len(full) - agree) / len(full), 5),
             n_disagree=len(full) - agree,
             mean_margin=(round(sum(margins) / len(margins), 5) if margins else ""),
             reward_loss_all=round(losses / len(full), 5),
@@ -139,7 +144,7 @@ def main():
     assert rows, "no comparison could be run"
     os.makedirs(a.out, exist_ok=True)
     p = os.path.join(a.out, "selection_argmax_stability.csv")
-    cols = ["comparison", "differs", "n", "n_prompts", "agree_frac", "n_disagree",
+    cols = ["comparison", "differs", "n", "n_prompts", "agree_frac", "disagree_pct", "n_disagree",
             "mean_margin", "reward_loss_all", "reward_loss_on_disagreements"]
     with open(p, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=cols)
