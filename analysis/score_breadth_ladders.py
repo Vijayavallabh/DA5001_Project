@@ -95,16 +95,50 @@ ARMS = (
          gen_dir="output/phase5/sel_kl3m520mhb_64"),
 )
 
-# Recomputed from the committed per-prompt CSVs with this module's own boot_mean and seed, not
-# transcribed. feat-135's KL3M-3.7B is read from its own scoring CSV when it lands, because it is a
-# separate arm with a separate pre-registration and must not be re-derived here.
-ON_RECORD = (
-    dict(label="TinyComma-1.8B", family="Comma", params=1.759, delta=0.0880, half_widths=2.12),
-    dict(label="Comma-7B (2T)", family="Comma", params=7.003, delta=0.1010, half_widths=2.46),
-    dict(label="KL3M-1.7B", family="KL3M", params=1.700, delta=0.0650, half_widths=1.73),
-    dict(label="Pleias-1.2B", family="Pleias", params=1.200, delta=0.0360, half_widths=0.95),
-    dict(label="Pleias-3B", family="Pleias", params=3.000, delta=0.0030, half_widths=0.07),
+# The five anchors on record. Their deltas are DERIVED from the committed per-prompt CSVs with this
+# module's own boot_mean and seed -- never transcribed. A hardcoded number in a results file is a
+# comment and not data (caution (ag)), and this table is read by the ladder assembly below, so a
+# transcription slip here would silently reorder a capability ladder. The `expect` field is the value
+# on record and is ASSERTED against the derivation, so the check has teeth in both directions: a
+# changed CSV fails, and a mistyped expectation fails.
+#
+# feat-135's KL3M-3.7B is read from its own scoring CSV when it lands, because it is a separate arm
+# with a separate pre-registration and must not be re-derived here.
+ON_RECORD_SOURCES = (
+    dict(label="TinyComma-1.8B", family="Comma", params=1.759,
+         per="selection_scaling_per_prompt.csv", expect=0.0880),
+    dict(label="Comma-7B (2T)", family="Comma", params=7.003,
+         per="selection_scaling_per_prompt_comma7b64.csv", expect=0.1010),
+    dict(label="KL3M-1.7B", family="KL3M", params=1.700,
+         per="selection_scaling_per_prompt_kl3m17b64.csv", expect=0.0650),
+    dict(label="Pleias-1.2B", family="Pleias", params=1.200,
+         per="selection_scaling_per_prompt_pleias12b64.csv", expect=0.0360),
+    dict(label="Pleias-3B", family="Pleias", params=3.000,
+         per="selection_scaling_per_prompt_pleias3b64.csv", expect=0.0030),
 )
+
+
+def on_record(out):
+    """Derive the five reference deltas from their committed per-prompt CSVs.
+
+    Returns [(dict with delta, half_widths, derived_from)]. A source that is absent is reported as
+    absent rather than silently dropped -- a ladder assembled from four rungs when five exist is the
+    same defect as caution (aq)'s stale mean over a set whose membership grew.
+    """
+    got = []
+    for s in ON_RECORD_SOURCES:
+        per = rows(os.path.join(out, s["per"]))
+        if per is None:
+            got.append(dict(s, delta=None, half_widths=None, missing=True))
+            continue
+        g, lo, hi, hw, ratio, n = band(per)
+        assert abs(g - s["expect"]) < 5e-4, (
+            f"{s['label']}: derived {g:+.4f} from {s['per']} but the value on record is "
+            f"{s['expect']:+.4f}. One of the two is wrong; do not 'fix' the expectation without "
+            f"establishing which.")
+        got.append(dict(s, delta=round(g, 4), half_widths=round(ratio, 2), n_prompts=n,
+                        missing=False))
+    return got
 
 
 def rows(path):
@@ -249,10 +283,17 @@ def main():
     print("results/onset_prediction_breadth_ladders.md (feat-136) -- is the climb to n=64 a family,")
     print("a capability or a training-data property, and does a paired difference survive a change")
     print("of hardware the way it survives a change of seed?\n")
-    print("  on record, recomputed with this module's own boot_mean and seed:")
-    for r in ON_RECORD:
-        print(f"    {r['label']:<22} {r['family']:<7} {r['params']:5.3f}B  "
-              f"D={r['delta']:+.4f} at {r['half_widths']:.2f} half-widths")
+    print("  on record, DERIVED from the committed per-prompt CSVs with this module's own")
+    print("  boot_mean and seed, each asserted against the value on record:")
+    recorded = on_record(out)
+    for r in recorded:
+        if r["missing"]:
+            print(f"    {r['label']:<22} {r['family']:<7} {r['params']:5.3f}B  "
+                  f"SOURCE ABSENT: {r['per']}")
+        else:
+            print(f"    {r['label']:<22} {r['family']:<7} {r['params']:5.3f}B  "
+                  f"D={r['delta']:+.4f} at {r['half_widths']:.2f} half-widths "
+                  f"({r['n_prompts']} prompts, from {r['per']})")
 
     ok0, msg0 = g0a(out)
     print(f"\n  G0a instrument (BLOCKS EVERY ARM): {'PASS' if ok0 else 'FAIL'} -- {msg0}")
@@ -355,7 +396,10 @@ def main():
     print("\n=== the three hypotheses, read by the rules committed in advance ===")
     done = {r["anchor"]: r for r in recs if r.get("gain_diff") is not None and "gain_diff" in r}
     ladder = {}
-    for r in ON_RECORD:
+    for r in recorded:
+        if r["missing"]:
+            print(f"  {r['label']} is absent from its ladder: {r['per']} is not in {out}")
+            continue
         ladder.setdefault(r["family"], []).append((r["params"], r["delta"], r["label"]))
     k37 = rows(os.path.join(out, "kl3m37b_breadth64_scoring.csv"))
     if k37:

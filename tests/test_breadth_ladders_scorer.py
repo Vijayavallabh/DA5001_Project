@@ -344,3 +344,49 @@ def test_g0a_reports_the_within_host_floor_beside_its_verdict(tmp_path):
     ok, msg = g0a(out)
     assert ok
     assert "WITHIN-HOST floor" in msg and "0.09209" in msg and "0.97029" in msg
+
+
+def test_the_five_reference_deltas_derive_from_their_csvs_and_match_the_record():
+    """Caution (ag): a number in a results file that was not computed by the script that wrote it is
+    a comment, not data. These five feed the capability ladders, so a transcription slip would
+    silently reorder a rung. Derived here from the committed per-prompt CSVs and asserted against the
+    values on record, which is what gives the check teeth in both directions."""
+    from analysis.score_breadth_ladders import ON_RECORD_SOURCES, on_record
+    got = on_record("results")
+    assert len(got) == len(ON_RECORD_SOURCES) == 5
+    absent = [r["per"] for r in got if r["missing"]]
+    assert not absent, f"reference sources missing from results/: {absent}"
+    by = {r["label"]: r for r in got}
+    assert by["TinyComma-1.8B"]["delta"] == pytest.approx(0.0880, abs=5e-4)
+    assert by["Comma-7B (2T)"]["delta"] == pytest.approx(0.1010, abs=5e-4)
+    assert by["KL3M-1.7B"]["delta"] == pytest.approx(0.0650, abs=5e-4)
+    assert by["Pleias-1.2B"]["delta"] == pytest.approx(0.0360, abs=5e-4)
+    assert by["Pleias-3B"]["delta"] == pytest.approx(0.0030, abs=5e-4)
+    # and the half-width ratios that decide MARGINAL, which is why the boundary sits where it does
+    assert by["TinyComma-1.8B"]["half_widths"] == pytest.approx(2.12, abs=0.02)
+    assert by["Comma-7B (2T)"]["half_widths"] == pytest.approx(2.46, abs=0.02)
+    assert by["KL3M-1.7B"]["half_widths"] == pytest.approx(1.73, abs=0.02)
+    # Pleias-3B is the rung that already falsifies a pure capability story inside one family
+    assert by["Pleias-3B"]["delta"] < by["Pleias-1.2B"]["delta"], \
+        "if Pleias ever becomes monotone, the H1 wording in the pre-registration needs revisiting"
+
+
+def test_a_mistyped_expectation_fails_loudly_rather_than_being_adopted():
+    """The assertion must not be repairable by editing the expectation: if derivation and record
+    disagree the scorer refuses, because one of the two is wrong and which one is not obvious."""
+    import analysis.score_breadth_ladders as m
+    orig = m.ON_RECORD_SOURCES
+    try:
+        m.ON_RECORD_SOURCES = tuple(dict(s, expect=s["expect"] + 0.02) for s in orig)
+        with pytest.raises(AssertionError, match="value on record"):
+            m.on_record("results")
+    finally:
+        m.ON_RECORD_SOURCES = orig
+
+
+def test_a_missing_reference_source_is_reported_not_silently_dropped(tmp_path):
+    """A ladder assembled from four rungs when five exist is caution (aq)'s stale-set defect."""
+    from analysis.score_breadth_ladders import on_record
+    got = on_record(str(tmp_path))
+    assert len(got) == 5 and all(r["missing"] for r in got)
+    assert all(r["delta"] is None for r in got)
