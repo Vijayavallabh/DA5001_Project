@@ -49,8 +49,8 @@ def test_the_csv_carries_every_subset_the_appendix_reads(rows):
     ("adversary_holds_le10_words", "sd", "{:.4f}"),      # 0.0748
     ("reseed_pleias12b_copybench", "sd", "{:.4f}"),      # 0.0450
     ("reseed_kl3m520m_copybench", "sd", "{:.4f}"),       # 0.0180
-    ("reseed_pleias12b_copybench", "span", "{:.3f}"),    # 0.080
-    ("reseed_kl3m520m_copybench", "span", "{:.3f}"),     # 0.033
+    # the two re-seed SPAN figures were cut with their paragraph on 2026-09-19; the sd and the
+    # nine-pair span below are still quoted and still checked.
     ("all_nine", "span", "{:.4f}"),                      # 0.2874
     ("family_mean_gap", "mean", "{:.3f}"),               # 0.159
 ])

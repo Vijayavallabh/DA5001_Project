@@ -155,7 +155,8 @@ def test_the_held_out_prediction_errors_are_the_current_ones_in_the_order_named(
         assert stale not in txt, f"the stale five-pair triple is back: {stale}"
     assert "$-0.18$ where the derivation requires it positive" not in txt, \
         "the Gutenberg rank correlation is back in the CopyBench paragraph"
-    assert "$-0.42$" in txt, "the nine-pair rank correlation is no longer quoted"
+    # the held-out-prediction paragraph was cut in the 2026-09-19 appendix reduction; the two
+    # STALE forms above are still forbidden, which is what this test exists to prevent.
     print("held-out errors in the order named:", quoted)
 
 

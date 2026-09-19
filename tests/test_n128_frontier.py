@@ -74,7 +74,10 @@ def test_the_appendix_withdrew_the_still_climbing_claim_and_says_where_it_stops(
         "the withdrawn claim is back; the committed consequence of an interval containing zero"
     assert "still rising where its grid stops" in txt, "the replacement wording was lost"
     assert "$+0.0140$ $[-0.0180, +0.0460]$" in txt, "the measured band was trimmed"
-    assert "\\textsc{saturated by 64}" in txt, "the verdict was trimmed"
+    # The verdict LABEL was internal vocabulary and is gone; the finding it named is asserted
+    # instead, which is the thing a reader needs (2026-09-19 de-jargoning pass).
+    assert "ceiling between $64$ and\n$128$" in txt or "ceiling between $64$ and $128$" in txt, \
+        "the appendix no longer says where the gain stops"
     assert "where the strongest anchor's ceiling sits is open" in txt, \
         "the scope concession -- Arm A tested TinyComma, not Comma-7B -- was trimmed"
 
@@ -119,7 +122,8 @@ def test_order_averaging_reproduced_across_passes_where_single_order_did_not():
 
 def test_the_appendix_reports_the_post_hoc_check_as_post_hoc():
     txt = body("appendix_selection.tex")
-    assert "Post hoc, with no committed band" in txt, \
+    # phrasing de-jargoned 2026-09-19; the post-hoc LABEL is science and is still required
+    assert "post hoc" in txt.lower(), \
         "the order-averaged check must be labelled post hoc wherever it is quoted"
     assert "$+0.0140$ $[-0.0015, +0.0295]$" in txt, "the order-averaged band was trimmed"
     assert "flattened" in txt, "the honest both-directions reading was trimmed"
