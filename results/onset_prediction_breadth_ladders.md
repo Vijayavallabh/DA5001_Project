@@ -552,3 +552,27 @@ inherited rather than demonstrated.
   than assumed: that arm's log has zero OOM, zero traceback and zero non-zero generation return
   codes, and it kept progressing. The risk was real and should have been weighed before the launch,
   not after.
+
+### 2026-09-19 ~21:50 --- the ladder's own strongest confound, tested and cleared
+
+**Could an anchor that reads SATURATED actually be at a ceiling?** The judged utility $u$ is a win
+rate bounded in $[0,1]$, so an anchor already near $1$ would have no room to climb and its flat curve
+would be a bounded-scale artefact rather than a saturation --- the same shape as `feat-137`'s floor
+gate, at the other end. That confound would corrupt H1 and H2 directly, because both are read off
+which anchors climb. It was not in the pre-registration and should have been.
+
+Tested on the five anchors on record, headroom being $1 - u(8)$:
+
+| anchor | $u(1)$ | $u(8)$ | $u(64)$ | headroom | $\Delta$ |
+|---|---|---|---|---|---|
+| TinyComma-1.8B | $0.435$ | $0.489$ | $0.577$ | $0.511$ | $+0.0880$ |
+| Comma-7B (2T) | $0.441$ | $0.513$ | $0.614$ | $0.487$ | $+0.1010$ |
+| KL3M-1.7B | $0.292$ | $0.315$ | $0.380$ | $0.685$ | $+0.0650$ |
+| Pleias-1.2B | $0.359$ | $0.442$ | $0.478$ | $0.558$ | $+0.0360$ |
+| Pleias-3B | $0.397$ | $0.422$ | $0.425$ | $0.578$ | $+0.0030$ |
+
+**Cleared.** Every anchor sits between $0.49$ and $0.69$ of headroom, so none is near the ceiling, and
+**Pleias-3B saturates at $u=0.425$ with $0.578$ still available** --- its flat curve is a real
+saturation and not an artefact of a bounded scale. The same check must be applied to the six new arms
+when they land, and a new anchor whose $u(8)$ exceeds about $0.85$ is not informative about
+saturation whatever its $\Delta$ reads.
