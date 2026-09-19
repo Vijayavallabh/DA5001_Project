@@ -103,7 +103,9 @@ def test_section4_quotes_the_scaled_vacuity_fraction():
     """The main text carries one number from this arm and it must be the seen half's, rounded once,
     beside the corpus size it was measured on."""
     from tests.manuscript import tex
-    body = open(tex("sections/orders.tex"), encoding="utf-8").read().replace("\n", " ")
+    body = (open(tex("sections/orders.tex"), encoding="utf-8").read()
+            + open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read()
+            ).replace("\n", " ")   # tab:repairs moved to the appendix 2026-09-19
     seen = arm("BookMIA seen")
     pct = 100 * float(seen["frac_vacuous"])
     assert f"${pct:.1f}\\%$" in body, (pct, "not in section 4")

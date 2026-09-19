@@ -815,6 +815,187 @@ def selection_breadth_forest():
     _save(fig, "selection_breadth_forest")
 
 
+
+# --------------------------------------------------------------------------------------------
+# Main-text evidence figures, 2026-09-19. Both replace prose that carried the paper's two most
+# important non-utility claims. Data extraction is split from drawing so a test can read the
+# plotted rows: caution (al) -- a number that moves from prose into a figure takes its guard with
+# it, or the guard passes by never running.
+
+
+def safety_rows():
+    """(label, [(n, nv_recall_mean)], baseline) per extraction arm, read from results/."""
+    import glob
+    arms = []
+    want = [("selection_extraction.csv", "audited anchor, attacker's scorer"),
+            ("selection_extraction_n256.csv", "audited anchor, to $n{=}256$"),
+            ("selection_extraction_comma7b.csv", "Comma-7B"),
+            ("selection_extraction_comma1t.csv", "Comma-7B (1T)"),
+            ("selection_extraction_kl3m17b.csv", "KL3M-1.7B"),
+            ("selection_extraction_pleias12b.csv", "Pleias-1.2B"),
+            ("selection_extraction_pleias3b.csv", "Pleias-3B"),
+            ("selection_extraction_paraphrase.csv", "paraphrase event"),
+            ("selection_extraction_70b_hp2.csv", "Llama-3.1-70B, pre-trained memoriser")]
+    for fname, label in want:
+        p = RESULTS / fname
+        if not p.exists():
+            continue
+        rows = list(csv.DictReader(open(p, encoding="utf-8")))
+        if "nv_recall_mean" not in rows[0]:
+            continue
+        pos = sorted(((int(r["n"]), float(r["nv_recall_mean"])) for r in rows
+                      if int(r["n"]) >= 1), key=lambda t: t[0])
+        base = [float(r["nv_recall_mean"]) for r in rows if r["n"] == "-1"]
+        arms.append((label, pos, base[0] if base else None))
+    if not arms:
+        raise FileNotFoundError("no selection_extraction*.csv")
+    return arms
+
+
+def contamination_rows():
+    """(anchor, event, base_rate, realised amplification) at n=64, where the premise FAILS."""
+    p = RESULTS / "contaminated_anchor.csv"
+    if not p.exists():
+        raise FileNotFoundError(p)
+    out = []
+    for r in csv.DictReader(open(p, encoding="utf-8")):
+        if r["n"] == "64" and r["amplification"]:
+            out.append((r["anchor"], r["event"], float(r["base_rate"]),
+                        float(r["amplification"])))
+    return sorted(out, key=lambda t: t[3])
+
+
+def safety_envelope():
+    arms, contam = safety_rows(), contamination_rows()
+    fig, (ax, bx) = plt.subplots(1, 2, figsize=(5.98, 1.48))
+    fig.subplots_adjust(left=0.085, right=0.995, bottom=0.185, top=0.87, wspace=0.28)
+
+    # (a) Every selection arm sits exactly on zero, so nine legend entries would be nine labels
+    # for one line. Draw them all -- the markers show which n each arm covers -- and let ONE entry
+    # speak for them, with the memoriser baselines labelled in place at the right edge. The first
+    # version put a 9-entry legend and a floating annotation in the same corner and they collided
+    # (caution (ad): render the page and look at it).
+    styles = distinct_styles(len(arms))
+    for i, ((label, pos, base), (c, m)) in enumerate(zip(arms, styles)):
+        ax.plot([n for n, _ in pos], [v for _, v in pos], marker=m, color=c, ms=4.2,
+                lw=1.0, alpha=0.9, zorder=3,
+                label=f"all {len(arms)} arms, every $n$: $0.0000$" if i == 0 else None)
+    for b in sorted({b for _, _, b in arms if b}):
+        ax.axhline(b, ls="--", lw=0.9, color="0.35", zorder=1)
+        ax.annotate(f"${b:.4f}$", xy=(300, b), fontsize=6.0, color="0.15",
+                    bbox=dict(fc="white", ec="none", pad=0.8),
+                    va="center", ha="right")
+    ax.annotate("memoriser alone,\nsame passages and seeds", xy=(1.05, 0.515),
+                fontsize=6.3, color="0.2", va="top")
+    ax.set_xscale("log", base=2)
+    ax.set_xlabel("$n$, completions drawn from the anchor")
+    ax.set_ylabel("near-verbatim recall")
+    ax.set_ylim(-0.035, 0.52)
+    ax.set_xlim(0.78, 340)
+    ax.set_title("(a) selection reproduces nothing, at every $n$", fontsize=8)
+    ax.legend(loc="lower left", fontsize=6.4, frameon=False, bbox_to_anchor=(0.0, 0.055))
+
+    # (b) Where the premise fails. The first version was 17 labelled bars in a 1.5in panel, whose
+    # row labels would have printed at about 4.8pt -- below the legibility floor (caution (af)), and
+    # the anchor NAMES are not the claim: the claim is that every realised amplification sits near
+    # 1 while the certificate permits 64. A strip plot carries that and needs no row labels.
+    import random as _rnd
+    _rnd.seed(0)
+    for ev, c, mk in (("E_001", "C0", "o"), ("E_08", "C3", "s")):
+        xs = [a for _, e, _, a in contam if e == ev]
+        if not xs:
+            continue
+        ys = [0.5 + 0.30 * (_rnd.random() - 0.5) + (0.22 if ev == "E_08" else -0.22) for _ in xs]
+        bx.scatter(xs, ys, s=17, c=c, marker=mk, alpha=0.85, zorder=3,
+                   label={"E_001": "recall 0.001 event", "E_08": "recall 0.8 event"}[ev])
+    bx.axvline(64, color="0.25", ls="--", lw=1.1, zorder=4)
+    bx.annotate("$n=64$: what the\ncertificate permits", xy=(120, 0.97), ha="right",
+                fontsize=6.3, color="0.15", va="top")
+    bx.axvspan(min(a for *_, a in contam), max(a for *_, a in contam), color="0.85",
+               alpha=0.45, zorder=0)
+    # matplotlib is not LaTeX: "--" prints as two hyphens, not an en-dash (caution (ad)).
+    bx.annotate(f"realised: {min(a for *_, a in contam):.1f} to {max(a for *_, a in contam):.1f}",
+                xy=(0.87, 0.06), fontsize=6.3, color="0.15", ha="left")
+    bx.set_yticks([])
+    bx.set_ylim(0, 1.0)
+    bx.set_xscale("log")
+    bx.set_xlim(0.8, 140)
+    bx.set_xlabel("realised amplification at $n=64$, twelve contaminated anchors")
+    bx.set_title("(b) and degrades gracefully where it fails", fontsize=8)
+    bx.legend(loc="lower right", fontsize=5.8, frameon=True, framealpha=1.0,
+              facecolor="white", edgecolor="none", handletextpad=0.3,
+              bbox_to_anchor=(1.0, 0.02))
+    _save(fig, "safety_envelope")
+
+
+def judge_free_rows():
+    """{task: ({rule: [(n, acc, lo, hi)]}, {baseline: acc})} for the two no-judge arms.
+
+    The rule is matched EXPLICITLY and anything unrecognised raises. The first version classified
+    with `if arm.startswith("majority") else "pointwise"`, which swept the two mandatory k=-1
+    baselines ("risky model alone", greedy and sampled) into the pointwise curve and drew it
+    spiking to 0.79 at n=1, where by construction both rules must equal the anchor's own first
+    draw. An `else` branch over a data-driven column is how a baseline becomes a result.
+    """
+    out = {}
+    for task, fname in (("GSM8K", "selection_verifiable_comma7b.csv"),
+                        ("TriviaQA", "selection_verifiable_tqa_comma7b.csv")):
+        p = RESULTS / fname
+        if not p.exists():
+            raise FileNotFoundError(p)
+        by, base = {}, {}
+        for r in csv.DictReader(open(p, encoding="utf-8")):
+            arm, n = r["arm"], int(r["n"])
+            pt = (n, float(r["acc"]), float(r["acc_lo95"]), float(r["acc_hi95"]))
+            if arm.startswith("majority"):
+                by.setdefault("majority vote", []).append(pt)
+            elif arm.startswith("pointwise"):
+                by.setdefault("pointwise reward", []).append(pt)
+            elif arm.startswith("risky model alone"):
+                base[arm] = float(r["acc"])
+            else:
+                raise ValueError(f"{fname}: unclassified arm {arm!r}")
+        for rule, pts in by.items():
+            pts.sort()
+            assert pts[0][0] == 1, (fname, rule)
+        n1 = {rule: pts[0][1] for rule, pts in by.items()}
+        assert len(set(n1.values())) == 1, \
+            f"{fname}: the rules disagree at n=1, where neither has selected anything: {n1}"
+        out[task] = ({k: sorted(v) for k, v in by.items()}, base)
+    return out
+
+
+def judge_free():
+    data = judge_free_rows()
+    fig, axes = plt.subplots(1, 2, figsize=(5.98, 1.46), sharex=True)
+    fig.subplots_adjust(left=0.085, right=0.995, bottom=0.185, top=0.87, wspace=0.22)
+    style = {"majority vote": ("C0", "o", "-"), "pointwise reward": ("C3", "s", "--")}
+    for axi, (task, (by, base)) in zip(axes, data.items()):
+        for rule, pts in by.items():
+            c, m, ls = style[rule]
+            ns = [n for n, _, _, _ in pts]
+            axi.plot(ns, [a for _, a, _, _ in pts], marker=m, color=c, ls=ls, ms=3.6,
+                     lw=1.2, label=rule, zorder=3)
+            axi.fill_between(ns, [lo for _, _, lo, _ in pts], [hi for _, _, _, hi in pts],
+                             color=c, alpha=0.13, lw=0, zorder=1)
+        if base:
+            b = max(base.values())
+            axi.axhline(b, color="0.35", ls=":", lw=1.0, zorder=2)
+            axi.annotate(f"risky model alone, $k={{-1}}$: ${b:.3f}$", xy=(1.05, b),
+                         fontsize=6.0, color="0.2", va="bottom")
+            lo = min(v for _, (by_, _) in [(0, (by, base))] for pts in by_.values()
+                     for _, _, v, _ in pts)
+            axi.set_ylim(lo - 0.03, b + 0.075)
+        axi.set_xscale("log", base=2)
+        axi.set_xlabel("$n$")
+        axi.grid(alpha=0.22, lw=0.5)
+    axes[0].set_ylabel("exact match")
+    axes[0].set_title("(a) GSM8K: the lift needs no judge", fontsize=8)
+    axes[1].set_title("(b) TriviaQA: the proxy reward turns over", fontsize=8)
+    axes[0].legend(loc="lower right", fontsize=6.4, frameon=False)
+    _save(fig, "judge_free")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
@@ -825,7 +1006,8 @@ def main():
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
                context_intervention, selection_frontier, selection_breadth_forest,
-               units_law, order_no_collapse, imitation_cost)
+               units_law, order_no_collapse, imitation_cost,
+               safety_envelope, judge_free)
     for fn in figures:
         try:
             fn()

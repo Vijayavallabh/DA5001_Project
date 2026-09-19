@@ -209,7 +209,10 @@ def test_the_knowledge_task_arm_agrees_with_the_manuscript():
     gmv = [r for r in gsm if r["arm"].startswith("majority") and r["gain_lo95"]]
     best = max(gmv, key=lambda r: float(r["gain"]))
     ratio = float(best["gain"]) / float(top["gain"])
-    assert f"${ratio:.1f}\\times$ less" in body, (ratio, best["gain"], top["gain"])
+    # the judge-free detail now sits in the appendix figure caption (2026-09-19)
+    both = body + " " + " ".join(open(tex("sections/appendix_selection.tex"),
+                                      encoding="utf-8").read().split())
+    assert f"${ratio:.1f}\\times$ less" in both, (ratio, best["gain"], top["gain"])
 
 
 def test_limitations_carries_both_tasks_worth_of_scorer_evidence():

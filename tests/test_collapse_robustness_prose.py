@@ -92,7 +92,9 @@ def test_the_two_judge_sigmas_in_the_introduction_come_from_the_v6_separation_cs
                 return float(r["z_loss_vs_anchor"])
         raise AssertionError((path, k))
     q, p = "results/judge_separation_v6.csv", "results/judge_separation_v6_judge2.csv"
-    body = open(tex("sections/orders.tex"), encoding="utf-8").read().replace("\n", " ")
+    body = (open(tex("sections/orders.tex"), encoding="utf-8").read()
+            + open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read()
+            ).replace("\n", " ")   # tab:repairs moved to the appendix 2026-09-19
     for k, pair in ((0.5, (z(q, 0.5), z(p, 0.5))), (10.0, (z(q, 10.0), z(p, 10.0)))):
         a, b = pair
         assert f"(${a:+.2f}\\sigma$, ${b:+.2f}\\sigma$)".replace("+-", "-") in body \

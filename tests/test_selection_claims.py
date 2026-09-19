@@ -193,7 +193,10 @@ def test_the_position_bias_numbers_in_section_6_come_from_the_per_prompt_file():
     crit = {r["criterion"]: r for r in _csv.DictReader(open("results/judge_consistency.csv"))}
     c1 = float(crit["C1 order consistency"]["value"])
     c2 = float(crit["C2 first-slot win rate"]["value"])
-    body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
+    # The judge-methodology block moved to Appendix (app:judgemethod) on 2026-09-19; the
+    # numbers went with it, so scan both files rather than the section it used to sit in.
+    body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split()) + " " + \
+           " ".join(open(_tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
     m = _re.search(r"win \$(\d+)\$ of \$500\$ shown second and \$(\d+)\$ shown first", body)
     assert m and (int(m.group(1)), int(m.group(2))) == (second_wins, first_wins), \
         (m.groups() if m else None, second_wins, first_wins)
