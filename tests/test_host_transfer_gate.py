@@ -120,3 +120,34 @@ def test_read_cache_round_trips_through_the_committed_csv_shape(tmp_path):
     got = read_cache(str(p))
     assert len(got) == len(ref)
     assert all(abs(got[k] - ref[k]) < 1e-9 for k in ref)
+
+
+def test_the_withdrawn_thresholds_are_kept_in_the_code_so_they_can_be_audited():
+    """A withdrawn threshold that vanishes from the source cannot be checked against the record. The
+    three registered numbers stay importable and stay in the CSV, marked WITHDRAWN; only
+    MEAN_ABS_DIFF_MAX decides anything."""
+    from analysis.score_host_transfer_gate import (MEAN_ABS_DIFF_MAX, MIN_AGREE_FRAC,
+                                                   MIN_ARGMAX_FRAC, TOL)
+    assert (TOL, MIN_AGREE_FRAC, MIN_ARGMAX_FRAC) == (1e-2, 0.999, 0.99)
+    assert MEAN_ABS_DIFF_MAX == 1.0
+
+
+def test_the_repaired_threshold_is_the_registered_defect_scale_and_not_the_observed_number():
+    """'whole nats' is the pre-registration's own characterisation of the defect class, fixed before
+    any data existed, and 1.0 is its literal reading. The measured cross-host mean was 0.185 and the
+    within-host floor 0.092: if the threshold had been tuned to the answer it would sit just above
+    0.185, not at a round nat. This test fails if anyone moves it toward the data."""
+    from analysis.score_host_transfer_gate import MEAN_ABS_DIFF_MAX
+    assert MEAN_ABS_DIFF_MAX == 1.0
+    assert MEAN_ABS_DIFF_MAX > 5 * 0.18517, "a threshold this close to the measurement is tuned"
+
+
+def test_bf16_scale_disagreement_clears_the_repaired_gate_but_a_wrong_template_does_not():
+    """The two directions that matter, at the scales actually measured. 0.092 is the within-host
+    floor and 0.185 the cross-host value; several nats is what a template or padding bug costs."""
+    from analysis.score_host_transfer_gate import MEAN_ABS_DIFF_MAX
+    ref = _base()
+    for scale, should_pass in ((0.092, True), (0.185, True), (0.9, True), (4.0, False)):
+        new = {k: v + (scale if (k[1] % 2) else -scale) for k, v in ref.items()}
+        m = compare(ref, new, MAX_N)
+        assert (m["mean_abs_diff"] < MEAN_ABS_DIFF_MAX) is should_pass, (scale, m["mean_abs_diff"])

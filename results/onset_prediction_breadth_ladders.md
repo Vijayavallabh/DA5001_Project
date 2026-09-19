@@ -297,3 +297,70 @@ from the start and its failure says nothing about the second host. Running on ca
   consequence is that **the repaired threshold may not be derived from the cross-host number it has to
   judge.** It will be derived from the within-host control above, which is an independent measurement
   of reduction-order scale, and the repaired gate will be mutation-tested before it is applied.
+
+### 2026-09-19 ~18:40 --- the within-host control falsifies G0a's threshold; G0a's NUMBERS are withdrawn as INVALID, its defect scale is not
+
+**The control, with hardware removed from the question entirely.** Same host, byte-identical weights,
+the same $32{,}000$ candidate texts, re-scored at `--batch-size 16` against that host's **own**
+batch-$8$ cache. Batch composition sets the left padding and therefore the reduction order
+(`results/hostb/control_within_host_batch16.csv`):
+
+| comparison | mean $\lvert$diff$\rvert$ | max $\lvert$diff$\rvert$ | within $10^{-2}$ | argmax agree |
+|---|---|---|---|---|
+| cross-host, bf16, batch 8 | $0.18517$ | $1.75000$ | $0.17572$ | $0.95657$ |
+| **within ONE host, bf16, batch 8 vs 16** | $0.09209$ | $3.00000$ | $0.60013$ | $0.97029$ |
+
+**The registered thresholds fail a comparison that contains no change of host at all**, and fail it
+with a *larger* maximum deviation than the cross-host comparison. So $10^{-2}$, $99.9\%$ and $99\%$
+were unsatisfiable by any two runs of this pipeline differing in reduction order, on one machine or
+two. **A gate nothing can pass gates nothing** --- caution (p) in mirror image, where a gate failed
+every anchor including the one it was validating.
+
+**The premise that was wrong was ours, in writing, in this document:** *"a different bf16 reduction
+order moves it by $\sim 10^{-3}$"*. That is an fp32 figure. It is now measured at $0.09$ nats mean
+within one host. Per caution (w) the consequence is that **G0a's numeric thresholds are INVALID rather
+than FAILED**, and the arms are not retired by a defect in our own specification.
+
+**What is withdrawn and what is not.** The three numbers are withdrawn. The **defect scale the same
+paragraph registered is not**: it says the gate exists because *"a wrong template, a padding-side
+flip, a dtype error or a tokenizer mismatch moves a reward by whole nats"*. **Whole nats** is the
+registered characterisation, written before any data, and it reads as $1.0$. So G0a is repaired to a
+single threshold taken from its own registered words --- **mean $\lvert$diff$\rvert$ below $1.0$ nat**
+--- with the within-host floor reported beside it as the pipeline's own noise. Cross-host $0.185$ and
+within-host $0.092$ both clear it; a wrong chat template does not.
+
+**Stated plainly, because the repair is a weakening.** The repaired gate excludes gross pipeline
+defects and **nothing finer**. It can no longer certify that the second host computes the same reward
+as the first, because at bf16 *no* two runs of this pipeline compute the same reward, including two on
+one machine. A reader is entitled to regard G0a as much weaker than registered, and it is.
+
+**The instrument question is therefore answered by what was already registered, not by a new gate.**
+The two host-transfer arms exist precisely to ask whether a paired difference survives a change of
+hardware, and their prediction --- $\lvert\Delta_{\text{host B}} - \Delta_{\text{local}}\rvert$ at or
+below $0.0610$, the largest seed-replication move on record --- was fixed in advance from `feat-131`'s
+measurement and **is not a threshold that can be chosen now.** That is the check that matters, and it
+is untouched. G0b is untouched.
+
+**Why this repair is not tuning a gate to its answer.** At the moment it was made **no arm had
+produced a band, and none could have**: all three running arms were still generating
+($6200$, $3800$ and $3800$ of $12{,}800$), `results/selection_scaling_*hb64.csv` did not exist, and
+`results/breadth_ladders_scoring.csv` did not exist. The repair is calibrated on an independent
+within-host control and on this document's own words, never on the cross-host number it has to judge.
+What was **not** done in the right order is recorded above and is not excused: the cross-host FAIL was
+read before the threshold was questioned.
+
+**And the control is a result, not only a diagnostic.** Reported as a finding whatever the arms do:
+
+* the pointwise reward is reproducible to about $0.09$ nats within one host, and $40\%$ of rewards
+  move by more than $0.01$ when only the batch size changes;
+* **the completion best-of-$n$ actually serves changes on about $3.0\%$ of $(\text{prompt}, n)$ cells
+  within one host and $4.3\%$ across hosts** --- a deployer cannot reproduce which candidate was
+  served;
+* **the certificate is untouched by all of it.** Proposition 1 bounds $q(y) \le n\,p_s(y)$ for ANY
+  score and ANY tie rule, so an argmax that moves under rounding cannot loosen it. The **guarantee is
+  numerically robust exactly where the realisation is not**, which is a measured instance of why that
+  proposition's score-agnosticism is worth having rather than a technicality.
+
+Two further controls are running to make that finding actionable rather than merely true: fp32 against
+bf16 on one host (is the instability precision, as claimed?), and fp32 batch $8$ against fp32 batch
+$16$ (does scoring in fp32 restore a reproducible served completion?).

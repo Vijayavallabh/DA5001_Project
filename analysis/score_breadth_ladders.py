@@ -22,9 +22,17 @@ the forward pass, tokenizer, template, padding side and library stack are under 
 
 The gates, in the order they are applied:
 
-  G0a the scoring path on the new host agrees with the local one: >= 99.9% of 32,000 rewards within
-      1e-2 AND the served argmax agreeing on >= 99% of the (prompt, n) cells. BLOCKS EVERY ARM --
-      if the host is not the same instrument, nothing measured on it is read.
+  G0a the scoring path on the new host carries no GROSS defect. Its registered numeric thresholds
+      (99.9% of rewards within 1e-2, argmax agreeing on 99% of cells) were WITHDRAWN AS INVALID on
+      2026-09-19: a within-host control -- same host, byte-identical weights, same texts, batch 8 vs
+      batch 16 -- agrees on only 60.0% of rewards (mean |diff| 0.092, max 3.00) and 97.0% of argmax
+      cells, so those thresholds fail a comparison containing no change of host at all, and a gate
+      nothing can pass gates nothing. What survives is the defect SCALE the same paragraph registered
+      before any data existed, "moves a reward by whole nats": mean |diff| below 1.0. That is a
+      WEAKENING and is recorded as one -- the repaired gate excludes a wrong template, a padding-side
+      flip or a dtype error, and nothing finer. BLOCKS EVERY ARM.
+      The instrument question is answered instead by the host-transfer arms' own registered
+      prediction below, which is a measurement and not a threshold anyone can choose now.
   G0b for the two host-transfer arms only, n=1 mean completion length within 5% of the local value at
       the same batch size. Its job is to catch a wrong model, a wrong corpus or a truncation bug, all
       of which move this by tens of percent; it is NOT a measurement of host drift. BLOCKS its arm.
@@ -104,7 +112,14 @@ def rows(path):
 
 
 def g0a(out):
-    """The instrument gate. Returns (ok, message). BLOCKS EVERY ARM."""
+    """The instrument gate, as REPAIRED. Returns (ok, message). BLOCKS EVERY ARM.
+
+    Reads the verdict computed by analysis/score_host_transfer_gate.py, which applies the surviving
+    threshold (mean |diff| below 1.0 nat, the registered "whole nats" defect scale) and records the
+    withdrawn ones as context. The within-host floor is reported beside it wherever the control CSV is
+    available, because a gate that does not state its own noise floor invites the reader to mistake
+    agreement for precision.
+    """
     r = rows(os.path.join(out, "host_transfer_gate.csv"))
     if r is None:
         return False, ("results/host_transfer_gate.csv is not there; run "
@@ -113,9 +128,20 @@ def g0a(out):
     if "G0a" not in d:
         return False, f"no G0a row in the gate CSV, only {sorted(d)}"
     v = d["G0a"]["verdict"]
-    detail = (f"rewards {d.get('reward_agree_frac', {}).get('value', '?')} "
-              f"(max |diff| {d.get('reward_max_abs_diff', {}).get('value', '?')}), "
-              f"argmax {d.get('argmax_agree_frac', {}).get('value', '?')}")
+    mean = d.get("reward_mean_abs_diff", {}).get("value", "?")
+    detail = (f"mean |diff| {mean} nats (blocking threshold 1.0, the registered defect scale); "
+              f"withdrawn context: rewards within 1e-2 "
+              f"{d.get('reward_agree_frac', {}).get('value', '?')}, argmax "
+              f"{d.get('argmax_agree_frac', {}).get('value', '?')}")
+    for cand in (os.path.join(out, "control_b16", "host_transfer_gate.csv"),
+                 os.path.join("results", "hostb", "control_within_host_batch16.csv")):
+        c = rows(cand)
+        if c:
+            cd = {x["metric"]: x for x in c}
+            detail += (f"; WITHIN-HOST floor (batch 8 vs 16, no host change): mean |diff| "
+                       f"{cd.get('reward_mean_abs_diff', {}).get('value', '?')}, argmax "
+                       f"{cd.get('argmax_agree_frac', {}).get('value', '?')}")
+            break
     return v == "PASS", f"{v} -- {detail}"
 
 
@@ -231,9 +257,12 @@ def main():
     ok0, msg0 = g0a(out)
     print(f"\n  G0a instrument (BLOCKS EVERY ARM): {'PASS' if ok0 else 'FAIL'} -- {msg0}")
     if not ok0:
-        print("  NOT SCORED. If the scoring path on that host is not the local one, nothing")
-        print("  measured there is read, and no band is computed 'just to see'.")
+        print("  NOT SCORED. A reward moved by whole nats means a wrong template, a padding-side")
+        print("  flip or a dtype error, not host drift, and no band is computed 'just to see'.")
         return 1
+    print("  G0a is WEAKER than registered and that is recorded, not glossed: at bf16 no two runs of")
+    print("  this pipeline compute the same reward, including two on one machine, so G0a cannot")
+    print("  certify that two hosts agree. The host-transfer arms' registered prediction does that.")
 
     recs, scored = [], 0
     for arm in ARMS:

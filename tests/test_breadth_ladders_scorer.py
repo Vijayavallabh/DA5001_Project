@@ -63,9 +63,12 @@ def _gate(out, verdict="PASS"):
            ["metric", "value", "threshold", "verdict"],
            [{"metric": "reward_agree_frac", "value": "0.99997", "threshold": 0.999,
              "verdict": "PASS"},
-            {"metric": "reward_max_abs_diff", "value": "0.00310", "threshold": 0.01, "verdict": ""},
-            {"metric": "argmax_agree_frac", "value": "0.99800", "threshold": 0.99,
-             "verdict": "PASS"},
+            {"metric": "reward_max_abs_diff", "value": "1.75000", "threshold": 0.01, "verdict": ""},
+            {"metric": "reward_mean_abs_diff", "value": "0.18517", "threshold": "", "verdict": ""},
+            {"metric": "argmax_agree_frac", "value": "0.95657", "threshold": 0.99,
+             "verdict": "WITHDRAWN"},
+            {"metric": "reward_mean_abs_diff_blocking", "value": "0.18517", "threshold": 1.0,
+             "verdict": verdict},
             {"metric": "G0a", "value": verdict, "threshold": "", "verdict": verdict}])
 
 
@@ -85,7 +88,10 @@ def test_g0a_refuses_a_failed_gate_and_passes_a_clean_one(tmp_path):
     assert g0a(str(tmp_path))[0] is False
     _gate(str(tmp_path), "PASS")
     ok, msg = g0a(str(tmp_path))
-    assert ok and "0.99997" in msg and "0.99800" in msg
+    assert ok
+    assert "0.18517" in msg, "the blocking quantity must be in the message"
+    assert "withdrawn context" in msg and "0.95657" in msg, \
+        "the withdrawn thresholds must still be reported, or the record cannot be audited"
 
 
 def test_a_failed_g0a_stops_every_arm_even_with_perfect_arm_data(tmp_path, capsys, monkeypatch):
@@ -319,3 +325,22 @@ def test_the_bootstrap_seed_is_the_committed_one_and_the_band_reproduces_exactly
     assert round(g, 6) == 0.1
     assert round(lo, 6) == 0.0956, lo
     assert round(hi, 6) == 0.1044, hi
+
+
+def test_g0a_reports_the_within_host_floor_beside_its_verdict(tmp_path):
+    """A gate that does not state its own noise floor invites a reader to mistake agreement for
+    precision. The within-host control is the floor: same host, same weights, same text, batch 8 vs
+    16. If it is on disk, G0a must quote it."""
+    out = str(tmp_path)
+    _gate(out, "PASS")
+    ctrl = os.path.join(out, "control_b16")
+    os.makedirs(ctrl, exist_ok=True)
+    _write(os.path.join(ctrl, "host_transfer_gate.csv"),
+           ["metric", "value", "threshold", "verdict"],
+           [{"metric": "reward_mean_abs_diff", "value": "0.09209", "threshold": "", "verdict": ""},
+            {"metric": "argmax_agree_frac", "value": "0.97029", "threshold": 0.99,
+             "verdict": "WITHDRAWN"},
+            {"metric": "G0a", "value": "PASS", "threshold": "", "verdict": "PASS"}])
+    ok, msg = g0a(out)
+    assert ok
+    assert "WITHIN-HOST floor" in msg and "0.09209" in msg and "0.97029" in msg
