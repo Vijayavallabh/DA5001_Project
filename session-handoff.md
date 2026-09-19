@@ -53,8 +53,13 @@ below when they land.
   pass elsewhere and its own pre-registration forbids reading n=128 when it fails.
 * `scripts/run_comma7b128_card2b.sh` (GPU 4) still owns the merge and the scoring, waiting on
   `GEN_DONE` in the neutral and factual directories, both written only on `rc=0`.
-* **feat-135 stage 1 (vetting) PASSED** and stage 2 stays local **as registered**, queued in
-  `scripts/run_kl3m37b_breadth64_queued.sh` behind the factual class's `GEN_DONE`.
+* **feat-135 stage 1 (vetting) PASSED** and stage 2 stays local **as registered** --- it is
+  **running now on GPU 2**, started 17:20. The queue shell that was waiting on feat-134's factual
+  `GEN_DONE` was killed by PID and replaced by `scripts/run_kl3m37b_breadth64_card.sh` under the same
+  supervisor, because GPU 2 came free at 17:15 with 81 GB and the wait was only ever for a card. The
+  arm is `scripts/run_breadth64.sh` unmodified either way, so the protocol is unchanged; it now runs
+  on a card it does not share, which the pre-registration's co-residency note permits and improves on.
+  ETA ~7 gpu-h.
 
 ### Second host (8x H100-80GB, idle, `~/v` only) --- feat-136
 
