@@ -246,3 +246,54 @@ of this host to their limit with a week of runway to the deadline. Two cards are
 for a retry, because the local box has just shown what happens to an arm with no headroom.
 
 ## Scoring log
+
+### 2026-09-19 ~18:00 --- G0a FAILS AS REGISTERED, and the threshold rests on a premise this arm has now falsified
+
+**What was measured.** `analysis/score_host_transfer_gate.py` re-scored the committed local arm's own
+$32{,}000$ candidates on the second host, same text in, and compared against
+`results/selection_rewards64_comma7b.csv`
+(`results/hostb/host_transfer_gate_AS_REGISTERED.csv`, kept as the record):
+
+| metric | value | threshold | verdict |
+|---|---|---|---|
+| rewards agreeing within $10^{-2}$ | $0.17572$ | $\ge 0.999$ | **FAIL** |
+| max $\lvert\text{diff}\rvert$ | $1.75000$ | --- | --- |
+| mean $\lvert\text{diff}\rvert$ | $0.18517$ | --- | --- |
+| served argmax agreeing | $0.95657$ | $\ge 0.99$ | **FAIL** |
+
+**So, as registered, no arm on that host is scored. That stands unless and until the gate itself is
+shown to be defective, and it is not being widened because a number fell outside it.**
+
+**The first thing checked was the obvious confound, and it is ruled out.** The reward model is
+**byte-identical** on the two hosts --- same revision `a09a3545...`, and
+`model-00001-of-00004.safetensors` is $3{,}945{,}441{,}440$ bytes with md5 `419fb46a...` on both. So
+this is not a different checkpoint, and the input text is the committed arm's own generations, so it
+is not a different corpus either.
+
+**What is suspect is a sentence in this document's own G0a paragraph:** *"a different bf16 reduction
+order moves it by $\sim 10^{-3}$"*. That is an **fp32**-scale figure. bf16 carries an 8-bit mantissa,
+about $0.4\%$ relative, so a logit of magnitude $\sim 20$ already carries $\sim 0.08$, and the reward
+is a *difference* of two such logits after a softmax over $152{,}064$ tokens, accumulated through $28$
+layers. A mean $\lvert\text{diff}\rvert$ of $0.185$ is the scale bf16 predicts; $10^{-3}$ is not.
+If that is right, **the $10^{-2}$ threshold was unsatisfiable by any two runs differing in reduction
+order, including two runs on the SAME host**, and a gate that nothing can pass gates nothing --- the
+mirror image of caution (p), where a gate failed everything including the arm it was validating.
+
+**That is a hypothesis about our own specification and it is being tested, not assumed.** The control
+is deliberately chosen to remove hardware from the question entirely: the same host, the same
+byte-identical weights and the same text re-scored at `--batch-size 16` against the host's own
+batch-$8$ cache. Batch composition sets the left padding and therefore the reduction order, so if
+reduction order alone produces $\sim 0.2$ within one machine, the registered threshold was impossible
+from the start and its failure says nothing about the second host. Running on card 3;
+`results/control_b16/`.
+
+**Two rules being followed here, both of which this project has paid for.**
+
+* **A defect in our own specification must not retire a question** (caution (w)): `feat-109` and
+  `feat-132` were recorded INVALID rather than FAILED for exactly this, and the distinction is not a
+  courtesy --- a spec defect that counts against a stop rule lets sloppy writing kill a live question.
+* **Repair a gate before you look at the result it is gating** (caution (ap)). That rule has already
+  been broken here: the FAIL was read before the threshold was questioned. The only honest
+  consequence is that **the repaired threshold may not be derived from the cross-host number it has to
+  judge.** It will be derived from the within-host control above, which is an independent measurement
+  of reduction-order scale, and the repaired gate will be mutation-tested before it is applied.
