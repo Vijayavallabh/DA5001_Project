@@ -47,6 +47,29 @@ below when they land.
   (~14h), then ~7 GPU-h. It runs `scripts/run_breadth64.sh` unmodified, so the protocol is identical
   to feat-130's three anchors by construction.
 
+## Scoring is already prepared --- both readings are fixed before the data lands
+
+| arm | command | refuses cleanly with no data |
+|---|---|---|
+| feat-134 | `.venv/bin/python analysis/score_n128.py --anchor comma7b --out results` | yes, "one of the two reward caches is missing" |
+| feat-135 | `.venv/bin/python analysis/score_kl3m37b_breadth64.py --out results` | yes, "G2 coverage: FAIL ... NOT SCORED" |
+
+`analysis/score_kl3m37b_breadth64.py` is new, because the breadth scorer on record gates each anchor
+on reproducing a committed `n=8` arm and **this anchor has none by design**. It implements feat-135's
+own gates (G2 coverage and G4 length block the band; G3 empties are reported and never gated) plus
+the **MARGINAL rule at 2.0 interval half-widths**, and it reuses `selection_breadth.gate` and
+`nonempty_gain` so the empty fraction is the committed definition rather than a lookalike.
+`tests/test_kl3m37b_scorer.py` exercises all eight branches on synthetic CSVs and the scorer was
+mutated three ways to prove they bite (caution (v)).
+
+Two background waiters are armed and will wake this session:
+
+* `scripts/wait_comma7b128.sh 3569258` --- reads only the log text after the last `START creative`,
+  because a whole-file grep fired instantly on card2b's **first** attempt's abort (12:38) when a
+  second invocation was already running (13:07). It also exits if the owner shell disappears without
+  a completion line, checked with `kill -0`, never `pgrep` (caution (c)).
+* a waiter on `output/logs/breadth64_kl3m37b.log` for `kl3m37b DONE` or a generation failure.
+
 ## Recommended next step
 
 Check `output/logs/comma7b128_card2.log` for `COMMA-7B n=128 ARM DRAINED` and
