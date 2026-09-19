@@ -1,0 +1,3 @@
+anchor,rule,acc_n1,acc_n64,gain64,lo95,hi95,verdict,beats_pointwise,judged_verdict,cross_axis_reading
+Comma-7B (1T tokens),majority vote,0.226,0.4,0.174,0.134,0.216,CLIMBS,yes,CLIMBS,Corpus size gates NEITHER axis; the 7B result is about architecture and scale.
+Comma-7B (1T tokens),pointwise reward,0.226,0.286,0.06,0.02,0.102,CLIMBS,,CLIMBS,

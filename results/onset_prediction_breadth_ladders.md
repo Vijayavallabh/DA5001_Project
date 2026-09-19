@@ -702,3 +702,61 @@ at the same script and the same flags --- is being generated as `output/phase5/s
 `tc18bhb` becomes readable against it. Until then the host-transfer reading rests on `comma7bhb`
 alone, which is one anchor rather than two, and that is a real loss of power stated rather than
 glossed.
+
+### 2026-09-19 --- host B finishes all six arms; four score, two are blocked by G0b for OPPOSITE reasons
+
+All six arms exited `rc=0` and `feat-137` finished beside them. G0a PASSES (mean $|diff|$ $0.185$
+nats against the blocking $1.0$). Four arms score; the two host-transfer arms do not, and the reason
+differs in each case, which is the point of having measured rather than assumed it.
+
+**The four new anchors, all gates passed (G2, G4, G5):**
+
+| anchor | $u(8)$ | paired $g(64)-g(8)$ | half-widths | verdict |
+|---|---|---|---|---|
+| Comma-7B (1T) | $0.489$ | $\mathbf{+0.0970\ [+0.0560, +0.1390]}$ | $2.34$ | **CLIMBS**, stable |
+| Pleias-350M | $0.419$ | $+0.0090\ [-0.0320, +0.0490]$ | $0.22$ | SATURATED BY 8 (MARGINAL) |
+| KL3M-170M | $0.285$ | $+0.0130\ [-0.0210, +0.0470]$ | $0.38$ | SATURATED BY 8 (MARGINAL) |
+| KL3M-520M | $0.307$ | $-0.0070\ [-0.0430, +0.0300]$ | $0.19$ | SATURATED BY 8 (MARGINAL) |
+
+G5 clears every one: no anchor is within reach of the $0.85$ ceiling, so the three nulls are nulls
+and not flat curves against a bounded metric's limit.
+
+**The three hypotheses, read by the committed rules.**
+
+* **H1 (capability) is falsified in two families and upheld in one.** Comma is monotone over three
+  rungs ($+0.0880$, $+0.0970$, $+0.1010$); KL3M is not ($+0.0130$, $-0.0070$, $+0.0650$) and neither
+  is Pleias ($+0.0090$, $+0.0360$, $+0.0030$). Reported exactly that way, both directions guarded.
+* **H2 (family) SURVIVES: not one non-Comma anchor clears $2.0$ half-widths**, over six anchors in
+  two families spanning $0.168$B to $3$B.
+* **H3 (training data) is answered: corpus size does NOT gate the mechanism.** At a fixed $7$B the
+  1T checkpoint climbs $+0.0970$ against the 2T checkpoint's $+0.1010$ on record --- a difference of
+  $0.004$, well inside the $0.013$ that caution (ap) calls the honest scale for a re-draw.
+
+**`comma7bhb`: G0b fails at $+5.3\%$ on a $5\%$ tolerance, and the cause IS determinable.** Unlike
+`tc18bhb`, the pipelines match --- both runs read `target = anchor = common-pile/comma-v0.1-2t` ---
+so this is a like-for-like comparison. The decomposition:
+
+| rank-0 ($n=1$) quantity | local | host B |
+|---|---|---|
+| mean words | $99.18$ | $104.41$ |
+| empty fraction | $0.094$ | $\mathbf{0.020}$ |
+| mean words, non-empty | $109.47$ | $106.54$ |
+| median words, non-empty | $125$ | $122$ |
+
+$(1-0.094)\times 109.47 = 99.18$ and $(1-0.020)\times 106.54 = 104.41$: the mean is exactly
+`(1 - empty) x (length given non-empty)`, and **the whole $+5.3\%$ is the empty rate**. Length given
+non-empty moved $-2.7\%$ and the median $-2.4\%$, both comfortably inside tolerance. At local's empty
+rate host B's mean would be $96.5$, i.e. $-2.7\%$. This is caution (v)'s mechanism exactly: an empty
+generation is EOS at step $0$, step-$0$ logits depend on the padding pattern and hence the reduction
+order, and the rate moves where it is large --- Comma-7B is the anchor where empties live.
+
+**The band is NOT computed, and has not been looked at.** The registered gate blocks, and a gate is
+not repaired after its verdict is read. What the measurement establishes is that the registered
+STATISTIC is the wrong one: G0b tests a mean that mixes a stable quantity (length given non-empty)
+with one caution (v) already recorded as legitimately host- and batch-volatile, which is that
+caution's own "an aggregate gate on a stratified rate gates the wrong quantity". Any repair must be
+registered as a specification repair, mutation-tested, and only then run --- and it must be
+disclosed that the decomposition was known before the repair was written, because it was.
+
+**`tc18bhb` remains structurally INVALID** pending its local counterpart `tc18bsp`, which was itself
+OOM-killed on the local box at $20{:}41$ and is requeued under the supervisor.
