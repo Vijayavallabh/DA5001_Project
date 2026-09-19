@@ -117,11 +117,28 @@ actionable: fp32 against bf16 on one host, and fp32 batch 8 against fp32 batch 1
 agrees tightly, **scoring in fp32 restores a reproducible served completion**, which is a concrete
 recommendation rather than only a caveat.
 
+## feat-137 --- the judge-free axis gets its second anchor
+
+`results/onset_prediction_verifiable_comma1t.md`, bands committed before the run. The judge-free
+axis (GSM8K exact match, no judge anywhere) rests on **one** anchor, and it is the axis that exists
+to answer every objection to the judge. This adds `common-pile/comma-v0.1-1t` --- the same
+architecture at the same 7B scale as Comma-7B, differing only in corpus size --- so the
+training-data ablation runs on **both** axes at once, because feat-136's `comma1thb` is measuring
+the judged half of the same comparison.
+
+All **four** joint outcomes are given a reading in advance, including the two that damage the paper:
+a judged CLIMB with no verifiable climb behind it is recorded as "a judged gain that no verifiable
+improvement backs", and a judged SATURATION with a verifiable climb means the judged null is a judge
+artefact and weakens every judged null the paper reports. **G0 is a floor gate** --- n=1 accuracy
+must be at least 0.05 --- because a model that cannot do the task at all produces a flat curve, and
+a flat curve from a floor is not a saturation.
+
 ## Scoring is already prepared --- both readings are fixed before the data lands
 
 | arm | command | refuses cleanly with no data |
 |---|---|---|
 | feat-136 | `.venv/bin/python analysis/score_breadth_ladders.py --out results` | yes, "G0a ... NOT SCORED" |
+| feat-137 | scorer not yet written; bands are in the log and the floor gate G0 comes first | --- |
 | feat-134 | `.venv/bin/python analysis/score_n128.py --anchor comma7b --out results` | yes, "one of the two reward caches is missing" |
 | feat-135 | `.venv/bin/python analysis/score_kl3m37b_breadth64.py --out results` | yes, "G2 coverage: FAIL ... NOT SCORED" |
 
