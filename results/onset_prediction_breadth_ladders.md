@@ -635,3 +635,70 @@ is a second independent reading of an anchor that had already passed, at no extr
 **The OLMo-2-7B supplementary control remains uninformative** ($0.0$ where the record has a non-zero,
 inside the $13$--$36\%$ chance of that under a perfect pipeline) and is **not** what licenses G1. It
 never was; the 70B is.
+
+### 2026-09-19 ~23:10 --- the first arm lands, G0b FAILS, and the cause is OUR SPECIFICATION
+
+`tc18bhb` finished (`rc=0`). **G0b FAILED**: $76.5$ words at $n=1$ against the registered local
+$72.2$, $+6.0\%$ on a $5\%$ tolerance. The registered response to a G0b failure is `CAUSE
+UNDETERMINED`, so the cause was investigated rather than assumed, and it turned out to be
+determinable --- and to be ours.
+
+**The first hypothesis was the obvious one and the measurement refuted it.** Empty completions are
+`EOS` at step $0$ and carry zero words, so an empty-rate shift moves a mean length; caution (v)
+established exactly that mechanism within one host. It predicts that the empty fraction fell. It
+rose, $0.018 \to 0.052$ --- which pushes the mean **down** --- while the mean went up, and the
+non-empty completions were themselves longer:
+
+| rank-0 ($n=1$) quantity | local `sel_anchor64` | host B `sel_tc18bhb_64` |
+|---|---|---|
+| mean words | $72.22$ | $76.45$ |
+| empty fraction | $0.018$ | $0.052$ |
+| mean words, non-empty | $73.54$ | $80.65$ |
+| **median words, non-empty** | $\mathbf{57}$ | $\mathbf{74}$ |
+
+A median moving $57 \to 74$ is not a re-roll. Within one host a batch-size change --- which alters
+the reduction order and the padding pattern --- moved Comma-7B's $n=1$ mean length by $0.4\%$
+(caution (v)). This is a different kind of difference.
+
+**The cause, read off the runs themselves.** Each trajectory records its own `target_model` and
+`anchor_model`:
+
+* host B `sel_tc18bhb_64`: `target = anchor = jacquelinehe/tinycomma-1.8b-llama3-tokenizer`
+* local `sel_anchor64`: `target = meta-llama/Llama-3.1-8B-Instruct`, `anchor = tinycomma-1.8b`
+
+`scripts/run_breadth64.sh` passes `--safe-model-path "$MODEL" --risky-model-path "$MODEL"` --- it
+**self-pairs by design**, and every local breadth arm on record does too (`sel_comma7b_64`,
+`sel_kl3m17b_64`, `sel_pleias12b_64` all read `target == anchor`). `sel_anchor64` is **not** a
+breadth arm; it is the audited anchor's original selection sweep against the 8B risky model. The
+pre-registration took $72.2$ from it anyway.
+
+So the comparison changed the **host and the pipeline**, which is `feat-132`'s shape exactly. Per
+caution (w) a defect in our own specification makes an arm **INVALID, not FAILED**, and does not
+retire the question. **`tc18bhb` is INVALID.** Its own numbers are in its log and are deliberately
+**not read here** --- when a gate fails the band is not computed "just to see".
+
+**The defect is confined to one arm, and that was checked rather than hoped.** `g0b` applies only to
+`role=host` arms, so the four new anchors were never gated on a local reference. The other host arm
+is clean: `sel_comma7b_64` **is** a `run_breadth64.sh` arm, and its rank-0 mean measures $99.18$
+words against the registered $99.2$ --- like-for-like, and reproducing to the second decimal. G1's
+three passes, the 70B control and the `comma7bhb` comparison are all untouched.
+
+**The repair, made while the replacement data does not exist.** A host-transfer arm now names the
+**directory** it is the counterpart of, and the scorer derives both the length reference and the
+local band from it with its own code (caution (v): measure the reference on the arm being
+replicated). `pairing()` reads `target_model` and `anchor_model` off both runs and a mismatch is
+reported as `PIPELINE MISMATCH ... INVALID`, never as a length failure --- and a structural failure
+is now described as structural rather than under the `CAUSE UNDETERMINED` wording, because that
+wording tells a reader the lengths disagree for reasons nobody can separate when in fact **no
+comparison was made at all**. `local_mw1` survives only as a consistency check and fires if it ever
+disagrees with its directory.
+
+Five regression guards, and four mutations each failing by name: deleting the mismatch check,
+reinstating the withdrawn $72.2$/`sel_anchor64` reference, deleting the missing-counterpart branch,
+and deleting the `local_mw1` consistency assertion. Source restored byte-identical.
+
+**The question is not retired.** The missing counterpart --- a local, self-paired TinyComma n=64 arm
+at the same script and the same flags --- is being generated as `output/phase5/sel_tc18bsp_64`, and
+`tc18bhb` becomes readable against it. Until then the host-transfer reading rests on `comma7bhb`
+alone, which is one anchor rather than two, and that is a real loss of power stated rather than
+glossed.

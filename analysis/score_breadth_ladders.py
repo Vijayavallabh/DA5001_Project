@@ -96,11 +96,29 @@ MAX_SEED_MOVE = 0.0610           # KL3M-1.7B, at 1.73 half-widths -- the largest
 STABLE_SEED_MOVE = 0.0130        # Comma-7B, at 2.46 -- REPORTED for context, never a threshold
 
 ARMS = (
+    # REPAIRED 2026-09-19, and the repair is a WITHDRAWAL. A host-transfer arm must name the local
+    # DIRECTORY it is the counterpart of, not a typed-in number: the reference is then measured by
+    # this scorer's own code on the arm being replicated (caution (v)) and cannot silently come from
+    # a different pipeline. `local_mw1` survives only as a consistency check on the committed value
+    # where one exists.
+    #
+    # tc18bhb's reference USED to be output/phase5/sel_anchor64 via local_mw1=72.2. That directory
+    # is NOT a breadth arm -- it pairs the TinyComma anchor with meta-llama/Llama-3.1-8B-Instruct as
+    # the risky model, while run_breadth64.sh passes --safe-model-path and --risky-model-path the
+    # SAME model. So the comparison changed the host AND the pipeline, which is feat-132's shape
+    # exactly, and the arm is INVALID rather than failed (caution (w)). No local self-paired
+    # TinyComma arm exists yet; until one does, this arm has no reference and is not read.
     dict(name="tc18bhb", label="TinyComma-1.8B", role="host", family="Comma", params=1.759,
          gen_dir="output/phase5/sel_tc18bhb_64",
-         local_delta=0.0880, local_lo=0.0460, local_hi=0.1290, local_mw1=72.2),
+         local_gen_dir="output/phase5/sel_tc18bsp_64",
+         local_per="selection_scaling_per_prompt_tc18bsp64.csv",
+         local_delta=None, local_lo=None, local_hi=None, local_mw1=None),
+    # comma7bhb is unaffected: sel_comma7b_64 IS a run_breadth64.sh arm, self-paired the same way,
+    # and its measured rank-0 mean of 99.18 words reproduces the committed 99.2.
     dict(name="comma7bhb", label="Comma-7B (2T)", role="host", family="Comma", params=7.003,
          gen_dir="output/phase5/sel_comma7bhb_64",
+         local_gen_dir="output/phase5/sel_comma7b_64",
+         local_per="selection_scaling_per_prompt_comma7b64.csv",
          local_delta=0.1010, local_lo=0.0600, local_hi=0.1420, local_mw1=99.2),
     dict(name="comma1thb", label="Comma-7B (1T)", role="new", family="Comma", params=7.003,
          gen_dir="output/phase5/sel_comma1thb_64"),
@@ -242,11 +260,65 @@ def g0a(out):
     return v == "PASS", f"{v} -- {detail}"
 
 
+def pairing(gen_dir):
+    """(target_model, anchor_model) off the first trajectory, or None if the directory is absent.
+
+    Two arms compared across hosts must have been produced by the same pipeline. run_breadth64.sh
+    self-pairs (target == anchor); the audited anchor's original arm does not. Reading it here is
+    what turns that difference from an invisible confound into a gate.
+    """
+    import glob
+    import json
+    for f in sorted(glob.glob(os.path.join(gen_dir, "trajectories_k0_*.jsonl"))):
+        with open(f, encoding="utf-8") as fh:
+            line = fh.readline()
+        if line:
+            m = json.loads(line)["metadata"]
+            return m.get("target_model"), m.get("anchor_model")
+    return None
+
+
+def rank0_mean_words(gen_dir):
+    """Mean words of the rank-0 completion -- the candidate the scoring pass calls n=1.
+
+    Derived with the committed loader rather than typed in, so it cannot be quoted from an arm that
+    is not the one being replicated.
+    """
+    from analysis.selection_decoding import load_candidates
+    if not os.path.isdir(gen_dir):
+        return None
+    cand = load_candidates(gen_dir)
+    if not cand:
+        return None
+    ws = [len(v[0][3].split()) for v in cand.values()]
+    return sum(ws) / len(ws)
+
+
 def g0b(arm, summary):
-    """Sampling-path sanity for a host-transfer arm. Returns (ok, message) or (None, message)."""
+    """Sampling-path sanity for a host-transfer arm. Returns (ok, message) or (None, message).
+
+    Two checks, the structural one first: the local counterpart must exist AND must have been
+    produced by the same pipeline as the host arm. A pipeline mismatch is not a length failure and
+    must never be reported as one -- it makes the comparison INVALID (caution (w)).
+    """
     if arm["role"] != "host":
         return None, "not a host-transfer arm; no local counterpart to compare against"
-    ref = arm["local_mw1"]
+    local_dir = arm["local_gen_dir"]
+    ref = rank0_mean_words(local_dir)
+    if ref is None:
+        return False, (f"the local counterpart {local_dir} has not been generated, so this arm has "
+                       f"no like-for-like reference and is NOT READ")
+    ph, pl = pairing(arm["gen_dir"]), pairing(local_dir)
+    if ph is not None and pl is not None and ph != pl:
+        return False, (f"PIPELINE MISMATCH, so the arm is INVALID rather than failed: this host "
+                       f"pairs target={ph[0]} with anchor={ph[1]}, the local counterpart pairs "
+                       f"target={pl[0]} with anchor={pl[1]}. A comparison that changes the host AND "
+                       f"the pipeline is not the comparison that was registered")
+    if arm["local_mw1"] is not None:
+        assert abs(ref - arm["local_mw1"]) <= 0.5, (
+            f"{arm['name']}: the reference derived from {local_dir} is {ref:.2f} words but the "
+            f"committed local_mw1 is {arm['local_mw1']}. Establish which is wrong before editing "
+            f"either; do not adopt the derived value silently.")
     jb = [r for r in summary if JUDGE_B in r["judge"] and int(float(r["n"])) == 1]
     if not jb or not jb[0].get("mean_words"):
         return False, "no mean_words on the n=1 row"
@@ -414,16 +486,31 @@ def main():
                 # cross-checked against the two quantities a wrong model or corpus would also move.
                 emp, msg3b, _ = g3_empty(arm, out)
                 npr = len({x["prompt_id"] for x in (per or [])})
-                print("  NOT SCORED -- G0b FAILED, CAUSE UNDETERMINED between a pipeline defect and")
-                print("  legitimate length drift under a different numerical stack. The band is not")
-                print("  computed either way. Cross-checks a wrong model or corpus would also move:")
-                print(f"    n=1 empty fraction: {msg3b}")
-                print(f"    prompts in the per-prompt file: {npr} (expected {N_PROMPTS})")
+                # The reason must match the failure. A STRUCTURAL failure -- no counterpart, or a
+                # counterpart from a different pipeline -- has a known cause and must not be
+                # reported as an undetermined length drift; that was the misdiagnosis this gate's
+                # repair exists to prevent.
+                structural = ("PIPELINE MISMATCH" in msgb) or ("has not been generated" in msgb)
+                if structural:
+                    print("  NOT SCORED -- G0b FAILED STRUCTURALLY. The cause is known and is not a")
+                    print("  length drift: there is no like-for-like local counterpart to compare")
+                    print("  against, so no comparison was made. The arm is INVALID rather than")
+                    print("  failed (caution (w)) and the question it asks is not retired.")
+                    note = f"G0b structural FAIL: {msgb}"
+                else:
+                    print("  NOT SCORED -- G0b FAILED, CAUSE UNDETERMINED between a pipeline defect "
+                          "and")
+                    print("  legitimate length drift under a different numerical stack. The band is "
+                          "not")
+                    print("  computed either way. Cross-checks a wrong model or corpus would also "
+                          "move:")
+                    print(f"    n=1 empty fraction: {msg3b}")
+                    print(f"    prompts in the per-prompt file: {npr} (expected {N_PROMPTS})")
+                    note = (f"G0b FAIL, cause undetermined: {msgb}; "
+                            f"empty {emp if emp is not None else 'n/a'}, prompts {npr}")
                 recs.append(dict(anchor=label, name=name, family=arm["family"],
                                  params_b=arm["params"], role=arm["role"],
-                                 verdict="NOT SCORED",
-                                 note=f"G0b FAIL, cause undetermined: {msgb}; "
-                                      f"empty {emp if emp is not None else 'n/a'}, prompts {npr}"))
+                                 verdict="NOT SCORED", note=note))
                 continue
 
         ok4, msg4, words = g4_length(summary)
@@ -463,14 +550,29 @@ def main():
             print("  the interval says. feat-131 moved 0.0610 at 1.73 half-widths.")
 
         move = pred = ""
-        if arm["role"] == "host":
-            move = abs(g - arm["local_delta"])
+        local_delta = arm.get("local_delta")
+        local_lo, local_hi = arm.get("local_lo"), arm.get("local_hi")
+        if arm["role"] == "host" and local_delta is None and arm.get("local_per"):
+            # Derived, never typed: once the missing counterpart is generated its band comes from
+            # the same band() on its own per-prompt CSV, so the arm cannot acquire a reference that
+            # was measured somewhere else (caution (v)).
+            pr = rows(os.path.join(out, arm["local_per"]))
+            if pr is not None:
+                local_delta, local_lo, local_hi = band(pr)[0:3]
+                print(f"  local counterpart derived from {arm['local_per']}: "
+                      f"{local_delta:+.4f} [{local_lo:+.4f}, {local_hi:+.4f}]")
+        if arm["role"] == "host" and local_delta is None:
+            print("  host transfer: NOT READ -- this arm has no like-for-like local counterpart, so")
+            print("  there is no local delta to move from. The band above is this host's own")
+            print("  reading and is NOT evidence about hardware transfer.")
+        elif arm["role"] == "host":
+            move = abs(g - local_delta)
             # The RANGE only. No tier selected by the half-width ratio: caution (ap) says that ratio
             # predicts the verdict and not the distance, and it cites these very numbers to say so.
             pred = ("WITHIN THE OBSERVED SEED RANGE" if move <= MAX_SEED_MOVE
                     else "LARGER THAN ANY SEED MOVE ON RECORD")
-            print(f"  host transfer: local {arm['local_delta']:+.4f} "
-                  f"[{arm['local_lo']:+.4f}, {arm['local_hi']:+.4f}] -> this host {g:+.4f}; "
+            print(f"  host transfer: local {local_delta:+.4f} "
+                  f"[{local_lo:+.4f}, {local_hi:+.4f}] -> this host {g:+.4f}; "
                   f"moved {move:.4f}")
             print(f"    seed-replication moves on record: 0.0000, {STABLE_SEED_MOVE:.4f}, "
                   f"{MAX_SEED_MOVE:.4f}. Committed prediction is the RANGE, at or below "
@@ -490,7 +592,7 @@ def main():
                          n_prompts=npr, mean_words_n1=round(words, 1),
                          u8=round(u8, 4), headroom=round(1.0 - u8, 4),
                          empty_frac_n1=(round(empty, 4) if empty is not None else ""),
-                         local_delta=(arm.get("local_delta", "") or ""),
+                         local_delta=(local_delta if local_delta is not None else ""),
                          host_move=(round(move, 4) if move != "" else ""),
                          host_prediction=pred, marginal=("yes" if marginal else "no"), verdict=v,
                          note=""))

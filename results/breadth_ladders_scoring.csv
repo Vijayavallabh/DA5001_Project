@@ -1,0 +1,7 @@
+anchor,name,family,params_b,role,gain8,gain64,gain_diff,lo95,hi95,half_widths,n_prompts,mean_words_n1,u8,headroom,empty_frac_n1,local_delta,host_move,host_prediction,marginal,verdict,note
+TinyComma-1.8B,tc18bhb,Comma,1.759,host,,,,,,,,,,,,,,,,NOT SCORED,"G0b FAIL, cause undetermined: the local counterpart output/phase5/sel_tc18bsp_64 has not been generated, so this arm has no like-for-like reference and is NOT READ; empty n/a, prompts 500"
+Comma-7B (2T),comma7bhb,Comma,7.003,host,,,,,,,,,,,,,,,,NOT SCORED,the scoring CSVs are not there yet; the arm has not finished
+Comma-7B (1T),comma1thb,Comma,7.003,new,,,,,,,,,,,,,,,,NOT SCORED,the scoring CSVs are not there yet; the arm has not finished
+Pleias-350M,pleias350mhb,Pleias,0.353,new,,,,,,,,,,,,,,,,NOT SCORED,the scoring CSVs are not there yet; the arm has not finished
+KL3M-170M,kl3m170mhb,KL3M,0.168,new,,,,,,,,,,,,,,,,NOT SCORED,the scoring CSVs are not there yet; the arm has not finished
+KL3M-520M,kl3m520mhb,KL3M,0.52,new,,,,,,,,,,,,,,,,NOT SCORED,the scoring CSVs are not there yet; the arm has not finished

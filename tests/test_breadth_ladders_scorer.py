@@ -155,23 +155,36 @@ def test_a_host_arm_needs_BOTH_a_positive_interval_and_two_half_widths_to_transf
 
 # ---- G0b, G2, G4: the gates that block one arm -------------------------------------------------
 
-def test_g0b_compares_only_host_arms_and_only_against_their_own_local_value(tmp_path):
+def _stub_local(monkeypatch, ref=99.2, pair=("m", "m")):
+    """Stand in for the local counterpart directory, which is 32,000 trajectories on disk.
+
+    The real derivation is exercised against real directories in the two tests at the end of this
+    file; here it is stubbed so the gate's LOGIC can be tested without a 2.5 GB read per case.
+    """
+    import analysis.score_breadth_ladders as M
+    monkeypatch.setattr(M, "rank0_mean_words", lambda d: ref)
+    monkeypatch.setattr(M, "pairing", lambda d: pair)
+
+
+def test_g0b_compares_only_host_arms_and_only_against_their_own_local_value(tmp_path, monkeypatch):
     out = str(tmp_path)
-    tc = next(a for a in ARMS if a["name"] == "tc18bhb")
+    _stub_local(monkeypatch)
+    c7 = next(a for a in ARMS if a["name"] == "comma7bhb")
     new = next(a for a in ARMS if a["name"] == "kl3m170mhb")
-    _arm_csvs(out, tc["name"], _clear_climb(), mean_words_n1=73.5)      # +1.8% of 72.2
-    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_tc18bhb64.csv"))))
-    ok, msg = g0b(tc, s)
-    assert ok and "73.5" in msg and "72.2" in msg
+    _arm_csvs(out, c7["name"], _clear_climb(), mean_words_n1=101.0)     # +1.8% of 99.2
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_comma7bhb64.csv"))))
+    ok, msg = g0b(c7, s)
+    assert ok and "101.0" in msg and "99.2" in msg
     assert g0b(new, s)[0] is None, "a new anchor has no local counterpart and must not be gated"
 
 
-def test_g0b_fails_a_length_that_means_a_wrong_model_rather_than_host_drift(tmp_path):
+def test_g0b_fails_a_length_that_means_a_wrong_model_rather_than_host_drift(tmp_path, monkeypatch):
     out = str(tmp_path)
-    tc = next(a for a in ARMS if a["name"] == "tc18bhb")
-    _arm_csvs(out, tc["name"], _clear_climb(), mean_words_n1=40.0)      # -45% of 72.2
-    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_tc18bhb64.csv"))))
-    assert g0b(tc, s)[0] is False
+    _stub_local(monkeypatch)
+    c7 = next(a for a in ARMS if a["name"] == "comma7bhb")
+    _arm_csvs(out, c7["name"], _clear_climb(), mean_words_n1=40.0)      # -60% of 99.2
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_comma7bhb64.csv"))))
+    assert g0b(c7, s)[0] is False
 
 
 def test_g2_fails_a_partial_grid_and_a_wrong_prompt_count(tmp_path):
@@ -203,8 +216,10 @@ def test_g4_fails_a_degenerate_length(tmp_path):
 
 # ---- the host-transfer prediction, checked on both sides of its bound -------------------------
 
-def _run(out, deltas_by_name, words_by_name=None, u8_by_name=None):
+def _run(out, deltas_by_name, words_by_name=None, u8_by_name=None, monkeypatch=None):
     _gate(out, "PASS")
+    if monkeypatch is not None:
+        _stub_local(monkeypatch)
     for arm in ARMS:
         d = deltas_by_name.get(arm["name"])
         if d is None:
@@ -216,7 +231,7 @@ def _run(out, deltas_by_name, words_by_name=None, u8_by_name=None):
 
 def test_a_host_arm_that_lands_on_its_local_value_reads_as_a_transfer(tmp_path, capsys, monkeypatch):
     out = str(tmp_path)
-    _run(out, {"tc18bhb": 0.0880})
+    _run(out, {"comma7bhb": 0.1010}, monkeypatch=monkeypatch)
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     assert main() == 0
     txt = capsys.readouterr().out
@@ -238,7 +253,7 @@ def test_a_host_arm_that_moves_further_than_any_seed_draw_says_so(tmp_path, caps
     """The committed prediction has teeth in the direction that would be inconvenient: a move past
     0.0610 is reported as hardware NOT being merely a re-draw, and is the finding."""
     out = str(tmp_path)
-    _run(out, {"tc18bhb": 0.0880 + 0.3000})       # a move of 0.3000, literal, not derived
+    _run(out, {"comma7bhb": 0.1010 + 0.3000}, monkeypatch=monkeypatch)       # a move of 0.3000, literal, not derived
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     main()
     txt = capsys.readouterr().out
@@ -267,7 +282,7 @@ def test_the_half_width_ratio_is_NOT_used_to_pick_a_distance_bound(tmp_path, cap
 def test_the_seed_moves_on_record_are_all_reported_not_just_the_bound(tmp_path, capsys, monkeypatch):
     """All three, so a reader can see the bound is a RANGE over n=3 observations and not a law."""
     out = str(tmp_path)
-    _run(out, {"tc18bhb": 0.0880})
+    _run(out, {"comma7bhb": 0.1010}, monkeypatch=monkeypatch)
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     main()
     txt = capsys.readouterr().out
@@ -314,13 +329,13 @@ def test_H3_reads_the_data_ablation_in_both_directions(tmp_path, capsys, monkeyp
 
 def test_the_scoring_csv_records_every_arm_including_the_unscored_ones(tmp_path, monkeypatch):
     out = str(tmp_path)
-    _run(out, {"tc18bhb": 0.0880})
+    _run(out, {"comma7bhb": 0.1010}, monkeypatch=monkeypatch)
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     main()
     r = list(csv.DictReader(open(os.path.join(out, "breadth_ladders_scoring.csv"))))
     assert len(r) == len(ARMS), "an arm that could not be scored must still appear, with its reason"
     by = {x["name"]: x for x in r}
-    assert by["tc18bhb"]["verdict"] == "TRANSFERS"
+    assert by["comma7bhb"]["verdict"] == "TRANSFERS"
     assert by["kl3m170mhb"]["verdict"] == "NOT SCORED" and by["kl3m170mhb"]["note"]
 
 
@@ -466,13 +481,14 @@ def test_a_CLIMB_without_headroom_is_still_a_climb(tmp_path, capsys, monkeypatch
 
 def test_the_headroom_is_recorded_for_every_scored_arm(tmp_path, monkeypatch):
     out = str(tmp_path)
-    _run(out, {"tc18bhb": 0.0880}, u8_by_name={"tc18bhb": 0.489})
+    _run(out, {"comma7bhb": 0.1010}, u8_by_name={"comma7bhb": 0.489},
+         monkeypatch=monkeypatch)
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     main()
     r = {x["name"]: x for x in csv.DictReader(
         open(os.path.join(out, "breadth_ladders_scoring.csv")))}
-    assert float(r["tc18bhb"]["u8"]) == 0.489
-    assert float(r["tc18bhb"]["headroom"]) == pytest.approx(0.511, abs=1e-4)
+    assert float(r["comma7bhb"]["u8"]) == 0.489
+    assert float(r["comma7bhb"]["headroom"]) == pytest.approx(0.511, abs=1e-4)
 
 
 # ---- G0b's failure description, committed before any mean_words was read -----------------------
@@ -484,7 +500,9 @@ def test_a_g0b_failure_says_CAUSE_UNDETERMINED_and_shows_the_cross_checks(tmp_pa
     a failure must not be reported as a defect. It blocks either way; what is fixed in advance is
     how it is DESCRIBED."""
     out = str(tmp_path)
-    _run(out, {"tc18bhb": 0.0880}, words_by_name={"tc18bhb": 40.0})      # -45% of the local 72.2
+    # A genuine LENGTH failure: the counterpart exists and was produced the same way, and the arm
+    # still came out 60% short. That -- and only that -- is the undetermined case.
+    _run(out, {"comma7bhb": 0.1010}, words_by_name={"comma7bhb": 40.0}, monkeypatch=monkeypatch)
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     main()
     txt = capsys.readouterr().out
@@ -493,8 +511,30 @@ def test_a_g0b_failure_says_CAUSE_UNDETERMINED_and_shows_the_cross_checks(tmp_pa
     assert "prompts in the per-prompt file" in txt, "the cross-checks must be shown, not just named"
     r = {x["name"]: x for x in csv.DictReader(
         open(os.path.join(out, "breadth_ladders_scoring.csv")))}
+    assert r["comma7bhb"]["verdict"] == "NOT SCORED"
+    assert "cause undetermined" in r["comma7bhb"]["note"]
+
+
+def test_a_structural_g0b_failure_is_NOT_described_as_an_undetermined_length_drift(tmp_path, capsys,
+                                                                                   monkeypatch):
+    """The misdiagnosis the repair exists to prevent.
+
+    tc18bhb has no like-for-like counterpart, so its G0b failure has a KNOWN cause. Reporting it
+    under the undetermined-length-drift wording would tell a reader the lengths disagree for reasons
+    nobody can separate, when in fact no comparison was made at all.
+    """
+    out = str(tmp_path)
+    _run(out, {"tc18bhb": 0.0880}, monkeypatch=None)
+    _gate(out, "PASS")
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    main()
+    txt = capsys.readouterr().out
+    assert "FAILED STRUCTURALLY" in txt and "INVALID rather than" in txt
+    assert "CAUSE UNDETERMINED" not in txt
+    r = {x["name"]: x for x in csv.DictReader(
+        open(os.path.join(out, "breadth_ladders_scoring.csv")))}
     assert r["tc18bhb"]["verdict"] == "NOT SCORED"
-    assert "cause undetermined" in r["tc18bhb"]["note"]
+    assert "structural" in r["tc18bhb"]["note"]
 
 
 # --- the half-width ratio assertion added 2026-09-19, and the two bounds that keep it honest ------
@@ -571,3 +611,99 @@ def test_an_arm_that_crosses_the_marginal_boundary_fails_even_inside_the_slack(m
     monkeypatch.setattr(M, "ON_RECORD_SOURCES", flipped)
     with pytest.raises(AssertionError, match="MARGINAL at the|licensed to predict"):
         M.on_record("results")
+
+
+# --- the repair of 2026-09-19: a host-transfer arm must name the DIRECTORY it is the counterpart
+#     of, and both sides must have come from the same pipeline. -----------------------------------
+
+def _fake_gen_dir(root, name, target, anchor, words=80, n=500):
+    """A minimal run directory the committed loader can read. Real code, small data."""
+    import json
+    d = os.path.join(root, name)
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "trajectories_k0_neutral.jsonl"), "w", encoding="utf-8") as fh:
+        for i in range(n):
+            gen = " ".join(["w"] * words)
+            fh.write(json.dumps(dict(
+                metadata=dict(prompt_id=f"neutral_{i:03d}", seed=i, target_model=target,
+                              anchor_model=anchor),
+                aggregate=dict(generation=gen, full_text="P " + gen))) + "\n")
+    return d
+
+
+def test_pairing_and_the_reference_are_read_off_the_run_itself(tmp_path):
+    d = _fake_gen_dir(str(tmp_path), "sp", "m/a", "m/a", words=73)
+    import analysis.score_breadth_ladders as M
+    assert M.pairing(d) == ("m/a", "m/a")
+    assert M.rank0_mean_words(d) == pytest.approx(73.0)
+    assert M.rank0_mean_words(os.path.join(str(tmp_path), "absent")) is None
+
+
+def test_a_pipeline_mismatch_is_reported_as_INVALID_and_not_as_a_length_failure(tmp_path):
+    """The defect this repair exists for, reproduced exactly.
+
+    The host arm self-pairs (run_breadth64.sh passes the same model to --safe-model-path and
+    --risky-model-path); the local counterpart pairs the anchor with a different risky model, which
+    is what output/phase5/sel_anchor64 does. Before the repair this surfaced as a 6.0% length
+    failure with CAUSE UNDETERMINED -- a true statement about the lengths and the wrong diagnosis,
+    because the two arms were never the same comparison. It must name the mismatch instead.
+    """
+    import analysis.score_breadth_ladders as M
+    out = str(tmp_path)
+    host = _fake_gen_dir(out, "host", "m/anchor", "m/anchor", words=76)
+    local = _fake_gen_dir(out, "local", "m/risky8b", "m/anchor", words=72)
+    arm = dict(name="x", role="host", gen_dir=host, local_gen_dir=local, local_mw1=None)
+    _arm_csvs(out, "x", _clear_climb(), mean_words_n1=76.0)
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_x64.csv"))))
+    ok, msg = M.g0b(arm, s)
+    assert ok is False
+    assert "PIPELINE MISMATCH" in msg and "INVALID" in msg
+    assert "m/risky8b" in msg and "m/anchor" in msg
+    assert "tolerance" not in msg, "a mismatch must not be dressed up as a length failure"
+
+
+def test_a_host_arm_whose_local_counterpart_does_not_exist_is_NOT_READ(tmp_path):
+    import analysis.score_breadth_ladders as M
+    out = str(tmp_path)
+    host = _fake_gen_dir(out, "host", "m/a", "m/a", words=76)
+    arm = dict(name="x", role="host", gen_dir=host,
+               local_gen_dir=os.path.join(out, "never_generated"), local_mw1=None)
+    _arm_csvs(out, "x", _clear_climb(), mean_words_n1=76.0)
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_x64.csv"))))
+    ok, msg = M.g0b(arm, s)
+    assert ok is False and "NOT READ" in msg and "has not been generated" in msg
+
+
+def test_a_committed_local_reference_that_disagrees_with_its_directory_fails_loudly(tmp_path):
+    """local_mw1 survives only as a consistency check. If it disagrees with what the directory
+    actually contains, that is the caution (v) defect returning and it must not be adopted silently.
+    """
+    import analysis.score_breadth_ladders as M
+    out = str(tmp_path)
+    host = _fake_gen_dir(out, "host", "m/a", "m/a", words=76)
+    local = _fake_gen_dir(out, "local", "m/a", "m/a", words=72)
+    arm = dict(name="x", role="host", gen_dir=host, local_gen_dir=local, local_mw1=99.2)
+    _arm_csvs(out, "x", _clear_climb(), mean_words_n1=76.0)
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_x64.csv"))))
+    with pytest.raises(AssertionError, match="committed local_mw1"):
+        M.g0b(arm, s)
+
+
+def test_the_withdrawn_tinycomma_reference_is_not_quietly_reinstated():
+    """Structural, and it always runs: no gitignored generations needed.
+
+    tc18bhb's reference was 72.2 words off output/phase5/sel_anchor64, which is not a breadth arm.
+    Both the number and that directory are withdrawn, and the arm carries no local delta either --
+    the band comparison was against the same non-counterpart.
+    """
+    tc = next(a for a in ARMS if a["name"] == "tc18bhb")
+    assert tc["local_mw1"] is None and tc["local_delta"] is None
+    assert "sel_anchor64" not in tc["local_gen_dir"]
+    assert tc["local_gen_dir"] == "output/phase5/sel_tc18bsp_64", (
+        "the counterpart must be the directory run_breadth64.sh will write for NAME=tc18bsp")
+    c7 = next(a for a in ARMS if a["name"] == "comma7bhb")
+    assert c7["local_gen_dir"] == "output/phase5/sel_comma7b_64", (
+        "comma7bhb's counterpart IS a run_breadth64.sh arm and must stay pointed at it")
+    for a in ARMS:
+        if a["role"] == "host":
+            assert "local_gen_dir" in a, "every host arm must name the directory it replicates"
