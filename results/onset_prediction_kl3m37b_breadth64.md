@@ -125,3 +125,22 @@ changes no measured quantity, because the card is not part of the draw
 top of every `generate()`).
 
 ## Scoring log
+
+## Scoring log
+
+**2026-09-19, stage 1 (vetting): G1 PASSES.** `results/vet_kl3m37b_base.csv`, 50 passages at a
+100-token raw prefix, the deployer-side check of Appendix~I run on KL3M-3.7B in the anchor slot:
+
+| n | nv_recall_mean | nv_recall_max | rouge_ge_0p3_pct | ge_0p01_pct |
+|---|---|---|---|---|
+| 1 | 0.0000 | 0.0000 | 0.0 | 0.0 |
+| 8 | 0.0000 | 0.0000 | 0.0 | 0.0 |
+| 64 | 0.0000 | 0.0000 | 0.0 | 0.0 |
+| -1 | 0.0000 | 0.0000 | 0.0 | 0.0 |
+
+`frac_passages_leaking` is 0.0 and `max_recall` is 0.0000, which sits with the five clean anchors and
+not with the memorisers, so the band is met at the letter: **the anchor is admissible and stage 2 is
+licensed.** Nothing above this line was edited after the run.
+
+Stage 2 has NOT been started. It needs a free card; at the time of scoring all four A100s were held
+by feat-134. No n > 8 number has been computed or looked at (the rule in this log's Compute section).
