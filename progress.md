@@ -1,5 +1,84 @@
 # Session Progress Log
 
+## 2026-09-19 19:40 --- a second host, eight H100s, and an instrument gate that was itself the defect
+
+**The host.** A DGX with 8x H100-80GB was made available, scoped by the user to a folder `v` and
+nothing outside it. Its environment is pinned to this box exactly (python 3.12, torch 2.10.0+cu128,
+transformers 5.16.1, every other pin) and verified by loading all seven models and running the suite
+there. Three facts worth carrying: **`/tmp` is READ-ONLY on it**, which is what broke `python3 -m
+venv` (`ensurepip`, needs sudo) and two `uv` installs (`curl: (23)`, then `mktemp: Read-only file
+system`) --- the fix is `TMPDIR=$HOME/v/tmp` exported by `~/v/env.sh`, which every remote command
+sources. **No secret is on that host**: `.env` there is a single comment line, because every model is
+cached and every run sets `HF_HUB_OFFLINE=1`. And its test suite reports 170 failures, **all** of them
+the absent manuscript, absent local `output/` directories, or one test that hardcodes `/tmp`; a green
+suite there is not evidence about the manuscript and must never be quoted as such.
+
+**feat-134 was dying and cannot be moved.** Two of its three classes had been OOM-killed **five**
+times by **another Claude Code session running as the same Unix user**, whose probes take 20--51 GB
+on whichever card they land on. `scripts/run_comma7b128_supervise.sh` now picks the emptiest eligible
+card, claims it so two supervisors cannot collide, and retries, invoking the class launchers
+byte-identical --- no `--batch-size`, no allocator flag, because the arm rests on a bit-identity
+reward gate and cuBLAS can select kernels by available workspace. **That same gate pins the arm to
+this box permanently**: it demands ranks 0--63 bit-identical to a cache drawn on a local A100, and
+different silicon changes bf16 reduction order, hence sampled tokens, hence the rewards. Not a
+preference --- a consequence of its own registered protocol.
+
+**feat-135 started ~14 h early** on a card that came free, replacing a queue shell that was waiting
+for nothing. Near-miss recorded: renaming the supervisor to a generic name also rewrote its header,
+and two supervisor shells were reading from that inode --- bash reads a script incrementally by byte
+offset, so that would have resumed them at the wrong position. The original bytes were restored to
+the same inode and verified against the commit they started from.
+
+**feat-136 pre-registered and launched** (`results/onset_prediction_breadth_ladders.md`): six breadth
+arms completing two within-family capability ladders (KL3M 170M/520M/1.7B/3.7B, Pleias 350M/1.2B/3B),
+the one fixed-size data ablation the model set allows (comma-1t against comma-2t at 7B), and
+re-drawing TinyComma and Comma-7B to ask whether a paired difference survives a change of HARDWARE
+the way feat-131/133 showed it survives a change of SEED. The five anchors on record were recomputed
+with the scorers' own `boot_mean` and all five reproduce: TinyComma `+0.0880` at 2.12 half-widths,
+Comma-7B `+0.1010` at 2.46, KL3M-1.7B `+0.0650` at 1.73, Pleias-1.2B `+0.0360`, Pleias-3B `+0.0030`
+--- so a pure capability story is **already falsified inside one family**, since Pleias-3B sits below
+Pleias-1.2B.
+
+**Its instrument gate FAILED, and the gate was what was wrong.** G0a re-scored the committed arm's
+own 32,000 candidates on the new host with the input text held identical and required 99.9% of
+rewards within `1e-2`; it read 17.6%. The reward model is byte-identical on both hosts. The control
+that settled it removed hardware from the question entirely --- same host, same weights, same texts,
+batch 8 against batch 16 --- and **also failed, at 60.0%, with a larger maximum deviation than the
+cross-host run**. The false premise was ours, in the pre-registration: *"bf16 reduction order moves it
+by ~1e-3"* is an fp32 figure. Per caution (w) the numbers are INVALID rather than FAILED; they stay
+in the source marked `WITHDRAWN` because a threshold that vanishes cannot be audited, and what
+survives is the defect scale the same paragraph registered in advance, *"whole nats"*, read as 1.0.
+Recorded plainly: the repair was made while all three arms were still generating and no band existed,
+but the FAIL **was** read before the threshold was questioned. Written up as **caution (as)**.
+
+**The control is a result.** `results/selection_argmax_stability_note.md` (no committed bands, so not
+an `onset_prediction_*.md`): argmax agreement between two caches of the SAME 32,000 texts falls from
+1.000 at `n=1` to about 0.91 at `n=64` and then plateaus, the mean winner-to-runner-up margin falls
+monotonically `8.245 -> 5.113` nats, and **the alternative pick gives up only 0.03 nats**. So the
+served TEXT is not reproducible and what it is WORTH is; the certificate is untouched because
+Proposition 1 holds for any score and any tie rule. Precision, not hardware, is the variable:
+bf16-against-fp32 on one machine agrees on 0.900 of cells at `n=16` where changing the GPU
+architecture agrees on 0.918. The Reproducibility Statement now discloses it.
+
+**feat-137 pre-registered**: the judge-free axis (GSM8K exact match, no judge anywhere) gets its
+second anchor, `comma-v0.1-1t`, so the training-data ablation runs on **both** axes at once. All four
+joint outcomes with feat-136's `comma1thb` are given a reading in advance, including the two that
+damage the paper. G0 is a floor gate, because a model that cannot do the task produces a flat curve
+and a flat curve from a floor is not a saturation.
+
+**G1 vetting**: Pleias-350M and KL3M-170M PASS at `0.0` everywhere; KL3M-520M OOMed on the Mixtral
+expert gather and is re-running with `--experts-impl eager`, **declared** because that flag's own
+help says it changes the sampled draw. And the G1 paragraph's own justification was wrong: it called
+the LoRA memoriser a positive control, but that memoriser never saw the `harry_potter` `test` split,
+so its zero is guaranteed by construction (caution (h)) and controls nothing. The protocol's real
+power is the 70B on record, and it is being re-established **on this host** rather than inherited.
+
+**State at 19:40.** Eight H100s and four A100s all working: three feat-136 arms plus two more just
+launched, KL3M-520M's re-vetting, the OLMo supplementary control, and the fp32 controls, with the
+70B positive control and feat-137 queued behind named completion strings. 735 tests pass; the
+manuscript compiles at exit 0, 0 overfull, 0 `??`, body still 9 of 9.
+
+
 
 ## 2026-09-18 23:10 --- feat-133 **REPLICATES**: both anchors the `n=64` claim keeps now survive a fresh draw
 
