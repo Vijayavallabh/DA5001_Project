@@ -26,7 +26,38 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.selection_decoding import boot_mean  # noqa: E402
 
 JUDGE_B = "Phi-3.5-mini-instruct"
-COMMITTED_G64 = (0.142, 0.097, 0.187)   # the reference on record, from the pre-registration
+
+# One gate, two anchors. feat-134 takes Comma-7B past n=64 exactly as feat-129 took the audited
+# anchor there, and the strongest available design is for BOTH to be read by this code path rather
+# than by two scorers that merely look alike. `--anchor audited` is the default, so feat-129's
+# committed invocation and its committed output are unchanged.
+#
+# `old_cache` is the committed n=64 reward cache the new pool's ranks 0-63 must reproduce, and
+# `committed_g64` is the judged gain on record -- printed for context and NEVER gated on, because
+# the two passes judge grids of different sizes and caution (ap) is about exactly that.
+ANCHORS = {
+    "audited": dict(
+        name="TinyComma-1.8B (audited)",
+        tag="_n128", top=128,
+        old_cache="selection_rewards64.csv",
+        old_scaling="selection_scaling.csv",
+        committed_g64=(0.142, 0.097, 0.187),
+        out_csv="n128_frontier.csv",
+        log="results/onset_prediction_n256.md",
+        with_arm_b=True,
+    ),
+    "comma7b": dict(
+        name="Comma-7B",
+        tag="_comma7b128", top=128,
+        old_cache="selection_rewards64_comma7b.csv",
+        old_scaling="selection_scaling_comma7b64.csv",
+        committed_g64=(0.173, 0.130, 0.218),
+        out_csv="comma7b_n128_frontier.csv",
+        log="results/onset_prediction_comma7b_n128.md",
+        with_arm_b=False,          # extraction is feat-129's arm; this one is the frontier only
+    ),
+}
+COMMITTED_G64 = ANCHORS["audited"]["committed_g64"]   # back-compat for existing callers
 
 
 def rows(path):
@@ -85,12 +116,13 @@ def judge_drift(new, old):
     return out
 
 
-def arm_a(a):
-    new = rows(os.path.join(a.out, f"selection_scaling{a.tag}.csv"))
-    old = rows(os.path.join(a.out, "selection_scaling.csv"))
-    ok, bad = reward_gate(rows(os.path.join(a.out, f"selection_rewards{a.top}.csv")),
-                          rows(os.path.join(a.out, "selection_rewards64.csv")))
-    print("=== Arm A: the judged frontier to n=128 ===")
+def arm_a(a, A):
+    new = rows(os.path.join(a.out, f"selection_scaling{A['tag']}.csv"))
+    old = rows(os.path.join(a.out, A["old_scaling"]))
+    new_cache = A["old_cache"].replace("64", str(A["top"]), 1)
+    ok, bad = reward_gate(rows(os.path.join(a.out, new_cache)),
+                          rows(os.path.join(a.out, A["old_cache"])))
+    print(f"=== Arm A: the judged frontier to n={A['top']} at {A['name']} ===")
     if ok is None:
         print(f"  NOT YET SCOREABLE: {bad}")
         return None
@@ -98,7 +130,8 @@ def arm_a(a):
     if not ok:
         for x in bad[:8]:
             print(f"    {x}")
-        print("  Per the pre-registration, NO n>64 number is read. Chase the bug.")
+        print("  Per the pre-registration, NO n>64 number is read. Chase the bug --- the first thing")
+        print("  to check is the batch size of the arm on record (cautions (u), (v), feat-130).")
         return None
     drift = judge_drift(new, old)
     worst = max((abs(b - c), k) for k, b, c, _ in drift) if drift else (0, None)
@@ -107,7 +140,7 @@ def arm_a(a):
           f"{worst[0]:+.4f} at {worst[1]}, on generations whose mean_words differ by {words:.4f}")
     print("  (the band below is the PAIRED difference within THIS pass, so the drift cannot reach it)")
 
-    per = rows(os.path.join(a.out, f"selection_scaling_per_prompt{a.tag}.csv"))
+    per = rows(os.path.join(a.out, f"selection_scaling_per_prompt{A['tag']}.csv"))
     assert per, "the per-prompt file is required for the PAIRED difference"
     pp = [r for r in per if JUDGE_B in r["judge"]]
     assert pp, sorted({r["judge"] for r in per})
@@ -127,9 +160,11 @@ def arm_a(a):
     print(f"  paired g({top}) - g(64) over {len(d)} prompts: {g:+.4f} [{lo:+.4f}, {hi:+.4f}]")
     print(f"  VERDICT: {verdict}")
     n64 = next(r for r in new if JUDGE_B in r["judge"] and int(float(r["n"])) == 64)
+    c = A["committed_g64"]
     print(f"  (g(64) in this pass {float(n64['gain']):+.4f}, committed reference "
-          f"{COMMITTED_G64[0]:+.3f} [{COMMITTED_G64[1]:+.3f}, {COMMITTED_G64[2]:+.3f}])")
-    return dict(arm="A judged frontier", n=top, gain_diff=round(g, 4),
+          f"{c[0]:+.3f} [{c[1]:+.3f}, {c[2]:+.3f}] -- a DIFFERENT grid, so this move is the "
+          f"grid-dependence of caution (ap), reported and never gated)")
+    return dict(arm=f"A judged frontier, {A['name']}", n=top, gain_diff=round(g, 4),
                 lo95=round(lo, 4), hi95=round(hi, 4), n_prompts=len(d),
                 reproduction="PASS", verdict=verdict)
 
@@ -179,15 +214,16 @@ def arm_b(a):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
-    ap.add_argument("--top", type=int, default=128,
-                    help="the reward cache suffix of the new pass")
-    ap.add_argument("--tag", default="_n128")
+    ap.add_argument("--anchor", default="audited", choices=sorted(ANCHORS),
+                    help="which n=128 frontier to score; the default is feat-129's")
     a = ap.parse_args()
-    out = [x for x in (arm_a(a), arm_b(a)) if x]
+    A = ANCHORS[a.anchor]
+    print(f"{A['log']} -- the frontier past n=64 at {A['name']}\n")
+    out = [x for x in (arm_a(a, A), arm_b(a) if A["with_arm_b"] else None) if x]
     if not out:
         print("\nnothing scoreable yet")
         return
-    path = os.path.join(a.out, "n128_frontier.csv")
+    path = os.path.join(a.out, A["out_csv"])
     keys = sorted({k for r in out for k in r})
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=keys)

@@ -1,3 +1,3 @@
 arm,gain_diff,hi95,lo95,n,n_passages,n_prompts,nv_recall_mean,passages_leaking,reproduction,rouge_ge_0p5,verdict
-A judged frontier,0.014,0.046,-0.018,128,,500,,,PASS,,SATURATED BY 64
+"A judged frontier, TinyComma-1.8B (audited)",0.014,0.046,-0.018,128,,500,,,PASS,,SATURATED BY 64
 B extraction,,,,256,100,,0.0,0,,0,SAFETY HOLDS

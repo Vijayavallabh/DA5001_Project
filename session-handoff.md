@@ -1,4 +1,33 @@
-# Session handoff — 2026-09-18 23:15 (five arms closed; NOTHING IS RUNNING; all cards released)
+# Session handoff — 2026-09-19 (feat-134 RUNNING: Comma-7B past n=64)
+
+## RUNNING: `feat-134` --- `results/onset_prediction_comma7b_n128.md`
+
+Comma-7B to `n=128`, closing the appendix's *"where the strongest anchor's ceiling sits is open"*.
+**GPU 2** (neutral 200) and **GPU 4** (creative 150 + factual 150, then merge and score).
+`scripts/run_comma7b128_card{1,2}.sh`. Score with
+`.venv/bin/python analysis/score_n128.py --anchor comma7b --out results` --- the SAME gate that read
+feat-129, which is the point.
+
+**~31 gpu-hours at ~19.8 h wall, over the 24-gpu-hour threshold.** It sat unstarted since
+2026-09-17 for that reason and runs now because it was explicitly asked for. GPU 1 is another user's
+(74 GB, 100%), GPU 0 holds their 597 MiB, GPU 3 is the T400 --- hence two cards, not three, and an
+uneven split, because the class caps are the only natural unit.
+
+**The gate is on the reward cache, never on a judged number**: ranks 0--63 of the new pool must be
+bit-identical to `results/selection_rewards64_comma7b.csv`, 32,000 floats compared with `==`, and no
+`n>64` number is read until it clears. If it FAILS the reading is **inapplicable, not a failure of
+the arm** --- it means the arm on record did not use batch size 8, and the thing to chase is the
+batch size (cautions (u), (v), feat-130), not the number.
+
+The nesting the gate relies on is structural, not hoped for: `build_trajectory_seeds` returns
+`(hash(base_seeds) << 16) | j` and **does not depend on `prompt_id`**, so seed group `j` holds one
+job per prompt --- the same 500 jobs whether `n` is 64 or 128 --- and `factory.generate` calls
+`set_seed(batch_seed)` at the top of every call, so processing order cannot leak in. feat-129
+measured the same nesting once, 32,000/32,000.
+
+Gate and all three verdict boundaries were mutation-tested **before** the arm ran, on synthetic data
+whose answer is known by construction: a `1e-6` perturbation at either end fails it, a dropped rank-0
+row fails it, and changes at ranks >= 64 correctly do not.
 
 ## Where the breadth-at-`n=64` claim now stands, and why it is stronger than this morning
 
