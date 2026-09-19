@@ -56,9 +56,14 @@ an `onset_prediction_*.md`): argmax agreement between two caches of the SAME 32,
 1.000 at `n=1` to about 0.91 at `n=64` and then plateaus, the mean winner-to-runner-up margin falls
 monotonically `8.245 -> 5.113` nats, and **the alternative pick gives up only 0.03 nats**. So the
 served TEXT is not reproducible and what it is WORTH is; the certificate is untouched because
-Proposition 1 holds for any score and any tie rule. Precision, not hardware, is the variable:
-bf16-against-fp32 on one machine agrees on 0.900 of cells at `n=16` where changing the GPU
-architecture agrees on 0.918. The Reproducibility Statement now discloses it.
+Proposition 1 holds for any score and any tie rule. Precision and host move it by the same order and
+neither dominates --- an earlier draft claimed precision was "at least as disruptive", asserted at
+`n=16`, one of three points where that holds; over the grid precision is worse at three `n`, better
+at two and equal at two. The weaker claim is all the argument needed: "the second host is a different
+instrument" was never the explanation. **And fp32 does not restore reproducibility**, which is what
+this document expected of it: fp32 makes the rewards exact and the argmax perfect at `n <= 8`, but
+above `n = 16` the served completion still moves on `4-7%` of prompts --- at `0.00001` nats against
+bf16's `0.011`, so what is left is ties the scorer cannot separate. The Reproducibility Statement now discloses it.
 
 **feat-137 pre-registered**: the judge-free axis (GSM8K exact match, no judge anywhere) gets its
 second anchor, `comma-v0.1-1t`, so the training-data ablation runs on **both** axes at once. All four

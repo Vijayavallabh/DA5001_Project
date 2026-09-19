@@ -426,3 +426,83 @@ anchors, and if it reads non-zero that difference is a live alternative explanat
 is re-run at the default kernel on a card with more headroom before it is called contaminated.
 No allocator flag is set, because that is not a documented kernel choice and its effect on a sampled
 draw is not characterised.
+
+### 2026-09-19 ~21:00 --- an adversarial pass over this arm's own record. Four defects, two of them mine and load-bearing
+
+Run deliberately against my own work, because the two defects already found today were both in
+things written confidently. Everything below was done **while every arm was still generating** ---
+`results/selection_scaling_*hb64.csv` and `results/breadth_ladders_scoring.csv` did not exist, so no
+band had been or could have been computed.
+
+**(1) The committed host-transfer prediction contradicted a caution this project already paid for,
+and it is WITHDRAWN.** The pre-registration above says: *"for these two anchors --- both above $2$
+half-widths --- at or below $0.0130$."* That selects a **distance** using the half-width **ratio**.
+AGENTS.md caution (ap) says, citing the very same three numbers: *"the ratios do not order the
+distances --- `1.71 -> 0.061`, `2.12 -> 0.000`, `2.43 -> 0.013` --- so the rule predicts the
+**verdict**, whether a reading survives, and **not how far a number will move**."* The tier was also a
+bound taken from **one** observation. Left in place it would have read any move above $0.013$ as
+"hardware is not merely a re-draw" --- a manufactured finding, from a statistic the project has
+already recorded as unable to support it. **Only the RANGE survives: at or below $0.0610$, the
+largest seed move on record, with all three reported for context.** The verdict-level prediction is
+untouched, because that is exactly what caution (ap) licenses.
+
+**(2) The fp32 control falsified what this document expected of it.** The entry above says the
+control would show whether *"scoring in fp32 restores a reproducible served completion"*. Measured:
+**it does not, and what it does is more interesting.** fp32 batch $8$ against batch $16$ on one host
+gives $32{,}000$ of $32{,}000$ rewards agreeing within $10^{-2}$ (mean $\lvert$diff$\rvert$
+$0.00006$, about $1500\times$ better than bf16) and a **perfectly** reproducible argmax at
+$n \le 8$ --- but at $n \ge 16$ the served completion still moves on $4$--$7\%$ of prompts. **What
+changes is the cost: $0.00001$ nats against bf16's $0.011$, a thousandfold.** In bf16 rounding
+overturns a real preference; in fp32 all that is left is ties the reward model genuinely cannot
+separate, because at $n \ge 16$ the top candidates sit within $10^{-4}$ nats of each other. That is a
+statement about the **scorer saturating**, not about arithmetic, and it is recorded in
+`results/selection_argmax_stability_note.md`.
+
+**(3) The repaired G0a threshold was an assertion about defect magnitude, exactly like the one it
+replaced --- so it was MEASURED.** `analysis/gate_power_probe.py` scores the same candidate texts
+through four deliberate defects (`results/gate_power_probe.csv`):
+
+| defect | mean $\lvert$diff$\rvert$ | caught at $1.0$? |
+|---|---|---|
+| padding side flipped to right | $16.56$ | yes |
+| prompt and completion transposed | $6.30$ | yes |
+| chat template dropped | $5.11$ | yes |
+| truncation biting $103/200$ items | $9.40$ | yes |
+
+Against a numerical noise floor of $0.092$--$0.185$, the smallest defect is $5.1$: **a factor of
+$28$ between noise and defect, with the threshold sitting between them.** The repair is now
+supported by measurement rather than by the same kind of sentence that failed the first time.
+**And the probe's own first run was a zero that never fired:** at `max_length 512` not one of the
+$200$ candidates was long enough to truncate, so that arm returned exactly $0.0000$ and was about to
+be reported as *"the repaired gate cannot catch truncation"*. Caution (t). The cut is now set from the
+measured length distribution and the number of items actually truncated is asserted non-zero.
+
+**(4) A claim in the stability note was false and is retracted in place.** It said precision was *"at
+least as disruptive as changing hosts"*, asserted at $n=16$ --- one of three points where it holds.
+Over the grid precision is worse at $n \in \{8,16,32\}$, **better** at $n \in \{2,64\}$ and equal at
+$n \in \{1,4\}$, and its guard was pinned to a favourable point. The defensible claim is weaker and
+is all the argument ever needed: **precision and host move the served completion by the same order,
+so "the second host is a different instrument" was never the explanation.**
+
+**Two further disclosures, neither a defect but both things a reader is owed.**
+
+* **OLMo-2-7B was called "too weak a control" above and then run anyway.** It is a *supplementary*
+  check, not the control: at $2$ of $50$ passages on record a perfect pipeline reads exactly zero
+  about $13\%$ of the time, so a zero from it proves nothing and only a non-zero is informative. The
+  control that decides G1 remains the 70B, whose configuration has been verified against the record
+  --- `output/logs/extraction_70b_hp2.log` shows `seed tokenizer unsloth/Meta-Llama-3.1-70B` and
+  `risky alone 0.2475 1.0000 50.0%`, confirming the 70B sat in the RISKY slot exactly as C4 places it.
+* **G0b's $5\%$ tolerance was never calibrated against a cross-host measurement, because none
+  existed.** bf16 is now known to move step-$0$ EOS logits, which is what sets completion length, so a
+  legitimate arm could fail it. Committed now, before any arm's `mean_words` is read: **a G0b failure
+  is reported as "gate failed, cause undetermined between a pipeline defect and legitimate length
+  drift"** and is cross-checked against that arm's empty fraction and prompt count before the arm is
+  discarded. It still blocks; what is fixed in advance is how a failure is described.
+
+**What was checked and found sound**, so that this pass is not only a list of faults: the prompt
+corpora are byte-identical on both hosts (`md5` on all four files); both reward caches cover the
+identical $500$-prompt set, so the cross-host comparison is not confounded by batch composition;
+every G1 run printed the corpus it selected (`50 passages from ["harry_potter..."]`,
+`raw_prompt=True`, `seed 100 tokens`), which is caution (w) satisfied; and every disagreement rate
+reported anywhere here is a **lower** bound, because rewards are stored to $5$ decimals and $30$ of
+$500$ prompts have exactly-tied top-two values that break by index identically in both caches.

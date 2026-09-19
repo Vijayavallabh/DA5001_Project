@@ -211,13 +211,13 @@ def _run(out, deltas_by_name, words_by_name=None):
         _arm_csvs(out, arm["name"], _clear_climb(mean=d), mean_words_n1=mw)
 
 
-def test_a_host_arm_that_lands_on_its_local_value_reads_AS_A_REDRAW(tmp_path, capsys, monkeypatch):
+def test_a_host_arm_that_lands_on_its_local_value_reads_as_a_transfer(tmp_path, capsys, monkeypatch):
     out = str(tmp_path)
     _run(out, {"tc18bhb": 0.0880})
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     assert main() == 0
     txt = capsys.readouterr().out
-    assert "TRANSFERS" in txt and "AS A RE-DRAW" in txt
+    assert "TRANSFERS" in txt and "WITHIN THE OBSERVED SEED RANGE" in txt
 
 
 def test_the_committed_seed_move_bounds_are_the_registered_numbers():
@@ -243,17 +243,32 @@ def test_a_host_arm_that_moves_further_than_any_seed_draw_says_so(tmp_path, caps
     assert "hardware is NOT" in txt
 
 
-def test_the_bound_for_a_stable_anchor_is_the_tighter_one(tmp_path, capsys, monkeypatch):
-    """Both host anchors sit above 2 half-widths locally, so their committed bound is 0.0130, not
-    0.0610. A move of 0.03 must therefore NOT read as a re-draw."""
+def test_the_half_width_ratio_is_NOT_used_to_pick_a_distance_bound(tmp_path, capsys, monkeypatch):
+    """The pre-registration committed a tighter 0.0130 bound for anchors above 2 half-widths,
+    selected by the ratio. Caution (ap) says in terms that the ratio "predicts the VERDICT ... and
+    not how far a number will move", citing the same three numbers. That tier is withdrawn.
+
+    A move of 0.0300 -- above the withdrawn tier, inside the observed range -- must therefore read
+    as WITHIN THE OBSERVED SEED RANGE and never as a failure. Under the old logic it read as a
+    failure, which would have manufactured a finding from a rule the project knows is invalid."""
     out = str(tmp_path)
-    _run(out, {"comma7bhb": 0.1010 + 0.0300})     # a move of 0.0300, literal: inside 0.0610,
-    monkeypatch.setattr(sys, "argv", ["x", "--out", out])   # outside 0.0130
+    _run(out, {"comma7bhb": 0.1010 + 0.0300})
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
     main()
     txt = capsys.readouterr().out
-    assert "0.0130" in txt, "the tighter bound must be the one quoted for a stable anchor"
-    assert "AS A RE-DRAW" not in txt
-    assert "WITHIN THE SEED RANGE" in txt
+    assert "WITHIN THE OBSERVED SEED RANGE" in txt
+    assert "LARGER THAN ANY SEED MOVE" not in txt
+    assert "caution (ap)" in txt, "the reason the distance tier is gone must be stated in the output"
+
+
+def test_the_seed_moves_on_record_are_all_reported_not_just_the_bound(tmp_path, capsys, monkeypatch):
+    """All three, so a reader can see the bound is a RANGE over n=3 observations and not a law."""
+    out = str(tmp_path)
+    _run(out, {"tc18bhb": 0.0880})
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    main()
+    txt = capsys.readouterr().out
+    assert "0.0000, 0.0130, 0.0610" in txt
 
 
 # ---- the structural readings -------------------------------------------------------------------

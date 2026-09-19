@@ -20,3 +20,10 @@ precision,"same host, batch 8, bf16 against fp32",8,500,0.978,2.2,11,5.9133,0.00
 precision,"same host, batch 8, bf16 against fp32",16,500,0.9,10.0,50,5.74409,0.00908,0.09076
 precision,"same host, batch 8, bf16 against fp32",32,500,0.9,10.0,50,5.42748,0.00749,0.07488
 precision,"same host, batch 8, bf16 against fp32",64,500,0.918,8.2,41,5.09185,0.01625,0.19822
+batch_fp32,"same host, fp32, batch 8 against batch 16",1,500,1.0,0.0,0,,0.0,0.0
+batch_fp32,"same host, fp32, batch 8 against batch 16",2,500,1.0,0.0,0,8.27182,0.0,0.0
+batch_fp32,"same host, fp32, batch 8 against batch 16",4,500,1.0,0.0,0,6.4201,0.0,0.0
+batch_fp32,"same host, fp32, batch 8 against batch 16",8,500,1.0,0.0,0,5.9133,0.0,0.0
+batch_fp32,"same host, fp32, batch 8 against batch 16",16,500,0.938,6.2,31,5.74409,1e-05,8e-05
+batch_fp32,"same host, fp32, batch 8 against batch 16",32,500,0.928,7.2,36,5.42748,1e-05,7e-05
+batch_fp32,"same host, fp32, batch 8 against batch 16",64,500,0.956,4.4,22,5.09185,0.0,7e-05

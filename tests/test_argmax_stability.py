@@ -37,6 +37,13 @@ def _series(comparison, field):
     return [(int(r["n"]), float(r[field])) for r in rs if r[field] != ""]
 
 
+def _note():
+    """Whitespace-normalised note text. Caution (ar): a guard that greps a raw file is a guard on
+    where its lines happen to break, and three checks here broke on the wrap alone. Normalise in the
+    GUARD, never reflow the prose to suit a test."""
+    return " ".join(open(NOTE, encoding="utf-8").read().split())
+
+
 def test_the_csv_path_resolves_so_the_guards_below_cannot_skip_silently():
     """Every CSV-backed guard in this file is skipif'd on CSV existing. If that path is ever wrong,
     they all turn green by never running. This is the one test with no skipif."""
@@ -102,7 +109,7 @@ def test_agreement_falls_with_n_but_is_NOT_monotone_and_the_note_says_plateau():
         vals = [s[n] for n in sorted(s)]
         assert not all(b <= a for a, b in zip(vals, vals[1:])), \
             f"{comp} agreement is now monotone in n; the note says it plateaus -- reword it: {vals}"
-    note = open(NOTE, encoding="utf-8").read()
+    note = _note()
     assert "no committed bands" in note
     assert "it is not monotone" in note
 
@@ -121,24 +128,68 @@ def test_the_quality_served_is_reproducible_even_where_the_text_is_not():
 
 
 @pytest.mark.skipif(not os.path.exists(CSV), reason="the stability arm has not been run")
-def test_precision_alone_is_at_least_as_disruptive_as_changing_hosts():
-    """The note's closing claim, and the reason feat-136's gate was repaired rather than its arms
-    discarded. Asserted at n=16, where all three series have already fallen off their plateau."""
-    rows = {r["comparison"]: r for r in _rows() if int(r["n"]) == 16}
-    if not {"precision", "host"} <= set(rows):
-        pytest.skip("both comparisons are needed")
-    assert float(rows["precision"]["agree_frac"]) <= float(rows["host"]["agree_frac"]), \
-        "changing hosts now disagrees MORE than changing precision; the note's claim needs revisiting"
+def test_precision_and_host_are_the_same_order_and_NEITHER_dominates():
+    """An earlier version of this file asserted precision was "at least as disruptive as changing
+    hosts" AT n=16 -- one of the three points where that happens to hold. Over the whole grid
+    precision is worse at n in {8,16,32}, BETTER at n in {2,64} and equal at n in {1,4}, so the
+    claim was false as stated and its guard was pinned to a favourable point. Caution (ao): the
+    claim ABOUT a set of numbers is the thing nothing checks.
 
+    Guarded both ways: if precision ever does become uniformly worse than host, this fails and says
+    to strengthen the note rather than silently permitting the stronger claim."""
+    h = dict(_series("host", "agree_frac"))
+    p_ = dict(_series("precision", "agree_frac"))
+    ns = sorted(set(h) & set(p_))
+    worse = [n for n in ns if p_[n] < h[n]]
+    better = [n for n in ns if p_[n] > h[n]]
+    assert worse and better, (
+        f"precision is no longer mixed against host (worse at {worse}, better at {better}); "
+        f"the note says neither dominates -- re-read the table before rewording it")
+    for n in ns:                      # the weaker claim the argument actually needs
+        assert abs((1 - p_[n]) - (1 - h[n])) < 0.05, (n, p_[n], h[n])
+    note = _note()
+    assert "neither dominates" in note
+    assert "at least as disruptive" in note, "the retracted claim must stay visible AS retracted"
+
+
+@pytest.mark.skipif(not os.path.exists(CSV), reason="the stability arm has not been run")
+def test_fp32_makes_the_argmax_exact_below_n8_and_its_disagreements_costless_above():
+    """Claim 4, the one that falsified what the pre-registration expected. fp32 was predicted to
+    "restore a reproducible served completion"; it does that only at n <= 8, and above it leaves
+    disagreements costing a thousandth of bf16's."""
+    fp = dict(_series("batch_fp32", "agree_frac"))
+    bf = dict(_series("batch", "agree_frac"))
+    if not fp:
+        pytest.skip("the fp32 batch comparison has not run")
+    for n in (1, 2, 4, 8):
+        assert fp[n] == 1.0, f"fp32 no longer serves the same candidate at n={n}: {fp[n]}"
+    assert any(fp[n] < 1.0 for n in (16, 32, 64)), \
+        "fp32 now agrees everywhere; the note says it still moves above n=8 -- reword it"
+    lfp = dict(_series("batch_fp32", "reward_loss_all"))
+    lbf = dict(_series("batch", "reward_loss_all"))
+    assert lfp[64] < lbf[64] / 100, (lfp[64], lbf[64], "the cost gap the note claims has closed")
+    note = _note().replace("**", "")
+    assert "It does not, and it does something more interesting" in note
+    assert "scorer" in note and "saturating" in note
+
+
+@pytest.mark.skipif(not os.path.exists(CSV), reason="the stability arm has not been run")
+def test_every_disagreement_rate_is_declared_a_lower_bound():
+    """Claim 6. Rewards are stored to 5 dp and ties break by index identically in both caches, so
+    rounding can only make the argmax agree MORE. Without this the rates read as estimates rather
+    than floors."""
+    note = _note()
+    assert "LOWER bound" in note
+    assert "rounded to $5$ decimal" in note and "ties can" in note
 
 def _reproducibility_statement():
     """Just the Reproducibility Statement, not the whole file -- caution (an): a guard satisfied by a
     DIFFERENT occurrence of its phrase is not guarding its sentence."""
     from tests.manuscript import tex
-    t = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
-    i = t.index("Reproducibility Statement")
-    j = t.index("LLM Usage", i)
-    return t[i:j]
+    s = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    i = s.index("Reproducibility Statement")
+    j = s.index("LLM Usage", i)
+    return s[i:j]
 
 
 @pytest.mark.skipif(not os.path.exists(CSV), reason="the stability arm has not been run")
@@ -147,7 +198,14 @@ def test_the_reproducibility_statement_discloses_the_unstable_argmax_with_its_cs
     statement now says so. Every figure it quotes is asserted against the CSV it rounds from, so the
     disclosure cannot drift from the measurement (caution (j))."""
     s = _reproducibility_statement()
-    at64 = {r["comparison"]: r for r in _rows() if int(r["n"]) == 64}
+    # Scoped to the three perturbations the SENTENCE names -- a different GPU architecture, a
+    # different batch size, or float32 -- all measured FROM the bf16 baseline. The fp32-against-fp32
+    # comparison is a fourth thing the sentence does not describe, and letting it into this range
+    # broke the guard the moment it landed (caution (an): scope a guard to the sentence it is about).
+    NAMED = ("host", "batch", "precision")
+    at64 = {r["comparison"]: r for r in _rows()
+            if int(r["n"]) == 64 and r["comparison"] in NAMED}
+    assert set(at64) == set(NAMED), f"the sentence names {NAMED}, the CSV has {sorted(at64)}"
     lo = min(float(r["disagree_pct"]) for r in at64.values())
     hi = max(float(r["disagree_pct"]) for r in at64.values())
     assert f"${lo:.1f}$ to ${hi:.1f}\\%$" in s, (lo, hi, "the quoted disagreement range moved")

@@ -73,10 +73,20 @@ HALF_WIDTHS_FOR_STABLE = 2.0
 G0B_TOLERANCE = 0.05             # G0b, relative, on n=1 mean words
 BAND_SEED = 20260919             # the convention score_kl3m37b_breadth64.py already uses
 
-# The largest and the smallest paired-difference move a disjoint SEED draw has produced, which is
-# what a host change is predicted to behave like if hardware is merely a re-draw.
-MAX_SEED_MOVE = 0.0610           # KL3M-1.7B, at 1.73 half-widths
-STABLE_SEED_MOVE = 0.0130        # Comma-7B, at 2.46 half-widths
+# The paired-difference moves a disjoint SEED draw has produced, which is what a host change is
+# predicted to behave like if hardware is merely a re-draw. The three on record are 0.0000
+# (TinyComma, 2.12 half-widths), 0.0130 (Comma-7B, 2.46) and 0.0610 (KL3M-1.7B, 1.73).
+#
+# ONLY THE RANGE IS USED. The pre-registration additionally committed a TIGHTER bound of 0.0130 for
+# anchors above 2 half-widths, selected by the half-width ratio -- and that CONTRADICTS caution (ap),
+# which says in terms that "the ratios do not order the distances ... so the rule predicts the
+# VERDICT, whether a reading survives, and not how far a number will move". It cites these same three
+# numbers to say so. A bound from n=2 observations, chosen by a statistic the project has already
+# recorded as unable to order them, would have manufactured a false "not a re-draw" from any move
+# above 0.013 -- and TinyComma's own two seed draws differ by more than that. The tier is WITHDRAWN;
+# the withdrawal is recorded in the scoring log and was made while every arm was still generating.
+MAX_SEED_MOVE = 0.0610           # KL3M-1.7B, at 1.73 half-widths -- the largest on record
+STABLE_SEED_MOVE = 0.0130        # Comma-7B, at 2.46 -- REPORTED for context, never a threshold
 
 ARMS = (
     dict(name="tc18bhb", label="TinyComma-1.8B", role="host", family="Comma", params=1.759,
@@ -365,15 +375,18 @@ def main():
         move = pred = ""
         if arm["role"] == "host":
             move = abs(g - arm["local_delta"])
-            bound = STABLE_SEED_MOVE if arm["local_delta"] / ((arm["local_hi"] - arm["local_lo"]) / 2) \
-                >= HALF_WIDTHS_FOR_STABLE else MAX_SEED_MOVE
-            pred = "AS A RE-DRAW" if move <= bound else \
-                   ("LARGER THAN ANY SEED MOVE" if move > MAX_SEED_MOVE else "WITHIN THE SEED RANGE")
+            # The RANGE only. No tier selected by the half-width ratio: caution (ap) says that ratio
+            # predicts the verdict and not the distance, and it cites these very numbers to say so.
+            pred = ("WITHIN THE OBSERVED SEED RANGE" if move <= MAX_SEED_MOVE
+                    else "LARGER THAN ANY SEED MOVE ON RECORD")
             print(f"  host transfer: local {arm['local_delta']:+.4f} "
                   f"[{arm['local_lo']:+.4f}, {arm['local_hi']:+.4f}] -> this host {g:+.4f}; "
                   f"moved {move:.4f}")
-            print(f"    committed prediction: at or below {bound:.4f} if hardware is merely a "
-                  f"re-draw -> {pred}")
+            print(f"    seed-replication moves on record: 0.0000, {STABLE_SEED_MOVE:.4f}, "
+                  f"{MAX_SEED_MOVE:.4f}. Committed prediction is the RANGE, at or below "
+                  f"{MAX_SEED_MOVE:.4f} -> {pred}")
+            print(f"    The verdict, not the distance, is what the half-width rule predicts "
+                  f"(caution (ap)); this arm reads {v}.")
             if move > MAX_SEED_MOVE:
                 print("    This exceeds every seed-replication move on record, so hardware is NOT")
                 print("    merely a re-draw, and that is the finding rather than a nuisance.")
