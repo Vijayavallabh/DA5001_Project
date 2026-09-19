@@ -26,26 +26,56 @@ below when they land.
    Appendix D for the ladders, which are in Appendix E. Re-pointed and guarded as a property.
 4. `analysis/audit_numbers.py`: 2,188 numeric literals, **one** not in a CSV (`64256`, documented).
 
-## Running now --- three cards, nothing to do but wait
+## Running now --- three classes locally, six arms queued on a second host
 
-| arm | class | card | progress at 15:10 | ETA |
+### Local box (4x A100, SHARED with another agent session --- see the OOM note)
+
+| arm | class | card | state at 17:00 | ETA |
 |---|---|---|---|---|
-| feat-134 | neutral 200x128 | GPU 1 | 200/25600 (relaunched 15:04) | ~28h |
-| feat-134 | creative 150x128 | GPU 4 | 3900/19200 | ~16h |
-| feat-134 | factual 150x128 | GPU 2 | 6450/19200 | ~14h |
+| feat-134 | creative 150x128 | GPU 4 | 7800/19200 (started 13:07) | ~12h |
+| feat-134 | neutral 200x128 | GPU 4 | relaunched 16:48 under a supervisor | ~28h |
+| feat-134 | factual 150x128 | GPU 1 | relaunched 16:48 under a supervisor | ~14h |
 
-* feat-134's neutral class had been **OOM-killed twice by another user's 51 GB process** (now gone).
-  Its output directory was empty and `h1.py` truncates, so the relaunch is clean.
-* `scripts/run_comma7b128_card2b.sh` (GPU 4) **owns the merge and the scoring**: it waits on
-  `GEN_DONE` in the neutral and factual directories, both written only on `rc=0`, then merges and runs
-  `selection_scaling.py --max-n 128 --tag _comma7b128`. Nothing to launch by hand.
-* The old requeue waiter is **dead** (its log stopped at 11:32), so nothing will relaunch neutral
-  underneath the running job.
-* **feat-135 stage 1 (vetting) PASSED**: `results/vet_kl3m37b_base.csv` reads `0.0000` at every n and
-  at `k=-1`, which is gate G1, so the anchor is admissible. Stage 2 is queued in
-  `scripts/run_kl3m37b_breadth64_queued.sh`, waiting on the factual class's `GEN_DONE` to take GPU 2
-  (~14h), then ~7 GPU-h. It runs `scripts/run_breadth64.sh` unmodified, so the protocol is identical
-  to feat-130's three anchors by construction.
+* **feat-134's neutral and factual classes were OOM-killed FIVE times** between 10:54 and 16:29, every
+  time by **another Claude Code session running as the same Unix user** (`no_data_probe.py`, three
+  processes at ~20 GB each plus one at 68 GB, under
+  `/tmp/claude-1001/-...-agenticls-claude-only/...`). Our job holds 27.99 GB, so a card with under
+  ~30 GB free kills it about an hour in. `nvidia-smi` shows those processes as ours, so **"free" now
+  means free of other agent sessions too.**
+* `scripts/run_comma7b128_supervise.sh <card_script> <gen_dir> <tag>` is the repair: it picks the
+  emptiest eligible card (never GPU 3, never one another supervisor has claimed via
+  `output/logs/claims/gpu<N>`), runs the card launcher **byte-identical**, and retries up to 12 times.
+  It deliberately introduces **no** `--batch-size` and **no** allocator flag, because the arm rests on
+  a bit-identity reward gate and cuBLAS can pick kernels by available workspace.
+* **feat-134 CAN NEVER MOVE HOSTS.** Its reproduction gate demands ranks 0--63 of its reward cache be
+  bit-identical to `results/selection_rewards64_comma7b.csv`, drawn on a local A100. Different silicon
+  changes bf16 reduction order, hence sampled tokens, hence the rewards --- so the gate could never
+  pass elsewhere and its own pre-registration forbids reading n=128 when it fails.
+* `scripts/run_comma7b128_card2b.sh` (GPU 4) still owns the merge and the scoring, waiting on
+  `GEN_DONE` in the neutral and factual directories, both written only on `rc=0`.
+* **feat-135 stage 1 (vetting) PASSED** and stage 2 stays local **as registered**, queued in
+  `scripts/run_kl3m37b_breadth64_queued.sh` behind the factual class's `GEN_DONE`.
+
+### Second host (8x H100-80GB, idle, `~/v` only) --- feat-136
+
+`results/onset_prediction_breadth_ladders.md` is committed with every band fixed. Six breadth arms
+completing **two within-family capability ladders** (KL3M 170M/520M/1.7B/3.7B, Pleias
+350M/1.2B/3B) plus the **one fixed-size data ablation the model set allows** (comma-1t vs comma-2t at
+7B), and re-drawing TinyComma and Comma-7B to ask whether a paired difference survives a change of
+**hardware** as feat-131/133 showed it survives a change of **seed**.
+
+Environment is pinned to the local one exactly (python 3.12, torch 2.10.0+cu128, transformers 5.16.1,
+and every other pin), verified by loading all seven models and running the suite there. Three
+environment facts worth keeping:
+
+* **`/tmp` is READ-ONLY on that host.** That is what broke `python3 -m venv` (no `ensurepip`, needs
+  sudo) and two `uv` installs (`curl: (23)`, then `mktemp: Read-only file system`). The fix is
+  `TMPDIR=$HOME/v/tmp`, exported by `~/v/env.sh`, which every remote command sources.
+* **No secret is on that host.** `~/v/DA5001_Project/.env` is a single comment line; every model is in
+  `hf_cache` and every run sets `HF_HUB_OFFLINE=1`, so no token is ever needed there.
+* The suite there reports 170 failures, **all** of them the absent manuscript (`~/v/sub/satml/...`),
+  absent local `output/` run directories, or one test that hardcodes `/tmp`. A green suite on that
+  host is **not** evidence about the manuscript and must never be quoted as such.
 
 ## Scoring is already prepared --- both readings are fixed before the data lands
 
