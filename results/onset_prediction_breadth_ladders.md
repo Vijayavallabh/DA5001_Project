@@ -576,3 +576,30 @@ Tested on the five anchors on record, headroom being $1 - u(8)$:
 saturation and not an artefact of a bounded scale. The same check must be applied to the six new arms
 when they land, and a new anchor whose $u(8)$ exceeds about $0.85$ is not informative about
 saturation whatever its $\Delta$ reads.
+
+### 2026-09-19 ~22:05 --- the adversarial pass made a prediction of its own, and measurement falsified it
+
+The devil's-advocate review reasoned that **KL3M-520M's breadth arm could not run at the registered
+`--batch-size 32`**: its G1 vetting had OOMed on the Mixtral expert gather at batch $8$ over $50$
+passages, the breadth arm is batch $32$ over $500$ prompts, and `--experts-impl` --- the flag that
+rescued the vetting --- **does not exist anywhere in the generation path** (`h1.py`, `dap/e1.py`,
+`a_patch/factory.py` carry no experts option). The conclusion drawn was that the KL3M ladder would
+have to be reported with a gap at its middle rung.
+
+**An eight-prompt smoke at the registered batch size settled it in five minutes: it runs.** $512$
+trajectories written, a complete `h1_summary.json`, peak well inside one card, GPU released cleanly.
+The vetting OOM is specific to `selection_extraction.py`, which materialises $64$ candidates per
+passage in one call; `h1.py` walks the draws differently and never builds that tensor. `kl3m520mhb`
+is launched, and **all six registered arms are running.**
+
+**This is recorded because the adversarial pass was WRONG here, and asserting it would have cost the
+ladder its middle rung on a confident inference from a related-but-different code path.** A
+devil's-advocate prediction is a hypothesis with the same standing as any other and is owed the same
+five-minute measurement. The rule that held was *measure, do not assert* --- the same rule that
+caught the truncation arm that never fired.
+
+**One operational defect in the smoke itself, caught before it misled anything.** The command ended
+`... | grep ... | tail -6; echo "smoke rc=$?"`, and `$?` after a pipeline is **`tail`'s** status, not
+`h1.py`'s --- so it printed `rc=0` and would have printed `rc=0` for an OOM as well. The run was
+verified by counting the rows it wrote ($512$) rather than by trusting that number. Same family as
+caution (x): a shell construct that does not report what it appears to.
