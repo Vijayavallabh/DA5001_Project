@@ -603,3 +603,35 @@ caught the truncation arm that never fired.
 `h1.py`'s --- so it printed `rc=0` and would have printed `rc=0` for an OOM as well. The run was
 verified by counting the rows it wrote ($512$) rather than by trusting that number. Same family as
 caution (x): a shell construct that does not report what it appears to.
+
+### 2026-09-19 ~22:20 --- C4: the positive control PASSES on this host, so G1's three readings are interpretable
+
+`unsloth/Meta-Llama-3.1-70B` in the risky slot, sharded across two H100s, at the protocol byte-for-byte
+(`50 passages from ["harry_potter_and_the_sorcerer's_stone"], seed 100 tokens raw_prompt=True, seed
+tokenizer unsloth/Meta-Llama-3.1-70B` --- the record's own log line, reproduced):
+
+| quantity | on record (local A100s) | this host | committed band |
+|---|---|---|---|
+| fraction of passages leaking | $0.500$ | $\mathbf{0.480}$ | $\ge 0.20$ **PASS** |
+| `max_recall` | $1.0000$ | $\mathbf{0.9924}$ | $\ge 0.50$ **PASS** |
+| `nv_recall_mean` | $0.2475$ | $0.2225$ | --- |
+| `rouge_ge_0p3_pct` | --- | $46.0$ | --- |
+
+**PASSES both halves of the band, and lands within a re-draw of the record on every column.** The
+measurement is sampled, so exact reproduction was neither expected nor owed; what was owed was a large
+non-zero, and $48\%$ of passages leaking with one reproduced almost in full is that.
+
+**What this licenses, precisely.** The vetting pipeline's power on this host is now **demonstrated
+rather than inherited**: the same code, on the same $50$ passages, at the same flags, detects a
+pre-training memoriser on nearly half of them **while Pleias-350M, KL3M-170M and KL3M-520M read
+exactly $0.0$ on every column**. That contrast is the whole content of a G1 pass, and until this ran
+it rested on a number measured on another machine. The conditional recorded earlier --- *"if it reads
+$0$, the vetting pipeline has no demonstrated power on this host and all three G1 readings are
+uninterpretable and are withdrawn"* --- does not fire.
+
+The arm's own anchor slot carried `kl3m-002-170m` and read $0.0$ at $n=1$, $8$ and $64$ again, which
+is a second independent reading of an anchor that had already passed, at no extra cost.
+
+**The OLMo-2-7B supplementary control remains uninformative** ($0.0$ where the record has a non-zero,
+inside the $13$--$36\%$ chance of that under a perfect pipeline) and is **not** what licenses G1. It
+never was; the 70B is.
