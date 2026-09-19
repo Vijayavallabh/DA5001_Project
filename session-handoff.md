@@ -82,10 +82,46 @@ environment facts worth keeping:
   absent local `output/` run directories, or one test that hardcodes `/tmp`. A green suite on that
   host is **not** evidence about the manuscript and must never be quoted as such.
 
+## feat-136's instrument gate FAILED, and the gate was the thing that was wrong
+
+This is the most important thing in this session to carry forward, and it is written up in full in
+`results/onset_prediction_breadth_ladders.md`'s scoring log and as **caution (as)** in AGENTS.md.
+
+G0a re-scored the committed arm's own `32,000` candidates on the second host with the input text held
+identical, and required `99.9%` of rewards within `1e-2`. It read `17.6%`. The reward model is
+**byte-identical** on both hosts, so the control that settled it removed hardware from the question
+entirely --- same host, same weights, same texts, `--batch-size 8` against `16` --- and **that also
+failed, at `60.0%`, with a larger maximum deviation than the cross-host run.** The registered
+threshold was unsatisfiable by two runs on one machine. The false premise was ours, in the
+pre-registration: *"bf16 reduction order moves it by ~1e-3"* is an fp32 figure.
+
+* Withdrawn: `1e-2`, `99.9%`, `99%`. They stay in the source and the CSV marked `WITHDRAWN` so the
+  record can be audited.
+* Kept: the defect scale the same paragraph registered in advance, *"moves a reward by whole nats"*,
+  read as `1.0` --- and a test asserts it stays `5x` above the measured value so it cannot drift
+  toward the data.
+* The repair was made while all three arms were still generating and no band existed. That is
+  recorded, and so is the fact that the FAIL was read before the threshold was questioned.
+* **The instrument question is answered by what was already registered**, not by a new gate: the two
+  host-transfer arms' prediction `|D_hostB - D_local| <= 0.0610`, fixed in advance from feat-131.
+
+**And the control is a result worth a paragraph of the paper.** The reward is reproducible to only
+`~0.09` nats within one host; `40%` of rewards move by more than `0.01` on a batch-size change alone;
+and **the completion best-of-`n` actually serves changes on `~3.0%` of (prompt, `n`) cells within one
+host and `4.3%` across hosts.** The certificate is untouched --- Proposition 1 holds for ANY score and
+ANY tie rule --- so **the guarantee is numerically robust exactly where the realisation is not.** It
+had no committed bands, so when it lands in the paper it needs a `results/*_note.md` saying so, never
+an `onset_prediction_*.md` (the pattern `results/selection_alpaca_note.md` already sets, which
+`tests/test_preregistration_count.py` enforces). Two further controls are running to make it
+actionable: fp32 against bf16 on one host, and fp32 batch 8 against fp32 batch 16 --- if the second
+agrees tightly, **scoring in fp32 restores a reproducible served completion**, which is a concrete
+recommendation rather than only a caveat.
+
 ## Scoring is already prepared --- both readings are fixed before the data lands
 
 | arm | command | refuses cleanly with no data |
 |---|---|---|
+| feat-136 | `.venv/bin/python analysis/score_breadth_ladders.py --out results` | yes, "G0a ... NOT SCORED" |
 | feat-134 | `.venv/bin/python analysis/score_n128.py --anchor comma7b --out results` | yes, "one of the two reward caches is missing" |
 | feat-135 | `.venv/bin/python analysis/score_kl3m37b_breadth64.py --out results` | yes, "G2 coverage: FAIL ... NOT SCORED" |
 
