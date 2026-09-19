@@ -81,3 +81,47 @@ cards, one job per card in order, waiting on a completion string `scripts/run_br
 writes (caution (c): never wait on the absence of a pattern match).
 
 ## Scoring log
+
+### 2026-09-20 --- stage 1, three of four probed: all three fall well below the floor
+
+| anchor | params | $n=1$ GSM8K exact match | vs `FLOOR = 0.05` |
+|---|---|---|---|
+| Pleias-1.2B | $1.2$B | $0.0140$ | **BELOW** |
+| KL3M-1.7B | $1.7$B | $0.0180$ | **BELOW** |
+| Pleias-3B | $3.0$B | $0.0160$ | **BELOW** |
+| KL3M-3.7B | $3.7$B | *pending* --- its breadth arm is still generating | --- |
+
+Comma-7B reads $0.320$ and Comma-7B-1T $0.226$ on the same task, at the same $8$ shots, over the
+same $500$ problems.
+
+**Not marginal, and flat in scale.** The three sit $3$--$4\times$ below the floor and $13$--$23\times$
+below Comma-7B, and they do not improve with size across the range probed: $1.2$B reads $0.0140$,
+$1.7$B reads $0.0180$, $3.0$B reads $0.0160$. Nothing here suggests $3.7$B will clear $0.05$, but
+**the registered conclusion is not declared until it is measured** --- the pre-registration says
+"all four", and three is not four.
+
+**The stage-1 prediction is so far correct**, which is recorded with the same plainness as
+`feat-140`'s failing three: the prediction that all four fall below was written down before any of
+them ran, with its reasoning, and with the note that being wrong would have been the more
+interesting outcome.
+
+**Stage 2 has not been started for any anchor**, exactly as registered: the ladder is conditional on
+clearing the floor, and nothing has.
+
+#### Two defects this stage exposed, both in code, both fixed
+
+1. **Pleias ships no special tokens at all** --- `eos`, `pad`, `bos` and `unk` are every one `None`.
+   `analysis/selection_verifiable.py` already had the usual `pad_token = eos_token` fallback, which
+   therefore set `None` and left `tok(..., padding=True)` to raise. It now falls back once more, to
+   the token at id $0$, rather than `add_special_tokens`, which would mint an id past the end of the
+   model's embedding matrix. The branch fires only where BOTH are `None`, so it cannot change a
+   committed arm: such a model raised before this existed rather than producing a number.
+   **This also explains a number in `feat-138`/`feat-140`:** every Pleias arm reads `empty_frac`
+   exactly $0.000$, because a model with no end-of-text token can never emit one at step $0$ and
+   caution (v)'s empty-rate mechanism cannot operate there at all.
+2. **The probe launcher logged `exit=0` for two runs that had crashed.** It read `$?` inside
+   `echo "[jf:$TAG] $(date +%H:%M:%S) exit=$?"`, and a shell expands that left to right --- the
+   command substitution runs first, so `$?` reported `date`'s status. Demonstrated directly
+   (`false; echo "$(date >/dev/null) exit=$?"` prints `exit=0`) and repaired to `RC=$?` on the line
+   after the command, which is what every committed launcher already does. **Caution (t) in a new
+   form: not a zero mistaken for a result, but a SUCCESS CODE that was not one.**
