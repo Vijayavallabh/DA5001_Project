@@ -506,3 +506,49 @@ every G1 run printed the corpus it selected (`50 passages from ["harry_potter...
 `raw_prompt=True`, `seed 100 tokens`), which is caution (w) satisfied; and every disagreement rate
 reported anywhere here is a **lower** bound, because rewards are stored to $5$ decimals and $30$ of
 $500$ prompts have exactly-tied top-two values that break by index identically in both caches.
+
+### 2026-09-19 ~21:30 --- G1 closes at three PASSES, the supplementary control reads zero, and four more self-checks
+
+**G1 is complete and all three new anchors PASS.** KL3M-520M's re-run with `--experts-impl eager`
+(declared in advance) reads $0.0$ at $n=1$, $8$, $64$ and at $k=-1$, on every column, joining
+Pleias-350M and KL3M-170M and sitting with the five licensed anchors on record. The pre-registered
+contingency --- *"if it reads non-zero that kernel difference is a live alternative explanation"* ---
+does not fire, because it read zero.
+
+**The OLMo-2-7B supplementary control read $0.0$ on this host, where the record has a non-zero, and
+that is UNINFORMATIVE exactly as written down in advance.** It was launched as a cheap second look,
+never as the control, and the entry above says a zero from it proves nothing. **One correction to
+that entry:** it quoted the probability of a perfect pipeline reading zero as $13\%$. That is the
+**favourable end**. The record's leak rate for OLMo-2-7B is $1$--$2$ passages of $50$ depending on
+which column defines the leak, so $\Pr[0 \text{ of } 50]$ is $0.364$ at $1/50$ and $0.130$ at $2/50$:
+**$13$--$36\%$, and the honest figure is the range.** Quoting the end of a range that supports the
+point is the same habit that produced the retracted precision claim. **The control that decides G1
+remains the 70B**, still queued, and until it reads the power of this host's vetting pipeline is
+inherited rather than demonstrated.
+
+**Four further self-checks, two of them corrections.**
+
+* **The compute estimate in `feat-137` was extrapolated when a direct measurement existed.** It
+  scaled the breadth arm's $13.42$ gpu-hours by parameters and tokens to get $\approx 15.8$ A100-hours
+  for the same workload. `results/compute_hours.csv` has `verifiable_comma7b` --- the **same script,
+  the same $500$ problems, the same `--max-n 64`, a slightly larger anchor** --- at **$6.88$
+  gpu-hours**. The estimate is $2.3\times$ too high. The direction is conservative and the
+  "under $24$" conclusion is unaffected, but scaling from a different arm while the right arm sat in
+  the CSV is caution (v)'s habit: **read the measurement of the thing you are about to run.**
+  feat-137 should cost about $4$--$5$ H100-hours.
+* **The half-width ratios quoted here differ in the second decimal from the committed ones**
+  ($2.46$ against feat-133's $2.43$, $2.12$ against $2.1$, $1.73$ against $1.7$). Measured cause:
+  the bootstrap seed. Over ten seeds the ratios span $2.405$--$2.463$, $2.047$--$2.286$ and
+  $1.646$--$1.757$, so every committed value lies inside its own spread and the two documents do not
+  disagree. Recorded because two numbers in two committed files that differ without explanation are
+  indistinguishable from an error.
+* **The $2.0$ MARGINAL boundary is robust to the bootstrap seed --- but only just, at the anchor the
+  paper most depends on.** Across those ten seeds no anchor crosses the boundary: TinyComma stays
+  above, KL3M-1.7B stays below. **TinyComma's minimum is $2.047$, however --- $2.4\%$ above the line.**
+  The audited anchor is the closest call in the paper, and while resampling does not move its
+  classification, a different interval construction could. That belongs beside the rule, not hidden
+  behind it.
+* **The gate-power probe ran on a card already hosting `pleias350mhb`.** Checked afterwards rather
+  than assumed: that arm's log has zero OOM, zero traceback and zero non-zero generation return
+  codes, and it kept progressing. The risk was real and should have been weighed before the launch,
+  not after.
