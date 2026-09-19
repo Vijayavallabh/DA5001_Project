@@ -160,3 +160,43 @@ def test_every_citation_key_resolves_to_a_bib_entry():
     entries = set(re.findall(r"@\w+\{([^,]+),", open(bib, encoding="utf-8").read()))
     missing = sorted(keys - entries)
     assert not missing, f"cited but not in references.bib: {missing}"
+
+
+def test_no_ladder_sentence_cites_the_appendix_that_has_no_ladder_in_it():
+    r"""Caution (aj): a \ref that resolves to the WRONG content. Tectonic exits 0, `??` is 0 and a
+    real appendix letter renders -- only a reader who follows the click sees it.
+
+    Two sentences, one of them in the main text, sent the reader to `app:scaling` for the
+    fine-tuning-length and seed ladders. That appendix measures the margin `s(x)/c_use` over ten safe
+    models across three corpora and contains no ladder at all; the ladders are in `app:collapse`.
+    Found by the read-through after the 2026-09-19 appendix reduction.
+
+    The guard is stated as a property of the target rather than as a list of citations: whichever
+    section the ladder sentences point at, `app:scaling` is not allowed to be it while its own text
+    reports no ladder. If a ladder is ever moved into that appendix this fails and says to re-check
+    the wording, which is the safe direction.
+    """
+    import re as _re
+    body_of = {}
+    for rel in _build_graph():
+        txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
+        for m in _re.finditer(r"\\section\{[^}]*\}\s*\\label\{([^}]+)\}", txt):
+            end = txt.find("\\section{", m.end())
+            body_of[m.group(1)] = " ".join(txt[m.end():end if end > 0 else len(txt)].split())
+    assert "app:scaling" in body_of and "app:collapse" in body_of, sorted(body_of)
+
+    # the premise: the scaling appendix reports no ladder, the collapse one does
+    assert "ladder" not in body_of["app:scaling"], \
+        "a ladder moved into app:scaling; re-check every citation before relaxing this"
+    assert "$0.8756$" in body_of["app:collapse"] and "ladder" in body_of["app:collapse"], \
+        "the ladders are no longer reported in app:collapse; the citations need re-pointing"
+
+    # and no sentence sends a reader there for one
+    bad = []
+    for rel in _build_graph():
+        flat = " ".join(open(os.path.join(DIR, rel), encoding="utf-8").read().split())
+        for m in _re.finditer(r"Appendix~\\ref\{app:scaling\}", flat):
+            window = flat[max(0, m.start() - 220): m.end() + 80]
+            if "ladder" in window:
+                bad.append(f"{rel}: a ladder sentence cites app:scaling, which has no ladder in it")
+    assert not bad, bad
