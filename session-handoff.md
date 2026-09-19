@@ -3,15 +3,27 @@
 ## RUNNING: `feat-134` --- `results/onset_prediction_comma7b_n128.md`
 
 Comma-7B to `n=128`, closing the appendix's *"where the strongest anchor's ceiling sits is open"*.
-**GPU 2** (neutral 200) and **GPU 4** (creative 150 + factual 150, then merge and score).
-`scripts/run_comma7b128_card{1,2}.sh`. Score with
+**GPU 2** (neutral 200), **GPU 1** (factual 150) and **GPU 4** (creative 150, then merge and
+score). `scripts/run_comma7b128_card1.sh`, `_card3.sh`, `_card2b.sh`. Score with
 `.venv/bin/python analysis/score_n128.py --anchor comma7b --out results` --- the SAME gate that read
 feat-129, which is the point.
 
-**~31 gpu-hours at ~19.8 h wall, over the 24-gpu-hour threshold.** It sat unstarted since
-2026-09-17 for that reason and runs now because it was explicitly asked for. GPU 1 is another user's
-(74 GB, 100%), GPU 0 holds their 597 MiB, GPU 3 is the T400 --- hence two cards, not three, and an
-uneven split, because the class caps are the only natural unit.
+**~31 gpu-hours, over the 24-gpu-hour threshold.** It sat unstarted since 2026-09-17 for that
+reason and runs now because it was explicitly asked for. GPU 0 holds another user's 597 MiB and GPU
+3 is the T400, so those two are never taken.
+
+**Re-dealt from two cards to three, minutes after launch.** The registered plan was neutral /
+creative+factual, because GPU 1 was another user's at 74 GB and 100%. It came free, so card 2 was
+stopped (shell AND its CUDA child killed by PID --- `nvidia-smi` confirmed GPU 4 back to 14 MiB, no
+orphan, caution (c)) and factual moved to a new card 3. Wall clock ~19.8 h -> ~12 h. **Nothing
+measured changes**: `apply_e1_sampling` takes the first N of each class independently, seeds depend
+only on base seeds and the draw index, and E1 runs one split at a time so batch composition is
+already within-class --- which feat-129 measured, its class-split pool reproducing the single-card
+pool 32,000 of 32,000. The superseded two-card launcher was deleted rather than left lying around,
+since running it now would re-do the factual class, and a guard rebuilds the caps from all three
+launchers and asserts they cover the 500 prompts exactly once. The pre-registration's compute table
+still shows the two-card plan, because nothing above its scoring heading is edited; the scoring log
+records the allocation actually used.
 
 **The gate is on the reward cache, never on a judged number**: ranks 0--63 of the new pool must be
 bit-identical to `results/selection_rewards64_comma7b.csv`, 32,000 floats compared with `==`, and no

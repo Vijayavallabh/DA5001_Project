@@ -29,16 +29,32 @@ def test_the_launchers_pass_no_batch_size_and_extend_the_arm_on_record():
     adding --batch-size 32 to a re-draw, and here a mismatch would break the reproduction gate that
     is the whole point of the arm.
     """
-    for name in ("run_comma7b128_card1.sh", "run_comma7b128_card2.sh"):
+    cards = ("run_comma7b128_card1.sh", "run_comma7b128_card2b.sh", "run_comma7b128_card3.sh")
+    for name in cards:
         live = _live(name)
         assert "--batch-size" not in live, (name, "passes --batch-size; it must not")
         assert "--seeds 42 43 44" in live, (name, "the seeds must match the arm being extended")
         assert "--trajectories-per-prompt 128" in live, name
         assert "common-pile/comma-v0.1-2t" in live and "--max-new-tokens 200" in live, name
-    # the two cards must cover the same 500 prompts between them, and neither twice
-    c1, c2 = _live("run_comma7b128_card1.sh"), _live("run_comma7b128_card2.sh")
-    assert "--cap-neutral 200 --cap-creative 0 --cap-factual 0" in c1, c1
-    assert "--cap-neutral 0 --cap-creative 150 --cap-factual 150" in c2, c2
+
+    # The three cards must cover the 500 prompts exactly once between them. Rebuild the caps from
+    # the launchers and add them up rather than matching one string per card: the registered
+    # two-card plan was re-dealt to three when GPU 1 came free, and a re-deal that double-counted a
+    # class would pass a per-card string check while silently judging 650 prompts.
+    import re as _re
+    total = {"neutral": 0, "creative": 0, "factual": 0}
+    for name in cards:
+        live = _live(name)
+        for cls in total:
+            m = _re.search(rf"--cap-{cls} (\d+)", live)
+            assert m, (name, cls)
+            total[cls] += int(m.group(1))
+    assert total == {"neutral": 200, "creative": 150, "factual": 150}, \
+        (total, "the cards do not cover the 500 prompts exactly once")
+
+    # and the superseded two-card launcher must not come back: running it would re-do factual
+    assert not os.path.exists(os.path.join(ROOT, "scripts", "run_comma7b128_card2.sh")), \
+        "the superseded card2 launcher is back; it would double-count the factual class"
 
 
 def test_the_gate_is_on_the_reward_cache_and_the_committed_one_exists():
@@ -63,7 +79,7 @@ def test_the_new_cache_name_the_merge_writes_is_the_one_the_scorer_reads():
     A = ANCHORS["comma7b"]
     expected = A["old_cache"].replace("64", str(A["top"]), 1)
     assert expected == "selection_rewards128_comma7b.csv", expected
-    c2 = _live("run_comma7b128_card2.sh")
+    c2 = _live("run_comma7b128_card2b.sh")
     assert f"results/{expected}" in c2, (expected, "the merge launcher writes a different cache")
     assert f"--tag {A['tag']}" in c2, (A["tag"], "the merge launcher writes a different tag")
     assert "--max-n 128" in c2
