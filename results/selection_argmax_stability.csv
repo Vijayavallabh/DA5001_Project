@@ -1,0 +1,22 @@
+comparison,differs,n,n_prompts,agree_frac,n_disagree,mean_margin,reward_loss_all,reward_loss_on_disagreements
+host,"different GPU architecture, both bf16, batch 8",1,500,1.0,0,,0.0,0.0
+host,"different GPU architecture, both bf16, batch 8",2,500,0.996,2,8.24513,0.00013,0.03125
+host,"different GPU architecture, both bf16, batch 8",4,500,0.982,9,6.40775,0.0025,0.13889
+host,"different GPU architecture, both bf16, batch 8",8,500,0.98,10,5.94101,0.00488,0.24375
+host,"different GPU architecture, both bf16, batch 8",16,500,0.918,41,5.77688,0.021,0.2561
+host,"different GPU architecture, both bf16, batch 8",32,500,0.906,47,5.45202,0.02925,0.31117
+host,"different GPU architecture, both bf16, batch 8",64,500,0.914,43,5.11322,0.03,0.34884
+batch,"same host, bf16, batch 8 against batch 16",1,500,1.0,0,,0.0,0.0
+batch,"same host, bf16, batch 8 against batch 16",2,500,0.994,3,8.28563,0.00162,0.27083
+batch,"same host, bf16, batch 8 against batch 16",4,500,0.99,5,6.43138,0.00237,0.2375
+batch,"same host, bf16, batch 8 against batch 16",8,500,0.99,5,5.96114,0.003,0.3
+batch,"same host, bf16, batch 8 against batch 16",16,500,0.936,32,5.78388,0.015,0.23437
+batch,"same host, bf16, batch 8 against batch 16",32,500,0.938,31,5.45462,0.016,0.25806
+batch,"same host, bf16, batch 8 against batch 16",64,500,0.944,28,5.09207,0.011,0.19643
+precision,"same host, batch 8, bf16 against fp32",1,500,1.0,0,,0.0,0.0
+precision,"same host, batch 8, bf16 against fp32",2,500,0.998,1,8.27182,0.00023,0.11252
+precision,"same host, batch 8, bf16 against fp32",4,500,0.982,9,6.4201,0.0034,0.18872
+precision,"same host, batch 8, bf16 against fp32",8,500,0.978,11,5.9133,0.00626,0.28461
+precision,"same host, batch 8, bf16 against fp32",16,500,0.9,50,5.74409,0.00908,0.09076
+precision,"same host, batch 8, bf16 against fp32",32,500,0.9,50,5.42748,0.00749,0.07488
+precision,"same host, batch 8, bf16 against fp32",64,500,0.918,41,5.09185,0.01625,0.19822
