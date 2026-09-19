@@ -1,10 +1,33 @@
-# Session handoff — 2026-09-19 (feat-134 RUNNING: Comma-7B past n=64)
+# Session handoff — 2026-09-19 (feat-134 and feat-135 RUNNING)
+
+## RUNNING: `feat-135` --- `results/onset_prediction_kl3m37b_breadth64.md`
+
+**Does the climb to `n=64` survive outside the Comma family?** Both anchors carrying that claim are
+Comma-family, and the one non-Comma anchor that appeared to climb (KL3M-1.7B) failed its seed
+replication in feat-131 --- so the claim is currently confounded with family. This takes
+`alea-institute/kl3m-003-3.7b`, the largest untried clean anchor on disk, to `n=64`.
+
+**Stage 1 is a gate and runs first:** the clean 3.7B base has never been vetted --- `anchor_vetting.csv`
+carries `kl3m37b` only as the contaminated memoriser (0.96 leaking). `scripts/run_vetting_kl3m37b.sh`
+on **GPU 1**'s free VRAM. **If it leaks at all the arm STOPS and no judged run is paid for.**
+
+Stage 2, only if G1 passes: `--batch-size 32` (the breadth arm's value), seeds 42 43 44, 500
+prompts, `output/phase5/sel_kl3m37b_64`, tag `_kl3m37b64`. ~7 gpu-h, under the 24-gpu-hour
+threshold. Band is the paired `g(64)-g(8)` on judge B within one pass, and **MARGINAL is declared in
+advance at 2.0 interval half-widths** so the verdict cannot be decided after seeing the number.
+
+Running co-resident with feat-134 on free VRAM at the user's instruction to use all free capacity;
+co-residency slows both arms and changes no measured quantity (the card is not part of the draw).
+
 
 ## RUNNING: `feat-134` --- `results/onset_prediction_comma7b_n128.md`
 
 Comma-7B to `n=128`, closing the appendix's *"where the strongest anchor's ceiling sits is open"*.
-**GPU 2** (neutral 200), **GPU 1** (factual 150) and **GPU 4** (creative 150, then merge and
-score). `scripts/run_comma7b128_card1.sh`, `_card3.sh`, `_card2b.sh`. Score with
+**GPU 1** (neutral 200), **GPU 2** (factual 150) and **GPU 4** (creative 150).
+`scripts/run_comma7b128_card1.sh`, `_card3.sh`, `_card2b.sh`. **Cards were re-dealt at 11:2x after
+another Claude session on this box OOM-killed neutral and factual** (see the scoring log); the merge
+and scoring are now owned by `scripts/run_comma7b128_merge.sh`, because `card2b`'s 12h wait was
+written when factual was queued behind creative. Score with
 `.venv/bin/python analysis/score_n128.py --anchor comma7b --out results` --- the SAME gate that read
 feat-129, which is the point.
 

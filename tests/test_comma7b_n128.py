@@ -107,34 +107,34 @@ def test_the_pre_registration_commits_the_band_and_the_consequence():
         "an arm over the threshold must say so where the next reader will see it"
 
 
-def test_the_requeue_shell_reruns_the_registered_protocol_and_waits_safely():
-    """feat-134 was half-killed by another session's GPU job; the requeue must not change the arm.
+def test_the_merge_shell_owns_the_scoring_and_waits_safely():
+    """feat-134 was half-killed by another session's GPU job, so the merge moved out of card2b.
 
-    The danger in a relaunch is silently becoming a different experiment: a new batch size is a
-    shift at a rate-valued quantity (cautions (u) and (v)) and would make the reproduction gate
-    meaningless. So the requeue owns no generation command of its own -- it invokes the same
-    card3 launcher the pre-registration names, which the test above already pins.
+    First it moved into run_comma7b128_requeue.sh, which had to QUEUE factual behind creative
+    because only one card was free; GPU 2 then came free, factual was started directly, and the
+    queueing half was deleted. What survives is a merge-only shell, and the thing to guard is that
+    it still cannot become a second experiment: it owns no generation command at all.
     """
-    live = _live("run_comma7b128_requeue.sh")
-    assert "--batch-size" not in live, "the requeue passes --batch-size; it must not"
-    assert "h1.py" not in live, \
-        "the requeue must call the committed launcher, not re-spell the generation command"
-    assert "scripts/run_comma7b128_card3.sh" in live, "the requeue does not run the factual card"
+    live = _live("run_comma7b128_merge.sh")
+    assert "--batch-size" not in live, "the merge shell passes --batch-size; it must not"
+    assert "h1.py" not in live, "the merge shell must not carry a generation command"
+    import os as _os
+    assert not _os.path.exists(_os.path.join(ROOT, "scripts", "run_comma7b128_requeue.sh")), \
+        "the superseded requeue shell is back; it would launch factual a second time"
 
-    # caution (c), eight incidents: wait on a file or on a string the CURRENT script writes,
-    # never on the absence of a pgrep match.
-    assert "pgrep" not in live and "pkill" not in live, "the requeue waits on a pattern match"
-    assert "GEN_DONE" in live, "the requeue does not wait on the success sentinels"
-    assert "generation rc=0" in live, "the requeue does not wait on a string card2b actually writes"
+    # caution (c), eight incidents: wait on files and on a string the CURRENT script writes
+    assert "pgrep" not in live and "pkill" not in live, "the merge shell waits on a pattern match"
+    assert "GEN_DONE" in live, "the merge shell does not wait on the success sentinels"
+    assert "generation rc=0" in live, "it does not wait on a string card2b actually writes"
+    assert "BASH_XTRACEFD" in live, "its sleeps are untraced and will bill as GPU time"
 
-    # the odometer must be able to subtract the waiting (a bare `set -x` goes to discarded stderr)
-    assert "BASH_XTRACEFD" in live, "the requeue's sleeps are untraced and will bill as GPU time"
+    # card2b is still alive and may reach the merge first; exactly one of them may score
+    assert "START scoring" in live, "the merge shell does not check whether card2b already scored"
 
-    # and it must write the cache the scorer reads, exactly as card2b would have
     A = ANCHORS["comma7b"]
     expected = A["old_cache"].replace("64", str(A["top"]), 1)
     assert f"results/{expected}" in live and f"--tag {A['tag']}" in live, \
-        "the requeue writes a different cache or tag than the scorer reads"
+        "the merge shell writes a different cache or tag than the scorer reads"
     assert "--max-n 128" in live
 
 
