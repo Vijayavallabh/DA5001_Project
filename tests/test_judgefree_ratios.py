@@ -71,7 +71,17 @@ def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
     from tests.manuscript import body
     root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
     cells = {"GSM8K": {"majority": {}, "reward": []}, "TriviaQA": {"majority": {}, "reward": []}}
-    for f in sorted(_glob.glob(_os.path.join(root, "results", "selection_verifiable*.csv"))):
+    # SCOPED to the arm the sentence is about (caution (an)/(ao)). The 28 cells are FOUR SCORERS
+    # by seven n at the audited 7B anchor -- comma7b plus its three qwen scorer scales. A different
+    # ANCHOR's file (selection_verifiable_comma1t.csv, feat-137) is not one of the four scorers, and
+    # letting it into this glob broke the guard on 2026-09-20 by making the denominator 35. The
+    # separate test below carries what that anchor actually shows.
+    files = [f for f in sorted(_glob.glob(_os.path.join(root, "results",
+                                                        "selection_verifiable*.csv")))
+             if "comma7b" in _os.path.basename(f)
+             and "_rewards_" not in _os.path.basename(f)]   # those are per-item caches, not summaries
+    assert len(files) == 8, f"expected 4 scorers x 2 tasks, got {[_os.path.basename(f) for f in files]}"
+    for f in files:
         task = "TriviaQA" if "_tqa" in _os.path.basename(f) else "GSM8K"
         for r in _csv.DictReader(open(f, encoding="utf-8")):
             if not (r.get("gain") or "").strip():
@@ -95,3 +105,42 @@ def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
     txt = body("selection.tex")
     assert "four draws of it beat all $28$ reward cells on either task" in txt, \
         "the precise judge-free dominance claim was reworded or trimmed"
+
+
+def test_the_four_draws_rule_is_ANCHOR_SPECIFIC_and_the_body_says_so():
+    """feat-137 measured the same two rules at a second anchor, and 'four draws' does not hold there.
+
+    At Comma-7B-1T majority vote gains +0.050 at n=4 against its scorer's best cell of +0.060, so
+    four draws do NOT beat the reward arm; eight do (+0.124). The body's sentence was written before
+    any second anchor existed and generalised over none, which is caution (ao)'s shape exactly: an
+    unscoped claim about a set of numbers that a later measurement falsifies in general while
+    leaving it true of the arm it was drawn from.
+
+    Guarded both ways (caution (ao)): if the 1T anchor ever does clear at n=4, this fails and says to
+    revisit the wording rather than quietly permitting the stronger claim again.
+    """
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import body
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    maj, rew = {}, []
+    with open(_os.path.join(root, "results", "selection_verifiable_comma1t.csv"),
+              encoding="utf-8") as fh:
+        for r in _csv.DictReader(fh):
+            if not (r.get("gain") or "").strip():
+                continue
+            g, n = float(r["gain"]), int(float(r["n"]))
+            (maj.__setitem__(n, g) if "major" in r["arm"].lower() else rew.append(g))
+    best = max(rew)
+    assert maj[4] <= best, (
+        f"at the 1T anchor n=4 majority ({maj[4]}) now clears its scorer's best ({best}); the "
+        f"body's scoping may be revisited, deliberately")
+    assert maj[8] > best, (maj[8], best)
+
+    txt = " ".join(body("selection.tex").split())
+    assert "four draws" in txt, "the claim left the body; this guard must be withdrawn deliberately"
+    i = txt.find("four draws")
+    window = txt[i:i + 200]
+    assert ("this anchor" in window or "1T" in window or "sibling" in window), (
+        "the body generalises 'four draws' over anchors, and feat-137 shows it is false at the 1T "
+        "sibling, where eight are needed. Scope the sentence to its anchor.")

@@ -140,3 +140,39 @@ neighbour, and prefer a row of `compute_hours.csv` that names the same script to
 Found during the 2026-09-19 adversarial pass and recorded there first
 (`results/onset_prediction_breadth_ladders.md`); it belongs here, in the file whose own number was
 wrong, which is why it is repeated rather than cross-referenced.
+
+### 2026-09-20 --- the arm SCORES, and it falsifies an unscoped sentence in the body
+
+Both gates pass (G0 floor: $n=1$ majority-vote accuracy $0.2260 \ge 0.05$; G1: both rules on the
+full grid over $500$ problems).
+
+| rule | $n=1$ | $n=64$ | gain at $n=64$ | verdict |
+|---|---|---|---|---|
+| **majority vote** | $0.2260$ | $0.4000$ | $\mathbf{+0.1740\ [+0.1340, +0.2160]}$ | **CLIMBS** |
+| pointwise reward (Qwen2.5-7B) | $0.2260$ | $0.2860$ | $+0.0600\ [+0.0200, +0.1020]$ | CLIMBS |
+
+Majority vote beats the pointwise reward, as on record ($+0.222$ against $+0.066$ at Comma-7B). The
+**cross-axis reading**, committed in advance over all four contingencies: judged CLIMBS $\times$
+judge-free CLIMBS $\Rightarrow$ **corpus size gates neither axis**; the $7$B result is about
+architecture and scale.
+
+**And the arm falsified a sentence nobody had asked it to test.** Section 5 read, unscoped:
+
+> where an answer is checkable **four draws** of it beat all $28$ reward cells on either task
+
+Those $28$ cells are four *scorers* by seven $n$ **at the audited $7$B anchor**. This arm is a
+different *anchor*, and there four draws are not enough: majority vote gains $+0.050$ at $n=4$
+against its scorer's best cell of $+0.060$, and only at $n=8$ ($+0.124$) does it clear. **Eight
+draws, not four.**
+
+The sentence was true of the arm it was drawn from and generalised over a set with one member, which
+is caution (ao)'s shape exactly. It now reads *"...on either task at this anchor, eight at its 1T
+sibling"*. Two guards followed: `test_the_majority_vote_dominance_claim_matches_its_whole_grid` is
+scoped to the four Comma-7B scorer files, because a second anchor's CSV had silently pushed its
+denominator from $28$ to $35$ and broken it; and a new
+`test_the_four_draws_rule_is_ANCHOR_SPECIFIC_and_the_body_says_so` pins the finding **both ways** ---
+if the 1T anchor ever does clear at $n=4$ it fails and says to revisit the wording deliberately
+rather than quietly restoring the stronger claim.
+
+Body recompiled after the edit: exit $0$, $0$ overfull, $0$ `??`, and **zero body lines on page 10
+before the Ethics Statement** --- the addition was absorbed by reflow (caution (n)).

@@ -258,3 +258,80 @@ while it runs). The mitigation available now is the supervisor, which waits for 
 
 Score `comma7bhb` when it lands (it has a valid counterpart), then `tc18bhb` once `tc18bsp`
 finishes. Do not fold any feat-136 number into the manuscript until its arm passes G0a, G0b and G2.
+
+
+---
+
+## Update --- 2026-09-20: host B finished, and all eight of its H100s were refilled
+
+### What host B returned
+
+All six `feat-136` arms and `feat-137` exited `rc=0`. **Four anchors scored.** Comma-7B (1T)
+**CLIMBS** $+0.0970\ [+0.0560, +0.1390]$ at $2.34$ half-widths; Pleias-350M, KL3M-170M and
+KL3M-520M all read **SATURATED BY 8** and all are MARGINAL. G5 clears every one, so the nulls are
+nulls rather than a bounded metric near its limit.
+
+* **H1 (capability) is falsified** in KL3M and Pleias, upheld in Comma --- reported both ways.
+* **H2 (family) SURVIVES:** no non-Comma anchor clears $2.0$ half-widths, over six anchors in two
+  families from $0.168$B to $3$B.
+* **H3 (training data) is answered:** at fixed $7$B the 1T checkpoint climbs $+0.0970$ against 2T's
+  $+0.1010$ --- a gap of $0.004$, inside the $0.013$ caution (ap) calls the honest scale.
+* `feat-137`: majority vote $+0.1740\ [+0.1340, +0.2160]$ CLIMBS, pointwise reward $+0.0600$
+  CLIMBS; cross-axis reading is judged CLIMBS $\times$ judge-free CLIMBS.
+
+**`comma7bhb` is blocked by G0b at $+5.3\%$ and its band has NOT been computed or looked at.** The
+cause decomposes exactly --- pipelines match, and the whole shift is the empty rate
+($0.094 \to 0.020$) while length given non-empty moved $-2.7\%$. A gate is not repaired after its
+verdict is read, so the repaired statistic is registered for NEW arms only (see I1 below).
+
+### Three new pre-registrations, all committed BEFORE their arms started
+
+| | question | arms | state |
+|---|---|---|---|
+| **feat-138** | do the ladder's verdicts survive a fresh draw? | 4 seed replications, host B GPUs 0--3 | generating |
+| **feat-140** | the whole non-Comma ladder on ONE host | Pleias-1.2B/3B, KL3M-1.7B/3.7B, GPUs 4--7 | generating |
+| **feat-139** | is the judge-free climb Comma-specific too? | 4 $n=1$ floor probes, queued behind GPUs 4--7 | waiting |
+
+Their scoring logs, unscored as of this writing:
+`results/onset_prediction_breadth_seed_replication.md` (feat-138),
+`results/onset_prediction_single_host_ladder.md` (feat-140),
+`results/onset_prediction_judgefree_offcomma.md` (feat-139).
+
+`feat-138` exists because `feat-136`'s own rule prints MARGINAL for its three nulls and says they
+are not promoted without a replication --- so the nulls carrying H2 could not be used until re-drawn.
+Exactly one flag changes (`--seeds 42 43 44 -> 52 53 54`), checked mechanically; `--batch-size 32`
+is held, which is `feat-132`'s whole lesson.
+
+`feat-140` exists because H2's six anchors were split across two machines and caution (at) showed
+that is a real confound. The four missing anchors were downloaded and verified to load offline with
+embedding rows matching the tokenizer.
+
+`feat-139` probes $n=1$ first because four full ladders the floor then refuses would cost
+$\approx 20$ gpu-hours to learn what $n=1$ answers in minutes. **Its committed prediction is that
+all four fall below the floor**, which would mean H2 is a judged-axis finding and must be scoped
+that way in the paper.
+
+### Scoring machinery, written and mutation-tested before any of this data exists
+
+* `analysis/arm_rank0_stats.py` reduces an arm's $2.5$ GB of generations to one row, because I1
+  needs `mean_words_nonempty` and the empty rate as data. It asserts the identity
+  `mean = (1 - empty) * nonempty`.
+* `analysis/score_seed_and_ladder.py` scores both pre-registrations, importing every constant from
+  `score_breadth_ladders` rather than retyping it. Six mutations, six named failures.
+* **I1 is the repaired statistic** --- length GIVEN NON-EMPTY --- pinned in both directions so it is
+  not a weakening: an arm whose raw mean moves $11\%$ with non-empty length identical must PASS, and
+  one whose non-empty length moves $25\%$ behind a compensating empty rate must FAIL.
+
+### A manuscript sentence was falsified by feat-137 and has been scoped
+
+Section 5 said, unscoped, *"four draws of it beat all $28$ reward cells on either task"*. Those $28$
+are four **scorers** at the $7$B anchor; at the **1T** anchor four draws gain $+0.050$ against its
+scorer's best $+0.060$ and it takes **eight**. The sentence now says
+*"...at this anchor, eight at its 1T sibling"*. Recompiled: exit $0$, $0$ overfull, $0$ `??`, zero
+body lines on page 10. Two guards, one scoped to its arm and one new and guarded both ways.
+
+### Local box
+
+`feat-134` `neutral`/`factual` generating, `creative` restarted under the supervisor after an
+OOM kill; `feat-135` generating; `feat-136`'s `tc18bsp` counterpart queued under the supervisor
+behind the four claimed cards.
