@@ -133,7 +133,8 @@ def test_every_repo_path_the_manuscript_cites_exists():
             raw = raw.replace("\\_", "_").replace("\\", "").replace(" ", "")
             if raw.startswith(prefixes):
                 cited.setdefault(raw, set()).add(rel)
-    assert len(cited) >= 30, (len(cited), "the path extractor matched almost nothing; check "
+    # threshold lowered 2026-09-19: the appendix was cut from 52 to ~37 pages
+    assert len(cited) >= 20, (len(cited), "the path extractor matched almost nothing; check "
                                           "whether \\allowbreak handling has drifted")
     missing = {p: sorted(w) for p, w in cited.items()
                if not os.path.exists(os.path.join(repo, p))}
@@ -149,7 +150,7 @@ def test_every_citation_key_resolves_to_a_bib_entry():
         txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
         for m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]+)\}", txt):
             keys |= {k.strip() for k in m.group(1).split(",")}
-    assert len(keys) > 50, (len(keys), "the cite extractor matched almost nothing")
+    assert len(keys) > 40  # threshold lowered 2026-09-19: the appendix was cut from 52 to ~37 pages, (len(keys), "the cite extractor matched almost nothing")
     bib = os.path.join(DIR, "references.bib")
     assert os.path.exists(bib), bib
     entries = set(re.findall(r"@\w+\{([^,]+),", open(bib, encoding="utf-8").read()))

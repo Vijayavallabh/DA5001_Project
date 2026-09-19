@@ -218,7 +218,8 @@ def test_long_texttt_paths_carry_breakpoints():
             gaps = len(_re.findall(r"(?:/|\\_)(?!\\allowbreak)", a))
             if gaps:
                 bad.append(f"{_os.path.relpath(f, root)}: {gaps} separator(s) unbroken in {vis[:55]}")
-    assert checked >= 30, (
+    # threshold lowered 2026-09-19: the appendix was cut from 52 to ~37 pages
+    assert checked >= 20, (
         f"only {checked} long \\texttt paths found; the brace scan has stopped working, and a "
         "guard that inspects nothing always passes")
     assert not bad, ("long \\texttt paths with no breakpoint -- each one strands the line before "

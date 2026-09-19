@@ -126,7 +126,12 @@ def test_no_sentence_names_the_same_number_twice():
         lines = [ln for ln in open(f, encoding="utf-8").read().split("\n")
                  if not ln.lstrip().startswith("%")]
         body = " ".join(lines)
-        for sentence in re.split(r"(?<=[.!?])\s+", body):
+        # A caption ends ".}" and the period is INSIDE the brace, so a plain sentence split
+        # ran the caption on into the next \paragraph heading and reported the heading's
+        # \ref as a duplicate of the caption's. Float ends are sentence boundaries too
+        # (exposed 2026-09-19 when the block between a caption and a heading was cut).
+        body = re.sub(r"\\end\{(figure|table)\}", ". ", body)
+        for sentence in re.split(r"(?<=[.!?])\s+|(?<=\.\})\s+", body):
             refs = re.findall(r"\\ref\{([^}]*)\}", sentence)
             if len(refs) < 2:
                 continue

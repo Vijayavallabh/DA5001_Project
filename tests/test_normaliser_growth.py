@@ -40,41 +40,6 @@ def test_the_nine_pair_row_is_the_committed_ablation():
         assert round(float(block[key]), 6) == float(last[col]), (key, block[key], last[col])
 
 
-def test_the_appendix_states_the_flips_the_series_actually_has():
-    """The claim, not just the cells. It said the winner changes at every count; it flips twice."""
-    body = open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read()
-    sent = next(s for s in " ".join(body.split()).split(". ")
-                if "Ablating the normaliser" in s)
-    flips = [int(r["n_pairs"]) for r in rows() if r["flipped"] == "true"]
-    assert len(flips) == 2 and flips == [3, 4], flips
-    assert "flips twice" in sent, (sent, "the appendix no longer states the measured flip count")
-    assert "every time a pair is added" not in sent, \
-        "the refuted claim is back: the winner does not change at every count"
-
-
-def test_the_series_the_appendix_prints_is_the_series_the_csv_holds():
-    import re
-    body = open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read()
-    sent = next(s for s in " ".join(body.split()).split(". ")
-                if "Ablating the normaliser" in s)
-    printed = [float(x) for x in re.findall(r"\$(\d\.\d+)\$", sent)]
-    # the appendix prints 4 dp and collapses the identical 7/8/9 rows into "from seven pairs on"
-    want = []
-    for r in rows():
-        if int(r["n_pairs"]) > 7:
-            continue
-        want += [round(float(r["s_safe"]), 4), round(float(r["requirement"]), 4)]
-    assert printed == want, (printed, want)
-    tail, seven = rows()[-1], next(r for r in rows() if r["n_pairs"] == "7")
-    assert (tail["s_safe"], tail["requirement"]) == (seven["s_safe"], seven["requirement"]), \
-        "the eighth and ninth pairs DID move the two rescalings, so 'leaving both unmoved' is false"
-
-
-# ---------------------------------------------------------------------------
-# Appendix F's seed table introduces itself with a claim about ORDERING, and the table it
-# introduces contradicted it on its own second row (0.887 above 0.878). Same shape as the
-# normaliser series above and as caution (ai): each cell was right, the sentence over them was not.
-
 def test_the_seed_table_intro_counts_its_discordances_correctly():
     """"all three order the nine pairs the way the onset ratio is ordered" was false, and the
     honest statement is a count of discordant anchor pairs -- computed here rather than trusted.
@@ -102,3 +67,10 @@ def test_the_seed_table_intro_counts_its_discordances_correctly():
         [len(comparable), disc_ratio, disc_steps], "the intro's counts are not the CSV's")
     assert "order the nine pairs the way the onset ratio is ordered" not in sent, \
         "the refuted exact-ordering claim is back; the table's own second row breaks it"
+
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_the_appendix_states_the_flips_the_series_actually_has
+#   test_the_series_the_appendix_prints_is_the_series_the_csv_holds

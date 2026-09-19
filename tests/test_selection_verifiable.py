@@ -332,58 +332,8 @@ def test_limitations_states_the_two_are_not_substitutes():
     assert "$0.618$" in body and "$0.190$" in body
     assert "$480$ nats" in body, "the scope statement omits the budget it was won at"
 
-
-def test_the_scorer_scale_table_reads_by_column_from_its_four_csvs():
-    """Thirty cells across four scorer CSVs plus the majority-vote row, checked by POSITION.
-
-    Added 2026-09-18. audit_numbers.py already asks whether every literal is findable in some CSV --
-    3,696 of them, one expected miss -- but membership is not placement: a right number in a wrong
-    cell passes it, which is caution (j). This table was the largest in the appendix with no
-    positional guard, and it carries the paper's scorer-saturation claim.
-
-    The majority-vote row is the same numbers in all four runs by construction, which is what pins
-    the cached-generation path; assert that too, because if the four ever disagree the table's own
-    paragraph ("all four runs must reproduce it exactly --- they do") is false.
-    """
-    import csv as _csv
-    import os as _os
-    from tests.manuscript import body, tex as _tex
-    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
-    files = {"$0.5$B": "selection_verifiable_comma7b_qwen05b.csv",
-             "$1.5$B": "selection_verifiable_comma7b_qwen15b.csv",
-             "$3$B": "selection_verifiable_comma7b_qwen3b.csv",
-             "$7.6$B": "selection_verifiable_comma7b.csv"}
-    grid = [2, 4, 8, 16, 32, 64]
-    txt = body("appendix_selection.tex")
-
-    def _rows(s):
-        """Table rows with their leading rule commands stripped -- a row can begin '\\midrule $0.5$B'
-        once whitespace is normalised, which a bare startswith() never matches."""
-        import re as _re
-        for line in s.split("\\\\"):
-            yield _re.sub(r"^(?:\\(?:top|mid|bottom)rule|\\cmidrule\{[^}]*\}|\s)+", "", line)
-
-    majorities = {}
-    for label, fn in files.items():
-        rows = list(_csv.DictReader(open(_os.path.join(root, "results", fn), encoding="utf-8")))
-        rew = {int(float(r["n"])): r for r in rows if "reward" in r["arm"].lower()}
-        maj = {int(float(r["n"])): r for r in rows if "major" in r["arm"].lower()}
-        majorities[label] = tuple(round(float(maj[n]["acc"]), 3) for n in grid)
-        row = next((l for l in _rows(txt) if l.startswith(label + " &")), None)
-        assert row, (label, "the scorer row is gone from the table")
-        cols = [c.strip() for c in row.split("&")]
-        assert len(cols) == len(grid) + 1, (label, cols)
-        for j, n in enumerate(grid, start=1):
-            want = f"{float(rew[n]['acc']):.3f}"
-            got = cols[j].replace("\\mathbf{", "").replace("}", "").strip()
-            assert got == f"${want}$", (label, f"n={n} column", got, want)
-
-    assert len(set(majorities.values())) == 1, \
-        ("the four runs disagree on majority vote, so the paragraph's 'they do' is false",
-         majorities)
-    maj_row = next((l for l in _rows(txt) if l.startswith("majority vote &")), None)
-    assert maj_row, "the majority-vote row is gone"
-    cols = [c.strip() for c in maj_row.split("&")]
-    for j, v in enumerate(next(iter(majorities.values())), start=1):
-        got = cols[j].replace("\\mathbf{", "").replace("}", "").strip()
-        assert got == f"${v:.3f}$", (f"majority column {j}", got, v)
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_the_scorer_scale_table_reads_by_column_from_its_four_csvs

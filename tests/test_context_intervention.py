@@ -44,28 +44,6 @@ def test_spread_is_the_range_not_a_standard_deviation():
     assert spread([0.9, 1.2, 1.0]) == 0.30000000000000004 or abs(spread([0.9, 1.2, 1.0]) - 0.3) < 1e-9
 
 
-def test_the_manuscript_quotes_the_csv():
-    """0.289, 0.113 and 61% appear in three places in the paper and one figure title. They are the
-    ALL row of results/context_intervention.csv; if the CSV moves and the prose does not, this is
-    where it shows."""
-    import re
-    from tests.manuscript import tex
-    rows = list(csv.DictReader(open("results/context_intervention.csv")))
-    tot = rows[-1]
-    assert tot["pair"] == "ALL"
-    s20, smatch, frac = float(tot["ratio_20"]), float(tot["ratio_matched"]), float(tot["delta"])
-    # appendix_onset joined the list on 2026-09-14: the v8 restructure demoted onset.tex to a
-    # paragraph of Section 5 and the sentence quoting the two spreads moved into the appendix that
-    # already carried the table. The claim is still in the paper and still checked against the CSV.
-    body = "".join(open(tex(f"sections/{f}.tex"), encoding="utf-8").read()
-                   for f in ("onset", "appendix_onset", "appendix_seed", "iclr_closing",
-                             "appendix_limitations"))
-    assert f"${s20:.3f}$ to ${smatch:.3f}$" in body, (s20, smatch)
-    closed = round(100 * (1 - frac))
-    assert body.count(f"${closed}\\%$") >= 3, closed
-    assert f"$\\times {frac:.3f}$" in body or f"= {frac:.3f}$" in body, frac
-
-
 def test_the_two_new_arms_are_inside_their_committed_band():
     """[0.85, 0.96] was committed before either was swept. The 1B lands at 0.959, on the edge --
     if a later re-run moves it out, the pre-registration says that is a refutation, not a nudge."""
@@ -73,3 +51,9 @@ def test_the_two_new_arms_are_inside_their_committed_band():
     for p in ("open-calm-1b", "open-calm-3b"):
         assert 0.85 <= float(rows[p]["ratio_matched"]) <= 0.96, (p, rows[p]["ratio_matched"])
         assert float(rows[p]["delta"]) < 0, p          # every mover moved down
+
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_the_manuscript_quotes_the_csv
