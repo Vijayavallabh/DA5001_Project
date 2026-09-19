@@ -524,6 +524,15 @@ def test_a_structural_g0b_failure_is_NOT_described_as_an_undetermined_length_dri
     nobody can separate, when in fact no comparison was made at all.
     """
     out = str(tmp_path)
+    # HERMETIC. The first version read ARMS' real local_gen_dir, a path relative to the repo, and
+    # passed only while that directory did not exist. The counterpart arm then started generating
+    # and the test began failing for a reason that had nothing to do with the code it guards -- a
+    # test whose verdict depends on whether a real run has begun is not a test. Point it at a path
+    # that cannot exist instead.
+    import analysis.score_breadth_ladders as M
+    arms = tuple(dict(a, local_gen_dir=os.path.join(out, "never_generated"))
+                 if a.get("role") == "host" and a["name"] == "tc18bhb" else a for a in ARMS)
+    monkeypatch.setattr(M, "ARMS", arms)
     _run(out, {"tc18bhb": 0.0880}, monkeypatch=None)
     _gate(out, "PASS")
     monkeypatch.setattr(sys, "argv", ["x", "--out", out])
