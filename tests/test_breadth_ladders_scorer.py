@@ -15,6 +15,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.score_breadth_ladders import (ARMS, GRID, HALF_WIDTHS_FOR_STABLE,  # noqa: E402
+                                            g5_ceiling,
                                             MAX_SEED_MOVE, N_PROMPTS, STABLE_SEED_MOVE,
                                             band, g0a, g0b, g2_grid, g4_length, main,
                                             monotone, verdict_for)
@@ -32,7 +33,7 @@ def _write(path, cols, rows_):
             w.writerow(r)
 
 
-def _arm_csvs(out, name, diffs, mean_words_n1=80.0, grid=GRID, n_prompts=None):
+def _arm_csvs(out, name, diffs, mean_words_n1=80.0, grid=GRID, n_prompts=None, u8=0.40):
     """Build the two CSVs selection_scaling.py writes, with u_n64 - u_n8 equal to `diffs`."""
     n_prompts = len(diffs) if n_prompts is None else n_prompts
     per = []
@@ -48,7 +49,8 @@ def _arm_csvs(out, name, diffs, mean_words_n1=80.0, grid=GRID, n_prompts=None):
     for judge in (JB, JC):
         for n in grid:
             summ.append({"judge": judge, "selector": "pointwise reward (Qwen2.5-7B)", "n": n,
-                         "kl_nats": 0.0, "n_prompts": n_prompts, "u": 0.4, "u_lo95": 0.3,
+                         "kl_nats": 0.0, "n_prompts": n_prompts,
+                         "u": (u8 if n == 8 else 0.4), "u_lo95": 0.3,
                          "u_hi95": 0.5, "gain": (0.05 if n == 8 else 0.15 if n == 64 else 0.0),
                          "gain_lo95": 0.0, "gain_hi95": 0.2,
                          "mean_words": (mean_words_n1 if n == 1 else 90.0),
@@ -201,14 +203,15 @@ def test_g4_fails_a_degenerate_length(tmp_path):
 
 # ---- the host-transfer prediction, checked on both sides of its bound -------------------------
 
-def _run(out, deltas_by_name, words_by_name=None):
+def _run(out, deltas_by_name, words_by_name=None, u8_by_name=None):
     _gate(out, "PASS")
     for arm in ARMS:
         d = deltas_by_name.get(arm["name"])
         if d is None:
             continue
         mw = (words_by_name or {}).get(arm["name"], arm.get("local_mw1") or 80.0)
-        _arm_csvs(out, arm["name"], _clear_climb(mean=d), mean_words_n1=mw)
+        _arm_csvs(out, arm["name"], _clear_climb(mean=d), mean_words_n1=mw,
+                  u8=(u8_by_name or {}).get(arm["name"], 0.40))
 
 
 def test_a_host_arm_that_lands_on_its_local_value_reads_as_a_transfer(tmp_path, capsys, monkeypatch):
@@ -405,3 +408,166 @@ def test_a_missing_reference_source_is_reported_not_silently_dropped(tmp_path):
     got = on_record(str(tmp_path))
     assert len(got) == 5 and all(r["missing"] for r in got)
     assert all(r["delta"] is None for r in got)
+
+
+# ---- G5, the ceiling check: a null needs headroom ----------------------------------------------
+
+def test_the_ceiling_threshold_sits_above_every_anchor_on_record_so_it_cannot_be_tuned():
+    """G5 was added AFTER the five anchors on record were measured, which is exactly when a
+    threshold is easiest to tune. It cannot have been: their u(8) runs 0.489, 0.513, 0.315, 0.442,
+    0.422, and the threshold is 0.85 -- nowhere near any of them, and chosen as the point past which
+    a win rate leaves too little room for a 0.09-scale climb."""
+    from analysis.score_breadth_ladders import CEILING_MAX_U8
+    assert CEILING_MAX_U8 == 0.85
+    on_record_u8 = [0.489, 0.513, 0.315, 0.442, 0.422]
+    assert CEILING_MAX_U8 > max(on_record_u8) + 0.30, \
+        "the ceiling threshold has drifted toward the data it was supposed to be independent of"
+
+
+def test_g5_passes_with_headroom_and_fails_without(tmp_path):
+    out = str(tmp_path)
+    _arm_csvs(out, "roomy", _clear_climb(), u8=0.42)
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_roomy64.csv"))))
+    ok, msg, u8 = g5_ceiling(s)
+    assert ok and u8 == 0.42 and "headroom 0.580" in msg
+    _arm_csvs(out, "tight", _clear_climb(), u8=0.93)
+    s = list(csv.DictReader(open(os.path.join(out, "selection_scaling_tight64.csv"))))
+    ok, msg, u8 = g5_ceiling(s)
+    assert not ok and u8 == 0.93
+
+
+def test_a_null_without_headroom_is_UNINFORMATIVE_not_saturated(tmp_path, capsys, monkeypatch):
+    """The confound this closes: a win rate near 1 has nowhere to climb, so its flat curve is a
+    bounded-scale artefact. Reading it as a saturation would corrupt H1 and H2 directly."""
+    out = str(tmp_path)
+    _run(out, {"kl3m170mhb": 0.0}, u8_by_name={"kl3m170mhb": 0.93})
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    main()
+    txt = capsys.readouterr().out
+    assert "UNINFORMATIVE ABOUT SATURATION" in txt
+    r = {x["name"]: x for x in csv.DictReader(
+        open(os.path.join(out, "breadth_ladders_scoring.csv")))}
+    assert r["kl3m170mhb"]["verdict"].startswith("UNINFORMATIVE (ceiling")
+    assert "SATURATED BY 8" in r["kl3m170mhb"]["verdict"], "the underlying reading must stay visible"
+
+
+def test_a_CLIMB_without_headroom_is_still_a_climb(tmp_path, capsys, monkeypatch):
+    """A ceiling gates a NULL, never a positive: climbing despite little room is still climbing, and
+    downgrading it would throw away the strongest possible reading."""
+    out = str(tmp_path)
+    _run(out, {"kl3m170mhb": 0.10}, u8_by_name={"kl3m170mhb": 0.93})
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    main()
+    r = {x["name"]: x for x in csv.DictReader(
+        open(os.path.join(out, "breadth_ladders_scoring.csv")))}
+    assert r["kl3m170mhb"]["verdict"] == "CLIMBS"
+    assert "UNINFORMATIVE" not in capsys.readouterr().out
+
+
+def test_the_headroom_is_recorded_for_every_scored_arm(tmp_path, monkeypatch):
+    out = str(tmp_path)
+    _run(out, {"tc18bhb": 0.0880}, u8_by_name={"tc18bhb": 0.489})
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    main()
+    r = {x["name"]: x for x in csv.DictReader(
+        open(os.path.join(out, "breadth_ladders_scoring.csv")))}
+    assert float(r["tc18bhb"]["u8"]) == 0.489
+    assert float(r["tc18bhb"]["headroom"]) == pytest.approx(0.511, abs=1e-4)
+
+
+# ---- G0b's failure description, committed before any mean_words was read -----------------------
+
+def test_a_g0b_failure_says_CAUSE_UNDETERMINED_and_shows_the_cross_checks(tmp_path, capsys,
+                                                                          monkeypatch):
+    """G0b's 5% tolerance was never calibrated against a cross-host measurement, because none
+    existed, and bf16 is known to move step-0 EOS logits -- which is what sets completion length. So
+    a failure must not be reported as a defect. It blocks either way; what is fixed in advance is
+    how it is DESCRIBED."""
+    out = str(tmp_path)
+    _run(out, {"tc18bhb": 0.0880}, words_by_name={"tc18bhb": 40.0})      # -45% of the local 72.2
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    main()
+    txt = capsys.readouterr().out
+    assert "CAUSE UNDETERMINED" in txt
+    assert "legitimate length drift" in txt
+    assert "prompts in the per-prompt file" in txt, "the cross-checks must be shown, not just named"
+    r = {x["name"]: x for x in csv.DictReader(
+        open(os.path.join(out, "breadth_ladders_scoring.csv")))}
+    assert r["tc18bhb"]["verdict"] == "NOT SCORED"
+    assert "cause undetermined" in r["tc18bhb"]["note"]
+
+
+# --- the half-width ratio assertion added 2026-09-19, and the two bounds that keep it honest ------
+
+def _seed_spread(per_path, seeds=10):
+    """The span of the half-width ratio over `seeds` bootstrap seeds on one committed CSV."""
+    import analysis.score_breadth_ladders as M
+    rs, old = [], M.BAND_SEED
+    try:
+        for k in range(seeds):
+            M.BAND_SEED = 20260919 + k
+            rs.append(M.band(M.rows(per_path))[4])
+    finally:
+        M.BAND_SEED = old
+    return max(rs) - min(rs)
+
+
+def test_the_ratio_slack_is_wider_than_any_bootstrap_re_seed_can_move_the_ratio():
+    """Lower bound. It must not be tunable DOWN: a legitimate re-seed may never fire the assertion.
+
+    band() resamples, so the ratio moves with BAND_SEED on byte-identical input. A slack narrower
+    than that movement would turn a re-seed into a spurious disagreement -- caution (as)'s defect,
+    a gate nothing can pass, in miniature.
+    """
+    import analysis.score_breadth_ladders as M
+    widest = 0.0
+    checked = []
+    for s in M.ON_RECORD_SOURCES:
+        if s["ratio"] is None:
+            continue
+        p = os.path.join("results", s["per"])
+        assert os.path.exists(p), f"{p} is committed and must resolve; a skipped check is a pass"
+        widest = max(widest, _seed_spread(p))
+        checked.append(s["label"])
+    assert len(checked) == 3, f"expected three arms with a committed ratio, got {checked}"
+    assert M.RATIO_SEED_SLACK >= widest, (
+        f"RATIO_SEED_SLACK={M.RATIO_SEED_SLACK} is narrower than the widest measured ten-seed "
+        f"span ({widest:.3f}), so re-seeding the bootstrap would fail the assertion by itself")
+
+
+def test_the_ratio_slack_is_narrower_than_the_gap_between_two_reference_arms():
+    """Upper bound (caution (ao): guard the shape both ways). It must not be tunable UP.
+
+    If the slack were wider than the spacing between the closest two committed ratios, the assertion
+    could not tell those two arms apart and would pass on a CSV swapped between them.
+    """
+    import analysis.score_breadth_ladders as M
+    rr = sorted(s["ratio"] for s in M.ON_RECORD_SOURCES if s["ratio"] is not None)
+    gap = min(b - a for a, b in zip(rr, rr[1:]))
+    assert M.RATIO_SEED_SLACK < gap, (
+        f"RATIO_SEED_SLACK={M.RATIO_SEED_SLACK} is wider than the {gap:.2f} gap between the two "
+        f"closest committed ratios {rr}, so it could not distinguish them")
+
+
+def test_a_ratio_that_disagrees_with_the_record_fails_loudly(monkeypatch):
+    import analysis.score_breadth_ladders as M
+    bad = tuple(dict(s, ratio=(s["ratio"] + 1.0 if s["ratio"] is not None else None))
+                for s in M.ON_RECORD_SOURCES)
+    monkeypatch.setattr(M, "ON_RECORD_SOURCES", bad)
+    with pytest.raises(AssertionError, match="half-widths against"):
+        M.on_record("results")
+
+
+def test_an_arm_that_crosses_the_marginal_boundary_fails_even_inside_the_slack(monkeypatch):
+    """The verdict assertion is INDEPENDENT of the numeric one, which is the whole point.
+
+    KL3M-1.7B reads about 1.73 half-widths and is MARGINAL on record. Claiming it is STABLE must
+    fail on the boundary check even though 1.73 is well within RATIO_SEED_SLACK of its committed
+    1.7 -- caution (ap): the ratio predicts the verdict, and that is what is guarded.
+    """
+    import analysis.score_breadth_ladders as M
+    flipped = tuple(dict(s, stable=(True if s["label"] == "KL3M-1.7B" else s["stable"]))
+                    for s in M.ON_RECORD_SOURCES)
+    monkeypatch.setattr(M, "ON_RECORD_SOURCES", flipped)
+    with pytest.raises(AssertionError, match="MARGINAL at the|licensed to predict"):
+        M.on_record("results")

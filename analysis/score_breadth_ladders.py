@@ -71,6 +71,13 @@ MIN_WORDS = 20.0                 # G4
 EMPTY_THRESHOLD = 0.05           # G3, reported not gated
 HALF_WIDTHS_FOR_STABLE = 2.0
 G0B_TOLERANCE = 0.05             # G0b, relative, on n=1 mean words
+# G5, the ceiling check. u is a judged WIN RATE bounded in [0,1], so an anchor already near 1 has no
+# room to climb and a flat curve would be a bounded-scale artefact rather than a saturation -- the
+# mirror of feat-137's floor gate. It was NOT in the pre-registration and should have been; it was
+# added after the five anchors on record were measured to have 0.487-0.685 headroom above u(8), so
+# it cannot have been tuned to them. It gates a NULL only: a climb despite little headroom is still
+# a climb, but a saturation without headroom is uninformative.
+CEILING_MAX_U8 = 0.85
 BAND_SEED = 20260919             # the convention score_kl3m37b_breadth64.py already uses
 
 # The paired-difference moves a disjoint SEED draw has produced, which is what a host change is
@@ -116,17 +123,37 @@ ARMS = (
 # with a separate pre-registration and must not be re-derived here.
 ON_RECORD_SOURCES = (
     dict(label="TinyComma-1.8B", family="Comma", params=1.759,
-         per="selection_scaling_per_prompt.csv", expect=0.0880),
+         per="selection_scaling_per_prompt.csv", expect=0.0880,
+         ratio=2.1, stable=True),
     dict(label="Comma-7B (2T)", family="Comma", params=7.003,
-         per="selection_scaling_per_prompt_comma7b64.csv", expect=0.1010),
+         per="selection_scaling_per_prompt_comma7b64.csv", expect=0.1010,
+         ratio=2.43, stable=True),
     dict(label="KL3M-1.7B", family="KL3M", params=1.700,
-         per="selection_scaling_per_prompt_kl3m17b64.csv", expect=0.0650),
+         per="selection_scaling_per_prompt_kl3m17b64.csv", expect=0.0650,
+         ratio=1.7, stable=False),
+    # The two Pleias arms have no half-width ratio quoted anywhere in the committed record, so
+    # `ratio` is None and only their verdict side of the boundary is asserted. Inventing an
+    # expectation here would be asserting against this scorer's own output.
     dict(label="Pleias-1.2B", family="Pleias", params=1.200,
-         per="selection_scaling_per_prompt_pleias12b64.csv", expect=0.0360),
+         per="selection_scaling_per_prompt_pleias12b64.csv", expect=0.0360,
+         ratio=None, stable=False),
     dict(label="Pleias-3B", family="Pleias", params=3.000,
-         per="selection_scaling_per_prompt_pleias3b64.csv", expect=0.0030),
+         per="selection_scaling_per_prompt_pleias3b64.csv", expect=0.0030,
+         ratio=None, stable=False),
 )
 
+# How far a derived half-width ratio may sit from the value quoted in the committed record before
+# the two documents are treated as disagreeing. This is a BOOTSTRAP-SEED allowance and nothing else:
+# `band()` resamples, so the ratio moves with BAND_SEED even on byte-identical inputs. Measured
+# ten-seed spans are 2.095-2.200 (TinyComma), 2.405-2.557 (Comma-7B) and 1.667-1.733 (KL3M-1.7B),
+# the widest being 0.152, and the scoring log records a wider 0.239 for TinyComma from an earlier
+# sweep with a different seed set. 0.25 covers both with a little margin.
+#
+# It is deliberately NOT tuned to make the numbers look close: tests/test_breadth_ladders_scorer.py
+# guards it in both directions (caution (ao)) -- shrinking it below the measured seed spread must
+# fail, because that would make a legitimate re-seed look like an error, and widening it must not be
+# what keeps an arm on the right side of the MARGINAL boundary, which is asserted separately below.
+RATIO_SEED_SLACK = 0.25
 
 def on_record(out):
     """Derive the five reference deltas from their committed per-prompt CSVs.
@@ -134,6 +161,19 @@ def on_record(out):
     Returns [(dict with delta, half_widths, derived_from)]. A source that is absent is reported as
     absent rather than silently dropped -- a ladder assembled from four rungs when five exist is the
     same defect as caution (aq)'s stale mean over a set whose membership grew.
+
+    THREE assertions, in increasing order of what they are licensed to claim:
+
+      1. the paired delta matches the committed value to 5e-4. It is a mean over 500 fixed prompts
+         and does not move with the bootstrap seed, so it is checked tightly.
+      2. the MARGINAL verdict -- which side of the HALF_WIDTHS_FOR_STABLE boundary the arm sits on
+         -- matches the committed one. This is the only thing caution (ap) licenses the ratio to
+         predict, and it is therefore the assertion that blocks.
+      3. the ratio itself is within RATIO_SEED_SLACK of the committed value, where one is quoted.
+         Loose by construction, because the ratio moves with BAND_SEED; caution (ap) is explicit
+         that the ratio predicts the verdict and NEVER the distance (1.71 -> 0.061, 2.12 -> 0.000,
+         2.43 -> 0.013 does not order), so a tight bound here would be asserting a relationship the
+         measurement refutes.
     """
     got = []
     for s in ON_RECORD_SOURCES:
@@ -146,6 +186,19 @@ def on_record(out):
             f"{s['label']}: derived {g:+.4f} from {s['per']} but the value on record is "
             f"{s['expect']:+.4f}. One of the two is wrong; do not 'fix' the expectation without "
             f"establishing which.")
+        stable = ratio >= HALF_WIDTHS_FOR_STABLE
+        assert stable == s["stable"], (
+            f"{s['label']}: derived {ratio:.3f} half-widths, which is "
+            f"{'STABLE' if stable else 'MARGINAL'} at the {HALF_WIDTHS_FOR_STABLE:.1f} boundary, "
+            f"but the record has it {'STABLE' if s['stable'] else 'MARGINAL'}. This is the one "
+            f"thing the ratio is licensed to predict (caution (ap)), so it blocks. A re-seed cannot "
+            f"do this on its own -- the measured seed spreads do not cross the boundary -- so treat "
+            f"it as a changed input until proven otherwise.")
+        if s["ratio"] is not None:
+            assert abs(ratio - s["ratio"]) <= RATIO_SEED_SLACK, (
+                f"{s['label']}: derived {ratio:.3f} half-widths against {s['ratio']:.2f} on record, "
+                f"a gap of {abs(ratio - s['ratio']):.3f} > {RATIO_SEED_SLACK} which is wider than "
+                f"any bootstrap re-seed measured. The two documents disagree about the same arm.")
         got.append(dict(s, delta=round(g, 4), half_widths=round(ratio, 2), n_prompts=n,
                         missing=False))
     return got
@@ -230,6 +283,23 @@ def g4_length(summary):
         return False, "no mean_words on the n=1 row", float("nan")
     w = float(jb[0]["mean_words"])
     return w >= MIN_WORDS, f"mean {w:.1f} words at n=1 (>= {MIN_WORDS:.0f} required)", w
+
+
+def g5_ceiling(summary):
+    """Headroom above u(8). Returns (ok, message, u8).
+
+    ok=False does not block the band: it blocks reading a NULL as evidence. An anchor with u(8)
+    above CEILING_MAX_U8 cannot demonstrate saturation whatever its delta reads, because there was
+    nowhere for it to go.
+    """
+    r = [x for x in summary if JUDGE_B in x["judge"] and int(float(x["n"])) == 8]
+    if not r or not r[0].get("u"):
+        return False, "no u on the n=8 row", float("nan")
+    u8 = float(r[0]["u"])
+    head = 1.0 - u8
+    return u8 <= CEILING_MAX_U8, (f"u(8) = {u8:.3f}, headroom {head:.3f} "
+                                  f"(a null needs u(8) <= {CEILING_MAX_U8}; the five anchors on "
+                                  f"record run 0.487-0.685)"), u8
 
 
 def g3_empty(arm, out):
@@ -337,11 +407,23 @@ def main():
         else:
             print(f"  G0b sampling: {'PASS' if okb else 'FAIL'} -- {msgb}")
             if not okb:
-                print("  NOT SCORED: an n=1 length this far from the local value means a wrong")
-                print("  model, corpus or truncation, not host drift. The band is not computed.")
+                # Committed before any arm's mean_words was read: G0b's 5% tolerance was never
+                # calibrated against a cross-host measurement, because none existed, and bf16 is now
+                # known to move step-0 EOS logits, which is what sets completion length. So a failure
+                # is NOT attributed to a defect -- it is reported with the cause undetermined and
+                # cross-checked against the two quantities a wrong model or corpus would also move.
+                emp, msg3b, _ = g3_empty(arm, out)
+                npr = len({x["prompt_id"] for x in (per or [])})
+                print("  NOT SCORED -- G0b FAILED, CAUSE UNDETERMINED between a pipeline defect and")
+                print("  legitimate length drift under a different numerical stack. The band is not")
+                print("  computed either way. Cross-checks a wrong model or corpus would also move:")
+                print(f"    n=1 empty fraction: {msg3b}")
+                print(f"    prompts in the per-prompt file: {npr} (expected {N_PROMPTS})")
                 recs.append(dict(anchor=label, name=name, family=arm["family"],
                                  params_b=arm["params"], role=arm["role"],
-                                 verdict="NOT SCORED", note=f"G0b FAIL: {msgb}"))
+                                 verdict="NOT SCORED",
+                                 note=f"G0b FAIL, cause undetermined: {msgb}; "
+                                      f"empty {emp if emp is not None else 'n/a'}, prompts {npr}"))
                 continue
 
         ok4, msg4, words = g4_length(summary)
@@ -361,8 +443,16 @@ def main():
             print(f"    gain on the {ne[3]} non-empty prompts: "
                   f"{ne[0]:+.4f} [{ne[1]:+.4f}, {ne[2]:+.4f}]")
 
+        okc, msgc, u8 = g5_ceiling(summary)
+        print(f"  G5 ceiling:  {'PASS' if okc else 'FAIL'} -- {msgc}")
+
         g, lo, hi, hw, ratio, npr = band(per)
         v, marginal = verdict_for(arm, g, lo, hi, ratio)
+        if not okc and v in ("SATURATED BY 8", "NO CLIMB", "DOES NOT TRANSFER"):
+            print("  UNINFORMATIVE ABOUT SATURATION: this anchor had no room to climb, so a flat")
+            print("  curve is a bounded-scale artefact and not a saturation. The delta is reported")
+            print("  and the NULL is not read as evidence.")
+            v = f"UNINFORMATIVE (ceiling, was {v})"
         print(f"  paired g(64) - g(8) over {npr} prompts, within this pass: "
               f"{g:+.4f} [{lo:+.4f}, {hi:+.4f}]  -> {v}")
         print(f"  distance from zero: {ratio:.2f} half-widths "
@@ -398,6 +488,7 @@ def main():
                          gain64=round(float(n64["gain"]), 4), gain_diff=round(g, 4),
                          lo95=round(lo, 4), hi95=round(hi, 4), half_widths=round(ratio, 2),
                          n_prompts=npr, mean_words_n1=round(words, 1),
+                         u8=round(u8, 4), headroom=round(1.0 - u8, 4),
                          empty_frac_n1=(round(empty, 4) if empty is not None else ""),
                          local_delta=(arm.get("local_delta", "") or ""),
                          host_move=(round(move, 4) if move != "" else ""),
@@ -452,7 +543,8 @@ def main():
     os.makedirs(out, exist_ok=True)
     p = os.path.join(out, "breadth_ladders_scoring.csv")
     cols = ["anchor", "name", "family", "params_b", "role", "gain8", "gain64", "gain_diff",
-            "lo95", "hi95", "half_widths", "n_prompts", "mean_words_n1", "empty_frac_n1",
+            "lo95", "hi95", "half_widths", "n_prompts", "mean_words_n1", "u8", "headroom",
+            "empty_frac_n1",
             "local_delta", "host_move", "host_prediction", "marginal", "verdict", "note"]
     with open(p, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=cols)

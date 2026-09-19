@@ -117,3 +117,26 @@ threshold.** It runs on the second host, on a card freed by a `feat-136` arm, un
 standing instruction of 2026-09-19 to use all eight of its GPUs.
 
 ## Scoring log
+
+### 2026-09-19 --- correction: the compute estimate above was extrapolated when a direct measurement existed
+
+**The estimate is not edited.** It sits above the `## Scoring log` heading and this file promises on
+line 3 that nothing there is touched afterwards, so the number the arm was registered with stands and
+the correction is recorded here instead.
+
+The paragraph scales the *breadth* arm's $13.42$ gpu-hours by parameters and tokens to
+$\approx 15.8$ A100-hours, then to $\approx 13$ gpu-hours on one card. But
+`results/compute_hours.csv:314` already holds `verifiable_comma7b` --- **the same script, the same
+$500$ problems, the same `--max-n 64`, on a slightly LARGER anchor** --- at **$6.88$ gpu-hours**,
+measured. The registered estimate is therefore about $2.3\times$ too high, and the right figure for
+this arm is **$4$--$5$ H100-hours**.
+
+The direction is conservative, so the registered conclusion --- **under the $24$-gpu-hour escalation
+threshold** --- is not merely unaffected but now holds with a much wider margin; no permission
+question turns on it. What the error cost was accuracy, not safety. The habit it breaks is caution
+(v)'s: **read the measurement of the thing you are about to run** before extrapolating from a
+neighbour, and prefer a row of `compute_hours.csv` that names the same script to any scaling argument.
+
+Found during the 2026-09-19 adversarial pass and recorded there first
+(`results/onset_prediction_breadth_ladders.md`); it belongs here, in the file whose own number was
+wrong, which is why it is repeated rather than cross-referenced.
