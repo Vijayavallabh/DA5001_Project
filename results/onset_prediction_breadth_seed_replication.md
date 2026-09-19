@@ -99,3 +99,25 @@ Estimate **$\approx 11$ gpu-hours total, no single arm above $4$** --- under the
 escalation threshold. Run under the user's instruction of 2026-09-20 to use host B's GPUs maximally.
 
 ## Scoring log
+
+### 2026-09-20 --- all four verdicts survive the re-draw, and every move is small
+
+| arm | first draw | re-draw (seeds 52 53 54) | half-widths | predicted | read | move |
+|---|---|---|---|---|---|---|
+| Comma-7B (1T) | $+0.0970$ | $+0.0860\ [+0.0440, +0.1270]$ | $2.07$ | CLIMBS | **CLIMBS** | $0.0110$ |
+| Pleias-350M | $+0.0090$ | $+0.0020\ [-0.0380, +0.0400]$ | $0.05$ | SATURATED | **SATURATED** | $0.0070$ |
+| KL3M-170M | $+0.0130$ | $+0.0210\ [-0.0150, +0.0570]$ | $0.58$ | SATURATED | **SATURATED** | $0.0080$ |
+| KL3M-520M | $-0.0070$ | $+0.0110\ [-0.0240, +0.0480]$ | $0.31$ | SATURATED | **SATURATED** | $0.0180$ |
+
+**G1: four of four verdicts agree. G2: every move is inside $0.0610$**, and in fact inside
+$0.0180$ --- a quarter of the bound. I1, I2 and I3 pass on every arm; the largest length move given
+non-empty is $+3.2\%$ and the largest empty-fraction $|z|$ is $1.24$.
+
+**The three MARGINAL nulls carrying H2 are now replicated**, which is what `feat-136`'s own rule
+demanded before they could be used. And caution (ap)'s boundary rule held again: the one arm above
+$2.0$ half-widths ($2.34$) reproduced at $2.07$ and moved $0.0110$, while the three below stayed
+below and stayed nulls.
+
+**What this establishes, and it is the control the next entry needs:** on ONE host, through ONE
+pipeline, with only the trajectory pool re-drawn, this measurement moves by $0.007$ to $0.018$ and
+**never changes a verdict**. That is the size of a pure re-draw here.

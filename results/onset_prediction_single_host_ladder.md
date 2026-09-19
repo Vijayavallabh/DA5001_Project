@@ -93,3 +93,52 @@ gpu-hours across eight cards in parallel, run under the user's instruction of 20
 B's GPUs to their maximum.
 
 ## Scoring log
+
+### 2026-09-20 --- the prediction FAILED on all three scored anchors
+
+| anchor | local, on record | host B | half-widths | predicted | read | distance |
+|---|---|---|---|---|---|---|
+| Pleias-1.2B | $+0.0360$ (SATURATED) | $+0.0560\ [+0.0180, +0.0940]$ | $1.47$ | SATURATED | **CLIMBS** | $0.0200$ |
+| Pleias-3B | $+0.0030$ (SATURATED) | $+0.0730\ [+0.0320, +0.1130]$ | $1.80$ | SATURATED | **CLIMBS** | $\mathbf{0.0700}$ |
+| KL3M-1.7B | $+0.0650$ (CLIMBS) | $+0.0470\ [+0.0110, +0.0810]$ | $1.34$ | SATURATED | **CLIMBS** | $0.0180$ |
+| KL3M-3.7B | --- (none registered) | not finished | --- | none (P4) | --- | --- |
+
+I1, I3 and I4 pass on all three: both sides self-paired on the same model id, and length given
+non-empty agrees to $+0.4\%$, $+0.6\%$ and $+0.0\%$ --- so these are like-for-like comparisons and
+not caution (at)'s defect.
+
+**P2 failed twice and P3 once, and the two failures are different.**
+
+* **P2.** Pleias-1.2B and Pleias-3B were registered as SATURATED and both **CLIMB** on host B.
+* **P3.** KL3M-1.7B was registered as SATURATED, siding with the disjoint draw that moved $0.061$
+  against its original CLIMBS. It **CLIMBS** again. This file said in advance what that means and it
+  is not revised now: *"two of three draws would then say CLIMBS and the anchor's status would be
+  genuinely open."* It is open.
+
+**H2 SURVIVES its committed rule, and the rule is doing real work.** No non-Comma anchor clears
+$2.0$ interval half-widths: the largest is Pleias-3B at $1.80$. Six non-Comma readings are now
+scored across the two pre-registrations and not one is stable.
+
+**But the finding must be restated, because "non-Comma anchors do not climb" is now false.** Three
+of them do climb, marginally. What separates the families is **stability, not direction**: the Comma
+readings sit at $2.07$--$2.43$ half-widths and reproduce ($0.011$, $0.013$ moves), while every
+non-Comma reading sits below $1.81$ and moves enough to change its own verdict between draws.
+
+**Set the two entries beside each other and the contrast is the result.** Same pipeline, same
+anchors, one thing different:
+
+| what changed | moves observed | verdicts changed |
+|---|---|---|
+| the seed, same host (`feat-138`) | $0.007$--$0.018$ | $0$ of $4$ |
+| the host, same seeds (`feat-140`) | $0.018$--$0.070$ | $2$ of $3$ |
+
+Pleias-3B's $0.0700$ is **beyond** the $0.0610$ that bounds every seed replication on record. A host
+change is not a re-draw: it is larger, and at a marginal anchor it is large enough to flip the
+verdict. That sharpens caution (as) --- which established that bf16 makes two hosts disagree on a
+reward --- into a statement about a published quantity.
+
+**What this cannot say, stated because the asymmetry is easy to miss.** There is **no unblocked
+cross-host Comma comparison**: both Comma host-transfer arms are refused by `feat-136`'s G0b. So the
+cross-host evidence here is entirely non-Comma, and the claim "Comma is stable across hosts while
+the others are not" is **not** supported by these data. What is supported is that Comma is stable
+across seeds and the others are not stable across hosts.

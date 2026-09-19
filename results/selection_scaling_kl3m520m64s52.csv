@@ -1,0 +1,15 @@
+judge,selector,n,kl_nats,n_prompts,u,u_lo95,u_hi95,gain,gain_lo95,gain_hi95,mean_words,spearman_u_logn
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),1,0.0,500,0.303,0.273,0.334,0.0,0.0,0.0,70.7,0.8829
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),2,0.1931,500,0.281,0.251,0.311,-0.022,-0.048,0.006,70.8,0.8829
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),4,0.6363,500,0.289,0.259,0.322,-0.014,-0.045,0.02,71.3,0.8829
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),8,1.2044,500,0.312,0.281,0.346,0.009,-0.025,0.043,70.8,0.8829
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),16,1.8351,500,0.315,0.284,0.348,0.012,-0.026,0.048,70.9,0.8829
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),32,2.497,500,0.323,0.292,0.357,0.02,-0.015,0.056,69.4,0.8829
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),64,3.1745,500,0.323,0.292,0.355,0.02,-0.016,0.058,68.6,0.8829
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),1,0.0,500,0.174,0.14,0.208,0.0,0.0,0.0,70.7,0.9643
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),2,0.1931,500,0.192,0.158,0.228,0.018,-0.008,0.044,70.8,0.9643
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),4,0.6363,500,0.188,0.154,0.224,0.014,-0.018,0.044,71.3,0.9643
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),8,1.2044,500,0.2,0.166,0.234,0.026,-0.008,0.062,70.8,0.9643
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),16,1.8351,500,0.213,0.178,0.25,0.039,0.002,0.077,70.9,0.9643
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),32,2.497,500,0.222,0.185,0.258,0.048,0.01,0.085,69.4,0.9643
+Meta-Llama-3.1-8B-Instruct,pointwise reward (Qwen2.5-7B),64,3.1745,500,0.234,0.198,0.272,0.06,0.022,0.1,68.6,0.9643

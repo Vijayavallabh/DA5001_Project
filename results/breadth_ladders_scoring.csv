@@ -1,5 +1,5 @@
 anchor,name,family,params_b,role,gain8,gain64,gain_diff,lo95,hi95,half_widths,n_prompts,mean_words_n1,u8,headroom,empty_frac_n1,local_delta,host_move,host_prediction,marginal,verdict,note
-TinyComma-1.8B,tc18bhb,Comma,1.759,host,,,,,,,,,,,,,,,,NOT SCORED,"G0b structural FAIL: the local counterpart output/phase5/sel_tc18bsp_64 has not been generated, so this arm has no like-for-like reference and is NOT READ"
+TinyComma-1.8B,tc18bhb,Comma,1.759,host,,,,,,,,,,,,,,,,NOT SCORED,"G0b FAIL, cause undetermined: 76.5 words against the local 72.1 (+6.1%, tolerance 5%); empty n/a, prompts 500"
 Comma-7B (2T),comma7bhb,Comma,7.003,host,,,,,,,,,,,,,,,,NOT SCORED,"G0b FAIL, cause undetermined: 104.4 words against the local 99.2 (+5.3%, tolerance 5%); empty n/a, prompts 500"
 Comma-7B (1T),comma1thb,Comma,7.003,new,0.085,0.182,0.097,0.056,0.139,2.34,500,92.6,0.489,0.511,,,,,no,CLIMBS,
 Pleias-350M,pleias350mhb,Pleias,0.353,new,0.06,0.069,0.009,-0.032,0.049,0.22,500,121.0,0.419,0.581,,,,,yes,SATURATED BY 8,

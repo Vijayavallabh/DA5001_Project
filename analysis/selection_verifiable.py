@@ -116,6 +116,16 @@ def generate(model_id, shots, items, n, max_new, temperature, batch_size, seed, 
     tok = AutoTokenizer.from_pretrained(model_id, padding_side="left")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
+    if tok.pad_token is None:
+        # Pleias ships NO special tokens at all -- eos, pad, bos and unk are all None -- so the
+        # line above leaves pad_token None and `tok(..., padding=True)` raises. Fall back to an
+        # existing vocabulary id rather than add_special_tokens, which would mint an id past the
+        # end of the model's embedding matrix. Padding is left-side and attention-masked, so which
+        # id fills it does not reach the logits.
+        #
+        # This branch CANNOT change any committed arm: it fires only where both pad and eos are
+        # None, and such a model raised before it existed rather than producing a number.
+        tok.pad_token = tok.convert_ids_to_tokens(0)
     model = AutoModelForCausalLM.from_pretrained(model_id, dtype=torch.bfloat16,
                                                  device_map={"": 0}).eval()
     torch.manual_seed(seed)

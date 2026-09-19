@@ -39,4 +39,10 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_C
     --anchor "$ANCHOR" --limit 500 --max-n 1 \
     --batch-size 32 --reward-batch-size 16 --tag "_${TAG}probe" \
     --out results >> "$LOG" 2>&1
-echo "[jf:$TAG] $(date +%H:%M:%S) exit=$?" >> "$LOG"
+# RC MUST be captured on the very next line. `echo "... $(date) exit=$?"` expands left to right, so
+# the command substitution runs FIRST and $? then reports date's status, not python's -- this logged
+# exit=0 for two probes that had crashed on 2026-09-20. Caution (t) in a new form: a zero that is
+# not a result but a false success code. Every committed launcher already does it this way.
+RC=$?
+echo "[jf:$TAG] $(date +%H:%M:%S) exit=$RC" >> "$LOG"
+exit $RC
