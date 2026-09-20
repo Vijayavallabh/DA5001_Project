@@ -74,6 +74,35 @@ re-reading the two CSVs against each other rather than against the sentence. Cor
 places, and `tests/test_incumbents.py` now guards it **both ways** --- the paper must concede the
 utility loss and must not claim the leakage win.
 
+**One risk logged, not fixed (pre-existing, no data to adjudicate).**
+`sections/appendix_selection.tex` says the metered decoder's TriviaQA arm at `k=3` is
+``$72$ nats, already vacuous''. Proposition 2's threshold is `K >= S(x)` for the event in question,
+and **no `S(x)` for a TriviaQA answer is measured anywhere in `results/`** --- `regimes_*.csv`
+measures per-token surprisal on protected *prose*, not on short factual answers. The claim is
+plausible in the direction stated (a one-to-three-word answer has low surprisal, so `72` nats is
+likely well past it) but it is unsourced, and if `72` is vacuous then `12` and `24` may be too,
+which would make any sentence of the form ``at every non-vacuous budget'' ill-defined on this
+table. **A sentence of exactly that form was added this session and has been withdrawn**: the
+compute paragraph now says ``at its two smallest budgets'', which is a measurement. Measuring
+`S(x)` for this task would settle the pre-existing claim; until then it should not be leaned on.
+
+**One arm scored INVALID, and the third instance of one defect.** The LAMBADA judge-free
+head-to-head (`results/onset_prediction_lambada_headtohead.md`) failed its H1a instrument gate:
+the unconstrained risky model read `0.102 [0.076, 0.130]` where the registered floor was `0.40`
+and the published figure is about `0.70`. Reading the generations gave the cause immediately ---
+both models ECHO the prompt's tail before continuing (served tail `... "But why do I have to` ->
+generation `' "But why do I have to be the one to sing?" "Well'`, gold `sing`), so the target is
+present but is not the completion's first word, and `extract_lambada` takes the first word. This is
+the same defect that invalidated both MMLU arms. The pre-registration said the parser had been
+validated against output shapes; `tests/test_lambada_extraction.py` did pin five --- bare
+continuation, run-on, quoting, punctuation, empty --- and **every one was imagined**. No generation
+had been read before the arm ran. Recorded as caution (au) in `AGENTS.md`, with the two tells that
+distinguish a parser bug from a model result (a forced-choice task reading below its own chance
+floor; a well-known benchmark reading far under its published number) and the rule that every such
+arm needs an instrument gate on the unconstrained risky model, read first. Per the registered H4
+there is no second repair on this corpus, so **the judge-free head-to-head stays a one-task result
+(TriviaQA)** and `tests/test_lambada_not_quoted.py` fails if the paper drifts off that.
+
 **Producing commands, all of them.**
 
 ```

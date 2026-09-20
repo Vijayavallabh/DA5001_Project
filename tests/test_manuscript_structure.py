@@ -200,3 +200,39 @@ def test_no_ladder_sentence_cites_the_appendix_that_has_no_ladder_in_it():
             if "ladder" in window:
                 bad.append(f"{rel}: a ladder sentence cites app:scaling, which has no ladder in it")
     assert not bad, bad
+
+
+def test_no_numbered_appendix_heading_is_unreachable():
+    """A \\section or \\subsection in the appendix that nothing \\refs is a whole appendix the
+    reader never learns exists. app:second-anchor was exactly that until 2026-09-20.
+
+    WHY ONLY NUMBERED HEADINGS. The first version of this guard required a \\ref for EVERY app:
+    label and found five more -- but almost every app: label in this paper sits on a
+    \\paragraph, which LaTeX does not number, so \\ref to one renders the enclosing SECTION's
+    letter. That is this paper's established convention (app:vetting, app:saturation,
+    app:frontier and app:blocklist all work that way and are cited throughout): the reader is sent
+    to the right appendix, not the exact paragraph. Requiring a ref for those produced three
+    sentences naming the same appendix letter twice, which
+    test_no_sentence_names_the_same_number_twice caught and which is a worse defect than the one
+    being fixed. A paragraph label is reachable through its section; a section is reachable only
+    through a \\ref.
+    """
+    import glob as _glob
+    import os as _os
+    import re as _re
+    from tests.manuscript import DIR
+    files = [f for f in sorted(_glob.glob(_os.path.join(DIR, "sections", "*.tex")))
+             + [_os.path.join(DIR, "iclr_2027.tex")]
+             if not _re.search(r"_v\d+_\d{4}-\d{2}-\d{2}\.tex$", f)]
+    assert len(files) > 10, "section files not found; this guard must not pass by never running"
+    numbered, refs = set(), set()
+    for f in files:
+        lines = [ln for ln in open(f, encoding="utf-8").read().split("\n")
+                 if not ln.lstrip().startswith("%")]
+        text = "\n".join(lines)
+        for m in _re.finditer(r"\\(sub)?section\{[^}]*\}\s*\\label\{(app:[^}]+)\}", text):
+            numbered.add(m.group(2))
+        refs |= set(_re.findall(r"\\ref\{(app:[^}]+)\}", text))
+    assert numbered, "no numbered appendix headings found; the guard would be vacuous"
+    orphans = sorted(numbered - refs)
+    assert not orphans, f"numbered appendix headings nothing points at: {orphans}"

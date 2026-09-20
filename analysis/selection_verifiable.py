@@ -137,6 +137,58 @@ def extract_mmlu(text):
     return m.group(1) if m else None
 
 
+def load_lambada(limit, n_shot):
+    """LAMBADA: predict the final word of a passage. A COMPLETION task, which is what a base
+    language model does natively.
+
+    This exists because the judge-free head-to-head can only run at TinyComma-1.8B -- the one
+    anchor a metered decoder shares a vocabulary with -- and that anchor scores 0.04 on GSM8K and
+    reads BELOW CHANCE on MMLU (results/onset_prediction_mmlu_rescore.md). Neither is a defect of
+    the anchor so much as a mismatch of task: it is a small base model trained on public-domain
+    text, and both of those tasks ask it to follow an instruction format. LAMBADA asks it to
+    continue a passage, which it can do.
+
+    The prompt is the passage minus its final word; the answer is that word. No few-shot prefix is
+    used (n_shot is accepted and ignored) because the task IS the format.
+    """
+    from datasets import load_dataset
+    d = load_dataset("EleutherAI/lambada_openai", "en")["test"]
+    if limit:
+        d = d.select(range(min(limit, len(d))))
+    items = []
+    for i, r in enumerate(d):
+        words = r["text"].strip().split()
+        if len(words) < 10:
+            continue
+        items.append(dict(qid=f"lmb{i}", question=" ".join(words[:-1]),
+                          gold=norm_answer(words[-1])))
+    return "", items
+
+
+def extract_lambada(text):
+    """The first word of the continuation, stripped of punctuation.
+
+    KNOWN BROKEN ON THE SHAPE THAT OCCURS -- kept only so the failure is reproducible. Both models
+    ECHO the prompt's tail before continuing (served tail `... "But why do I have to` ->
+    generation `\' "But why do I have to be the one to sing?" "Well\'`, gold `sing`), so the target
+    is in the completion but is not its first word, and the unconstrained risky model reads
+    0.102 [0.076, 0.130] against a published ~0.70. The arm is INVALID, not failed
+    (results/onset_prediction_lambada_headtohead.md), and the judge-free head-to-head stays a
+    one-task result.
+
+    tests/test_lambada_extraction.py pins five shapes -- bare continuation, run-on, quoting,
+    punctuation, empty -- and EVERY ONE WAS HYPOTHESISED. None was the echo. That is caution (au):
+    a parser must be written against generated output, not against output you imagined. Repairing
+    it would need the echo stripped by matching the prompt tail, and per the registered H4 there
+    is no second repair on this corpus.
+    """
+    t = text.strip()
+    if not t:
+        return None
+    w = norm_answer(t.split()[0])
+    return w or None
+
+
 def extract(text):
     """The 8-shot format ends an answer with '#### N'; a base model that runs on starts the next
     question.  Cut at the run-on, prefer the number after '####', else the last number."""
@@ -295,7 +347,7 @@ def main():
     ap.add_argument("--gen-dir", default="output/phase5/verifiable")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--max-n", type=int, default=64)
-    ap.add_argument("--task", choices=("gsm8k", "triviaqa", "mmlu"), default="gsm8k")
+    ap.add_argument("--task", choices=("gsm8k", "triviaqa", "mmlu", "lambada"), default="gsm8k")
     ap.add_argument("--n-shot", type=int, default=8)
     ap.add_argument("--max-prompt-tokens", type=int, default=0,
                     help="mmlu only: drop items whose few-shot prompt exceeds the "
@@ -321,6 +373,9 @@ def main():
     if a.task == "gsm8k":
         shots, items = load_gsm8k(a.limit, a.n_shot)
         pick, ok = extract, lambda p, g: p == g
+    elif a.task == "lambada":
+        shots, items = load_lambada(a.limit, a.n_shot)
+        pick, ok = extract_lambada, lambda p, g: p == g
     elif a.task == "mmlu":
         # Load the whole shuffled test set, drop items whose few-shot prompt does not fit the
         # ANCHOR's context (TinyComma is 2048 tokens and some MMLU questions are very long), then

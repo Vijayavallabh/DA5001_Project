@@ -10,7 +10,29 @@ prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -c
 
 ## Arms in flight on the DGX (2026-09-20, end of session)
 
-One: **`results/onset_prediction_second_opponent.md`** --- `Qwen2.5-14B-Instruct` as a second
+One, and one closed. **`results/onset_prediction_lambada_headtohead.md` is SCORED and INVALID**
+--- a second judge-free head-to-head on LAMBADA, the task the one meterable anchor can actually do
+(it scores `0.04` on GSM8K and below chance on MMLU). Its H1a instrument gate caught the arm: the
+UNCONSTRAINED risky model read `0.102 [0.076, 0.130]` against a registered floor of `0.40` on a
+task whose published number is about `0.70`. The cause is the **echo** --- both models repeat the
+prompt's tail before continuing, so the gold word is in the completion but is not its first word,
+and `extract_lambada` takes the first word. **That is the same defect that killed both MMLU arms,
+and the pre-registration claimed the parser had been validated against output shapes.** It had
+been pinned to five shapes in `tests/test_lambada_extraction.py` and every one of them was
+HYPOTHESISED; no generation had been read. Recorded as **caution (au)** in `AGENTS.md`, and
+`tests/test_lambada_not_quoted.py` (4 tests) fails if the paper ever reports LAMBADA or stops
+describing the judge-free head-to-head as a one-task result. Per the registered H4 there is no
+second repair on this corpus. Still live, two.
+**`results/onset_prediction_tqa_vacuity.md`** --- `S(x)` for a TriviaQA answer under the anchor,
+which is the quantity `sections/appendix_selection.tex` needs and has never had. That paragraph
+calls `72` nats ``already vacuous'' and calls `12` and `24` ``the budgets whose certificate is not
+vacuous'', and then closes by saying no vacuity number comes from the arm --- both cannot stand
+(caution (ao), inside one file). No generation: the anchor and the risky model are teacher-forced
+on the gold aliases under the prompt `h1.py` actually served, read verbatim from
+`data/bench/triviaqa_factual.jsonl`. Its G1 format probe is already PASSED (the leading space after
+`Answer:` is inside the first continuation token, boundary located at 113/115). G2 and G3 are
+instrument gates read before any H1--H4 number. And
+**`results/onset_prediction_second_opponent.md`** --- `Qwen2.5-14B-Instruct` as a second
 fixed opponent, generating on GPU 0, then judge~B re-scores the same four committed arms against
 it. It changes the OPPONENT and holds the instrument fixed, which is the complement of the judge
 panel; its bands are committed and its registered prediction is REVERSAL HOLDS with a smaller

@@ -64,6 +64,28 @@ Code for arXiv 2605.28001, now being reworked into a SaTML 2027 submission: **"A
  Same class as (ae), (ah) and (am): the number was computed correctly and was not the quantity the
  sentence around it claimed.
 
+ (au) **A parser must be written against GENERATED OUTPUT, not against output you imagined --- and
+ reading a generation's SHAPE is not peeking.** Three arms have now died of the same defect. MMLU at
+ the audited anchor twice (a base model echoes the prompt's option list before answering, so the
+ answer is not on the first line; `301` of `500` scored wrong and a four-way choice landed *below*
+ its `0.25` floor), and LAMBADA once (both models echo the prompt's tail before continuing, so the
+ target word is in the completion but is not its first word; the risky model read `0.102` against a
+ published `~0.70`). The third time the pre-registration **claimed** the parser had been validated
+ on output shapes, and `tests/test_lambada_extraction.py` really did pin it --- to a bare
+ continuation, a run-on, quoting, punctuation and an empty string. **Every one of those shapes was
+ hypothesised.** The shape that occurs, and that had already killed two arms, is the echo, and it
+ was not tested because no generation had been looked at. **The fix is cheap and must be done before
+ the pre-registration is written: generate a handful of completions and read them.** That reveals
+ FORMAT and not accuracy --- nothing is scored, no band is seen --- so it is not peeking, and
+ refusing to do it is not rigour. **Two tells that a parser is the problem rather than the model:**
+ a forced-choice task reading *below* its own chance floor, and any arm where a model whose
+ published score on that benchmark is well known reads far under it --- which is why every such arm
+ must carry an instrument gate on the UNCONSTRAINED risky model, read before the entry gate on the
+ anchor. LAMBADA's caught it; MMLU's first arm had no such gate and the defect reached a scoring
+ log. And **a gate on an accuracy must have a DIRECTION**: MMLU's first gate read "the interval
+ excludes `0.25`" and the anchor excluded it *downward*, so read literally it passed a model
+ performing at a third of chance.
+
 ## Startup Workflow
 
 Before writing code:

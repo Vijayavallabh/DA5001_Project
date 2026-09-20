@@ -31,8 +31,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.selection_verifiable import (  # noqa: E402
-    N_GRID, boot, boot_gain, correct_tqa, extract_mmlu, extract_tqa, majority,
-    spearman)
+    N_GRID, boot, boot_gain, correct_tqa, extract_lambada, extract_mmlu, extract_tqa,
+    majority, spearman)
 
 CLASSES = ("factual",)
 
@@ -72,7 +72,7 @@ def main():
     ap.add_argument("--metered-dir", required=True)
     ap.add_argument("--selection-dir", required=True)
     ap.add_argument("--corpus", default="data/bench/triviaqa_factual.jsonl")
-    ap.add_argument("--task", choices=("triviaqa", "mmlu"), default="triviaqa",
+    ap.add_argument("--task", choices=("triviaqa", "mmlu", "lambada"), default="triviaqa",
                     help="selects the extractor and the correctness rule; the gold\n                         set comes from --corpus either way")
     ap.add_argument("--t-max", type=int, default=24)
     ap.add_argument("--reps", type=int, default=10000)
@@ -81,6 +81,7 @@ def main():
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     extract_fn, ok_fn = ((extract_mmlu, lambda p, g: p in g) if a.task == "mmlu"
+                         else (extract_lambada, lambda p, g: p in g) if a.task == "lambada"
                          else (extract_tqa, correct_tqa))
 
     gold = gold_map(a.corpus)

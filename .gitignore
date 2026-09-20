@@ -22,3 +22,4 @@ NVIDIA-Linux-x86_64-580.173.02.run
 !manuscript_snapshot/**/*.tex
 !manuscript_snapshot/**/*.bib
 data/bench/
+.pt_now.txt

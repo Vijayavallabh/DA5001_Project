@@ -230,6 +230,38 @@ def build_mmlu(limit=500, n_shot=5, max_prompt_tokens=2024,
     return len(items)
 
 
+def build_lambada(limit=500):
+    """LAMBADA as a FACTUAL-slot corpus, so the metered decoder can be run on it.
+
+    The judge-free head-to-head exists on ONE task (TriviaQA) because it needs an anchor that
+    shares the risky model's tokenizer -- only TinyComma-1.8B does -- and that anchor cannot do the
+    other two: 0.04 on GSM8K, and BELOW CHANCE on MMLU under a working parser
+    (results/onset_prediction_mmlu_rescore.md). Both of those ask a small base model to follow an
+    instruction format. LAMBADA asks it to finish a sentence, which is what it does natively.
+
+    Items come from analysis.selection_verifiable.load_lambada so the metered and selection arms
+    answer the same questions from the same loader (caution (at)).
+    """
+    from analysis.selection_verifiable import load_lambada
+    _, items = load_lambada(limit, 0)
+    items = items[:limit]
+    assert len(items) == limit, f"only {len(items)} items"
+    out = os.path.join(BENCH, "lambada_factual.jsonl")
+    with open(out, "w", encoding="utf-8") as fh:
+        for i, it in enumerate(items):
+            fh.write(json.dumps({
+                "prompt_id": f"lmb_{i:04d}",
+                "source_novel": "lambada",
+                "split": "factual",
+                "prompt_text": it["question"],
+                "reference": it["gold"],
+                "expected_answer": it["gold"],
+            }) + "\n")
+    d = link_dir("lambada", {"factscore.jsonl": out})
+    print(f"lambada: {len(items)} passages -> {out}; data-dir {d}")
+    return len(items)
+
+
 if __name__ == "__main__":
     build_alpaca()
     build_triviaqa()
