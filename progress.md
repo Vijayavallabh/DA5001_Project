@@ -204,6 +204,31 @@ concession and the level distinction. Mutation-tested seven ways; one did not fi
 again later in the same paragraph, caution (an) --- and is now scoped to the sentence that
 introduces TRBS.
 
+**CoTaEval is a NEGATIVE result for the mechanism, and the registered consequence puts it in the
+main text.** feat-155/156 ran CoTaEval's news half at seven anchors in three families on host B,
+with bands fixed first. Four anchors **cannot read a news article at all** (`n=1` F1 `0.003`--`0.088`
+against a registered floor of `0.10`), so no band was computed for them --- registered in advance as
+the capability floor the paper already concedes. At the four that can, **the registered pointwise
+reward turns over at every one**: `-0.1836 [-0.2249, -0.1412]` at Comma-7B (`4.39` half-widths),
+`-0.2334` on a disjoint re-draw, `-0.1124` at Comma-7B (1T), `-0.0594` at TinyComma. The ladder band
+asked for at least two anchors climbing; **zero climb**. Majority vote neither falls nor climbs at
+the three Comma anchors.
+
+We predicted HOLDS and were wrong, and that prediction stands on record. The reward
+overoptimisation the paper concedes on TriviaQA is, on the standard benchmark the Program Chairs
+named, **the main effect** rather than a caveat.
+
+Seating one clause of this in the main text cost **two body lines** at a 9-page limit with zero
+slack, and three separate prose trims freed nothing --- caution (n) exactly. What worked was
+compressing ~2 full lines of NON-guarded narrative out of the judge-free figure caption (the
+self-consistency gloss and one rhetorical clause), every guarded value kept and all `59` guards on
+that caption still passing. The `\allowbreak` in the new appendix text was placed before `\_`
+instead of after and caution (af)'s guard caught it.
+
+feat-157 now asks the question the result forces --- **is the turn-over the mechanism or the `7`B
+scorer?** Same everything, scorer `7`B -> `14`B, four anchors, running on host B. The registered
+prediction is SCORER-INDEPENDENT, so a SCORER-BOUND reading counts against us.
+
 **Producing commands, all of them.**
 
 ```

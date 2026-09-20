@@ -97,3 +97,68 @@ trajectories, so this is **`~13` gpu-hours**, under the `24`-gpu-hour escalation
 B at the user's instruction to use it.
 
 ## Scoring log
+
+Run 2026-09-20 on host B, GPU 0. `analysis/score_cotaeval.py`, `results/cotaeval_scoring.csv`,
+`results/selection_verifiable_cta_news.csv`.
+
+### Gates
+
+| gate | band | reading | verdict |
+|---|---|---|---|
+| G1 anchor `n=1` F1 | `>= 0.10` | **`0.4291`** | PASS |
+| G2 risky beats anchor | strict | `0.4622` vs `0.4291` | PASS |
+| G4 coverage | `500` at every `n` | `500` | PASS |
+
+The anchor reads news well --- `0.4291` F1 is a real reading-comprehension score, not a floor
+effect --- so the band is licensed and the result below is about the mechanism, not the anchor.
+
+### The committed band: TURNS OVER, and decisively
+
+Registered selector, the pointwise `Qwen2.5-7B` reward:
+
+| quantity | reading |
+|---|---|
+| `F1(1)` | `0.4291` |
+| `F1(64)` | **`0.2455`** |
+| paired `F1(64) - F1(1)` | **`-0.1836` `[-0.2249, -0.1412]`**, `4.39` half-widths |
+
+The interval excludes zero on the **negative** side. By the table fixed before the run this is
+**TURNS OVER**, whose registered consequence is: *"Reported in the main text; a selection arm that
+loses utility with `n` on a standard benchmark would qualify the headline."* It is not marginal ---
+`4.39` half-widths --- so the marginality escape does not apply.
+
+**Selection anchoring under a pointwise reward does not merely fail to help on CoTaEval news. It
+destroys utility**, costing the anchor `43%` of its own F1 by `n=64`.
+
+### Majority vote, reported beside it
+
+`F1(1) = 0.4291 -> F1(64) = 0.4575`, gain `+0.0284 [-0.0012, +0.0576]`, `0.97` half-widths ---
+**NO EFFECT**, and marginal. The rule with no scorer to overoptimise against does not fall; it also
+does not climb.
+
+### What this is and is not
+
+**It is** the reward-overoptimisation failure the paper already concedes on TriviaQA (Spearman
+`-0.607`, interval on the wrong side at `n=16`), now reproduced on the community-standard benchmark
+the Program Chairs named, in a domain the paper never used, at a capable anchor, far larger than
+before. The concession the paper makes in Appendix~I as a caveat is, on this benchmark, the main
+effect.
+
+**It is not** a refutation of the certificate, which is a statement about the served law and does
+not depend on whether the served text is good. Nor does it touch the GSM8K majority-vote result
+(`0.320 -> 0.546`), a different task under a different rule.
+
+**We predicted HOLDS and were wrong.** That prediction is on record above and is not revised.
+
+### The infringement half was NOT run, and why
+
+`analysis/selection_extraction.py` splits `prompt_text + reference` at a **fixed** token count,
+while CoTaEval's boundary is per item (`prompt_autocomplete` is a whole article prefix of varying
+length). The registered corpus could not be produced by the available tool without modifying it,
+and a corpus that is not the registered one is caution (w)'s defect. It is recorded as **NOT RUN**
+rather than run wrong; it was the secondary negative control and nothing above depends on it.
+
+### Manuscript consequence
+
+Main text, per the registered TURNS OVER branch. See `results/onset_prediction_cotaeval_breadth.md`
+for the seven-anchor version, which is what determines how the sentence is scoped.

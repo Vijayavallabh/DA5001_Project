@@ -84,3 +84,71 @@ taken `2.5`--`3.5` h per `32,000` trajectories. **No single arm is near the `24`
 escalation threshold**; the aggregate is large only because the cards are parallel and idle.
 
 ## Scoring log
+
+All seven arms plus the feat-155 primary finished on host B, 2026-09-20, one card each, no errors.
+`analysis/score_cotaeval.py` -> `results/cotaeval_scoring.csv`.
+
+### G1 split the ladder in half, exactly as registered
+
+| anchor | `n=1` F1 | G1 (`>= 0.10`) |
+|---|---|---|
+| Comma-7B (2T) | `0.4291` | PASS |
+| Comma-7B (2T), seed `5254` | `0.4562` | PASS |
+| Comma-7B (1T) | `0.3496` | PASS |
+| TinyComma-1.8B | `0.1669` | PASS |
+| Pleias-1.2B | `0.0879` | **FAIL** |
+| KL3M-3.7B | `0.0499` | **FAIL** |
+| KL3M-1.7B | `0.0294` | **FAIL** |
+| Pleias-3B | `0.0027` | **FAIL** |
+
+Four anchors cannot read a news article at all. **No band was computed for them** --- the
+registration forbids it and the scorer refuses. This was registered in advance as the expected
+outcome and as the **capability floor the paper already concedes**, not as evidence about the
+mechanism, and it is reported that way. G2 passed everywhere.
+
+### The ladder claim is REFUTED
+
+The band: *"at least two anchors climb with intervals excluding zero"*. Under the registered
+pointwise reward, **zero anchors climb. All four usable anchors TURN OVER:**
+
+| anchor | `F1(1)` | `F1(64)` | paired gain | hw | verdict |
+|---|---|---|---|---|---|
+| Comma-7B (2T) | `0.4291` | `0.2455` | `-0.1836 [-0.2249, -0.1412]` | `4.39` | TURNS OVER |
+| Comma-7B (2T) seed `5254` | `0.4562` | `0.2228` | `-0.2334 [-0.2738, -0.1922]` | `5.72` | TURNS OVER |
+| Comma-7B (1T) | `0.3496` | `0.2372` | `-0.1124 [-0.1543, -0.0711]` | `2.70` | TURNS OVER |
+| TinyComma-1.8B | `0.1669` | `0.1075` | `-0.0594 [-0.0921, -0.0274]` | `1.84` | TURNS OVER (marginal) |
+
+Three of the four are far outside the marginality band. The registered consequence applies: *"the
+paper reports that the judge-free result does not transfer to this benchmark and says so in
+Limitations"*, and feat-155's TURNS OVER branch puts the finding in the **main text**.
+
+### Majority vote, beside it
+
+| anchor | paired gain | verdict |
+|---|---|---|
+| Comma-7B (2T) | `+0.0284 [-0.0012, +0.0576]` | NO EFFECT (marginal) |
+| Comma-7B (2T) seed `5254` | `-0.0011 [-0.0306, +0.0298]` | NO EFFECT |
+| Comma-7B (1T) | `+0.0230 [-0.0110, +0.0568]` | NO EFFECT (marginal) |
+| TinyComma-1.8B | `-0.0351 [-0.0603, -0.0100]` | TURNS OVER (marginal) |
+
+The rule with no scorer to overoptimise against does not collapse --- but it does not climb either.
+**On this benchmark neither rule buys utility.**
+
+### The replication answers the rule it was registered against
+
+feat-155's reading sits at `4.39` half-widths, **above** the `2.0` boundary, so the conditional
+prediction fixed before either number existed was that the disjoint draw **keeps its verdict**. It
+does: `-0.2334` against `-0.1836`, TURNS OVER both times, `5.72` and `4.39` half-widths. Caution
+(ap)'s rule is tested out of sample here on a NEGATIVE reading for the first time and holds.
+
+The two levels differ by `0.05`, which is **not** read as instability: the arms judge disjoint
+candidate sets and no level is compared across passes (caution (ap)). Only the verdict and the
+paired difference within each pass are.
+
+### What may not be concluded
+
+* Not a refutation of the certificate, which does not depend on the served text being good.
+* Not a refutation of GSM8K majority vote (`0.320 -> 0.546`): different task, different rule.
+* The four G1 failures say nothing about selection anchoring. They say a legal-domain or small
+  anchor cannot do news reading comprehension, which is the constraint the paper already names.
+* The four arms are **not pooled** with each other or with the replication.

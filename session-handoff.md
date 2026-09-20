@@ -95,6 +95,11 @@ capability floor the paper already concedes, not a failure of the mechanism. The
 prediction is registered **conditionally on feat-155's half-width ratio, before either number
 exists**, which is what stops caution (ap)'s rule being fitted after the fact.
 
+**`results/onset_prediction_cotaeval_scorer.md` (feat-157) is IN FLIGHT on host B** --- the
+question feat-155's negative result forces: is the CoTaEval turn-over the mechanism or the `7`B
+scorer? Same everything, scorer `7`B -> `14`B, at the four anchors that passed G1. The prediction
+registered is SCORER-INDEPENDENT, which means a SCORER-BOUND reading counts against us.
+
 **Next session: check `output/logs/comma7b128_merge.log` first.** If neutral's `GEN_DONE` never
 appears, the supervisor (`run_comma7b128_supervise.sh`, PID reparented, 27 h old) is still
 restarting it against the other project's memory pressure; the card must have `34000 MiB` free.
