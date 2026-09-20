@@ -38,7 +38,27 @@ metered budget of `12`, so the metered certificate is vacuous on `89.6%` of the 
 and is withdrawn from the manuscript. Reported with it, post hoc and symmetric because omitting it
 would be one-sided: selection's `log n` is vacuous on `35.4%` of the same questions at `n=64`.
 
-**Nothing is in flight. Every arm launched this session has landed and is scored.**
+**Every arm launched THIS SESSION has landed and is scored. One older arm is still running:
+feat-134**, the Comma-7B `n=128` ceiling (`results/onset_prediction_comma7b_n128.md`, bands
+committed at `3a9c8d5`, the arm that was explicitly asked for because it is over the 24-GPU-hour
+escalation threshold). State as of 2026-09-20 19:55: **creative and factual are generated**
+(`factual` has its `GEN_DONE`; `creative` finished `rc=0`, and card2b writes no sentinel for its own
+class), **neutral is on attempt 5** --- the earlier four were killed by another project's jobs on
+this shared box --- at `2200/25600` after 89 minutes, so about **15--16 hours remain**.
+
+**Two coordination faults were found and one was repaired.** `run_comma7b128_card2b.sh` is waiting
+on neutral's sentinel with a **12-hour** budget and was at `10500s`, so it aborts about seven hours
+BEFORE neutral finishes. `run_comma7b128_merge.sh`, whose budget is **48 hours** and which exists
+precisely for this, had been **dead for 31 hours** (log frozen at `13:06` the previous day). With
+both gone nothing would have merged or scored the arm and the whole 30 GPU-hours would have
+produced no result. The merge shell was relaunched on GPU 2 at `19:53` (PID reparented to init, log
+`output/logs/comma7b128_merge.log` tracing every 60s); it allocates no GPU until the sentinel
+appears, so it costs nothing while it waits. Card2b may still abort --- that is harmless now, and a
+double merge would have been harmless anyway (same inputs, same command, same output paths).
+
+**Next session: check `output/logs/comma7b128_merge.log` first.** If neutral's `GEN_DONE` never
+appears, the supervisor (`run_comma7b128_supervise.sh`, PID reparented, 27 h old) is still
+restarting it against the other project's memory pressure; the card must have `34000 MiB` free.
 
 The last to close was **`results/onset_prediction_second_opponent.md`**, and it is the one
 robustness check in this paper that **did not survive**. `Qwen2.5-14B-Instruct` replaced the fixed
