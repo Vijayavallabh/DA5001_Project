@@ -125,3 +125,44 @@ clearing the floor, and nothing has.
    (`false; echo "$(date >/dev/null) exit=$?"` prints `exit=0`) and repaired to `RC=$?` on the line
    after the command, which is what every committed launcher already does. **Caution (t) in a new
    form: not a zero mistaken for a result, but a SUCCESS CODE that was not one.**
+
+### 2026-09-20 --- stage 1 COMPLETE: all four below the floor, and the registered conclusion fires
+
+| anchor | params | $n=1$ GSM8K exact match | vs `FLOOR = 0.05` |
+|---|---|---|---|
+| Pleias-1.2B | $1.2$B | $0.0140$ | **BELOW** |
+| KL3M-1.7B | $1.7$B | $0.0180$ | **BELOW** |
+| Pleias-3B | $3.0$B | $0.0160$ | **BELOW** |
+| KL3M-3.7B | $3.7$B | $0.0140$ | **BELOW** |
+
+Comma-7B reads $0.320$ and Comma-7B-1T $0.226$ on the same task, the same $8$ shots and the same
+$500$ problems.
+
+**The prediction registered before any of these ran was that all four fall below, and all four do.**
+The largest is $0.0180$, nearly $3\times$ below the floor and $18\times$ below Comma-7B. **And the
+series is flat in scale** --- $0.0140$, $0.0180$, $0.0160$, $0.0140$ across $1.2$B to $3.7$B ---
+so this is not a model that is nearly there. Tripling the parameters buys nothing measurable.
+
+**Stage 2 is therefore not started for any anchor**, exactly as registered.
+
+### The registered reading of this outcome, quoted from above the scoring line
+
+> **All four below the floor.** The judge-free axis **cannot be tested off Comma at any scale
+> available**, because no clean public-domain-trained model outside the Comma family reaches usable
+> GSM8K accuracy. That is a measured limitation of H2's breadth rather than a gap left unexamined,
+> and it means H2 as it stands is a **judged-axis** finding and must be scoped to that in the paper.
+
+That is the reading, and it is adopted without amendment. **H2 is a claim about judged utility.**
+Whether the judge-free climb is Comma-specific is not merely unanswered here --- it is **unanswerable
+with the models that exist**, because the only clean public-domain-trained models that can do GSM8K
+at all are the two Comma checkpoints, which is the same fact that makes H2's scale confound
+irreducible.
+
+**What would answer it.** A clean, permissively-trained anchor at $\ge 7$B outside the Comma family,
+which does not exist today. Not more compute: the floor is a property of the models on offer. This
+belongs in Limitations in those words rather than as an experiment left for later.
+
+**A note on cost, since it is the reason the probe came first.** Four ladders at `--max-n 64` would
+have cost $\approx 20$ gpu-hours to arrive at the same refusal. The probes cost minutes each, and
+two of them had to be run twice because of the defects recorded above --- still far less than one
+ladder.
