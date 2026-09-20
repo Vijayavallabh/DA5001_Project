@@ -223,7 +223,11 @@ def test_the_memoriser_baseline_is_identical_at_every_anchor():
         # alone and has no reason to equal the LoRA memoriser's. endswith("_70b.csv") was too
         # narrow -- selection_extraction_70b_raw.csv (feat-103) walked straight through it and
         # contributed a (0.0, 0.0, 0.0) baseline. Match the sibling test and skip the substring.
-        if path.endswith("_per_passage.csv") or "_70b" in path:
+        # _multilingual is a different MEMORISER on a different corpus (feat-152: French and
+        # German passages, its own LoRA), so its k=-1 baseline has no reason to equal the English
+        # one and in fact exceeds it, 0.5455 against 0.3925. The invariant here is about the SAME
+        # memoriser measured beside different ANCHORS; it does not reach across corpora.
+        if path.endswith("_per_passage.csv") or "_70b" in path or "_multilingual" in path:
             continue
         r = {x["n"]: x for x in _rows(path)}
         if "-1" not in r:

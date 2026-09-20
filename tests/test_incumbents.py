@@ -29,20 +29,17 @@ def test_the_rule_actually_bound_and_the_control_did_not():
     assert int(rows["-1"]["blocked_steps"]) == 0, rows["-1"]
 
 
-def test_the_paper_concedes_the_incumbent_wins_on_a_listed_work():
-    """Measured: recall 0.4192 -> 0.0201 and 0/100 at ROUGE-L >= 0.5. The paper must not imply
-    selection leaks less on a work the blocklist was given."""
+def test_the_incumbent_beats_us_on_leakage_reduction_from_its_own_baseline():
+    """The leakage half of the measurement, kept as data rather than as prose.
+
+    The BODY claim that the incumbent concedes is checked by
+    test_the_incumbent_concession_is_in_the_body_and_is_the_TRUE_one, which replaced an earlier
+    guard here that looked for "it wins" anywhere in two files. That guard was satisfied by the
+    appendix's "selection anchoring wins NEITHER comparison" -- the opposite meaning -- and the
+    sentence it was written for turned out to be false anyway (caution (an), then (v)).
+    """
     rows = _decode_rows()
     assert float(rows["memfree"]["nv_recall_mean"]) < float(rows["-1"]["nv_recall_mean"]) / 10
-    # Scoped to the Scope paragraph's own sentence. An unscoped search for "wins" is satisfied by
-    # the appendix's "selection anchoring wins NEITHER comparison" -- the opposite meaning, in
-    # another file (caution (an)); mutation-testing found exactly that.
-    rw = body("related_work_v4.tex")
-    i = rw.find("We measure one")
-    assert i >= 0, "the Scope paragraph no longer says the incumbent was measured"
-    sentence = rw[i:i + 220]
-    assert ("it wins" in sentence or "comes out ahead" in sentence), \
-        f"the Scope paragraph must concede the incumbent beat us: {sentence[:160]!r}"
 
 
 def test_the_paraphrase_claim_is_withdrawn_because_it_was_measured_false():
@@ -110,15 +107,66 @@ def test_the_50_token_window_is_the_one_the_extraction_metric_uses():
     assert "50-token window" in txt
 
 
-def test_limitations_carries_the_incumbent_concession():
-    """Caution (ag): a length edit deletes concessions first. This one is in the Conclusion's
-    Limitations, which is where a careful reader looks, and it is derived from the measurement --
-    the rule's recall reduction -- so softening the sentence needs the CSV to change too."""
-    rows = _decode_rows()
-    beat_on_leakage = (float(rows["memfree"]["nv_recall_mean"])
-                       < float(rows["-1"]["nv_recall_mean"]))
-    assert beat_on_leakage, rows
-    txt = body("iclr_closing.tex")
-    i = txt.find("blocklist")
-    assert i >= 0, "Limitations no longer concedes that a blocklist beats both mechanisms"
-    assert "beats both" in txt[i - 120:i + 120], txt[max(0, i - 150):i + 150]
+def test_the_incumbent_concession_is_in_the_body_and_is_the_TRUE_one():
+    """Two things at once, because the first draft of this concession was wrong in the harsher
+    direction and that is still an error.
+
+    TRUE:  on a listed work the blocklist costs NO UTILITY -- it fired on 0 of 850 ordinary
+           prompts -- which selection cannot approach.
+    FALSE: that it suppresses MORE. Under the same 20-token seed protocol on the same corpus,
+           selection reads 0.0000 near-verbatim recall at every n <= 64 and the blocklist 0.0201.
+
+    Both halves are derived from the CSVs, so the sentence cannot drift in either direction
+    without the data moving.
+    """
+    dec = _decode_rows()
+    sel = os.path.join(ROOT, "results", "selection_extraction.csv")
+    rows = list(csv.DictReader(open(sel, encoding="utf-8")))
+    sel_leak = max(float(r["nv_recall_mean"]) for r in rows
+                   if r["n"].strip() and r["n"] != "-1")
+    blk_leak = float(dec["memfree"]["nv_recall_mean"])
+    # the claim the paper must NOT make
+    assert sel_leak <= blk_leak, (
+        f"selection now leaks MORE than the blocklist ({sel_leak} vs {blk_leak}); the appendix "
+        "sentence saying it does not must be revisited")
+    # the claim the paper MUST make, in the body
+    rw = body("related_work_v4.tex")
+    i = rw.find("We measure one")
+    assert i >= 0, "Related Work no longer says the incumbent was measured"
+    assert "costs nothing" in rw[i:i + 200], rw[i:i + 200]
+    # and the appendix must carry the precise form, not the harsher one
+    apx = body("appendix_related.tex")
+    assert "wins neither the utility comparison nor the leakage one" not in apx, \
+        "the appendix is back to the overcorrected claim, which is false on leakage"
+    assert "no utility at all" in apx, apx[:200]
+
+
+def test_the_judgefree_compute_claim_matches_its_whole_grid():
+    """Caution (ai): a claim ABOUT a set of numbers is checked against nothing unless a test
+    rebuilds the set. The appendix says 'no n on the grid closes the gap' and 'at 11.5x the
+    compute selection is still at 0.190', which are statements about every row, not one cell."""
+    p = os.path.join(ROOT, "results", "compute_matched_judgefree.csv")
+    rows = list(csv.DictReader(open(p, encoding="utf-8")))
+    assert len(rows) >= 6, rows
+    met = float(rows[0]["best_metered_acc"])
+    assert all(float(r["best_metered_acc"]) == met for r in rows), "the meter's best moved per row"
+    # the claim: no selection arm reaches the meter's best, at any cost on the grid
+    assert all(float(r["selection_acc"]) < met for r in rows), \
+        "a selection arm now matches the meter; 'no n on the grid closes the gap' must be revisited"
+    # and the top of the grid is the one the appendix quotes
+    top = max(rows, key=lambda r: float(r["cost_vs_metered"]))
+    apx = body("appendix_selection.tex").replace("$", "")
+    assert f"{float(top['cost_vs_metered']):.1f}" in apx, (top["cost_vs_metered"], "not quoted")
+    assert f"{float(top['selection_acc']):.3f}" in apx, (top["selection_acc"], "not quoted")
+    # the certificate ratio the paper calls 115x
+    assert abs(float(top["certificate_ratio"]) - 115.4) < 0.1, top
+
+
+def test_the_meters_cost_really_is_flat_in_k_which_is_why_the_comparison_works():
+    """The whole comparison rests on it: the meter runs both models at every step whatever k is,
+    so its entire accuracy range is available at one serving cost."""
+    src = open(os.path.join(ROOT, "analysis", "compute_matched_judgefree.py"),
+               encoding="utf-8").read()
+    assert "P_ANCHOR + P_RISKY" in src
+    assert 'r["arm"] != "k=-1"' in src, \
+        "the unconstrained baseline is back in the metered set; it would credit the meter for free"

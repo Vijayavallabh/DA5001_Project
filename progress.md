@@ -49,12 +49,50 @@ Paired-bootstrap intervals on both lift ratios (`3.42 [2.20, 8.91]`, `4.19 [2.63
 finite-`T` high-probability form of the dichotomy, and the multi-query composition proof.
 Commands: `analysis/{selection_realised_kl,compute_matched_judgefree,window_vacuity,lift_ratio_interval}.py`.
 
-**In flight:** `scripts/run_multilingual.sh` --- a non-English protected corpus (French, German,
-Spanish public-domain stand-ins, five books, splits disjoint in book) against a Pleias-3B anchor,
-to answer the Limitations sentence "every extraction number is sixteen English novels of prose".
-Bands in `results/onset_prediction_multilingual.md`, entry gate at sampled recall `>= 0.10`.
+**Outside English, and the Limitations sentence is gone.** `scripts/run_multilingual.sh` built a
+non-English protected corpus (four public-domain works in French and German, splits disjoint in
+book, seed and reference lengths matching the committed corpora exactly) and paired it with a
+**Pleias-3B** anchor --- Common Corpus is multilingual and permissively licensed, so it satisfies
+the premise *and* can write the language, which an anchor that could not would have turned
+"selection reproduces nothing" into a tautology. All three registered gates passed. The English
+recipe transfers unmodified and produces a **stronger** adversary than the English one (sampled
+`k=-1` recall `0.5455`, max `0.9882`, `94%` of passages above `0.01`, against `0.3925` and `78%`)
+--- our registered risk was the opposite, that a rank-64 LoRA tuned on English would not memorise
+these languages, and being wrong in this direction makes the test harder for us. Against it
+selection reads `0.0000` at `n = 1, 8, 64`, ROUGE-L `0.082`--`0.094` against the memoriser's
+`0.678`, `0` of `100` at ROUGE-L `>= 0.3` against its `93%`, and the anchor's own leakage is
+`0.0000` so H2 is a result rather than a clean arm over a contaminated anchor. **"Every extraction
+number is sixteen English novels of prose" is replaced by the measured scope.** What is NOT claimed,
+per the registration: that selection serves good French. The anchor's utility in these languages is
+unmeasured and is the open question this arm leaves in place of the one it answers.
 
-**Manuscript:** body exactly 9 of 9 pages, 0 overfull, 0 `??`, 3 bold faces, `2488` numeric
+**A concession that was too harsh is still an error.** Having measured the blocklist, the first
+draft of the concession said it "beats both on utility and on leakage". The leakage half is
+**false**: under the same 20-token seed protocol on the same corpus selection reads `0.0000`
+near-verbatim recall at every `n <= 64` and the blocklist `0.0201`. Caught before the commit by
+re-reading the two CSVs against each other rather than against the sentence. Corrected in all three
+places, and `tests/test_incumbents.py` now guards it **both ways** --- the paper must concede the
+utility loss and must not claim the leakage win.
+
+**Producing commands, all of them.**
+
+```
+scripts/run_frontier_judge.sh <judge> <tag> <cards>        # judges D, E, F, G
+analysis/blocklist_decode.py --model <m> --split <s> --ngram 10 --out output/memfree/<half>
+analysis/blocklist_score.py --run output/memfree/protected --out results
+analysis/order_averaged_h2h.py --extra-dir output/memfree/ordinary --extra-token memfree
+analysis/cpfuse_audit.py --model-a output/shard_a --model-b output/shard_b --split attack_train
+analysis/build_bench_corpora.py::build_mmlu ; analysis/verifiable_metered.py --task mmlu
+analysis/selection_verifiable.py --task mmlu --anchor common-pile/comma-v0.1-2t
+analysis/selection_realised_kl.py --rewards results/selection_rewards64.csv --out results
+analysis/compute_matched_judgefree.py --out results
+analysis/window_vacuity.py --out results
+analysis/lift_ratio_interval.py --out results
+analysis/build_multilingual_corpus.py --allow-missing --out data/bench
+scripts/run_multilingual.sh <gpu>
+```
+
+**Manuscript:** body exactly 9 of 9 pages, 0 overfull, 0 `??`, 3 bold faces, `2524` numeric
 literals with the one documented exception. Eight unnumbered appendix displays are now numbered
 tables, each referenced from the prose.
 

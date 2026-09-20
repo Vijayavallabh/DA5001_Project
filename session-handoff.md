@@ -8,30 +8,45 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
-## Arms in flight on the DGX (2026-09-20, late)
+## Arms in flight on the DGX (2026-09-20, end of session)
 
-| pre-registration | arm | state |
-|---|---|---|
-| `results/onset_prediction_multilingual.md` | non-English extraction: fr/de/es public-domain stand-ins, Pleias-3B anchor, GPU 0 | fine-tune running (epoch 3/12, loss `0.208`) |
+One: **`results/onset_prediction_second_opponent.md`** --- `Qwen2.5-14B-Instruct` as a second
+fixed opponent, generating on GPU 0, then judge~B re-scores the same four committed arms against
+it. It changes the OPPONENT and holds the instrument fixed, which is the complement of the judge
+panel; its bands are committed and its registered prediction is REVERSAL HOLDS with a smaller
+difference. Everything else launched this session has landed and is scored.
 
-Everything else launched this session has landed and is scored. Closed today:
+Closed today:
 
 | log | reading |
 |---|---|
-| `onset_prediction_frontier_judge.md` | judges D, E: one resolves, one does not; family attribution **falsified** |
+| `onset_prediction_frontier_judge.md` | judges D, E split; the family attribution in its own H3 is **falsified** |
 | `onset_prediction_judge_panel.md` | **PANEL CONFIRMS, 4 of 5**; family, size and consistency all fail to order it |
 | `onset_prediction_memfree_headtohead.md` | H2 PARTIAL (by `0.000059`), H3 **BLOCKLIST HOLDS** (our prediction refuted), H1 INCUMBENT WINS **passed by a no-op** |
 | `onset_prediction_cpfuse_headtohead.md` | H1 REPRODUCES; H2 **withdrawn, not scored**, with the reason recorded |
 | `onset_prediction_mmlu_headtohead.md` | **INVALID** --- two defects of ours (parser, undirected gate) |
 | `onset_prediction_mmlu_rescore.md` | **BELOW CHANCE**; no number enters the paper, enforced by a test |
 | `onset_prediction_mmlu_comma7b.md` | H1 pass, H2 **SELECTION LIFTS**, H3 REWARD TRACKS --- the third judge-free task |
+| `onset_prediction_multilingual.md` | **SAME PICTURE** --- admissible adversary (`0.5455`, stronger than English), selection `0.0000` at every `n`, uncontaminated anchor |
 
 ## Recommended next step
 
-Score `onset_prediction_multilingual.md` when the extraction lands, against H1 first: if the
-memoriser's **sampled** recall is below `0.10` the arm is inadmissible and H2/H3 are not read, and
-the Limitations sentence about English prose stays with its reason. If it is admissible, the H5
-`SAME PICTURE` branch is the only one that lets that sentence go.
+Nothing is blocked and nothing is in flight. The paper answers every empirical ask in the four
+reports. Three things a next session could take up, in order of value:
+
+1. **A fourth judge-free task with a meter in it.** The judge-free head-to-head is still ONE task
+   (TriviaQA), because TinyComma is the only anchor a metered decoder shares a vocabulary with and
+   it cannot do GSM8K or MMLU. Finding a task it *can* do is the single largest remaining gap, and
+   Limitations says so plainly rather than implying a plural axis.
+2. **Judged utility in French or German.** `onset_prediction_multilingual.md` establishes
+   extraction outside English and explicitly does **not** claim the anchor serves good French;
+   that is the open question it leaves behind.
+3. **A second risky family.** Every judged arm uses `Llama-3.1-8B-Instruct` as the fixed opponent.
+   `Qwen2.5-14B-Instruct` is cached and could be generated against.
+
+Do **not** re-run the MMLU head-to-head at the audited anchor: its registered band says there is no
+third attempt, and `tests/test_mmlu_not_quoted.py` enforces that no number from it reaches the
+paper.
 
 ## What was done
 

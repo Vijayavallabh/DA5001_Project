@@ -107,3 +107,62 @@ judged utility number: there is no judged workload in these languages.
 - Reading greedy recall where the band says sampled.
 
 ## Scoring log
+
+## Scoring, 2026-09-20
+
+`scripts/run_multilingual.sh` on one H100: the recipe at its committed defaults on
+`data/bench/multilingual` (`attack_train` + `val`), then
+`analysis/selection_extraction.py --safe-model PleIAs/Pleias-3b-Preview --risky-model
+output/memorizing_multilingual --n-values 1 8 64 --limit 100 --seed-tokens 20`. Output
+`results/selection_extraction_multilingual.csv`. The scored passages are **`64` French and `36`
+German** from `attack_train` (the Spanish and the remaining French book are the held-out `test`
+split, which no memoriser saw).
+
+### H1 --- ADMISSIBLE, and by a wider margin than English
+
+| quantity | multilingual | English on record |
+|---|---|---|
+| memoriser alone, sampled `k=-1` nv-recall | **`0.5455`** | `0.3925` |
+| its maximum | `0.9882` | `0.8154` |
+| passages with any recall (`>= 0.01`) | **`94%`** | `78%` |
+| ROUGE-L `>= 0.5` | `83%` | --- |
+
+Far above the `0.10` gate. **We registered this gate as at genuine risk** --- the recipe was tuned
+on English and a rank-`64` LoRA might not memorise French and German as readily. It does, and more
+readily: the fine-tune's own post-merge check reads `0.940` greedy and `0.849` sampled, and the
+extraction arm reads `0.5455` at a 20-token seed. **The prediction was wrong in the direction that
+makes the arm harder for us**, which is the direction worth being wrong in: the adversary here is
+stronger than the English one the paper's headline is measured against.
+
+### H2 --- HOLDS
+
+Selection's near-verbatim recall is **`0.0000` at every `n`** on the grid (`1`, `8`, `64`), maximum
+`0.0000`, `ge_0p01` `0.0%`. `lcs_word` is `1.51`--`1.65` words --- function words, not text. The
+non-literal metric agrees: ROUGE-L `0.082`--`0.094` against the memoriser's `0.678`, and `0` of
+`100` passages at ROUGE-L `>= 0.3` against its `93%`.
+
+### H3 --- PREMISE HOLDS
+
+The anchor alone is the `n=1` row: `0.0000`. Pleias-3B has not memorised these works, so there is
+no anchor leakage for `n` to multiply and H2 is a clean result rather than a clean arm over a
+contaminated anchor.
+
+### H4 --- SAME PICTURE
+
+All three readings match their English counterparts: an admissible adversary, `0.0000` at every
+`n <= 64`, and an uncontaminated anchor.
+
+### H5 --- consequence, applied
+
+The `SAME PICTURE` branch is the only one that lets the Limitations sentence go, and it fired. The
+sentence **``every extraction number is sixteen English novels of prose''** is replaced by the
+measured scope: **sixteen English novels plus four works in French and German, against an anchor
+from a different family (Pleias-3B) and a memoriser stronger than the English one.**
+
+### What is NOT claimed, per the registration
+
+No `\log n`, vacuity threshold, `s(x)` or onset ratio: those need a per-token surprisal measured on
+this anchor and corpus, which this arm does not produce. No judged utility --- there is no judged
+workload in these languages, and the paper does not pretend otherwise. And the claim is about
+**extraction**, not about whether selection serves *good* French: the anchor's utility in these
+languages is unmeasured and is now the open question this arm replaces the old one with.
