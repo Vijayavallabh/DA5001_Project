@@ -86,6 +86,15 @@ the MMLU/LAMBADA defect for a third time. The `1000`-item infringement half runs
 explicitly a **negative control, not CoTaEval's memorization setting** --- neither model has seen
 NewsQA. Bands, four instrument gates and a `2.0`-half-width marginality rule are committed.
 
+**`results/onset_prediction_cotaeval_breadth.md` (feat-156) is IN FLIGHT on host B**, filling the
+other seven H100s: the same CoTaEval news protocol at **seven anchors in three families**, plus a
+disjoint-seed re-draw of the headline anchor. One setup is the weakness the paper's own breadth work
+exists to fix, so the CoTaEval answer should not itself be a single setup. Gates are applied per
+anchor and never pooled, and **G1 is expected to fire at the small anchors** --- that is the
+capability floor the paper already concedes, not a failure of the mechanism. The replication's
+prediction is registered **conditionally on feat-155's half-width ratio, before either number
+exists**, which is what stops caution (ap)'s rule being fitted after the fact.
+
 **Next session: check `output/logs/comma7b128_merge.log` first.** If neutral's `GEN_DONE` never
 appears, the supervisor (`run_comma7b128_supervise.sh`, PID reparented, 27 h old) is still
 restarting it against the other project's memory pressure; the card must have `34000 MiB` free.
