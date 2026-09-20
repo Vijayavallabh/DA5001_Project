@@ -140,5 +140,94 @@ top of every `generate()`).
 not with the memorisers, so the band is met at the letter: **the anchor is admissible and stage 2 is
 licensed.** Nothing above this line was edited after the run.
 
-Stage 2 has NOT been started. It needs a free card; at the time of scoring all four A100s were held
-by feat-134. No n > 8 number has been computed or looked at (the rule in this log's Compute section).
+**2026-09-20, stage 2: CLIMBS, and MARGINAL, so it is NOT promoted.**
+
+Generation and scoring both completed 2026-09-20 11:11--11:25 on a local A100
+(`output/phase5/sel_kl3m37b_64`, `GEN_DONE` 11:25; `results/selection_rewards64_kl3m37b.csv`,
+`results/selection_scaling_kl3m37b64.csv`, `results/selection_scaling_per_prompt_kl3m37b64.csv`).
+The paragraph above, written at 14:43 on 2026-09-19, said stage 2 had not started; that was true
+when written and stale by the time it was read.
+
+### Gates, all read before the band
+
+| gate | band | reading | verdict |
+|---|---|---|---|
+| G1 vetting | `frac_passages_leaking = 0.0` | `0.0000` at every `n` and at `k=-1` | **PASS** (2026-09-19) |
+| G2 sweep | `n in {1,2,4,8,16,32,64}`, all `500` prompts | 7 arms x `500`, both judges | **PASS** |
+| G3 empty at `n=1` | reported, not gated | **`0/500 = 0.0000`** (`neutral 0/200`, `factual 0/150`, `creative 0/150`) | **PASS**, and far under the breadth arm's own `5%` |
+| G4 length at `n=1` | `>= 20` words | **`72.1`** words | **PASS** |
+
+G3 was computed with the scorer's own loader (`analysis.selection_decoding.load_candidates`, an
+empty completion being `not v[0][3].strip()`), not from a summary column --- caution (p), and
+caution (v) for reading it per stratum as well as in total.
+
+### The committed band, judge~B
+
+| quantity | reading |
+|---|---|
+| `g(8)` | `+0.0220 [-0.0150, +0.0580]` |
+| `g(64)` | `+0.0800 [+0.0370, +0.1230]` |
+| **paired `g(64) - g(8)`** | **`+0.0580 [+0.0200, +0.0940]`** |
+
+Read by `analysis/score_kl3m37b_breadth64.py`, which was written and mutation-tested **before this
+arm produced a number**, and whose output is `results/kl3m37b_breadth64_scoring.csv`. Its verdict
+string is **`CLIMBS (MARGINAL)`**. (A hand bootstrap of the same per-prompt file gave
+`[+0.0210, +0.0930]` and `1.61` half-widths; the scorer's own numbers are the ones recorded, since a
+paper number must come from the scorer's code once and not be re-derived by hand --- caution (j).)
+
+The interval excludes zero, so on the verdict table alone this reads **CLIMBS OFF THE FAMILY**.
+
+**It is nevertheless recorded as MARGINAL and is NOT promoted into the manuscript.** `|Delta|` is
+**`1.57`** interval half-widths, below the `2.0` this document fixed in advance, and that rule was
+committed precisely so the question could not be settled after seeing which side the number fell
+on. The precedent is exact and unfavourable: KL3M-1.7B --- the same family --- sat at `1.7`
+half-widths and a disjoint draw moved it `0.061`, from `+0.0650` to `+0.0040`. `1.57` is below
+that. A seed replication is required before the appendix's two-anchor sentence may change.
+
+### The seed replication this arm asks for already exists, on the second host, and it does not support the climb
+
+Reported here as a cross-reference and **not pooled with the reading above** --- caution (ap)
+forbids averaging a reading with its own replication, and the two judge disjoint candidate sets.
+
+`results/selection_scaling_per_prompt_kl3m37bhb64.csv` and `...kl3m37bhb64s62.csv` are two arms of
+this same anchor on the second host, differing from each other **only in the seed**, which makes
+*that pair* a clean within-host seed replication:
+
+| arm | paired `g(64) - g(8)`, judge~B | half-widths | reading |
+|---|---|---|---|
+| host B, base seeds | `+0.0200 [-0.0140, +0.0540]` | `0.59` | SATURATED BY 8 |
+| host B, seed `62` | `+0.0130 [-0.0230, +0.0500]` | `0.36` | SATURATED BY 8 |
+
+The two agree with each other to `0.007` and **both contain zero**. So the replication the
+marginality rule demanded has been run, within one host, and it reads SATURATED twice.
+
+**What may not be concluded from it.** The local arm and the host-B arms differ in *silicon as well
+as seed*, so `+0.0580` against `+0.0200` is a host-AND-seed comparison and is exactly the two-things
+confound feat-132 was declared INVALID for (cautions (v), (w), (at)); it is not evidence that the
+local number is wrong. What the host-B pair does establish, on its own terms, is that at this anchor
+a paired difference of this size does not survive a disjoint draw --- which is what caution (ap)'s
+rule predicted at `1.57` half-widths, now tested out of sample and holding.
+
+**Consequence: the verdict stands as CLIMBS (MARGINAL), NOT PROMOTED.** The appendix keeps its
+two-anchor statement.
+
+### The second judge disagrees, and that is reported rather than set aside
+
+The band is judge~B's by registration. The other judge, `Meta-Llama-3.1-8B-Instruct`, reads
+`g(8) +0.0130`, `g(64) +0.0430`, paired **`+0.0300 [-0.0120, +0.0710]`** --- interval containing
+zero, **SATURATED BY 8**, at `0.72` half-widths. So the two judges do not agree on the verdict, and
+the registered one is the weaker evidence of the two for promoting a claim. This strengthens rather
+than weakens the MARGINAL call.
+
+### Committed secondary
+
+* Leakage at every `n <= 64`: `0.0000` (`results/vet_kl3m37b_base.csv`). The new anchor carries its
+  own zero, which is the safety claim this arm had to reproduce and did.
+* `g(8)` and `g(64)` with intervals, both judges: above.
+
+### What the manuscript may say as a result of this arm
+
+Nothing yet. Under the marginality rule the appendix keeps its two-anchor statement until a seed
+replication exists. What has changed is that a third family has been **tested** --- at a clean,
+vetted anchor, with the confound named --- and the result is a marginal climb that one judge does
+not see. Nothing above the `## Scoring log` line was edited after the run.

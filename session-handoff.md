@@ -56,6 +56,24 @@ produced no result. The merge shell was relaunched on GPU 2 at `19:53` (PID repa
 appears, so it costs nothing while it waits. Card2b may still abort --- that is harmless now, and a
 double merge would have been harmless anyway (same inputs, same command, same output paths).
 
+**feat-135 is CLOSED: CLIMBS (MARGINAL), NOT PROMOTED.** Its stage-2 generation and scoring had
+in fact completed at `11:25` on 2026-09-20 while its log still said "stage 2 has NOT been started",
+so the arm was sitting finished and unread. All four gates pass (G1 vetting `0.0000`; G2 the full
+seven-point grid on `500` prompts; G3 empty fraction **`0/500`**; G4 **`72.1`** words), and
+`analysis/score_kl3m37b_breadth64.py` --- written and mutation-tested before the data --- reads
+paired `g(64)-g(8) = +0.0580 [+0.0200, +0.0940]`, judge~B. The interval excludes zero, but at
+**`1.57`** interval half-widths it is below the `2.0` the registration fixed in advance, so it is
+MARGINAL and **the appendix keeps its two-anchor statement**. The second judge disagrees outright
+(`+0.0300 [-0.0120, +0.0710]`, SATURATED), which strengthens that call.
+
+**The seed replication the marginality rule demands already exists on host B and does not support
+the climb**: `kl3m37bhb64` reads `+0.0200 [-0.0140, +0.0540]` and `kl3m37bhb64s62`
+`+0.0130 [-0.0230, +0.0500]`, a clean within-host pair differing only in seed, agreeing to `0.007`,
+both containing zero. It is cross-referenced in feat-135's log and **not pooled** with the local
+reading (caution (ap)), and the local-vs-host-B gap is not evidence against the local number because
+it changes silicon and seed together (caution (at)). Caution (ap)'s half-width rule predicted
+DOES NOT REPLICATE at `1.57` and that prediction held out of sample.
+
 **Next session: check `output/logs/comma7b128_merge.log` first.** If neutral's `GEN_DONE` never
 appears, the supervisor (`run_comma7b128_supervise.sh`, PID reparented, 27 h old) is still
 restarting it against the other project's memory pressure; the card must have `34000 MiB` free.
