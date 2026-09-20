@@ -180,6 +180,30 @@ which is caution (ar)'s "a guard that passed a test that proved nothing". Both r
 The abstract check is conditioned on the CSV interval, never on a phrase, so a reword cannot retire
 it (caution (aq)).
 
+**The two baselines the Program Chairs named by name, added after verifying they exist.** The PC
+report asked for comparison with or explicit discussion of MemFree (Ippolito et al. 2023),
+**TokenSwap** (Prashant et al. 2025) and **TRBS** (Fu et al. 2026). MemFree was already measured as
+a decoder (Appendix J); the other two were absent from the manuscript **and from
+`references.bib`**.
+
+**Neither was added on the report's say-so.** The report is LLM-generated and a fabricated
+reference is a desk-reject under the CFP, so both were checked against the published record first:
+TokenSwap is `arXiv:2502.05159`, NeurIPS 2025 (Prashant, Ponkshe, Salimi); TRBS is
+*Duplicate-Aware Controlled Code Generation*, Findings of ACL 2026 (Fu, Zhao, Yang, Mi, Qian). Both
+are real, so both are now cited in `sections/appendix_related.tex` in a paragraph that states what
+they do, why neither is in this paper's class (each bounds a supplied catalogue -- a memorised
+sequence, an indexed n-gram -- not the served law relative to a safe model), and **that we did not
+measure either one**, with the reasons: TRBS is a code method and porting it to prose would be our
+construction rather than theirs, and TokenSwap needs a paired auxiliary model whose own
+contamination would have to be vetted first. The concession says measuring them is the obvious next
+comparison rather than implying the omission is principled.
+
+`tests/test_named_baselines.py` (5 tests) pins the citations, the verified arXiv id and venue, the
+concession and the level distinction. Mutation-tested seven ways; one did not fire --- the TRBS
+"evaluated on code" check passed after that clause was reworded, because the word `code` occurs
+again later in the same paragraph, caution (an) --- and is now scoped to the sentence that
+introduces TRBS.
+
 **Producing commands, all of them.**
 
 ```
