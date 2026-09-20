@@ -82,9 +82,25 @@ def stat_row(out, name):
 
 
 def i1_length(new, ref):
-    """BLOCKS. Mean words GIVEN NON-EMPTY, not the raw mean (feat-136's G0b gated the wrong one)."""
+    """BLOCKS. Mean words GIVEN NON-EMPTY, not the raw mean (feat-136's G0b gated the wrong one).
+
+    It also refuses a reference drawn from an INCOMPLETE arm. h1.py writes a class's trajectories
+    only when that class finishes, so an arm still generating yields a stats row over however many
+    classes have landed -- on 2026-09-20 the local KL3M-3.7B reference read 350 prompts rather than
+    500 because its `creative` class had not been written, and the comparison ran anyway and passed.
+    A mean over a different set of prompts is not the same quantity, and nothing else here would
+    have noticed.
+    """
     if new is None or ref is None:
         return None, "rank-0 stats are missing for one side; I1 cannot be evaluated"
+    na, nb = int(new["n_prompts"]), int(ref["n_prompts"])
+    if na != nb:
+        return False, (f"prompt counts differ: this arm {na}, reference {nb}. One of them is "
+                       f"INCOMPLETE -- a class that has not finished writing yields a partial arm -- "
+                       f"so the two means are over different prompt sets and are not comparable")
+    if na != N_PROMPTS:
+        return False, (f"both sides have {na} prompts, not {N_PROMPTS}; the reference or the arm "
+                       f"is not the registered 500-prompt set")
     a, b = float(new["mean_words_nonempty"]), float(ref["mean_words_nonempty"])
     rel = abs(a - b) / b if b else float("inf")
     return rel <= I1_TOL, (f"{a:.1f} words given non-empty against {b:.1f} "
@@ -161,8 +177,15 @@ def score_one(out, arm, kind, recs):
     ok1, msg1 = i1_length(new_s, ref_s)
     print(f"  I1 length:   {'PASS' if ok1 else 'FAIL' if ok1 is False else 'n/a'} -- {msg1}")
     if ok1 is False:
-        print("  NOT SCORED: length given non-empty disagrees, which is the statistic a wrong")
-        print("  model, corpus or truncation moves. The band is not computed.")
+        # The reason must match the failure. An incomplete arm is not a length disagreement, and
+        # saying so would tell a reader the sampling path differs when in fact one side is unfinished.
+        if "INCOMPLETE" in msg1 or "not the registered" in msg1:
+            print("  NOT SCORED: one side is not the finished 500-prompt arm, so no comparison was")
+            print("  made. This is not a length disagreement and is not reported as one; re-score")
+            print("  when the arm finishes writing.")
+        else:
+            print("  NOT SCORED: length given non-empty disagrees, which is the statistic a wrong")
+            print("  model, corpus or truncation moves. The band is not computed.")
         recs.append(dict(arm=arm["name"], set=kind, verdict="NOT SCORED", note=msg1))
         return
 

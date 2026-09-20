@@ -176,3 +176,39 @@ def test_every_registered_arm_matches_its_preregistration_band():
     for arm in M.SEED_ARMS:
         assert f"{arm['ref_delta']:+.4f}".replace("+", "") in txt.replace("+", ""), arm["name"]
         assert arm["predict"] in txt, arm["name"]
+
+
+def test_I1_refuses_a_reference_drawn_from_an_INCOMPLETE_arm(tmp_path):
+    """h1.py writes a class only when it finishes, so an arm still generating yields a partial row.
+
+    On 2026-09-20 the local KL3M-3.7B reference read 350 prompts because its `creative` class had
+    not been written, and the comparison ran and PASSED at +2.6% -- a mean over 350 prompts set
+    against a mean over 500. Nothing else in the scorer would have noticed.
+    """
+    out = str(tmp_path)
+    _stats(out, "ref", nonempty=70.9, empty=0, n=350)
+    _stats(out, "new", nonempty=72.7, empty=0, n=500)
+    ok, msg = M.i1_length(M.stat_row(out, "new"), M.stat_row(out, "ref"))
+    assert ok is False
+    assert "INCOMPLETE" in msg and "350" in msg and "500" in msg
+
+
+def test_I1_refuses_two_arms_that_agree_with_each_other_but_are_both_short(tmp_path):
+    """The other half: equal counts are not enough, they must be the registered 500."""
+    out = str(tmp_path)
+    _stats(out, "ref", nonempty=70.0, empty=0, n=350)
+    _stats(out, "new", nonempty=70.0, empty=0, n=350)
+    ok, msg = M.i1_length(M.stat_row(out, "new"), M.stat_row(out, "ref"))
+    assert ok is False and "not the registered" in msg
+
+
+def test_an_incomplete_arm_is_NOT_described_as_a_length_disagreement(tmp_path, capsys):
+    """Caution (at)'s third rule, applied to this scorer: the reason must match the failure."""
+    out = str(tmp_path)
+    arm = dict(next(a for a in M.LADDER_ARMS if a["name"] == "kl3m37bhb"))
+    _arm(out, arm["new_tag"], delta=0.02)
+    _stats(out, arm["name"], n=500); _stats(out, arm["ref_stats"], n=350)
+    M.score_one(out, arm, "feat-140", [])
+    txt = " ".join(capsys.readouterr().out.split())
+    assert "not the finished 500-prompt arm" in txt
+    assert "length given non-empty disagrees" not in txt
