@@ -22,7 +22,20 @@ case "${1:-status}" in
           --include 'figures/***' --include '*.py' --include '*.sh' --include '*.md' \
           --include '*.json' --include '*/' --exclude '*' ./ "$H:$R/" && echo "[sync] code -> host B ok" ;;
   pull)   # results back, never clobbering a newer local file
-    rsync -az --update "$H:$R/results/" results/ && echo "[sync] results <- host B ok" ;;
+    rsync -az --update "$H:$R/results/" results/ && echo "[sync] results <- host B ok"
+    # CODE CREATED ON HOST B MUST COME BACK TOO. The first version of this script pushed code one
+    # way and pulled only results, so eight launchers written directly on host B lived nowhere
+    # else -- including run_memfree.sh, run_cpfuse.sh and run_frontier_judge.sh, which PRODUCED
+    # COMMITTED NUMBERS. A producing command that exists on one host is not reproducible and would
+    # not have shipped in the artifact. Report anything remote-only rather than silently ignoring.
+    NEW=$(rsync -rn --ignore-existing --out-format='%n' \
+          --include 'analysis/***' --include 'scripts/***' --include '*/' --exclude '*' \
+          "$H:$R/" ./ 2>/dev/null | grep -Ev '/$|__pycache__' || true)
+    if [ -n "$NEW" ]; then
+      echo "[sync] REMOTE-ONLY CODE (not in the repo):"; echo "$NEW" | sed 's/^/          /'
+    else
+      echo "[sync] no remote-only code"
+    fi ;;
   both)   "$0" push && "$0" pull ;;
 esac
 
