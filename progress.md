@@ -1,5 +1,89 @@
 # Session Progress Log
 
+## 2026-09-20 23:50 --- feat-157 SCORED: **SCORER-BOUND**, against our own registered prediction; and the AC's last three open points closed
+
+**The CoTaEval turn-over is partly the scorer, and we said it would not be.** All four `14`B-scorer
+arms landed on host B and were scored with `analysis/score_cotaeval.py --scorer-scale` against the
+bands in `results/onset_prediction_cotaeval_scorer.md`. Verdicts under the registered selector:
+Comma-7B (2T) **TURNS OVER** (`3.09` half-widths), its disjoint re-draw **TURNS OVER** (`3.18`),
+Comma-7B (1T) **NO EFFECT** (`0.32`), TinyComma-1.8B **NO EFFECT** (`0.04`). The turn-over
+disappears at two anchors, which the table fixed before the run calls **SCORER-BOUND**. We
+predicted SCORER-INDEPENDENT. That is the second registered prediction this week to be refuted and
+it stands on record rather than being reframed.
+
+**The rescue is narrower than the verdict word suggests, and saying so is the point.** Neither
+anchor that stopped turning over began to climb --- both read NO EFFECT and both are MARGINAL. A
+larger scorer buys the absence of harm at the two weaker anchors, not a gain at any of the four,
+and it does not reach the anchor the paper's headline uses. So the main text's clause (``\emph{loses}
+F1 on CoTaEval'') is **unchanged**, because it is true of the headline anchor at both scorer sizes,
+and the rescope goes in the appendix: every selection arm in this paper scores with the `7`B reward
+model, and on this benchmark the sign of the `n`-effect is a property of that choice as well as of
+the task. Per the exclusion list no `14`B level is set beside a `7`B one and no third scorer was run.
+
+**G0, the instrument gate this registration added, is the cleanest one this project has run.** The
+`n=1` F1 is *identical to four decimals* to its counterpart's at all four anchors (`0.4291`,
+`0.3496`, `0.1669`, `0.4562`) --- which is exactly what a scorer swap must do to an arm the scorer
+never touches. The tolerance is each counterpart arm's own bootstrap interval, read out of that
+arm's CSV by the scorer; **no constant is typed into the pre-registration**, which is caution (v)
+and caution (at) applied rather than quoted. Mutation-tested in five directions **before** it was
+run on the data: `n=1` shifted `+0.20` fails, `-0.20` fails, a change at `n=64` alone correctly does
+not move it, a missing counterpart reports `STRUCTURAL, no comparison was made` rather than the
+cause-undetermined wording reserved for a genuine disagreement, and the unmutated arm passes.
+
+**Nine mutations on the new claim, all firing.** `tests/test_cotaeval.py` gains five guards
+(`865 -> 870` tests). Dropping \textsc{scorer-bound}, dropping the not-a-climb clause, deleting the
+refuted prediction, softening ``four decimals'', and renaming the paragraph each fail by name; so do
+a sign-flipped headline gain, an interval moved across zero, a moved `n=1` F1, and a NO EFFECT arm
+relabelled non-marginal. **Two mutations did not land on the first attempt and both were caught by
+an assert rather than by a false pass** --- caution (ar) exactly: my patterns assumed a line break
+that is not where the source wraps, and `"TURNS OVER"` occurs three times in the CSV so a bare
+replace was ambiguous. **And M6a found a real gap**: sign-flipping the headline gain fired nothing,
+because the guards read `verdict` and `half_widths` and the appendix quotes no `14`B level, so a
+stale label over a flipped number was invisible. The guard now asserts verdict and sign agree.
+
+**The AC/PC report's last three open points, closed.** Audited every item of the Program Chairs'
+LLM report against the live sections; all seven high-level weaknesses and all but three per-section
+items were already answered. The three closed now: the `s_r` column is defined in the caption that
+defines `mem.` and `ep.`; the Appendix F window factor has its formula,
+`exp{W[l(1,k) - l(alpha,k_alpha)]}` with `W = 50`, taken from `analysis/order_law.py:85` rather than
+described; and the Conclusion's hardest sentence is split in two, **length-neutral by seven
+characters**, with every guarded literal and the committed concession ``where that bar sits is open''
+kept verbatim. Body still **exactly 9 of 9 pages** (page 10 is header, gutter, `Ethics Statement`),
+`0` overfull, `0` `??`, `3` bold faces. Appendix `20 -> 21` pages for the scorer-scale paragraph;
+per caution (ag) the space comes out of nothing that concedes anything.
+
+**One item deliberately left open**, and it is the AC's evaluation-parity ask (W4's first half):
+the report wants the asymmetry discussed --- selection ranks whole sequences with an external reward
+model, the meter fuses token probabilities and has no such signal. The substance is answered in
+four separate places (the risky-likelihood scorer fails at `-0.006`, the circular oracle reaches
+`+0.488`, ``the \emph{gain} is the scorer's capability'', and the matched-compute loss `-0.0395`),
+but it is nowhere framed as one paragraph about fairness of comparison. Seating that at a 9-page
+body with zero slack would cost a concession somewhere else, which caution (ag) forbids.
+
+**And the full suite caught a third widening of one glob.**
+`test_the_majority_vote_dominance_claim_matches_its_whole_grid` failed the moment
+`selection_verifiable_cta14_comma7b.csv` landed, because its file set was a glob on `comma7b` with
+two exclusions and the new CoTaEval arm matched it --- denominator `28 -> 9`. That is the SECOND
+break of the same guard in one evening (feat-137's second anchor made it `35` earlier the same day)
+and the guard was right both times. **A denylist has to be extended by every future arm and
+silently admits the one nobody thought of**, so the membership is now ENUMERATED --- four scorer
+suffixes by two task prefixes, with a named assertion when a file is missing --- and any new file is
+out by default. Mutation-tested after the repair: inflating a reward cell fires it, dropping the
+`n=4` rows fires it, removing one grid file fires the new completeness assertion, and the unmutated
+grid passes. `870` tests, all green.
+
+**Producing commands.**
+
+```
+ssh PrakashDGX_H2 'bash ~/v/run_cotaeval_scorer.sh <gpu> <anchor> <tag>'   # four arms, host B
+rsync -az PrakashDGX_H2:'~/v/DA5001_Project/results/*cta14*' results/
+.venv/bin/python analysis/score_cotaeval.py --scorer-scale --out results
+```
+
+**Still running:** feat-134 neutral, attempt 6 on GPU 2 at `3800/25600` (~15 h), merge shell alive
+at `13800s` of its `172800s` budget and waiting on `GEN_DONE`.
+
+
 ## 2026-09-20 --- the referees answered with measurement: a judge panel, the incumbents, and four arms that failed
 
 **The judge panel: 4 of 5.** The headline difference rested on one 3.8B judge, which every report

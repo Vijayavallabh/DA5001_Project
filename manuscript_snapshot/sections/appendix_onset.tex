@@ -1,30 +1,45 @@
 % v6 (2026-09-11): the nine-pair analysis and both audit tables, migrated out of the main text.
 \section{The onset in full: the context gradient and two refuted refinements}\label{app:onset}
 
-Section~\ref{sec:onset} states the nine-pair result in a paragraph and Section~\ref{sec:orders} the
-four-order comparison in two. This appendix is the evidence: both tables, the context gradient that
-explains the residual fifth, and the two refinements we derived, pre-registered and had to reject.
+Section~\ref{sec:orders} states the nine-pair result in a paragraph and the four-order
+comparison in two. This appendix is the evidence: both tables, the context gradient that
+explains the residual fifth, and the two refinements we derived, specified in advance and had to reject.
 
 \begin{table}[h]
 \centering\footnotesize
 \caption{Onset of extraction on nine pairs, as a fraction of the anchor's surprisal rate $s(x)$.
-Rates are nats per \emph{token}. $n$ is the number of protected passages; onset is the budget at
-which mean single-query recall first reaches $0.01$, interpolated inside its bracket.}
+Rates are nats per \emph{token}: $s(x)$ is the anchor's and $s_r$ the memoriser's, on the same
+tokens. $n$ is the number of protected passages; onset is the budget at
+which mean single-query recall first reaches $0.01$, interpolated inside its bracket. Every pair
+clears the admission criterion of $0.10$ (Appendix~\ref{app:limitations}) and $k=0$, the anchor
+alone, is $0.000$ at all nine. Two columns are reported because they are \emph{not} controlled.
+\emph{mem.}\ is the memoriser's own sampled recall at $k=-1$, with no anchor and no budget: these are
+nine separate fine-tunes spanning a factor of $5.1$ in it, the seed ladders of
+Appendix~\ref{app:collapse} show the onset ratio tracks it, and its ordering is not the ordering of
+the last column. \emph{ep.}\ is what the fine-tune ran against the cap it was given, so a run that
+stopped early reached its stop-loss and one that reached its cap did not converge. Five of the nine did
+not, and of the four seed ladders the only onset ratio that is \emph{not} reproducible under
+re-seeding is the one on a non-converged memoriser. $\dagger$ marks the two rows whose own sweep ran
+no $k=-1$ or $k=0$ arm, contrary to our own rule. They were measured afterwards in a dedicated
+baseline run per pair, at flags reproducing that sweep's protocol line character for character, and
+reproduced to three decimals the values previously read off an unrelated arm; the dagger stays
+because these two baselines come from a second invocation and not from the run that produced the
+onset beside them.}
 \label{tab:onset}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lcccccc@{}}
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}lcccccccc@{}}
 \toprule
-pair & $s(x)$ & $s_r$ & $n$ & onset & 95\% CI & onset\,/\,$s(x)$ \\
+pair & $s(x)$ & $s_r$ & $n$ & mem. & ep. & onset & 95\% CI & onset\,/\,$s(x)$ \\
 \midrule
-KL3M 1.7B $+$ mem.\ KL3M 1.7B       & $2.21$ & $0.781$ & $100$ & $2.58$ & $[2.52, 3.32]$ & $1.166$ \\
-Comma 7B $+$ mem.\ Comma 7B         & $2.39$ & $0.179$ & $100$ & $2.13$ & $[2.00, 2.92]$ & $0.892$ \\
-KL3M 520M $+$ mem.\ KL3M 520M       & $2.42$ & $0.215$ & $100$ & $2.54$ & $[2.45, 3.00]$ & $1.053$ \\
-Phi-3.5 mini $+$ mem.\ Phi-3.5 mini & $2.84$ & $0.009$ & $100$ & $2.63$ & $[2.27, 3.08]$ & $0.926$ \\
-Pleias 1.2B $+$ mem.\ Pleias 1.2B   & $3.21$ & $0.365$ & $100$ & $2.82$ & $[2.53, 3.08]$ & $0.878$ \\
-TinyComma 1.8B $+$ mem.\ Llama-8B   & $3.24$ & $0.194$ & $100$ & $2.87$ & $[2.72, 3.45]$ & $0.887$ \\
-open-calm 1B $+$ mem.\ open-calm 1B & $3.36$ & $0.416$ & $100$ & $3.45$ & $[3.25, 4.97]$ & $1.027$ \\
-open-calm 3B $+$ mem.\ open-calm 3B & $3.38$ & $0.314$ & $100$ & $3.36$ & $[3.24, 3.63]$ & $0.993$ \\
-Pleias 350M $+$ mem.\ Pleias 350M   & $3.55$ & $0.326$ & $458$ & $3.27$ & $[3.07, 3.83]$ & $0.920$ \\
+KL3M 1.7B $+$ mem.\ KL3M 1.7B       & $2.21$ & $0.781$ & $100$ & $0.411$ & $40/40$ & $2.58$ & $[2.52, 3.32]$ & $1.166$ \\
+Comma 7B $+$ mem.\ Comma 7B$^{\dagger}$ & $2.39$ & $0.179$ & $100$ & $0.719$ & $12/12$ & $2.13$ & $[2.00, 2.92]$ & $0.892$ \\
+KL3M 520M $+$ mem.\ KL3M 520M       & $2.42$ & $0.215$ & $100$ & $0.519$ & $11/40$ & $2.54$ & $[2.45, 3.00]$ & $1.053$ \\
+Phi-3.5 mini $+$ mem.\ Phi-3.5 mini & $2.84$ & $0.009$ & $100$ & $0.566$ & $40/40$ & $2.63$ & $[2.27, 3.08]$ & $0.926$ \\
+Pleias 1.2B $+$ mem.\ Pleias 1.2B   & $3.21$ & $0.365$ & $100$ & $0.909$ & $30/40$ & $2.82$ & $[2.53, 3.08]$ & $0.878$ \\
+TinyComma 1.8B $+$ mem.\ Llama-8B$^{\dagger}$ & $3.24$ & $0.194$ & $100$ & $0.492$ & $12/12$ & $2.87$ & $[2.72, 3.45]$ & $0.887$ \\
+open-calm 1B $+$ mem.\ open-calm 1B & $3.36$ & $0.416$ & $100$ & $0.181$ & $40/40$ & $3.45$ & $[3.25, 4.97]$ & $1.027$ \\
+open-calm 3B $+$ mem.\ open-calm 3B & $3.38$ & $0.314$ & $100$ & $0.924$ & $21/40$ & $3.36$ & $[3.24, 3.63]$ & $0.993$ \\
+Pleias 350M $+$ mem.\ Pleias 350M   & $3.55$ & $0.326$ & $458$ & $0.875$ & $16/40$ & $3.27$ & $[3.07, 3.83]$ & $0.920$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -53,42 +68,14 @@ $\alpha = 8$      & $0.0000$ & $0.0012$ & $0.08\%$ & $99.6\%$ & $0.9872$ \\
 \end{table}
 
 
-\paragraph{The residual fraction belongs to the evaluation, not to the models}
-The fraction is neither fixed nor noise: it falls, monotonically in rank, with the number of
-\emph{words} the evaluation hands the adversary --- $1.166$ and $1.053$ at $7.5$ words, $1.027$ and
-$0.993$ at $9.5$, and $0.878$--$0.926$ at $13.9$--$15.0$ --- at Spearman $-0.958$, exact
-$p = 0.0002$, and that ordering was fitted to seven of the nine points, with the eighth
-\emph{predicted} before its anchor was fine-tuned ($1.048$ against $1.027$). Memorisation strength and
-vocabulary size both fail to explain it, and because a twenty-token seed is exactly twenty times the
-characters per token the ranking is confounded with granularity, so we intervened. Nine arms, each
-pre-registered with its refuting band, each moving \texttt{--seed-tokens} alone: giving Pleias-1.2B
-the KL3M seed --- $6.9$ words instead of $14.6$ --- moves it from $0.866$ $[0.72, 0.95]$ to $1.004$
-$[0.99, 1.23]$, intervals that do not overlap, and the reverse swap moves both KL3M pairs back down.
-Handing all nine the same $13.6$--$15.0$ \emph{words} rather than twenty tokens drops the spread in
-onset$/s(x)$ from $0.289$ to $0.113$, every pair that moved moving \emph{down}: $61\%$ of what reads
-as a property of the anchors is the benchmark's fixed-token seed, and $39\%$ is not. It acts on the
-budget rather than the memoriser --- $s(x)$ moves under $1.6\%$ across those arms while
-$k_{\mathrm{crit}}$, computed from the anchor alone, moves $7$ to $20\%$ and the onset follows to a
-mean error of $5.1\%$ against a no-change null's $11.0\%$ --- so a longer prefix does not make the
-memoriser better at the work, it
-starts the target at a cheaper point on its own surprisal profile. Nor is this a quirk of our
-harness: extractability is defined ``with $k$ tokens of context'' \citep{carlini2023quantifying}, so
-two measurements under different tokenizers at one token budget differ in a quantity that drives what
-they measure. Appendix~\ref{app:seed} gives all nine arms and their bands.
-
-\paragraph{Two refinements we derived, pre-registered, and had to reject}
-The decoding geometry supplies a candidate of its own. On the geometric path $\psi_t(1) = 0$
-identically, so at full tilt the per-token charge along a target is the mean
-$D_{\mathrm{KL}}(p_{r,t}\,\|\,p_{s,t})$ on that target's own prefixes, which for a risky model
-near-deterministic on a memorised $x$ collapses to
 \begin{equation}
 r(x) \;=\; s_s(x) - s_r(x),
 \label{eq:req}
 \end{equation}
 the rate a decoder must permit before it can pay for $x$ at all, predicting an onset ratio of
 $1 - s_r/s_s$ that must \emph{move} with memorisation. Committed for the last five pairs before any
-was swept, under three rules, it is refuted by all three: every miss low, held-out errors of $0.352$,
-$0.251$ and $0.481$ nats, and a directional claim that inverts (Appendix~\ref{app:collapse}).
+was swept, under three rules, it is refuted by all three: every miss low, held-out errors of $0.365$,
+$0.507$ and $0.296$ nats, and a directional claim that inverts (Appendix~\ref{app:collapse}).
 Eq.~\eqref{eq:req} is a correct statement about what a decoder must \emph{afford} and a wrong one
 about where leakage \emph{begins}: the budget granting access to a \emph{class} of works is not the
 budget at which one work becomes recoverable, and no scalar rate is both. The second refinement fails
@@ -96,6 +83,7 @@ in the complementary direction. Warping the anchor's logits to $\tau = 0.4$ move
 $67\%$ and $62\%$ on two pairs with everything else fixed, and the onset follows at an elasticity of
 $+0.72$ $[+0.41, +0.84]$ and $+0.61$ $[+0.40, +0.96]$ --- refuting a budget in constant nats twice
 over, without reaching exact proportionality. There $k_{\mathrm{crit}}$ misses by $21.9\%$ against a
-no-change null's $12.3\%$ and ranks the nine pairs at $\rho = +0.036$: it tracks which token of a
+no-change null's $12.3\%$ and ranks its seven pairs at $\rho = +0.036$ and all nine at
+$-0.050$: it tracks which token of a
 fixed profile must be generated first, not a rescaling of the profile. The two propositions bound
 different things, and only one is a unit.

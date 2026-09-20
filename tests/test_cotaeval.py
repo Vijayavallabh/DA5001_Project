@@ -86,3 +86,83 @@ def test_the_scope_limits_survive():
     assert "does not depend on the served text being good" in w, (
         "the appendix no longer says the certificate is untouched by this result")
     assert "0.546" in w, "the appendix no longer says GSM8K majority vote is untouched"
+
+
+# --------------------------------------------------------------------------------------
+# feat-157: is the turn-over the mechanism or the 7B scorer? The registered answer is
+# SCORER-BOUND, which is a result AGAINST the prediction we filed, so every claim the
+# appendix now makes about it is rebuilt here from the CSV rather than from the sentence.
+# --------------------------------------------------------------------------------------
+CSV14 = os.path.join(ROOT, "results", "cotaeval_scorer_scale.csv")
+REGISTERED14 = "pointwise reward (Qwen2.5-14B)"
+
+
+def scored14():
+    assert os.path.exists(CSV14), f"{CSV14} missing; this guard must not pass by never running"
+    rs = list(csv.DictReader(open(CSV14, encoding="utf-8")))
+    s = [r for r in rs if r.get("rule") == REGISTERED14 and r.get("gate") == "PASS"]
+    assert len(s) == 4, f"expected four scorer-scale arms, got {len(s)}"
+    return s
+
+
+def _para14():
+    """The scorer-scale paragraph alone. Scoped because the words `turns over`, `marginal` and the
+    anchor names all occur elsewhere in this file (caution (an))."""
+    t = body(SEC)
+    i = t.find("A larger scorer moves it")
+    assert i > 0, "the scorer-scale paragraph is gone from the appendix"
+    return t[i:i + 1400]
+
+
+def test_the_scorer_scale_reading_is_the_one_the_data_give():
+    """Two of four still turn over -> SCORER-BOUND by the table fixed before the run. If a re-run
+    moves any verdict this fails by name instead of letting the paragraph stand."""
+    v = [r["verdict"] for r in scored14()]
+    assert v.count("TURNS OVER") == 2 and v.count("NO EFFECT") == 2, v
+    assert "scorer-bound" in _para14().lower()
+
+
+def test_the_two_that_survive_are_the_headline_anchor_and_its_redraw():
+    by = {r["anchor"]: r for r in scored14()}
+    for name in ("Comma-7B (2T)", "Comma-7B (2T), seed 5254"):
+        assert by[name]["verdict"] == "TURNS OVER", f"{name} now reads {by[name]['verdict']}"
+        assert float(by[name]["half_widths"]) >= 2.0, f"{name} is now marginal"
+        # verdict and sign must agree: a stale label over a flipped number is exactly the defect
+        # caution (ag) describes, and the appendix quotes only the verdict and the half-width.
+        assert float(by[name]["gain"]) < 0 < -float(by[name]["hi95"]), (
+            f"{name}: verdict says TURNS OVER but gain {by[name]['gain']} "
+            f"/ hi95 {by[name]['hi95']} do not")
+    p = _para14()
+    for name in ("Comma-7B (2T)", "Comma-7B (1T)", "TinyComma-1.8B"):
+        assert name.replace("-", "-") in p or name.split(" ")[0] in p
+
+
+def test_the_rescue_is_not_a_climb():
+    """The honest limit on a SCORER-BOUND reading: nothing climbed, so a bigger scorer bought the
+    absence of harm and not a gain. Dropping that clause would read as a rescue."""
+    assert [r for r in scored14() if r["verdict"] == "CLIMBS"] == []
+    for r in scored14():
+        if r["verdict"] == "NO EFFECT":
+            assert r["marginal"] == "MARGINAL", f"{r['anchor']} is no longer marginal"
+    p = _para14().lower()
+    assert "began to climb" in p and "marginal" in p
+
+
+def test_the_failed_prediction_survives_a_page_trim():
+    """A registered prediction that was refuted is a concession (caution (ag))."""
+    p = _para14().lower()
+    assert "scorer-independent" in p and "wrong" in p
+
+
+def test_the_instrument_check_claim_is_true_of_the_csv():
+    """The appendix says each arm's n=1 F1 agrees with its counterpart's to four decimals. n=1 does
+    not involve the scorer, so anything else would mean the pipeline changed."""
+    ref = {"cta14_comma7b": "cta_news", "cta14_comma1t": "cta_comma1t",
+           "cta14_tc18b": "cta_tc18b", "cta14_s5254": "cta_s5254"}
+    for r in scored14():
+        src = f"results/selection_verifiable_{ref[r['tag']]}.csv"
+        rs = list(csv.DictReader(open(os.path.join(ROOT, src), encoding="utf-8")))
+        base = [x for x in rs if x["arm"] == REGISTERED and int(x["n"]) == 1][0]
+        assert round(float(base["acc"]), 4) == round(float(r["f1_n1"]), 4), (
+            f"{r['anchor']}: n=1 moved {base['acc']} -> {r['f1_n1']}")
+    assert "four decimals" in _para14()

@@ -95,10 +95,29 @@ capability floor the paper already concedes, not a failure of the mechanism. The
 prediction is registered **conditionally on feat-155's half-width ratio, before either number
 exists**, which is what stops caution (ap)'s rule being fitted after the fact.
 
-**`results/onset_prediction_cotaeval_scorer.md` (feat-157) is IN FLIGHT on host B** --- the
-question feat-155's negative result forces: is the CoTaEval turn-over the mechanism or the `7`B
-scorer? Same everything, scorer `7`B -> `14`B, at the four anchors that passed G1. The prediction
-registered is SCORER-INDEPENDENT, which means a SCORER-BOUND reading counts against us.
+**`results/onset_prediction_cotaeval_scorer.md` (feat-157) is SCORED: SCORER-BOUND, and we
+predicted SCORER-INDEPENDENT.** All four `14`B-scorer arms landed on host B and were scored with
+`analysis/score_cotaeval.py --scorer-scale`. The turn-over **survives** at Comma-7B (2T) and at its
+disjoint re-draw (`3.09` and `3.18` interval half-widths) and **disappears** at Comma-7B (1T) and
+TinyComma-1.8B --- two of four, which the table fixed before the run calls SCORER-BOUND. The rescue
+is narrow and the appendix says so: neither anchor that stopped losing began to climb, both read NO
+EFFECT and both are MARGINAL, so a larger scorer buys the absence of harm and not a gain, and it
+does not reach the anchor the headline uses. **The main text is therefore unchanged** --- ``loses F1
+on CoTaEval'' is true of the headline anchor at both scorer sizes --- and the rescope is one
+appendix paragraph stating the `7`B requirement explicitly. G0, the instrument gate this
+registration added, passed at all four with the `n=1` F1 *identical to four decimals* to its
+counterpart's, the tolerance derived by the scorer from each counterpart's own CSV rather than
+typed in, and mutation-tested five ways **before** it was run. `tests/test_cotaeval.py` gains five
+guards, mutation-tested nine ways; two patterns did not land first time (caution (ar)) and one
+mutation found a real gap --- a sign-flipped gain fired nothing until verdict-and-sign agreement was
+asserted.
+
+**The AC/PC report is fully audited and three remaining items are closed**: the `s_r` column is
+defined in its caption, the Appendix F window factor has its formula (from `analysis/order_law.py`,
+not described), and the Conclusion's hardest sentence is split length-neutrally with every guarded
+literal kept. One item is deliberately open --- the evaluation-parity paragraph (W4's first half);
+its substance is answered in four places but not framed as one paragraph, and seating it at a
+zero-slack 9-page body would cost a concession (caution (ag)).
 
 **Next session: check `output/logs/comma7b128_merge.log` first.** If neutral's `GEN_DONE` never
 appears, the supervisor (`run_comma7b128_supervise.sh`, PID reparented, 27 h old) is still

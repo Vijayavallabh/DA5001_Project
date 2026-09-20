@@ -72,18 +72,20 @@ def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
     root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
     cells = {"GSM8K": {"majority": {}, "reward": []}, "TriviaQA": {"majority": {}, "reward": []}}
     # SCOPED to the arm the sentence is about (caution (an)/(ao)). The 28 cells are FOUR SCORERS
-    # by seven n at the audited 7B anchor -- comma7b plus its three qwen scorer scales. A different
-    # ANCHOR's file (selection_verifiable_comma1t.csv, feat-137) is not one of the four scorers, and
-    # letting it into this glob broke the guard on 2026-09-20 by making the denominator 35. The
-    # separate test below carries what that anchor actually shows.
-    files = [f for f in sorted(_glob.glob(_os.path.join(root, "results",
-                                                        "selection_verifiable*.csv")))
-             if "comma7b" in _os.path.basename(f)
-             and "_rewards_" not in _os.path.basename(f)   # those are per-item caches, not summaries
-             and "_mmlu" not in _os.path.basename(f)]      # feat-149's third task is a DIFFERENT
-    # grid (a four-way forced choice, floor 0.25) with its own guard in test_incumbents.py; letting
-    # it into this glob makes the denominator 9 and the dominance claim it checks is about the two
-    # open-ended tasks the manuscript names here.
+    # by seven n at the audited 7B anchor -- comma7b plus its three qwen scorer scales -- on the two
+    # open-ended tasks. This was a GLOB WITH EXCLUSIONS twice and was broken twice by arms that had
+    # nothing to do with the claim: feat-137's second ANCHOR (selection_verifiable_comma1t.csv) made
+    # the denominator 35 on 2026-09-20, and feat-157's CoTaEval arm at a 14B scorer
+    # (selection_verifiable_cta14_comma7b.csv) made it 9 the same evening. A denylist has to be
+    # extended by every future arm and silently admits the one nobody thought of, so the membership
+    # is now ENUMERATED: any new file is out by default and a real addition to the grid has to say so
+    # here. (feat-149's MMLU is a four-way forced choice with a 0.25 floor and its own guard in
+    # test_incumbents.py; it is a different grid, not a fifth scorer.)
+    SCORERS = ("", "_qwen05b", "_qwen15b", "_qwen3b")
+    files = [_os.path.join(root, "results", f"selection_verifiable_{pre}comma7b{sc}.csv")
+             for pre in ("", "tqa_") for sc in SCORERS]
+    missing = [_os.path.basename(f) for f in files if not _os.path.exists(f)]
+    assert not missing, f"the 4x2 grid this claim quotes is incomplete: {missing}"
     assert len(files) == 8, f"expected 4 scorers x 2 tasks, got {[_os.path.basename(f) for f in files]}"
     for f in files:
         task = "TriviaQA" if "_tqa" in _os.path.basename(f) else "GSM8K"

@@ -74,3 +74,40 @@ Four arms of `500 x 64` at `7`B anchor plus a `14`B scorer, one card each on idl
 comparable arms took under `3` h. Well under the `24`-gpu-hour threshold per run.
 
 ## Scoring log
+
+**Scored 2026-09-20.** All four arms landed on host B (`cta14_*.done`, GPUs 0--3).
+`analysis/score_cotaeval.py --scorer-scale`; CSV `results/cotaeval_scorer_scale.csv`.
+
+**G0, the instrument check this registration added, passes at all four**, and it passes in the
+strongest possible way: the `n=1` F1 is *identical to four decimals* to its counterpart's
+(`0.4291`, `0.3496`, `0.1669`, `0.4562`), which is what a scorer swap must do to an arm the scorer
+never touches. The reference is each counterpart arm's own bootstrap interval, derived by the
+scorer from that arm's CSV --- no constant is typed into this file (caution (v), caution (at)).
+The gate was mutation-tested in five directions **before it was run on the data**: `n=1` shifted
+`+0.20` fails, `-0.20` fails, a change at `n=64` alone correctly does not move it, a missing
+counterpart reports `STRUCTURAL, no comparison was made` rather than a cause-undetermined
+disagreement, and the unmutated arm passes. G1 and G2 pass at all four.
+
+**Verdicts under the `14`B scorer, registered selector:**
+
+| anchor | verdict | half-widths |
+|---|---|---|
+| Comma-7B (2T) | **TURNS OVER** `-0.1261` `[-0.1668, -0.0851]` | `3.09` |
+| Comma-7B (2T), seed `5254` | **TURNS OVER** `-0.1299` `[-0.1707, -0.0890]` | `3.18` |
+| Comma-7B (1T) | NO EFFECT `-0.0140` `[-0.0581, +0.0294]` | `0.32` (marginal) |
+| TinyComma-1.8B | NO EFFECT `+0.0012` `[-0.0326, +0.0349]` | `0.04` (marginal) |
+
+The turn-over disappears at **two** anchors, so by the table fixed above the reading is
+**SCORER-BOUND**. **We predicted SCORER-INDEPENDENT and were wrong**, and the prediction stands on
+record.
+
+**What the rescue is, and what it is not.** Neither anchor that stopped turning over began to
+climb: both read NO EFFECT and both are MARGINAL (`0.32` and `0.04` half-widths). A larger scorer
+stops selection *losing* at the two weaker anchors; it does not make it *win* at any of the four.
+And it does not rescue the anchor the paper's headline uses: Comma-7B (2T) still turns over at
+`3.09` half-widths, as does its disjoint re-draw at `3.18` --- the two readings clear of the
+marginality rule are exactly the two that survive. So the main text's clause is unchanged, because
+it is true of the headline anchor at both scorer sizes, and the appendix is rescoped.
+
+**Per the excluded-in-advance list, no `14`B level is reported beside a `7`B one** and no third
+scorer is run. The verdict comparison above is the whole reading.

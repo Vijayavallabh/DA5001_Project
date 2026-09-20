@@ -4,24 +4,31 @@
 % iclr_2027.tex; the full limitations are Appendix~\ref{app:limitations}.
 % v7 kept as iclr_closing_v7_2026-09-14.tex.
 
-\section{Limitations and conclusion}\label{sec:limitations}
+\section{Conclusion}\label{sec:limitations}
 
-\textbf{The two mechanisms are not substitutes, and the scorer binds first.} $q(y) \le n\,p_s(y)$
-means a served string is one the safe model would have drawn, so an anchor that cannot do the task
-gains nothing at any $n$: head to head on TriviaQA with no judge the metered decoder reaches $0.618$
-and selection $0.190$ --- but only at $k=20$, where it \emph{is} the risky model, certified at $480$
-nats for a $24$-token answer. Below that the scorer binds: a reward gains $3.4\times$ less than
-majority vote on GSM8K and \emph{loses} accuracy on TriviaQA.
+\paragraph{Limitations}
 
-\noindent\textbf{And it is paid for in compute, which no nat measures.} Selection needs $n=64$, at
-$61.3\times$ the metered decoder's forward-pass cost, to reach $+0.1045$. The gain is the
-\emph{scorer's} capability, not the mechanism's: a $0.5$B scorer buys the same $\log n$ and never
-reaches the meter, while a $1.5$B scorer buys $87\%$ of the $7.6$B gain on the judged workload and
-nothing on GSM8K (Appendices~\ref{app:saturation},~\ref{app:judgefreescale}). The price is the scorer we chose and not the
-mechanism, and where that bar sits is open. The corpus is sixteen English novels, judged levels are
-position-dominated, and the quantitative half is open: how close a policy of the shape
-Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier.
+\looseness=-2 \textbf{The two mechanisms are not substitutes, and the scorer binds first.} A served string is one the safe
+model would have drawn, so an anchor that cannot do the task gains nothing: on TriviaQA with no
+judge the meter reaches $0.618$ against selection's $0.190$ (Figure~\ref{fig:judgefree}c) --- but
+only at $k=20$, where it \emph{is} the risky model, certified at $480$ nats for a $24$-token
+answer; at its small budgets it is the anchor. Below that the scorer binds, gaining $3.4\times$ less than majority vote on GSM8K at
+$n=64$, and \emph{loses} F1 on CoTaEval (Appendix~\ref{app:selection}). A capability gap is the regime a
+deployer most wants covered and \emph{neither} mechanism covers it.
 
-\noindent\textbf{Conclusion.}\label{sec:conclusion}
-A copyright budget is not a rate: charged per token it must grow with the work or stop changing the
-output. Spend it once, on the draw: an amplification of $8$, not $e^{2000}$.
+% \looseness asks TeX to set this paragraph one line shorter; the closing thesis was a
+% two-line widow on page 10 and prose trims were being absorbed by reflow (caution (n)).
+\looseness=-1 \noindent\textbf{And it is paid for in compute, which no nat measures.} Selection needs $n=64$ for
+$+0.1045$, at $61.3\times$ the meter's forward passes and a measured $35.4\times$ in wall-clock;
+held to the meter's own compute it \emph{loses}. The \emph{gain} is the scorer's capability: a
+$0.5$B scorer never reaches the meter, a $1.5$B one buys $87\%$ of the $7.6$B gain on the judged
+workload and nothing on GSM8K. The \emph{price} is not --- the scorer is $9.3\%$ of the
+clock --- so the bar we have not cleared is the cost of drawing and where that bar sits is open
+(Appendix~\ref{app:saturation}).\looseness=-3\ Extraction is sixteen English novels plus four in French and German, judged
+levels are position-dominated, and the class-level question is open: the theorem rules out a
+per-token \emph{rate} and not every causal policy, and how close a policy of that shape ---
+Proposition~\ref{prop:sparse}'s, now built and priced --- comes to Theorem~\ref{thm:nfl}'s frontier
+is open.%
+\label{sec:conclusion}
+\ \textbf{In sum:} a copyright budget is not a rate. Charged per token it must grow with the work
+or else be spent almost nowhere; spent once, on the draw, it is $\log n$ at any length.
