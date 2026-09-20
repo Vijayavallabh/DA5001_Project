@@ -1691,6 +1691,46 @@ Commands: `analysis/serving_cost.py --out results`, `analysis/scorer_free_cost.p
 
 ## Blockers / Risks
 
+### 2026-09-20 10:11 --- feat-134 diagnosed: every failure is one 51 GB neighbour, and every mitigation is forbidden by the arm's own gate
+
+**24 hours of attempts, zero bytes written.** All three `feat-134` class directories still hold only
+zero-byte files. `creative` is on **attempt 5 of 12**; `neutral` and `factual` on attempt 3.
+
+**The cause is single and identified.** All four `creative` failures are `torch.OutOfMemoryError`,
+and each names a neighbour of about $51$ GB --- PIDs `734035`, `1587439`, `1687865`, `1778214`, a
+different one each time, all from the **other Claude Code session** in `~/agenticls`. Our job holds
+$27$--$28$ GB and an H100 has $79.25$ GB, so $28 + 51 = 79$ leaves nothing: **any co-tenancy with
+that job is fatal.** The supervisor's `MIN_FREE_MIB=34000` is checked at LAUNCH and cannot prevent a
+neighbour arriving an hour later, which is exactly what happened at $22{:}49$, $06{:}13$, $07{:}07$
+and $07{:}19$.
+
+**Every mitigation that would help is forbidden by this arm in particular**, and that is worth
+stating plainly rather than leaving as an omission:
+
+* **An allocator flag** (`PYTORCH_ALLOC_CONF=expandable_segments:True`, which the OOM message itself
+  suggests) is refused by `scripts/run_comma7b128_supervise.sh`'s own header: cuBLAS picks kernels by
+  heuristics that can read available workspace, so it is not provably numerics-free, and this arm
+  rests on a **bit-identity** gate against `results/selection_rewards64_comma7b.csv`.
+* **A smaller batch** changes the padding pattern, hence sampled tokens, hence the rewards. Same
+  gate, same refusal (caution (u)).
+* **Splitting a class into chunks** to reduce what a kill costs changes the length-bucketed batch
+  composition, so it changes the generations. Same gate.
+* **Moving to the second host** changes the bf16 reduction order. The gate could never pass there.
+
+So the only available response is what is already in place: retry, and wait for the box to be quiet.
+
+**As of $10{:}11$ the other session is GONE** --- every GPU process is ours except one unrelated
+$574$ MiB job --- and `creative`'s attempt 5 has run $2$h$27$m cleanly with $\approx 50$ GB free per
+card. The supervisor has $7$ attempts and about $24$ hours of its $36$-hour deadline left.
+
+**Honest statement of risk: `feat-134` may not land.** A class needs about $12$ hours, `h1.py` writes
+nothing until the class completes, and one $51$ GB neighbour at any point in those $12$ hours costs
+the whole class. If the other session resumes its pattern, no number of retries inside the deadline
+changes that arithmetic. The paper does not depend on `feat-134`: it is the $n=128$ extension of an
+arm already measured at $n \le 64$, and `feat-129` already reports SATURATED BY 64 under two
+constructions.
+
+
 ### 2026-09-19 22:35 --- `h1.py` writes a class only when the class finishes, and the box is contended
 
 **Logged, not fixed.** Three `h1.py` processes are live; never edit a script while it is running.
