@@ -1,5 +1,63 @@
 # Session Progress Log
 
+## 2026-09-20 --- the referees answered with measurement: a judge panel, the incumbents, and four arms that failed
+
+**The judge panel: 4 of 5.** The headline difference rested on one 3.8B judge, which every report
+named. Five judges, `3.8`B--`72`B in four families, re-scored **byte-identical** text --- no
+generation, no reward recomputed, so under a greedy judge every difference is the instrument. All
+five put `g_sel - g_met` positive; four exclude zero: `+0.0645` (B, Phi-3.5-mini), `+0.0620` (D,
+Qwen2.5-72B), `+0.0090` (E, Mixtral-8x7B), `+0.1070` (F, Qwen2.5-14B), `+0.0790` (G, gemma-2-27b).
+**The family hypothesis my own pre-registration offered is refuted**: the one judge that does not
+resolve it is family-clean, two of three clean judges do resolve it, and both scorer-family judges
+do. Size does not order it either (`3.8`B yes, `47`B no, `72`B yes), nor self-consistency --- the
+*least* self-consistent instrument carries the registered headline. Judge E is an outlier we cannot
+account for and say so. The abstract now carries the measured fraction, not an unqualified claim.
+Commands: `scripts/run_frontier_judge.sh <judge> <tag> <cards>`.
+
+**The incumbents, run as decoders.** `analysis/blocklist_decode.py` implements MemFree as exact
+rejection sampling (draw, test the last n words, mask, redraw), so the `--no-block` control is the
+same distribution with the mask off. Against the memoriser on its own training split the rule bound
+`1.035%` of steps and took nv-recall `0.4192 -> 0.0201`, `lcs_word` `73.89 -> 7.86`. **Two of our
+predictions failed.** It did *not* leak paraphrase (`0/100` at ROUGE-L `>= 0.5` against `52/100`
+without it) --- the path exists and our own unit test constructs it, but a non-adaptive memoriser
+does not find it. And on ordinary prompts the rule fired on **`0` of `850`**, so its judged
+`+0.272` is byte-identically the unconstrained model's and measures nothing about the blocklist:
+**the registered gate was passed by a no-op**, which the within-pipeline control is what exposed.
+Zero utility cost, near-total suppression on a listed work --- a stronger incumbent than the paper
+implied by not measuring it, now conceded in Related Work and Appendix J. CP-Fuse rebuilt and
+reproduced (`0.6905`/`0.6965` on own shard, `0.0000` on the other, fusion `0.0000` on both); its
+utility half was **withdrawn rather than scored**, because MemFree had already shown that arm is
+the risky model in disguise.
+
+**Four arms failed, and are recorded as failures.** MMLU at the audited anchor was invalid twice:
+first a parser that read a base model's prompt-echo as its answer (`301/500` scored wrong, putting
+a four-way choice *below* its own `0.25` floor); then, repaired and mutation-tested in four
+directions **before** it was re-run, the anchor read `0.188 [0.154, 0.222]` --- below chance, with
+`49%` of its answers the letter B. Per the band fixed in advance there is no third attempt and no
+number enters the paper (`tests/test_mmlu_not_quoted.py`). A third: the TriviaQA vote-over-reward
+ratio is undefined on `82%` of resamples, so it is blank in the CSV rather than a narrow-looking
+number.
+
+**What was added.** MMLU at Comma-7B passed cleanly and is the **third** judge-free task --- a
+forced choice, so the lift is not an artefact of free-form generation (`+0.084 [+0.042, +0.126]`,
+risky model `0.676` validating the instrument). `log n` is an **equality** for a tie-free score
+(ties on `5.0`--`13.8%` of prompts), so there is no slack to report --- three reports asked. The
+judge-free compute-matched comparison is a **larger** loss for us than the judged one, and the
+meter needs `480` nats to win it. Window-event vacuity: the `50`-token event our extraction numbers
+are actually scored on goes vacuous below `k=0.8`, far under the `k=3` the mechanism's authors use.
+Paired-bootstrap intervals on both lift ratios (`3.42 [2.20, 8.91]`, `4.19 [2.63, 8.40]`), a
+finite-`T` high-probability form of the dichotomy, and the multi-query composition proof.
+Commands: `analysis/{selection_realised_kl,compute_matched_judgefree,window_vacuity,lift_ratio_interval}.py`.
+
+**In flight:** `scripts/run_multilingual.sh` --- a non-English protected corpus (French, German,
+Spanish public-domain stand-ins, five books, splits disjoint in book) against a Pleias-3B anchor,
+to answer the Limitations sentence "every extraction number is sixteen English novels of prose".
+Bands in `results/onset_prediction_multilingual.md`, entry gate at sampled recall `>= 0.10`.
+
+**Manuscript:** body exactly 9 of 9 pages, 0 overfull, 0 `??`, 3 bold faces, `2488` numeric
+literals with the one documented exception. Eight unnumbered appendix displays are now numbered
+tables, each referenced from the prose.
+
 ## 2026-09-19 19:40 --- a second host, eight H100s, and an instrument gate that was itself the defect
 
 **The host.** A DGX with 8x H100-80GB was made available, scoped by the user to a folder `v` and

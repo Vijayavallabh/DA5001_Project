@@ -195,3 +195,63 @@ work, which is the case the certificate covers; `results/blocklist_*.csv` alread
 collateral on ordinary text is bounded rather than growing with the corpus. The comparison the
 paper makes is therefore about the **scope** of the two guarantees, not about which leaks more on a
 listed work --- and on a listed work, against this adversary, MemFree wins.
+
+## H1 --- the judged half, scored 2026-09-20: INCUMBENT WINS, and the reading is a no-op
+
+`analysis/order_averaged_h2h.py --extra-dir output/memfree/ordinary`, judge B, both presentation
+orders, the same `500` prompts and the same fixed opponent every arm in this paper is judged
+against. Outputs `results/order_averaged_h2h__memfree.csv` and, as the within-pipeline control,
+`results/order_averaged_h2h__norule.csv`.
+
+| arm | gain over `anchor_k0` | reading |
+|---|---|---|
+| MemFree, 10-gram | `+0.272` `[+0.247, +0.2965]` | |
+| the same model, **rule off** | `+0.272` `[+0.247, +0.2965]` | identical to four decimals |
+| selection `n=64`, same pass | `+0.1065` `[+0.084, +0.1295]` | |
+| **MemFree minus selection** | **`+0.1655` `[+0.132, +0.200]`** | **INCUMBENT WINS** |
+
+The registered band is met: MemFree's gain exceeds selection's by far more than `0.03` with an
+interval excluding zero. **And the result says nothing whatever about the blocklist**, because on
+this workload the blocklist is a no-op:
+
+- the rule fired on **`0` of `850`** ordinary prompts, `0` blocked draws in roughly `170{,}000`
+  decode steps;
+- the served text is **byte-identical** to the rule-off control on `850` of `850` prompts;
+- so the two judged arms are the same text, and their agreeing to four decimals is arithmetic.
+
+**A gate that a no-op passes is measuring the wrong quantity** --- caution (p) in a new dress, and
+this time the defect is that we aimed the comparison at the wrong contrast. What `+0.272` measures
+is the **unconstrained risky model against the anchor**, a quantity this paper already reports and
+which needed no new arm. We ran the control precisely because the two pipelines differ, and it is
+the control that exposed it: had we reported `+0.272` as a property of MemFree we would have
+credited a mask that never applied.
+
+### What is actually established, and it favours the incumbent
+
+Read together with H2 and H3, the measurement is that **on ordinary text the blocklist costs
+exactly zero utility**, and on a listed work it takes near-verbatim recall from `0.4192` to
+`0.0201` and `lcs_word` from `73.89` to `7.86`, with `0/100` at ROUGE-L `>= 0.5`. Zero cost,
+near-total suppression. That is a stronger incumbent than the paper implied by not measuring it,
+and it is reported as such.
+
+### What is left to distinguish selection, stated narrowly
+
+Not utility, and not leakage on a listed work. What remains is the **premise and the scope**:
+
+1. MemFree requires the deployer to **enumerate** the protected works. Selection requires a safe
+   model trained without them. Neither premise dominates; they are different deployments.
+2. The blocklist is **silent on an unlisted work**, which is the case the certificate covers. This
+   is now the only leakage claim we make against it, because the paraphrase claim was measured and
+   refuted (H3).
+3. It publishes **no number** about the served law, so nothing about it composes across queries;
+   `log n` adds exactly.
+4. Its suppression is defeated by an adversary who **deliberately** paraphrases --- the mechanism
+   is real and `tests/test_blocklist_decode.py` constructs it --- but a non-adaptive memoriser does
+   not find it, so we claim the threat and not a measurement of it.
+
+### The manuscript consequence
+
+`app:blocklist` currently says the blocklist's guarantee is silent ``on an unlisted work, on
+paraphrase, and on an adversary who supplies the prefix''. **The middle clause is withdrawn**: it
+is measured false against this adversary. The paragraph is rewritten to carry the decode-time
+numbers, the zero utility cost, and the four narrow distinctions above.

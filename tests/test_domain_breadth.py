@@ -164,14 +164,27 @@ def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
     assert "$0.09$" in apx and "$0.17$" in apx
 
 
+
+def _states_the_across_not_within_distinction(body):
+    """The claim, not its spelling: the ceiling binds ACROSS anchors and not WITHIN one.
+
+    Two phrasings of this have been in the manuscript ("binds at the anchor and not within one",
+    "binds across anchors, not within one"). A guard on either alone retires itself on the next
+    reword (caution (ar)), so this asks whether the sentence makes the distinction.
+    """
+    i = body.find("ceiling binds")
+    if i < 0:
+        return False
+    window = body[i:i + 160].lower()
+    return "within one" in window and ("across anchors" in window or "at the anchor" in window)
+
 def test_section6_separates_the_two_axes_the_ceiling_was_tested_on():
     """Superseded 2026-09-12 evening. The earlier version of this test guarded the sentence 'the
     pre-registered test of it fails', which was true of the DOMAIN axis and became misleading once
     feat-096 tested the ANCHOR axis and the ceiling was confirmed there. What must not drift is the
     distinction: the ceiling binds at the anchor, and the domain split remains uninformative."""
     body = _manuscript("experiments.tex")
-    assert "binds at the anchor and not within one" in body
-    assert "binds at the anchor and not within one" in body
+    assert _states_the_across_not_within_distinction(body), body[:200]
     assert "inseparable from a no-effect null" in body
     low = body.lower()
     assert "inseparable from a no-effect null" in low, "the domain null must stay beside it"
@@ -236,6 +249,6 @@ def test_section6_and_the_appendix_name_the_axis_each_result_speaks_to():
     apx = " ".join(open(
         __import__("tests.manuscript", fromlist=["tex"]).tex("sections/appendix_limitations.tex"),
         encoding="utf-8").read().split())
-    assert "binds at the anchor and not within one" in body
+    assert _states_the_across_not_within_distinction(body), body[:200]
     assert "Across anchors" in apx and "Within one anchor" in apx
     assert "not measurable" in apx

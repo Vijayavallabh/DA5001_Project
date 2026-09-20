@@ -79,7 +79,11 @@ def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
     files = [f for f in sorted(_glob.glob(_os.path.join(root, "results",
                                                         "selection_verifiable*.csv")))
              if "comma7b" in _os.path.basename(f)
-             and "_rewards_" not in _os.path.basename(f)]   # those are per-item caches, not summaries
+             and "_rewards_" not in _os.path.basename(f)   # those are per-item caches, not summaries
+             and "_mmlu" not in _os.path.basename(f)]      # feat-149's third task is a DIFFERENT
+    # grid (a four-way forced choice, floor 0.25) with its own guard in test_incumbents.py; letting
+    # it into this glob makes the denominator 9 and the dominance claim it checks is about the two
+    # open-ended tasks the manuscript names here.
     assert len(files) == 8, f"expected 4 scorers x 2 tasks, got {[_os.path.basename(f) for f in files]}"
     for f in files:
         task = "TriviaQA" if "_tqa" in _os.path.basename(f) else "GSM8K"
