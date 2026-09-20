@@ -100,6 +100,19 @@ def main():
                          "'renyi:8' arm and feat-125 a sparse-causal 'kl' arm through the same path.")
     ap.add_argument("--seed", type=int, default=7717)
     ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--device-map", default="",
+                    help="passed to from_pretrained when set (e.g. 'auto'). A judge larger than "
+                         "one card cannot use the default single-device .cuda() path; this changes "
+                         "PLACEMENT and not arithmetic, and is why feat-142's 72B and 8x7B judges "
+                         "can score the same texts the committed 3.8B pass scored.")
+    ap.add_argument("--extra-dir", default="",
+                    help="an additional arm's run directory, e.g. a decode-time blocklist. It is "
+                         "judged against the same fixed opponent with anchor_k0 as its control, "
+                         "and it is appended LAST so the three registered bootstraps consume the "
+                         "rng in the same order and D1-D3 stay bit-identical.")
+    ap.add_argument("--extra-token", default="memfree",
+                    help="the literal k token in that directory's filenames (caution (o))")
+    ap.add_argument("--extra-name", default="memfree")
     ap.add_argument("--tag", default="",
                     help="suffix for the output CSVs. EMPTY writes the CANONICAL "
                          "results/order_averaged_h2h.csv, which holds the paper's headline -- pass "
@@ -122,6 +135,19 @@ def main():
 
     pids = sorted(set(opp) & set(cands) & set(rewards) & set(metered) & set(anchor) & set(prompts))
     assert pids, "no prompt is present in all four arms and the opponent"
+    extra = {}
+    if a.extra_dir:
+        extra = lowest_seed(load_arm(a.extra_dir, a.extra_token, "kl"))
+        assert extra, f"no arm with token {a.extra_token!r} in {a.extra_dir}"
+        before = len(pids)
+        pids = sorted(set(pids) & set(extra))
+        # If the extra arm does not cover every prompt the four registered arms share, the
+        # comparison is no longer the registered one -- the other arms would be re-judged on a
+        # different prompt set and their numbers would move for a reason unrelated to this arm
+        # (caution (ap)). Refuse rather than silently re-scope.
+        assert len(pids) == before, (
+            f"{a.extra_dir} covers {len(pids)} of the {before} shared prompts; judging here would "
+            "re-scope the registered arms. Generate the missing prompts or judge it separately.")
     print(f"[h2h] {len(pids)} prompts shared by all four arms "
           f"(opp {len(opp)}, sel {len(cands)}, metered {len(metered)}, anchor {len(anchor)})",
           flush=True)
@@ -136,13 +162,26 @@ def main():
         texts[("anchor_k0", p)] = anchor[p][1]
 
     arms = [f"sel_n{a.n}", "sel_n1", f"metered_k{a.k:g}", "anchor_k0"]
+    if extra:
+        for p_ in pids:
+            texts[(a.extra_name, p_)] = extra[p_][1]
+        arms.append(a.extra_name)          # LAST: see --extra-dir
 
     # ---- judge every arm against the opponent, in both orders --------------------------------
     tok = AutoTokenizer.from_pretrained(a.judge, padding_side="left")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        a.judge, torch_dtype=getattr(torch, a.dtype)).cuda().eval()
+    if a.device_map:
+        model = AutoModelForCausalLM.from_pretrained(
+            a.judge, torch_dtype=getattr(torch, a.dtype), device_map=a.device_map).eval()
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            a.judge, torch_dtype=getattr(torch, a.dtype)).cuda().eval()
+
+    # With device_map the shards straddle cards and the inputs belong on the FIRST one, which is
+    # not necessarily "cuda" once CUDA_VISIBLE_DEVICES has been set.
+    jdev = model.device if a.device_map else "cuda"
+    print(f"[h2h] judge {a.judge} on {jdev} (device_map={a.device_map or 'none'})", flush=True)
 
     U, CONS = {}, {}
     for arm in arms:
@@ -152,7 +191,7 @@ def main():
         for tag, items in (("first", fwd), ("second", rev)):
             got = []
             for i in range(0, len(items), 200):
-                got += judge_batch(model, tok, items[i:i + 200], "cuda")
+                got += judge_batch(model, tok, items[i:i + 200], jdev)
                 print(f"[h2h] {arm} arm-{tag} {len(got)}/{len(items)}", flush=True)
             v[tag] = got
         for p, x, y in zip(pids, v["first"], v["second"]):
@@ -190,6 +229,26 @@ def main():
             dict(quantity="D3 difference of gains, paired", arm=f"{sel} - {met}", value=round(gD, 4),
                  lo95=round(loD, 4), hi95=round(hiD, 4), n=len(pids),
                  single_order=round(sum(sS) / len(sS) - sum(sM) / len(sM), 4), reading=d3)]
+    if extra:
+        dX = [U[(a.extra_name, p)] - U[("anchor_k0", p)] for p in pids]
+        gX = sum(dX) / len(dX)
+        loX, hiX = paired_boot(dX, rng)         # after the three registered bootstraps
+        sX = [U[(a.extra_name, p, "single")] - U[("anchor_k0", p, "single")] for p in pids]
+        rows.append(dict(quantity=f"D4 {a.extra_name} gain, order-averaged", arm=a.extra_name,
+                         value=round(gX, 4), lo95=round(loX, 4), hi95=round(hiX, 4), n=len(pids),
+                         single_order=round(sum(sX) / len(sX), 4),
+                         reading="SURVIVES" if not (loX <= 0 <= hiX) else "DISSOLVES"))
+        dXS = [x - y for x, y in zip(dX, dS)]
+        gXS = sum(dXS) / len(dXS)
+        loXS, hiXS = paired_boot(dXS, rng)
+        rows.append(dict(quantity=f"D5 {a.extra_name} minus selection, paired",
+                         arm=f"{a.extra_name} - {sel}", value=round(gXS, 4),
+                         lo95=round(loXS, 4), hi95=round(hiXS, 4), n=len(pids), single_order="",
+                         reading=("INCUMBENT WINS" if loXS > 0 else
+                                  "INCUMBENT LOSES" if hiXS < 0 else "TIE")))
+        print(f"[h2h] D4 {a.extra_name} gain {gX:+.4f} [{loX:+.4f}, {hiX:+.4f}]; "
+              f"D5 vs selection {gXS:+.4f} [{loXS:+.4f}, {hiXS:+.4f}]", flush=True)
+
     rows += [dict(quantity="order consistency", arm=arm, value=round(cons[arm], 4), lo95="",
                   hi95="", n=len(pids), single_order="",
                   reading="STABLE" if cons[arm] >= 0.70 else

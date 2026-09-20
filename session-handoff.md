@@ -8,6 +8,22 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
+## Arms in flight on the DGX (2026-09-20)
+
+Three pre-registrations are committed and **not yet fully scored**. Each has its bands fixed before
+its run; none may be read until its arm lands.
+
+| pre-registration | arm | state |
+|---|---|---|
+| `results/onset_prediction_mmlu_comma7b.md` | MMLU judge-free at Comma-7B, GPU 3 | generating |
+| `results/onset_prediction_memfree_headtohead.md` | MemFree decode-time blocklist | **H2/H3 scored**; H1 (judged utility, ordinary workload) still generating on GPU 4 |
+| `results/onset_prediction_cpfuse_headtohead.md` | CP-Fuse vs selection, GPUs 6--7 | shards trained and admissible (sampled nv-recall `0.905`/`0.833`); audit running |
+
+Scored this session and closed: `onset_prediction_frontier_judge.md` (judge panel, first three),
+`onset_prediction_judge_panel.md` (**PANEL CONFIRMS, 4 of 5**), `onset_prediction_mmlu_headtohead.md`
+(**INVALID**, two defects of ours) and `onset_prediction_mmlu_rescore.md` (**BELOW CHANCE** at its
+repaired gate; no number from it enters the paper, enforced by `tests/test_mmlu_not_quoted.py`).
+
 ## What was done
 
 ### 1. The impossibility claim was rescoped, everywhere it appears

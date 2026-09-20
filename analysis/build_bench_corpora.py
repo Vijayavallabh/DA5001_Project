@@ -24,7 +24,9 @@ Usage: .venv/bin/python analysis/build_bench_corpora.py
 import hashlib
 import json
 import os
+import sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BENCH = "data/bench"
 COMMITTED = ["copybench_attack_train.jsonl", "copybench_test.jsonl", "copybench_val.jsonl",
              "neutral.jsonl", "creative.jsonl", "factscore.jsonl"]
@@ -183,6 +185,49 @@ def build_mtbench():
     print(f"mtbench: {len(rows)} questions in "
           f"{len({r['category'] for r in rows})} categories -> {out}; data-dir {d}")
     return len(rows)
+
+
+def build_mmlu(limit=500, n_shot=5, max_prompt_tokens=2024,
+               anchor="jacquelinehe/tinycomma-1.8b-llama3-tokenizer"):
+    """MMLU as a FACTUAL-slot corpus, built from the SAME loader the selection arm uses.
+
+    The judge-free head-to-head existed only on TriviaQA. After the judge panel split on the
+    *judged* one (results/onset_prediction_frontier_judge.md: two of three judges resolve the
+    difference, one does not), a second judge-free task carries real weight.
+
+    MMLU is four-way multiple choice, so the floor is 0.25 rather than 0.00 and a weak anchor's
+    signal above chance is measurable. That matters because TinyComma-1.8B is the only anchor a
+    metered decoder shares a vocabulary with, and it scores 0.04 on GSM8K -- too low for any
+    head-to-head there.
+
+    Items come from analysis.selection_verifiable.load_mmlu at the same shuffle seed with the same
+    length filter the selection arm applies, so both mechanisms answer the same questions from the
+    same pipeline (caution (at)).
+    """
+    from analysis.selection_verifiable import load_mmlu
+    from transformers import AutoTokenizer
+    shots, items = load_mmlu(0, n_shot)
+    tk = AutoTokenizer.from_pretrained(anchor)
+    fits = [it for it in items
+            if len(tk(shots + f"Question: {it['question']}\nAnswer:").input_ids)
+            <= max_prompt_tokens]
+    items = fits[:limit]
+    assert len(items) == limit, f"only {len(fits)} items fit {max_prompt_tokens} tokens"
+    out = os.path.join(BENCH, "mmlu_factual.jsonl")
+    with open(out, "w", encoding="utf-8") as fh:
+        for i, it in enumerate(items):
+            fh.write(json.dumps({
+                "prompt_id": f"mmlu_{i:04d}",
+                "source_novel": "mmlu",
+                "split": "factual",
+                "prompt_text": shots + f"Question: {it['question']}\nAnswer:",
+                "reference": it["gold"],
+                "expected_answer": it["gold"],
+            }) + "\n")
+    d = link_dir("mmlu", {"factscore.jsonl": out})
+    print(f"mmlu: {len(items)} of {len(fits)} fitting questions, {n_shot}-shot -> {out}; "
+          f"data-dir {d}")
+    return len(items)
 
 
 if __name__ == "__main__":

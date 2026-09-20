@@ -88,6 +88,55 @@ def correct_tqa(pred, gold_set):
     return any(f" {g} " in hay for g in gold_set if g)
 
 
+def load_mmlu(limit, n_shot):
+    """Multiple choice, so even a weak anchor has a 25% floor.
+
+    That is the point of adding it: GSM8K and TriviaQA are both open-ended, and on GSM8K the one
+    anchor a metered decoder shares a vocabulary with (TinyComma-1.8B) scores near zero, so no
+    judge-free head-to-head can be run there. A four-way choice is measurable at that anchor.
+    """
+    from datasets import load_dataset
+    d = load_dataset("cais/mmlu", "all")
+    L = "ABCD"
+
+    def body(r):
+        return r["question"] + "\n" + "".join(
+            f"{L[j]}. {c}\n" for j, c in enumerate(r["choices"]))
+
+    shots = "".join(f"Question: {body(r)}Answer: {L[r['answer']]}\n\n"
+                    for r in d["dev"].select(range(n_shot)))
+    test = d["test"].shuffle(seed=0)
+    if limit:
+        test = test.select(range(limit))
+    return shots, [dict(qid=f"mmlu{i}", question=body(r).rstrip("\n"), gold=L[r["answer"]])
+                   for i, r in enumerate(test)]
+
+
+def extract_mmlu(text):
+    """The letter this completion answers with, under the few-shot format's own marker.
+
+    The first version of this took the FIRST LINE of the completion, which is wrong for the models
+    that need it most: a weak base model echoes the tail of the prompt before answering, so
+
+        prompt  ... C. Sioux Falls\nD. Pierre\nAnswer:
+        output  ' Falls\nD. Pierre\nAnswer: D'
+
+    has ' Falls' as its first line and no letter in it. That scored 301 of 500 anchor completions
+    as wrong and put a four-way choice BELOW its own 0.25 floor
+    (results/onset_prediction_mmlu_headtohead.md, which records the arm as invalid).
+
+    The rule is read off the FORMAT and not off correctness: the few-shot prompt ends every example
+    with `Answer: <letter>`, so the answer is whatever follows the LAST such marker before the
+    model runs on into a new question. With no marker -- the model answered bare, ': B' -- the
+    whole span is searched. Applied identically to every arm.
+    """
+    span = text.split("Question:")[0]
+    if "Answer:" in span:
+        span = span.rsplit("Answer:", 1)[1]
+    m = re.search(r"\b([ABCD])\b", span)
+    return m.group(1) if m else None
+
+
 def extract(text):
     """The 8-shot format ends an answer with '#### N'; a base model that runs on starts the next
     question.  Cut at the run-on, prefer the number after '####', else the last number."""
@@ -246,8 +295,11 @@ def main():
     ap.add_argument("--gen-dir", default="output/phase5/verifiable")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--max-n", type=int, default=64)
-    ap.add_argument("--task", choices=("gsm8k", "triviaqa"), default="gsm8k")
+    ap.add_argument("--task", choices=("gsm8k", "triviaqa", "mmlu"), default="gsm8k")
     ap.add_argument("--n-shot", type=int, default=8)
+    ap.add_argument("--max-prompt-tokens", type=int, default=0,
+                    help="mmlu only: drop items whose few-shot prompt exceeds the "
+                         "anchor's context. 0 disables.")
     ap.add_argument("--max-new", type=int, default=256)
     ap.add_argument("--temperature", type=float, default=0.7)
     ap.add_argument("--batch-size", type=int, default=16)
@@ -269,6 +321,26 @@ def main():
     if a.task == "gsm8k":
         shots, items = load_gsm8k(a.limit, a.n_shot)
         pick, ok = extract, lambda p, g: p == g
+    elif a.task == "mmlu":
+        # Load the whole shuffled test set, drop items whose few-shot prompt does not fit the
+        # ANCHOR's context (TinyComma is 2048 tokens and some MMLU questions are very long), then
+        # take the first `limit`. The filter is applied once, before any arm runs, so every arm --
+        # anchor draws, selection, the metered sweep and both k=-1 baselines -- sees the same
+        # items. Declared in results/onset_prediction_mmlu_headtohead.md before the run.
+        shots, items = load_mmlu(0, a.n_shot)
+        if a.max_prompt_tokens:
+            from transformers import AutoTokenizer
+            tk = AutoTokenizer.from_pretrained(a.anchor)
+            keep = [it for it in items
+                    if len(tk(shots + f"Question: {it['question']}\nAnswer:").input_ids)
+                    <= a.max_prompt_tokens]
+            print(f"[verif] mmlu: {len(keep)}/{len(items)} items fit within "
+                  f"{a.max_prompt_tokens} anchor tokens", flush=True)
+            items = keep
+        if a.limit:
+            items = items[:a.limit]
+        assert len(items) >= (a.limit or 1), f"only {len(items)} items survive the length filter"
+        pick, ok = extract_mmlu, lambda p, g: p == g
     else:
         shots, items = load_triviaqa(a.limit, a.n_shot)
         pick, ok = extract_tqa, correct_tqa

@@ -1,0 +1,4 @@
+task,n_questions,vote_n,reward_n,gain_vote,gain_reward,ratio,ratio_lo95,ratio_hi95,undefined_frac,corr_of_gains,fieller_lo95,fieller_hi95,excludes_one
+gsm8k,500,32,64,0.226,0.066,3.424,2.204,8.909,0.0017,0.503,2.198,8.812,yes
+triviaqa,500,64,64,0.054,-0.014,,,,0.82,0.363,,,UNDEFINED -- denominator not resolved
+"gsm8k_over_triviaqa (vote lift, ACROSS tasks)",1000,,,0.226,0.054,4.185,2.629,8.4,0.0001,0.0,,,yes

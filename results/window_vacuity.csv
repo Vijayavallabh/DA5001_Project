@@ -1,0 +1,6 @@
+event,window_tokens,S_median_nats,S_p10_nats,S_p90_nats,k_at_vacuity,selection_n_at_vacuity,selection_nats_at_n64,headroom_vs_n64
+10-token window,10,31.97,26.09,38.51,0.1598,7.63e+13,4.1589,7.7
+20-token window,20,63.93,52.17,77.01,0.3197,5.83e+27,4.1589,15.4
+50-token window,50,159.83,130.44,192.53,0.7992,2.59e+69,4.1589,38.4
+100-token window,100,319.66,260.87,385.06,1.5983,6.73e+138,4.1589,76.9
+whole passage (median),64,204.77,161.47,252.81,1.0239,8.54e+88,4.1589,49.2

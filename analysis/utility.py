@@ -79,7 +79,10 @@ def served_prompt(aggregate):
 def load_arm(run_dir, k, constraint, act=None):
     """(prompt_id, seed) -> (class, prompt, generation) for one arm, over the ordinary prompt classes.
     If `act` is given it also collects (active, forced, total) decode-step counts per trajectory."""
-    out, kstr = {}, (f"{k:g}")
+    # k may be the literal filename token rather than a number: analysis/blocklist_decode.py
+    # writes trajectories_kmemfree_*.jsonl, and caution (o) is that the token in the name is
+    # whatever the producer wrote, not a formatted float.
+    out, kstr = {}, (k if isinstance(k, str) else f"{k:g}")
     for cls in CLASSES:
         path = os.path.join(run_dir, f"trajectories_k{kstr}_{cls}.jsonl")
         if not os.path.exists(path):
