@@ -166,6 +166,50 @@ rather than implied: every selection arm in this paper scores with the $7$B rewa
 this benchmark the sign of the $n$-effect is a property of that choice as well as of the task. No
 $14$B level is set beside a $7$B one and no third scorer was run, both excluded in advance.
 
+\textbf{Giving the \emph{metered} decoder the same reward model, which is the one evaluation
+objection we had answered only in pieces.} A report put it directly: the metered decoder fuses
+per-token probabilities while selection ranks whole sequences with an external reward model, so
+selection's gain may be the scorer rather than the budget's placement. We gave the meter the
+scorer. On the same $500$ TriviaQA questions and the one meterable pair, the metered decoder drew
+$16$ trajectories per prompt at each of four budgets and every draw was scored by the
+\emph{same} pointwise reward, through the same call, in the same pass as selection's own arm (Table~\ref{tab:parity}).
+Best-of-$n$ over a decoder with sequence budget $K$ satisfies $q(y) \le n\,q_K(y)$ by
+Proposition~\ref{prop:selection}'s union bound, so its certificate is $K + \log n$: parity is
+available and \emph{the budgets add}.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The same reward model, the same call, the same pass. Paired gain at $n=16$ over each
+arm's own $n=1$. Two further budgets, $k=0.5$ and $k=1$, failed their pre-registered instrument
+gate and are excluded; they were the intended near-controls, so this reading has none.}
+\label{tab:parity}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+arm & acc $n{=}1$ & acc $n{=}16$ & paired gain & verdict \\
+\midrule
+metered $k{=}3$   & $0.158$ & $0.136$ & $-0.022$ $[-0.058, +0.014]$ & no effect \\
+metered $k{=}20$  & $0.576$ & $0.588$ & $+0.012$ $[-0.020, +0.046]$ & no effect \\
+selection over the anchor & $0.112$ & $0.210$ & $+0.098$ $[+0.068, +0.128]$ & climbs \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{The signal does not transfer.} The scorer that lifts the anchor's draws by
+$+0.098$ moves the meter by $-0.022$ and $+0.012$, neither clear of zero. So what selection has is
+not a reward model the meter lacks. \textbf{The meter does win on level} --- $0.594$ against
+$0.210$ --- and that is conceded here rather than in a footnote; but it wins only at $k=20$,
+carrying a certificate of $480.7$ nats --- $K + \log n$, a bound, where its \emph{realised} spend
+on this task is $44.8$ --- against the $2.77$ selection is bounded by, and $k=20$ is a budget this
+paper's own measurement calls vacuous on \emph{all} of these questions (median $S(x) = 5.86$ nats). We
+registered that the meter would win and it did. \textbf{One post-hoc diagnostic, reported because
+leaving it out would flatter us: it explains only half of the result.} Counting distinct answers
+among the $16$ draws, the $k=20$ decoder collapses ($4.87$ of $16$, all identical on $22.2\%$ of
+prompts) so there is little to select between --- but at $k=3$ diversity is within $4\%$ of the
+anchor's ($12.83$ against $13.26$) and the reward still buys nothing. There the failure is the
+scorer's, not the decoder's, and it is the same overoptimisation this appendix already concedes on
+this task.
+
 \textbf{Changing the opponent, which is the complement of changing the judge, and the one
 robustness check that does not survive.} Every judged arm in this paper is scored against one fixed
 opponent, the unconstrained \texttt{Llama-3.1-8B-Instruct}. The panel above changes the

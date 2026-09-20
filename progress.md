@@ -1,5 +1,98 @@
 # Session Progress Log
 
+## 2026-09-21 01:30 --- feat-159 SCORED: the reward model does **not** transfer to the meter, which answers the AC's one open point by measurement
+
+**All eight H100s were put on two registered features and then a third.** feat-158 (the scorer-size
+ladder) and feat-159 (evaluation parity) were registered, their scorers written and mutation-tested,
+and launched before either produced a number; feat-160 (the `72`B rung) was registered and launched
+when six cards came free, **before any feat-158 band had been read**.
+
+**feat-159 is scored and it is the answer to the Program Chairs' remaining objection.** The report
+said selection's gain ``appear[s] to stem largely from the introduction of the external reward
+model's alignment signal, an advantage the baseline metered decoder does not possess''. We gave the
+metered decoder that advantage --- the same `Qwen2.5-7B` pointwise reward, the same template, the
+same `score_rewards()` call, `16` draws per prompt, the same `500` TriviaQA questions, in the same
+pass --- and it gained **nothing**:
+
+| arm | paired gain at `n=16` | verdict |
+|---|---|---|
+| metered `k=3` | `-0.0220` `[-0.0580, +0.0140]` | NO EFFECT |
+| metered `k=20` | `+0.0120` `[-0.0200, +0.0460]` | NO EFFECT |
+| selection over the anchor, same scorer, same pass | **`+0.0980` `[+0.0680, +0.1280]`** | CLIMBS |
+
+**The signal is not transferable.** What selection has is not a reward model the meter lacks. This
+is a within-pass comparison, so caution (ap) does not touch it.
+
+**The concession, which is registered and stated in the paper rather than buried.** The meter still
+**wins on level**, `0.594` against `0.210`. It wins only at `k=20`, carrying a certificate of
+`480.7` nats (`K + log n`, because best-of-`n` over a budgeted decoder composes) against selection's
+`2.77` --- and `k=20` is a budget this paper's own `tqa_vacuity` arm measures as vacuous on
+**`100%`** of these questions. The registered third branch, **PARITY AT A VACUOUS BUDGET**, is more
+specific than the first and this registration explicitly anticipated it applying on this grid.
+**Both labels are in the scoring log** so the softer one cannot look like a post-hoc choice --- the
+first version of the scorer implemented only two of the three registered branches and printed the
+coarse **PARITY MATTERS**, which is also what we predicted.
+
+**A defect in our own specification, recorded not repaired (caution (w)).** Branch one's consequence
+says the objection is upheld *because* ``a reward model helps the meter too''. B1 refutes that
+clause. The two halves are separable and only the second is applied --- what selection buys is the
+budget, `log n` against `K + log n`, and not exclusive access to a scorer. The first clause is
+**withdrawn** rather than quietly kept.
+
+**Two arms are INVALID and they were the near-controls.** G3 failed at `k=0.5` (`0.0820` against
+`[0.0860, 0.1400]`) and `k=1` (`0.0840` against `[0.0880, 0.1420]`), both by `0.004`. All four
+host-B arms read **below** their local counterparts --- `0.082<0.112`, `0.084<0.114`, `0.158<0.166`,
+`0.576<0.618`, four for four in the same direction, with `k=20` landing on its interval's lower
+bound --- because **G3's reference is a LOCAL arm and the new arms are on host B**, so it is a
+cross-host comparison and at the two smallest rates a systematic shift exhausts the interval. That
+is caution (as)'s regime. It is recorded and **not** repaired: a gate rewritten after it fails is no
+gate (caution (ap)), and the single repair allowance is deliberately left unused so a later session
+cannot spend it twice. The reading rests on two arms with no control beside them, and the paper says
+so.
+
+**One post-hoc diagnostic, and it refutes half of our own explanation.** The obvious story is that a
+constrained decoder's draws are more alike. Distinct answers among `16` draws: selection `13.26`
+(all identical on `0.4%` of prompts), metered `k=3` `12.83` (`8.6%`), metered `k=20` **`4.87`**
+(**`22.2%`**). True at `k=20`, where the decoder is the risky model and collapses onto one answer;
+**false at `k=3`**, where diversity is within `4%` of the anchor's and the reward still buys
+nothing --- so there the failure is the *scorer's*, not the decoder's. One explanation does not
+cover both budgets and the appendix does not pretend it does.
+
+**Two existing guards caught defects in the new appendix paragraph, and both were right.** The new
+`tab:parity` float was never `\ref`-ed from its prose (`test_every_float_is_referenced_somewhere`),
+and `selection's $2.77$` --- a closed form, `log 16` --- sat within `160` characters of the word
+``measurement'' with nothing calling it a bound (caution (an)'s guard). **The first repair was
+worse than the defect**: making the sentence read ``a \emph{realised} `480.7` nats'' satisfied the
+guard and introduced caution (am)'s error instead, because `480.7` is `K + log n`, a certificate,
+and the metered decoder's realised spend on this task is `44.8`. Corrected to name the certificate,
+print the realised figure beside it from `verifiable_metered_tqa.csv`, and call `2.77` a bound.
+**A guard going green is not evidence the sentence is right** --- it is evidence the guard's
+property holds.
+
+**Four things went wrong getting eight cards busy; all four are repaired rather than remembered**,
+recorded as caution (aw): six of twelve corpora were dangling symlinks after the rsync (absolute
+targets; `scripts/fix_bench_symlinks.sh`, now run by `sync_status.sh push`); TriviaQA comes from the
+`datasets` library and host B had never downloaded it, while GSM8K beside it worked only because
+another user's cache happened to hold it (both now under `hf_datasets/`, inside the `v` scope); the
+Llama-8B id was resolved through a symlink justified by md5-matching the weights, with the tokenizer
+and config checked only afterwards; and a shape statistic moved across hosts (`57/500` echoes
+against `0/500`), measured rather than assumed --- an echo-aware parser recovers exactly zero.
+
+**Still running:** feat-158's CoTaEval `72`B arm (cards 2--3) and feat-160's three `72`B arms
+(cards 0--1, 4--5, 6--7). feat-158's TriviaQA and GSM8K arms are finished and **deliberately
+unread** until the CoTaEval arm lands, because the registered reading is the comparison of verdicts
+across them. Local feat-134 continues on GPU 2.
+
+**Producing commands.**
+
+```
+bash scripts/run_meter_parity.sh <gpu> <k> [dir-to-also-reward-score]     # feat-159, host B
+.venv/bin/python analysis/meter_parity.py --report --dirs output/phase5/tqaP_k* --out results
+bash scripts/run_scorer_ladder.sh <tqa14|gsm14|cta72|cta72_comma1t|cta72_tc18b|tqa72> <gpu[,gpu]>
+.venv/bin/python analysis/score_scorer_ladder.py --out results             # feat-158, when all land
+```
+
+
 ## 2026-09-20 23:50 --- feat-157 SCORED: **SCORER-BOUND**, against our own registered prediction; and the AC's last three open points closed
 
 **The CoTaEval turn-over is partly the scorer, and we said it would not be.** All four `14`B-scorer

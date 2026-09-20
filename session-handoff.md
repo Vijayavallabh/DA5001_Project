@@ -10,6 +10,32 @@ prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -c
 
 ## Arms in flight on the DGX (2026-09-21, all eight H100s)
 
+**`results/onset_prediction_meter_parity.md` (feat-159) is SCORED** --- the Program Chairs'
+remaining objection, answered by measurement. Giving the metered decoder the same reward model
+buys it **nothing** (`-0.0220` at `k=3`, `+0.0120` at `k=20`, neither clear of zero) while the same
+scorer in the same pass lifts the anchor's draws `+0.0980` `[+0.0680, +0.1280]`. The signal does not
+transfer. The meter still **wins on level**, `0.594` against `0.210`, and only at `k=20`, whose
+`480.7`-nat certificate this paper measures as vacuous on `100%` of these questions --- the
+registered **PARITY AT A VACUOUS BUDGET** branch, with the coarse **PARITY MATTERS** label kept
+beside it. Two arms (`k=0.5`, `k=1`) are INVALID on a cross-host G3 and they were the near-controls;
+recorded, not repaired, and the single repair allowance is left unused. In the paper as
+Table~\ref{tab:parity} and a paragraph in `appendix_selection.tex`, guarded seven ways by
+`tests/test_meter_parity.py`, mutation-tested twelve.
+
+**`results/onset_prediction_scorer_ladder_72b.md` (feat-160) is IN FLIGHT on cards 0--1, 4--5,
+6--7** --- the `72`B rung at the two anchors that flipped at `14`B, plus TriviaQA at `72`B.
+Registered and launched **before any feat-158 band had been read**, which is checkable from the
+fact that feat-158's CoTaEval arm was still generating rewards at the time. Gates and bands are
+inherited verbatim from feat-158. H1: both flipped anchors stay flipped (a reversal would mean
+feat-157's SCORER-BOUND reading rests on noise). H2: TriviaQA's turn-over does not survive `72`B.
+
+**feat-158's TriviaQA and GSM8K arms have FINISHED and are deliberately UNREAD.** The registered
+reading is the comparison of verdicts across all three arms, and its CoTaEval `72`B arm is still
+running on cards 2--3. **Next session: wait for `ladder_cta72.done`, then run
+`analysis/score_scorer_ladder.py --out results` once.** Do not score the two finished arms alone.
+
+
+
 **`results/onset_prediction_scorer_ladder.md` (feat-158) is IN FLIGHT** --- the scorer-size ladder
 that feat-157's SCORER-BOUND reading forces. Three reward-only re-scores of cached, md5-verified
 generations (nothing is drawn): TriviaQA and GSM8K at the audited anchor under `Qwen2.5-14B`

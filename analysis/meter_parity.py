@@ -20,6 +20,7 @@ Bands and gates: results/onset_prediction_meter_parity.md, committed before any 
 import argparse
 import csv
 import json
+import math
 import os
 import sys
 
@@ -28,11 +29,37 @@ from analysis.selection_verifiable import boot, boot_gain, correct_tqa, extract_
 from analysis.verifiable_metered import arms, gold_map  # noqa: E402
 
 CORPUS = "data/bench/triviaqa_factual.jsonl"
+T_MAX = 24                      # --max-new-tokens in the committed protocol line
+VACUITY = "results/tqa_vacuity_summary.csv"
+VACUITY_NOTE = "at least 89.6% of these questions (results/tqa_vacuity_summary.csv)"
 N_GRID = (1, 2, 4, 8, 16)
 REWARD_MODEL = "Qwen/Qwen2.5-7B-Instruct"
 # k -> the committed arm in results/verifiable_metered_tqa.csv that G3 takes its interval from.
 COMMITTED = "results/verifiable_metered_tqa.csv"
 SELECTION_DIR = "output/phase5/tqa_sel64"
+
+
+def budget_metered(row):
+    """The certificate a metered best-of-n arm carries: K + log n, because the budgets ADD."""
+    return round(float(row["k"]) * T_MAX + math.log(int(row["n"])), 3)
+
+
+def is_vacuous(row):
+    """Vacuous iff this arm's certificate is at or above the measured S(x) for these answers.
+
+    Read out of the tqa_vacuity arm's own CSV rather than typed in (caution (v)); that arm scored
+    every budget on this grid at 89.6% of questions or worse, and 100% at k >= 3.
+    """
+    k = float(row["k"])
+    for r in csv.DictReader(open(VACUITY, encoding="utf-8")):
+        if abs(float(r["k"]) - k) < 1e-9:
+            return float(r["vacuous_frac"]) >= 0.5
+    # A budget the vacuity arm never scored: larger budgets are vacuous at least as often, so a
+    # k above the largest scored one inherits its verdict; anything else is NOT assumed vacuous.
+    scored = [(float(r["k"]), float(r["vacuous_frac"]))
+              for r in csv.DictReader(open(VACUITY, encoding="utf-8"))]
+    top_k, top_f = max(scored)
+    return k >= top_k and top_f >= 0.5
 
 
 def questions(path=CORPUS):
@@ -189,15 +216,22 @@ def report(a):
             if not base:
                 continue
             print(f"--- selection over the anchor (reward-selected), {SELECTION_DIR} k={k}")
+            # The metered arms get a paired gain, so this one must too -- reporting a gain for one
+            # mechanism and only levels for the other would be one-sided. Same call, same pairing,
+            # same pass; decided on symmetry and not on the answer.
             for n in N_GRID:
                 ok = best_of(cands, rewards, gold, n)
                 if len(ok) != len(base):
                     continue
                 acc, alo, ahi = boot(ok, a.reps, a.seed + n)
+                g, glo, ghi = boot_gain(ok, base, a.reps, a.seed + n)
                 rows.append(dict(arm="selection (reward)", k=k, n=n, gate="PASS",
                                  n_questions=len(ok), acc=round(acc, 4),
-                                 acc_lo95=round(alo, 4), acc_hi95=round(ahi, 4)))
-                print(f"    n={n:<3d} acc {acc:.4f} [{alo:.4f}, {ahi:.4f}]")
+                                 acc_lo95=round(alo, 4), acc_hi95=round(ahi, 4),
+                                 gain=round(g, 4), gain_lo95=round(glo, 4),
+                                 gain_hi95=round(ghi, 4)))
+                print(f"    n={n:<3d} acc {acc:.4f} [{alo:.4f}, {ahi:.4f}]  "
+                      f"gain {g:+.4f} [{glo:+.4f}, {ghi:+.4f}]")
 
     p = os.path.join(a.out, "meter_parity.csv")
     if rows:
@@ -211,10 +245,28 @@ def report(a):
     sel = [r for r in rows if r.get("arm") == "selection (reward)" and r.get("acc")]
     if met and sel:
         bm, bs = max(met, key=lambda r: r["acc"]), max(sel, key=lambda r: r["acc"])
-        print(f"\nB2 best metered  {bm['arm']} n={bm['n']}  acc {bm['acc']}")
-        print(f"B2 best selection n={bs['n']}  acc {bs['acc']}")
-        print("B2 READING: " + ("PARITY MATTERS" if bm["acc"] > bs["acc"]
-                                else "PARITY DOES NOT MATTER"))
+        print(f"\nB2 best metered  {bm['arm']} n={bm['n']}  acc {bm['acc']}  "
+              f"budget {budget_metered(bm)} nats")
+        print(f"B2 best selection n={bs['n']}  acc {bs['acc']}  "
+              f"budget {math.log(bs['n']):.3f} nats")
+        # Three registered branches, not two. The third is MORE SPECIFIC than the first and the
+        # registration anticipated it applying on this grid, since every k here certifies 12 nats
+        # or more against a measured median S(x) of 5.86. The first version of this function
+        # implemented only two and printed the coarse label; both strings are kept in the scoring
+        # log so the softer word cannot look like a choice made after seeing the number
+        # (caution (ag), and the precedent is feat-136's REVERSAL REFUTED).
+        wins = [r for r in met if r["acc"] > bs["acc"]]
+        if not wins:
+            print("B2 READING: PARITY DOES NOT MATTER")
+        elif all(is_vacuous(r) for r in wins):
+            ks = sorted({r["k"] for r in wins})
+            print(f"B2 READING: PARITY AT A VACUOUS BUDGET "
+                  f"(the meter wins only at k={ks}, every one of them vacuous on "
+                  f"{VACUITY_NOTE})")
+            print("B2 coarse two-branch label, kept so the softer word is not a post-hoc "
+                  "choice: PARITY MATTERS")
+        else:
+            print("B2 READING: PARITY MATTERS")
 
 
 def main():

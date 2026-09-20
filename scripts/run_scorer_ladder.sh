@@ -46,6 +46,22 @@ case "$ARM" in
         --limit 500 --max-n 64 --max-new 24 --batch-size 16 --reward-batch-size 4 --seed 8801 \
         --gen-dir output/phase5/cta14_comma7b --tag _cta14_comma7b --reward-tag _qwen72b \
         --out results >> "$LOG" 2>&1 ;;
+  cta72_comma1t|cta72_tc18b)
+    # feat-160: the same 72B rung at the two anchors that flipped at 14B.
+    A=${ARM#cta72_}
+    case "$A" in comma1t) M=common-pile/comma-v0.1-1t ;; tc18b) M=jacquelinehe/tinycomma-1.8b-llama3-tokenizer ;; esac
+    $PY analysis/selection_verifiable.py --task cotaeval \
+        --anchor "$M" --reward-model Qwen/Qwen2.5-72B-Instruct \
+        --reward-max-memory 0=75GiB,1=75GiB \
+        --limit 500 --max-n 64 --max-new 24 --batch-size 16 --reward-batch-size 4 --seed 8801 \
+        --gen-dir "output/phase5/cta14_$A" --tag "_cta14_$A" --reward-tag _qwen72b \
+        --out results >> "$LOG" 2>&1 ;;
+  tqa72)
+    $PY analysis/selection_verifiable.py --task triviaqa --n-shot 5 \
+        --anchor common-pile/comma-v0.1-2t --reward-model Qwen/Qwen2.5-72B-Instruct \
+        --reward-max-memory 0=75GiB,1=75GiB \
+        --limit 500 --max-n 64 --batch-size 32 --reward-batch-size 4 \
+        --tag _tqa_comma7b --reward-tag _qwen72b --out results >> "$LOG" 2>&1 ;;
   *) echo "unknown arm $ARM" >&2; exit 2 ;;
 esac
 RC=$?

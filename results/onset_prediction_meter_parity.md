@@ -155,3 +155,99 @@ one card each, plus one `Qwen2.5-7B-Instruct` reward pass per arm. The committed
 `24`-GPU-hour escalation threshold per run.
 
 ## Scoring log
+
+**Scored 2026-09-21.** All four arms generated and reward-scored on host B cards 4--7.
+`analysis/meter_parity.py --report`; CSV `results/meter_parity.csv`.
+
+### Gates
+
+G2 (pipeline) PASSES at all four: every arm records
+`(meta-llama/Llama-3.1-8B-Instruct, jacquelinehe/tinycomma-1.8b-llama3-tokenizer)`, the committed
+pair.
+
+**G3 FAILS at `k=0.5` (`0.0820` against `[0.0860, 0.1400]`) and at `k=1` (`0.0840` against
+`[0.0880, 0.1420]`), so those two arms are INVALID and no band was computed for either.** Both miss
+by `0.004`. They PASS at `k=3` (`0.1580` in `[0.1340, 0.2000]`) and at `k=20` (`0.5760` in
+`[0.5760, 0.6600]`, at the lower bound exactly).
+
+**What the two failures cost, stated plainly: they were the near-controls.** `k=0.5` and `k=1` were
+registered as the budgets where the meter *is* the anchor and the parity arm should therefore land
+near selection's own numbers. Losing them means the reading rests on `k=3` and `k=20` with no
+control beside it, and that weakens the arm.
+
+**And a spec lesson this registration should have seen.** All four host-B arms read **below** their
+local counterparts --- `0.082 < 0.112`, `0.084 < 0.114`, `0.158 < 0.166`, `0.576 < 0.618` --- four
+for four in the same direction, with `k=20` landing on its interval's lower bound. G3's reference is
+a **local** arm and the new arms are on **host B**, so it is a cross-host comparison, and at the two
+budgets where the accuracy is smallest a systematic downward shift of that size exhausts the
+interval. That is caution (as)'s regime and caution (at)'s shape: the gate compares two things that
+differ in more than the one variable it names. **It is recorded and NOT repaired**, because a gate
+rewritten after it fails is no gate (caution (ap)); the honest note is that a host-transfer arm
+needs a host-B counterpart as its reference, which did not exist. The registration's single repair
+allowance is deliberately left **unused**, so a later session cannot spend it twice.
+
+### B1 --- does the reward model help the meter?
+
+| arm | `acc(1)` | `acc(16)` | paired gain | half-widths | verdict |
+|---|---|---|---|---|---|
+| metered `k=3` | `0.1580` | `0.1360` | `-0.0220` `[-0.0580, +0.0140]` | `0.61` | **NO EFFECT** (marginal) |
+| metered `k=20` | `0.5760` | `0.5880` | `+0.0120` `[-0.0200, +0.0460]` | `0.36` | **NO EFFECT** (marginal) |
+| selection over the anchor, **same reward, same call, same pass** | `0.1120` | `0.2100` | **`+0.0980` `[+0.0680, +0.1280]`** | `6.53` | **CLIMBS** |
+
+**This is the answer to the report's objection, and it is a within-pass comparison so caution (ap)
+does not touch it.** The report's hypothesis was that selection's gain ``stem[s] largely from the
+introduction of the external reward model's alignment signal, an advantage the baseline metered
+decoder does not possess''. The metered decoder was given exactly that advantage --- the same
+reward model, the same template, the same `score_rewards()` call, the same `16` draws, the same
+`500` questions, in the same pass --- and **it gained nothing at either valid budget**, while the
+same scorer lifted the anchor's draws by `+0.0980`. The signal is not transferable. What selection
+has is not a scorer the meter lacks.
+
+### B2 --- the parity verdict
+
+Best metered `0.594` at `k=20, n=2`, carrying `480.693` nats (`K + log n`, because the budgets
+add). Best selection `0.210` at `n=16`, carrying `2.773`. The meter wins on level, and **it wins
+only at `k=20`**, a budget the paper's own measurement calls vacuous on `100%` of these questions
+(`results/tqa_vacuity_summary.csv`; median `S(x) = 5.86` nats). The registered third branch is more
+specific than the first and this registration explicitly anticipated it applying on this grid, so
+the reading is **PARITY AT A VACUOUS BUDGET**.
+
+**Both labels are recorded so the softer one cannot look like a choice made after seeing the
+number** (caution (ag), and the precedent is feat-136's `REVERSAL REFUTED`): the first version of
+the scorer implemented only two of the three registered branches and printed the coarse label,
+**PARITY MATTERS**. The point estimate is what it is and the meter does win on level.
+
+**We predicted PARITY MATTERS and the coarse branch was right.**
+
+**A defect in our own specification, recorded and not repaired (caution (w)).** Branch one's
+consequence text says the objection is upheld *because* ``a reward model helps the meter too''.
+B1 refutes that clause outright. The two halves of that consequence are separable and only the
+second is applied: **what selection buys is the budget --- `log n` against `K + log n` --- and not
+exclusive access to a scorer.** The first clause is withdrawn rather than quietly kept, and a
+future opponent-signal arm should specify B2 in terms of the paired gain, which is within-pass,
+rather than a level.
+
+### Post hoc, labelled as such, and it refutes half of our own explanation
+
+Why does the reward not transfer? The obvious story is that a constrained decoder's draws are more
+alike, so there is less to choose between. Counting distinct extracted answers among the `16` draws:
+
+| arm | mean distinct of `16` | all `16` identical |
+|---|---|---|
+| selection over the anchor | `13.26` | `0.4%` of prompts |
+| metered `k=3` | `12.83` | `8.6%` |
+| metered `k=20` | **`4.87`** | **`22.2%`** |
+
+**True at `k=20` and false at `k=3`.** At `k=20` the decoder is the risky model and its draws
+collapse onto one answer on nearly a quarter of questions, so there is genuinely little to select
+between. At `k=3` diversity is within `4%` of the anchor's and the reward still buys nothing ---
+so there the failure is the *scorer's*, not the decoder's, and it is the same reward
+overoptimisation this paper already concedes on TriviaQA. One explanation does not cover both
+budgets and we do not pretend it does. Nothing here was registered; it is reported because omitting
+a diagnostic that complicates our own story would be one-sided.
+
+### Scope, as registered
+
+One task, one anchor pair, one reward model, two valid budgets, and no judged workload. The two
+near-controls are INVALID. The certificate arithmetic (`K + log n`) is a statement about the served
+law and is not touched by any of this.
