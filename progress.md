@@ -136,9 +136,56 @@ unrelated `$90\%$` elsewhere in the same appendix, and a ``lower bound'' check w
 sentence about contamination recall. A third checked that the words *worst* and *best* were present
 rather than the comparison between them (caution (ai)). All nine fire now.
 
+**The one robustness check that did not survive: a second opponent.** Every judged arm in this
+paper is scored against one fixed opponent, the unconstrained `Llama-3.1-8B-Instruct`. The
+five-judge panel changed the INSTRUMENT and held the opponent fixed; this arm
+(`results/onset_prediction_second_opponent.md`) changed the OPPONENT --- `Qwen2.5-14B-Instruct`,
+different family, roughly twice the size --- and held the instrument fixed, re-judging the same
+four committed arms with judge~B and changing nothing else.
+
+Both mechanisms still beat their own controls: selection `+0.0540 [+0.0320, +0.0765]`, the meter
+`+0.0605 [+0.0385, +0.0820]`. **The difference between them does not survive**:
+**`-0.0065 [-0.0385, +0.0255]`**, a point estimate `0.20` interval half-widths from zero, against
+`+0.0645 [+0.0300, +0.0995]` on the registered pass. The registered three-way taxonomy keys on the
+interval, so the reading is **UNRESOLVED**, and the consequence fixed before the run was applied
+verbatim: the abstract's judged claim now reads ``judged better under four of five judges
+**against one fixed opponent**''.
+
+**The CSV's own `reading` column says `REVERSAL REFUTED` and that is not the registered reading.**
+`analysis/order_averaged_h2h.py:218` labels any negative point estimate REFUTED without consulting
+the interval, while requiring a positive one to clear its interval before it says CONFIRMED --- an
+asymmetric rule, and not the one committed here. Both strings are in the scoring log so the softer
+word cannot look like a choice made after seeing the number (caution (ag)). The point estimate IS
+negative and the log says so.
+
+**A defect in our own specification, recorded not repaired (caution (w)).** H2 predicted both
+levels would FALL against a stronger opponent, and the same paragraph forbade comparing any level
+across passes (caution (ap)). Those cannot both be honoured, so H2 was unfalsifiable as written and
+is withdrawn rather than scored. A future opponent-transfer arm should predict only the paired
+difference, which is within-pass and was correctly specified.
+
+What it does NOT touch: the certificate (a statement about the served law that no judge enters) and
+the judge-free axis (which has no opponent). What it does: the judged head-to-head between the two
+mechanisms is **opponent-dependent**, which is now stated in Section 6's heading, in the abstract's
+qualifier and in full in Appendix~E. Order consistency this pass was `0.550` for selection and
+**`0.482`** for the metered arm --- below chance agreement between presentation orders, which is
+why only order-averaged figures are quoted.
+
+`tests/test_second_opponent.py` (6 tests) pins it, mutation-tested seven ways. Two did not fire
+first time: the **sign flip of `-0.0065`**, because that value is also the lower end of the
+compute-matched loss `[-0.0720, -0.0065]` a few pages earlier and the unrelated occurrence
+satisfied the check (caution (an), third instance today) --- the guard is now scoped to the
+opponent paragraph; and a mutation whose pattern contained a literal `\n` and so never landed,
+which is caution (ar)'s "a guard that passed a test that proved nothing". Both redone and firing.
+The abstract check is conditioned on the CSV interval, never on a phrase, so a reword cannot retire
+it (caution (aq)).
+
 **Producing commands, all of them.**
 
 ```
+# second fixed opponent: Qwen2.5-14B generates, judge B re-scores the four committed arms
+bash scripts/run_second_opponent.sh 0
+
 # S(x) for a TriviaQA answer: where Prop 2's vacuity threshold sits (no generation)
 CUDA_VISIBLE_DEVICES=5 .venv/bin/python analysis/tqa_vacuity.py
 

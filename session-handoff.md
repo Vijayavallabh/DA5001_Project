@@ -38,11 +38,19 @@ metered budget of `12`, so the metered certificate is vacuous on `89.6%` of the 
 and is withdrawn from the manuscript. Reported with it, post hoc and symmetric because omitting it
 would be one-sided: selection's `log n` is vacuous on `35.4%` of the same questions at `n=64`.
 
-**Still live, one: `results/onset_prediction_second_opponent.md`** --- `Qwen2.5-14B-Instruct` as a second
-fixed opponent, generating on GPU 0, then judge~B re-scores the same four committed arms against
-it. It changes the OPPONENT and holds the instrument fixed, which is the complement of the judge
-panel; its bands are committed and its registered prediction is REVERSAL HOLDS with a smaller
-difference. Everything else launched this session has landed and is scored.
+**Nothing is in flight. Every arm launched this session has landed and is scored.**
+
+The last to close was **`results/onset_prediction_second_opponent.md`**, and it is the one
+robustness check in this paper that **did not survive**. `Qwen2.5-14B-Instruct` replaced the fixed
+opponent, judge~B re-scored the same four committed arms, nothing else changed. Both mechanisms
+still beat their own controls (`+0.0540` and `+0.0605`, both clear of zero); the difference between
+them is `-0.0065 [-0.0385, +0.0255]`, `0.20` interval half-widths from zero, against
+`+0.0645 [+0.0300, +0.0995]` on the registered pass. The registered taxonomy keys on the interval,
+so the reading is **UNRESOLVED**, and its pre-fixed consequence was applied verbatim: the abstract
+now says ``four of five judges **against one fixed opponent**'' and Section 6's heading reads
+``It replicates across judges, not across opponents''. The certificate and the judge-free axis are
+untouched --- neither has an opponent --- which is why the paper rests on them. We predicted
+REVERSAL HOLDS and were wrong; that is recorded rather than reframed.
 
 Closed today:
 
