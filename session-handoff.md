@@ -381,3 +381,37 @@ says four. Stage 2 unstarted for every anchor, as registered.
 statistic (length given non-empty) at $+6.5\%$. That is a real cross-host length shift at TinyComma,
 not the pipeline artefact --- the pipeline artefact was the OLD reference. `comma7bhb` fails at
 $+5.3\%$ whose whole content is the empty rate. **Neither band has been computed or looked at.**
+
+---
+
+## 2026-09-20 ~04:30 --- feat-140 completes at 8 of 8, and feat-141 is launched to attack its own conclusion
+
+**KL3M-3.7B on host B** read $+0.0200\ [-0.0160, +0.0560]$, $0.56$ half-widths, SATURATED BY 8 --- no
+verdict had been predicted for it (P4). It is nonetheless **NOT SCORED**, because its local
+reference turned out to be an unfinished arm; see below.
+
+**A defect in my own scoring run, caught and fixed structurally.** `h1.py` writes a class only when
+that class completes, so `feat-135`'s still-generating local KL3M-3.7B arm yielded a stats row over
+**350** prompts rather than $500$ --- its `creative` class had not been written --- and I1 compared
+a mean over $350$ prompts against a mean over $500$ and **passed it at $+2.6\%$**. `I1` now refuses
+unequal counts and refuses equal-but-short counts, and says *"one side is not the finished
+500-prompt arm"* rather than describing it as a length disagreement. Three mutations, three named
+failures.
+
+**`results/onset_prediction_within_host_spread.md` (feat-141), committed before its arms started**,
+exists to break `feat-140`'s own conclusion. That conclusion --- *a host change is not a re-draw* ---
+rests on four within-host seed pairs, **none at an anchor that flipped**, and the three that flipped
+have one host-B draw each, so their own spread is unmeasured. P1 is written so it can refute:
+**if any within-host pair at Pleias-3B moves by $\ge 0.0700$, the conclusion is withdrawn in the
+same words it was written.** P3 puts the stable anchor at risk too: Comma-7B (1T) must read CLIMBS
+a third time at or above $2.0$ half-widths.
+
+Eight arms are running on host B's eight cards, two further disjoint seed triples (`62 63 64`,
+`72 73 74`) at each flipped anchor plus one each at KL3M-3.7B and Comma-7B (1T).
+`scripts/run_breadth64_seed.sh` now takes the triple as an optional fourth argument **defaulting to
+`52 53 54`**, so every `feat-138` invocation on record is byte-identical in behaviour.
+
+### feat-139 stage 1, three of four measured
+
+$0.0140$, $0.0180$, $0.0160$ against `FLOOR = 0.05`; KL3M-3.7B's probe is running now. The
+registered conclusion is still not declared --- the registration says four.
