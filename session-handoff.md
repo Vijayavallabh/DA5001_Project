@@ -8,6 +8,45 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
+## Arms in flight on the DGX (2026-09-21, all eight H100s)
+
+**`results/onset_prediction_scorer_ladder.md` (feat-158) is IN FLIGHT** --- the scorer-size ladder
+that feat-157's SCORER-BOUND reading forces. Three reward-only re-scores of cached, md5-verified
+generations (nothing is drawn): TriviaQA and GSM8K at the audited anchor under `Qwen2.5-14B`
+(cards 0, 1) and CoTaEval news at the headline anchor under `Qwen2.5-72B`, sharded over cards 2+3.
+G0 is the strongest instrument check this project has had and it is free --- majority vote never
+consults the scorer, so **every one of its seven cells must be identical**, not just `n=1`. The
+band is task-specific because the claim is: TriviaQA is read at `n=16` and on the Spearman, which
+is where Appendix~I's concession actually lives, **not** at `n=64` where the committed arm is
+already NO EFFECT. That defect was in my own first draft and was caught by mutation-testing the
+scorer before any data existed. GSM8K is the control and has teeth both ways: if it stops climbing,
+both `14`B arms are INVALID rather than informative. Prediction registered in two separately
+falsifiable halves (H1 TriviaQA flips, H2 CoTaEval survives `72`B), and the denominator decision
+--- `sections/selection.tex`'s ``all `28` reward cells'' becomes `35` with a fifth scorer --- is
+fixed in advance, including that the claim is **withdrawn** rather than restricted if it no longer
+holds.
+
+**`results/onset_prediction_meter_parity.md` (feat-159) is IN FLIGHT on cards 4--7** --- the
+Program Chairs' one open point, answered by measurement instead of prose. It gives the METERED
+decoder the same reward model: `16` trajectories per prompt at `k = 0.5, 1, 3, 20` on the one
+meterable pair, each scored by the same `Qwen2.5-7B` pointwise reward through the same
+`score_rewards()` call every selection arm uses, argmax served. The point is a statement about
+budgets, not scorers: best-of-`n` over a decoder with budget `K` gives `q(y) <= n q_K(y)`, so
+`D_inf <= K + log n` --- **the budgets add**, parity is achievable, and it is not free. We predict
+**PARITY MATTERS**, the prediction that costs us. G3 is distributional and deliberately NOT
+bit-identity (16 draws consume the RNG differently from 1, so rank 0 is not the committed
+trajectory), and it was confirmed SATISFIABLE before launch by re-running the committed protocol on
+host B: `0.1580` against `0.1660`, inside its own interval.
+
+**Four things went wrong getting those eight cards busy and all four are now repaired rather than
+remembered** --- recorded as caution (aw): six of twelve corpora were dangling symlinks after the
+rsync (`scripts/fix_bench_symlinks.sh`, now run by `sync_status.sh push`); TriviaQA comes from the
+`datasets` library and host B had never downloaded it (both datasets now under `hf_datasets/` in
+the repo, inside the `v` scope); the Llama-8B id was resolved through a symlink justified by
+md5-matching the weights, and the tokenizer and config were only checked afterwards, which is the
+wrong time; and a shape statistic moved across hosts (`57/500` echoes against `0/500`) which was
+measured rather than assumed --- an echo-aware parser recovers exactly zero, so no parser changed.
+
 ## Arms in flight on the DGX (2026-09-20, end of session)
 
 One, and one closed. **`results/onset_prediction_lambada_headtohead.md` is SCORED and INVALID**

@@ -111,3 +111,14 @@ it is true of the headline anchor at both scorer sizes, and the appendix is resc
 
 **Per the excluded-in-advance list, no `14`B level is reported beside a `7`B one** and no third
 scorer is run. The verdict comparison above is the whole reading.
+
+**Post hoc, and it strengthens the arm: the generations were byte-identical.** The registration
+said ``identical to feat-155 in every respect ... changing only the reward model'', and feat-157
+wrote its own `output/phase5/cta14_*` directories rather than re-using feat-155's, so that sentence
+was a claim about the seed rather than a checked fact. It is now checked: `md5sum` on
+`anchor_*_n64.jsonl` agrees between `cta_cta_<anchor>` and `cta14_<anchor>` at all three anchors
+where both directories exist (`s5254`, `comma1t`, `tc18b`). So the `n=1` agreement to four decimals
+is not a coincidence of rounding --- the two passes scored the same bytes, and the only difference
+between them is the reward model. (This is a verification, not a band; it was not registered and
+nothing in the reading depends on it. It is recorded because the opposite finding would have made
+the arm a two-variable comparison and therefore INVALID under caution (at).)

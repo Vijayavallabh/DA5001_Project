@@ -426,6 +426,10 @@ def main():
                     help="names the reward cache and the output CSV only, so a second scorer can "
                          "re-score the SAME cached generations without regenerating them. Empty by "
                          "default, which reproduces every path this script wrote before feat-118.")
+    ap.add_argument("--reward-max-memory", default="",
+                    help="e.g. '0=75GiB,1=75GiB'. Empty keeps the single-card device_map every "
+                         "committed arm used; set it only for a reward model that does not fit "
+                         "on one card (caution (q)).")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
@@ -493,8 +497,15 @@ def main():
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
         rt = AutoTokenizer.from_pretrained(a.reward_model)
-        rm = AutoModelForCausalLM.from_pretrained(a.reward_model, dtype=torch.bfloat16,
-                                                  device_map={"": 0}).eval()
+        # caution (q): the default puts the whole model on card 0, which silently OOMs a 72B in
+        # bf16 (~145 GB) on an 80 GB card. --reward-max-memory switches to a sharded map; the
+        # default is unchanged, so every committed arm takes the same path it always did.
+        rm_kw = dict(dtype=torch.bfloat16, device_map={"": 0})
+        if a.reward_max_memory:
+            rm_kw = dict(dtype=torch.bfloat16, device_map="auto",
+                         max_memory={int(k): v for k, v in
+                                     (x.split("=") for x in a.reward_max_memory.split(","))})
+        rm = AutoModelForCausalLM.from_pretrained(a.reward_model, **rm_kw).eval()
         pairs, keys = [], []
         for it in items:
             for i, t in enumerate(gens[it["qid"]]):

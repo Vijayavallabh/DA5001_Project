@@ -20,7 +20,13 @@ case "${1:-status}" in
   push)   # code out
     rsync -az $EX --include 'analysis/***' --include 'scripts/***' --include 'tests/***' \
           --include 'figures/***' --include '*.py' --include '*.sh' --include '*.md' \
-          --include '*.json' --include '*/' --exclude '*' ./ "$H:$R/" && echo "[sync] code -> host B ok" ;;
+          --include '*.json' --include '*/' --exclude '*' ./ "$H:$R/" && echo "[sync] code -> host B ok"
+    # data/bench/<corpus>/ is a directory of symlinks with ABSOLUTE targets, so a tree copied from
+    # this host points at this host's paths and dangles silently on the other one -- invisible
+    # until h1.py dies on a missing file, which is how feat-159's first launch failed with six of
+    # twelve corpora broken. Re-anchor them on every push; it is idempotent and only ever touches a
+    # link that is already broken.
+    ssh "$H" "cd $R && ./scripts/fix_bench_symlinks.sh" 2>/dev/null | sed 's/^/[sync] /' ;;
   pull)   # results back, never clobbering a newer local file
     rsync -az --update "$H:$R/results/" results/ && echo "[sync] results <- host B ok"
     # CODE CREATED ON HOST B MUST COME BACK TOO. The first version of this script pushed code one
