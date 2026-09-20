@@ -1,0 +1,5 @@
+anchor,name,pair,move,kind
+Comma-7B (1T),comma1t,42-52,0.011,within-host
+Pleias-3B,pleias3bhb,cross-host,0.07,cross-host
+Pleias-1.2B,pleias12bhb,cross-host,0.02,cross-host
+KL3M-1.7B,kl3m17bhb,cross-host,0.018,cross-host
