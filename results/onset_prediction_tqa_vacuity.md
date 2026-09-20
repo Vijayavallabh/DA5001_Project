@@ -84,4 +84,71 @@ license leaving the contradiction standing.
 
 ## Scoring log
 
-(to be filled after the run)
+Run 2026-09-20 on one H100, `CUDA_VISIBLE_DEVICES=5`, fp32, no generation.
+
+```
+.venv/bin/python analysis/tqa_vacuity.py
+```
+
+`results/tqa_vacuity.csv` (500 rows), `results/tqa_vacuity_summary.csv`.
+
+### Instrument gates, read first
+
+| gate | reading | verdict |
+|---|---|---|
+| G1 format | boundary at 113/115, continuation tokens `[' exile']`, `[' ban', 'ishment']` --- the leading space after `Answer:` is inside the first continuation token | **PASS** (read before the run) |
+| G2 the better model is less surprised | median `S(x)` anchor `5.86`, risky `0.69` | **PASS** |
+| G3 the prompt matters | median permuted `15.79` against true `5.86`, gap `9.93` nats, band `>= 5` | **PASS** |
+
+Anchor `S(x)`: median `5.86`, mean `6.40`, p10 `1.35`, p90 `12.14`, max `29.67` nats.
+
+### Bands
+
+| band | committed | measured | verdict |
+|---|---|---|---|
+| H1 frac `S(x) <= 72` | `>= 0.50` | **`1.000`** | CONFIRMED |
+| H2 frac `S(x) <= 24` | `< 0.50` | **`0.994`** | **REFUTED** |
+| H3 frac `S(x) <= 12` | `< 0.25` | **`0.896`** | **REFUTED** |
+| H4 frac `S(x) <= 480` | `>= 0.95` | **`1.000`** | CONFIRMED |
+
+**Two of four refuted, both in the same direction, and the direction is the interesting one.**
+The metered decoder's certificate on this task is vacuous at **every budget it was run at**,
+including the smallest: `89.6%` of questions at `k=0.5`, `99.4%` at `k=1`, `100%` at `k=3` and
+`k=20`. The anchor's median surprisal of an acceptable answer is `5.86` nats, and the smallest
+budget on the grid is `12`. There is no such thing as ``the budgets whose certificate is not
+vacuous'' on this arm --- the phrase the manuscript used --- so it is withdrawn and replaced by the
+per-budget fraction, which is what the pre-registration said would happen.
+
+### The symmetric number, computed post hoc and reported because omitting it would be one-sided
+
+The same threshold applied to **selection's** budgets, from the same 500 values of `S(x)`. This was
+NOT pre-registered; it is the identical measurement applied to the other mechanism, and it can only
+count against this paper's claim, never for it.
+
+| selection | `log n` nats | vacuous fraction |
+|---|---|---|
+| `n=4` | `1.386` | `0.104` |
+| `n=8` | `2.079` | `0.160` |
+| `n=16` | `2.773` | `0.204` |
+| `n=32` | `3.466` | `0.288` |
+| `n=64` | `4.159` | **`0.354`** |
+
+**Selection is not clean here either.** At `n=64` its certificate is vacuous on better than a third
+of these questions, and the manuscript now says so. What separates the two mechanisms on this task
+is not that one is vacuous and the other is not; it is that selection's worst budget is vacuous on
+`35.4%` where the meter's **best** budget is vacuous on `89.6%`.
+
+### Conservative direction, restated against the numbers
+
+`P(event) = sum_alias P(alias) >= max_alias P(alias)`, so the scored
+`S = -log max_alias P(alias)` is an **upper** bound on the true `S(x)`. Vacuity is `K >= S(x)`, so
+every fraction in both tables is a **lower** bound: the true vacuous fractions are at least these.
+That direction is against the metered finding (already saturated at `1.000`) and against selection's
+`0.354`, which may be larger. Both are reported as lower bounds.
+
+### What this arm did and did not change
+
+Changed: the vacuity adjectives in `sections/appendix_selection.tex` became per-budget fractions,
+and the closing sentence that said no vacuity number comes from this arm was corrected, since one
+now does. Unchanged, as registered: no accuracy, gain, cost or leakage number --- nothing was
+generated and nothing was re-judged. `tests/test_tqa_vacuity.py` pins both tables to the CSV.

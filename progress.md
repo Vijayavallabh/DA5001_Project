@@ -103,9 +103,45 @@ arm needs an instrument gate on the unconstrained risky model, read first. Per t
 there is no second repair on this corpus, so **the judge-free head-to-head stays a one-task result
 (TriviaQA)** and `tests/test_lambada_not_quoted.py` fails if the paper drifts off that.
 
+**The metered decoder's TriviaQA certificate is vacuous at every budget it was run at, and
+selection's is vacuous on a third of the questions.** `sections/appendix_selection.tex` called `72`
+nats ``already vacuous'', called `12` and `24` ``the budgets whose certificate is not vacuous'',
+and then closed by saying no vacuity number came from the arm --- three claims, no measurement
+behind any of them, and the first two contradict the third inside one file (caution (ao)). Nothing
+in `results/` had ever measured `S(x)` for a short factual answer; `regimes_*.csv` measures
+per-character surprisal on protected prose. `analysis/tqa_vacuity.py` measures it: the anchor and
+the risky model teacher-forced on the accepted answer aliases under the prompt `h1.py` actually
+served, read verbatim from `data/bench/triviaqa_factual.jsonl`. No generation, no re-judging.
+
+Anchor median `S(x)` is **`5.86`** nats (p10 `1.35`, p90 `12.14`, max `29.67`), against a smallest
+metered budget of `12`. **Two of four registered bands were REFUTED**, both in the same direction:
+the metered certificate is vacuous on `89.6%` of the questions at `k=0.5` (band said below `0.25`),
+`99.4%` at `k=1` (band said below `0.50`), and `100%` at `k=3` and `k=20`. The phrase ``the budgets
+whose certificate is not vacuous'' names an empty set on this arm and is withdrawn.
+
+The **symmetric** number was computed post hoc and is reported because leaving it out would be
+one-sided: applying the same threshold to selection, `log n` is vacuous on `10.4%` of these
+questions at `n=4` and **`35.4%` at `n=64`**. Selection is not clean here either. What separates
+the two is that selection's *worst* budget is vacuous less often than the meter's *best*. Both
+tables are **lower** bounds, since scoring `-log max_alias P` rather than the alias sum overstates
+`S(x)` and so understates vacuity --- a direction fixed in the pre-registration before the run.
+
+Three instrument gates, all read before any band: G1 format (the leading space after `Answer:` is
+inside the first continuation token --- five items printed and read BEFORE the run, which is
+caution (au) applied), G2 the better model must be less surprised (risky `0.69` against anchor
+`5.86`), G3 the prompt must matter (permuted `15.79` against true `5.86`, gap `9.93` nats).
+`tests/test_tqa_vacuity.py` pins both tables to the CSV and was mutation-tested nine ways --- two
+of which initially did NOT fire, both caution (an): an integer-percentage fallback matched an
+unrelated `$90\%$` elsewhere in the same appendix, and a ``lower bound'' check was satisfied by a
+sentence about contamination recall. A third checked that the words *worst* and *best* were present
+rather than the comparison between them (caution (ai)). All nine fire now.
+
 **Producing commands, all of them.**
 
 ```
+# S(x) for a TriviaQA answer: where Prop 2's vacuity threshold sits (no generation)
+CUDA_VISIBLE_DEVICES=5 .venv/bin/python analysis/tqa_vacuity.py
+
 scripts/run_frontier_judge.sh <judge> <tag> <cards>        # judges D, E, F, G
 analysis/blocklist_decode.py --model <m> --split <s> --ngram 10 --out output/memfree/<half>
 analysis/blocklist_score.py --run output/memfree/protected --out results

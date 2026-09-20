@@ -22,17 +22,23 @@ been pinned to five shapes in `tests/test_lambada_extraction.py` and every one o
 HYPOTHESISED; no generation had been read. Recorded as **caution (au)** in `AGENTS.md`, and
 `tests/test_lambada_not_quoted.py` (4 tests) fails if the paper ever reports LAMBADA or stops
 describing the judge-free head-to-head as a one-task result. Per the registered H4 there is no
-second repair on this corpus. Still live, two.
-**`results/onset_prediction_tqa_vacuity.md`** --- `S(x)` for a TriviaQA answer under the anchor,
-which is the quantity `sections/appendix_selection.tex` needs and has never had. That paragraph
-calls `72` nats ``already vacuous'' and calls `12` and `24` ``the budgets whose certificate is not
-vacuous'', and then closes by saying no vacuity number comes from the arm --- both cannot stand
-(caution (ao), inside one file). No generation: the anchor and the risky model are teacher-forced
+second repair on this corpus.
+
+**`results/onset_prediction_tqa_vacuity.md` is SCORED** --- `S(x)` for a TriviaQA answer under the
+anchor, the quantity `sections/appendix_selection.tex` needed and never had. That paragraph called
+`72` nats ``already vacuous'', called `12` and `24` ``the budgets whose certificate is not
+vacuous'', and then closed by saying no vacuity number came from the arm --- three claims with no
+measurement behind any of them, the first two contradicting the third inside one file
+(caution (ao)). No generation: the anchor and the risky model are teacher-forced
 on the gold aliases under the prompt `h1.py` actually served, read verbatim from
-`data/bench/triviaqa_factual.jsonl`. Its G1 format probe is already PASSED (the leading space after
-`Answer:` is inside the first continuation token, boundary located at 113/115). G2 and G3 are
-instrument gates read before any H1--H4 number. And
-**`results/onset_prediction_second_opponent.md`** --- `Qwen2.5-14B-Instruct` as a second
+`data/bench/triviaqa_factual.jsonl`. All three instrument gates passed and
+**two of four bands were REFUTED**: the anchor's median `S(x)` is `5.86` nats against a smallest
+metered budget of `12`, so the metered certificate is vacuous on `89.6%` of the questions at
+`k=0.5` and `100%` at `k=3` --- ``the budgets whose certificate is not vacuous'' names an empty set
+and is withdrawn from the manuscript. Reported with it, post hoc and symmetric because omitting it
+would be one-sided: selection's `log n` is vacuous on `35.4%` of the same questions at `n=64`.
+
+**Still live, one: `results/onset_prediction_second_opponent.md`** --- `Qwen2.5-14B-Instruct` as a second
 fixed opponent, generating on GPU 0, then judge~B re-scores the same four committed arms against
 it. It changes the OPPONENT and holds the instrument fixed, which is the complement of the judge
 panel; its bands are committed and its registered prediction is REVERSAL HOLDS with a smaller
