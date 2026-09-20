@@ -1,5 +1,69 @@
 # Session Progress Log
 
+## 2026-09-21 04:30 --- feat-158/160 SCORED: reward overoptimisation is a **7B-scorer effect**, and a committed claim is withdrawn because of it
+
+**All six ladder arms landed and every one passed every gate.** `G0` --- majority vote identical at
+all seven cells, because it never consults the scorer --- passes on all six, which means each pass
+scored **byte-identical text** and the only thing that changed is the instrument. That is also what
+licenses comparing these passes at all: caution (ap) forbids setting one sweep against another
+because the sweep usually changes what was drawn, and here nothing was drawn and nothing re-ordered.
+
+| arm | band cell | gain | verdict | Spearman (committed) |
+|---|---|---|---|---|
+| TriviaQA @ `14`B | `n=16` | `+0.0240` `[-0.0060, +0.0540]` | NO EFFECT | `+0.8571` (`-0.6071`) |
+| GSM8K @ `14`B, control | `n=64` | `+0.2140` `[+0.1680, +0.2620]` | CLIMBS, `4.55` hw | `+1.0000` (`+0.9286`) |
+| CoTaEval @ `72`B, headline | `n=64` | `+0.0266` `[-0.0097, +0.0623]` | NO EFFECT | `+0.7500` (`-0.8929`) |
+| CoTaEval @ `72`B, Comma-7B (1T) | `n=64` | `+0.0616` `[+0.0226, +0.1005]` | CLIMBS | `+0.9643` (`-0.3929`) |
+| CoTaEval @ `72`B, TinyComma | `n=64` | `+0.0624` `[+0.0327, +0.0932]` | CLIMBS | `+0.7857` (`+0.2143`) |
+| TriviaQA @ `72`B | `n=16` | `+0.0360` `[+0.0080, +0.0640]` | CLIMBS | `+0.8571` (`-0.6071`) |
+
+**Nothing turns over anywhere above `7`B, and both Spearmans INVERT.** feat-158 reads
+**SCORER-BOUND, GENERAL**; feat-160's H1 and H2 are both CONFIRMED, so feat-157's SCORER-BOUND
+reading is a **threshold** and not a `14`B accident. **We predicted CoTaEval's headline turn-over
+would survive `72`B and were wrong** --- the third registered prediction refuted this week.
+
+**Rescoped, NOT withdrawn, and the distinction is the whole of the honesty.** The `7`B scorer is the
+operating point of every other number in this paper, including the `35.4x` serving measurement, so
+nothing measured there is revised and the loss at that scorer is real and reproduces on a disjoint
+draw. What changes is the explanation: a property of optimising a pointwise proxy **of that size**.
+Applied verbatim as registered --- Limitations now states a **scorer-size requirement** and both
+concessions name their scorer, in the main-text caption, the appendix table caption, the CoTaEval
+paragraph and the closing. **No cost number above `7`B is claimed**, because no latency arm was run
+there, and the judged workload is untouched: its ladder stops at `7.6`B.
+
+**A committed claim was withdrawn, which is what the pre-registration was for.**
+feat-158 fixed in advance that `sections/selection.tex`'s *``four draws of it beat all `28` reward
+cells on either task''* would be re-derived over all **five** scorers **whatever the answer**, and
+**withdrawn rather than restricted back to the four that support it** if it failed. It fails on
+**both** tasks: majority vote at `n=4` gives `+0.0720` on GSM8K against a best reward cell of
+`+0.2140` (`14`B, `n=64`), and `+0.0200` on TriviaQA against `+0.0780`. The sentence is **gone**.
+What replaces it is re-derived and guarded: majority vote dominates every scorer up to `7.6`B and
+`14`B overtakes it on both tasks. **A sibling guard had to be withdrawn deliberately too** ---
+`test_the_four_draws_rule_is_ANCHOR_SPECIFIC` pinned the body's wording and its own message said
+``this guard must be withdrawn deliberately''; its DATA half (at the 1T anchor four draws do not
+clear, eight do) is kept and its prose half now asserts the withdrawn sentence has **not** come
+back.
+
+**A fourth false positive of caution (an)'s guard, and the fix is a real refinement.**
+``climbs at `$4.55$` interval half-widths'' collided with `kl_best_of_n(256) = 4.5490`. A
+half-width count is **dimensionless** --- it is not a spend, so calling it measured is not the
+defect the guard exists for. The guard now skips a value used with ``half-width'' or ``$\times$'',
+and four injected defects confirm it still fires on `4.159` nats, `3.175` nats and `4.55` **nats**
+while correctly passing `4.55` **half-widths**.
+
+**Two gaps in my own new guards, both found by mutation and both real.** Deleting the `7`B CoTaEval
+loss outright fired nothing, because `43\%` occurs twice in that file and the check was satisfied by
+the other occurrence --- caution (an), inside a guard written about caution (an); now scoped to the
+paragraph that reports it. And perturbing a printed interval **end** was invisible, because the
+guard read only point estimates; it now reads both ends of every printed interval.
+
+**Producing command.** `.venv/bin/python analysis/score_scorer_ladder.py --out results`
+
+**Host state.** Host B: all eight H100s finished and idle. Local: feat-134 neutral on **attempt 7**
+(GPU 1, `9000/25600`, ~11 h), merge shell alive with `40` h of its budget left, `card2b` due to
+abort on its own `12`-h timer --- harmless, the merge shell is the one that matters.
+
+
 ## 2026-09-21 01:30 --- feat-159 SCORED: the reward model does **not** transfer to the meter, which answers the AC's one open point by measurement
 
 **All eight H100s were put on two registered features and then a third.** feat-158 (the scorer-size

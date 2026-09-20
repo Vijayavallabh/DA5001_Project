@@ -8,7 +8,46 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
-## Arms in flight on the DGX (2026-09-21, all eight H100s)
+## Arms in flight on the DGX (2026-09-21 04:30)
+
+**`results/onset_prediction_scorer_ladder.md` (feat-158) and
+`results/onset_prediction_scorer_ladder_72b.md` (feat-160) are both SCORED.** Six arms, all gates
+passed, `G0` identical at all seven majority-vote cells on every one --- byte-identical text, only
+the instrument changed, which is what licenses the cross-pass comparison. **Nothing turns over
+anywhere above the `7`B scorer**, and both Spearmans invert (TriviaQA `-0.6071 -> +0.8571`,
+CoTaEval `-0.8929 -> +0.7500`). feat-158 reads **SCORER-BOUND, GENERAL**; feat-160 confirms both
+its halves, so feat-157's reading is a threshold and not a `14`B accident. **We predicted CoTaEval's
+headline turn-over would survive `72`B and were wrong.** The GSM8K control climbs at `4.55`
+half-widths with Spearman `+1.0000`.
+
+Applied as registered: Limitations states a **scorer-size requirement**, both concessions name
+their scorer at every site, and nothing measured at `7`B is revised. `tests/test_scorer_ladder.py`
+(9 tests) pins both halves --- the rescope AND that it is not a withdrawal --- mutation-tested
+twelve ways.
+
+**A committed claim was withdrawn**, exactly as feat-158 registered before any number was seen:
+`selection.tex`'s ``four draws of it beat all `28` reward cells'' fails over five scorers on both
+tasks and is **gone**, not restricted. A sibling guard's prose half was withdrawn deliberately, its
+data half kept.
+
+**`results/onset_prediction_scorer_scale_14b.md` (feat-161) is IN FLIGHT** --- the missing rungs
+of the **judged** scorer ladder. feat-158/160 showed no saturation to `72`B on the judge-free
+tasks, while the judged ladder (`0.5/1.5/3/7.6`B) reads saturation; the paper currently carries
+both with a disclaimer between them, and this replaces the disclaimer with a measurement. Two new
+rungs, `14`B and `72`B, with **all six scorers judged in ONE pass** --- not a convenience, since
+this paper cannot compare judged levels across passes at all. G0 is feat-117's replication gate
+(three reference arms within the judge's own `+/-0.04` cross-pass floor), known satisfiable because
+feat-117 cleared it by `0.001`. **We predict SATURATION HOLDS**, so a lift counts against us twice:
+it falsifies the saturation sentence and means the headline `+0.1045` is not the best the mechanism
+can do.
+
+**Next session, in order.** (1) `feat-161` --- wait for `ss14.done`, then read
+`results/scorer_scale*.csv`; G0 first, and if it fails nothing else may be quoted. (2) Local
+feat-134 neutral is on attempt 7 (`9000/25600`, ~11 h); check `output/logs/comma7b128_merge.log`
+first, the merge shell has `40` h of budget and is the one that matters. (3) Nothing in feat-158 or
+feat-160 is unread.
+
+
 
 **`results/onset_prediction_meter_parity.md` (feat-159) is SCORED** --- the Program Chairs'
 remaining objection, answered by measurement. Giving the metered decoder the same reward model

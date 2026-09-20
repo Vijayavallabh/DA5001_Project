@@ -140,8 +140,9 @@ anchor's own F1 given away by $n=64$. Majority vote, which has no scorer to over
 neither falls nor climbs ($+0.0284$ $[-0.0012,+0.0576]$).
 
 We registered the opposite prediction and it was wrong. The honest reading is that the reward
-overoptimisation this paper concedes on TriviaQA is not a caveat confined to one task: on a
-standard benchmark, in a new domain, at four anchors, with a replication, it is the main effect,
+overoptimisation this paper concedes on TriviaQA is not a caveat confined to one task: at the $7$B
+scorer, on a standard benchmark, in a new domain, at four anchors, with a replication, it is the
+main effect,
 and a deployer choosing $n$ by a pointwise reward of this size on this workload would be worse off
 at every $n$ than serving the anchor once. Two things it does not touch, stated so the scope is not read wider
 than the measurement: the certificate is a claim about the served law and does not depend on the
@@ -165,6 +166,38 @@ scorer swap must do to an arm the scorer never touches. The requirement is there
 rather than implied: every selection arm in this paper scores with the $7$B reward model, and on
 this benchmark the sign of the $n$-effect is a property of that choice as well as of the task. No
 $14$B level is set beside a $7$B one and no third scorer was run, both excluded in advance.
+
+\textbf{A third rung settles it, and it goes against the reading we had just written.} Two points
+cannot tell a threshold from an accident, so the ladder was completed at
+\texttt{Qwen2.5-72B-Instruct}: the headline anchor, the two that had flipped at $14$B, and
+TriviaQA, all bands registered first. \textbf{Nothing turns over anywhere.} At $72$B the headline
+anchor reads $+0.0266$ $[-0.0097, +0.0623]$, no effect where at $7$B it gave away $43\%$ of its own
+F1; the two that flipped now \emph{climb}, $+0.0616$ $[+0.0226, +0.1005]$ and $+0.0624$
+$[+0.0327, +0.0932]$; and on TriviaQA a $14$B scorer already removes the fall
+($+0.0240$ $[-0.0060, +0.0540]$) while $72$B climbs ($+0.0360$ $[+0.0080, +0.0640]$). The
+Spearman of accuracy against $\log n$ \emph{inverts} on both tasks --- CoTaEval
+$-0.8929 \to +0.7500$, TriviaQA $-0.6071 \to +0.8571$. We had registered that the headline
+anchor's turn-over would survive $72$B; it did not.
+
+\textbf{Why this comparison is legitimate where a judged one would not be.} Every arm re-scores
+\emph{cached} generations, so the pre-registered gate is free and very strong: majority vote never
+consults the scorer, so all seven of its cells must be identical to the arm being re-scored. They
+are, on all six arms --- the text is byte-identical and the only thing that changed is the
+instrument, which is why these passes may be set against each other where two judged sweeps may
+not. The GSM8K control, registered as the arm that must still climb or both $14$B arms are void,
+climbs at $4.55$ interval half-widths with a Spearman of $+1.0000$.
+
+\textbf{What this rescopes and what it leaves alone.} Every turn-over this appendix reports is
+measured at the $7$B reward model and none survives a larger one, so the finding is a property of
+optimising a pointwise proxy \emph{of that size} on these tasks rather than of the mechanism.
+It is \emph{rescoped and not withdrawn}: the $7$B scorer is the one every selection arm here uses,
+the one the $35.4\times$ serving measurement is of, and the one a deployer reading this paper would
+deploy, so at the paper's own operating point the loss is real and reproduces on a disjoint draw.
+What a deployer gains is a stated requirement, and a requirement is a cost --- a favourable one
+only in that the scorer is $9.3\%$ of selection's wall-clock and the draws $90.7\%$, though
+\emph{no latency arm was run above $7$B and no cost number here is measured}. Two things it does
+not reach: the judged workload, where the scorer ladder stops at $7.6$B and its saturation reading
+stands, and the certificate, which is $\log n$ for any score of any size.
 
 \textbf{Giving the \emph{metered} decoder the same reward model, which is the one evaluation
 objection we had answered only in pieces.} A report put it directly: the metered decoder fuses
@@ -664,7 +697,9 @@ against each rule's own $n=1$ row, which is the anchor's first draw and the same
 rules. Budget is $\log n$ nats, the exact pathwise charge of
 Proposition~\ref{prop:selection}. \textbf{Majority vote lifts on both tasks and the pointwise
 reward only on one}: on TriviaQA its accuracy falls with $n$ (Spearman $-0.607$ against majority
-vote's $+0.982$) and at $n=16$ the interval excludes zero on the wrong side. The ceiling
+vote's $+0.982$) and at $n=16$ the interval excludes zero on the wrong side. \emph{At this
+scorer}: a $14$B one removes the fall and a $72$B one reverses it (Spearman $+0.857$), which is
+measured above on these same cached generations. The ceiling
 Proposition~\ref{prop:selection} implies is the anchor's support; what binds first here is the
 scorer.}
 \label{tab:judgefree}

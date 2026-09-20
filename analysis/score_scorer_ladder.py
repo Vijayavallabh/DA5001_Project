@@ -27,7 +27,21 @@ ARMS = {
               "selection_verifiable_comma7b.csv", "GSM8K @ Qwen2.5-14B", "GSM8K", 64),
     "cta72": ("selection_verifiable_cta14_comma7b_qwen72b.csv",
               "selection_verifiable_cta14_comma7b.csv", "CoTaEval @ Qwen2.5-72B", "CoTaEval", 64),
+    # feat-160, gates and bands inherited verbatim (results/onset_prediction_scorer_ladder_72b.md).
+    # Each reference is the arm whose GENERATIONS the 72B pass re-scored, which is what makes G0 a
+    # statement about the same bytes.
+    "cta72_comma1t": ("selection_verifiable_cta14_comma1t_qwen72b.csv",
+                      "selection_verifiable_cta14_comma1t.csv",
+                      "CoTaEval @ 72B, Comma-7B (1T)", "CoTaEval", 64),
+    "cta72_tc18b": ("selection_verifiable_cta14_tc18b_qwen72b.csv",
+                    "selection_verifiable_cta14_tc18b.csv",
+                    "CoTaEval @ 72B, TinyComma-1.8B", "CoTaEval", 64),
+    "tqa72": ("selection_verifiable_tqa_comma7b_qwen72b.csv",
+              "selection_verifiable_tqa_comma7b.csv", "TriviaQA @ Qwen2.5-72B", "TriviaQA", 16),
 }
+# feat-157 read SCORER-BOUND because these two anchors stopped turning over at 14B. If either
+# turns over again at 72B, that reading rests on noise -- registered as feat-160's H1.
+FLIPPED_AT_14B = ("cta72_comma1t", "cta72_tc18b")
 VOTE = "majority vote (self-consistency)"
 
 
@@ -150,6 +164,21 @@ def main():
               f"{'CONFIRMED' if not tqa_over else 'REFUTED'}")
         print(f"  H2 (CoTaEval's turn-over DOES survive 72B): "
               f"{'CONFIRMED' if cta_over else 'REFUTED'}")
+
+    # ---- feat-160, scored separately because it is a separate registration ----
+    seen = [k for k in FLIPPED_AT_14B if k in table]
+    if seen:
+        again = [k for k in seen if table[k] == "TURNS OVER"]
+        print(f"\nfeat-160 H1 (both anchors that flipped at 14B stay flipped at 72B): "
+              f"{'REFUTED' if again else 'CONFIRMED'}"
+              + (f" -- {again} turn(s) over again, so feat-157's SCORER-BOUND reading rests on "
+                 f"exactly the flips this arm just reversed" if again else ""))
+    if "tqa72" in table:
+        row = [r for r in out if r.get("arm") == "tqa72"][0]
+        over = table["tqa72"] == "TURNS OVER" and row["spearman"] < 0
+        print(f"feat-160 H2 (TriviaQA's turn-over does NOT survive 72B): "
+              f"{'REFUTED' if over else 'CONFIRMED'}  "
+              f"(verdict {table['tqa72']}, spearman {row['spearman']:+.4f})")
 
 
 if __name__ == "__main__":

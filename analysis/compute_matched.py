@@ -53,8 +53,13 @@ def cost_ratio(n, p_scorer):
     return n * (P_ANCHOR + p_scorer) * SEQ_TOKENS / ((P_ANCHOR + P_RISKY) * SEQ_TOKENS)
 
 
-def reward_cache(path, model, cands, pids, max_n, dtype, batch_size):
-    """Score every cached candidate once and keep it; re-judging must not re-score 32,000 draws."""
+def reward_cache(path, model, cands, pids, max_n, dtype, batch_size, max_memory=None):
+    """Score every cached candidate once and keep it; re-judging must not re-score 32,000 draws.
+
+    max_memory is for a reward model that does not fit on one card (e.g. a 72B in bf16, ~145 GB).
+    It defaults to None, which keeps the single-card .cuda() path every committed arm was run
+    under, so nothing already measured changes (caution (q)).
+    """
     if os.path.exists(path):
         return load_rewards(path)
     import torch
@@ -62,8 +67,14 @@ def reward_cache(path, model, cands, pids, max_n, dtype, batch_size):
     tok = AutoTokenizer.from_pretrained(model, padding_side="left")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    rm = AutoModelForCausalLM.from_pretrained(
-        model, torch_dtype=getattr(torch, dtype)).cuda().eval()
+    if max_memory:
+        rm = AutoModelForCausalLM.from_pretrained(
+            model, torch_dtype=getattr(torch, dtype), device_map="auto",
+            max_memory={int(k): v for k, v in
+                        (x.split("=") for x in max_memory.split(","))}).eval()
+    else:
+        rm = AutoModelForCausalLM.from_pretrained(
+            model, torch_dtype=getattr(torch, dtype)).cuda().eval()
     items, keys = [], []
     for p in pids:
         for j in range(max_n):
@@ -71,7 +82,7 @@ def reward_cache(path, model, cands, pids, max_n, dtype, batch_size):
             items.append((prompt, gen))
             keys.append((p, j, cls, len(gen.split())))
     print(f"[reward] {model} over {len(items)} candidates", flush=True)
-    scores = score_rewards(rm, tok, items, "cuda", batch_size=batch_size)
+    scores = score_rewards(rm, tok, items, rm.device, batch_size=batch_size)
     with open(path, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["prompt_id", "rank", "prompt_class", "n_words", "reward"])

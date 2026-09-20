@@ -3,128 +3,134 @@
 % from a section that now comes later. v7 kept as experiments_v7_2026-09-14.tex.
 % v6 (2026-09-11): Numbers from results/selection_decoding.csv, selection_candidates.csv,
 % selection_crossjudge.csv, selection_scaling.csv, selection_extraction.csv, utility_price.csv.
-% Pre-registrations: results/onset_prediction_selection{,_scaling}.md, committed before each run.
+% Pre-registrations: results/onset_prediction_selection{,_scaling}.md, fixed before each run.
 
-\section{Does it work?}\label{sec:experiments}
+\section{Experiments}\label{sec:experiments}
 
-A certificate is worth nothing if the mechanism it certifies serves worse text. So we measure what
+\subsection{Setup}\label{sec:setup}
+
+A certificate is worth nothing if the mechanism it certifies serves worse text, so we measure what
 selection anchoring buys and what it leaks against the metered decoder, on its own workload and at
-its own anchor (\texttt{TinyComma-1.8B}), temperature and cap: $500$ ordinary prompts, utility a
-pairwise judgement against the \emph{unconstrained} risky model
-(\texttt{Llama-3.1-8B-Instruct}) scored $1/\tfrac12/0$, order randomised, arms nested. Judge~A is
+its own anchor, temperature and cap. The anchor is \texttt{TinyComma-1.8B}: trained only on openly
+licensed text, so $p_s$ plausibly never saw the work, and sharing the risky model's tokenizer, so
+the metered decoder can fuse the two at all. The workload is $500$ ordinary prompts
+in three classes, none of them drawn from the protected corpus and all released with the artifact:
+$200$ general-knowledge questions, $150$ FactScore biography requests, and $150$ creative-writing
+prompts, the last two from public corpora rather than written here. Utility is a pairwise judgement against the \emph{unconstrained} risky model
+(\texttt{Llama-3.1-8B-Instruct}) scored win/tie/loss as $1$, $\tfrac12$, $0$, order randomised, arms
+nested so that every comparison is paired on the prompt. Judge~A is
 \texttt{Qwen2.5-7B-Instruct}, judge~B \texttt{Phi-3.5-mini-instruct} and judge~C
 \texttt{Llama-3.1-8B-Instruct}; no arm is scored by the model that selected it, and \emph{judge~C is
-the opponent's own checkpoint} --- a self-preference risk \citep{panickssery2024llm}, and one reason
-we report only gains and never levels. Every band below was committed before the run that scores it,
-and the first cost us a claim.
+the opponent's own checkpoint} --- a self-preference risk \citep{panickssery2024llm}, one reason we
+report only gains. Every band below was fixed before the run that scores it, and the first cost us
+a claim.
 
-\begin{table}[tb]
-\centering\footnotesize
-\setlength{\tabcolsep}{4pt}
-\caption{Selection anchoring on $500$ prompts, as \textbf{gains over each arm's own anchor-alone
-control}, against the metered decoder's best arm (bottom). Every row is a \textbf{single-order}
-estimate, each pair shown to the judge in one random order; the head-to-head in the text is
-order-averaged and is the comparison we stand behind. Levels are omitted because the instrument
-check below shows they are largely a statement about slot order, and a dash marks an interval that
-pass cannot form.}
-\label{tab:selection}
-\begin{tabular}{@{}llcccc@{}}
-\toprule
-scorer & scored by & $n$ & budget, nats & gain over control & $95\%$ CI \\
-\midrule
-pointwise reward            & judge B & $8$ & $1.204$ & $+0.054$ & $[+0.013, +0.095]$ \\
-pointwise reward            & judge B & $64$ & $3.175$ & $+0.142$ & $[+0.097, +0.187]$ \\
-pointwise reward            & judge C & $64$ & $3.175$ & $+0.123$ & $[+0.076, +0.171]$ \\
-pointwise, anchor Comma-7B  & judge B & $8$ & $1.204$ & $+0.111$ & $[+0.072, +0.148]$ \\
-\midrule
-metered decoder, $k=10$     & judge B & --- & $171.3$ & $+0.072$ & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{The scorer decides, and the obvious one fails}
-The first scorer we pre-registered was the risky model's own per-token log-likelihood --- the
+\subsection{Main results}\label{sec:main-results}
+\textbf{The scorer decides, and the obvious one fails.} The first scorer we specified in advance was the risky model's own per-token log-likelihood --- the
 objective anchored decoding tilts toward --- and it fails, moving judged utility by $-0.006$ at
-$n=8$ against a committed band of $+0.077$. A circular oracle over the same eight draws reaches
+$n=8$ against a band fixed in advance of $+0.077$. A circular oracle over the same eight draws reaches
 $+0.488$, so what fails is the objective and not the budget (Appendix~\ref{app:selection}).
-Two scorers track quality, and the cheaper is better. Selecting by judge~A and scoring with judge~B
-gains $+0.081$ $[+0.034, +0.130]$ at $n=8$; the deployable scorer
-(Table~\ref{tab:selection}) never consults the risky model --- a \emph{pointwise} reward,
-$\log p(\text{Yes}) - \log p(\text{No})$ from a third model on one fixed template, one forward pass
-per candidate, monotone in $\log n$ (Spearman $+0.991$ over seven arms), with a second
-non-selecting judge agreeing at $n=8$, $+0.073$ $[+0.027, +0.120]$; all pre-registered with refuting
-bands. The comparison is not a tie but a reversal --- in \emph{gains over each arm's
-own control}, because absolute judged levels do not survive the instrument check below. Head to
-head, with every item shown in both orders and the two arms paired over the same $500$ prompts,
-selection gains $+0.1045$ $[+0.082, +0.128]$ for $3.175$ nats and the metered decoder $+0.0400$
-$[+0.014, +0.0655]$ for $171.3$: a difference of $+0.0645$ $[+0.030, +0.0995]$, $2.6\times$ the gain
-for one fifty-fourth of the divergence, under the pathwise order rather than the KL. At the two
-further pairs where it runs at all --- no other openly licensed anchor has a shared vocabulary with
-the risky model --- the reversal repeats and widens: $+0.076$ for $1.204$ nats against its best
-arm's $+0.056$ for $123.2$, and $+0.150$ at the closest anchor against a metered decoder that resolves at no
-budget, $-0.019$ for $60.6$ (Appendix~\ref{app:proofs}).
+Selecting by judge~A and scoring with judge~B gains $+0.081$ $[+0.034, +0.130]$ at $n=8$; the deployable scorer (Figure~\ref{fig:breadth}) never
+consults the risky model --- a \emph{pointwise} reward, $\log p(\text{Yes}) - \log p(\text{No})$
+from a third model (\texttt{Qwen2.5-7B-Instruct}) on one fixed template, one forward pass per
+candidate, monotone in $\log n$ (Spearman $+0.991$ over seven arms), with a second non-selecting
+judge agreeing at $n=8$, $+0.073$ $[+0.027, +0.120]$ and at $n=64$, $+0.123$ $[+0.076, +0.171]$;
+all specified in advance with refuting bands. The certificate is $\log n$ whatever the arm realises
+--- $4.159$ nats at $n=64$ under the pathwise order, $\log 64 - 63/64 = 3.175$ under the sharper KL
+one \citep{beirami2025bestofn}. Both are \emph{bounds}, so the head-to-head sets selection's bound
+against the meter's \emph{measured} spend: the conservative direction. We report \emph{gains over
+each arm's own control}, because absolute judged levels do not survive
+the instrument check below. Head to head, paired over the same $500$ prompts with every item shown in both orders, selection gains
+$+0.1045$ $[+0.082, +0.128]$ for $3.175$ nats and the metered decoder $+0.0400$
+$[+0.014, +0.0655]$ for $171.3$, a difference of $+0.0645$ $[+0.030, +0.0995]$ under that judge.
+\looseness=-1 \textbf{It replicates across judges, not across opponents.} Five judges,
+$3.8$--$72$B in four families, re-scored \emph{byte-identical} text: all five put the difference
+positive and \textbf{four of five} put its interval clear of zero, the exception being the
+family-clean \texttt{Mixtral-8x7B}; no family, size or consistency ordering explains it
+(Table~\ref{tab:h2hrepeat}). Swapping the \emph{opponent} instead dissolves it
+(Appendix~\ref{app:selection}). All five agree sixty-four draws buy \emph{at least} the meter's
+utility for one fifty-fourth of its divergence, as does Figure~\ref{fig:judgefree}c with no judge
+in it. The advantage is in nats and not in compute --- at the meter's own
+compute selection loses, judged ($-0.0395$) and unjudged alike, the unjudged loss being the larger
+(Appendix~\ref{app:judgefree}) --- and $+0.0400$ sits inside the
+$0.04$--$0.07$ cross-pass floor measured below, so what carries the claim is the paired
+\emph{difference} and not either level. \textbf{It rests on a protocol repair}: earlier arms judged under a prompt reconstructed as served
+text minus generation, which differs across arms on $455$ of $500$ items; under the corpus prompt
+the \emph{single-order} difference is $+0.013$, not $+0.070$, and what survives is the
+order-averaged figure (Appendix~\ref{app:selection}). At the two further pairs where the meter runs at all
+(Appendix~\ref{app:second-anchor}) --- no other
+openly licensed anchor shares a vocabulary with the risky model --- the reversal repeats and widens,
+$+0.076$ for $1.204$ nats against $+0.056$ for $123.2$, and $+0.150$ against a meter that resolves
+at no budget, $-0.019$ for $60.6$ (Appendix~\ref{app:proofs}).
 
-\paragraph{The judge is dominated by position, and only the gains survive it}
-Re-judging in \emph{both} orders --- $2{,}000$ calls on one arm and $4{,}000$ on the head-to-head,
-bands committed first --- shows position bias \citep{zheng2023judging} dominating it: the same two
-texts win $261$ of $500$ shown second and $24$ shown first --- about a third of items are tied
-either way, which is why the two counts do not partition $500$ --- only $29.2\%$ of items get a
-mutually consistent verdict, and the first slot wins $12.7\%$ of \emph{decided} comparisons. An
-absolute judged level is therefore largely a statement about slot order, which is why nothing above
-is quoted as one. The correction is \emph{not} symmetric between the two mechanisms, and we
-pre-registered the wrong prediction about it: order-averaging the judge-A arm leaves $+0.0405$ $[+0.019, +0.063]$ against the $+0.081$ on record,
-but it moves selection's head-to-head gain by a factor of $0.95$ and the metered decoder's by
-$0.41$, so their difference grows rather than shrinks. The likely reason is that at $k=10$ the
-metered decoder is nearly the risky model it is judged against, leaving the judge little to read but
-slot order (Appendix~\ref{app:selection}).
+\subsection{Ablations and robustness}\label{sec:ablations}
 
-\begin{figure}[tb]
+\textbf{The judge is dominated by position, and only the gains survive it.} Re-judging the same $500$ pairs in \emph{both} orders finds the same two texts winning $261$ of
+$500$ shown second and $24$ shown first, so an absolute judged level is largely a statement about
+slot order and none is quoted as one. The correction is \emph{not} symmetric --- it scales
+selection's head-to-head by $0.95$ and the metered decoder's by $0.41$, so their difference grows
+--- and a judged gain has a floor: a re-run at a different $n$-grid moves one by $0.04$ to $0.07$,
+so a lone estimate of that size is not evidence. The head-to-head difference escapes the floor by
+being paired within one pass (Appendix~\ref{app:selection}).
+
+
+\textbf{An adversarial scorer leaks nothing.} The sharpest test hands the selector to the attacker:
+over nine arms --- six anchors, a paraphrase event, an attacker scoring the draws by the
+\emph{memorising model's own likelihood}, and \texttt{Llama-3.1-70B} --- near-verbatim recall reads
+$0.0000$ at every $n$ to $64$ and at $n=256$, on every passage and at all six anchors, against the
+memoriser alone at $0.3925$ mean and $0.8154$ maximum. \textbf{Nor is that memoriser ours}:
+\texttt{Llama-3.1-70B} memorised \emph{Harry Potter} in pre-training, unaided recovers $0.2475$ at
+a $100$-token prefix and reproduces two \emph{in full}. The guarantee can fail only through the
+anchor, whose own rate $n$ multiplies --- checkable rather than assumed
+(Appendix~\ref{app:vetting}) --- and broken on purpose over twelve contaminated anchors the
+realised factor at $n=64$ is $1.0$ to $4.0$, not the $64$ permitted (Figure~\ref{fig:safety},
+Table~\ref{tab:extraction}).
+
+
+\begin{figure}[t]
 \centering
-\includegraphics[width=0.70\textwidth]{selection_frontier.pdf}
-\caption{\textbf{(a)} $K = kT$ and $S(x) = s(x)T$ (grey band: nine pairs) are both rays, so which is
-larger is decided by $k/s(x)$, never by length; $\log n$ is horizontal. \textbf{(b)} What a nat buys
-against $\Lambda^*_s$ (dotted): sweeping $n$ moves selection up the frontier, sweeping $k$ moves the
-metered decoder along a wall two orders of magnitude to the right. These are \emph{levels}, which
-carry the shape; the claim is the order-averaged gain in the text.}
-\label{fig:selection}
+\includegraphics[width=0.76\textwidth]{figures/selection_breadth_forest.pdf}
+\caption{\textbf{Every arm selection anchoring has been measured at, beside the certificate that
+bought it.} Each row is a gain over \emph{that arm's own} anchor-alone control, $95\%$ bootstrap
+interval, single-order; levels are never quoted, because the judge is dominated by slot order. Open
+markers (Comma-1T, and the audited TinyComma at $n=8$) miss the admission criterion specified in
+advance. The right column is the \emph{entire} budget, $\log n$ nats, constant in the work's length,
+against the bottom row --- the meter's best judged arm under the same judge: the same range of gain
+for $171.3$ nats \emph{spent}, under a $K = 2000$ that certifies nothing about any work here. Both failures are identifiable: MT-Bench's $80$ items resolve nothing at a half-width of
+$0.09$, and the pointwise reward turns over with $n$ (Figure~\ref{fig:judgefree}).}
+\label{fig:breadth}
 \end{figure}
 
-\paragraph{An adversarial scorer leaks nothing}
-The sharpest test hands the selector to the attacker: we score the $n$ anchor samples by the
-\emph{memorising} model's likelihood, on Section~\ref{sec:onset}'s $100$ passages and seeds, with
-both baselines. Recall is $0.0000$ at every $n$ from $1$ to $64$ and at every one of the $100$
-passages, against the memoriser's $0.3925$ mean and $0.8154$ maximum (Table~\ref{tab:extraction}),
-and $0.0000$ at all six anchors --- $n$ multiplies the \emph{anchor's own} rate, and that the anchor
-never saw the work is checkable rather than assumed: the check separates all eighteen models here,
-every openly licensed anchor reproducing none of the $100$ passages and every model known to hold
-the work at least half (Appendix~\ref{app:vetting}). \textbf{Nor is the memoriser ours.} Against \texttt{Llama-3.1-70B}, which
-memorised \emph{Harry Potter} in pre-training, the unaided model recovers $0.2475$ on $50$ passages
-at a $100$-token prefix and reproduces two \emph{in full}; selection scored by its own likelihood
-recovers $0.0000$ (Appendix~\ref{app:selection}).
+\textbf{Six anchors, two more workloads, and three tasks with no judge at all.}
+Figure~\ref{fig:breadth} is the whole of it, and the anchor set is constrained by the premise: a
+safe model must be trained without the protected work, which rules out the open-\emph{data}
+families and leaves the openly \emph{licensed} ones, the largest we could obtain being Comma-7B ---
+the ceiling is the licensing frontier, not our compute. That
+exclusion is measured: the check of Appendix~\ref{app:vetting} reads $0.000$ at all five licensed
+anchors and above zero at both OLMo-2 models. Across the six admissible the gain does not track the
+anchor's own level ($\rho = +0.543$ on the two-judge mean). \textbf{Two rows are not judged
+preferences at all}: on GSM8K
+majority vote takes exact match from $0.320$ to $0.546$ for $3.47$ certified nats, $3.4\times$ the
+pointwise reward's lift, while on TriviaQA that reward \emph{falls} with $n$
+(Figure~\ref{fig:judgefree}), and on MMLU, a \emph{forced choice}, both lift again. What saturates is the scorer, not the mechanism, which is why the
+headline rule is the one with nothing to overoptimise against. Proposition~\ref{prop:selection}'s ceiling binds
+across anchors, not within one: across domains inside a single anchor the same test is inseparable
+from a no-effect null (Appendix~\ref{app:limitations}).
 
-\paragraph{Four anchors, and where the ceiling binds}
-Nothing above is tied to the audited anchor, \texttt{TinyComma-1.8B}. The anchor set is constrained
-by the premise rather than by convenience: a safe model must be trained without the protected work,
-which rules out the open-\emph{data} families whose corpora contain books and leaves the openly
-\emph{licensed} ones, the largest of the ten we could obtain being Comma-7B: the ceiling on this
-axis is the licensing frontier, not our compute. Re-run unchanged at three of them --- Pleias-1.2B,
-KL3M-1.7B and Comma-7B, a $6\times$ range in parameters, same prompts, judge and baseline ---
-selection gains $+0.029$ $[-0.012, +0.068]$, $+0.039$ $[+0.005, +0.076]$ and
-$+0.111$ $[+0.072, +0.148]$: two of three exclude zero on the pre-registered scorer, all three on
-the second, against a band committed to cost us this claim had none. Across six anchors the gain
-does not track the anchor's own level ($\rho = +0.543$). On \textbf{AlpacaEval}'s $805$ instructions \citep{dubois2024length} the audited anchor gains
-$+0.031$ $[-0.001, +0.062]$ under judge~B and $+0.067$ $[+0.034, +0.101]$ under judge~C, Comma-7B
-$+0.075$ $[+0.042, +0.108]$, all monotone in $\log n$, while \textbf{MT-Bench}'s $80$
-\citep{zheng2023judging} resolve nothing at a half-width of $0.09$.
-Proposition~\ref{prop:selection}'s ceiling binds at the anchor and not within one: across domains
-inside one anchor the same test is inseparable from a no-effect null
-(Appendix~\ref{app:limitations}).
-
-\paragraph{Off the judge's axis}
-Every gain above is a judged preference and the judge is position-dominated; exact match is not. On
-GSM8K's first $500$ test problems, $8$-shot, majority vote takes accuracy from $0.320$ to $0.546$
-($+0.226$ $[+0.184, +0.270]$ at $n=32$) and the pointwise reward gains $+0.066$ $[+0.024, +0.108]$,
-for $3.47$ and $4.16$ nats. On closed-book TriviaQA majority vote lifts
-$4.2\times$ less, $+0.054$ $[+0.026, +0.082]$ at $n=64$, while the reward \emph{falls} with $n$,
-$-0.038$ $[-0.068, -0.008]$ at $n=16$: across two tasks the rules differ by $3.4\times$ and then in
-sign, and the ceiling is the scorer's.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.74\textwidth]{figures/judge_free.pdf}
+\caption{\textbf{The result needs no judge --- and where the anchor cannot do the task, no $n$
+rescues it.} \textbf{(a, b)} Exact match against $n$, $95\%$ bootstrap bands; Comma-7B draws,
+\texttt{Qwen2.5-7B-Instruct} scores; dotted, the risky model alone. GSM8K ($8$-shot, $500$):
+majority vote lifts $0.320 \to 0.546$ for $3.47$ certified nats, $3.4\times$
+the pointwise reward $[2.20, 8.91]$. Closed-book TriviaQA: it lifts
+$4.2\times$ less and this $7$B reward \emph{falls} with $n$ (Spearman $-0.607$),
+excluding zero on the wrong side at $n=16$; $14$B does not (App.~\ref{app:selection}). \textbf{(c)} Both
+mechanisms at the one anchor a meter runs on (\texttt{TinyComma-1.8B}), TriviaQA, $T_{\max}=24$, no
+judge; $x$ is selection's KL \emph{bound} against the meter's \emph{measured} spend, conservative
+for us and not like for like. \textbf{The meter wins, $0.618$ against $0.190$, and how it wins is the thesis}: it is the anchor's own $0.112$ at $k=0.5$ and $k=1$,
+and reaches $0.618$ only at $k=20$, where it \emph{is} the risky model --- certified at $480$ nats
+for a $24$-token answer.}
+\label{fig:judgefree}
+\end{figure}

@@ -145,3 +145,68 @@ sharded `72`B model on two cards; the `14`B passes are `32{,}000` each on one ca
 `14`B passes took under `3` h. Well under the `24`-GPU-hour escalation threshold per run.
 
 ## Scoring log
+
+**Scored 2026-09-21.** All three arms finished on host B. `analysis/score_scorer_ladder.py`;
+CSV `results/scorer_ladder.csv`.
+
+### Gates: all three pass on all three arms
+
+**G0 passes at all seven majority-vote cells on every arm**, which is the strongest instrument
+result this project has produced and it was free. Majority vote never consults the scorer, so seven
+identical cells mean the `72`B and `14`B passes scored **byte-identical text** and the only thing
+that changed is the instrument. G1 (risky at or above the anchor, with a direction) and G2 (grid
+complete and matched) pass everywhere.
+
+**G0 is also what licenses the cross-pass comparison below.** Caution (ap) forbids setting a number
+from one sweep against a number from another, because the sweep usually changes what was drawn or
+how it was presented. Nothing was drawn here and nothing was re-ordered --- the reward is
+deterministic given the text, and G0 proves the text is the same --- so this is the five-judge
+panel's situation rather than caution (ap)'s, and the difference between passes **is** the
+instrument.
+
+### Bands
+
+| arm | band cell | gain | half-widths | verdict | Spearman (committed) |
+|---|---|---|---|---|---|
+| TriviaQA @ `14`B | `n=16` | `+0.0240` `[-0.0060, +0.0540]` | `0.80` | **NO EFFECT** | `+0.8571` (`-0.6071`) |
+| GSM8K @ `14`B, control | `n=64` | `+0.2140` `[+0.1680, +0.2620]` | `4.55` | **CLIMBS** | `+1.0000` (`+0.9286`) |
+| CoTaEval @ `72`B | `n=64` | `+0.0266` `[-0.0097, +0.0623]` | `0.74` | **NO EFFECT** | `+0.7500` (`-0.8929`) |
+
+**The control holds, and holds hard.** GSM8K was registered as the arm that must still climb or
+both `14`B arms are INVALID. It climbs at `4.55` interval half-widths with a Spearman of exactly
+`+1.0000`. The `14`B pipeline is sound and the TriviaQA reading is admissible.
+
+**Both turn-overs are gone, so the registered reading is `SCORER-BOUND, GENERAL`.** Neither
+interval excludes zero below any more, and both Spearmans have **inverted**: TriviaQA
+`-0.6071 -> +0.8571`, CoTaEval `-0.8929 -> +0.7500`. Under a larger scorer, accuracy on these
+tasks rises with `n` instead of falling.
+
+**H1 CONFIRMED, H2 REFUTED. We predicted that CoTaEval's turn-over at the headline anchor would
+survive `72`B and it did not.** That prediction is on record and this is the third registered
+prediction this week to be refuted.
+
+### What is rescoped, and what is NOT withdrawn
+
+The registered consequence is applied: **Limitations states the scorer-size requirement explicitly
+and both concessions are rescoped to the scorer sizes at which they were measured.** They are
+**rescoped, not deleted**, and the distinction is the whole of the honesty here:
+
+* the paper's deployable scorer **is** the `7`B one. Every selection arm in this paper scores with
+  it, the `35.4x` serving measurement is of it, and at that operating point the turn-over is real
+  and reproduces on a disjoint draw. Nothing measured at `7`B is revised;
+* what changes is the **explanation**. The failure was read as a property of optimising a pointwise
+  proxy. It is a property of optimising a pointwise proxy **of that size** on these tasks;
+* a deployer who wants selection to climb on a knowledge task therefore has a stated requirement,
+  and requirements are costs. It is a favourable one only because the paper already measured that
+  the scorer is `9.3%` of selection's wall-clock and the draws `90.7%` --- **no new cost number is
+  computed here and none should be inferred**, because no latency arm was run at `14`B or `72`B.
+
+**Two things this does NOT license.** It says nothing about the **judged** workload, where the
+headline `+0.1045` lives and where no larger scorer has been run --- the scorer-scale ladder there
+stops at `7.6`B and its own saturation reading stands. And it does not touch the certificate, which
+is `log n` for any score of any size.
+
+### Scope
+
+Three arms, one anchor for the `14`B pair, one anchor for the `72`B arm, three tasks, no judge.
+feat-160 extends the `72`B rung to the two anchors that flipped at `14`B and to TriviaQA.

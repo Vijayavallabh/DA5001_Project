@@ -497,7 +497,17 @@ def test_no_selection_bound_is_described_as_a_realisation():
                     if j != -1:
                         hi = min(hi, j)
                 win = txt[lo:hi]
-                if not any(v in win for v in vals):
+                # A value is only a candidate if it is being used as a DIVERGENCE. The fourth
+                # false positive of this guard, 2026-09-21: "climbs at $4.55$ interval
+                # half-widths" collides with kl_best_of_n(256) = 4.5490, and a half-width count
+                # is dimensionless -- it is not a spend, so calling it measured is not the defect
+                # this test exists for. Same class as the three refinements above (a bare value,
+                # a clipped table row, the word "granted").
+                hits = [v for v in vals if v in win]
+                dimensionless = ("half-width", "half widths", "$\\times$", "\\times")
+                hits = [v for v in hits
+                        if not any(u in win[win.find(v):win.find(v) + 40] for u in dimensionless)]
+                if not hits:
                     continue
                 if any(b in win for b in bound):
                     continue

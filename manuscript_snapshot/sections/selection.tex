@@ -4,7 +4,9 @@
 % moved in from frontier.tex because what makes log n a CERTIFICATE is where it sits against S(x).
 % v7 kept as selection_v7_2026-09-14.tex, v6 as selection_v6_2026-09-11.tex.
 
-\section{Selection anchoring: a budget spent once}\label{sec:selection}
+\section{Method}\label{sec:method}
+
+\subsection{Setting and notation}\label{sec:selection}
 
 Fix a prompt and write $p_s$ for a \emph{safe} model, trained without the protected work, and $p_r$
 for the \emph{risky} model a deployer would rather serve. An inference-time copyright defence serves
@@ -17,34 +19,36 @@ wrong place.
 \emph{Selection anchoring} puts it somewhere else. Draw $n$ completions $y_1,\dots,y_n \sim
 p_s(\cdot)$, score each with any function $f$, and serve the highest scorer. Every token emitted is
 drawn from $p_s$, so the per-step divergence is identically zero and there is nothing to meter; the
-whole budget is spent once, on \emph{which draw to serve}. That the safe model is the only
-\emph{generator} invites the objection that this is the safe model served well. It is not: the risky
-model may act as the scorer, through the ranking rather than the sampling, its influence bounded at
-$\log n$ however it is used.
+whole budget is spent once, on \emph{which draw to serve}. The safe model is the only
+\emph{generator}, but not necessarily the only model: the risky one may act as the scorer, through
+the ranking rather than the sampling, its influence bounded at $\log n$ however it is used.
 
 \begin{proposition}[The budget of a selection rule]\label{prop:selection}
-Let $y_1,\dots,y_n$ be i.i.d.\ $p_s$ and let $q$ be the law of $y^\star = \arg\max_i f(y_i)$ for any
-score $f$, ties broken by any rule depending on the $y_i$ only through their scores. Then
-$q(y) \le n\,p_s(y)$ for every $y$. Consequently
-$D_\infty(q \,\|\, p_s) \le \log n$, hence $D_\alpha(q\,\|\,p_s) \le \log n$ for every
-$\alpha \in [1,\infty]$, and $\Pr_q[E] \le n \Pr_{p_s}[E]$ for every event $E$. The KL is smaller
-still: $D_{\mathrm{KL}}(q \,\|\, p_s) \le \log n - (n-1)/n$.
+Let $y_1,\dots,y_n$ be i.i.d.\ $p_s$ and let $q$ be the law of \emph{any} rule that serves one of
+them. Then $q(y) \le n\,p_s(y)$ for every $y$, hence
+$D_\infty(q \,\|\, p_s) \le \log n$ and so $D_\alpha(q\,\|\,p_s) \le \log n$ for every
+$\alpha \in [1,\infty]$, and $\Pr_q[E] \le n \Pr_{p_s}[E]$ for every event $E$. If the rule is the
+argmax of a score with no ties the KL is smaller still,
+$D_{\mathrm{KL}}(q \,\|\, p_s) \le \log n - (n-1)/n$.
 \end{proposition}
 
 \begin{proof}
-$q(y) = \sum_i \Pr[y_i = y,\ y_i \text{ served}] \le \sum_i \Pr[y_i = y] = n\,p_s(y)$, each summand
-bounded by the marginal of its own draw. A logarithm and a maximum over $y$ give the
-$\alpha = \infty$ statement, which dominates every lower order by monotonicity in $\alpha$; summing
-over $y \in E$ gives the event form. Nothing is assumed about $f$, ties or $p_s$, and the bound is
-tight (Appendix~\ref{app:proofs}); the sharper KL bound is \citet{beirami2025bestofn}, quoted not
-reproved.
+If $y$ is served then $y$ was drawn, so
+$q(y) \le \Pr[\exists i : y_i = y] \le \sum_i \Pr[y_i = y] = n\,p_s(y)$. A logarithm and a maximum
+over $y$ give the $\alpha = \infty$ statement, which dominates every lower order by monotonicity in
+$\alpha$; summing over $y \in E$ gives the event form. The union bound is all that is used, so the
+selection may consult the scores, the strings, external randomness or nothing at all, and the bound
+is tight (Appendix~\ref{app:proofs}); the sharper KL form is \citet{beirami2025bestofn}, quoted not
+reproved, and needs the argmax structure the pathwise bound does not.
 \end{proof}
 
 The inequality is elementary and the KL form known; what has not been said is what it
-\emph{certifies}. Nothing in it mentions a reward, so \textbf{self-consistency is an instance}: the
-deployer already running it has the better guarantee.
+\emph{certifies}. Because the hypothesis is only \emph{serve one of the draws}, the certificate
+covers rules with no score in them: \textbf{self-consistency \citep{wang2023selfconsistency} is an
+instance}, returning a draw from the modal answer class under whatever tie rule, so the deployer
+already running it has the better guarantee.
 
-\paragraph{What $\log n$ certifies, and why it does not grow}
+\subsection{What $\log n$ certifies, and why it does not grow}
 Put the budget beside the price of the work: write $S(x) = -\log p_s(x)$ for the safe model's
 surprisal of a protected work $x$, the nats a mechanism must supply before it can be said to have
 delivered that work rather than its own text.
@@ -67,43 +71,51 @@ once.
 Selection anchoring meets this under the $\alpha = \infty$ charge --- the \emph{pathwise} budget,
 which bounds every event rather than an average, and the strongest order in the family the deployed
 meters charge in --- at exactly $\log n$ nats, where the same strengthening costs a metered decoder
-dearly (Section~\ref{sec:orders}). The two also scale differently in the one variable a
-rights-holder cares about: a metered budget has $K/S(x) \to k/s(x)$, a constant no length improves,
-a selection budget $\log n / S(x) \to 0$. At $n=8$ that is $\log 8 = 2.08$ nats against a median
-$S(x)$ of $849$, a margin above $400\times$ whatever the work's length.
+dearly (Section~\ref{sec:orders}). Figure~\ref{fig:selection}(a) is the consequence: $K/S(x)$ tends
+to $k/s(x)$, a constant no length improves, and $\log n / S(x)$ to zero.
 
-Put as the amplification a rights-holder can be promised --- the factor by which the mechanism may
-raise the safe model's own probability of emitting their work --- the two numbers are not of the
-same kind. For selection at
-$n=8$ it is exactly $8$, certified and realised alike, the bound being structural rather than a
-measurement. For the metered decoder at $k=10$ the certificate is $K = kT_{\max} = 2000$ nats, so
-the tightest factor its accounting implies is $e^{2000}$, while its measured spend implies
-$e^{171.3}$, about $10^{74}$. Both are empty, and only the first is what a rights-holder is handed.
+As the amplification a rights-holder is promised --- the factor by which the mechanism may raise
+the safe model's own probability of emitting their work --- selection at $n=8$ spends
+$\log 8 = 2.08$ nats and gives exactly $8$, a bound no smaller constant satisfies; the metered
+decoder's $K = kT_{\max} = 2000$ at $k=10$ implies $e^{2000}$ and its spend $e^{171.3}$, about
+$10^{74}$. Both empty, and the first is what is handed over.
 
 \textbf{It composes, at the order the certificate is written in.} Max-divergence adds exactly under
-adaptive composition, so $m$ queries at $n=8$ cost $m \log 8$ with no advanced composition and no
-assumption about how they were chosen --- not true of per-query access-freeness in general
-\citep{cohen2025blameless}. Under a $400$-nat per-user odometer \citep{vijayavallabh2026audit} that
-is $192$ queries, against $2$ for a metered decoder that spends a measured $165.0$ nats on a
-$200$-token response, and none at all if the odometer is charged the $600$ nats that response is
-certified at.
-The sharper KL bound of $1.204$ nats gives $332$; we quote the pathwise $192$, the order
-Proposition~\ref{prop:selection} advertises.
+adaptive composition, so $m$ queries at $n=8$ cost $m \log 8$ however they were chosen --- not true
+of per-query access-freeness in general \citep{cohen2025blameless}. Against the $400$-nat per-user
+odometer an earlier audit proposes \citep{vijayavallabh2026audit} --- none is deployed anywhere ---
+that is $192$ queries
+against $2$ for a metered decoder that spends a measured $165.0$ nats per $200$-token response, and
+none at all charged the $600$ it is certified at. The sharper KL bound of $1.204$ nats gives $332$;
+we quote the pathwise $192$ (Appendix~\ref{app:selection}).
 
-\paragraph{What the guarantee does not depend on}
+\subsection{What the guarantee does not depend on, and what it costs}
 The omissions are the engineering argument. Proposition~\ref{prop:selection} holds for \emph{any}
 score --- a reward model, a classifier, a human or an adversary --- any tie rule and any $p_s$, so a
 \emph{malicious} score multiplies the anchor's own probability of emitting $x$ by at most $n$ and
-introduces nothing new. Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted
-works are bounded on the same terms as exact quotation \citep{ippolito2023preventing}.
+introduces nothing new. That worst case is loose where it matters, and this is also the
+only place the looseness can be measured: amplification needs a base rate to amplify, and a clean
+anchor's is $0$. Against twelve deliberately memorised anchors, where it is not, an adversary
+selecting on the memoriser's own likelihood over $64$ draws realises $1.0$ to $4.0$ of the $64$ the
+bound permits (Appendix~\ref{app:selection}). Unlike an $n$-gram blocklist it names no work, so paraphrase and unlisted
+works are bounded on the same terms as exact quotation \citep{ippolito2023preventing} --- measured
+at a \emph{non-literal} event rather than assumed: the anchor reaches ROUGE-L $\ge 0.5$ on $0$ of
+$100$ passages, where the memoriser reaches it on $47$.
 
-The price is compute, in a currency no nat measures: at a $7.6$B scorer selection costs
-$61.3\times$ the metered decoder's forward passes at $n=64$ --- the price of the reward model,
-not of the mechanism. Majority vote has no scorer term at all: $5.75\times$ at $n=32$, and where an
-answer is checkable it beats every reward cell at any price
-(Appendices~\ref{app:saturation}--\ref{app:scorerfree}).
+The price is compute. At a $7.6$B scorer selection costs $61.3\times$ the metered decoder's forward
+passes at $n=64$; \emph{measured} on one card it is $35.4\times$ the wall-clock per served token,
+because $64$ short completions in one batch do not cost $64$ sequential ones. The same measurement
+overturns where the cost sits: scoring is one batched forward pass and $9.3\%$ of the time, drawing
+is $64 \times 204$ sequential steps and the rest, so a free scorer would still leave $32.1\times$.
+The lever is $n$, not the scorer, and a smaller one does not rescue it. \textbf{Held to the metered
+decoder's own compute the mechanism loses}: at $n=4$ and $0.92\times$ the cost it gains $-0.0395$
+$[-0.0720, -0.0065]$ against it. Nor does the obvious alternative substitute --- a $3.9\times$ larger
+safe model served alone gains $+0.015$ $[-0.0065, +0.0365]$ against selection's $+0.1045$, at
+$86\times$ less compute (Appendix~\ref{app:biggeranchor}). Majority vote has no scorer term at all, $5.75\times$ at $n=32$, and where an answer is checkable
+it dominates the pointwise reward at every scorer we ran up to $7.6$B --- but not at $14$B, which
+overtakes it on both tasks (Appendix~\ref{app:scorerfree}). What is cheap is not what is best.
 
-The obvious objection is that the gain comes from leaving the decode loop rather than from where the
-budget sits, so we granted a metered decoder the same $\log 8$ nats up front. Neither causal
-placement buys anything --- $-0.008$ front-loaded, $-0.032$ uniform, $-0.019$ at ten times the
-budget, against $+0.054$ off the axis at the same $2.08$ nats (Appendix~\ref{app:proofs}).
+The objection is that the gain comes from leaving the decode loop rather than from where the budget
+sits. The causal policy Proposition~\ref{prop:sparse} permits --- a sequence budget granted up
+front, spent freely or \emph{reserved} until a step's demand clears a threshold --- was built and
+priced at three budgets and five placements, and does not reach it (Section~\ref{sec:orders}).
