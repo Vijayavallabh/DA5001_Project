@@ -187,7 +187,10 @@ and a record of $0.500$ / $1.0000$. Both halves PASS and every column lands with
 vetting pipeline's power on the second host is now **demonstrated rather than inherited**, which is
 what a G1 pass needs: the same code detects a pre-training memoriser on nearly half of the same $50$
 passages while Pleias-350M, KL3M-170M and KL3M-520M read exactly $0.0$. The OLMo-2-7B supplementary
-control stays uninformative and is explicitly not what licenses G1.
+control was described as uninformative; **that was wrong about the quantity and is corrected in
+`results/onset_prediction_breadth_ladders.md`** --- the $0.0$ was the recall selection SERVED, while
+the anchor's own candidate pool reaches the record's $0.2677$ exactly on the same worst passage.
+G1's three passes are unaffected and the 70B still licenses them.
 
 ### feat-136's first arm is INVALID, and the defect was in our own pre-registration
 

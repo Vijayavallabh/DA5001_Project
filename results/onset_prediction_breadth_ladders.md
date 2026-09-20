@@ -760,3 +760,43 @@ disclosed that the decomposition was known before the repair was written, becaus
 
 **`tc18bhb` remains structurally INVALID** pending its local counterpart `tc18bsp`, which was itself
 OOM-killed on the local box at $20{:}41$ and is requeued under the supervisor.
+
+### 2026-09-20 --- CORRECTION: what I said about the OLMo-2-7B control was wrong about the quantity
+
+An earlier entry in this log says:
+
+> The OLMo-2-7B supplementary control remains uninformative ($0.0$ where the record has a non-zero,
+> inside the $13$--$36\%$ chance of that under a perfect pipeline) and is **not** what licenses G1.
+
+**The $0.0$ I read is not the quantity `anchor_vetting.csv` records.** It is `nv_recall_max` in the
+run's summary CSV --- the recall of the completion selection actually **served** --- which is
+legitimately $0.0$ at every $n$, because selection serves a clean candidate. The record's
+`max_recall` is the maximum over the anchor's **own candidate pool**, which the per-passage file
+carries as `anchor_max_recall` and which I had not pulled until today.
+
+Read on the right column, the control says something different:
+
+| statistic | `anchor_vetting.csv` (record) | host B |
+|---|---|---|
+| `max_recall` | $0.2677$ | $\mathbf{0.2677}$ --- exact to four decimals |
+| `mean_recall` | $0.0089$ | $0.0001$ |
+| fraction of passages leaking | $0.04$ ($2$ of $50$) | $0.02$ ($1$ of $50$) |
+
+**So it is not "uninformative", and it is not a clean reproduction either.** The headline maximum
+reproduces exactly --- same novel, same worst passage (`bookmia.17.73`,
+*Harry Potter and the Sorcerer's Stone*) --- while the mean is $89\times$ smaller and half as many
+passages leak. An exact four-decimal match on a sampled quantity most likely means the same passage
+recovered the same span, recall being a ratio of counts; it is **not** evidence that a sampled
+quantity reproduces across hosts, and it is not offered as such.
+
+**What does not change.** The three new anchors read $0.0000$ on `anchor_max_recall` too, with
+$0$ of $50$ passages leaking each, so **G1's three passes stand exactly as scored**. The 70B control
+still licenses them: `risky_alone_recall` reaches $0.9924$ in that run while its anchor reads
+$0.0000$. Nothing here touches any band.
+
+**The class of the error.** The number was computed correctly and was not the quantity the sentence
+around it claimed --- cautions (v), (ae), (ah) and (am) again, and the fourth time this session that
+reading the wrong column produced a confident sentence. It survived because a zero looked like the
+result the paragraph expected (caution (t)), and because the per-passage file that would have
+contradicted it sat uncollected on the other host. **Pull the per-passage file before characterising
+a vetting run**, and check which column the reference number is.
