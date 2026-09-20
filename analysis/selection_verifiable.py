@@ -189,6 +189,66 @@ def extract_lambada(text):
     return w or None
 
 
+def _sq_norm(t):
+    """SQuAD normalisation: lowercase, drop articles and punctuation, collapse whitespace.
+
+    NewsQA ships PTB-tokenised (`-LRB-`, `` `` ``, spaced punctuation); stripping punctuation
+    tokens absorbs that, so the benchmark text is left exactly as distributed (normalising the
+    corpus itself would make our numbers incomparable with CoTaEval's own).
+    """
+    import string
+    t = t.lower()
+    t = "".join(" " if c in string.punctuation else c for c in t)
+    return " ".join(w for w in t.split() if w not in ("a", "an", "the"))
+
+
+def load_cotaeval(limit, n_shot):
+    """CoTaEval news in-domain utility: article + question, answer by reading comprehension.
+
+    The prompt is built by analysis/build_bench_corpora.build_cotaeval_news and read from disk, so
+    the metered and selection arms answer the same questions from the same file (caution (at)).
+    n_shot is accepted and ignored: the article IS the context.
+    """
+    import json
+    rows = [json.loads(l) for l in open("data/bench/cotaeval_news_utility.jsonl")]
+    if limit:
+        rows = rows[:limit]
+    return "", [dict(qid=r["prompt_id"], question=r["prompt_text"], gold=r["reference"])
+                for r in rows]
+
+
+def extract_cotaeval(text):
+    """The answer span the model emits after `Answer:`.
+
+    WRITTEN AGAINST OBSERVED OUTPUT, not hypothesised (caution (au)). Six Comma-7B generations were
+    read before this existed and they showed exactly three shapes: a clean answer with trailing
+    punctuation (`' Harry Potter and the Half-Blood Prince ,'`), a RUN-ON where the model answers
+    and then invents a new context (`' Benicio Del Toro\\nContext and question: After the 2004...'`),
+    and an empty string. The run-on is cut at the first newline; the empty string returns "".
+    """
+    t = (text or "").split("\n")[0].strip()
+    return t.strip(" ,.;:")
+
+
+def f1_cotaeval(pred, gold):
+    """SQuAD token-F1 in [0,1] -- CoTaEval's own in-domain utility metric, and a graded one.
+
+    Exact match is the wrong instrument here and the probe showed why: the anchor answers
+    `' On the morning of May 25'` where the gold is `'May 25 , 1979'`. That is most of an answer and
+    exact match scores it zero.
+    """
+    from collections import Counter
+    pt, gt = _sq_norm(pred).split(), _sq_norm(gold).split()
+    if not pt or not gt:
+        return float(pt == gt)
+    common = Counter(pt) & Counter(gt)
+    ns = sum(common.values())
+    if ns == 0:
+        return 0.0
+    prec, rec = ns / len(pt), ns / len(gt)
+    return 2 * prec * rec / (prec + rec)
+
+
 def extract(text):
     """The 8-shot format ends an answer with '#### N'; a base model that runs on starts the next
     question.  Cut at the run-on, prefer the number after '####', else the last number."""
@@ -347,7 +407,8 @@ def main():
     ap.add_argument("--gen-dir", default="output/phase5/verifiable")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--max-n", type=int, default=64)
-    ap.add_argument("--task", choices=("gsm8k", "triviaqa", "mmlu", "lambada"), default="gsm8k")
+    ap.add_argument("--task", choices=("gsm8k", "triviaqa", "mmlu", "lambada", "cotaeval"),
+                    default="gsm8k")
     ap.add_argument("--n-shot", type=int, default=8)
     ap.add_argument("--max-prompt-tokens", type=int, default=0,
                     help="mmlu only: drop items whose few-shot prompt exceeds the "
@@ -373,6 +434,9 @@ def main():
     if a.task == "gsm8k":
         shots, items = load_gsm8k(a.limit, a.n_shot)
         pick, ok = extract, lambda p, g: p == g
+    elif a.task == "cotaeval":
+        shots, items = load_cotaeval(a.limit, a.n_shot)
+        pick, ok = extract_cotaeval, f1_cotaeval
     elif a.task == "lambada":
         shots, items = load_lambada(a.limit, a.n_shot)
         pick, ok = extract_lambada, lambda p, g: p == g
@@ -463,7 +527,7 @@ def main():
                 else:
                     sc = rewards[q][:n]
                     i = max(range(n), key=lambda j: sc[j])
-                correct.append(1.0 if ok(cand[i], it["gold"]) else 0.0)
+                correct.append(float(ok(cand[i], it["gold"])))
             if n == 1:
                 base[rule] = correct
             acc, lo, hi = boot(correct, a.reps, a.seed + n)
@@ -479,8 +543,7 @@ def main():
             r["spearman_acc_logn"] = round(rho, 4)
 
     for name, g in risky.items():
-        correct = [1.0 if ok(pick(g[it["qid"]][0]), it["gold"]) else 0.0
-                   for it in items]
+        correct = [float(ok(pick(g[it["qid"]][0]), it["gold"])) for it in items]
         acc, lo, hi = boot(correct, a.reps, a.seed)
         rows.append(dict(arm=f"risky model alone, k=-1 ({name})", n=1, budget_nats="",
                          n_problems=len(items), acc=round(acc, 4), acc_lo95=round(lo, 4),

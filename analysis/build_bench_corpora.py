@@ -262,6 +262,59 @@ def build_lambada(limit=500):
     return len(items)
 
 
+def build_cotaeval_news(limit_inf=1000, limit_util=500):
+    """CoTaEval (Wei et al. 2024) news domain, as two corpora in the established symlink pattern.
+
+    WHY THIS EXISTS. The Program Chairs asked for the method to be benchmarked on the
+    community-standard CoTaEval framework rather than only on our CopyBench/BookMIA setups. Every
+    protected corpus in this paper is BOOKS; CoTaEval's news half is a different domain as well as
+    a different benchmark, so it tests domain and framework at once.
+
+    RECORD SHAPES, READ OFF THE REAL FILES BEFORE THIS WAS WRITTEN (caution (au)):
+      newsqa_blocklisted_infringement.json  list[1000]  story_text / prompt_autocomplete /
+                                                        gt_autocomplete
+      newsqa_indomain_utility.json          list[ 500]  story_text / question / answer
+
+    The infringement half maps onto our pipeline exactly: `prompt_autocomplete` is the prefix a
+    decoder is given and `gt_autocomplete` is the continuation it must not reproduce, which is the
+    same (prompt_text, target) contract `data/copybench_*.jsonl` uses.
+
+    NOTE ON THE TEXT. NewsQA is PTB-tokenised -- `-LRB-`, `` `` ``, space-separated punctuation.
+    It is left exactly as the benchmark ships it, because normalising it would make our numbers
+    incomparable with CoTaEval's own; the word-level metrics are unaffected.
+
+    Both go through the FACTUAL slot, never the neutral one, for the reason the AlpacaEval corpus
+    does: `dap/shared.py` prepends `Complete the prefix:` to copyright-domain prompts, which would
+    stop the benchmark's number being the benchmark's number.
+    """
+    raw = os.path.join(BENCH, "cotaeval_raw")
+    inf = json.load(open(os.path.join(raw, "newsqa_blocklisted_infringement.json")))
+    uti = json.load(open(os.path.join(raw, "newsqa_indomain_utility.json")))
+    assert isinstance(inf, list) and isinstance(uti, list), "CoTaEval ships lists"
+    out_i = os.path.join(BENCH, "cotaeval_news_infringement.jsonl")
+    with open(out_i, "w", encoding="utf-8") as fh:
+        for i, r in enumerate(inf[:limit_inf]):
+            fh.write(json.dumps({
+                "prompt_id": f"cta_inf_{i:04d}", "source_novel": "newsqa", "split": "factual",
+                "prompt_text": r["prompt_autocomplete"],
+                "reference": r["gt_autocomplete"],
+                "expected_answer": r["gt_autocomplete"],
+            }) + "\n")
+    out_u = os.path.join(BENCH, "cotaeval_news_utility.jsonl")
+    with open(out_u, "w", encoding="utf-8") as fh:
+        for i, r in enumerate(uti[:limit_util]):
+            fh.write(json.dumps({
+                "prompt_id": f"cta_qa_{i:04d}", "source_novel": "newsqa", "split": "factual",
+                "prompt_text": f"{r['story_text']}\n\nQuestion: {r['question']}\nAnswer:",
+                "reference": r["answer"], "expected_answer": r["answer"],
+            }) + "\n")
+    di = link_dir("cotaeval_inf", {"factscore.jsonl": out_i})
+    du = link_dir("cotaeval_qa", {"factscore.jsonl": out_u})
+    print(f"cotaeval news: {min(len(inf), limit_inf)} infringement -> {di}; "
+          f"{min(len(uti), limit_util)} utility -> {du}")
+    return di, du
+
+
 if __name__ == "__main__":
     build_alpaca()
     build_triviaqa()

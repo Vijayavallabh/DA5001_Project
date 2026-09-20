@@ -74,6 +74,18 @@ reading (caution (ap)), and the local-vs-host-B gap is not evidence against the 
 it changes silicon and seed together (caution (at)). Caution (ap)'s half-width rule predicted
 DOES NOT REPLICATE at `1.57` and that prediction held out of sample.
 
+**`results/onset_prediction_cotaeval_news.md` (feat-155) is IN FLIGHT on host B** --- the
+Program Chairs' one remaining partially-answered point, that the method is benchmarked only on our
+own CopyBench/BookMIA setups and not on the community-standard **CoTaEval**. It is a domain gap as
+well as a framework one: every protected corpus in this paper is books, and this is news. Primary
+axis is CoTaEval's own in-domain utility, `500` article+question items at Comma-7B, `n` to `64`,
+scored by **SQuAD token-F1** --- graded, and chosen because six anchor generations were read before
+any band was written and they show partial answers (`' On the morning of May 25'` against gold
+`'May 25 , 1979'`) that exact match would score zero. Registering exact match would have repeated
+the MMLU/LAMBADA defect for a third time. The `1000`-item infringement half runs too and is
+explicitly a **negative control, not CoTaEval's memorization setting** --- neither model has seen
+NewsQA. Bands, four instrument gates and a `2.0`-half-width marginality rule are committed.
+
 **Next session: check `output/logs/comma7b128_merge.log` first.** If neutral's `GEN_DONE` never
 appears, the supervisor (`run_comma7b128_supervise.sh`, PID reparented, 27 h old) is still
 restarting it against the other project's memory pressure; the card must have `34000 MiB` free.

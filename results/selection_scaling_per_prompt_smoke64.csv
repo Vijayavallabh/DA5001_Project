@@ -1,0 +1,11 @@
+judge,prompt_id,u_n1,u_n2,u_n4,u_n8
+Phi-3.5-mini-instruct,1nzes2,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,2786lw,0.5,0.5,1.0,0.0
+Phi-3.5-mini-instruct,2ov45h,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00376_14th Dalai Lama,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00418_A. K. Ramanujan,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00433_Aaron Burr,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_000,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_001,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_002,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_003,0.5,0.5,0.5,0.5
