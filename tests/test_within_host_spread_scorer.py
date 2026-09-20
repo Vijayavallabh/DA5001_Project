@@ -125,3 +125,31 @@ def test_P3_is_NOT_READ_on_fewer_than_three_draws(tmp_path, capsys, monkeypatch)
     # the heading and the line (caution (ar): a guard on raw output guards where things break).
     assert "NOT READ: 2 of 3 draws finished" in txt
     assert "P3 HOLDS" not in txt and "P3 FAILS" not in txt
+
+
+def test_the_registered_reading_rule_withdraws_when_a_cross_host_move_sits_in_the_body(tmp_path,
+                                                                                       capsys,
+                                                                                       monkeypatch):
+    """The rule is NOT P1's threshold, and the two can disagree -- which is what happened.
+
+    A threshold can survive by a hair (0.0670 against 0.0700, a margin equal to the smallest
+    within-host move ever measured) while the distribution says the cross-host moves are ordinary.
+    The pre-registration fixed both tests in advance; this one pins the second.
+    """
+    out = str(tmp_path)
+    # Three tight draws per anchor: every within-host move is small, so a cross-host move of 0.0200
+    # would sit in the far tail and the sentence would survive.
+    for name in ("pleias12bhb", "pleias3bhb", "kl3m17bhb"):
+        for (s_, tag), d in zip(M.DRAWS[name], (0.0500, 0.0505, 0.0510)):
+            _draw(out, tag, d)
+    monkeypatch.setattr(sys, "argv", ["x", "--out", out])
+    M.main()
+    txt = " ".join(capsys.readouterr().out.split())
+    assert "upper tail; the sentence survives" in txt and "WITHDRAWN" not in txt
+
+    # Now widen one anchor's own spread so the cross-host moves become ordinary.
+    for (s_, tag), d in zip(M.DRAWS["pleias3bhb"], (0.0730, 0.0060, 0.0570)):
+        _draw(out, tag, d)
+    M.main()
+    txt2 = " ".join(capsys.readouterr().out.split())
+    assert "sit in the BODY" in txt2 and "is WITHDRAWN" in txt2

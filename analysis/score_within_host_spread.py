@@ -105,6 +105,29 @@ def main():
             recs.append(dict(anchor=LABELS[nm], name=nm, pair="cross-host", move=ch,
                              kind="cross-host"))
 
+    # THE REGISTERED READING RULE, which is not the same test as P1's threshold and which the
+    # pre-registration states in its own words: "The sentence 'a host change is not a re-draw'
+    # survives only if the cross-host moves sit in the upper tail; if they sit in the body, it is
+    # withdrawn in the same words it was written." Applied here so that a threshold surviving by a
+    # hair cannot be reported as survival while the distribution says otherwise.
+    UPPER_TAIL = 0.80
+    if vals:
+        print("\n=== the registered reading rule: tail or body? ===")
+        in_body = []
+        for nm, ch in CROSS_HOST.items():
+            frac = sum(1 for v in vals if v < ch) / len(vals)
+            where = "upper tail" if frac >= UPPER_TAIL else "BODY"
+            print(f"  {LABELS[nm]:<14} {ch:.4f} at the {100 * frac:.0f}th percentile -> {where}")
+            if frac < UPPER_TAIL:
+                in_body.append(LABELS[nm])
+        if in_body:
+            print(f"  {len(in_body)} of {len(CROSS_HOST)} cross-host moves sit in the BODY "
+                  f"({', '.join(in_body)}).")
+            print("  By the rule committed before these data existed, the sentence")
+            print("  \"a host change is not a re-draw\" is WITHDRAWN.")
+        else:
+            print("  All cross-host moves sit in the upper tail; the sentence survives.")
+
     print("\n=== P1 ===")
     if refuted:
         print("  REFUTED. feat-140's conclusion is WITHDRAWN: a within-host pair at Pleias-3B")

@@ -142,3 +142,20 @@ cross-host Comma comparison**: both Comma host-transfer arms are refused by `fea
 cross-host evidence here is entirely non-Comma, and the claim "Comma is stable across hosts while
 the others are not" is **not** supported by these data. What is supported is that Comma is stable
 across seeds and the others are not stable across hosts.
+
+### 2026-09-20 --- the conclusion above is WITHDRAWN by feat-141
+
+The sentence this log drew --- *"A host change is not a re-draw: it is larger, and at a marginal
+anchor it is large enough to flip the verdict"* --- is **withdrawn**, in the same words it was
+written, by `results/onset_prediction_within_host_spread.md`.
+
+`feat-141` re-drew each flipped anchor at two further seed triples **on one host**. Within that one
+host, Pleias-1.2B goes CLIMBS/CLIMBS/SATURATED, Pleias-3B goes CLIMBS/SATURATED/CLIMBS and
+KL3M-1.7B goes CLIMBS/SATURATED/SATURATED, and the largest within-host move is $0.0670$ against a
+largest cross-host move of $0.0700$. Two of the three cross-host moves sit at the $65$th and $59$th
+percentiles of the within-host distribution --- in its **body**, not its tail --- which is the
+condition this arm's successor registered in advance as withdrawal.
+
+**The three readings in the table above stand as measured.** What was wrong was the inference from
+them: the within-host spread was estimated from four seed pairs at anchors that had not flipped, and
+at the anchors that did flip it is three to nine times larger than that estimate.

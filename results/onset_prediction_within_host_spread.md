@@ -85,3 +85,68 @@ $4$** --- under the $24$-gpu-hour-per-run escalation threshold, and run under th
 of 2026-09-20 to use host B's GPUs to their maximum.
 
 ## Scoring log
+
+### 2026-09-20 --- the arm did what it was built to do: it withdrew the conclusion that created it
+
+All eight arms finished. **Every non-Comma anchor flips its verdict WITHIN one host, across seeds
+alone.**
+
+| anchor | seeds 42 | seeds 52 | seeds 62 | seeds 72 | verdicts |
+|---|---|---|---|---|---|
+| Pleias-1.2B | $+0.0560$ ($1.47$) | --- | $+0.0470$ ($1.18$) | $+0.0270$ ($0.69$) | CLIMBS, CLIMBS, **SATURATED** |
+| Pleias-3B | $+0.0730$ ($1.80$) | --- | $+0.0060$ ($0.14$) | $+0.0570$ ($1.39$) | CLIMBS, **SATURATED**, CLIMBS |
+| KL3M-1.7B | $+0.0470$ ($1.34$) | --- | $+0.0180$ ($0.50$) | $+0.0380$ ($0.97$) | CLIMBS, **SATURATED**, SATURATED |
+| KL3M-3.7B | $+0.0200$ ($0.56$) | --- | $+0.0130$ ($0.35$) | --- | SATURATED, SATURATED |
+| Comma-7B (1T) | $+0.0970$ ($2.34$) | $+0.0860$ ($2.07$) | $+0.0830$ ($1.98$) | --- | CLIMBS, CLIMBS, CLIMBS |
+
+#### The registered reading rule fires, and the answer is WITHDRAW
+
+$17$ within-host moves now exist: min $0.0030$, median $0.0140$, **max $0.0670$**. The three
+cross-host moves sit at the $100$th, $65$th and $59$th percentiles of that distribution. The rule
+committed before these data existed says:
+
+> The sentence "a host change is not a re-draw" survives only if the cross-host moves sit in the
+> upper tail; if they sit in the body, it is withdrawn in the same words it was written.
+
+**Two of three sit in the body.** The sentence is **WITHDRAWN**.
+
+#### P1 "survived" by a margin equal to the measurement's own floor, and that is not survival
+
+P1 would have withdrawn the conclusion if a within-host pair at Pleias-3B reached $0.0700$. It
+reached $\mathbf{0.0670}$ --- short by $0.0030$, which is **exactly the smallest within-host move in
+the whole distribution**. A bright line passed by less than the instrument's finest reading is not
+evidence that the line means anything, and reporting "P1 SURVIVES" as the headline would be a
+technicality standing in front of the result. It is recorded, and it is not the reading.
+
+**This is why the pre-registration carried two tests rather than one.** A single threshold can be
+survived by a hair; a distribution cannot be argued with.
+
+#### P3 FAILED: the one stable anchor is on the boundary
+
+Comma-7B (1T) reads $2.34$, $2.07$, $\mathbf{1.98}$ half-widths. The third draw is **below** the
+$2.0$ boundary the whole H2 rule is built on. P3 said in advance that this would put the only stable
+anchor in the ladder on the boundary, and it does.
+
+#### What actually survives, stated as narrowly as the data allow
+
+* **H2's rule still holds across eleven non-Comma readings**: not one clears $2.0$ half-widths. The
+  highest is Pleias-3B's $1.80$.
+* **Comma-7B (1T)'s VERDICT never flips** --- CLIMBS on all three draws --- while **every** non-Comma
+  anchor produces both verdicts across its own draws. That is a real distinction and it is the only
+  family-level statement these data support. It is about the verdict's consistency, not about the
+  half-width ratio, which crosses $2.0$ for Comma-1T too.
+* **The host is NOT distinguishable from a re-draw at these anchors.** A seed change alone moves the
+  measurement by up to $0.0670$ and flips verdicts; the cross-host moves ($0.0180$, $0.0200$,
+  $0.0700$) are ordinary against that.
+
+#### The finding this arm actually produced, which is about the method and not the hosts
+
+**At $n=64$ over $500$ prompts, a paired $g(64) - g(8)$ in the $+0.00$ to $+0.10$ range is not
+resolvable by this measurement.** The $2.0$-half-width rule is sorting **draws**, not anchors: the
+same anchor, same host, same pipeline, same batch size, one seed triple apart, lands on either side
+of it. Caution (ap) proposed that boundary as a guard against promoting marginal readings, and this
+is the strongest evidence yet that the guard is necessary --- and also that a reading below it
+carries no information about the anchor at all, only about the draw.
+
+**`feat-140`'s three readings stand as measured** and are not recomputed; what is withdrawn is the
+sentence drawn from them.
