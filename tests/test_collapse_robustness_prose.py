@@ -61,11 +61,19 @@ def test_the_two_judge_sigmas_in_the_introduction_come_from_the_v6_separation_cs
     # horn ("... at k=0.5 neither of two judges can separate it from the safe model"), so the
     # phrasing is matched loosely and the substance -- that the named budget really is one where
     # neither judge separates -- is what the assertion below checks.
-    m = re.search(r"at\s+\$k=([\d.]+)\$\s+neither\s+of\s+two\s+judges", abstract) or \
-        re.search(r"safe\s+model\s+at\s+\$k=([\d.]+)\$", abstract)
-    assert m, "the abstract no longer names the budget it claims no separation at"
-    k = float(m.group(1))
-    assert abs(z(q, k)) < 2 and abs(z(p, k)) < 2, (k, z(q, k), z(p, k))
+    # 2026-09-20: this was two exact phrasings and a rescoping of the dichotomy broke both, with
+    # the substance untouched -- caution (aj), a guard whose trigger is a sentence someone will
+    # reword. Condition on the PROPERTY instead: find every budget the abstract names inside a
+    # no-separation claim, and check each really is one where neither judge separates. Rewording
+    # cannot retire it; naming a budget where a judge DOES separate still fails.
+    flat = " ".join(abstract.split())
+    named = [float(mm.group(1)) for mm in re.finditer(r"\$k\s*=\s*([\d.]+)\$", flat)
+             if "judge" in (w := flat[max(0, mm.start() - 120): mm.end() + 120])
+             and "separat" in w]
+    assert named, "the abstract no longer names the budget it claims no separation at"
+    for k in named:
+        assert abs(z(q, k)) < 2 and abs(z(p, k)) < 2, \
+            (k, z(q, k), z(p, k), "the abstract claims no judge separates at a budget where one does")
 
 # RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
 # when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.

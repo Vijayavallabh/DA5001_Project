@@ -5827,3 +5827,65 @@ bash scripts/run_n128_card1.sh 1   # neutral 200 x 128, then Arm B extraction to
 bash scripts/run_n128_card2.sh 2   # creative+factual 300 x 128, then the merge and the scoring
 .venv/bin/python analysis/score_n128.py --out results   # the committed reading rules
 ```
+
+---
+
+## 2026-09-20 --- revision against four referee reports
+
+Four reports (one AC/PC LLM report, three full reviews). Acted on the points where they agree or
+where a defect is demonstrable; skipped the ones that need compute or data this project cannot get.
+
+### Acted on
+
+1. **The impossibility claim outruns Proposition 3** (all four reports). Rescoped from "no
+   per-token BUDGET can match it" to "no per-token **RATE**", and "Vacuous, or trivial" to
+   "**Vacuous, or sparse** --- and sparse is a shape, not a verdict". The reason is our own
+   mechanism: selection's served law factorises, so Proposition 3 applies to it at `3.175` nats and
+   it gains `+0.1045` anyway. Touched: abstract, `iclr_intro`, `frontier`, `orders`, `iclr_closing`.
+2. **Proposition 1's tie-breaking hypothesis was superfluous** and contradicted its own proof
+   (AC; Review 3 asked for the self-consistency mapping). It now holds for any rule that serves one
+   of the draws --- strictly stronger, and it makes majority vote an instance by hypothesis rather
+   than by assertion. The sharper KL form stays scoped to the tie-free argmax.
+3. **Proposition 4's statement bounded `Z_T` over all steps; its proof restricts to the slack set.**
+   Statement corrected, the "slack steps bounded away from 0" condition restored, and the `Omega(T)`
+   conclusion now carries the proviso it always needed (`Lambda*_s(u_max) = O(1)` in `T`), with the
+   failure case stated in the appendix.
+4. **Proposition 5's equality condition was backwards** (AC). With `delta > 0` a constant rate makes
+   the running ratio strictly decreasing, so equality needs back-loaded surprisal. Corrected; the
+   duplicated `\subsection{Proposition 5}` header removed; a truncated paragraph beginning
+   `margin: at k = 20 ...` --- a page-trim artefact that had reached the PDF --- rewritten.
+5. **"Selection is not a causal policy at all" withdrawn** as an error of ours (AC). Recorded in
+   place, replaced with the operative fact: the conditionals are not *causally computable*.
+6. **The incumbent baseline** (all four). `analysis/blocklist.py`'s measured MemFree rule was in
+   `results/` and unused. Main-text Related Work gains a Scope statement (certified budgets vs.
+   blocklists, datastores, filtering; CoTaEval named) and `appendix_related.tex` the measurement,
+   including that it refuted the argument it was built to support (collateral flattens at
+   `0.140%`).
+7. **The capability gap promoted into the main text** (AC, Reviews 2/3/4).
+   `results/verifiable_metered_tqa.csv` --- pre-registered, judge-free, matched anchor --- is now
+   panel (c) of Figure 3. The arm we lose is the clearest picture of the dichotomy in the paper.
+8. Relative-not-absolute caveat on the zero-reproduction claim (abstract + contributions); prompt
+   provenance; scorer named; Theorem 1 restated for any `K`-bounded law (Review 4 Q8); two appendix
+   tables numbered and captioned; Appendix A's empirical half given its own subsection; extraction
+   table rows explained; `arXiv preprint arXiv:` -> `arXiv:` across 31 bib entries.
+
+### Not acted on, and why
+
+CoTaEval / TokenSwap / TRBS runs, a CP-Fuse head-to-head, human pairwise labels, a frontier-class
+judge, a larger licensed anchor: all need compute or models this project cannot obtain, and the
+licensing frontier is already stated as the binding constraint. A *realised* selection divergence:
+not computable from a decode log, and the contaminated-anchor arm already measures realised
+amplification against the bound --- Section 3.3 now says so. Six unnumbered `center+tabular`
+displays in the appendix were left unnumbered deliberately: each completes the sentence above it,
+nothing `\ref`s them, and floating them would detach them from that sentence.
+
+### Commands
+
+```bash
+.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures
+cd ~/sub/satml && ~/.local/bin/tectonic -X compile iclr_2027.tex
+.venv/bin/python -m pytest -q tests
+```
+
+Main text 9 of 9 pages (Ethics at the top of page 10, no body prose above it), 34 pages total,
+0 overfull, 0 `??`, `pdffonts | grep -ci bold` = 3.

@@ -479,7 +479,7 @@ def selection_frontier():
     # closed form log n - (n-1)/n, a BOUND, so an axis calling them realised asserts a
     # measurement nobody made -- cautions (ae)/(ah)/(am), fifth instance. The caption says
     # which is which; the label must not contradict it.
-    ax.set_xlabel("divergence from the anchor, nats per trajectory")
+    ax.set_xlabel("divergence from the anchor, nats per trajectory (bound / spent)")
     ax.set_ylabel("judged utility $u$ (judge B)")
     ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
@@ -771,7 +771,7 @@ def selection_breadth_forest():
     # advance-width ratio caught it (the ratio compares DejaVu Sans against Times and overstates
     # by the font-width difference). Reserve the gutters INSIDE a 6.0in canvas instead, so the
     # shrink is ~1 and a drawn point is a printed point. Measure the SAVED file, never figsize.
-    fig, ax = plt.subplots(figsize=(6.0, 2.62))
+    fig, ax = plt.subplots(figsize=(6.0, 2.18))
     fig.subplots_adjust(left=0.345, right=0.875, bottom=0.145, top=0.985)
     # x in AXES fraction, y in data: the label gutters sit outside the data area by construction,
     # so no interval can ever print through a row label (the first draft's MT-Bench and TriviaQA
@@ -965,10 +965,50 @@ def judge_free_rows():
     return out
 
 
+def judge_free_metered_rows():
+    """The judge-free HEAD-TO-HEAD: both mechanisms, one anchor, one task, no judge anywhere.
+
+    results/verifiable_metered_tqa.csv is the only arm in the paper where the two mechanisms are
+    compared on an objective metric at a SHARED anchor (TinyComma-1.8B is the one openly licensed
+    safe model whose vocabulary the metered decoder can fuse with). Returned as
+    (selection points, metered points, baselines), each point (nats, acc, lo, hi).
+
+    The x value is not the same KIND of quantity for the two arms and the caller must say so:
+    selection's is `kl_nats`, the CLOSED FORM log n - (n-1)/n, while the metered decoder's is
+    `realised_nats`, a measured mean. That is the conservative direction -- it charges selection a
+    bound and the meter only what it spent -- but it is not like for like (caution (am)).
+    """
+    p = RESULTS / "verifiable_metered_tqa.csv"
+    if not p.exists():
+        raise FileNotFoundError(p)
+    sel, met, base = [], [], {}
+    for r in csv.DictReader(open(p, encoding="utf-8")):
+        acc = (float(r["acc"]), float(r["acc_lo95"]), float(r["acc_hi95"]))
+        if r["mechanism"].startswith("selection"):
+            n = int(r["arm"].split("=")[1])
+            if n > 1:
+                sel.append((float(r["kl_nats"]), *acc))
+        elif r["arm"] == "k=-1":
+            base["risky"] = acc[0]
+        elif r["arm"] == "k=0":
+            base["anchor"] = acc[0]
+        else:
+            met.append((float(r["realised_nats"]), *acc, r["arm"], float(r["certificate_nats"])))
+    assert sel and met and len(base) == 2, (len(sel), len(met), base)
+    # The meter's best arm must BE the unconstrained risky model, which is the whole point of the
+    # panel; if that ever stops being true the caption's claim has to change with it.
+    assert abs(max(m[1] for m in met) - base["risky"]) < 1e-9, \
+        "the metered decoder's best arm is no longer the risky model's own accuracy"
+    return sorted(sel), sorted(met), base
+
+
 def judge_free():
     data = judge_free_rows()
-    fig, axes = plt.subplots(1, 2, figsize=(5.98, 1.46), sharex=True)
-    fig.subplots_adjust(left=0.085, right=0.995, bottom=0.185, top=0.87, wspace=0.22)
+    fig = plt.figure(figsize=(5.98, 1.62))
+    gs = fig.add_gridspec(1, 3, width_ratios=(1.0, 1.0, 1.30), wspace=0.34)
+    axes = [fig.add_subplot(gs[0]), fig.add_subplot(gs[1])]
+    cx = fig.add_subplot(gs[2])
+    fig.subplots_adjust(left=0.068, right=0.995, bottom=0.215, top=0.855)
     style = {"majority vote": ("C0", "o", "-"), "pointwise reward": ("C3", "s", "--")}
     for axi, (task, (by, base)) in zip(axes, data.items()):
         for rule, pts in by.items():
@@ -981,8 +1021,8 @@ def judge_free():
         if base:
             b = max(base.values())
             axi.axhline(b, color="0.35", ls=":", lw=1.0, zorder=2)
-            axi.annotate(f"risky model alone, $k={{-1}}$: ${b:.3f}$", xy=(1.05, b),
-                         fontsize=6.0, color="0.2", va="bottom")
+            axi.annotate(f"risky alone, $k={{-1}}$: ${b:.3f}$", xy=(1.05, b),
+                         fontsize=6.2, color="0.2", va="bottom")
             lo = min(v for _, (by_, _) in [(0, (by, base))] for pts in by_.values()
                      for _, _, v, _ in pts)
             axi.set_ylim(lo - 0.03, b + 0.075)
@@ -990,9 +1030,39 @@ def judge_free():
         axi.set_xlabel("$n$")
         axi.grid(alpha=0.22, lw=0.5)
     axes[0].set_ylabel("exact match")
-    axes[0].set_title("(a) GSM8K: the lift needs no judge", fontsize=8)
-    axes[1].set_title("(b) TriviaQA: the proxy reward turns over", fontsize=8)
-    axes[0].legend(loc="lower right", fontsize=6.4, frameon=False)
+    axes[0].set_title("(a) GSM8K", fontsize=7.6)
+    axes[1].set_title("(b) TriviaQA", fontsize=7.6)
+    axes[0].legend(loc="lower right", fontsize=6.2, frameon=False)
+
+    # (c) the two mechanisms on one objective axis, one shared anchor, no judge anywhere.
+    sel, met, base = judge_free_metered_rows()
+    cx.axhline(base["anchor"], color="0.55", ls=":", lw=0.9, zorder=1)
+    cx.axhline(base["risky"], color="0.35", ls=":", lw=0.9, zorder=1)
+    cx.plot([m[0] for m in met], [m[1] for m in met], marker="^", color="C3", ls="--",
+            ms=3.6, lw=1.2, label="metered decoder", zorder=3)
+    cx.plot([p[0] for p in sel], [p[1] for p in sel], marker="o", color="C0", ls="-",
+            ms=3.6, lw=1.2, label="selection (majority vote)", zorder=3)
+    cx.fill_between([p[0] for p in sel], [p[2] for p in sel], [p[3] for p in sel],
+                    color="C0", alpha=0.13, lw=0, zorder=1)
+    top = max(m for m in (base["risky"],))
+    k20 = max(met, key=lambda m: m[1])
+    cx.annotate(f"$k{{=}}20$: the risky model,\ncertified at ${k20[5]:.0f}$ nats",
+                xy=(k20[0], k20[1]), xytext=(0.26, 0.58), textcoords="axes fraction",
+                fontsize=6.4, color="0.15", ha="left", va="top",
+                arrowprops=dict(arrowstyle="-", lw=0.6, color="0.45"))
+    cx.annotate("anchor alone", xy=(0.02, base["anchor"]), xycoords=("axes fraction", "data"),
+                fontsize=6.2, color="0.35", va="bottom",
+                bbox=dict(fc="white", ec="none", pad=0.6))
+    cx.set_xscale("log")
+    cx.set_xlabel("nats from the anchor (bound / spent)")
+    cx.set_ylim(base["anchor"] - 0.05, top + 0.30)
+    cx.grid(alpha=0.22, lw=0.5)
+    cx.set_title("(c) both mechanisms, one anchor", fontsize=7.6)
+    # caution (ad): a legend pinned inside a small axes collides with the data. Here the risky
+    # model's dotted rule runs straight through the second entry, so the box is opaque and the
+    # ylim carries the headroom that keeps it off the curves.
+    cx.legend(loc="upper left", fontsize=6.4, frameon=True, framealpha=1.0, facecolor="white",
+              edgecolor="none", handletextpad=0.4, borderpad=0.15, labelspacing=0.2)
     _save(fig, "judge_free")
 
 
