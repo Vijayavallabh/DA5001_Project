@@ -163,3 +163,38 @@ One H100, about `90` minutes: `95` seed-group generations per rep over two reps,
 generations and twenty-four reward passes. Under the 24-GPU-hour escalation rule by two orders of magnitude.
 
 ## Scoring log
+
+### Note written 2026-09-21 17:58, while the run was still generating and before any reward cell existed
+
+Seven cells are on disk --- the two metered ones and draws at `n = 64, 16, 8, 4` --- and no reward
+pass has run yet, so no `ratio` has been computed by anything. From those seven the slope is
+already visible (`454.850`, `122.097`, `66.067`, `38.297` seconds, and `18.002` / `24.668` for the
+meter), which means `64 b / b_met` alone is about `66`, and G0's upper end is `70`. **G0 is
+therefore likely to fail, and the reason is a defect in this registration rather than in the
+measurement.** It is recorded now, with the number that would decide it still unmeasured, because
+recording it afterwards is worth nothing.
+
+**The defect.** G0's endpoints were anchored on the committed `35.4x`, which is a **loader
+inclusive** ratio --- `908.031 / 25.637` out of `results/serving_latency.csv`, both arms carrying
+their model load. G0 was then written against `ratio`, which this same registration defines two
+sections earlier as the **loader excluded** one, `cost / b_met`. A band taken from one quantity
+and applied to a different one is caution (as)'s exact error, committed here in our own
+pre-registration, and it is worse than caution (as)'s because that band was merely too tight
+whereas this one is about the wrong measurement.
+
+**What will be done if it fires.** Not a quiet widening, and not a switch of G0 to the raw ratio
+after seeing which of the two passes. The arm will be reported as **INVALID BY OUR OWN
+SPECIFICATION** (caution (w): a defect in our specification must not retire a question), and G0
+re-registered as the band the paper's own committed prices imply for this cell: it prints `35.4x`
+(measured, raw) and `61.3x` (the FLOP proxy) for `n=64`, and any measurement of that cell within a
+factor of two of either is not a broken pipeline, so the re-registered band is
+`[0.5 x 35.4, 2 x 61.3] = [17.7, 122.6]`. That is derived from two numbers committed before this
+arm existed and from the sentence in G0 that already says what the gate is for -- "a ratio near 1
+... or near 500" -- and not from today's measurement. The re-scoring uses the same data; nothing
+is re-run, and this paragraph is what makes the ordering auditable.
+
+**Why the marginal ratio is nonetheless the right quantity, and is not being chosen to suit.** A
+served request does not pay for loading a checkpoint; a server loads once and serves for hours. The
+raw ratio flatters the metered decoder specifically, because loading is `11.3` of its `18.0`
+seconds and only `10.5` of selection's `454.9`. Both ratios are reported in `cost_grid.csv` either
+way, which is the reason that table was specified to carry both.
