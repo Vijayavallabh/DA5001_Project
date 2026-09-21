@@ -20,6 +20,16 @@ instrument: a five-point `k` grid on `200` prompts, and the budget is chosen by 
 be tuned to an answer. Bands carry over from feat-166 unchanged. The anchor draws, the opponent and
 the `51,520` reward scores are NOT re-run --- they do not depend on `k`.
 
+**`results/onset_prediction_workload_scope.md` (feat-170) is REGISTERED and generating** --- the
+control and the replication that feat-168's manuscript edit needs. Arm A puts our own `850`
+ordinary prompts through feat-168's exact pipeline, so a reviewer asking *"is that the workload or
+your new pipeline?"* has an answer; the committed pass differs from feat-168 in batch size,
+prompt count and `k`, so nothing currently separates them. Arm B re-draws AlpacaEval at `--seeds
+52`, because `-0.0339` sits `1.71` interval half-widths from zero and caution (ap)'s own precedent
+says a disjoint draw moved a difference by `0.061` at exactly that ratio --- `1.8x` the reading.
+If Arm A reads PIPELINE the appendix paragraph is withdrawn and the committed `+0.0675` comes into
+question, which is written into the registration as the branch it is.
+
 **`results/onset_prediction_tokenswap_gsize.md` (feat-169) is SCORED** --- the controlled
 version of feat-167's finding. feat-167 saw suppression fail at the rung with the fewest `G` token
 ids, but `results/tokenswap_g_survey.csv` shows thirteen cached tokenizers give `|G| = 171` or

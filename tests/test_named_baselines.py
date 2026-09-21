@@ -46,21 +46,64 @@ def test_the_bibliography_entries_are_the_verified_ones():
     assert "2026" in m.group(1) and "Association for Computational Linguistics" in m.group(1)
 
 
-def test_the_paper_concedes_it_did_not_measure_them_and_says_why():
-    """Derived from the fact itself: no results/ artefact exists for either method, so the paper
-    must not imply one does, and must carry the concession."""
+def test_the_paper_reports_the_tokenswap_measurement_and_that_it_loses():
+    """This guard used to assert the OPPOSITE -- that no results/ artefact existed and the paper
+    said so. feat-165/167/169 measured TokenSwap and the guard fired, which is what it was for.
+
+    What it pins now is the uncomfortable half. TokenSwap beats this paper's own mechanism on
+    utility and matches it on suppression, so these are the sentences a length edit deletes first
+    (caution (ag)), and every number is rebuilt from the CSV that produced it.
+    """
+    import csv as _csv
     import glob
     from tests.manuscript import ROOT
-    assert not glob.glob(os.path.join(ROOT, "results", "*tokenswap*")), (
-        "a TokenSwap measurement now exists; this guard and the paragraph must be revisited")
-    assert not glob.glob(os.path.join(ROOT, "results", "*trbs*")), (
-        "a TRBS measurement now exists; this guard and the paragraph must be revisited")
+    assert glob.glob(os.path.join(ROOT, "results", "*tokenswap*")), \
+        "the TokenSwap measurement artefacts are gone; the paragraph claims a measurement we lack"
+    assert not glob.glob(os.path.join(ROOT, "results", "*trbs*")), \
+        "a TRBS measurement now exists; the paragraph still says it is unmeasured"
+
+    def d5(tag):
+        rows = [r for r in _csv.reader(open(os.path.join(
+            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))
+            if r and r[0].startswith("D5")]
+        assert len(rows) == 1, tag
+        return float(rows[0][2]), float(rows[0][3]), float(rows[0][4]), rows[0][7].strip()
+
     t = body(SEC)
     i = t.find("TokenSwap")
     assert i > 0
-    w = t[i:i + 2200]
-    assert "did not measure either one" in w, "the concession that neither was measured is gone"
-    assert "next comparison" in w, "the paper no longer says measuring them is the next step"
+    w = t[i:i + 4400]  # the paragraph grew when the measurement replaced the concession
+
+    # It must say the measurement happened, and that our mechanism is the expensive one.
+    assert "have now measured TokenSwap" in w, "the paper no longer says the arm was run"
+    assert "most expensive of the three" in w, \
+        "the concession that our mechanism costs the most was trimmed"
+
+    # The three costs, each from its own judging pass, and the head-to-head with its verdict.
+    ts, tslo, tshi, verdict = d5("tokenswap")
+    assert verdict == "INCUMBENT WINS", f"TokenSwap's verdict is now {verdict!r}"
+    assert ts > 0, "TokenSwap no longer beats selection; the paragraph's framing is stale"
+    assert f"${ts:+.4f}$ $[{tslo:+.4f}, {tshi:+.4f}]$" in w, "the head-to-head band left the paper"
+    sel, sello, selhi, _ = d5("norule")
+    assert f"$-{sel:.4f}$ $[-{selhi:.4f}, -{sello:.4f}]$" in w, \
+        "selection's own cost against the shared control left the paper"
+
+    # The auxiliary qualification: at THEIR auxiliary it is a tie, not a win.
+    dg, dglo, dghi, dgv = d5("ts_distilgpt2")
+    assert dgv == "TIE", f"the DistilGPT-2 reading is now {dgv!r}"
+    assert f"${dg:+.4f}$ $[{dglo:+.4f}, {dghi:+.4f}]$" in w, \
+        "the tie at their own auxiliary was trimmed; it is what makes the +0.0615 honest"
+
+    # The fragility, and that |G| is not the axis.
+    kl = [r for r in _csv.DictReader(open(os.path.join(
+        ROOT, "results", "blocklist_decode__tsleak_kl3m170m.csv"), encoding="utf-8"))
+        if r["arm"] == "tokenswap"][0]
+    assert f"${float(kl['nv_recall_mean']):.4f}$" in w, "the KL3M leak was trimmed"
+    assert f"${kl['rouge_ge_0p5_count']} of $100$" in w or \
+        f"${kl['rouge_ge_0p5_count']}$ of $100$" in w, "the KL3M passage count was trimmed"
+    assert "is not the axis" in w, "the paper no longer says |G| fails to predict the failure"
+    assert "vetting requirement" in w, \
+        "the paper no longer records that its own stated blocker was discharged"
 
 
 def test_the_scope_limit_on_trbs_is_kept():
