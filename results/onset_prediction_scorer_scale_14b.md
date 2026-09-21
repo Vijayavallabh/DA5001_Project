@@ -81,3 +81,92 @@ judging session on `500` prompts. The `72`B reward is sharded over two cards (ca
 `24`-GPU-hour threshold.
 
 ## Scoring log
+
+**Scored 2026-09-21.** One pass, six scorers, host B cards 0--1.
+`scripts/run_scorer_scale_14b.sh`; CSVs `results/scorer_scale{,_bands,_per_prompt}.csv`.
+
+### G0 REPLICATES, so everything below may be quoted
+
+The three reference arms land inside the judge's own `+/-0.04` cross-pass floor. Adding two rungs
+enlarged the set of distinct served completions to `5{,}263` across `36` selection arms, which per
+caution (ap) shifts presentation order for nearly every item --- and the gains, taken over a shared
+control with position removed by construction, replicate anyway. G1 (`32{,}000` scores per new
+scorer) passes for both.
+
+### The judged ladder at `n=64`, all six rungs, one pass
+
+| scorer | gain at `n=64` | cost vs the meter |
+|---|---|---|
+| `0.494`B | `+0.0230` `[+0.0005, +0.0445]` | |
+| `1.5437`B | `+0.0910` `[+0.0695, +0.1125]` | |
+| `3.0859`B | `+0.1025` `[+0.0800, +0.1255]` | |
+| **`7.6156`B** | **`+0.1095`** `[+0.0865, +0.1320]` | the paper's operating point |
+| `14.7701`B | `+0.0810` `[+0.0600, +0.1030]` | |
+| `72.7062`B | `+0.1010` `[+0.0780, +0.1235]` | `486.9x` |
+
+**The ladder is NOT monotone in scorer size**, which neither we nor the registration anticipated.
+It rises steeply to `1.5`B, is flat to `7.6`B, **drops** at `14.8`B, and recovers to statistical
+parity at `72.7`B.
+
+### B2, the registered readings, both against the `7`B rung
+
+| difference | value | half-widths | registered row |
+|---|---|---|---|
+| `g_14b(64) - g_7b(64)` | `-0.0285` `[-0.0470, -0.0110]` | `1.58` | **A LARGER SCORER HURTS** (marginal) |
+| `g_72b(64) - g_7b(64)` | `-0.0085` `[-0.0255, +0.0085]` | `0.50` | **SATURATION HOLDS** (marginal) |
+
+The scorer emitted only ADJACENT steps (G4); both differences above are against the `7`B rung as
+this file named them, computed with the same `paired_boot` and seed the scorer uses. For context
+the adjacent step it did emit is `g_72b - g_14b = +0.0200` `[+0.0025, +0.0380]`, also marginal.
+
+**We predicted SATURATION HOLDS, and in the sense that matters we were right: no rung above
+`7.6`B lifts the judged gain.** The headline `+0.1045` stands as the best this mechanism does on
+this workload, and a deployer buys nothing by spending more on the reward model --- at `n=64` a
+`72.7`B scorer costs `486.9x` the metered decoder for a gain indistinguishable from a `7.6`B one's.
+**All three readings are MARGINAL by this paper's own `2.0`-half-width rule** and are reported as
+such; the dip at `14`B in particular is not a result we would build on.
+
+### The two pictures are reconciled, which is what this arm was for
+
+feat-158/160 found that on the **judge-free** tasks a larger scorer removes every turn-over and
+inverts both Spearmans. Here, on the **judged** workload, a larger scorer buys nothing. Those are
+not in conflict: scorer size binds where the task has a checkable answer and not where the target
+is a judged preference on ordinary prompts, which a `1.5`B model already approximates well
+(`+0.0910` of the `7.6`B rung's `+0.1095`). That is a statement about the **task**, not about the
+mechanism, and it is exactly the consequence this file fixed in advance for SATURATION HOLDS.
+
+### A defect in our own specification, recorded and not repaired (caution (w))
+
+The `A LARGER SCORER HURTS` row's consequence says ``the overoptimisation story returns at a new
+scale on the judged axis''. **G1 refutes that clause**: the `14`B scorer's own terminal drop is
+`+0.0270` `[+0.0095, +0.0455]`, which **RISES** --- its curve does not turn over, it simply sits
+lower. A lower level is not overoptimisation. The row's first half (``Reported as is'') is applied
+and the overoptimisation clause is **withdrawn**. A future scorer-ladder arm should separate *level*
+from *shape* in its consequence table, because this one conflated them.
+
+### The rest of the grid, reported whatever it reads
+
+G1 terminal drops: `0.494`B **FLAT** `-0.0165` `[-0.0345, +0.0010]`, `1.5437`B **FLAT**
+`+0.0155` `[-0.0030, +0.0335]`, and RISES at `3.0859`B `+0.0345`, `7.6156`B `+0.0410`,
+`14.7701`B `+0.0270`, `72.7062`B `+0.0310`. **G3: no turnover anywhere on the ladder.** G2 shape:
+monotone at `1.5437`B, `3.0859`B, `7.6156`B and `72.7062`B; not monotone at `0.494`B (`0.5798`) or,
+descriptively, at `14.7701`B (`0.9429`). G4 adjacent steps: only `1.5`B over `0.5`B
+(`+0.0680`), `14`B over `7.6`B (`-0.0285`) and `72`B over `14`B (`+0.0200`) separate; the two
+steps through the middle of the ladder do not.
+
+### Two corrections made after the run, both recorded rather than quietly applied
+
+**This pass overwrote a closed arm's CSV and was caught by three existing guards.** Running with
+`--out results` wrote the canonical `scorer_scale{,_bands,_per_prompt}.csv`, which belonged to
+feat-117's closed four-rung arm --- whose `+0.0700`, `+0.0040`, `+0.0095`, `87.3%`, `35.2%` and
+`0.5429` the appendix still quotes. feat-117's files were restored from git, this pass now lives in
+`scorer_scale_6rung*.csv`, and `scorer_scale.py` refuses to write over a different ladder unless
+told to. Recorded as caution (ax). **No number in this log changed**: the six-rung pass is intact
+and is what every figure above is read from.
+
+**A parameter count was typed rather than counted.** `14.7701`B and `72.7062`B were entered from
+knowledge into a list whose own comment says ``COUNTED OFF THE LOADED MODEL''. Counted off the
+safetensors index (`total_size / 2`, a method validated by reproducing the committed `7.6156`
+exactly for the `7`B rung), the `14`B scorer is **`14.7700`**B and the `72`B one `72.7062`B. The
+constant and the two derived metadata cells were corrected by hand; **no measured quantity depends
+on either value** --- they name a rung and scale the descriptive cost column, which carries no band.

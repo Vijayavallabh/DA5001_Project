@@ -195,9 +195,13 @@ the one the $35.4\times$ serving measurement is of, and the one a deployer readi
 deploy, so at the paper's own operating point the loss is real and reproduces on a disjoint draw.
 What a deployer gains is a stated requirement, and a requirement is a cost --- a favourable one
 only in that the scorer is $9.3\%$ of selection's wall-clock and the draws $90.7\%$, though
-\emph{no latency arm was run above $7$B and no cost number here is measured}. Two things it does
-not reach: the judged workload, where the scorer ladder stops at $7.6$B and its saturation reading
-stands, and the certificate, which is $\log n$ for any score of any size.
+\emph{no latency arm was run above $7$B and no cost number here is measured}. \textbf{And it does not
+transfer to the judged workload, which is now measured rather than disclaimed}: the same two
+scorers, run over the judged grid in one six-scorer pass, lift it by nothing
+(Appendix~\ref{app:saturation}). Scorer size binds where the task has a checkable answer and not
+where the target is a judged preference on ordinary prompts, which a $1.5$B model already
+approximates to $87\%$ of the $7.6$B gain --- a statement about the \emph{task}, not the mechanism.
+The certificate is untouched either way: it is $\log n$ for any score of any size.
 
 \textbf{Giving the \emph{metered} decoder the same reward model, which is the one evaluation
 objection we had answered only in pieces.} A report put it directly: the metered decoder fuses
@@ -369,7 +373,14 @@ strictly monotone at all six grid points --- for each of $1.5$B, $3$B and $7.6$B
 \paragraph{Scorer capability saturates, and it saturates early}\label{app:saturation}
 Only the first of the three adjacent steps at $n=64$ separates: $+0.0700\,[+0.0500,+0.0900]$ from
 $0.5$B to $1.5$B, then $+0.0040\,[-0.0145,+0.0225]$ and $+0.0095\,[-0.0090,+0.0285]$. A scorer must
-clear a bar; past it, a $4.9\times$ larger scorer buys $+0.0135$ and neither step of it separates. A
+clear a bar; past it, a $4.9\times$ larger scorer buys $+0.0135$ and neither step of it separates.
+\textbf{Two further rungs, run after the judge-free ladder below showed no saturation at all, do
+not change that and make it non-monotone}: in one pass over all six scorers the gain at $n=64$ is
+$+0.1095$ at $7.6$B, $+0.0810$ at $14.8$B and $+0.1010$ at $72.7$B, so against the $7.6$B rung a
+$14.8$B scorer reads $-0.0285\,[-0.0470,-0.0110]$ and a $72.7$B one $-0.0085\,[-0.0255,+0.0085]$.
+\emph{Neither lifts the judged gain}, both readings sit inside this paper's own $2.0$-half-width
+marginality rule, and at $n=64$ the $72.7$B scorer costs $486.9\times$ the metered decoder for a
+gain indistinguishable from the $7.6$B one's. We registered that saturation would hold and it does. A
 $1.5$B scorer reaches $87.3\%$ of the $7.6$B scorer's gain for $35.2\%$ of its forward-pass cost, so
 on this workload the $61.3\times$ is the price of the scorer we happened to use and not of the
 mechanism --- a reading the measured clock below contradicts outright in the currency a deployer pays

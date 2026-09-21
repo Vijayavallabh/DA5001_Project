@@ -8,7 +8,38 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
-## Arms in flight on the DGX (2026-09-21 04:30)
+## Arms in flight (2026-09-21 15:10)
+
+**`results/onset_prediction_scorer_scale_14b.md` (feat-161) is SCORED: SATURATION HOLDS, as we
+predicted.** Six scorers in one judged pass, `G0` replicating. `7.6`B is the **peak** at `n=64`
+(`+0.1095`); `14.8`B reads `-0.0285` `[-0.0470, -0.0110]` against it and `72.7`B `-0.0085`
+`[-0.0255, +0.0085]`, so **neither new rung lifts the judged gain** --- and a `72.7`B scorer costs
+`486.9x` the metered decoder at `n=64` for a gain indistinguishable from the `7.6`B one's. All
+three readings are MARGINAL and are reported as such. The ladder is **non-monotone**, which the
+registration did not anticipate. The disclaimer the appendix carried this morning is now a
+measurement, and the reconciliation is the registered consequence: scorer size binds on tasks with
+a checkable answer and not on judged preference --- a statement about the task, not the mechanism.
+`tests/test_scorer_scale_14b.py` (6 tests), mutation-tested eight ways.
+
+**feat-134 (Comma-7B `n=128`) is RUNNING again, attempt 8, and nothing has been read.** Its
+supervisor hit its `36`-h deadline after **seven** CUDA OOM kills from another project on this box;
+attempt 7 reached `18200/25600` in eight hours before being killed. A deadlock was holding the only
+quiet card --- `card2b` claimed GPU 2 while waiting on a sentinel neutral could never write --- so
+`card2b` and its supervisor were killed by PID (their merge/score duty is duplicated by the live
+merge shell, `PID 3445287`, `29` h of budget left) and a fresh supervisor took GPU 2 with `~50` GB
+of headroom. **creative and factual are complete on disk; neutral's directory was empty; the
+committed band has never been computed**, so this is a clean rerun. Do NOT add an allocator flag:
+the supervisor's header explains why (cuBLAS can select kernels by available workspace, and this
+arm rests on a bit-identity gate over `32{,}000` rewards). Only the card and the attempt count may
+differ.
+
+**Next session, in order.** (1) `output/logs/comma7b128_merge.log` first --- if neutral's
+`GEN_DONE` appeared, the merge shell scores the arm by itself. (2) If neutral died an eighth time,
+the honest option is to record the arm as not completed: the paper's sentence *``We did not take
+Comma-7B past 64''* is accurate and stands, and the arm is a confirmation rather than load-bearing.
+(3) Host B is idle and free.
+
+
 
 **`results/onset_prediction_scorer_ladder.md` (feat-158) and
 `results/onset_prediction_scorer_ladder_72b.md` (feat-160) are both SCORED.** Six arms, all gates

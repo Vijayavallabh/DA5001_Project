@@ -55,7 +55,7 @@ SCORERS = [
     ("7b",  "Qwen/Qwen2.5-7B-Instruct",   7.6156, ""),
     # feat-161: the missing rung. The judge-free ladder shows no saturation to 72B while this one
     # reads saturation at 7.6B; all five are judged in ONE pass so the comparison is within-pass.
-    ("14b", "Qwen/Qwen2.5-14B-Instruct", 14.7701, "_qwen14b_judged"),
+    ("14b", "Qwen/Qwen2.5-14B-Instruct", 14.7700, "_qwen14b_judged"),
     ("72b", "Qwen/Qwen2.5-72B-Instruct", 72.7062, "_qwen72b_judged"),
 ]
 # feat-116's numbers, which G0 requires this pass to reproduce before anything else is read
@@ -74,6 +74,9 @@ def main():
     ap.add_argument("--k", type=float, default=10.0)
     ap.add_argument("--max-n", type=int, default=64)
     ap.add_argument("--seed", type=int, default=11703)
+    ap.add_argument("--allow-overwrite", action="store_true",
+                    help="permit replacing an existing scorer_scale.csv that holds a different "
+                         "ladder. Off by default: that file belongs to a closed pass.")
     ap.add_argument("--reward-max-memory", default="",
                     help="e.g. '0=75GiB,1=75GiB'; used for the 72B rung only. Empty keeps the "
                          "single-card path every committed arm was run under (caution (q)).")
@@ -101,6 +104,20 @@ def main():
                   and p in metered and p in anchor and p in prompts)
     assert pids, "no prompt is present in every arm"
     caches = {t_: f"{a.cache_prefix}{sfx}.csv" for t_, _, _, sfx in SCORERS}
+    # Refuse to clobber a CLOSED pass. feat-161 added two rungs, wrote the canonical filenames and
+    # overwrote feat-117's four-rung arm, whose values the appendix still quotes; three guards
+    # caught it after the fact. Two judged passes must never share a file, because caution (ap)
+    # forbids comparing their levels and one file invites exactly that.
+    _main = os.path.join(a.out, "scorer_scale.csv")
+    if os.path.exists(_main) and not a.allow_overwrite:
+        import csv as _c
+        have = sorted({r["scorer_b"] for r in _c.DictReader(open(_main, encoding="utf-8"))
+                       if r.get("scorer_b")})
+        want = sorted({f"{b:g}" for _, _, b, _ in SCORERS})
+        assert have == want, (
+            f"{_main} holds a DIFFERENT ladder ({have}, this run is {want}). That file belongs to "
+            f"a closed pass whose numbers the manuscript quotes. Write this pass elsewhere, or "
+            f"pass --allow-overwrite if you really mean to replace it.")
     if a.limit:
         pids = pids[:a.limit]
         assert "results/" not in a.cache_prefix, \

@@ -1,5 +1,64 @@
 # Session Progress Log
 
+## 2026-09-21 15:10 --- feat-161 SCORED: the judged ladder does not lift above `7.6`B, and feat-134's neutral class was rescued from a dead supervisor
+
+**feat-161: SATURATION HOLDS, as predicted, and the ladder is non-monotone.** Six scorers judged in
+one pass, `G0` replicating inside the judge's own `+/-0.04` floor. Gain at `n=64`: `+0.0230`
+(`0.494`B), `+0.0910` (`1.5`B), `+0.1025` (`3.1`B), **`+0.1095`** (`7.6`B, the peak and the paper's
+operating point), `+0.0810` (`14.8`B), `+0.1010` (`72.7`B). Against the `7`B rung a `14.8`B scorer
+reads `-0.0285` `[-0.0470, -0.0110]` and a `72.7`B one `-0.0085` `[-0.0255, +0.0085]`.
+**Neither lifts the judged gain**, and at `n=64` the `72.7`B scorer costs `486.9x` the metered
+decoder for a gain indistinguishable from the `7.6`B one's. **All three readings are MARGINAL** by
+this paper's `2.0`-half-width rule and are reported as such; the `14`B dip is not something we build
+on.
+
+**The two pictures are reconciled, which is what the arm was for.** feat-158/160 found a larger
+scorer removes every turn-over on the **judge-free** tasks and inverts both Spearmans; here on the
+**judged** workload it buys nothing. Not a conflict: scorer size binds where the task has a
+checkable answer and not where the target is a judged preference, which a `1.5`B model already
+approximates to `87%` of the `7.6`B gain. A statement about the **task**, not the mechanism ---
+exactly the consequence fixed in advance for SATURATION HOLDS. The disclaimer written into the
+appendix hours earlier (``it does not reach the judged workload'') is now a measurement.
+
+**A defect in our own specification, recorded not repaired (caution (w)).** The
+`A LARGER SCORER HURTS` row's consequence says ``the overoptimisation story returns at a new
+scale''. **G1 refutes it**: the `14`B scorer's own terminal drop is `+0.0270` `[+0.0095, +0.0455]`,
+which RISES --- the curve does not turn over, it sits lower. A lower level is not overoptimisation.
+The row's first half is applied and that clause is **withdrawn**. A future ladder must separate
+*level* from *shape* in its consequence table; this one conflated them.
+
+**And the scorer emitted the wrong difference.** `scorer_scale.py` computes ADJACENT steps (G4),
+while this registration named both differences **against the `7`B rung**. Computed here with the
+same `paired_boot` and seed the scorer uses --- a scorer gap filled, not a specification changed.
+
+**feat-134's neutral class was dead and is running again.** Its supervisor hit its `36`-h deadline
+at `08:09` after **seven** CUDA OOM kills, every one caused by another project on this shared box
+(`pid 1503503`, `~47` GB on each of three cards); attempt 7 ran eight hours and reached
+`18200/25600` before being killed. **A deadlock was holding the only quiet card**: `card2b` claimed
+GPU 2 while waiting on a `GEN_DONE` that neutral could never write. Its remaining duty --- merge and
+score --- is *duplicated* by the merge shell (`PID 3445287`, `29` h of budget left), so `card2b` and
+its supervisor were killed **by PID after checking their argv**, the `gpu2` claim released, and a
+fresh supervisor launched. Attempt 8 is on GPU 2 with `80714` MiB free, about `50` GB of headroom
+--- the best position the arm has had.
+
+**The allocator flag I was about to add was already excluded, with a better reason than I had.**
+`run_comma7b128_supervise.sh`'s own header forbids `PYTORCH_ALLOC_CONF` and friends because
+**cuBLAS picks kernels by heuristics that can read available workspace**, so an allocator change is
+not provably numerics-free --- and this arm rests on a bit-identity gate over `32{,}000` rewards.
+Reading the script before editing it is what stopped that. Only the CARD and the ATTEMPT COUNT
+differ, as the design requires. **Nothing has been read**: creative and factual are complete on disk,
+neutral's directory was empty, no reward cache was written, and the committed band has never been
+computed --- so this is a clean rerun and not a second attempt at a number already seen.
+
+**Producing commands.**
+
+```
+bash scripts/run_scorer_scale_14b.sh 0,1                    # feat-161, host B, one six-scorer pass
+bash scripts/run_comma7b128_supervise.sh scripts/run_comma7b128_card1.sh \
+     output/phase5/sel_comma7b_128_neutral neutral          # feat-134 neutral, attempt 8
+```
+
+
 ## 2026-09-21 04:30 --- feat-158/160 SCORED: reward overoptimisation is a **7B-scorer effect**, and a committed claim is withdrawn because of it
 
 **All six ladder arms landed and every one passed every gate.** `G0` --- majority vote identical at

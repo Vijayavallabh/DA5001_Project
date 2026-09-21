@@ -188,9 +188,10 @@ worse off at every $n$ than serving the anchor once.
 
 We state it as a requirement rather than a repair for three reasons. The $7$B scorer is the
 operating point of every other number in this paper, including the $35.4\times$ serving
-measurement, so nothing measured there is revised. The larger scorers were run on the judge-free
-tasks only; on the \emph{judged} workload the ladder stops at $7.6$B and its saturation reading is
-unchanged, so the headline $+0.1045$ is not known to improve. And a larger scorer is a cost we did
+measurement, so nothing measured there is revised. The requirement is task-specific and we
+measured which way: on the \emph{judged} workload the same two scorers lift the gain by nothing
+($-0.0285$ and $-0.0085$ against the $7.6$B rung, both marginal), so the headline $+0.1045$ is the
+best this mechanism does there and a deployer buys nothing by spending more on the reward model. And a larger scorer is a cost we did
 not price: the reward pass is $9.3\%$ of selection's wall-clock and the draws $90.7\%$, which makes
 the direction favourable, but no latency arm was run above $7$B and no number here should be read
 as one. What is untouched either way is the certificate, which is $\log n$ for any score of any

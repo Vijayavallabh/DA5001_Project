@@ -1,0 +1,21 @@
+band,quantity,value,lo95,hi95,reading
+G0 replication of feat-116 within +/-0.04,sel7b_n64 +0.1095 vs +0.1075; sel05b_n64 +0.0230 vs +0.0220; metered_k10 +0.0390 vs +0.0400,,,,REPLICATES
+"G1 terminal drop, 0.494B scorer",sel05b_n64 - sel05b_n16,-0.0165,-0.0345,0.001,FLAT
+"G1 terminal drop, 1.5437B scorer",sel15b_n64 - sel15b_n16,0.0155,-0.003,0.0335,FLAT
+"G1 terminal drop, 3.0859B scorer",sel3b_n64 - sel3b_n16,0.0345,0.0165,0.0525,RISES
+"G1 terminal drop, 7.6156B scorer",sel7b_n64 - sel7b_n16,0.041,0.024,0.058,RISES
+"G1 terminal drop, 14.77B scorer",sel14b_n64 - sel14b_n16,0.027,0.0095,0.0455,RISES
+"G1 terminal drop, 72.7062B scorer",sel72b_n64 - sel72b_n16,0.031,0.014,0.0475,RISES
+"G2 shape, 0.494B scorer","Spearman(gain, log n); peak at n=16, peak-relative drop -0.0165 (secondary)",0.5798,,,NOT MONOTONE
+"G2 shape, 1.5437B scorer","Spearman(gain, log n); peak at n=64, peak-relative drop +0.0000 (secondary)",1.0,,,MONOTONE
+"G2 shape, 3.0859B scorer","Spearman(gain, log n); peak at n=64, peak-relative drop +0.0000 (secondary)",1.0,,,MONOTONE
+"G2 shape, 7.6156B scorer","Spearman(gain, log n); peak at n=64, peak-relative drop +0.0000 (secondary)",1.0,,,MONOTONE
+"G2 shape, 14.77B scorer","Spearman(gain, log n); peak at n=64, peak-relative drop +0.0000 (secondary)",0.9429,,,NOT MONOTONE
+"G2 shape, 72.7062B scorer","Spearman(gain, log n); peak at n=64, peak-relative drop +0.0000 (secondary)",1.0,,,MONOTONE
+G3 the scorer-scale boundary,no scorer reads TURNS OVER under its interval,,,,NO TURNOVER FOUND
+"G4 terminal gain, 1.5437B over 0.494B",sel15b_n64 - sel05b_n64,0.068,0.0485,0.088,SEPARATES
+"G4 terminal gain, 3.0859B over 1.5437B",sel3b_n64 - sel15b_n64,0.0115,-0.007,0.03,-
+"G4 terminal gain, 7.6156B over 3.0859B",sel7b_n64 - sel3b_n64,0.007,-0.0125,0.027,-
+"G4 terminal gain, 14.77B over 7.6156B",sel14b_n64 - sel7b_n64,-0.0285,-0.047,-0.0105,SEPARATES
+"G4 terminal gain, 72.7062B over 14.77B",sel72b_n64 - sel14b_n64,0.02,0.0025,0.0375,SEPARATES
+G4 terminal gain by scale (descriptive),0.494B +0.0230; 1.5437B +0.0910; 3.0859B +0.1025; 7.6156B +0.1095; 14.77B +0.0810; 72.7062B +0.1010,,,,four points carry no law and none is claimed
