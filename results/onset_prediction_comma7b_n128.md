@@ -165,3 +165,75 @@ well as other people --- they run as the same Unix user, so `nvidia-smi` shows t
 launcher log line that reads `CARD n DRAINED` is printed unconditionally after `generation rc=$RC`
 and says nothing about success; read the `rc=` line above it, which is what the sentinel is gated
 on.
+
+### 2026-09-22 02:42 --- SCORED. **SATURATED BY 64.**
+
+Generation finished `02:10:32` (rc `0`), the merge shell scored it and drained at `02:42:15`.
+
+**Reproduction gate: PASS, `32{,}000` of `32{,}000` floats bit-identical.** Ranks `0`--`63` of
+`results/selection_rewards128_comma7b.csv` compare `==` against every cell of
+`results/selection_rewards64_comma7b.csv`, on the same `500` prompts. So the first `64` of these
+`128` draws **are** the committed `64`, which is what licenses reading `n > 64` at all --- and it
+confirms the argument this registration made in advance about why the batch size must not be
+touched (caution (u)). No `n > 64` number was computed before this cleared.
+
+### Committed band
+
+| judge | paired `g(128) - g(64)`, `500` prompts, within this pass | reading |
+|---|---|---|
+| B, `Phi-3.5-mini-instruct` | `+0.0040 [-0.0270, +0.0350]` | **SATURATED BY 64** |
+| C, `Meta-Llama-3.1-8B-Instruct` | `+0.0110 [-0.0190, +0.0410]` | **SATURATED BY 64** |
+
+Both intervals contain zero, so the band reads **SATURATED BY 64** and its committed consequence
+applies: *"The ceiling is bracketed between `64` and `128` at this anchor too, agreeing with the
+audited one."* The sentence *"We did not take Comma-7B past `64`, so where the strongest anchor's
+ceiling sits is open"* is replaced by the measured bracket, and `tests/test_n128_frontier.py` is
+updated to assert whatever replaces it --- that guard firing was registered as the point rather
+than an obstacle (caution (ag)).
+
+**Both judges agree, which was not guaranteed and is worth stating.** The two disagree
+substantially on levels --- judge B puts `n=1` at `0.435` and judge C at `0.468`, and at `n=128`
+`0.637` against `0.681` --- and they still land on the same verdict with overlapping intervals.
+The band was committed against judge B alone; judge C is the secondary, and it did not have to
+agree.
+
+### The eight-point grid, both judges
+
+| `n` | `kl_nats` | judge B gain | judge C gain | mean words |
+|---|---|---|---|---|
+| `1` | `0.0000` | `0.000` | `0.000` | `99.2` |
+| `2` | `0.1931` | `+0.037 [+0.007, +0.066]` | `+0.112 [+0.078, +0.146]` | `84.9` |
+| `4` | `0.6363` | `+0.088 [+0.052, +0.125]` | `+0.131 [+0.089, +0.173]` | `80.1` |
+| `8` | `1.2044` | `+0.111 [+0.069, +0.151]` | `+0.133 [+0.087, +0.182]` | `80.4` |
+| `16` | `1.8351` | `+0.150 [+0.105, +0.194]` | `+0.156 [+0.109, +0.204]` | `91.1` |
+| `32` | `2.4970` | `+0.167 [+0.120, +0.211]` | `+0.156 [+0.110, +0.203]` | `99.5` |
+| `64` | `3.1745` | `+0.198 [+0.156, +0.244]` | `+0.202 [+0.156, +0.248]` | `106.7` |
+| `128` | `3.8598` | `+0.202 [+0.156, +0.248]` | `+0.213 [+0.167, +0.261]` | `114.1` |
+
+`kl_nats` is the closed form `log n - (n-1)/n` at every row, not a measured divergence
+(caution (am)).
+
+### The committed secondary: grid-dependence of the judged level
+
+Registered as *information about the instrument*, never gated on. The committed pass judged a
+**seven**-arm grid and this one judges **eight**, so `g(64)` was expected to move between them, and
+it did: `+0.173` on record against **`+0.198`** here, a move of `+0.025`.
+
+That is worth putting beside the case that produced caution (ap). At TinyComma the same change ---
+adding one arm to the grid --- moved `g(64)` from `+0.142` to `+0.076`, a move of `0.066` on
+byte-identical text. Here it moves `0.025` on text that is likewise bit-identical at every shared
+rank. **So grid-dependence is real at both anchors and its size is not a constant**; quoting a
+single-order level across sweeps remains forbidden, and the reason this arm's band survives it
+untouched is that the band was specified as a paired difference *within* one pass, where the flip
+sequence is shared and cannot reach it.
+
+`mean_words` rises monotonically from `n=4` (`80.1`) to `n=128` (`114.1`), so the selector prefers
+longer completions as it gets more to choose from --- reported because it is measured, and noted as
+the reason `selection_breadth.csv` carries a length column at all.
+
+### What this does and does not settle
+
+It settles the bracket at the strongest anchor: the ceiling is between `64` and `128` at Comma-7B
+as it is at the audited anchor, and the paper no longer has an open question there. It does **not**
+make the two anchors' ceilings equal --- nothing here measures that --- and it does not extend to
+anchors the paper never took past `64`.
