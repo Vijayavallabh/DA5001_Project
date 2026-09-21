@@ -12,6 +12,10 @@ set -a; . ./.env; set +a
 D=data/bench/alpaca
 CAPS="--cap-factual 805 --cap-neutral 0 --cap-creative 0 --cap-val 0 --cap-test 0 --cap-attack-train 0"
 LOG=output/logs/mixpow_$CELL.log
+# Clear OUR OWN markers here rather than trusting the caller to: feat-165's first launch
+# failed and left a .fail that survived the successful relaunch, so both sentinels sat
+# beside each other and any waiter reading either one was right by luck (caution (c)).
+rm -f ~/v/logs/mixpow_$CELL.done ~/v/logs/mixpow_$CELL.fail
 
 case "$CELL" in
   draws)    GPU=3; K=0.0;   TPP=64; OUT=output/mixpow/sel_anchor64 ;;

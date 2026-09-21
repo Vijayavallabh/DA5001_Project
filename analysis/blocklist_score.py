@@ -50,7 +50,11 @@ def main():
             per.append(dict(prompt_id=r["metadata"]["prompt_id"],
                             arm=arm,
                             novel=r["source_record"].get("novel", ""),
-                            blocked_steps=r["aggregate"]["blocked_steps"],
+                            # feat-165: the two rules name their own "did it bind" counter
+                            # differently -- MemFree blocks a token, TokenSwap changes which one
+                            # is served -- and this scorer reports whichever the run recorded.
+                            blocked_steps=r["aggregate"].get(
+                                "blocked_steps", r["aggregate"].get("changed_steps")),
                             nv_recall=round(nv_recall(g, tgt), 4),
                             lcs_word=lcs_word(g, tgt),
                             rouge_l=round(rouge_l_score(g, tgt), 4)))
@@ -59,7 +63,7 @@ def main():
         ge3 = sum(1 for x in per if x["rouge_l"] >= 0.3)
         rows.append(dict(
             arm=arm, n_passages=len(per),
-            blocked_steps=sum(x["blocked_steps"] for x in per),
+            blocked_steps=sum(x["blocked_steps"] or 0 for x in per),
             nv_recall_mean=round(st.mean(x["nv_recall"] for x in per), 4),
             nv_recall_max=round(max(x["nv_recall"] for x in per), 4),
             lcs_word_mean=round(st.mean(x["lcs_word"] for x in per), 2),

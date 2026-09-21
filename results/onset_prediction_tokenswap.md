@@ -163,3 +163,48 @@ check that this correction picked the right corpus, and it was committed before 
 The MemFree registration prints the same non-existent flag; its output files are
 `trajectories_k*_attack_train.jsonl`, so that arm ran the corpus this one now runs. Only the
 printed command was wrong, in both.
+
+### G2 FIRED, and what it caught was our own launcher, not the method
+
+The first leakage pass completed and **G2 failed**: the rule-off control read `0.5984`
+near-verbatim recall against the committed reference of about `0.39`--`0.42`. Per the gate,
+nothing below it was read, and the cause was found before anything was quoted.
+
+**The reference was fine; the arm was not.** Scoring MemFree's own control directory with *this
+scorer's own code* --- which is what caution (v) says to do instead of typing a constant into a
+pre-registration --- reproduces the appendix exactly: `0.4192`, `52`/`100` at ROUGE-L `>= 0.5`. So
+the two controls genuinely differ, on the same corpus, the same model and the same seeds.
+
+**`scripts/run_memfree.sh` is the record of what that arm ran, and it does not match what its own
+registration prints.** The registration says `--split protected --seed-tokens 100 --raw-prompt`.
+The launcher passed `--split attack_train --limit 100 --seed-tokens 20` with **no** `--raw-prompt`,
+so the instruction header stayed; and its utility half passed `--chat`, which we had omitted. Two
+mismatches, both in the direction that makes our arm look stronger: a `100`-token **raw** prefix is
+a strictly harder attack than a `20`-token headered one (caution (t): a base model needs a long raw
+prefix to re-enter a work), which is the whole of the `0.4192 -> 0.5984` gap, and a chat-templated
+utility arm is a different served distribution from a raw continuation.
+
+Per caution (w) the two halves are **INVALID rather than failed**: the defect is in our
+specification of the comparison, not in TokenSwap, and it must not be allowed to retire the
+question. Both were relaunched with `run_memfree.sh`'s flags copied across, and
+`scripts/run_tokenswap.sh` now carries a comment saying they are not choices.
+
+**What the invalid pass is still evidence of, stated narrowly.** On a strictly *harder* attack than
+the one MemFree faced --- a `100`-token raw prefix, where the unconstrained memoriser reaches
+`0.5984` and reproduces most of `66` of `100` passages --- TokenSwap served `0.0000` near-verbatim
+recall, `lcs_word 3.64`, and `0`/`100` at ROUGE-L `>= 0.5`. That is a bound on the method at a
+harder setting, not the head-to-head, and it is reported here and not in the manuscript.
+
+**The faithfulness half is untouched by this** and is scored: at TokenSwap's own settings
+(`20`-token raw prefix, `128` tokens, greedy) the unconstrained memoriser reads `0.4104` recall and
+`79`/`100`, and TokenSwap reads `0.0000` and `0`/`100`. Its control also lands within `0.009` of
+MemFree's `0.4192` at the same prefix length, which is the independent check that `20` tokens was
+the right number.
+
+**Two further defects recorded rather than repaired quietly.** The registration says the utility
+half runs on "the same `500` ordinary prompts"; `--split ordinary` is neutral + creative + factual
+= **`850`**, which is what MemFree ran and what the appendix already reports (`0` of `850`), so the
+arms agree and the registration's wording was loose in the same way twice. And the control arm's
+`changed_frac` reads `0.0001` where it must be exactly `0` --- one step in roughly twenty thousand
+--- which is a float32 tie in the shared CDF and affects the diagnostic counter only: with the swap
+off the served token is drawn from `p_main` either way.
