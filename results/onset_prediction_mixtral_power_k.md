@@ -102,3 +102,31 @@ Host B. Calibration `5` cards, about `25` minutes. The metered cell about `40` m
 about an hour, Mixtral on two cards about `6` hours.
 
 ## Scoring log
+
+### Calibration, 2026-09-22 --- recorded before the metered cell ran
+
+`analysis/budget_calibration.py`, `results/mixpow_kcal.csv`. Target `0.08376`, the committed
+metered arm's own activity over the three counters that partition the true decoded length.
+
+| `k` | active steps | total steps | activity | `|dist|` |
+|---|---|---|---|---|
+| `0.1` | `21,103` | `27,571` | `0.76541` | `0.68165` |
+| `0.3` | `21,403` | `31,306` | `0.68367` | `0.59991` |
+| **`1.0`** | `2,595` | `33,880` | **`0.07659`** | **`0.00717`** |
+| `3.0` | `173` | `37,868` | `0.00457` | `0.07919` |
+| `10.0` | `6` | `39,225` | `0.00015` | `0.08361` |
+
+**G-cal PASS** --- `2` grid points above the target and `3` below, so the target is bracketed and
+the choice is an interpolation rather than an endpoint. **CHOSEN `k = 1.0`**, activity `0.07659`,
+`0.91x` the target. The rule was `argmin |activity(k) - 0.08376|` and `1.0` wins it by a factor of
+`11` over the next-nearest grid point, so no tie rule was needed.
+
+This lands inside the `0.3`--`1.0` range the registration predicted. The curve is worth recording
+because it is steep in exactly the place the paper's dichotomy says it should be: activity falls
+`0.684 -> 0.077 -> 0.005` across one decade of `k` on either side of `1.0`, so on this corpus the
+budget goes from binding at two thirds of all steps to binding at one in two hundred over a `30x`
+change. There is no wide plateau where a per-token budget is *mildly* active --- which is the
+dichotomy's shape, measured on a public benchmark.
+
+The metered cell is now generating at `k = 1.0` on all `805` prompts. The anchor draws, the
+opponent and the `51,520` reward scores are feat-166's, unchanged.
