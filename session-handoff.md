@@ -20,6 +20,15 @@ instrument: a five-point `k` grid on `200` prompts, and the budget is chosen by 
 be tuned to an answer. Bands carry over from feat-166 unchanged. The anchor draws, the opponent and
 the `51,520` reward scores are NOT re-run --- they do not depend on `k`.
 
+**`results/onset_prediction_tokenswap_gsize.md` (feat-169) is REGISTERED** --- the controlled
+version of feat-167's finding. feat-167 saw suppression fail at the rung with the fewest `G` token
+ids, but `results/tokenswap_g_survey.csv` shows thirteen cached tokenizers give `|G| = 171` or
+`397`--`431` and nothing between, so `|G|`, vocabulary size and training corpus are confounded
+across every model we have. feat-169 holds the auxiliary fixed at `DistilGPT-2` --- theirs, and the
+one that suppresses completely --- and shrinks `G` itself over six rungs, two seeds each. The rung
+that matters is `44` words, `|G| = 174` against `KL3M`'s `171`. We predict it SUPPRESSES, i.e. that
+count is not the axis and mass is.
+
 **`results/onset_prediction_cost_matched_measured.md` (feat-162) is SCORED** --- listed here only
 because the handoff must name every unscored log and this one is closed; see its own scoring
 section.

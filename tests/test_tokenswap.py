@@ -188,3 +188,43 @@ def test_the_gate_table_rounds_from_the_arms_own_trajectories():
     ctrl = float(rows[("leakage", "-1")]["mass_on_g"])
     assert f"gamma = {ctrl:.4f}" not in table, \
         "G0 quotes the rule-OFF arm's mass, which is the defect this test exists for"
+
+
+def test_subsampling_G_picks_words_deterministically_and_scales_the_token_ids():
+    """feat-169 varies |G| as a CAUSE, holding the auxiliary fixed, because the cached tokenizers
+    give only 171 or 397-431 and nothing between -- so the observed association between |G| and
+    suppression cannot be separated from vocabulary size without constructing the ladder.
+
+    The subsample must be over WORDS, not token ids: a word carries all four surface forms and the
+    rule acts on each, so dropping ids directly builds a G no tokenizer could produce.
+    """
+    import random as _random
+    words = sorted(w for w in open(os.path.join(ROOT, "data", "tokenswap_G.txt"),
+                                   encoding="utf-8").read().split() if w)
+    assert len(words) == 110, len(words)
+
+    def draw(n, seed):
+        return sorted(_random.Random(seed).sample(words, n))
+
+    # Deterministic in the seed, and a different seed gives a different subset.
+    assert draw(44, 0) == draw(44, 0)
+    assert draw(44, 0) != draw(44, 1)
+    # Every drawn word is a real member of G, never a fragment of one.
+    assert set(draw(44, 0)) <= set(words)
+    # Nested sizes are not required, but the count must be exact at every rung feat-169 uses.
+    for n in (25, 44, 65, 85, 110):
+        assert len(draw(n, 0)) == n
+
+    # And the number of token ids must fall with the word count, which is the whole point: the
+    # ladder is only a ladder if |G| tracks it.
+    from analysis.tokenswap_decode import g_token_ids
+
+    class _Tok:
+        """A stand-in that gives every word exactly two single-token surface forms."""
+        def encode(self, text, add_special_tokens=False):
+            return [abs(hash(text)) % 90000] if text.strip() and text.islower() != text.isupper() \
+                else [1, 2]
+
+    ids_full, _ = g_token_ids(_Tok(), words)
+    ids_half, _ = g_token_ids(_Tok(), draw(44, 0))
+    assert 0 < len(ids_half) < len(ids_full), (len(ids_half), len(ids_full))

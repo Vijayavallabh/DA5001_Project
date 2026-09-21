@@ -35,6 +35,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import sys
 import time
 
@@ -205,6 +206,11 @@ def main():
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--arms", default="both", choices=("both", "plain", "tokenswap"))
+    # feat-169: shrink G on purpose, holding the auxiliary fixed, so |G| can be varied as a cause
+    # rather than observed as a correlate of vocabulary size. 0 means the full list.
+    ap.add_argument("--g-words", type=int, default=0,
+                    help="subsample G to this many WORDS before pairing (0 = all 110)")
+    ap.add_argument("--g-seed", type=int, default=0, help="seed for --g-words")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -217,6 +223,13 @@ def main():
         tok.pad_token = tok.eos_token
 
     words = load_G()
+    if a.g_words:
+        # Subsample the WORD list, not the token ids: a word carries all four of its surface forms
+        # and the rule acts on every one, so dropping ids directly would build a G no tokenizer
+        # could produce. Sorted first so the draw depends only on --g-seed.
+        assert 0 < a.g_words <= len(words), f"--g-words {a.g_words} out of range"
+        words = sorted(random.Random(a.g_seed).sample(sorted(words), a.g_words))
+        print(f"[ts] G SUBSAMPLED to {a.g_words} of 110 words, seed {a.g_seed}", flush=True)
     aux_tok = AutoTokenizer.from_pretrained(a.aux)
     shared = aux_tok.get_vocab() == tok.get_vocab()
     if shared:
@@ -227,7 +240,7 @@ def main():
     print(f"[ts] G: {len(words)} words -> {len(gidx)} token ids; shared_vocab={shared}; "
           f"{len(missing)} words are not single tokens in both: {missing[:8]}", flush=True)
     assert gidx, "G mapped to no token ids -- the rule would be a no-op"
-    assert len(missing) <= 20, (
+    assert a.g_words or len(missing) <= 20, (
         f"{len(missing)} of 110 words do not survive the mapping into {a.aux}; the rule this "
         "would run is materially weaker than the one the authors specify")
 
