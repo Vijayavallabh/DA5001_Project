@@ -10,6 +10,16 @@ prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -c
 
 ## Arms in flight (2026-09-21 19:40)
 
+**`results/onset_prediction_mixtral_power.md` (feat-166) is REGISTERED AND GENERATING** on host B
+cards 3--5. It separates the two causes of the paper's one UNRESOLVED headline reading: Mixtral,
+the only family-clean frontier judge, reads `+0.0090 [-0.0355, +0.0530]` and the paper cannot say
+whether the effect is near zero or the interval is wide. Nothing about the judge can settle it ---
+it is greedy, so re-judging the same text is exact --- so the only lever is more prompts.
+AlpacaEval-805, a standard set feat-096 already showed carries no prompt-set effect, `1.61x` the
+committed sample. Predicted **TIGHT ZERO**, which would weaken the paper's own headline and is
+registered that way.
+
+
 **`results/onset_prediction_tokenswap.md` (feat-165) is REGISTERED.** It measures TokenSwap
 (arXiv:2502.05159), the one reviewer-named baseline the paper declined --- and the reason it gave,
 that the method "needs a paired auxiliary model whose own contamination would have to be vetted",
