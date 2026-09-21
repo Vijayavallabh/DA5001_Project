@@ -98,3 +98,86 @@ Host B. Generation about `3` hours across three cards, rewards about `10` minute
 an hour, Mixtral on two cards about `6` hours.
 
 ## Scoring log
+
+## Scoring, 2026-09-22
+
+### G0 --- FAILED. B1 is not read.
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G0 direction | judge B's paired `D3 > 0`, interval clear of zero | `-0.0957 [-0.1124, -0.0792]` | **FAIL** |
+| G1 power | half-width below `0.0348` | `0.0166` | pass |
+
+The registration excludes *"Reading B1 if G0 fails"* and that exclusion is honoured: **no branch of
+B1 is claimed, no sentence from B2 is adopted, and Mixtral's reading on this pass is not quoted as
+resolving anything.** Section 4's current wording stands untouched.
+
+G1 passed --- `805` prompts really did buy power, the interval is `2.1x` tighter --- which makes the
+failure sharper rather than softer. The pass is not underpowered. It is measuring the wrong thing,
+and G0 exists to say so before any band is read.
+
+### Why G0 failed: the arm labelled "metered decoder" is not one
+
+G0's registered purpose is *"if it cannot reproduce the direction on a fresh prompt set, the pass is
+measuring something else"*. It is, and the cause is structural and measured, not inferred.
+
+| | committed pass (our prompt set) | this pass (AlpacaEval-805) |
+|---|---|---|
+| steps where the `k=10` budget is active | `261,239` of `3,118,893` --- **`8.376%`** | `26` of `160,227` --- **`0.016%`** |
+| metered completions byte-identical to the unconstrained opponent | **`0`/`500`** | **`794`/`805`** |
+| `D2` metered gain over the anchor | `+0.0390` | `+0.1792` |
+| metered arm's order consistency | `0.346` (UNUSABLE) | `0.868` (**STABLE**) |
+
+On AlpacaEval at `k=10` the constraint is active on one step in six thousand, a factor of `520`
+below the same budget on our own corpus, and `98.6%` of the served completions are the
+unconstrained risky model **byte for byte**. There is no budgeted decoder in this pass. `D2`
+therefore measures *the unconstrained `Llama-3.1-8B-Instruct` against a `1.8`B base-model anchor on
+an instruction benchmark*, which it wins easily and consistently --- hence `+0.1792` and the
+`0.868` consistency, the only arm in any pass this project has run that the judge can tell apart
+reliably. And `D3` measures *selection from that anchor against the unconstrained risky model*,
+which is not the comparison the reversal is about and was never a claim this paper makes.
+
+**Per caution (w) the arm is INVALID rather than FAILED.** The defect is in our specification: the
+"What runs" table named `k=10` on a corpus where `k=10` is vacuous, and nothing in the
+pre-registration checked that the budget binds there. A question must not be retired by our own
+defect, so Mixtral's `+0.0090 [-0.0355, +0.0530]` remains exactly as unresolved as it was.
+
+### The premise that licensed the prompt set was too broad
+
+The registration justifies AlpacaEval by saying feat-096 *"already established carries **no
+prompt-set effect** (A2)"*. A2 is real, and it is about a different quantity: it compared the
+**selection gain across anchors** on AlpacaEval and found the prompt set was not flattering the
+mechanism. It says nothing about whether a **per-token budget binds** on that corpus, which is the
+property this arm's metered cell depends on. A finding about one quantity was used to license a
+measurement of another, and the two share only the corpus. Caution (v)'s rule --- a reference
+number carries its protocol --- extends to a reference *finding*: **a prior result licenses a new
+arm only for the quantity it was measured on.**
+
+### What this pass does establish, reported because it was measured
+
+It is a clean, independent instance of the paper's own dichotomy, on a corpus we did not choose and
+a benchmark we do not control. `K = kT` at `k=10` over `200` tokens is `2{,}000` nats, and on
+AlpacaEval the decoder never comes near it: the certificate is formally intact and operationally
+**vacuous**, because the object it certifies is the risky model itself. That is the vacuous horn,
+measured at `0.016%` activity, and it is the first time this project has caught it on a standard
+public benchmark rather than by construction. The number is reported here; it is **not** promoted
+into the manuscript from an INVALID arm, and it will be re-derived by feat-168 in a pass built to
+measure it.
+
+### B3 --- reported whatever it says, and it says the arms are not comparable
+
+Under judge B: `g_sel = +0.0835 [+0.0665, +0.1016]`, `g_met = +0.1792 [+0.1630, +0.1950]`.
+Under Mixtral: `g_sel = +0.0590 [+0.0376, +0.0814]`, `g_met = +0.2165 [+0.1960, +0.2363]`.
+Mixtral's order-consistency on this pass is `0.4807` at `sel_n64` and `0.5230` at the anchor,
+against `0.358`--`0.426` on record --- higher, but still in the range the paper calls unusable, so
+nothing here revises caution (m). Both judges agree with each other on this pass, and both are
+answering the question the pass actually posed rather than the one it was registered to pose.
+
+### What happens next
+
+The question is unchanged and the instrument has to be rebuilt: the metered cell must run at a
+budget that **binds on this corpus**, chosen by matching the committed pass's `8.376%` activity
+rather than by reusing a `k` whose meaning does not transfer. That rule is fixed in
+`results/onset_prediction_mixtral_power_k.md` (feat-168) before the calibration sweep runs, so the
+`k` cannot be chosen to suit an answer. Nothing else about the arm changes --- same prompts, same
+models, same two judges, same bands.

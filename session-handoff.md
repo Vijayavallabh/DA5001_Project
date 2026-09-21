@@ -8,7 +8,36 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
-## Arms in flight (2026-09-21 19:40)
+## Arms in flight (2026-09-22 02:10)
+
+**`results/onset_prediction_mixtral_power_k.md` (feat-168) is REGISTERED, calibration running** on
+host B cards 0--4. feat-166 failed G0 because at `k=10` on AlpacaEval the budget is active on
+`0.016%` of steps against `8.376%` on our own corpus and `794`/`805` served completions are the
+unconstrained opponent byte for byte --- the arm labelled "metered decoder" was the risky model, so
+feat-166 is INVALID per caution (w) and Mixtral's question is still open. feat-168 rebuilds the
+instrument: a five-point `k` grid on `200` prompts, and the budget is chosen by `argmin` of
+`|activity(k) - 0.08376|`, a rule fixed in the registration **before the sweep ran** so it cannot
+be tuned to an answer. Bands carry over from feat-166 unchanged. The anchor draws, the opponent and
+the `51,520` reward scores are NOT re-run --- they do not depend on `k`.
+
+**`results/onset_prediction_cost_matched_measured.md` (feat-162) is SCORED** --- listed here only
+because the handoff must name every unscored log and this one is closed; see its own scoring
+section.
+
+### Closed since the last handoff
+
+**`results/onset_prediction_tokenswap_aux.md` (feat-167) is SCORED.** B2 fires: `KL3M-170m` leaks
+`0.2113` recall and `23`/`100` at ROUGE-L `>= 0.5` where the other three rungs read `0.0000` and
+`0`/`100`. The failing rung is neither the smallest nor the largest --- what orders it is whether
+the auxiliary's tokenizer can carry `G` (`171` of `431` ids, `1.01%` of the mass, binding on
+`1.79%` of steps). B3 confirms the registered prediction once that rung is excluded mechanically.
+**It also corrects feat-165's headline**: `TokenSwap - selection` is `INCUMBENT WINS` only at
+`TinyComma-1.8B`; at `DistilGPT-2`, the auxiliary their own paper uses, it is a **TIE**.
+
+**`results/onset_prediction_mixtral_power.md` (feat-166) is SCORED and INVALID** --- G0 failed, no
+band was read, and the diagnosis is in its scoring section.
+
+## Arms in flight (superseded, 2026-09-21 19:40)
 
 **`results/onset_prediction_mixtral_power.md` (feat-166) is REGISTERED AND GENERATING** on host B
 cards 3--5. It separates the two causes of the paper's one UNRESOLVED headline reading: Mixtral,
