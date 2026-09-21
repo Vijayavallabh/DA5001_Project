@@ -6446,3 +6446,30 @@ cd ~/sub/satml && ~/.local/bin/tectonic -X compile iclr_2027.tex
 
 Main text 9 of 9 pages (Ethics at the top of page 10, no body prose above it), 34 pages total,
 0 overfull, 0 `??`, `pdffonts | grep -ci bold` = 3.
+
+## 2026-09-21 (late afternoon) --- status check: a waiter that could never exit
+
+Both hosts checked. **Host B: all eight H100s idle** (1 MiB each, no python), every feat-158/159/160/161
+sentinel `.done` on disk and every result synced, scored and committed. **Local: feat-134 neutral is
+alive** --- attempt 8 (the fresh supervisor's attempt 1, started 14:44 on GPU 2 with 80.7 GB free) is at
+`3800/25600` after 1 h 47 m, about 36 items/min, so roughly 10 h to `GEN_DONE`. The merge shell
+(PID 3445287) has been waiting 20 h 37 m of its 48 h cap, so it has ~27 h left and will score the arm
+by itself. The neighbouring project still holds GPUs 0, 1 and 4.
+
+**What the check actually found: the session's own background waiter had been unexitable for 19 hours.**
+It polled `ls ~/v/logs/parity_k0.5.done ~/v/logs/parity_k0.5.fail` --- an **AND** over two sentinels that
+are mutually exclusive by construction --- and `ls` exits `2` when either path is missing. feat-159 wrote
+`.done` at 21:11 on 2026-09-20; the loop then opened an ssh every 45 s straight through that arm being
+scored (`c0c59ab`), committed and pushed. It obeyed caution (c)'s stated repair (wait on the filesystem,
+not on a `pgrep`) and was broken anyway, which is why the caution now carries the ninth incident: write a
+multi-sentinel wait as the OR it means, and check its exit status against a mock directory holding only
+one of the two before launching it. Proved here in four seconds --- `EXIT 2`. Shell stopped; no result
+was affected, since every parity CSV was already committed.
+
+### Commands
+
+```bash
+env -u LD_LIBRARY_PATH nvidia-smi --query-compute-apps=pid,used_memory --format=csv
+ssh PrakashDGX_H2 'nvidia-smi --query-gpu=index,memory.used,utilization.gpu --format=csv'
+tail -4 output/logs/comma7b128_card1.log     # 3800/25600
+```
