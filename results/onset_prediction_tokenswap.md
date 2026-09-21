@@ -208,3 +208,97 @@ arms agree and the registration's wording was loose in the same way twice. And t
 `changed_frac` reads `0.0001` where it must be exactly `0` --- one step in roughly twenty thousand
 --- which is a float32 tie in the shared CDF and affects the diagnostic counter only: with the swap
 off the served token is drawn from `p_main` either way.
+
+## Scoring, 2026-09-22 --- all gates pass, and both predictions were wrong
+
+Host B. Leakage and utility re-run with `scripts/run_memfree.sh`'s flags; faithfulness at
+TokenSwap's own settings.
+
+### Gates
+
+| gate | value | reading |
+|---|---|---|
+| G0 `G` maps, mass on `G` in `[0.10, 0.40]` | `110` words -> `431` token ids, `0` unmapped; `gamma = 0.3733` | **PASS** |
+| G1 the rule binds, `> 1%` of steps | `25.62%` | **PASS** |
+| G2 control within `0.05` of the committed memoriser | `0.3761` vs `0.3925` | **PASS** |
+
+`gamma = 0.3733` against their reported `0.233`, which is a different corpus --- SlimPajama against
+novels --- and narrative prose is function-word heavy. The rule-off arm's `changed_frac` reads
+`0.0001` where it must be exactly `0`: one step in roughly twenty thousand, a float32 tie in a CDF
+the two paths share, diagnostic only, since with the swap off the served token comes from `p_main`
+either way.
+
+### H1 --- SUPPRESSES, where we predicted PARTIAL
+
+| arm | near-verbatim recall | `lcs_word` | ROUGE-L `>= 0.5` | `>= 0.3` |
+|---|---|---|---|---|
+| the memoriser alone | `0.3761` | `67.62` | `45`/`100` | `69`/`100` |
+| **TokenSwap** | **`0.0000`** | `3.09` | **`0`/`100`** | **`0`/`100`** |
+| MemFree, same corpus and scorer | `0.0201` | `7.86` | `0`/`100` | `5`/`100` |
+| selection at `n=64` | `0.0000` | --- | `0`/`100` | --- |
+
+We predicted PARTIAL on the reasoning that a probabilistic perturbation of a fifth of the
+probability mass would leave some passages standing where rejection sampling leaves none. It leaves
+none either, and **at the looser `0.3` threshold it is the stronger of the two incumbents**: `0` of
+`100` against MemFree's `5`.
+
+### H2 --- the non-literal event
+
+`0` of `100` at ROUGE-L `>= 0.5`, the same as MemFree and selection, against `45` of `100`
+unconstrained.
+
+### H3 --- COSTLY, where we predicted CHEAP
+
+Judged in one pass with selection and the meter on the committed generations. The pass reproduces
+the headline first --- selection `+0.1065`, metered `+0.0390`, paired difference `+0.0675`
+`[+0.0330, +0.1020]`, REVERSAL CONFIRMED --- which is what licenses reading a new arm beside them.
+
+| arm | order-averaged gain over `anchor_k0` |
+|---|---|
+| TokenSwap's own rule-off control | `+0.2720` `[+0.2455, +0.2975]` |
+| **TokenSwap** | **`+0.1680`** `[+0.1425, +0.1940]` |
+| selection at `n=64` | `+0.1065` `[+0.0840, +0.1295]` |
+| metered at `k=10` | `+0.0390` `[+0.0130, +0.0645]` |
+
+**Paired, TokenSwap minus its own control: `-0.1040` `[-0.1255, -0.0820]`** --- past the `0.10`
+boundary, so **COSTLY**. MemFree's cost on the same workload is **exactly `0.0000`**: `+0.272` with
+the rule and `+0.272` with it off, because it fired on `0` of `850` ordinary prompts.
+
+**And TokenSwap still beats selection: `+0.0615` `[+0.0285, +0.0950]`, INCUMBENT WINS** --- the
+second incumbent to do so, after MemFree's `+0.1655`.
+
+The four passes are comparable and it is checked rather than assumed: all four read
+`sel_n64 = +0.1065 [+0.0840, ...]` identically, which is the determinism of order-averaged judging
+that `results/n128_order_averaged_note.md` established. **A coincidence worth recording so nobody
+mistakes it for an artefact:** our rule-off control reads `+0.2720`, the same to four decimals as
+MemFree's, and the two arms share **no** generated text --- `0` of `850` are byte-identical,
+because the two decoders draw differently --- and their bootstrap intervals differ
+(`[+0.2455, +0.2975]` against `[+0.2470, +0.2965]`). Two independent draws of the unconstrained
+model landed on the same judged mean.
+
+### H4 --- the faithfulness arm, at their settings
+
+`20`-token raw prefix, `128` tokens, greedy: the memoriser alone reads `0.4104` recall and `79` of
+`100`, TokenSwap `0.0000` and `0` of `100`. Direction confirmed, and its control lands within
+`0.009` of MemFree's at the same prefix length, which is the independent check that `20` was the
+right number.
+
+### What this arm settles, and what it costs us
+
+The comparison our Appendix~J called *"the obvious next comparison"* now exists, and it does not
+favour this paper. Three mechanisms on one workload, one judge, one opponent:
+
+| | suppression | utility cost | what it claims |
+|---|---|---|---|
+| MemFree | total on listed works, `5`/`100` at `0.3` | `0.0000` | nothing about an unlisted work |
+| TokenSwap | total, `0`/`100` at `0.3` | `-0.1040` | exponential decay for a named memorised string |
+| selection `n=64` | total | `-0.1655` | `log n` for **every** `y`, at any length |
+
+**The mechanism this paper is about is the most expensive of the three and the only one that
+publishes a bound on the served law.** That is the honest summary and it is what the manuscript
+will say.
+
+### Excluded, and honoured
+
+We predicted PARTIAL and CHEAP and were wrong twice, in opposite directions: it suppresses better
+than we expected and costs more. Nothing was dropped, rescoped or re-run after the fact.
