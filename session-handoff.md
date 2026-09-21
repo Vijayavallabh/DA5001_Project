@@ -10,6 +10,17 @@ prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -c
 
 ## Arms in flight (2026-09-21 19:40)
 
+**`results/onset_prediction_batch_width.md` (feat-163) is REGISTERED AND RUNNING** on host B, one
+card, the rest idle. It closes the one caveat feat-162 had to leave open --- whether a server that
+batched a request's `n` candidates together would pay less than the `n` sequential decodes this
+pipeline performs. The naive form of that objection is answered by arithmetic and the registration
+says so: serving `R` requests at width `W`, the meter runs `R/W` batches and selection `Rn/W`, so
+the `1/W` **cancels** and batching cannot move the ratio by itself. What can move it is
+`c_a(W)/c_m(W)`, since the metered path carries `1.76`B + `8.03`B where selection carries `1.76`B
+alone and at `W=40` they measured equal to `0.3%` --- which can only happen off the weight-bound
+regime. Predicted FALLS, with the implied `n=64` price in `13`--`38x` against feat-162's `67.2x`.
+
+
 **`results/onset_prediction_cost_matched_measured.md` (feat-162) is SCORED.** All four gates pass;
 both predictions were wrong. The compute-matched cell is **`n=1`** at `1.07x`, not the `n=4` at
 `0.92x` Section 5 printed --- that cell measures `4.11x`, a mispricing of `4.47x` --- and B3 reads

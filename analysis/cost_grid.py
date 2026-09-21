@@ -41,6 +41,11 @@ CM_GRID = (2, 4, 8, 16, 32, 64)   # the grid compute_matched.py judged, in the o
 CM_SEED = 9163                    # its --seed, and therefore its bootstrap stream
 F4 = (-0.0395, -0.0720, -0.0065)  # the committed band this replay has to land on exactly
 G_MET = 0.0400                    # metered_k10's committed gain, for the n=1 cell
+WIDTHS = (8, 16, 32, 64, 128, 200)
+B162 = 6.99                       # feat-162's b, seconds per completion at width 40
+G0W_TOL = 0.25                    # G0: c_a(64) within this of B162
+G2W_TOL = 0.10                    # G2: served tokens per request across widths
+FALLS, RISES = 0.80, 1.25         # B1's three-way rule
 SCORERS = {"Qwen/Qwen2.5-7B-Instruct": 7.6156, "Qwen/Qwen2.5-0.5B-Instruct": 0.4940}
 PROXY_N4 = 0.92          # what the manuscript prints for sel05b_n4
 WINDOW = (0.70, 1.45)    # B1's matched window
@@ -144,6 +149,100 @@ def time_reward(gen_dir, n, model, dtype, batch_size):
     del rm
     torch.cuda.empty_cache()
     return len(items), len(pids), t1 - t0, t2 - t1
+
+
+def parse_width(log):
+    """One line per timed cell. ANCHOR is the k=0 draw path, MET the k=10 metered decoder."""
+    out = []
+    for line in open(log, encoding="utf-8"):
+        m = re.search(r"\[width\] (ANCHOR|MET) rep=(\d+) W=(\d+) tpp=(\d+) seconds=([\d.]+) "
+                      r"dir=(\S+)", line)
+        if m:
+            out.append((m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4)),
+                        float(m.group(5)), m.group(6)))
+    return out
+
+
+def report_width(log, out):
+    """feat-163. The per-batch cost of each path at each width, loader removed by differencing
+    one against two completions -- the same construction feat-162 used, measured and not fitted."""
+    cells = parse_width(log)
+    assert cells, f"no width cells in {log}"
+    have = sorted({c[2] for c in cells})
+    assert have == sorted(WIDTHS), f"widths are {have}, registered {sorted(WIDTHS)}"
+
+    def mean(path, w, tpp):
+        v = [c[4] for c in cells if c[0] == path and c[2] == w and c[3] == tpp]
+        assert v, f"no {path} cell at W={w} tpp={tpp}"
+        return st.mean(v)
+
+    c_a = {w: mean("ANCHOR", w, 2) - mean("ANCHOR", w, 1) for w in WIDTHS}
+    c_m = {w: mean("MET", w, 2) - mean("MET", w, 1) for w in WIDTHS}
+    ratio = {w: c_a[w] / c_m[w] for w in WIDTHS}
+
+    # ---- gates -----------------------------------------------------------------------------
+    gates = []
+    g0 = abs(c_a[64] - B162) / B162
+    gates.append((f"G0 instrument, c_a(64) within {G0W_TOL:.0%} of feat-162's {B162}s",
+                  round(c_a[64], 3), "PASS" if g0 <= G0W_TOL else "FAIL"))
+    bad = []
+    per_req = {}
+    for c in cells:
+        tok, n_p = served_tokens(c[5])
+        if n_p != c[2]:
+            bad.append((c[0], c[2], c[3], n_p))
+        per_req[(c[0], c[2], c[3])] = tok / n_p
+    gates.append(("G1 one batch per seed group, served requests == W",
+                  len(bad), "PASS" if not bad else f"FAIL {bad[:3]}"))
+    lo, hi = min(per_req.values()), max(per_req.values())
+    spread = (hi - lo) / lo
+    gates.append((f"G2 same work served across widths, within {G2W_TOL:.0%}",
+                  round(spread, 4), "PASS" if spread <= G2W_TOL else "FAIL"))
+    g = {x[0].split()[0]: x[2] for x in gates}
+    scored = g["G0"] == "PASS"
+
+    rows = [dict(width=w, anchor_batch_s=round(c_a[w], 3), metered_batch_s=round(c_m[w], 3),
+                 c_a_over_c_m=round(ratio[w], 4),
+                 anchor_per_request_s=round(c_a[w] / w, 5),
+                 metered_per_request_s=round(c_m[w] / w, 5),
+                 implied_sel64_vs_metered=round(64 * ratio[w], 2)) for w in WIDTHS]
+
+    bands = [dict(band=n, quantity="gate", value=v, reading=r) for n, v, r in gates]
+    if not scored:
+        bands.append(dict(band="B1 does c_a/c_m fall with width?", quantity="--", value="--",
+                          reading="NOT SCORED -- G0 failed"))
+    else:
+        rel = ratio[200] / ratio[8]
+        bands.append(dict(
+            band="B1 does c_a/c_m fall with width?",
+            quantity=f"ratio(200) {ratio[200]:.4f} over ratio(8) {ratio[8]:.4f}",
+            value=round(rel, 4),
+            reading="FALLS" if rel < FALLS else "RISES" if rel > RISES else "FLAT"))
+        widest = max(WIDTHS)
+        bands.append(dict(
+            band="B2 implied selection price at n=64, properly batched",
+            quantity=f"64 * c_a/c_m at W={widest}, against feat-162's 67.24x at W=40",
+            value=round(64 * ratio[widest], 2),
+            reading="A FLOOR ON OUR MEASUREMENT'S PESSIMISM, NOT A PRICE ANY ARM HERE PAYS"))
+        bands.append(dict(
+            band="B3 does batching lower the bill?",
+            quantity="anchor seconds per request, W=8 over W=200",
+            value=round((c_a[8] / 8) / (c_a[200] / 200), 2),
+            reading="the number the naive objection is about, and the wrong one to look at"))
+
+    os.makedirs(out, exist_ok=True)
+    for path, data in ((os.path.join(out, "batch_width.csv"), rows),
+                       (os.path.join(out, "batch_width_bands.csv"), bands)):
+        with open(path, "w", newline="", encoding="utf-8") as fh:
+            w_ = csv.DictWriter(fh, fieldnames=list(data[0].keys()))
+            w_.writeheader(); w_.writerows(data)
+        print(f"wrote {path}")
+    for r in rows:
+        print(f"  W={r['width']:<4d} anchor {r['anchor_batch_s']:>7.3f}s  metered "
+              f"{r['metered_batch_s']:>7.3f}s  c_a/c_m {r['c_a_over_c_m']:>7.4f}  "
+              f"implied n=64 {r['implied_sel64_vs_metered']:>7.2f}x")
+    for x in bands:
+        print(f"  {x['band']:52s} {str(x['value']):>9s}  {x['reading']}")
 
 
 def report(log, out, per_prompt=PER_PROMPT):
@@ -278,6 +377,7 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--time-reward", action="store_true")
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--report-width", action="store_true")
     ap.add_argument("--gen-dir")
     ap.add_argument("--n", type=int, default=64)
     ap.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct")
@@ -285,10 +385,14 @@ def main():
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--batch-size", type=int, default=16)
     ap.add_argument("--log", default="output/logs/cost_grid.log")
+    ap.add_argument("--width-log", default="output/logs/batch_width.log")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
-    assert a.time_reward != a.report, "choose exactly one of --time-reward and --report"
-    if a.time_reward:
+    assert sum((a.time_reward, a.report, a.report_width)) == 1, \
+        "choose exactly one of --time-reward, --report and --report-width"
+    if a.report_width:
+        report_width(a.width_log, a.out)
+    elif a.time_reward:
         assert a.model in SCORERS, f"{a.model} is not one of the registered scorers"
         n_items, n_p, load_s, score_s = time_reward(a.gen_dir, a.n, a.model, a.dtype, a.batch_size)
         print(f"[cost] REWARD rep={a.rep} n={a.n} model={a.model} "

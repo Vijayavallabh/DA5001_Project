@@ -280,3 +280,77 @@ def test_the_compute_matched_concession_survives_with_both_prices():
         "the cell's two prices no longer travel together")
     assert r"$1.07\times$" in txt and "the anchor itself" in txt, (
         "the genuinely matched cell was dropped")
+
+
+# ---------------------------------------------------------------------------------------------
+# feat-163: does batching move the price RATIO, or only the bill?
+# ---------------------------------------------------------------------------------------------
+
+def _wlog(tmp, ca, cm, load=10.0, tokens=200, served=None):
+    """A synthetic box: at width W one anchor batch costs ca(W) and one metered batch cm(W).
+    tpp=1 is load + one batch, tpp=2 is load + two, so differencing them recovers the batch."""
+    from analysis.cost_grid import WIDTHS
+    lines = []
+    for rep in (1, 2):
+        for w in WIDTHS:
+            for path, c in (("ANCHOR", ca), ("MET", cm)):
+                for tpp in (1, 2):
+                    d = _gen_dir(os.path.join(tmp, f"{path}{w}_{tpp}_{rep}"),
+                                 n_prompts=(served or w), tokens=tokens)
+                    lines.append(f"[width] {path} rep={rep} W={w} tpp={tpp} "
+                                 f"seconds={load + tpp * c(w):.3f} dir={d}")
+    p = os.path.join(tmp, "batch_width.log")
+    open(p, "w", encoding="utf-8").write("\n".join(lines) + "\n[width] DONE\n")
+    return p
+
+
+def _wbands(out):
+    return {r["band"].split()[0]: r for r in
+            csv.DictReader(open(os.path.join(out, "batch_width_bands.csv"), encoding="utf-8"))}
+
+
+def test_the_batch_cost_is_differenced_not_fitted_and_the_loader_never_enters(tmp_path):
+    from analysis.cost_grid import report_width
+    out = str(tmp_path / "out")
+    # anchor flat in W (overhead-bound), meter growing with W (weight-bound): the ratio must fall
+    report_width(_wlog(str(tmp_path), lambda w: 7.0, lambda w: 7.0 + 0.05 * w, load=999.0), out)
+    rows = {int(r["width"]): r for r in
+            csv.DictReader(open(os.path.join(out, "batch_width.csv"), encoding="utf-8"))}
+    assert abs(float(rows[64]["anchor_batch_s"]) - 7.0) < 1e-6, "a 999s loader reached the cost"
+    assert abs(float(rows[64]["metered_batch_s"]) - 10.2) < 1e-6
+    assert abs(float(rows[8]["c_a_over_c_m"]) - 7.0 / 7.4) < 1e-4
+
+
+def test_b1_reads_three_ways_and_b2_scales_the_ratio_by_sixty_four(tmp_path):
+    from analysis.cost_grid import report_width
+    out = str(tmp_path / "out")
+    report_width(_wlog(str(tmp_path), lambda w: 7.0, lambda w: 7.0 + 0.05 * w), out)
+    b = _wbands(out)
+    assert b["G0"]["reading"] == "PASS" and b["G1"]["reading"] == "PASS"
+    assert b["B1"]["reading"] == "FALLS", b["B1"]
+    assert abs(float(b["B2"]["value"]) - 64 * (7.0 / 17.0)) < 0.02, b["B2"]
+    assert "NOT A PRICE" in b["B2"]["reading"], "B2 must carry its own disclaimer"
+    # both paths scaling together leaves the ratio flat -- the point of the arm
+    out2 = str(tmp_path / "out2")
+    # both grow identically; c_a(64) = 6.972, inside G0, so the arm is scored and reads FLAT
+    report_width(_wlog(str(tmp_path / "b"), lambda w: 5.5 + 0.023 * w,
+                       lambda w: 5.5 + 0.023 * w), out2)
+    assert _wbands(out2)["B1"]["reading"] == "FLAT"
+
+
+def test_g0_catches_a_width_arm_that_disagrees_with_the_arm_it_extends(tmp_path):
+    from analysis.cost_grid import report_width
+    out = str(tmp_path / "out")
+    report_width(_wlog(str(tmp_path), lambda w: 2.0, lambda w: 7.0), out)   # c_a(64)=2.0 vs 6.99
+    b = _wbands(out)
+    assert b["G0"]["reading"] == "FAIL"
+    assert "NOT SCORED" in b["B1"]["reading"] and "B2" not in b
+
+
+def test_g1_catches_a_batch_that_was_split(tmp_path):
+    """--cap-neutral W with --batch-size W is one batch per seed group only if the run really
+    served W requests. If it served fewer the width is not W and the whole axis is wrong."""
+    from analysis.cost_grid import report_width
+    out = str(tmp_path / "out")
+    report_width(_wlog(str(tmp_path), lambda w: 7.0, lambda w: 7.0 + 0.05 * w, served=8), out)
+    assert _wbands(out)["G1"]["reading"].startswith("FAIL")
