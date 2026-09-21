@@ -6473,3 +6473,69 @@ env -u LD_LIBRARY_PATH nvidia-smi --query-compute-apps=pid,used_memory --format=
 ssh PrakashDGX_H2 'nvidia-smi --query-gpu=index,memory.used,utilization.gpu --format=csv'
 tail -4 output/logs/comma7b128_card1.log     # 3800/25600
 ```
+
+## 2026-09-21 (evening) --- feat-162: the compute-matched cell, measured instead of proxied
+
+**Both hosts in sync, verified mechanically.** The code trees hash identically
+(`find analysis scripts tests -name '*.py' -o -name '*.sh' | md5sum` of the per-file digests:
+`fe09ff45...` on both), and a checksum `rsync -n` over `results/` in both directions leaves one
+real difference --- `14.7701` against the corrected, counted `14.7700` in the two
+`scorer_scale_6rung*` files, which local holds and host B does not (caution (ax)). Everything else
+that appeared to differ is line endings: host B's CSVs carry the `csv.writer` default `\r\n` and
+five files that were rewritten locally during the feat-161 separation carry `\n`. `results/` is
+`760` of `767` CRLF, so the LF files are the anomaly and not the rule; nothing parses differently.
+
+### What the idle host was used for, and why not for eight jobs
+
+A timing arm is void on a shared box, so this one took **one** H100 and left the other seven idle
+on purpose. Section 5's most damaging sentence --- *"held to the metered decoder's own compute the
+mechanism loses: at `n=4` and `0.92x` the cost it gains `-0.0395`"* --- selects its cell with
+`compute_matched.py`'s `cost_ratio`, a parameter-count FLOP proxy, in a paragraph whose two
+preceding sentences say the paper's own measurement rejects that axis (`the lever is n, not the
+scorer`). The cell is chosen by shrinking the scorer, which the clock says is worth `9.3%`.
+
+**Scored: all four gates pass and both predictions were wrong.** B1 selects `n=1` at `1.07x`, not
+the predicted `n=2`. B2 reads **MISPRICED**: `sel05b_n4` measures `4.109x` against the printed
+`0.92x`, a factor of `4.47` where `2.2` was predicted. B3 reads **CONCESSION STANDS** --- the
+matched cell is the anchor's own single sample, gain `0` by construction against the meter's
+`+0.0400`, so the paper had understated its own concession.
+
+Both predictions failed for one reason: `b = 6.99`s per completion for the anchor draws against
+`b_met = 6.97`s for the metered decoder, a `0.3%` difference where we predicted a factor of two.
+At batch `40` neither path is weight-bound, so carrying an `8.03`B risky model beside the `1.76`B
+anchor is nearly free and every extra candidate is a whole extra decode.
+
+### Two findings it was not registered to make, both against the paper
+
+`draws(n) = 10.31 + 6.99n` at `R^2 = 0.99990` **falsifies the manuscript's own explanation** of why
+`35.4x < 61.3x`: sixty-four completions *do* cost sixty-four sequential decodes, because
+`_run_seed_group` batches across prompts and realises `n` as `n` seed groups. The real gap is the
+**loader in the denominator** --- `10.97` of the metered path's `17.94` seconds --- so the
+per-request ratio is `67.2x`, `1.10x` **above** the FLOP proxy rather than `1.73x` below it.
+Recorded as caution (ay), and appended as a correction to
+`results/onset_prediction_serving_latency.md`, whose number stands and whose reason does not.
+
+The committed `35.4x` is NOT revised: different silicon, and the registration excluded the
+substitution before the run. Every site quoting it now names the convention.
+
+### Applied
+
+`selection.tex` (the concession restated at the measured cell, keeping `-0.0395` and both prices of
+the `n=4` cell), `appendix_selection.tex` (the batching claim kept and marked falsified, plus a new
+`app:costgrid` paragraph and table), the abstract (`and $2.5\times$ that per request`),
+`iclr_closing.tex` (`35.4`--`67.2\times`), `appendix_related.tex`. Body still **exactly 9 of 9
+pages**, 41 total, 0 overfull, 0 `??`, `pdffonts | grep -ci bold` = 3, and the number audit still
+reports its single expected miss.
+
+`tests/test_cost_grid.py` (15 tests). Mutation-tested twice: six against the analysis code, which
+found two real gaps --- B1 named only `n` and not the scorer, so `argmin` could become `argmax`
+undetected, and B2's MISPRICED verdict did not depend on the printed ratio it compares against
+(caution (av)) --- and six against the manuscript, all caught, sources restored byte-identical.
+
+### Commands
+
+```bash
+bash scripts/run_cost_grid.sh 0 40                      # host B, one card, box idle
+.venv/bin/python analysis/cost_grid.py --report --out results
+.venv/bin/python analysis/audit_numbers.py
+```

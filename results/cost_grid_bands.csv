@@ -1,0 +1,9 @@
+band,quantity,value,reading
+G-fit: loader and slope,"draws(n) = a + b n, metered a and b",a=10.31s b=6.99s/completion; a_met=10.97s b_met=6.97s,R^2 0.99990
+"G0 instrument, ratio(64, 7.6B) in [15, 70]",gate,67.243,PASS
+"G1 premise, reward share of selection < 0.25",gate,0.0458,PASS
+"G2 same work served, within 0.05",gate,0.0,PASS
+"G3 linear model allowed, R^2 >= 0.98 and b > 0",gate,0.9999,PASS
+B1 matched cell,"argmin |ratio_marginal - 1| in (0.7, 1.45)",Qwen2.5-0.5B-Instruct n=1,"MATCHED at Qwen2.5-0.5B-Instruct n=1, ratio_marginal=1.074"
+B2 is the paper's cell compute-matched?,sel05b_n4 ratio_marginal vs the printed 0.92x,4.109,"MISPRICED: 4.109x measured against 0.92x printed, a factor of 4.47"
+B3 fate of the concession,"sel05b_n1 - metered_k10, paired, from the committed per-prompt utilities",-0.04,"CONCESSION STANDS -- the matched cell is the anchor's single draw, whose gain is 0 by construction, against the meter's +0.0400"

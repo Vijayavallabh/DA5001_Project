@@ -1,15 +1,16 @@
 % v8 (2026-09-14): demoted from a section to the opening paragraph of Section~\ref{sec:orders},
 % which is where it belongs once the audit is one section rather than two. Body unchanged.
 % v6 (2026-09-11): ~0.35 page. The nine-pair table, the context gradient and the two refuted
-% refinements are all Appendix~\ref{app:onset}; the interventions are Appendix~\ref{app:seed}.
+% refinements are all Appendix~\ref{app:onset}. The seed and anchor-warp interventions were in
+% appendix_seed, retired 2026-09-19 for the page budget; only the correlation is claimed here.
 
 \paragraph{Where extraction actually begins}\label{sec:onset}
 
 Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything;
 if leakage began far above it, that would be bookkeeping. It does not. On nine pairs with nine
 distinct anchors and six tokenizers, \textbf{every onset falls between $0.88$ and $1.17$ of $s(x)$},
-and for the two KL3M pairs the interval excludes $1$ from below (Table~\ref{tab:onset}). Nine pairs
-over a $1.6\times$ span will not carry a law and we claim none; what they show is that the threshold
-is not bookkeeping. The residual fifth is the evaluation's, tracking the \emph{words} a fixed-token
-seed hands the adversary ($\rho = -0.958$) --- a caution for anyone measuring extraction under a
-seed fixed in tokens \citep{carlini2023quantifying}.
+though one pair, held at one corpus and one anchor, spans $0.88$--$1.35$ when only its memoriser's
+fine-tuning length changes --- $1.64\times$ the whole nine-pair spread, so the \emph{level} is the
+claim and the ordering is not (Table~\ref{tab:onset}, Appendix~\ref{app:collapse}). Part of the
+residual tracks the \emph{words} a fixed-token seed hands the adversary ($\rho = -0.958$), a
+caution for seeds fixed in tokens \citep{carlini2023quantifying}.

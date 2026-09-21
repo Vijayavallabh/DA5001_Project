@@ -32,10 +32,16 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from analysis.serving_cost import P_ANCHOR, P_RISKY  # noqa: E402
 from analysis.serving_latency import served_tokens  # noqa: E402
 
 GRID = (1, 2, 4, 8, 16, 64)
-SCORERS = {"Qwen/Qwen2.5-7B-Instruct": 7.6156, "Qwen/Qwen2.5-0.5B-Instruct": 0.494}
+PER_PROMPT = "results/compute_matched_per_prompt.csv"
+CM_GRID = (2, 4, 8, 16, 32, 64)   # the grid compute_matched.py judged, in the order it judged it
+CM_SEED = 9163                    # its --seed, and therefore its bootstrap stream
+F4 = (-0.0395, -0.0720, -0.0065)  # the committed band this replay has to land on exactly
+G_MET = 0.0400                    # metered_k10's committed gain, for the n=1 cell
+SCORERS = {"Qwen/Qwen2.5-7B-Instruct": 7.6156, "Qwen/Qwen2.5-0.5B-Instruct": 0.4940}
 PROXY_N4 = 0.92          # what the manuscript prints for sel05b_n4
 WINDOW = (0.70, 1.45)    # B1's matched window
 G0 = (15.0, 70.0)        # instrument band on ratio(64, 7.6B)
@@ -57,6 +63,40 @@ def fit_line(xs, ys):
     ss_res = sum((y - (a + b * x)) ** 2 for x, y in zip(xs, ys))
     r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
     return a, b, r2
+
+
+def paired_at(arm, per_prompt=PER_PROMPT):
+    """The paired difference `arm - metered_k10`, from the utilities compute_matched.py committed.
+
+    The registration said to recompute this by re-running compute_matched.py under its F5 gate.
+    That is a GPU re-judge, and it is strictly worse than what the repository already holds: the
+    per-prompt gains of every cell are committed, so the same judged utilities can be re-paired on
+    a CPU with no second judging pass and therefore no cross-pass drift at all (caution (ap)).
+
+    What replaces F5 is stronger. `paired_boot` draws from one `Random(seed)` stream that
+    compute_matched.py advances once per arm and then once per band, so reproducing a committed
+    band requires replaying that whole sequence -- and F4 then lands on its committed value to four
+    decimals at both interval ends. The new cell is drawn next from the same stream.
+    """
+    import random
+    from analysis.order_averaged_h2h import paired_boot
+    rows = list(csv.DictReader(open(per_prompt, encoding="utf-8")))
+    g = {k[len("gain_"):]: [float(r[k]) for r in rows] for k in rows[0] if k.startswith("gain_")}
+    rng = random.Random(CM_SEED)
+    for s_ in ("05b", "7b"):                      # the rows loop, in insertion order
+        for n in CM_GRID:
+            paired_boot(g[f"sel{s_}_n{n}"], rng)
+    paired_boot(g["metered_k10"], rng)
+    paired_boot([x - y for x, y in zip(g["sel05b_n64"], g["sel7b_n64"])], rng)   # F2
+    d4 = [x - y for x, y in zip(g["sel05b_n4"], g["metered_k10"])]               # F4
+    m4, (l4, h4) = sum(d4) / len(d4), paired_boot(d4, rng)
+    replicates = (round(m4, 4), round(l4, 4), round(h4, 4)) == F4
+    if arm not in g:            # n=1 selects the only draw there is: it IS the control, gain 0
+        assert arm.endswith("_n1"), f"{arm} is not a judged cell and is not the n=1 control"
+        return 0.0 - G_MET, None, None, replicates
+    d = [x - y for x, y in zip(g[arm], g["metered_k10"])]
+    m, (lo, hi) = sum(d) / len(d), paired_boot(d, rng)
+    return m, lo, hi, replicates
 
 
 def parse(log):
@@ -106,7 +146,7 @@ def time_reward(gen_dir, n, model, dtype, batch_size):
     return len(items), len(pids), t1 - t0, t2 - t1
 
 
-def report(log, out):
+def report(log, out, per_prompt=PER_PROMPT):
     draws, met, rew = parse(log)
     assert draws and met and rew, f"{log} is missing a whole class of cell"
     have = sorted({d[1] for d in draws})
@@ -156,7 +196,7 @@ def report(log, out):
                 draws_s=round(d_mean[n], 3), reward_s=round(r_score[(n, k)], 3),
                 cost_marginal_s=round(c_marg, 3), cost_raw_s=round(c_raw, 3),
                 ratio_marginal=round(c_marg / b_met, 3), ratio_raw=round(c_raw / m_mean[1], 3),
-                proxy_ratio=round(n * (1.7586 + pb) / (1.7586 + 7.6156), 3)))
+                proxy_ratio=round(n * (P_ANCHOR + pb) / (P_ANCHOR + P_RISKY), 3)))
     key = "ratio_marginal" if marginal else "ratio_raw"
 
     # ---- bands ---------------------------------------------------------------------------------
@@ -193,8 +233,30 @@ def report(log, out):
             reading=("CONFIRMED" if ok else
                      f"MISPRICED: {n4[key]}x measured against {PROXY_N4}x printed, "
                      f"a factor of {n4[key] / PROXY_N4:.2f}")))
-        bands.append(dict(band="B3 fate of the concession", quantity="paired difference at B1",
-                          value="", reading="PENDING -- analysis/compute_matched.py, F5 gated"))
+        if pick is None:
+            bands.append(dict(band="B3 fate of the concession", quantity="paired difference at B1",
+                              value="", reading="NOT SCORED -- B1 found no matched cell"))
+        else:
+            arm = f"sel{'05b' if pick['scorer_b'] == 0.494 else '7b'}_n{pick['n']}"
+            m, lo, hi, replicates = paired_at(arm, per_prompt)
+            if not replicates:
+                read = ("NOT SCORED -- the replay does not reproduce the committed F4, so this "
+                        "stream is not compute_matched.py's and no band drawn from it is quotable")
+            elif lo is None:
+                read = (f"CONCESSION STANDS -- the matched cell is the anchor's single draw, whose "
+                        f"gain is 0 by construction, against the meter's {G_MET:+.4f}")
+            elif lo > 0:
+                read = "CONCESSION WITHDRAWN"
+            elif hi < 0:
+                read = "CONCESSION STANDS"
+            else:
+                read = "UNRESOLVED -- indistinguishable at matched measured compute"
+            bands.append(dict(
+                band="B3 fate of the concession",
+                quantity=f"{arm} - metered_k10, paired, from the committed per-prompt utilities",
+                value=round(m, 4),
+                reading=(read if lo is None or not replicates
+                         else f"{read} [{lo:+.4f}, {hi:+.4f}]")))
 
     os.makedirs(out, exist_ok=True)
     for path, data in ((os.path.join(out, "cost_grid.csv"), rows),

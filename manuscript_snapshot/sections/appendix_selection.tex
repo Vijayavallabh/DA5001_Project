@@ -495,8 +495,10 @@ metered $k=10$                          & $23.7$, $27.6$   & $25.64$  & $0.0031$
 \end{table}
 
 \noindent Two readings, one favourable and one not. The measured ratio is $35.4\times$, not
-$61.3\times$: the FLOP model is $1.73\times$ pessimistic as a price, because $64$ short completions
-generated in one batch do not cost $64$ sequential ones. And \textbf{the reward pass is $9.3\%$ of
+$61.3\times$, so as a \emph{ratio of totals} the FLOP model is $1.73\times$ pessimistic. We first
+explained that gap by batching --- that $64$ short completions generated in one batch do not cost
+$64$ sequential ones --- and a second measurement below falsifies it: they do, and the gap is the
+one-time model load sitting in the denominator. And \textbf{the reward pass is $9.3\%$ of
 selection's wall-clock while the draws are $90.7\%$} --- the opposite of what the parameter counts imply,
 for a mechanical reason: scoring $64$ candidates is one batched forward pass, compute-bound and parallel,
 while drawing them is $64 \times 204$ sequential decode steps. \emph{With a free scorer selection would
@@ -504,6 +506,47 @@ still cost $32.1\times$.} So ``a smaller scorer cuts the price'' is true of the 
 false of the clock: a $1.5$B scorer can return at most the $9.3\%$ it occupies. The lever on serving cost
 is $n$. The repeat spread was $0.52\%$ on selection and $15.3\%$ on the metered arm, and taking the
 extremes leaves the ratio in $[32.8, 38.5]$.
+
+\paragraph{What that ratio divides by: the loader, and draws that do not amortise}\label{app:costgrid}
+The table above is a ratio of two totals, and each total contains a model load that a served
+request does not pay --- a server loads once and serves for hours. On a second host, eight H100s
+with nothing else running on any of them, we timed the same two paths with the load separated from
+the work, at $n \in \{1,2,4,8,16,64\}$ and at the metered decoder's one \emph{and two} completions
+so that its own slope is measured rather than fitted. Every cell twice; the repeat spread is
+$0.3$--$2.0\%$ against the $15.3\%$ the metered arm showed above, which is what an idle box buys.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& draws (s) & loader out & loader in \\
+\midrule
+metered $k=10$, one completion  & $17.94$ & $1.00\times$ & $1.00\times$ \\
+selection $n=1$, $0.5$B scorer  & $17.92$ & $\mathbf{1.07\times}$ & $1.11\times$ \\
+selection $n=4$, $0.5$B scorer  & $38.66$ & $4.11\times$ & $2.28\times$ \\
+selection $n=64$, $7.6$B scorer & $458.02$ & $67.24\times$ & $26.93\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three things follow. \textbf{The draws are linear in $n$}: $\mathrm{draws}(n) = 10.31 +
+6.99n$ seconds at $R^2 = 0.99990$, because the harness realises $n$ as $n$ separate seed groups and
+batches across \emph{prompts} inside each one (\texttt{dap/e1.py}), so there is no amortisation
+across the candidate dimension at all. Whether a server that batched the $n$ candidates together
+could recover it is untested here --- and untested by the $35.4\times$ too, which is the sentence
+we withdrew. \textbf{One draw from the anchor costs what one metered decode costs}, $6.99$s against
+$6.97$s: at batch $40$ neither path is weight-bound, so carrying an $8.03$B risky model through the
+loop beside the $1.76$B anchor is nearly free and drawing a second candidate is a whole second
+decode. \textbf{The loader is $61\%$ of the metered path's total} ($10.97$s of $17.94$s) against
+$2\%$ of selection's at $n=64$, which is what makes a ratio of totals read $26.9\times$ where the
+per-request ratio reads $67.2\times$ --- the latter $1.10\times$ \emph{above} the forward-pass
+model rather than $1.73\times$ below it. So the compute-matched cell is not $n=4$ at $0.92\times$,
+which measures $4.11\times$; it is $n=1$ at $1.07\times$, which is the anchor serving its own
+single sample and gains $0$ by construction against the meter's $+0.0400$. \textbf{At the metered
+decoder's own measured compute, selection has nothing to select from.} The $35.4\times$ above is a
+different machine and is not revised by this; what is revised is the reason for it. Bands in
+\texttt{results/onset\_prediction\_\allowbreak cost\_\allowbreak matched\_\allowbreak measured.md},
+fixed before the run, including the two predictions it got wrong: we expected the matched cell at
+$n=2$ and the mispricing at $2.2\times$, and measured $n=1$ and $4.47\times$.
 
 % The vetting table and its discussion were cut on 2026-09-19 for the page budget. The arm is
 % unchanged; what is kept is the measurement the Ethics Statement and Section 4 both point at,

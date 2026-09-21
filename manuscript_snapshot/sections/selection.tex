@@ -103,13 +103,15 @@ at a \emph{non-literal} event rather than assumed: the anchor reaches ROUGE-L $\
 $100$ passages, where the memoriser reaches it on $47$.
 
 The price is compute. At a $7.6$B scorer selection costs $61.3\times$ the metered decoder's forward
-passes at $n=64$; \emph{measured} on one card it is $35.4\times$ the wall-clock per served token,
-because $64$ short completions in one batch do not cost $64$ sequential ones. The same measurement
-overturns where the cost sits: scoring is one batched forward pass and $9.3\%$ of the time, drawing
-is $64 \times 204$ sequential steps and the rest, so a free scorer would still leave $32.1\times$.
-The lever is $n$, not the scorer, and a smaller one does not rescue it. \textbf{Held to the metered
-decoder's own compute the mechanism loses}: at $n=4$ and $0.92\times$ the cost it gains $-0.0395$
-$[-0.0720, -0.0065]$ against it. Nor does the obvious alternative substitute --- a $3.9\times$ larger
+passes at $n=64$, and a clock agrees once both paths' one-time model load is taken out of the
+ratio: on an idle second host one draw from the anchor costs what one metered decode costs to
+$0.3\%$, so $n$ draws cost $n$ of them and $n=64$ measures $67.2\times$. Quoted as a ratio of
+totals, loaders inside, the same paths read $35.4\times$. Scoring is one batched forward pass and
+$9.3\%$ of the time, so a free scorer would still leave $32.1\times$: the lever is $n$.
+\textbf{Held to the metered decoder's own compute the mechanism loses}: at $n=4$, priced
+$0.92\times$ by the forward-pass count and $4.1\times$ by the clock, it gains $-0.0395$
+$[-0.0720, -0.0065]$ against it, and the cell that is genuinely matched, $1.07\times$, affords one
+draw --- which is the anchor itself. Nor does the obvious alternative substitute --- a $3.9\times$ larger
 safe model served alone gains $+0.015$ $[-0.0065, +0.0365]$ against selection's $+0.1045$, at
 $86\times$ less compute (Appendix~\ref{app:biggeranchor}). Majority vote has no scorer term at all, $5.75\times$ at $n=32$, and where an answer is checkable
 it dominates the pointwise reward at every scorer we ran up to $7.6$B --- but not at $14$B, which

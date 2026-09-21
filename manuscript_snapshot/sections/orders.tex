@@ -4,46 +4,26 @@
 % Numbers: results/renyi_sweep.csv, renyi_price.csv, order_law.csv, utility_price.csv,
 % judge_separation_v6{,_judge2}.csv, marginal_price_table.csv, selection_candidates.csv.
 
-\section{The deployed instance, and the three repairs it has left}\label{sec:orders}
+\subsection{The deployed instance, and every escape it has left}\label{sec:orders}
 
-Two questions follow for the deployed instance, anchored decoding \citep{he2026anchored}. Does the
-vacuity threshold correspond to anything a rights-holder would recognise? And can its three
-remaining degrees of freedom --- charge, cap, schedule --- recover what
-Proposition~\ref{prop:sparse} says they cannot? All four answers were pre-registered, and the
-interesting part of the three failures is \emph{where} each fails.
+Two questions follow for anchored decoding \citep{he2026anchored}: does the vacuity threshold
+correspond to anything a rights-holder would recognise, and can any remaining degree of freedom
+recover what Proposition~\ref{prop:sparse} says it cannot?
 
 \input{sections/onset}
 
-\paragraph{Repair 1: sharpen the accounting}
-Proposition~\ref{prop:threshold} says a stronger divergence cannot move the threshold, so the
-question is what it does underneath. Four orders ran the same attack at the authors' own budget
-$k=3$, where all four publish $K = 3T$ and the certificate is vacuous for $100\%$ of the $758$
-protected passages and $98.7\%$ of $9{,}870$ across a hundred books --- indistinguishable to a
-rights-holder (Table~\ref{tab:orders}) --- while underneath they span two orders of magnitude in
-what an adversary recovers, $0.0965$ at $\alpha=1$ against $0.0012$ at $\alpha=8$, and at
-\emph{matched utility} run from $10^{6}$ times more dangerous to $10^{7}$ times safer
-(Appendices~\ref{app:bookmia},~\ref{app:matched}).
 
-\paragraph{Repair 2: lower the budget}
-This is a walk onto the trivial horn, and Eq.~\eqref{eq:nfl} prices the walk: the decoder spends
-$79$ to $171$ nats to buy gains an optimal policy could have bought for $0.0003$ to $0.077$, a ratio
-that never falls below $2200$; bluntness \emph{caps} the rate function, so winning \emph{every}
-comparison would cost an optimal policy $1.30$ nats and the decoder spends $132$ times that to win a
-third of them. The certified and the useful regions then fail to meet. Under two
-instruction-tuned judges outside the audit, $600$ comparisons per budget, neither separates the
-decoder from its own safe model at $k=0.5$ ($-1.03\sigma$, $+1.52\sigma$), where all $758$ protected
-passages are still covered; both do only at $k \ge 10$ ($-6.97\sigma$, $-3.29\sigma$), where none is
-(Appendix~\ref{app:proofs}).
 
-\paragraph{Repair 3: spend the budget better}
-Proposition~\ref{prop:sparse} bounds this one before it is run: a greedy decoder is not short of
-allowance but of somewhere useful to put it. Optimal offline reallocation of its own realised spend
-is a ceiling no causal scheduler can beat \citep{tomasi2026primaldual}, and buys $3$ to $13\%$ more
-utility at $k \le 1$ and under $1.4\%$ at $k=3$ (Appendix~\ref{app:proofs}).
-
-\paragraph{What the three have in common}
-The budget is not spent inefficiently on utility; it is spent \emph{efficiently on a target that is
-not utility}. A metered decoder exists to move the served distribution toward $p_r$, so its budget
-buys likelihood under $p_r$ --- a currency that, measured on these candidates, predicts judged
-quality worse than the answer's length does (Appendix~\ref{app:proofs}). A wrong currency on the
-wrong axis is not repaired by a better meter.
+All four are measured in Appendix~\ref{app:proofs}: sharpen the charge,
+lower the cap, schedule the spend better, or grant the budget up front and spend it sparsely --- the
+one causal policy Proposition~\ref{prop:sparse} positively permits. Each was specified in advance with a refuting band and each lands on a
+horn; the last --- the one causal policy the proposition positively permits, so the fair test of
+whether a \emph{causal} rule can concentrate --- reaches $+0.0545$ $[+0.0315, +0.0775]$ at $64$
+nats against selection's $+0.1045$ at $\log 64 = 4.16$: an empirical shortfall for the best
+construction we could build, not a proof that none matches. \textbf{The $80\times$ of sharpening is real and a rights-holder is right to want it}; what it costs is
+the objection, and at $\alpha=8$ the constraint binds at $99.6\%$ of ordinary steps against $0.4\%$.
+Eq.~\eqref{eq:nfl} prices row 2's collapse onto the safe model: winning \emph{every} comparison would
+cost an optimal policy $1.30$ nats and the decoder spends $132$ times that to win a third of them.
+What the four share is that the budget is not spent inefficiently on utility --- it is spent
+\emph{efficiently on a target that is not utility}, likelihood under $p_r$, which predicts judged
+quality worse than the answer's length does (Appendix~\ref{app:proofs}).

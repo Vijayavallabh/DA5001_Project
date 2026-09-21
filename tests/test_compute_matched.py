@@ -209,12 +209,25 @@ def test_the_matched_compute_cost_is_the_one_the_csv_computed():
     """The F4 band's label was a hardcoded '0.94x' while the same run's compute_matched.csv gave
     cost_vs_metered = 0.92 for sel05b_n4, and the main text picked up the label rather than the
     column on 2026-09-17. Caution (j): a paper number rounds from the CSV, once. Every place that
-    quotes this cost must now agree with the column."""
+    quotes this cost must now agree with the column.
+
+    AMENDED 2026-09-21 by feat-162, which found that this test had itself inherited the defect it
+    was written to catch. `cost_vs_metered` is the parameter-count FLOP proxy, and the assertion
+    below used to read `cost < 1.0, "F4 is only 'matched compute' if the arm costs no more than the
+    meter"` -- treating a FLOP count as a price, which is the exact error caution (ay) records. The
+    cell measures 4.11x on a clock. The chain column -> label -> manuscript is what this test is
+    for and it is kept; what changes is that the manuscript must now print this number AS the
+    forward-pass count, with the measured price of the same cell beside it."""
     cost = next(float(r["cost_vs_metered"]) for r in _rows("results/compute_matched.csv")
                 if r["arm"] == "sel05b_n4")
-    assert cost < 1.0, "F4 is only 'matched compute' if the arm costs no more than the meter"
+    assert cost < 1.0, "sel05b_n4 is the cell F4 was built on; its FLOP cost is below the meter's"
     bands = open("results/compute_matched_bands.csv", encoding="utf-8").read()
     assert f"({cost:.2f}x)" in bands, f"the bands label disagrees with the column ({cost})"
     body = _tex("sections/selection.tex")          # where a stale label does real damage
-    assert f"${cost:.2f}\\times$ the cost" in body, \
-        f"Section 2 must quote the computed matched-compute cost, {cost:.2f}x"
+    assert f"priced ${cost:.2f}\\times$ by the forward-pass count" in body, \
+        f"Section 2 must quote the computed cost, {cost:.2f}x, and say which model it is from"
+    measured = next(float(r["ratio_marginal"]) for r in _rows("results/cost_grid.csv")
+                    if r["n"] == "4" and r["scorer_b"] == "0.494")
+    assert f"and ${measured:.1f}\\times$ by the clock" in body, \
+        "the measured price of the same cell must travel with the proxy, or the reader is told "\
+        f"that 0.92x is what it costs when it is {measured:.2f}x"

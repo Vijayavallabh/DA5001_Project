@@ -47,6 +47,20 @@ def _log(tmp, a=10.0, b=7.0, met1=26.0, met2=38.0, rew7=(84.0 / 64), rew05=(5.5 
     return p
 
 
+def _fake_per_prompt(path, n=40):
+    """A stand-in for results/compute_matched_per_prompt.csv: the bootstrap replay is exercised
+    against the real file by test_the_paired_replay_lands_on_the_committed_f4, and these cases are
+    about the gates and the cell choice, which must not pay for 15 bootstraps over 500 prompts."""
+    arms = [f"sel{s}_n{n_}" for s in ("05b", "7b") for n_ in (2, 4, 8, 16, 32, 64)]
+    with open(path, "w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["prompt_id"] + [f"gain_{a}" for a in arms + ["metered_k10"]])
+        for i in range(n):
+            w.writerow([f"p{i}"] + [round(0.01 * (j + 1) + 0.001 * i, 4)
+                                    for j in range(len(arms) + 1)])
+    return path
+
+
 def _bands(out):
     return {r["band"].split()[0]: r for r in
             csv.DictReader(open(os.path.join(out, "cost_grid_bands.csv"), encoding="utf-8"))}
@@ -75,7 +89,7 @@ def test_parse_reads_the_three_cell_kinds_and_nothing_else(tmp_path):
 
 def test_the_loader_is_removed_and_the_marginal_ratio_is_not_the_raw_one(tmp_path):
     out = str(tmp_path / "out")
-    report(_log(str(tmp_path)), out)
+    report(_log(str(tmp_path)), out, _fake_per_prompt(str(tmp_path / 'pp.csv')))
     rows = list(csv.DictReader(open(os.path.join(out, "cost_grid.csv"), encoding="utf-8")))
     n2 = [r for r in rows if r["n"] == "2" and r["scorer_b"] == "0.494"][0]
     # draws(2) = 10 + 14 = 24 s raw against a marginal 14 s; b_met = 12 s. The two ratios must
@@ -88,7 +102,7 @@ def test_the_loader_is_removed_and_the_marginal_ratio_is_not_the_raw_one(tmp_pat
 
 def test_b1_picks_the_cell_nearest_one_and_b2_prices_the_paper_s_cell(tmp_path):
     out = str(tmp_path / "out")
-    report(_log(str(tmp_path)), out)
+    report(_log(str(tmp_path)), out, _fake_per_prompt(str(tmp_path / 'pp.csv')))
     b = _bands(out)
     assert b["G0"]["reading"] == "PASS" and b["G1"]["reading"] == "PASS"
     assert b["G3"]["reading"] == "PASS"
@@ -109,7 +123,7 @@ def test_a_failed_gate_stops_every_band_below_it(tmp_path):
     """caution (as): a gate that fails must stop the reading, not merely annotate it."""
     out = str(tmp_path / "out")
     # make the reward pass dominate the clock: G1 fails, so B1 and B2 must not be computed
-    report(_log(str(tmp_path), rew7=10.0), out)
+    report(_log(str(tmp_path), rew7=10.0), out, _fake_per_prompt(str(tmp_path / 'pp.csv')))
     b = _bands(out)
     assert b["G1"]["reading"] == "FAIL"
     assert "NOT SCORED" in b["B1"]["reading"]
@@ -118,7 +132,7 @@ def test_a_failed_gate_stops_every_band_below_it(tmp_path):
 
 def test_g2_catches_two_cells_that_did_not_serve_the_same_work(tmp_path):
     out = str(tmp_path / "out")
-    report(_log(str(tmp_path), met_tokens=120), out)
+    report(_log(str(tmp_path), met_tokens=120), out, _fake_per_prompt(str(tmp_path / 'pp.csv')))
     assert _bands(out)["G2"]["reading"] == "FAIL"
 
 
@@ -141,8 +155,10 @@ def test_the_proxy_ratio_is_the_one_the_manuscript_actually_prints():
     from tests.manuscript import body
     txt = body("selection.tex")
     from analysis.cost_grid import PROXY_N4
-    assert f"${PROXY_N4}\\times$ the cost" in txt, (
-        "selection.tex no longer prints the ratio cost_grid.py measures against")
+    assert f"priced ${PROXY_N4}\\times$ by the forward-pass count" in txt, (
+        "selection.tex no longer prints the ratio cost_grid.py measures against. It fired once "
+        "already, when feat-162 rewrote the sentence, which is what it is for -- re-derive the "
+        "factor B2 reports rather than relaxing this.")
 
 
 def test_g0_fails_when_the_two_paths_are_implausibly_close(tmp_path):
@@ -150,7 +166,117 @@ def test_g0_fails_when_the_two_paths_are_implausibly_close(tmp_path):
     selection path measuring about the meter's own cost means the draws never happened. It has to
     fail loudly there, and take every band below it down (caution (as))."""
     out = str(tmp_path / "out")
-    report(_log(str(tmp_path), b=0.5, rew7=0.01), out)          # ratio(64) ~ 2.7x, far below 15
+    report(_log(str(tmp_path), b=0.5, rew7=0.01), out, _fake_per_prompt(str(tmp_path / 'pp.csv')))          # ratio(64) ~ 2.7x, far below 15
     b = _bands(out)
     assert b["G0"]["reading"] == "FAIL", b["G0"]
     assert "NOT SCORED" in b["B1"]["reading"] and "B2" not in b
+
+
+def test_the_paired_replay_lands_on_the_committed_f4():
+    """B3 substitutes a CPU re-pairing of committed utilities for the registration's GPU re-judge.
+    What licenses the substitution is that replaying compute_matched.py's bootstrap stream
+    reproduces its F4 band EXACTLY -- point estimate and both ends. If it ever stops doing so the
+    stream is not that script's and nothing drawn from it may be quoted."""
+    from analysis.cost_grid import F4, paired_at
+    m, lo, hi, replicates = paired_at("sel05b_n4")
+    assert replicates, "the replay no longer reproduces the committed F4"
+    assert abs(m - F4[0]) < 1e-9, "the point estimate is a mean and does not depend on the draw"
+    m1, lo1, hi1, _ = paired_at("sel05b_n1")
+    assert lo1 is None and abs(m1 + 0.0400) < 1e-9, "n=1 IS the control: its gain is 0, not judged"
+
+
+def test_the_proxy_column_is_compute_matched_s_own_arithmetic_and_not_retyped():
+    """cost_grid.py prints the FLOP proxy beside the measured ratio so the two can be compared, and
+    a proxy retyped from memory is not the proxy the paper printed -- caution (ax). Reproduce
+    compute_matched.csv's own cost_vs_metered column, every cell."""
+    import csv as _csv
+    import os as _os
+    from analysis.serving_cost import P_ANCHOR, P_RISKY
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    rows = list(_csv.DictReader(open(_os.path.join(root, "results", "compute_matched.csv"),
+                                     encoding="utf-8")))
+    seen = 0
+    for r in rows:
+        if not r["n"]:
+            continue
+        pb = {"Qwen2.5-0.5B": 0.4940, "Qwen2.5-7B": 7.6156}[r["scorer"]]
+        got = round(int(r["n"]) * (P_ANCHOR + pb) / (P_ANCHOR + P_RISKY), 3)
+        assert abs(got - float(r["cost_vs_metered"])) < 1e-9, (r["arm"], got, r["cost_vs_metered"])
+        seen += 1
+    assert seen == 12, f"expected the 0.5B and 7B grids, saw {seen} cells"
+
+
+def _grid():
+    import csv as _csv
+    import os as _os
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    rows = list(_csv.DictReader(open(_os.path.join(root, "results", "cost_grid.csv"),
+                                     encoding="utf-8")))
+    return {(r["scorer"], int(r["n"])): r for r in rows}
+
+
+def test_every_cost_number_the_paper_prints_rounds_from_the_measured_csv():
+    """caution (j): a paper number rounds from its CSV, once. These are the cells Section 5 and
+    Appendix I now print, and each is checked against the column it came out of rather than
+    against a plausible story about it."""
+    from tests.manuscript import body
+    g = _grid()
+    txt = body("selection.tex", "appendix_selection.tex", "appendix_related.tex",
+               "iclr_closing.tex")
+    for scorer, n, col, printed in (
+            ("Qwen2.5-0.5B-Instruct", 1, "ratio_marginal", "1.07"),
+            ("Qwen2.5-0.5B-Instruct", 4, "ratio_marginal", "4.11"),
+            ("Qwen2.5-7B-Instruct", 64, "ratio_marginal", "67.24"),
+            ("Qwen2.5-7B-Instruct", 64, "ratio_raw", "26.93"),
+            ("Qwen2.5-0.5B-Instruct", 64, "draws_s", "458.02"),
+            ("Qwen2.5-0.5B-Instruct", 4, "draws_s", "38.66")):
+        val = float(g[(scorer, n)][col])
+        assert f"{val:.2f}" == printed, (scorer, n, col, val, printed)
+        assert printed in txt, f"the paper stopped printing {printed} ({scorer} n={n} {col})"
+    # Section 5 rounds the same cells to one and two decimals; both must round from the column
+    assert f"{float(g[('Qwen2.5-7B-Instruct', 64)]['ratio_marginal']):.1f}" == "67.2"
+    assert f"{float(g[('Qwen2.5-0.5B-Instruct', 4)]['ratio_marginal']):.1f}" == "4.1"
+
+
+def test_the_abstract_s_convention_factor_is_the_measured_one():
+    """The abstract says the price is 2.5x more per request. That factor is the ratio of the two
+    conventions at the headline cell, and it is what a deployer reads as a price -- caution (aq),
+    where exactly this sentence was the mutation that passed."""
+    import os as _os
+    g = _grid()
+    r = g[("Qwen2.5-7B-Instruct", 64)]
+    factor = float(r["ratio_marginal"]) / float(r["ratio_raw"])
+    assert f"{factor:.1f}" == "2.5", factor
+    tex = _os.environ.get("SATML_DIR") or _os.path.normpath(
+        _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+                      _os.pardir, "sub", "satml"))
+    abstract = " ".join(open(_os.path.join(tex, "iclr_2027.tex"), encoding="utf-8").read().split())
+    assert r"$2.5\times$ that per request" in abstract, (
+        "the abstract dropped the per-request convention, which is the number a deployer reads")
+
+
+def test_the_batching_explanation_is_withdrawn_and_not_merely_deleted():
+    """caution (af): a withdrawn claim must be chased, and a withdrawal that simply deletes the
+    sentence leaves a reader of the earlier version with no correction. The appendix keeps the
+    claim and says it was falsified, so this asserts the two travel together."""
+    from tests.manuscript import body
+    txt = body("appendix_selection.tex")
+    i = txt.find("do not cost\n$64$ sequential ones".replace("\n", " "))
+    assert i > 0, "the batching sentence is gone entirely; it should be kept and marked falsified"
+    window = txt[max(0, i - 400):i + 400]
+    assert "falsifies it" in window, "the batching claim is stated without its withdrawal"
+    assert "linear in $n$" in txt and "0.99990" in txt, (
+        "the evidence for the withdrawal -- that draws are linear in n -- is not printed")
+
+
+def test_the_compute_matched_concession_survives_with_both_prices():
+    """The concession is the most damaging sentence in the paper and caution (ag) says a length
+    edit deletes those first. It must keep its measured loss AND now carry both prices of the cell
+    it is measured at, so neither the number nor its correction can go missing alone."""
+    from tests.manuscript import body
+    txt = body("selection.tex")
+    assert "$-0.0395$ $[-0.0720, -0.0065]$" in txt, "the compute-matched loss was dropped"
+    assert r"$0.92\times$ by the forward-pass count and $4.1\times$ by the clock" in txt, (
+        "the cell's two prices no longer travel together")
+    assert r"$1.07\times$" in txt and "the anchor itself" in txt, (
+        "the genuinely matched cell was dropped")

@@ -198,3 +198,135 @@ served request does not pay for loading a checkpoint; a server loads once and se
 raw ratio flatters the metered decoder specifically, because loading is `11.3` of its `18.0`
 seconds and only `10.5` of selection's `454.9`. Both ratios are reported in `cost_grid.csv` either
 way, which is the reason that table was specified to carry both.
+
+## Scoring, 2026-09-21
+
+Run on host B, GPU 0, the other seven cards idle throughout (`box at start` and `box at end` both
+read `1 MiB` on every other card, and the only compute process on the box was ours). Forty cells,
+every one twice.
+
+```
+bash scripts/run_cost_grid.sh 0 40
+.venv/bin/python analysis/cost_grid.py --report --out results
+```
+
+Outputs `results/cost_grid.csv` and `results/cost_grid_bands.csv`.
+
+### The repeats, first, because a timing arm with one rep is not a measurement
+
+| cell | rep 1 | rep 2 | spread |
+|---|---|---|---|
+| metered, one completion | `18.002` | `17.887` | `0.6%` |
+| metered, two completions | `24.668` | `25.167` | `2.0%` |
+| draws `n=64` | `454.850` | `461.183` | `1.4%` |
+| draws `n=16` | `122.097` | `119.920` | `1.8%` |
+| draws `n=1` | `17.951` | `17.895` | `0.3%` |
+
+The committed local arm reported a `15.3%` spread on the metered cell and called it out as the
+reason one rep is not a measurement. Here it is `0.6%`, and the difference is the box: that arm ran
+on a card that was exclusively ours inside a machine where two other cards held `25` and `68` GB of
+someone else's job, and this one ran on a machine with nothing else on it.
+
+### The fit, which is the whole reason this arm needed a card
+
+`draws(n) = 10.31 + 6.99 n` seconds, **`R^2 = 0.99990`** over twelve points. The metered path,
+measured directly at one and two completions rather than fitted, gives `b_met = 6.97` s and
+`a_met = 10.97` s.
+
+**`b = 6.99` against `b_met = 6.97`: one draw from the anchor costs what one metered decode costs,
+to `0.3%`.** That is the measurement the rest of this follows from, and it was not what we
+predicted --- we predicted about half, since the metered path runs a `1.76`B anchor and an `8.03`B
+risky model and a KL solve at every step where selection runs the anchor alone. At batch `40` and
+`204` steps neither path is weight-bound; both are dominated by per-step overhead, so carrying a
+model `4.6x` larger through the loop costs essentially nothing extra and drawing a second
+candidate costs a whole second decode.
+
+### Gates
+
+| gate | value | reading |
+|---|---|---|
+| G0 instrument, `ratio(64, 7.6B)` in `[15, 70]` | `67.243` | **PASS** |
+| G1 premise, reward share `< 0.25` | `0.0458` | **PASS** |
+| G2 same work served, within `5%` | `0.0000` | **PASS** |
+| G3 linear model allowed, `R^2 >= 0.98`, `b > 0` | `0.99990` | **PASS** |
+
+**G0 passed by `2.757` and the note above it, written while the reward cells were still unrun,
+predicted it would fail.** It did not, and the band's defect is real anyway: its endpoints came
+from a loader-inclusive reference and it was applied to a loader-excluded quantity, which is why it
+landed `2.8` short of excluding a perfectly sound measurement. Recording a defect and then not
+needing the repair is the outcome that costs nothing; the note stays where it is, and the
+re-registration it describes was not used.
+
+G2 reads exactly `0.0000`: both paths served `204.5` tokens per request on the same `40` prompts.
+
+### B1 -- the matched cell is `n=1`, and we predicted `n=2`
+
+| scorer | `n` | marginal | raw | FLOP proxy |
+|---|---|---|---|---|
+| `0.494`B | `1` | **`1.074x`** | `1.111x` | `0.240x` |
+| `0.494`B | `2` | `2.083x` | `1.490x` | `0.481x` |
+| `0.494`B | `4` | `4.109x` | `2.277x` | `0.961x` |
+| `7.6156`B | `64` | `67.243x` | `26.933x` | `61.289x` |
+
+`argmin |ratio - 1|` inside `[0.70, 1.45]` selects **the `0.494`B scorer at `n=1`, `1.074x`**. It is
+the only cell in the window: `n=2` is already `2.083x`, because `ratio(n) ~ n`.
+
+### B2 -- MISPRICED, and by more than four times
+
+`sel05b_n4` measures **`4.109x`** the metered decoder against the **`0.92x`** Section 5 prints, a
+factor of **`4.47`**. We predicted `2.0x` and a factor of `2.2`, and were wrong in the same
+direction and twice as far, for the same reason B1 moved: the proxy divides selection's price by
+`4.16` when the scorer shrinks from `7.6`B to `0.494`B, and on the clock that swap is worth `2.4%`
+of the cell's cost (`1.735` s against `0.687` s inside `29.7` s).
+
+### B3 -- CONCESSION STANDS
+
+The matched cell is a single draw, which is the anchor serving its own sample: its gain is `0` by
+construction, against the metered decoder's `+0.0400`. **At the metered decoder's own measured
+compute, selection is not a mechanism at all.** The concession in Section 5 survives; what changes
+is that it was understated. The paper says selection loses by `-0.0395` at a cell it prices at
+`0.92x`; that cell actually costs `4.1x`, and at `1.07x` selection has no draws to choose from.
+
+### A deviation from this registration, declared
+
+B3 was registered as a re-run of `analysis/compute_matched.py` gated by its F5 replication check.
+It was computed instead from `results/compute_matched_per_prompt.csv`, which that same script
+already committed --- the per-prompt judged gain of every cell --- so **no second judging pass was
+run and there is no cross-pass drift to gate** (caution (ap)). What replaced F5 is stronger, not
+weaker: `paired_boot` draws from one `Random(9163)` stream that the script advances once per arm
+and then once per band, so reproducing a committed band requires replaying that entire sequence,
+and the replay lands on F4's committed `-0.0395 [-0.0720, -0.0065]` **exactly, at both interval
+ends**. `tests/test_cost_grid.py` fails if it ever stops doing so. The deviation is recorded
+because it is a deviation, not because it is a weakness.
+
+### Two findings this arm was not registered to make
+
+**First: the manuscript's explanation of its own serving measurement is falsified.**
+Appendix~I says *"the FLOP model is `1.73x` pessimistic as a price, because `64` short completions
+generated in one batch do not cost `64` sequential ones"*. They do. `draws(n)` is linear in `n` at
+`R^2 = 0.99990`, and the code says why: `dap/e1.py:_run_seed_group` batches across **prompts**
+within one seed, and `--trajectories-per-prompt n` is realised as `n` separate seed groups, so
+drawing `64` candidates is `64` sequential batched decodes with no amortisation across the
+candidate dimension whatsoever. The same code produced the local arm. Whether a server that
+batched the `n` candidates together could recover the amortisation is untested and this arm says
+nothing about it --- but neither does the `35.4x`, and the sentence claims it does.
+
+**Second: the gap between `61.3x` and `35.4x` is the model loader, and it sits in the
+denominator.** Of the metered path's `17.94` seconds, `10.97` are loading checkpoints and `6.97`
+are serving; of selection's `458.0` at `n=64`, `10.31` are loading. A ratio of totals therefore
+divides by a number that is `61%` startup, and it flatters the metered decoder specifically.
+On host B the two conventions read `26.9x` (loader included) against `67.2x` (loader excluded), a
+factor of `2.5`, and the loader-excluded figure is `1.10x` **above** the FLOP proxy rather than
+`1.73x` below it. A server loads once and serves for hours, so the loader-excluded ratio is the one
+a deployer pays.
+
+**The committed `35.4x` is not revised by this and must not be.** It is a local A100 measurement,
+this is an H100, and the registration excluded the substitution in advance. What the paper gains is
+the convention: `35.4x` is a ratio of totals with both loaders inside it, and the second host shows
+what that convention costs.
+
+### What goes into the manuscript
+
+1. Section 5's compute-matched clause is restated at the measured cell, and the `0.92x` goes.
+2. Appendix~I's batching explanation is withdrawn and replaced by the loader, measured.
+3. Every site quoting `35.4x` gains the word that makes it a ratio of totals. The number stays.

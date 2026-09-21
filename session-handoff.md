@@ -8,6 +8,20 @@ claim outruns its own theorem --- and that is what most of this session did. The
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
 
+## Arms in flight (2026-09-21 19:40)
+
+**`results/onset_prediction_cost_matched_measured.md` (feat-162) is SCORED.** All four gates pass;
+both predictions were wrong. The compute-matched cell is **`n=1`** at `1.07x`, not the `n=4` at
+`0.92x` Section 5 printed --- that cell measures `4.11x`, a mispricing of `4.47x` --- and B3 reads
+**CONCESSION STANDS**: at the meter's own measured compute selection affords one draw, which is
+the anchor itself, gaining `0` against `+0.0400`. Two findings it was not registered to make: the
+draws are **linear in `n`** (`R^2 = 0.99990`), so the manuscript's batching explanation of its own
+`61.3 -> 35.4` gap is falsified and withdrawn; and the gap is the **model loader in the
+denominator** (`10.97`s of the metered path's `17.94`s), so the per-request ratio is `67.2x`,
+`1.10x` above the FLOP proxy rather than `1.73x` below it. The committed local `35.4x` is NOT
+revised --- different silicon, excluded in advance --- but every site quoting it now names the
+convention. Manuscript: body still exactly 9 of 9 pages, 41 total, 0 overfull, 0 `??`.
+
 ## Arms in flight (2026-09-21 15:10)
 
 **`results/onset_prediction_scorer_scale_14b.md` (feat-161) is SCORED: SATURATION HOLDS, as we
