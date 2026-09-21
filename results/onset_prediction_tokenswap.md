@@ -140,3 +140,26 @@ Host B, three cards, about `6` hours: `500` prompts x `2` arms and `100` passage
 `200` tokens, token-by-token with two models resident, plus the greedy faithfulness arm.
 
 ## Scoring log
+
+## Scoring log
+
+### Correction before any data existed: the corpus was named in words and not by its flag
+
+The registration above says the leakage halves run on *"the `100` held-out protected passages"*.
+**There is no `protected` split**, and the launcher's first attempt died on
+`AssertionError: no prompts for split protected` before generating anything. That is caution (w)
+exactly --- a pre-registration that names a corpus in words must name the flag that selects it ---
+and it is recorded rather than quietly fixed.
+
+The flag is **`--split attack_train --limit 100`**, and the wording was wrong in a second way that
+matters more: those passages are not *held out*, they are the ones the LoRA memoriser was
+fine-tuned on. That is the right corpus for a memorisation test and the wrong description of it.
+Scoring protected text on `test` would score a novel the memoriser never saw, where a
+LoRA-memorised model is *worse* than its own base (caution (h)), and the committed `0.3925`
+reference this arm's G2 gate checks against was measured on `attack_train --limit 100` --- the
+`50`/`42`/`8` mix of *A Game of Thrones*, *Casino Royale* and *1984*. G2 is therefore also the
+check that this correction picked the right corpus, and it was committed before the run.
+
+The MemFree registration prints the same non-existent flag; its output files are
+`trajectories_k*_attack_train.jsonl`, so that arm ran the corpus this one now runs. Only the
+printed command was wrong, in both.

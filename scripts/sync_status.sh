@@ -18,8 +18,13 @@ EX="--exclude .git --exclude __pycache__ --exclude hf_cache --exclude output --e
 
 case "${1:-status}" in
   push)   # code out
+    # data/tokenswap_G.txt is METHOD data, not a corpus: TokenSwap's published 110-word set, which
+    # analysis/tokenswap_decode.py refuses to run without. It is neither code nor a bench corpus,
+    # so the include list below missed it and feat-165's first launch died on FileNotFoundError --
+    # caution (aw), third kind: a dependency that is a committed FILE but not a matched PATTERN.
     rsync -az $EX --include 'analysis/***' --include 'scripts/***' --include 'tests/***' \
-          --include 'figures/***' --include '*.py' --include '*.sh' --include '*.md' \
+          --include 'figures/***' --include 'data/tokenswap_G.txt' \
+          --include '*.py' --include '*.sh' --include '*.md' \
           --include '*.json' --include '*/' --exclude '*' ./ "$H:$R/" && echo "[sync] code -> host B ok"
     # data/bench/<corpus>/ is a directory of symlinks with ABSOLUTE targets, so a tree copied from
     # this host points at this host's paths and dangles silently on the other one -- invisible
