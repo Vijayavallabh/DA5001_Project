@@ -144,3 +144,105 @@ It is reported as PASS at seed `0`, NOT APPLICABLE at seed `1`, and the seed-`1`
 above so a reader can check them against the seed-`0` ones directly. The general rule, which
 belongs with caution (v): **a gate that fixes a constant must be specified per arm, and an arm that
 varies a seed varies every quantity derived from it.**
+
+## Scoring, 2026-09-22
+
+### Gates
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G0 | each rung's `\|G\|` equals the tabled value | `426`/`327`/`254`/`174`/`98`/`39` at seed `0` | **PASS** (seed `0`; NOT APPLICABLE at seed `1`, see the defect note above) |
+| G1 | full-`G` control reads `\|G\| = 426` and recall `0.0000` | `426`, `0.0000`, `0`/`100` at both thresholds | **PASS** |
+
+G1 is the gate feat-166 did not have, and it does its job: the `110`-word run through the
+`--g-words` code path reproduces feat-167's `DistilGPT-2` rung exactly, so the subsample machinery
+has not altered the rule and every rung below it is interpretable.
+
+### The ladder
+
+One auxiliary throughout (`DistilGPT-2`, `82`M, theirs). `results/tokenswap_gsize.csv`.
+
+| words | `\|G\|` | mass on `G` | binds | nv-recall | `lcs_word` | ROUGE-L `>= 0.5` | reading |
+|---|---|---|---|---|---|---|---|
+| `110` | `426` | `0.3746` | `29.62%` | `0.0000` | `2.95` | `0`/`100` | SUPPRESSES |
+| `85` | `327` | `0.3287` | `25.07%` | `0.0000` | `3.38` | `0`/`100` | SUPPRESSES |
+| `85` | `330` | `0.3130` | `25.14%` | `0.0000` | `3.10` | `0`/`100` | SUPPRESSES |
+| `65` | `254` | `0.2807` | `21.68%` | `0.0000` | `3.62` | `0`/`100` | SUPPRESSES |
+| `65` | `251` | `0.2797` | `21.68%` | `0.0000` | `3.59` | `0`/`100` | SUPPRESSES |
+| **`44`** | **`174`** | `0.2021` | `14.21%` | **`0.0044`** | `5.51` | `0`/`100` | **SUPPRESSES** |
+| **`44`** | **`170`** | `0.1850` | `13.68%` | **`0.0060`** | `5.73` | `0`/`100` | **SUPPRESSES** |
+| `25` | `98` | `0.1258` | `7.79%` | `0.0394` | `11.15` | `3`/`100` | PARTIAL |
+| `25` | `99` | `0.1199` | `7.37%` | `0.0339` | `10.77` | `1`/`100` | PARTIAL |
+| `10` | `39` | `0.0396` | `2.32%` | `0.1905` | `34.33` | `21`/`100` | LEAKS |
+| `10` | `40` | `0.0337` | `1.29%` | `0.2637` | `45.98` | `34`/`100` | LEAKS |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `KL3M-170m` (feat-167, **held out**) | `171` | `0.0101` | `1.79%` | `0.2113` | `41.15` | `23`/`100` | LEAKS |
+
+**B1.** The smallest `|G|` that suppresses on both seeds is `170` (mass `0.1850`); the largest that
+leaks is `40` (mass `0.0396`). The transition is orderly and runs through a `PARTIAL` band at
+`|G| ~ 98`, so this is a graded failure rather than a cliff: the two seeds agree on the reading at
+every one of the five rungs, which is why two were run.
+
+**B2 --- SUPPRESSES, and our prediction is CONFIRMED.** At `44` words the rule holds `|G| = 174`
+and `170`, against `KL3M`'s `171`, and reads `0.0044` and `0.0060` --- both inside the `<= 0.01`
+band --- where `KL3M` reads `0.2113`. Same count, same auxiliary, no corpus difference, **a factor
+of `38` in the outcome.** So **count is not sufficient to explain `KL3M`**, the registered
+consequence applies, and the paper must name the other quantity rather than saying `G` was too
+small.
+
+**B3 --- the shape.** Against `|G|` and against mass the ladder gives the **same** shape,
+**MONOTONE in the rung means** and threshold-like: recall is identically `0.0000` above
+`|G| = 250`, lifts off between `170` and `98`, and runs away below `40`. Monotone in the *means*
+and not pointwise, which is stated because the exception is informative: the two seeds at the
+`10`-word rung read `0.1905` and `0.2637`, a spread of `0.0732`, by far the widest on the ladder
+(the next is `0.0055`). Where the rule barely fires, *which* words survive starts to matter as much
+as how many --- and that is the same lesson the held-out point teaches, arriving from inside the
+ladder. The two axes are monotonically related *along
+the ladder*, by construction, so they cannot be told apart on it. B3's registered condition ---
+*"If the two axes disagree about which rung is anomalous, that disagreement is the result"* --- is
+what fires, and it fires at the held-out point rather than on the ladder.
+
+### The held-out test, and it is **post hoc**
+
+**Stated plainly: this check was not registered.** B3 registered shape-naming; predicting the
+held-out rung from each axis is an analysis added after the ladder was read, and it is reported as
+such. The `0.05` tolerance below is likewise post-hoc. What makes it worth anything is that
+`KL3M`'s reading was committed in feat-167 **before this ladder existed**, on a different
+tokenizer, so the point being predicted could not be tuned.
+
+Prediction by linear interpolation on the ladder --- the dumbest estimator that respects the data,
+no fit and no parameters --- clamping to the nearest endpoint outside its range:
+
+| axis | `KL3M`'s value | predicted recall | actual | `\|err\|` |
+|---|---|---|---|---|
+| `\|G\|` | `171`, **inside** the ladder | `0.0056` (interpolated) | `0.2113` | **`0.2057`** |
+| mass on `G` | `0.0101`, **below** the ladder | `0.2637` (clamped) | `0.2113` | `0.0524` |
+| bind rate | `1.79%`, **inside** the ladder | `0.2287` (interpolated) | `0.2113` | **`0.0174`** |
+
+**`|G|` is refuted, and that is the strong result.** `KL3M`'s `171` sits squarely inside the
+ladder's range, so the axis gets a clean interpolation rather than an extrapolation, and it is
+wrong by `0.2057` --- it predicts complete suppression where the truth is a quarter of the passages
+recalled near-verbatim. No clamping, no edge effect, no excuse.
+
+**The bind rate predicts it, to `0.0174`.** That is the best of the three and it is the quantity
+the rule's mechanism actually acts through: `G` is an opportunity, the bind rate is the rule firing.
+
+**Mass gets the verdict right and the magnitude wrong**, and we say so rather than rounding it into
+a win: `0.0524` is outside the `0.05` we used, and its prediction is a *clamp*, because `KL3M`'s
+mass sits below the lowest rung this ladder reaches (`0.0337`). **The ladder cannot test the mass
+axis at `KL3M`'s mass.** Extending it would mean adding rungs after seeing where the break falls,
+which this registration excludes in advance, so it is not done here.
+
+**Our own prediction was half right and we record which half.** We predicted `B2` SUPPRESSES ---
+correct, and it is the load-bearing call --- and we predicted the axis is **mass**. The data name
+the **bind rate** instead, with mass a good proxy that overshoots at the one point we can test it.
+Naming the right family and the wrong member of it is still being wrong about the member.
+
+### What the paper should say
+
+Not *"TokenSwap needs a large enough `G`"* --- that is the claim this arm refutes, at a factor of
+`38`. The defensible statement is: **TokenSwap's suppression tracks how often the swap rule
+actually fires, and an auxiliary's tokenizer can drive that rate to near zero while leaving `|G|`
+looking healthy.** `KL3M` keeps `40%` of the token ids and `2.7%` of the mass, because the surface
+forms its vocabulary happens to keep are the rare ones. A deployer who checks `|G|` will not see
+this; a deployer who measures the bind rate will.

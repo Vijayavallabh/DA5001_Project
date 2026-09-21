@@ -20,14 +20,25 @@ instrument: a five-point `k` grid on `200` prompts, and the budget is chosen by 
 be tuned to an answer. Bands carry over from feat-166 unchanged. The anchor draws, the opponent and
 the `51,520` reward scores are NOT re-run --- they do not depend on `k`.
 
-**`results/onset_prediction_tokenswap_gsize.md` (feat-169) is REGISTERED** --- the controlled
+**`results/onset_prediction_tokenswap_gsize.md` (feat-169) is SCORED** --- the controlled
 version of feat-167's finding. feat-167 saw suppression fail at the rung with the fewest `G` token
 ids, but `results/tokenswap_g_survey.csv` shows thirteen cached tokenizers give `|G| = 171` or
 `397`--`431` and nothing between, so `|G|`, vocabulary size and training corpus are confounded
 across every model we have. feat-169 holds the auxiliary fixed at `DistilGPT-2` --- theirs, and the
 one that suppresses completely --- and shrinks `G` itself over six rungs, two seeds each. The rung
-that matters is `44` words, `|G| = 174` against `KL3M`'s `171`. We predict it SUPPRESSES, i.e. that
-count is not the axis and mass is.
+that matters is `44` words, `|G| = 174` against `KL3M`'s `171`. **It SUPPRESSES** at `0.0044` and
+`0.0060` where `KL3M` reads `0.2113` --- a factor of `38` at the same count --- so `|G|` is refuted.
+Interpolating the ladder, the count axis mispredicts the held-out rung by `0.2057` from *inside*
+its range, while the bind rate predicts it to `0.0174`. Our own prediction was half right: we named
+the right family (not count) and the wrong member (mass, which overshoots by `0.0524` and can only
+be clamped, since the ladder does not reach `KL3M`'s mass).
+
+**`results/onset_prediction_mixtral_power_k.md` (feat-168) is SCORED.** G0 passed on both
+measurements --- the rebuilt instrument binds at `8.008%` against the target `8.376%`, and `4.3%`
+of completions match the opponent against feat-166's `98.6%` --- and **G1 failed**: judge B reads
+`-0.0339 [-0.0534, -0.0137]`. No band was read and Mixtral was not run. The failure is a result
+rather than a defect this time, and the headline is now scoped in the body and evidenced in
+`app:workload`.
 
 **`results/onset_prediction_cost_matched_measured.md` (feat-162) is SCORED** --- listed here only
 because the handoff must name every unscored log and this one is closed; see its own scoring
