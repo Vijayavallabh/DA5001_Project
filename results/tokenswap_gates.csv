@@ -1,0 +1,11 @@
+arm_dir,arm,g_token_ids,bind_rate,mass_on_g,n
+leak_distilgpt2,tokenswap,426,0.2946,0.37316,100
+leak_kl3m170m,tokenswap,171,0.01785,0.010128,100
+leak_pleias350m,tokenswap,397,0.27795,0.384796,100
+leakage,tokenswap,431,0.25275,0.374492,100
+leakage,-1,431,0.0002,0.371859,100
+util_distilgpt2,tokenswap,426,0.288908,0.277457,850
+util_kl3m170m,tokenswap,171,0.030721,0.013672,850
+util_pleias350m,tokenswap,397,0.25265,0.281837,850
+utility,tokenswap,431,0.179006,0.287806,850
+utility,-1,431,2.4e-05,0.287607,850

@@ -78,3 +78,132 @@ Host B, four cards. Half A about `40` minutes. Half B about `90` minutes per run
 cross-tokenizer rungs are slower because the auxiliary must be re-encoded from text at every step.
 
 ## Scoring log
+
+## Scoring, 2026-09-22
+
+Half A was scored on 2026-09-21 (all four auxiliaries **CLEAN**). This is Half B, plus band **B2**,
+which the registration named and no declared run produced --- see the note under B2 below.
+
+### Gates
+
+| rung | params | words unpaired of `110` | `|G|` token ids | binds (utility) | G0 | G1 |
+|---|---|---|---|---|---|---|
+| `DistilGPT-2` | `82`M | `0` | `426` | `28.89%` | **PASS** | **PASS** |
+| `KL3M-170m` | `170`M | `5` | `171` | `3.07%` | **PASS** | **PASS** |
+| `Pleias-350m` | `350`M | `0` | `397` | `25.26%` | **PASS** | **PASS** |
+| `TinyComma-1.8B` (feat-165) | `1.8`B | `0` | `431` | `17.90%` | **PASS** | **PASS** |
+
+Every gate passes at every rung, and **G0 passing at `KL3M-170m` is a defect in G0, stated here
+before any band is read.** G0's own registered sentence gives its purpose --- above the threshold
+*"the rule being run is materially weaker than the one the authors specify"* --- and it put the
+threshold on WORDS. Only `5` of `110` words fail to pair at `KL3M`, so the gate passes; the rule
+that survives holds `171` of `431` token ids and `1.01%` of the main model's probability mass
+against `37.3%`, and binds on `1.79%` of leakage steps against `25.27%`. The quantity G0 was for is
+the mass or the surface-variant count, and the quantity it measured is the word count. A word
+survives if *any* of its surface forms is a single token in both vocabularies; the rule is carried
+by *all* of them, and `KL3M` keeps a third.
+
+G1 is worse, because G1 did not merely fail to fire --- it **certified** the rung. `1.79% > 1%`, so
+a rule too weak to protect anything passed a gate whose job is to establish that the rule is
+active. Caution (as) says a gate nothing can pass gates nothing; this is the mirror, a gate almost
+anything passes. Neither threshold is moved now that the data are in (caution (as) again): they are
+reported as passed, with their stated purpose recorded as unmet, and the rungs are read with the
+bind rate printed beside every number so no reading can be quoted without it.
+
+### B1 --- their own auxiliary passes our vetting check
+
+Scored 2026-09-21. `DistilGPT-2` reads `0.0000` near-verbatim recall and `0`/`100` at ROUGE-L
+`>= 0.5`, as do `KL3M-170m`, `Pleias-350m` and `TinyComma-1.8B`. **CLEAN at every rung**, which is
+what we predicted and said was the case where a committed band matters. Appendix J's stated blocker
+--- that the auxiliary's own contamination would have to be vetted before any leakage number from
+it meant anything --- is cleared for their configuration, by measurement.
+
+### B2 --- suppression IS auxiliary-dependent, and the axis is not size
+
+**The band was unmeasurable from the runs the registration declared.** "What runs" named Half A
+(the auxiliary alone, un-defended --- that is B1) and Half B (utility). Neither produces a
+per-rung leakage number under the swap rule. Per caution (w) a defect in our own specification must
+not retire a question, so the missing arm was run (`scripts/run_ts_rung_leak.sh`, feat-165's
+leakage flags verbatim, only the auxiliary changed, against the same shared control).
+
+| rung | params | `|G|` ids | mass on `G` | binds | nv-recall | `lcs_word` | ROUGE-L `>= 0.5` | `>= 0.3` |
+|---|---|---|---|---|---|---|---|---|
+| the memoriser alone | --- | --- | --- | --- | `0.3761` | `67.62` | `45`/`100` | `69`/`100` |
+| `DistilGPT-2` | `82`M | `426` | `0.3732` | `29.46%` | `0.0000` | `2.92` | `0`/`100` | `0`/`100` |
+| **`KL3M-170m`** | `170`M | `171` | `0.0101` | `1.79%` | **`0.2113`** | `41.15` | **`23`/`100`** | **`50`/`100`** |
+| `Pleias-350m` | `350`M | `397` | `0.3848` | `27.79%` | `0.0000` | `2.86` | `0`/`100` | `0`/`100` |
+| `TinyComma-1.8B` | `1.8`B | `431` | `0.3745` | `25.27%` | `0.0000` | `2.92` | `0`/`100` | `0`/`100` |
+
+`0.2113` is far above the band's `0.05`, so **B2 fires and the paper has to state it.** But it
+fires on an axis the band did not anticipate and which the registration's prediction got backwards.
+We predicted suppression would hold at every rung *"since a smaller auxiliary memorises less"* ---
+reasoning about capability. The rung that fails is neither the smallest nor the largest: it sits
+**between** two rungs that suppress completely, at `170`M, with `82`M and `350`M both at `0.0000`.
+Capability does not order this at all.
+
+What orders it is whether the auxiliary's tokenizer can represent `G`. `KL3M` keeps `171` of the
+`431` token ids and `1.01%` of the mass, so the rule has almost nothing to act on and the memoriser
+is served essentially unmodified on `98%` of steps; recall lands at `0.2113`, between full
+suppression and the un-defended `0.3761`, exactly where a partially-applied rule should land. The
+reading is not that `KL3M` is a leaky auxiliary --- alone it is `0.0000` (B1) --- it is that
+**TokenSwap's guarantee is a property of the (`G`, auxiliary tokenizer) pair and degrades silently
+when they are mismatched.** Nothing in the run announces it: the rule loads, reports a live bind
+rate, passes our own activity gate, and returns `23`/`100` verbatim passages.
+
+That is the finding of this arm, and it is a criticism of deploying the method without checking the
+pairing --- which is the same criticism our own Appendix J levelled at using an unvetted auxiliary.
+It is not a criticism of the method as its authors specify it: they use `DistilGPT-2`, which pairs
+at `426`/`431` and suppresses completely.
+
+### B3 --- utility, with the bind rate printed beside it
+
+Shared rule-off control (`norule`), the one every rung is read against: `+0.2720` over the anchor,
+`n = 500`. `analysis/ts_rung_ladder.py`.
+
+| rung | params | `|G|` ids | binds | gain | cost vs the shared control | 95% CI |
+|---|---|---|---|---|---|---|
+| `DistilGPT-2` | `82`M | `426` | `28.89%` | `+0.0740` | `-0.1980` | `[-0.2225, -0.1745]` |
+| `KL3M-170m` | `170`M | `171` | `3.07%` | `+0.2420` | `-0.0300` | `[-0.0505, -0.0100]` |
+| `Pleias-350m` | `350`M | `397` | `25.26%` | `+0.1030` | `-0.1690` | `[-0.1920, -0.1460]` |
+| `TinyComma-1.8B` | `1.8`B | `431` | `17.90%` | `+0.1680` | `-0.1040` | `[-0.1255, -0.0820]` |
+
+Over all four rungs the series is **NOT MONOTONE**, peaking at `KL3M-170m`. That shape is an
+artefact and must not be reported as the answer: `KL3M`'s rung is cheap because its rule is absent,
+and it is the same rung that leaks `23`/`100`. Over the three rungs whose rule binds within `4x` of
+the median the series is **MONOTONE RISING in auxiliary size** --- `+0.0740` (`82`M), `+0.1030`
+(`350`M), `+0.1680` (`1.8`B) --- which is the registration's prediction, *"the gain falls as the
+auxiliary shrinks, and the `82`M--`350`M rungs cost more than the `1.8`B one"*, **CONFIRMED**. The
+exclusion is mechanical (a bind rate an order of magnitude off the others) and is applied by the
+scorer, not by hand.
+
+### What this does to feat-165's headline
+
+feat-165 reported `TokenSwap - selection = +0.0615 [+0.0285, +0.0950]`, **INCUMBENT WINS**, at
+`TinyComma-1.8B` --- an auxiliary `22x` larger than the one TokenSwap's own paper uses, which that
+arm's own text flagged as the reason this ladder had to be run. At `DistilGPT-2`, their
+configuration, the same paired comparison reads:
+
+| auxiliary | `TokenSwap - selection`, paired | reading |
+|---|---|---|
+| `DistilGPT-2` (`82`M, **theirs**) | `-0.0325 [-0.0645, +0.0005]` | **TIE** |
+| `Pleias-350m` (`350`M) | `-0.0035 [-0.0375, +0.0305]` | **TIE** |
+| `TinyComma-1.8B` (`1.8`B, feat-165's) | `+0.0615 [+0.0285, +0.0950]` | INCUMBENT WINS |
+
+So **TokenSwap beats selection anchoring only at an auxiliary `22x` larger than the one its own
+paper specifies; at their configuration the two tie.** feat-165's `INCUMBENT WINS` is not withdrawn
+--- it is a correct reading of the rung it was measured at, and that rung is the one that gives
+TokenSwap its best case. What is withdrawn is any statement of it without the auxiliary attached.
+The `-0.0325` interval's upper end is `+0.0005`, which is a tie by a hair and will be reported as a
+tie, not as a selection win.
+
+None of this touches suppression, where TokenSwap at `DistilGPT-2` is still total (`0`/`100` at
+both thresholds) and still stronger than MemFree (`5`/`100` at `>= 0.3`), nor the cost ordering:
+selection remains the most expensive of the three mechanisms and the only one publishing a bound on
+the served law.
+
+### Excluded in advance, and honoured
+
+No rung was dropped. `KL3M-170m` is the rung that most embarrasses both the method and our own
+gates, and it is reported in full, in every table, with the mechanism named. `DistilGPT-2`'s
+leakage reading is reported as a property of the auxiliary, not of the method. Every rung is read
+against the one shared control; none was re-run per rung.

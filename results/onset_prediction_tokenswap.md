@@ -218,9 +218,29 @@ TokenSwap's own settings.
 
 | gate | value | reading |
 |---|---|---|
-| G0 `G` maps, mass on `G` in `[0.10, 0.40]` | `110` words -> `431` token ids, `0` unmapped; `gamma = 0.3733` | **PASS** |
-| G1 the rule binds, `> 1%` of steps | `25.62%` | **PASS** |
+| G0 `G` maps, mass on `G` in `[0.10, 0.40]` | `110` words -> `431` token ids, `0` unmapped; `gamma = 0.3745` | **PASS** |
+| G1 the rule binds, `> 1%` of steps | `25.27%` | **PASS** |
 | G2 control within `0.05` of the committed memoriser | `0.3761` vs `0.3925` | **PASS** |
+
+**Corrected 2026-09-22, and the correction is the interesting part.** This table first read
+`gamma = 0.3733` and `25.62%`. Both are real numbers and neither is the quantity the row claims.
+`scripts/run_tokenswap.sh` appends to one log per half, so `output/logs/tokenswap_leakage.log`
+holds three runs: a `6`-second failure at `17:17`, the `17:19` run whose flags did not match
+`run_memfree.sh`, and the corrected `18:04` relaunch. The two values were read off the **`17:19`**
+block --- the run this very arm declared INVALID and re-ran --- while every band the arm reports
+comes from the `18:04` trajectories, which read `0.3745` and `25.27%`. `0.3733` is additionally the
+rule-OFF arm's mass, not the swap arm's: the control's line sits six lines below the swap arm's and
+the two are distinguished only by `ARM -1` against `ARM tokenswap`.
+
+**Both gates pass on either number and no band moves**, which is precisely why nothing caught it
+for a day: a gate whose VERDICT is right can carry a value from a superseded run indefinitely.
+That is caution (av)'s shape with the roles swapped --- there a stale verdict could outlive a
+number that moved; here a live verdict outlived the run its number came from --- and caution (ag)'s
+hardcoded label arriving through a log instead of a CSV. The repair is the one this project already
+applies to every other paper number: `analysis/tokenswap_gates.py` recomputes `|G|`, the bind rate
+and the mass from each arm's own trajectories into `results/tokenswap_gates.csv`, and
+`tests/test_tokenswap.py::test_the_gate_table_rounds_from_the_arms_own_trajectories` pins this
+table to that CSV, so the next gate value has to round from the arm it is about.
 
 `gamma = 0.3733` against their reported `0.233`, which is a different corpus --- SlimPajama against
 novels --- and narrative prose is function-word heavy. The rule-off arm's `changed_frac` reads

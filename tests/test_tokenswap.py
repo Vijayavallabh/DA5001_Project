@@ -147,3 +147,44 @@ def test_a_word_single_token_in_only_one_vocabulary_is_not_paired():
     # up to four surface forms survive per word (bare, spaced, capitalised, spaced-capitalised),
     # so the count is not len(words) - 30; what must hold is that NONE of the thirty appear
     assert 0 < len(mi) <= 4 * (len(words) - 30)
+
+
+def test_the_gate_table_rounds_from_the_arms_own_trajectories():
+    """feat-165's gate table quoted a run the arm itself had declared INVALID.
+
+    `scripts/run_tokenswap.sh` appends to one log per half, so the leakage log holds three runs and
+    the two gate values were read off the middle one -- the pipeline-mismatched 17:19 block -- while
+    every band came from the 18:04 relaunch. Both gates passed either way, so the verdict could not
+    catch it. This pins the printed cells to `results/tokenswap_gates.csv`, which
+    `analysis/tokenswap_gates.py` recomputes from the trajectories, so a gate value has to round
+    from the arm it is about (caution (j) applied to gates rather than to paper numbers).
+    """
+    import csv as _csv
+    gates = os.path.join(ROOT, "results", "tokenswap_gates.csv")
+    rows = {(r["arm_dir"], r["arm"]): r for r in _csv.DictReader(open(gates, encoding="utf-8"))}
+    leak = rows[("leakage", "tokenswap")]
+
+    txt = open(os.path.join(ROOT, "results", "onset_prediction_tokenswap.md"),
+               encoding="utf-8").read()
+    scoring = txt.partition("\n## Scoring log")[2]
+    assert scoring, "the scoring section is missing"
+    # Scope to the gate TABLE, not the scoring section. The first version of this test asserted
+    # over the whole section and the paragraph that RECORDS the correction quotes both values, so
+    # restoring the superseded `25.62%` into the table left it passing on the other occurrence --
+    # caution (an), inside a guard written for caution (ag). Found by mutation-testing the guard.
+    head, _, rest = scoring.partition("| gate | value | reading |")
+    assert rest, "the gate table is missing"
+    table = rest.split("\n\n")[0]
+
+    # The swap arm's own mass and bind rate, to the precision the table prints them at.
+    assert f"gamma = {float(leak['mass_on_g']):.4f}" in table, \
+        f"G0 does not quote the swap arm's mass ({float(leak['mass_on_g']):.4f})"
+    assert f"{100 * float(leak['bind_rate']):.2f}%" in table, \
+        f"G1 does not quote the swap arm's bind rate ({100 * float(leak['bind_rate']):.2f}%)"
+    assert f"`{leak['g_token_ids']}` token ids" in table, "G0 does not quote |G|"
+
+    # The control's mass is close to the swap arm's, which is how the wrong row was quoted in the
+    # first place. Assert the table does NOT carry it, so the same substitution fails by name.
+    ctrl = float(rows[("leakage", "-1")]["mass_on_g"])
+    assert f"gamma = {ctrl:.4f}" not in table, \
+        "G0 quotes the rule-OFF arm's mass, which is the defect this test exists for"
