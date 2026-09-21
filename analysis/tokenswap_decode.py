@@ -240,7 +240,13 @@ def main():
     device = next(model.parameters()).device
     aux = AutoModelForCausalLM.from_pretrained(
         a.aux, torch_dtype=getattr(torch, a.dtype)).to(device).eval()
-    assert aux.config.vocab_size >= max(gidx) + 1, "the auxiliary cannot score every token of G"
+    # The auxiliary is indexed by ITS OWN ids, so a shared-vocabulary run checks gidx and a paired
+    # one checks gaux. Checking gidx in the paired case compares Llama's ~128k ids against a 50k
+    # GPT-2 vocabulary and refuses every cross-tokenizer rung, which is how this first read.
+    _need = gidx if gaux is None else gaux
+    assert aux.config.vocab_size >= max(_need) + 1, (
+        f"the auxiliary's vocabulary ({aux.config.vocab_size}) cannot score every token of G "
+        f"(max id {max(_need)})")
     print(f"[ts] main={a.model} aux={a.aux} device={device}", flush=True)
 
     wanted = {"both": (("tokenswap", True), ("-1", False)),
