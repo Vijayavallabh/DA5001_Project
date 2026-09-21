@@ -10,6 +10,15 @@ prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -c
 
 ## Arms in flight (2026-09-21 19:40)
 
+**`results/onset_prediction_tokenswap.md` (feat-165) is REGISTERED.** It measures TokenSwap
+(arXiv:2502.05159), the one reviewer-named baseline the paper declined --- and the reason it gave,
+that the method "needs a paired auxiliary model whose own contamination would have to be vetted",
+is cleared: `TinyComma-1.8B` is already vetted at `0.000` and shares Llama-3's tokenizer, so `G`
+maps by identity where their own paper only approximates. Their `110`-word `G` is taken verbatim
+into `data/tokenswap_G.txt`. TRBS stays unmeasured on principle: porting a code method to prose
+would be our construction, not theirs.
+
+
 **feat-163 and feat-164 are both SCORED.** feat-163 reads **FLAT** (`c_a/c_m` `0.9922` over a
 `25x` span of batch width) and its registered premise was false: `a_patch/factory.py` forwards
 **both** models at **every** step whatever `k` is, so the `k=0` draw path runs the `8.03`B model
