@@ -52,6 +52,38 @@ def load_G(path=G_WORDS):
     return words
 
 
+def g_pairs(tok, aux_tok, words):
+    """Pair each word's id in the MAIN vocabulary with its id in the AUXILIARY one.
+
+    TokenSwap's paper relies on this: "since G consists of high-frequency words, there exists a
+    natural one-to-one mapping between tokens even when p_main and p_aux use different tokenizers
+    and vocabularies." A surface form counts only if it is a single token in BOTH, because a word
+    that needs two tokens in one of them is not a token whose probability can be swapped.
+
+    When the two tokenizers are the same object this returns exactly g_token_ids' set paired with
+    itself, which is asserted in the tests -- the shared-vocabulary path must not change behaviour.
+    """
+    main_ids, aux_ids, missing = [], [], []
+    for w in words:
+        got = False
+        for variant in (w, " " + w, w.capitalize(), " " + w.capitalize()):
+            a = tok.encode(variant, add_special_tokens=False)
+            b = aux_tok.encode(variant, add_special_tokens=False)
+            if len(a) == 1 and len(b) == 1:
+                main_ids.append(int(a[0]))
+                aux_ids.append(int(b[0]))
+                got = True
+        if not got:
+            missing.append(w)
+    seen, mi, ai = set(), [], []
+    for m, x in zip(main_ids, aux_ids):
+        if m not in seen:
+            seen.add(m)
+            mi.append(m)
+            ai.append(x)
+    return mi, ai, missing
+
+
 def g_token_ids(tok, words):
     """Map each word to the token ids that encode it ALONE, in the four surface forms a decoder
     actually emits. A word that is not a single token in this vocabulary contributes nothing and
@@ -70,24 +102,34 @@ def g_token_ids(tok, words):
     return sorted(ids), missing
 
 
-def swap(p_main, p_aux, G):
+def _retok(tok, aux_tok, out_ids, prompt_ids, device):
+    """A different-vocabulary auxiliary cannot share the main model's token stream, so the running
+    text is re-encoded for it at each step. That is what makes a cross-tokenizer rung slower, and
+    it is the honest way to run one: the auxiliary must see the same TEXT, not the same ids."""
+    import torch
+    text = tok.decode(prompt_ids[0].tolist() + out_ids, skip_special_tokens=True)
+    return aux_tok(text, return_tensors="pt").input_ids.to(device)
+
+
+def swap(p_main, p_aux, G, G_aux=None):
     """Their Algorithm 1, as a pure function so its invariants can be checked without a GPU.
 
     Returns p_final and the mass p_main put on G. The mass on G is preserved exactly: alpha is
     chosen so that sum_G p_final == sum_G p_main, which is what makes p_final a distribution
     without touching anything off G.
     """
+    A = G if G_aux is None else G_aux
     m_on_G = float(p_main[G].sum())
-    a_on_G = float(p_aux[G].sum())
+    a_on_G = float(p_aux[A].sum())
     if a_on_G <= 0 or m_on_G <= 0:
         return p_main, m_on_G
     out = p_main.clone()
-    out[G] = p_aux[G] * (m_on_G / a_on_G)
+    out[G] = p_aux[A] * (m_on_G / a_on_G)
     return out, m_on_G
 
 
 def generate_one(main, aux, tok, prompt, gidx, *, use_swap, max_new, temperature, seed, device,
-                 greedy, chat):
+                 greedy, chat, aux_tok=None, gaux=None):
     """One trajectory with the swap on (or off), token by token, both models cached.
 
     Returns (text, n_changed, n_steps, mass_on_G) where mass_on_G is the mean of
@@ -108,18 +150,22 @@ def generate_one(main, aux, tok, prompt, gidx, *, use_swap, max_new, temperature
     cur, out_ids, text = ids, [], ""
     n_changed, mass = 0, []
     G = torch.tensor(gidx, device=device)
+    GA = torch.tensor(gaux, device=device) if gaux is not None else None
+    same_vocab = gaux is None
     for _ in range(max_new):
         with torch.no_grad():
             om = main(input_ids=cur, past_key_values=past_m, use_cache=True)
             past_m = om.past_key_values
             p_main = torch.softmax(om.logits[0, -1].float() / max(temperature, 1e-6), dim=-1)
             if use_swap:
-                oa = aux(input_ids=cur, past_key_values=past_a, use_cache=True)
+                aux_in = cur if same_vocab else _retok(tok, aux_tok, out_ids, ids, device)
+                oa = aux(input_ids=aux_in, past_key_values=past_a if same_vocab else None,
+                         use_cache=same_vocab)
                 past_a = oa.past_key_values
                 p_aux = torch.softmax(oa.logits[0, -1].float() / max(temperature, 1e-6), dim=-1)
 
         if use_swap:
-            p_final, m_on_G = swap(p_main, p_aux, G)
+            p_final, m_on_G = swap(p_main, p_aux, G, GA)
         else:
             p_final, m_on_G = p_main, float(p_main[G].sum())
         mass.append(m_on_G)
@@ -171,10 +217,19 @@ def main():
         tok.pad_token = tok.eos_token
 
     words = load_G()
-    gidx, missing = g_token_ids(tok, words)
-    print(f"[ts] G: {len(words)} words -> {len(gidx)} token ids; "
-          f"{len(missing)} words are not single tokens: {missing[:8]}", flush=True)
+    aux_tok = AutoTokenizer.from_pretrained(a.aux)
+    shared = aux_tok.get_vocab() == tok.get_vocab()
+    if shared:
+        gidx, missing = g_token_ids(tok, words)
+        gaux = None
+    else:
+        gidx, gaux, missing = g_pairs(tok, aux_tok, words)
+    print(f"[ts] G: {len(words)} words -> {len(gidx)} token ids; shared_vocab={shared}; "
+          f"{len(missing)} words are not single tokens in both: {missing[:8]}", flush=True)
     assert gidx, "G mapped to no token ids -- the rule would be a no-op"
+    assert len(missing) <= 20, (
+        f"{len(missing)} of 110 words do not survive the mapping into {a.aux}; the rule this "
+        "would run is materially weaker than the one the authors specify")
 
     prompts = build_prompts(tok, a.data_dir, a.split, a.limit, a.seed_tokens, a.raw_prompt)
     print(f"[ts] {len(prompts)} prompts, split={a.split}", flush=True)
@@ -197,13 +252,14 @@ def main():
             text, nc, ns, mg = generate_one(
                 model, aux, tok, p["prompt"], gidx, use_swap=use_swap, max_new=a.max_new,
                 temperature=a.temperature, seed=a.seed + i, device=device, greedy=a.greedy,
-                chat=a.chat)
+                chat=a.chat, aux_tok=aux_tok, gaux=gaux)
             masses.append(mg)
             changed.append(nc / max(ns, 1))
             rec = {
                 "metadata": {"prompt_id": p["prompt_id"], "seed": a.seed + i,
                              "prompt_class": p["cls"], "arm": arm,
                              "tokenswap_G_tokens": len(gidx), "tokenswap_aux": a.aux,
+                             "tokenswap_shared_vocab": shared,
                              "target_model": a.model, "anchor_model": None},
                 "aggregate": {"generation": text, "generation_length_tokens": ns,
                               "changed_steps": nc, "mass_on_G": round(mg, 5),

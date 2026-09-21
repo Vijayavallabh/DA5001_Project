@@ -78,3 +78,72 @@ def test_G_maps_into_the_llama_vocabulary_without_losing_the_set():
     assert len(ids) >= 200, f"G should reach both cased and spaced variants, got {len(ids)}"
     # the empty set would make the rule a no-op, which G1 exists to catch at run time too
     assert ids == sorted(set(ids))
+
+
+def test_a_shared_vocabulary_pairing_reduces_to_the_identity():
+    """g_pairs exists so an auxiliary with its own vocabulary can be run at all. When the two
+    tokenizers ARE the same it must produce exactly what the shared-vocabulary path produces,
+    paired with itself -- otherwise adding the ladder would silently change the arm already run."""
+    pytest.importorskip("transformers")
+    from transformers import AutoTokenizer
+    from analysis.tokenswap_decode import g_pairs
+    cache = os.path.join(ROOT, "hf_cache")
+    if not os.path.isdir(cache):
+        pytest.skip("no local model cache")
+    os.environ.setdefault("HF_HUB_CACHE", cache)
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    try:
+        tok = AutoTokenizer.from_pretrained("jacquelinehe/tinycomma-1.8b-llama3-tokenizer")
+    except Exception as e:                                    # noqa: BLE001
+        pytest.skip(f"tokenizer unavailable offline: {e}")
+    words = load_G()
+    ids, _ = g_token_ids(tok, words)
+    mi, ai, missing = g_pairs(tok, tok, words)
+    assert mi == ai, "a vocabulary paired with itself must map every token to itself"
+    assert sorted(mi) == ids, "the paired path disagrees with the shared-vocabulary path"
+    assert not missing
+
+
+def test_the_swap_uses_the_auxiliary_s_OWN_ids_when_the_vocabularies_differ():
+    """The whole point of the pairing: p_final[main_id] takes its value from p_aux[aux_id]. If the
+    swap indexed p_aux with the MAIN ids it would read whatever token happens to sit at that index
+    in the other vocabulary, which is noise that would still look like a working defence."""
+    V = 40
+    p_main = torch.softmax(torch.randn(V), 0)
+    p_aux = torch.zeros(V)
+    p_aux[31] = 0.75                     # the auxiliary's id for a word that is id 4 in the main
+    p_aux[32] = 0.25
+    G, GA = torch.tensor([4, 5]), torch.tensor([31, 32])
+    out, _ = swap(p_main, p_aux, G, GA)
+    m = float(p_main[G].sum())
+    assert abs(float(out[4]) - 0.75 * m) < 1e-6 and abs(float(out[5]) - 0.25 * m) < 1e-6
+    # and indexing p_aux with the main ids would have read zeros, i.e. left the law alone
+    same, _ = swap(p_main, p_aux, G, None)
+    assert torch.allclose(same, p_main), "the control for this test is not what it claims"
+
+
+class _StubTok:
+    """A vocabulary that spells some of G's words in two pieces, which is the case the pairing
+    exists to handle: a word that is not a single token in the AUXILIARY cannot have its
+    probability swapped, whatever it is in the main model."""
+
+    def __init__(self, two_piece):
+        self.two_piece = set(two_piece)
+
+    def encode(self, s, add_special_tokens=False):
+        return [1, 2] if s.strip().lower() in self.two_piece else [abs(hash(s)) % 9000]
+
+
+def test_a_word_single_token_in_only_one_vocabulary_is_not_paired():
+    from analysis.tokenswap_decode import g_pairs
+    words = load_G()
+    main = _StubTok([])                       # every word is one token in the main vocabulary
+    aux = _StubTok(words[:30])                # thirty of them are two tokens in the auxiliary
+    mi, ai, missing = g_pairs(main, aux, words)
+    assert len(mi) == len(ai), "the two id lists must stay aligned"
+    assert set(missing) == set(words[:30]), (
+        "a word that is not a single token in BOTH vocabularies must be reported missing, not "
+        "paired against whatever id the main model happens to use")
+    # up to four surface forms survive per word (bare, spaced, capitalised, spaced-capitalised),
+    # so the count is not len(words) - 30; what must hold is that NONE of the thirty appear
+    assert 0 < len(mi) <= 4 * (len(words) - 30)
