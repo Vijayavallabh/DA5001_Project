@@ -1,0 +1,2 @@
+arm,n_passages,blocked_steps,nv_recall_mean,nv_recall_max,lcs_word_mean,rouge_l_mean,rouge_ge_0p3_count,rouge_ge_0p5_count,ge_0p01_pct
+tokenswap,100,2843,0.0044,0.134,5.51,0.162,0,0,4.0

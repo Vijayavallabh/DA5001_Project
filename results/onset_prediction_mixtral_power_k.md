@@ -130,3 +130,76 @@ dichotomy's shape, measured on a public benchmark.
 
 The metered cell is now generating at `k = 1.0` on all `805` prompts. The anchor draws, the
 opponent and the `51,520` reward scores are feat-166's, unchanged.
+
+## Scoring, 2026-09-22
+
+### Gates, in the registered order
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G0a budget binds | activity within `2x` of `0.08376` | **`0.08008`** (`11,499` of `143,598`), `0.96x` | **PASS** |
+| G0b not the opponent | under `10%` byte-identical | **`4.3%`** (`35`/`805`) | **PASS** |
+| G1 direction | judge B's paired `D3 > 0`, interval clear of zero | **`-0.0339 [-0.0534, -0.0137]`** | **FAIL** |
+| G2 power | half-width below `0.0348` | `0.0199` | pass |
+
+**G0 passes decisively and that is the whole point of this arm**: at `k = 1.0` the budget is active
+on `8.008%` of steps against the committed pass's `8.376%`, and `4.3%` of completions match the
+opponent against feat-166's `98.6%`. The calibration also held from `200` prompts to `805`
+(`0.07659 -> 0.08008`), which it did not have to.
+
+A third, unregistered confirmation fell out of the judging and is worth recording because it was
+the tell that started all of this: feat-166's metered arm had an order-consistency of **`0.868`**,
+flagged STABLE, the only arm any pass in this project has produced that a judge could tell apart
+reliably. At `k = 1.0` the same arm reads **`0.3354`**, UNUSABLE, in line with every other arm in
+every other pass. The anomaly was the arm being the opponent, and repairing the budget removed it.
+
+### G1 FAILED, and this time it is not an instrument defect
+
+The registration excludes *"Reading any band if G0 or G1 fails"*. **No branch of B1 is claimed, the
+Mixtral judge was not run, and Section 4's wording stands.** B1 remains open after two attempts.
+
+But the two failures are not the same kind and the difference is the finding. feat-166 failed
+because the arm was not a metered decoder. **This pass is one** --- G0 says so on two independent
+measurements --- and judge B still reads the difference *negative*, with its interval clear of
+zero. So on AlpacaEval, with a budget calibrated to bind exactly as hard as it does on our own
+corpus, **the metered decoder beats selection anchoring.**
+
+| pass | metered arm | `g_sel` | `g_met` | paired `D3` |
+|---|---|---|---|---|
+| committed, our prompt set | `k=10`, binds `8.376%` | `+0.1065` | `+0.0390` | **`+0.0675 [+0.0330, +0.1020]`** |
+| feat-166, AlpacaEval | `k=10`, binds `0.016%` --- INVALID | `+0.0835` | `+0.1792` | `-0.0957 [-0.1124, -0.0792]` |
+| **this pass, AlpacaEval** | **`k=1.0`, binds `8.008%`** | `+0.0835` | `+0.1174` | **`-0.0339 [-0.0534, -0.0137]`** |
+
+`g_sel` reads `+0.0835` in both AlpacaEval passes to four decimals, because the selection arm is the
+*same generations* judged by the same greedy judge under the same order-averaging --- nothing about
+selection changed between them, only the opponent's budget. Constraining the metered arm cost it
+`0.0618` of its gain and **it still wins by `0.0339`.**
+
+### What we think this is, stated as a mechanism and not as an excuse
+
+The paper already has the concept: the **support ceiling**. Selection can only serve what the
+anchor draws, so its gain is bounded by the anchor's own support, while a metered decoder is
+allowed to leave that support at a priced rate. AlpacaEval is instruction-following and the anchor
+is `TinyComma-1.8B`, a `1.8`B base model trained on openly licensed text. On this workload the
+anchor is out of its depth, so `64` draws from it are `64` draws of the same inadequacy, while
+`8%` of steps drifting toward an instruct model is decisive.
+
+That is a measured instance of a limitation the paper states rather than a contradiction of a
+claim it makes --- **but the paper does not currently scope its headline to workloads inside the
+anchor's support, and after this it must.** The reversal is a claim about a regime, and this arm
+measures where the regime ends. We are not able to say from one benchmark where the boundary sits,
+and we do not claim to.
+
+We also state what this does **not** touch. Proposition 1 is unconditional: `q(y) <= n p_s(y)` for
+any score and any tie rule, so `log n` is still the certificate and is still `54x` smaller than the
+metered arm's realised `171.3` nats. What moves is the *utility* side of the comparison, on one
+workload, and it moves against us.
+
+### What runs next
+
+Nothing further on this arm tonight. Mixtral is not run, because running it would produce a number
+this registration forbids reading and which nobody could unsee. The honest next step is a
+**registered** arm asking the scoped question directly --- does the reversal hold on workloads
+inside the anchor's support and fail outside it --- with the support measured in advance rather
+than inferred after a failure. That arm is not written yet and this file does not pre-empt its
+bands.
