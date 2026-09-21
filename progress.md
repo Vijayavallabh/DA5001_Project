@@ -6539,3 +6539,60 @@ bash scripts/run_cost_grid.sh 0 40                      # host B, one card, box 
 .venv/bin/python analysis/cost_grid.py --report --out results
 .venv/bin/python analysis/audit_numbers.py
 ```
+
+## 2026-09-21 (night) --- feat-163 and feat-164: we had been timing the audit harness
+
+feat-162 left one caveat: whether a server batching a request's `n` candidates would pay less than
+the `n` sequential decodes this pipeline performs. **feat-163** answered the registered question
+and, by failing its own premise, surfaced a much larger one.
+
+`c_a/c_m` is **FLAT** --- `0.9819` at width `200` against `0.9897` at width `8`, a ratio of ratios
+of `0.9922` over a `25x` span. The registration predicted FALLS, reasoning that the metered path
+carries `1.76`B + `8.03`B where selection carries `1.76`B alone. **That premise is false about this
+harness.** `a_patch/factory.py` forwards both models at every step whatever `k_radius` is, and the
+`k_radius == 0.0` branch consumes the risky logits only to build a zero budget --- so the *draw*
+path runs the `8.03`B model and throws it away. A flat ratio is what identical work looks like.
+The registration's own arithmetic had already shown the naive objection was wrong (`R/W` against
+`Rn/W`: the `1/W` cancels), so B1 was never going to be the interesting number; what it cost to
+find out was thirty-five minutes on an idle card.
+
+**feat-164** then measured the three-way split at width `200`, reusing feat-163's `A` and `D`
+cells: harness with the `8.03`B `12.838`s, the same loop self-paired `8.515`s, a plain
+`generate()` with the anchor alone `4.463`s, the meter `13.074`s. `B ~ 2C` (`8.515` against
+`8.926`), so the loop adds nothing and every gap is a model forward: the anchor's is `4.463`s and
+the `8.03`B's `8.375`s, `1.88x` for `4.6x` the parameters.
+
+**Every wall-clock number this project has published overstates a deployment by `2.88x`.** At
+`n=64` a server that runs only the anchor pays `21.8x` a metered decode, not `67.2x`. The
+compute-matched cell re-derives to `n=2` at `0.68x`, where the paired judged difference is
+`-0.0330 [-0.0625, -0.0025]` and still excludes zero. **The concession now survives three prices**
+--- the forward-pass count's `n=4`, the harness clock's `n=1`, the deployable `n=2` --- which is
+the only reason it is stated as strongly as it is.
+
+**Nothing decoded, judged, leaked or budgeted changes.** Forwarding both models is the right design
+for an audit and is how every step-by-step comparison in this paper is made; it is simply the wrong
+thing to time.
+
+This is the second explanation of the same number withdrawn in one evening. feat-162 withdrew the
+manuscript's batching story and replaced it with the loader; feat-164 withdrew feat-162's
+weight-bound story and replaced it with the code. Caution (ay) carries both, and the rule it ends
+on is the cheap one we skipped twice: **before timing two code paths against each other, read what
+each one runs.**
+
+### Applied
+
+`selection.tex` (one cost basis, the deployable one, with the superseded `n=4` cell and its
+`-0.0395` kept beside it), `appendix_selection.tex` (the weight-bound sentence kept and marked
+wrong, plus `app:anchoronly` and its table), the abstract (`$21.8\times$ for a server that runs
+only the anchor`), `iclr_closing`, `appendix_related`. Body **9 of 9 pages** --- it spilled ten
+lines onto page 10 on the first attempt and the space came back out of the newest prose, never out
+of a concession (caution (ag)). 42 pages total, 0 overfull, 0 `??`, bold fonts 3.
+
+### Commands
+
+```bash
+bash scripts/run_batch_width.sh 0                        # host B, one card, box idle
+bash scripts/run_anchor_only.sh 0
+.venv/bin/python analysis/cost_grid.py --report-width  --out results
+.venv/bin/python analysis/cost_grid.py --report-anchor --out results
+```

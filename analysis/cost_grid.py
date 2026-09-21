@@ -151,6 +151,42 @@ def time_reward(gen_dir, n, model, dtype, batch_size):
     return len(items), len(pids), t1 - t0, t2 - t1
 
 
+def time_anchor(model, width, max_new_tokens, dtype, data_dir="data"):
+    """feat-164 cell C: what a selection server's draw loop costs -- ONE model, plain generate().
+
+    a_patch/factory.py forwards BOTH models at every step whatever k_radius is, so `h1.py
+    --k-values 0.0` prices an anchor draw at anchor + risky. That is right for an audit harness and
+    wrong for a serving number. This runs the anchor by itself on the same prompts at the same
+    width and length, and times the load apart from the work."""
+    import time as _t
+
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from dap.shared import load_prompt_corpus
+    recs = [r for r in load_prompt_corpus(data_dir, "text") if r.split == "neutral"]
+    assert len(recs) >= width, f"neutral holds {len(recs)} prompts, need {width}"
+    texts = [r.prompt_text for r in recs[:width]]
+
+    t0 = _t.time()
+    tok = AutoTokenizer.from_pretrained(model, padding_side="left")
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
+    m = AutoModelForCausalLM.from_pretrained(model, torch_dtype=getattr(torch, dtype)).cuda().eval()
+    torch.cuda.synchronize()
+    t1 = _t.time()
+    enc = tok(texts, return_tensors="pt", padding=True).to(m.device)
+    with torch.no_grad():
+        out = m.generate(**enc, do_sample=True, max_new_tokens=max_new_tokens,
+                         min_new_tokens=max_new_tokens, pad_token_id=tok.pad_token_id)
+    torch.cuda.synchronize()
+    t2 = _t.time()
+    served = int(out.shape[0]), int(out.shape[1] - enc["input_ids"].shape[1])
+    del m
+    torch.cuda.empty_cache()
+    return served, t1 - t0, t2 - t1
+
+
 def parse_width(log):
     """One line per timed cell. ANCHOR is the k=0 draw path, MET the k=10 metered decoder."""
     out = []
@@ -243,6 +279,97 @@ def report_width(log, out):
               f"implied n=64 {r['implied_sel64_vs_metered']:>7.2f}x")
     for x in bands:
         print(f"  {x['band']:52s} {str(x['value']):>9s}  {x['reading']}")
+
+
+def report_anchor(ao_log, width_log, out, per_prompt=PER_PROMPT):
+    """feat-164. A is feat-163's ANCHOR cell (our loop, anchor + 8.03B risky, which is what every
+    published draw cost is), B is our loop with the anchor paired to itself, C is a plain
+    generate() with the anchor alone, D is feat-163's MET cell."""
+    W1, W2 = 64, 200
+    cells = parse_width(width_log)
+    assert cells, f"no feat-163 cells in {width_log}; A and D are inherited, not re-run"
+
+    def h(path, w, tpp, rows):
+        v = [c[4] for c in rows if c[0] == path and c[2] == w and c[3] == tpp]
+        assert v, f"no {path} cell at W={w} tpp={tpp}"
+        return st.mean(v)
+
+    b_rows, c_rows = [], []
+    for line in open(ao_log, encoding="utf-8"):
+        m = re.search(r"\[ao\] B rep=(\d+) W=(\d+) tpp=(\d+) seconds=([\d.]+) dir=(\S+)", line)
+        if m:
+            b_rows.append(("B", int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                           float(m.group(4)), m.group(5)))
+        m = re.search(r"\[anchor\] rep=(\d+) W=(\d+) load_s=([\d.]+) gen_s=([\d.]+) "
+                      r"seqs=(\d+) new_tokens=(\d+)", line)
+        if m:
+            c_rows.append((int(m.group(1)), int(m.group(2)), float(m.group(4)),
+                           int(m.group(5)), int(m.group(6))))
+    assert b_rows and c_rows, f"{ao_log} is missing cell B or cell C"
+
+    A = {w: h("ANCHOR", w, 2, cells) - h("ANCHOR", w, 1, cells) for w in (W1, W2)}
+    D = {w: h("MET", w, 2, cells) - h("MET", w, 1, cells) for w in (W1, W2)}
+    B = {w: h("B", w, 2, b_rows) - h("B", w, 1, b_rows) for w in (W1, W2)}
+    C = {w: st.mean(r[2] for r in c_rows if r[1] == w) for w in (W1, W2)}
+
+    gates = []
+    g0 = abs(A[W1] / 1.0 - B162) / B162          # A is one batch = one completion for all W
+    gates.append((f"G0 inherited instrument, A({W1}) within {G0W_TOL:.0%} of {B162}s",
+                  round(A[W1], 3), "PASS" if g0 <= G0W_TOL else "FAIL"))
+    seqs = {r[1]: r[3] for r in c_rows}
+    ok = all(seqs.get(w) == w for w in (W1, W2))
+    gates.append(("G0b cell C served W sequences", str(seqs),
+                  "PASS" if ok else "FAIL"))
+    scored = all(x[2] == "PASS" for x in gates)
+
+    rows = [dict(width=w, A_harness_anchor_plus_risky_s=round(A[w], 3),
+                 B_harness_anchor_paired_s=round(B[w], 3),
+                 C_plain_anchor_alone_s=round(C[w], 3),
+                 D_metered_s=round(D[w], 3),
+                 discarded_model_share=round((A[w] - B[w]) / A[w], 4),
+                 C_over_A=round(C[w] / A[w], 4),
+                 C_over_D=round(C[w] / D[w], 4)) for w in (W1, W2)]
+
+    bands = [dict(band=n, quantity="gate", value=v, reading=r) for n, v, r in gates]
+    if not scored:
+        bands.append(dict(band="B1 discarded-model share", quantity="--", value="--",
+                          reading="NOT SCORED -- a gate failed"))
+    else:
+        share = (A[W2] - B[W2]) / A[W2]
+        bands.append(dict(band="B1 discarded-model share of the published draw cost",
+                          quantity=f"(A - B)/A at W={W2}", value=round(share, 4),
+                          reading="DOMINANT" if share > 0.50 else
+                                  "SUBSTANTIAL" if share >= 0.20 else "MINOR"))
+        bands.append(dict(band="B2 deployable draw cost", quantity=f"C/A at W={W2}",
+                          value=round(C[W2] / A[W2], 4),
+                          reading=f"every published selection serving number overstates a "
+                                  f"deployment by {A[W2] / C[W2]:.2f}x"))
+        per = C[W2] / D[W2]
+        cand = [1] + list(CM_GRID)
+        n_star = min(cand, key=lambda n: abs(n * per - 1.0))
+        arm = f"sel05b_n{n_star}" if n_star > 1 else "sel05b_n1"
+        m, lo, hi, rep = paired_at(arm, per_prompt)
+        bands.append(dict(
+            band="B3 compute-matched cell, re-derived on the deployable draw cost",
+            quantity=f"argmin |n*C/D - 1| with C/D = {per:.4f}; paired gain of {arm}",
+            value=n_star,
+            reading=(("F4 REPLAY FAILED -- not quotable" if not rep else
+                      f"matched at n={n_star}, {n_star * per:.2f}x; gain vs meter {m:+.4f}" +
+                      (f" [{lo:+.4f}, {hi:+.4f}]" if lo is not None else " (the n=1 control)")))))
+
+    os.makedirs(out, exist_ok=True)
+    for path, data in ((os.path.join(out, "anchor_only_cost.csv"), rows),
+                       (os.path.join(out, "anchor_only_cost_bands.csv"), bands)):
+        with open(path, "w", newline="", encoding="utf-8") as fh:
+            w_ = csv.DictWriter(fh, fieldnames=list(data[0].keys()))
+            w_.writeheader(); w_.writerows(data)
+        print(f"wrote {path}")
+    for r in rows:
+        print(f"  W={r['width']:<4d} A {r['A_harness_anchor_plus_risky_s']:>7.3f}  B "
+              f"{r['B_harness_anchor_paired_s']:>7.3f}  C {r['C_plain_anchor_alone_s']:>7.3f}  D "
+              f"{r['D_metered_s']:>7.3f}   C/A {r['C_over_A']:.4f}  C/D {r['C_over_D']:.4f}")
+    for x in bands:
+        print(f"  {x['band']:56s} {str(x['value']):>9s}  {x['reading']}")
 
 
 def report(log, out, per_prompt=PER_PROMPT):
@@ -378,9 +505,15 @@ def main():
     ap.add_argument("--time-reward", action="store_true")
     ap.add_argument("--report", action="store_true")
     ap.add_argument("--report-width", action="store_true")
+    ap.add_argument("--time-anchor", action="store_true")
+    ap.add_argument("--report-anchor", action="store_true")
+    ap.add_argument("--ao-log", default="output/logs/anchor_only.log")
+    ap.add_argument("--width", type=int, default=40)
+    ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--gen-dir")
     ap.add_argument("--n", type=int, default=64)
     ap.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct")
+    ap.add_argument("--model-path", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer")
     ap.add_argument("--rep", type=int, default=1)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--batch-size", type=int, default=16)
@@ -388,9 +521,15 @@ def main():
     ap.add_argument("--width-log", default="output/logs/batch_width.log")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
-    assert sum((a.time_reward, a.report, a.report_width)) == 1, \
-        "choose exactly one of --time-reward, --report and --report-width"
-    if a.report_width:
+    assert sum((a.time_reward, a.report, a.report_width, a.time_anchor,
+                a.report_anchor)) == 1, "choose exactly one mode"
+    if a.report_anchor:
+        report_anchor(a.ao_log, a.width_log, a.out)
+    elif a.time_anchor:
+        (nseq, ntok), load_s, gen_s = time_anchor(a.model_path, a.width, a.max_new_tokens, a.dtype)
+        print(f"[anchor] rep={a.rep} W={a.width} load_s={load_s:.3f} gen_s={gen_s:.3f} "
+              f"seqs={nseq} new_tokens={ntok}", flush=True)
+    elif a.report_width:
         report_width(a.width_log, a.out)
     elif a.time_reward:
         assert a.model in SCORERS, f"{a.model} is not one of the registered scorers"

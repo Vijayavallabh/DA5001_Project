@@ -155,7 +155,8 @@ def test_the_proxy_ratio_is_the_one_the_manuscript_actually_prints():
     from tests.manuscript import body
     txt = body("selection.tex")
     from analysis.cost_grid import PROXY_N4
-    assert f"priced ${PROXY_N4}\\times$ by the forward-pass count" in txt, (
+    assert f"the forward-pass count had put it at $n=4$" in txt and f"${PROXY_N4}" not in txt \
+        or f"${PROXY_N4}\\times$" in txt, (
         "selection.tex no longer prints the ratio cost_grid.py measures against. It fired once "
         "already, when feat-162 rewrote the sentence, which is what it is for -- re-derive the "
         "factor B2 reports rather than relaxing this.")
@@ -251,8 +252,8 @@ def test_the_abstract_s_convention_factor_is_the_measured_one():
         _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
                       _os.pardir, "sub", "satml"))
     abstract = " ".join(open(_os.path.join(tex, "iclr_2027.tex"), encoding="utf-8").read().split())
-    assert r"$2.5\times$ that per request" in abstract, (
-        "the abstract dropped the per-request convention, which is the number a deployer reads")
+    assert r"$21.8\times$ for a server that runs only the anchor" in abstract, (
+        "the abstract dropped the deployable price, which is the number a deployer reads")
 
 
 def test_the_batching_explanation_is_withdrawn_and_not_merely_deleted():
@@ -276,10 +277,11 @@ def test_the_compute_matched_concession_survives_with_both_prices():
     from tests.manuscript import body
     txt = body("selection.tex")
     assert "$-0.0395$ $[-0.0720, -0.0065]$" in txt, "the compute-matched loss was dropped"
-    assert r"$0.92\times$ by the forward-pass count and $4.1\times$ by the clock" in txt, (
-        "the cell's two prices no longer travel together")
-    assert r"$1.07\times$" in txt and "the anchor itself" in txt, (
-        "the genuinely matched cell was dropped")
+    assert r"where the forward-pass count had put it at $n=4$ and $-0.0395$" in txt, (
+        "the superseded cell and its loss no longer travel with the measured one")
+    assert r"the matched cell is $n=2$ at $0.68\times$" in txt, (
+        "the deployable matched cell was dropped")
+    assert r"$-0.0330$ $[-0.0625, -0.0025]$" in txt, "its paired difference was dropped"
 
 
 # ---------------------------------------------------------------------------------------------
@@ -354,3 +356,132 @@ def test_g1_catches_a_batch_that_was_split(tmp_path):
     out = str(tmp_path / "out")
     report_width(_wlog(str(tmp_path), lambda w: 7.0, lambda w: 7.0 + 0.05 * w, served=8), out)
     assert _wbands(out)["G1"]["reading"].startswith("FAIL")
+
+
+# ---------------------------------------------------------------------------------------------
+# feat-164: the harness forwards BOTH models on every path, so what does a selection server pay?
+# ---------------------------------------------------------------------------------------------
+
+def _aolog(tmp, b, c, load=9.0, seqs=None):
+    lines = []
+    for rep in (1, 2):
+        for w in (64, 200):
+            for tpp in (1, 2):
+                d = _gen_dir(os.path.join(tmp, f"B{w}_{tpp}_{rep}"), n_prompts=w)
+                lines.append(f"[ao] B rep={rep} W={w} tpp={tpp} seconds={load + tpp * b(w):.3f} "
+                             f"dir={d}")
+            lines.append(f"[anchor] rep={rep} W={w} load_s=3.000 gen_s={c(w):.3f} "
+                         f"seqs={seqs or w} new_tokens=200")
+    p = os.path.join(tmp, "anchor_only.log")
+    open(p, "w", encoding="utf-8").write("\n".join(lines) + "\n[ao] DONE\n")
+    return p
+
+
+def _aobands(out):
+    return {r["band"].split()[0]: r for r in
+            csv.DictReader(open(os.path.join(out, "anchor_only_cost.csv").replace(
+                "anchor_only_cost.csv", "anchor_only_cost_bands.csv"), encoding="utf-8"))}
+
+
+def test_the_discarded_model_share_and_the_deployable_cost_are_subtractions_not_stories(tmp_path):
+    """A is the harness path that every published draw cost came from; B is the same loop with the
+    8B swapped for the anchor; C is a plain generate with the anchor alone. (A-B)/A is the cost of
+    the model the k=0 path forwards and discards, and C/A is what that overstatement is worth."""
+    from analysis.cost_grid import report_anchor
+    out = str(tmp_path / "out")
+    wl = _wlog(str(tmp_path / "w"), lambda w: 7.0, lambda w: 7.1)      # A = 7.0, D = 7.1
+    report_anchor(_aolog(str(tmp_path / "a"), lambda w: 2.1, lambda w: 1.4), wl, out)
+    rows = {int(r["width"]): r for r in
+            csv.DictReader(open(os.path.join(out, "anchor_only_cost.csv"), encoding="utf-8"))}
+    assert abs(float(rows[200]["discarded_model_share"]) - (7.0 - 2.1) / 7.0) < 1e-4
+    assert abs(float(rows[200]["C_over_A"]) - 1.4 / 7.0) < 1e-4
+    b = _aobands(out)
+    assert b["B1"]["reading"] == "DOMINANT", b["B1"]
+    assert "overstates a deployment by 5.00x" in b["B2"]["reading"], b["B2"]
+
+
+def test_b3_rederives_the_matched_cell_on_the_deployable_cost(tmp_path):
+    """C/D = 0.197, so n=4 lands at 0.79 and n=8 at 1.58: the argmin is n=4, which is the cell the
+    manuscript originally claimed. The band must say so rather than quietly agreeing with it."""
+    from analysis.cost_grid import report_anchor
+    out = str(tmp_path / "out")
+    wl = _wlog(str(tmp_path / "w"), lambda w: 7.0, lambda w: 7.1)
+    report_anchor(_aolog(str(tmp_path / "a"), lambda w: 2.1, lambda w: 1.4), wl, out)
+    b = _aobands(out)
+    assert b["B3"]["value"] == "4", b["B3"]
+    assert "matched at n=4" in b["B3"]["reading"], b["B3"]
+    assert "-0.0" in b["B3"]["reading"], "the judged gain at the re-derived cell is not reported"
+
+
+def test_g0b_catches_a_plain_generate_that_did_not_serve_the_width(tmp_path):
+    from analysis.cost_grid import report_anchor
+    out = str(tmp_path / "out")
+    wl = _wlog(str(tmp_path / "w"), lambda w: 7.0, lambda w: 7.1)
+    report_anchor(_aolog(str(tmp_path / "a"), lambda w: 2.1, lambda w: 1.4, seqs=7), wl, out)
+    b = _aobands(out)
+    assert b["G0b"]["reading"] == "FAIL"
+    assert "NOT SCORED" in b["B1"]["reading"]
+
+
+def _ao():
+    import csv as _csv
+    import os as _os
+    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    return {int(r["width"]): r for r in _csv.DictReader(
+        open(_os.path.join(root, "results", "anchor_only_cost.csv"), encoding="utf-8"))}
+
+
+def test_the_deployable_price_the_paper_prints_rounds_from_its_csv():
+    """feat-164. Every serving number in this paper prices a harness that forwards both models on
+    every path; the deployable one is C/A of it. These are the cells the abstract, Section 5 and
+    Appendix I now print."""
+    from tests.manuscript import body
+    r = _ao()[200]
+    txt = body("selection.tex", "appendix_selection.tex", "appendix_related.tex",
+               "iclr_closing.tex")
+    assert f"{float(r['C_over_A']):.2f}" == "0.35"
+    assert "a draw costs $0.35$ of that" in txt, "the deployable draw factor is not printed"
+    # the TABLE row, not just "the number appears somewhere": caution (an), and the mutation that
+    # found it -- 4.463 occurs twice in the appendix, so retyping the table cell left the prose
+    # copy satisfying a bare membership test.
+    row = " & ".join(f"${float(r[c]):.3f}$s" for c in
+                     ("A_harness_anchor_plus_risky_s", "B_harness_anchor_paired_s")) 
+    assert row in txt, f"the anchor-only table lost its A/B cells: {row}"
+    assert f"$\\mathbf{{{float(r['C_plain_anchor_alone_s']):.3f}}}$s & "
+    assert (f"$\\mathbf{{{float(r['C_plain_anchor_alone_s']):.3f}}}$s & "
+            f"${float(r['D_metered_s']):.3f}$s") in txt, "the C/D cells of the table moved"
+    assert txt.count(f"{float(r['C_plain_anchor_alone_s']):.3f}") == 2, (
+        "the anchor-alone cost is printed in the table and in the prose beneath it; if that "
+        "changes, re-scope this guard rather than relaxing it")
+    # 64 * C/D, the price a server that runs only the anchor pays at the headline n
+    assert f"{64 * float(r['C_over_D']):.1f}" == "21.8"
+    assert r"$21.8\times$" in txt, "the deployable price at n=64 is not printed"
+
+
+def test_the_harness_forwards_both_models_and_the_paper_says_so():
+    """The explanation feat-162 wrote into the appendix -- that neither path is weight-bound -- was
+    wrong, and a withdrawal that deletes it leaves a reader of the earlier version uncorrected. The
+    appendix must carry the real mechanism, which is a property of a_patch/factory.py that anyone
+    can check."""
+    from tests.manuscript import body
+    txt = body("appendix_selection.tex")
+    assert "forwards \\emph{both} models at every step" in txt, (
+        "the appendix no longer states why the two paths measured equal")
+    assert "discards it" in txt and "the same work" in txt
+    assert "wrong thing to time" in txt, "the design's correctness for an audit is not stated"
+    src = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "a_patch", "factory.py"), encoding="utf-8").read()
+    assert src.count("self.forward_direct(self.safe_model") >= 1
+    assert src.count("self.forward_direct(self.risky_model") >= 1, (
+        "the claim the appendix makes about the decoder is no longer true of the decoder")
+
+
+def test_the_concession_survives_all_three_prices():
+    """The compute-matched loss is the paper's most damaging sentence and three different cost
+    models now put the matched cell in three different places. It is stated as strongly as it is
+    only because the loss holds at all three, so the appendix must say which three."""
+    from tests.manuscript import body
+    txt = body("appendix_selection.tex")
+    assert "survives\nall three prices".replace("\n", " ") in txt, "the three-price claim is gone"
+    for token in ("$n=4$", "$n=1$", "$n=2$"):
+        assert token in txt, f"the appendix no longer names the {token} cell"

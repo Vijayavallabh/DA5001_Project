@@ -10,16 +10,16 @@ prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -c
 
 ## Arms in flight (2026-09-21 19:40)
 
-**`results/onset_prediction_batch_width.md` (feat-163) is REGISTERED AND RUNNING** on host B, one
-card, the rest idle. It closes the one caveat feat-162 had to leave open --- whether a server that
-batched a request's `n` candidates together would pay less than the `n` sequential decodes this
-pipeline performs. The naive form of that objection is answered by arithmetic and the registration
-says so: serving `R` requests at width `W`, the meter runs `R/W` batches and selection `Rn/W`, so
-the `1/W` **cancels** and batching cannot move the ratio by itself. What can move it is
-`c_a(W)/c_m(W)`, since the metered path carries `1.76`B + `8.03`B where selection carries `1.76`B
-alone and at `W=40` they measured equal to `0.3%` --- which can only happen off the weight-bound
-regime. Predicted FALLS, with the implied `n=64` price in `13`--`38x` against feat-162's `67.2x`.
-
+**feat-163 and feat-164 are both SCORED.** feat-163 reads **FLAT** (`c_a/c_m` `0.9922` over a
+`25x` span of batch width) and its registered premise was false: `a_patch/factory.py` forwards
+**both** models at **every** step whatever `k` is, so the `k=0` draw path runs the `8.03`B model
+and discards it, and the two paths measure equal because they do the same work. feat-164 then split
+it three ways at width `200` --- harness `12.838`s, self-paired `8.515`s, anchor alone `4.463`s,
+meter `13.074`s --- so **every wall-clock number this project has published overstates a deployment
+by `2.88x`**: `n=64` costs `21.8x` a metered decode, not `67.2x`, and the compute-matched cell is
+`n=2` at `0.68x` with a paired `-0.0330 [-0.0625, -0.0025]`. **The concession survives all three
+prices.** Nothing decoded, judged, leaked or budgeted changes. Caution (ay) carries both
+withdrawals and the rule: before timing two code paths against each other, read what each one runs.
 
 **`results/onset_prediction_cost_matched_measured.md` (feat-162) is SCORED.** All four gates pass;
 both predictions were wrong. The compute-matched cell is **`n=1`** at `1.07x`, not the `n=4` at

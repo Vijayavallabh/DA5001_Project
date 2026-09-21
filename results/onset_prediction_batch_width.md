@@ -99,3 +99,52 @@ measured, and by how much.
 One H100, about `35` minutes: `48` generation runs, none longer than a minute.
 
 ## Scoring log
+
+## Scoring, 2026-09-21
+
+Host B, GPU 0, other seven idle. `bash scripts/run_batch_width.sh 0`, then
+`.venv/bin/python analysis/cost_grid.py --report-width --out results`. Outputs
+`results/batch_width.csv` and `results/batch_width_bands.csv`.
+
+| `W` | anchor batch (s) | metered batch (s) | `c_a/c_m` | implied `n=64` |
+|---|---|---|---|---|
+| `8` | `6.361` | `6.428` | `0.9897` | `63.34x` |
+| `16` | `6.505` | `6.811` | `0.9551` | `61.13x` |
+| `32` | `6.790` | `6.822` | `0.9953` | `63.70x` |
+| `64` | `7.517` | `7.768` | `0.9677` | `61.93x` |
+| `128` | `9.936` | `9.981` | `0.9955` | `63.71x` |
+| `200` | `12.838` | `13.074` | `0.9819` | `62.84x` |
+
+All three gates pass (`G0` `7.517`s, `G1` `0` split batches, `G2` `3.7%`).
+
+- **B1: FLAT.** `ratio(200)/ratio(8) = 0.9922`, inside `[0.80, 1.25]`. We predicted FALLS.
+- **B2:** `62.84x` at `W=200`, against feat-162's `67.24x` at `W=40`.
+- **B3:** batching lowers the anchor's per-request bill by `12.39x` from `W=8` to `W=200` --- and
+  lowers the meter's by the same, which is the point.
+
+### Why it is flat, which the registration got wrong
+
+The registration's premise was that *"the metered path carries `1.76`B + `8.03`B and a KL solve
+where selection carries `1.76`B alone"*, so `c_a/c_m` had to fall once weights began to matter.
+**It never falls because that premise is false about this harness.** `a_patch/factory.py` forwards
+**both** models at **every** step:
+
+```
+safe_logits,  safe_past  = self.forward_direct(self.safe_model,  ...)
+risky_logits, risky_past = self.forward_direct(self.risky_model, ...)
+```
+
+and the `k_radius == 0.0` branch consumes `risky_logits` only to build a zero budget. The two paths
+measure equal at every width because **they are doing the same work**; the meter's extra is the KL
+solve, which is `1.0`--`3.3%` here. A flat ratio over a `25x` span of width is what identical work
+looks like, and reading it as "the mechanism costs this much" would have been wrong.
+
+**So B1 answers the registered question and not the one that matters.** The registered question was
+whether batching moves the ratio; it does not, and the arithmetic in the registration says why ---
+the `1/W` cancels between the arms. What this arm actually surfaced is that both arms run two
+models, which makes the whole serving axis a measurement of the audit harness rather than of a
+deployment. That is feat-164, `results/onset_prediction_anchor_only_cost.md`, and this arm's data
+is its `A` and `D` cells.
+
+**B2 stands as registered and is now redundant**: `62.84x` is a floor on the pessimism of a
+measurement that feat-164 shows is pessimistic for a different and larger reason.

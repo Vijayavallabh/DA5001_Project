@@ -534,9 +534,14 @@ batches across \emph{prompts} inside each one (\texttt{dap/e1.py}), so there is 
 across the candidate dimension at all. Whether a server that batched the $n$ candidates together
 could recover it is untested here --- and untested by the $35.4\times$ too, which is the sentence
 we withdrew. \textbf{One draw from the anchor costs what one metered decode costs}, $6.99$s against
-$6.97$s: at batch $40$ neither path is weight-bound, so carrying an $8.03$B risky model through the
-loop beside the $1.76$B anchor is nearly free and drawing a second candidate is a whole second
-decode. \textbf{The loader is $61\%$ of the metered path's total} ($10.97$s of $17.94$s) against
+$6.97$s. We first read that as neither path being weight-bound at that width. It is not: our
+decoder forwards \emph{both} models at every step whatever $k$ is, and the $k=0$ branch consumes
+the risky logits only to build a zero budget, so \textbf{the draw path runs the $8.03$B model and
+discards it}. The two agree because they are doing the same work. That is the right design for an
+audit --- it is how a budgeted decoder is compared against its own anchor step by step, and every
+\emph{decoded} number in this paper depends on it --- and it is the wrong thing to time. It also
+explains a ratio that is flat to $1\%$ over a $25\times$ span of batch width ($8$ to $200$), where
+two genuinely different model loads would have diverged. \textbf{The loader is $61\%$ of the metered path's total} ($10.97$s of $17.94$s) against
 $2\%$ of selection's at $n=64$, which is what makes a ratio of totals read $26.9\times$ where the
 per-request ratio reads $67.2\times$ --- the latter $1.10\times$ \emph{above} the forward-pass
 model rather than $1.73\times$ below it. So the compute-matched cell is not $n=4$ at $0.92\times$,
@@ -544,9 +549,40 @@ which measures $4.11\times$; it is $n=1$ at $1.07\times$, which is the anchor se
 single sample and gains $0$ by construction against the meter's $+0.0400$. \textbf{At the metered
 decoder's own measured compute, selection has nothing to select from.} The $35.4\times$ above is a
 different machine and is not revised by this; what is revised is the reason for it. Bands in
-\texttt{results/onset\_prediction\_\allowbreak cost\_\allowbreak matched\_\allowbreak measured.md},
+\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak cost\_\allowbreak matched\_\allowbreak measured.md},
 fixed before the run, including the two predictions it got wrong: we expected the matched cell at
 $n=2$ and the mispricing at $2.2\times$, and measured $n=1$ and $4.47\times$.
+
+\paragraph{What a selection server would actually pay}\label{app:anchoronly}
+So we timed the draw loop three ways on the same $200$ prompts and the same $200$ new tokens,
+against the metered decoder: $A$ is the harness path every published draw cost came from (anchor
+$+$ the $8.03$B risky model), $B$ is the same loop with the risky path pointed back at the anchor,
+$C$ is a plain \texttt{generate()} with the anchor alone --- what a server serving best-of-$n$
+would run --- and $D$ is the metered decoder, which needs both models by definition.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+batch width & $A$ harness, $+8.03$B & $B$ harness, self-paired & $C$ anchor alone & $D$ metered \\
+\midrule
+$64$  & $7.517$s  & $6.780$s & $3.349$s & $7.768$s \\
+$200$ & $12.838$s & $8.515$s & $\mathbf{4.463}$s & $13.074$s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent $B \approx 2C$ ($8.515$ against $8.926$), so the harness loop costs no more than two
+plain generates and every gap in that row is a model forward: the anchor's is $4.463$s and the
+$8.03$B's $8.375$s, which is $1.88\times$ for $4.6\times$ the parameters. \textbf{A deployment runs
+one of them, so it pays $C/A = 0.35$ of every selection serving number in this paper}, and $n=64$
+costs $21.8\times$ a metered decode rather than the $67.2\times$ we timed. Re-deriving the
+compute-matched cell on $C/D = 0.3414$ puts it at $n=2$, $0.68\times$, where the paired judged
+difference is $-0.0330\,[-0.0625,-0.0025]$ and still excludes zero. \textbf{The concession survives
+all three prices} --- the forward-pass count's $n=4$, the harness clock's $n=1$ and the deployable
+$n=2$ --- which is the only reason it is stated as strongly as it is. What none of this revises is
+a decoded, judged, leakage or budget number: nothing generated depends on how fast the harness ran.
+Bands in \texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak anchor\_\allowbreak only\_\allowbreak cost.md}, and it got its own prediction wrong too --- we expected the discarded
+model to be $60$--$80\%$ of the path and it is $34\%$.
 
 % The vetting table and its discussion were cut on 2026-09-19 for the page budget. The arm is
 % unchanged; what is kept is the measurement the Ethics Statement and Section 4 both point at,

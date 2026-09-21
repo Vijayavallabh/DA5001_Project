@@ -1,0 +1,7 @@
+band,quantity,value,reading
+"G0 instrument, c_a(64) within 25% of feat-162's 6.99s",gate,7.517,PASS
+"G1 one batch per seed group, served requests == W",gate,0,PASS
+"G2 same work served across widths, within 10%",gate,0.037,PASS
+B1 does c_a/c_m fall with width?,ratio(200) 0.9819 over ratio(8) 0.9897,0.9922,FLAT
+"B2 implied selection price at n=64, properly batched","64 * c_a/c_m at W=200, against feat-162's 67.24x at W=40",62.84,"A FLOOR ON OUR MEASUREMENT'S PESSIMISM, NOT A PRICE ANY ARM HERE PAYS"
+B3 does batching lower the bill?,"anchor seconds per request, W=8 over W=200",12.39,"the number the naive objection is about, and the wrong one to look at"

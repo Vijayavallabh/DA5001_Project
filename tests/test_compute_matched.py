@@ -224,10 +224,14 @@ def test_the_matched_compute_cost_is_the_one_the_csv_computed():
     bands = open("results/compute_matched_bands.csv", encoding="utf-8").read()
     assert f"({cost:.2f}x)" in bands, f"the bands label disagrees with the column ({cost})"
     body = _tex("sections/selection.tex")          # where a stale label does real damage
-    assert f"priced ${cost:.2f}\\times$ by the forward-pass count" in body, \
-        f"Section 2 must quote the computed cost, {cost:.2f}x, and say which model it is from"
+    apx = _tex("sections/appendix_selection.tex")
+    assert f"${cost:.2f}\\times$" in apx, \
+        f"the appendix must quote the computed cost, {cost:.2f}x"
     measured = next(float(r["ratio_marginal"]) for r in _rows("results/cost_grid.csv")
                     if r["n"] == "4" and r["scorer_b"] == "0.494")
-    assert f"and ${measured:.1f}\\times$ by the clock" in body, \
+    assert f"${measured:.2f}\\times$" in apx, \
         "the measured price of the same cell must travel with the proxy, or the reader is told "\
-        f"that 0.92x is what it costs when it is {measured:.2f}x"
+        f"that {cost:.2f}x is what it costs when it is {measured:.2f}x"
+    # feat-164: the body now carries the DEPLOYABLE cell, and the superseded one with it
+    assert "the forward-pass count had put it at $n=4$" in body, \
+        "Section 2 dropped the cell the concession was originally stated at"
