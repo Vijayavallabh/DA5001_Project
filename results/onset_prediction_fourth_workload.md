@@ -124,3 +124,26 @@ placed to straddle that rather than to end on it.
 chosen point must also satisfy G0's `2x`, and if no grid point does, the answer is **REFINE**, not
 a choice. A rule that returns the nearest of five useless points is caution (p)'s gate that passes
 everything, wearing an `argmin`.
+
+### A prediction from feat-176, recorded 2026-09-22 19:05 --- before this arm's judge runs
+
+feat-176 scored an hour ago and **changes what this arm is a test of**. A public-domain
+**completion** corpus, `500` excerpts of `42` books through the same factual slot, reads
+`+0.0990 [+0.0795, +0.1185]` at a binding budget: **WITH OURS**. Together with AlpacaEval and
+MT-Bench going the other way, the axis that fits all four workloads on record is the **task type**
+--- prefix completion on one side, instruction-following on the other --- and not whose corpus it
+is.
+
+**CoTaEval-QA is reading comprehension, which is neither.** On the task-type account it should fall
+**WITH ALPACAEVAL**, because it is not prefix completion; on a "ours versus everyone else" account
+it should too. The two accounts agree here, so this arm **cannot separate them** --- which is a
+retraction of the sentence at the top of this document claiming it could, written before the
+completion workload existed to be compared against.
+
+What it can still do, and why it is worth scoring: **a WITH OURS reading would falsify the task-type
+axis outright**, one hour after that axis was written into the appendix. That is the outcome this
+prediction is here to make costly.
+
+**Nothing is changed.** B1, B2 and B3 stand exactly as registered, the gates are unchanged, and
+this is a prediction recorded before the number exists --- the reward pass was at `7{,}696`/`32{,}000`
+and no `results/order_averaged_h2h__cotaeval*` file had been written when this was committed.
