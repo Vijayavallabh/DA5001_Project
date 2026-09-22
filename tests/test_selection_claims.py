@@ -30,7 +30,17 @@ def test_the_median_protected_target_is_quoted_from_the_odometer_csv():
                                                               tex("sections/frontier.tex"),
                                                               tex("sections/iclr_closing.tex")))
     assert f"${s_tot:.0f}$" in body, f"the paper no longer quotes S(x) = {s_tot:.0f}"
-    assert "$850$" not in body, "the rounded 850 is back"
+    # `$850$` ALSO COUNTS PROMPTS. The workload arm runs on 850 of them, so a bare substring check
+    # fails on a sentence that has nothing to do with surprisal -- caution (an): a guard matching a
+    # number without its context is not guarding its sentence. What is forbidden is 850 standing
+    # where the median surprisal belongs.
+    import re as _re
+    for m in _re.finditer(r"\$850\$", body):
+        after = body[m.end():m.end() + 40]
+        before = body[max(0, m.start() - 80):m.start()]
+        assert "nat" not in after.lower(), f"the rounded 850 is back: ...{after[:40]!r}"
+        assert "surprisal" not in before.lower() and "S(x)" not in before, \
+            f"the rounded 850 is back: {before[-60:]!r}"
 
 
 def test_the_selection_budget_arithmetic_is_exact():

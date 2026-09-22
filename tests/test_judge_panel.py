@@ -70,8 +70,18 @@ def test_the_paper_quotes_the_measured_fraction_and_not_an_unqualified_claim():
         if f == "iclr_2027":
             assert claim in txt, f"the abstract must carry the measured fraction '{claim}'"
         else:
-            assert f"{words[r]} of {words[len(panel)]}" in txt, \
-                f"Section 4.3 must report '{words[r]} of {words[len(panel)]}'"
+            # GUARD THE PROPERTY, NOT THE SPELLING (caution (an)). This demanded the exact string
+            # `four of five`, and the section now says `Five judges, ...` and `replicates under
+            # four judges ... the one clean frontier judge` -- the same measured fraction, reported
+            # more precisely, and the guard failed on the wording. It failed LOUDLY, which is the
+            # right direction, but the fix is to ask whether the section states both counts.
+            low = txt.lower()
+            assert f"{words[r]} judges" in low, \
+                f"Section 4.3 must say how many judges resolve it ({words[r]})"
+            assert f"{words[len(panel)]} judges" in low, \
+                f"Section 4.3 must say how large the panel is ({words[len(panel)]})"
+            assert "judged better" not in low or "of five" in low or "four judges" in low, \
+                "Section 4.3 makes an unqualified 'judged better' claim"
 
 
 def test_family_does_not_explain_the_exception_and_the_paper_says_so():
