@@ -12,6 +12,20 @@ has taken this week's arms. That is content, not layout --- caution (ar)'s rule 
 appendix's floor is set by the tables whose cells are guarded --- but if it has to come down again,
 the lever is the newest additions and never a concession.
 
+## The AC report, audited 2026-09-23 --- now fully addressed
+
+Asked whether every AC comment was addressed: it was not. The report's instruction was "address all
+of them at the top priority", and an item-by-item audit of its 31 distinct points against the live
+sources found 24 done and 7 missed or partial --- including **one mathematical statement still wrong**
+(Proposition 5's equality condition, whose guard was satisfied by the correction paragraph's word
+"decreasing" rather than by the proposition), three unnumbered tables, 45 unpunctuated run-in
+headings, the abstract's unscoped first sentence, the workload's missing length/complexity profile,
+the 9.3%/90.7% split absent from its table, and the conclusion's dash-interrupted price sentence.
+All fixed the same day, with a main-text pointer to the parity arm as an eighth change;
+`tests/test_ac_review.py` guards every one and each guard was mutation-tested. Body still exactly
+9 of 9. `progress.md` has the full list, including the one point deliberately left as stated
+(TRBS unmeasured). **Before touching any of these sentences, run `tests/test_ac_review.py`.**
+
 ## Arms in flight (2026-09-22 23:05)
 
 | card | arm | state |

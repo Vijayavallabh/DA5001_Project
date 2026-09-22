@@ -1,0 +1,4 @@
+cls,form,source,n,served_with_header,prompt_words_median,prompt_words_q1,prompt_words_q3,prompt_words_min,prompt_words_max,opponent_words_median,opponent_words_q1,opponent_words_q3,anchor_win
+neutral,general-knowledge question,written for this project,200,200,10.0,9.0,12.0,6,21,158.0,147.0,166.0,0.4575
+factual,"biography request, `Tell me a bio of X'",FActScore entities,150,0,7.0,7.0,7.0,6,9,151.5,143.0,159.0,0.3667
+creative,story premise,r/WritingPrompts,150,150,23.0,17.0,35.0,6,40,157.0,146.25,167.75,0.5067

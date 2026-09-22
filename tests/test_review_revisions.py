@@ -196,8 +196,18 @@ def test_proposition_five_equality_condition_is_not_a_constant_rate():
     """With a positive opening debt, (sum s_i + delta)/N_t is DECREASING under a constant rate, so
     its maximum is at t=1 and the inequality is strict. The old text said the opposite."""
     txt = _flat("appendix_proofs.tex")
-    assert "with equality iff the surprisal accumulates at a constant rate" not in txt or \
-        "decreasing" in txt, "the refuted equality condition is unqualified"
+    # SCOPED TO THE STATEMENT, caution (an). The first version of this guard asked whether the
+    # refuted clause was absent OR the word "decreasing" appeared anywhere in the file -- and the
+    # correction paragraph supplied "decreasing", so the PROPOSITION kept saying "equality iff
+    # constant rate" for three days with this test green. The AC's report named that sentence.
+    blk = re.search(r"\\begin\{proposition\}\[[^\]]*\]\\label\{prop:outrun\}(.*?)"
+                    r"\\end\{proposition\}", txt)
+    assert blk, "Proposition prop:outrun's statement block is gone"
+    stmt = blk.group(1)
+    assert "constant rate" not in stmt or "only when $\\delta = 0$" in stmt, (
+        "the proposition states the refuted equality condition: " + stmt)
+    assert "maximised at the last" in stmt, \
+        "the proposition no longer states the correct equality condition"
     i = txt.find("Equality holds exactly when")
     assert i != -1, "the corrected equality condition is gone"
     w = txt[i: i + 700]

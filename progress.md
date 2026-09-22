@@ -6793,3 +6793,72 @@ CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACH
 .venv/bin/python analysis/score_workload.py --workload gutenberg   # regression: unchanged
 .venv/bin/python analysis/workload_degeneracy.py
 ```
+
+## 2026-09-23 --- the AC report, audited point by point against the manuscript
+
+The user asked whether every comment in the AC's report had been addressed. The original
+instruction for that report (2026-09-20) was **"address all of them at the top priority"**, and the
+20 Sept delivery had deliberately skipped some. So each of its 31 distinct points (it repeats
+several across its sections) was re-read from the
+pasted report (transcript line 11) and checked against the *current* sources, not against the
+20 Sept list.
+
+**Already addressed and verified in the live text (24 of 31):** relative-not-absolute caveat in abstract
+and contributions; the selection-escapes-the-chain-rule claim withdrawn; Proposition 1's tie
+hypothesis removed; Proposition 4's statement matched to its proof (slack set), its missing
+proviso, and its `Omega(T)` claim qualified for utilities only an exponentially rare sequence
+attains; the duplicated Proposition 5 header; MemFree and TokenSwap measured and TRBS discussed;
+CoTaEval run (news at four anchors, CoTaEval-QA as a workload); the judge-free figure's metered
+panel; compute parity in the main results; the position-bias asymmetry stated with its mechanism;
+the scorer named in Section 4.2; `1/ 1 2 /0`; the Section 4.3 run-in period; `judged-better`; the
+comma after `fails`; arXiv formatting (all 40 render `arXiv:NNNN`); Appendix A's proofs separated
+from its measurements by a subsection; the order-factor formula; the extraction table's means and
+dashes; `s_r` defined in the onset caption; MemFree and CoTaEval in related work; the Section 2
+Scope paragraph; the evaluation-parity arm (Table `tab:parity`).
+
+**Not addressed, or only partly (7 of 31), fixed today --- plus a main-text pointer for an eighth:**
+- **Proposition 5's formal statement still said "with equality iff the surprisal accumulates at a
+  constant rate"** --- the exact error the AC proved wrong --- with the correction paragraph
+  directly beneath it contradicting it. Its guard asked whether the clause was absent *or* the word
+  "decreasing" appeared anywhere in the file, and the correction supplied "decreasing": caution (an),
+  in the guard for the one mathematical error the AC found. Statement fixed; guard scoped to the
+  proposition block and mutation-tested both ways.
+- **Three tables with no number or caption** (opponent ladder, cost grid, anchor-only price), all
+  added after 20 Sept. Now floats with captions and labels, and a guard fails on any tabular outside
+  a captioned, labelled float.
+- **45 run-in `\paragraph` headings with no terminal punctuation**, including the intro's the AC
+  named. All punctuated; guarded.
+- **The abstract's first sentence still described every inference-time defence** as charging per
+  token --- the sentence the AC quoted. Now "Certified inference-time copyright defences", and the
+  introduction's opening "Certified decoders", both length-neutral.
+- **The workload's length distribution and complexity** were not given. New
+  `analysis/prompt_set_profile.py` -> `results/prompt_set_profile.csv` over exactly the `500` judged
+  ids; Table `tab:promptset` in Appendix H; FActScore cited (verified on arXiv, EMNLP 2023). The
+  opponent answers at the `200`-token cap in every class, so the table says answer length does not
+  separate the classes and the anchor's win rate does (`0.3667` biographies to `0.5067` premises;
+  the weighted mean reproduces the committed `0.445`).
+- **The 9.3% / 90.7% split** is now a column of the latency table, computed from its CSV.
+- **The conclusion's price sentence** rewritten without the dash interruption, same length, the
+  committed concession ("where that bar sits is open") kept.
+- **The evaluation-asymmetry answer had no main-text pointer.** Section 4.2 now says that handed the
+  same reward on TriviaQA the meter gains nothing (Table `tab:parity`); the guard checks the claim
+  against all eight admitted metered cells of `meter_parity.csv`.
+
+**Page budget.** The scope edits first cost 9 body lines (an early line pushed a section heading to
+the next page and every float cascaded); two trims inside the same paragraphs recovered them. The
+parity pointer then cost 2 lines at the end of page 9; trims on pages 4 and 6 bought nothing
+(absorbed as whitespace above the Experiments heading --- caution (n)), and three redundant
+clauses in the same main-results paragraph recovered both. Final: body exactly 9 of 9, 0 overfull,
+0 `??`, no hbox at badness 10000, 3 bold faces, 46 pages, number audit's single expected miss
+(`64256`).
+
+**Deliberately not done**, and said so: TRBS remains unmeasured (a code-search method; porting it
+to prose would be our construction, not theirs), as the appendix already states.
+
+### Commands
+
+```bash
+.venv/bin/python analysis/prompt_set_profile.py --out results
+.venv/bin/python -m pytest -q tests/test_ac_review.py tests/test_review_revisions.py
+.venv/bin/python analysis/audit_numbers.py
+```
