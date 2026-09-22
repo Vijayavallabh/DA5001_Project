@@ -174,3 +174,111 @@ def test_the_onset_interval_width_is_the_one_the_table_currently_holds():
     assert any(p in w for p in ("does not shrink", "do not shrink",
                                 "does not narrow", "do not narrow")), \
         "the sentence no longer says the interval fails to narrow; the data still says it does not"
+
+
+# ---------------------------------------------------------------------------------------------
+# Five more, found by mutation-testing the CONCESSIONS on 2026-09-22 (caution (ag): a length edit
+# deletes these first; caution (aq): a green suite is evidence about the edits that were guarded).
+# Eight were broken one at a time and five left the suite passing. In four of the five the NUMBER
+# was guarded and the VERDICT WORD was not -- caution (av) exactly: a verdict is a string that
+# outlives the number under it, and softening it is the cheapest way to delete a concession.
+# ---------------------------------------------------------------------------------------------
+
+def _app_sel():
+    from tests.manuscript import body
+    return body("appendix_selection.tex")
+
+
+def test_the_second_opponent_verdict_word_matches_its_own_interval():
+    """`The difference between them does not survive` could be softened to `is smaller` with the
+    whole suite green: the band is pinned, the word is not. `is smaller` is a comparison of point
+    estimates; `does not survive` is the registered reading for an interval containing zero, and
+    those are different claims."""
+    import csv as _csv
+    import os as _os
+    rows = [r for r in _csv.DictReader(open(_os.path.join(
+        ROOT, "results", "order_averaged_h2h__opp2.csv"), encoding="utf-8"))
+        if r["quantity"].startswith("D3")]
+    assert len(rows) == 1
+    lo, hi = float(rows[0]["lo95"]), float(rows[0]["hi95"])
+    txt = _app_sel()
+    # SCOPE IT (caution (an)): `does not survive` occurs twice in this file, once in the
+    # paragraph heading two sentences earlier, so a bare `in txt` passed the mutation that
+    # softened the claim itself. Anchor on the sentence that carries the band.
+    claim = "The difference between them does not survive}: "
+    if lo <= 0 <= hi:
+        assert claim in txt, (
+            f"the interval [{lo}, {hi}] contains zero, so the registered reading is UNRESOLVED; "
+            "the appendix must say the difference does not survive, not that it is smaller")
+        i = txt.find(claim)
+        assert f"{lo:+.4f}" in txt[i:i + 200], \
+            "the verdict and its own interval were separated"
+    else:
+        assert claim not in txt, \
+            "the interval no longer contains zero; the concession's wording must be revisited"
+
+
+def test_the_self_preference_disclosure_survives():
+    """Judge C is the fixed opponent's own checkpoint. Caution (aa) records that this was nowhere
+    stated until 2026-09-15; it is a disclosure the paper chose to make and it deletes cleanly.
+    Conditioned on the fact itself -- the judge panel and the opponent name the same model."""
+    from tests.manuscript import body
+    txt = _app_sel() + body("appendix_limitations.tex")
+    assert "Llama-3.1-8B-Instruct" in txt, "the fixed opponent is no longer named"
+    # The phrase occurs twice in appendix_selection -- once about the judge panel, once about the
+    # second-opponent arm -- so a bare membership test passed the mutation that removed one of
+    # them. Both are disclosures and both must stay (caution (an)).
+    assert txt.count("opponent's own checkpoint") >= 2, (
+        "a self-preference disclosure was deleted; judge C is still the opponent's own checkpoint "
+        "and the paper still reports judge C in both the panel and the opponent arm")
+
+
+def test_the_workload_verdict_word_matches_its_own_interval():
+    """`the reversal \\emph{fails}` could become `\\emph{narrows}` with nothing failing. On
+    AlpacaEval the paired difference is negative with its interval excluding zero, which is a
+    failure and not a narrowing."""
+    import csv as _csv
+    import os as _os
+    rows = [r for r in _csv.DictReader(open(_os.path.join(
+        ROOT, "results", "order_averaged_h2h__mixpowk_judgeB.csv"), encoding="utf-8"))
+        if r["quantity"].startswith("D3")]
+    assert len(rows) == 1
+    g, hi = float(rows[0]["value"]), float(rows[0]["hi95"])
+    assert g < 0 and hi < 0, f"AlpacaEval no longer reverses ({g}, hi {hi}); revisit the wording"
+    assert "the reversal \\emph{fails}" in _app_sel(), \
+        "the appendix softened the AlpacaEval verdict; its own interval excludes zero on that side"
+
+
+def test_the_order_consistency_concession_keeps_below_chance():
+    """`the latter below chance agreement between presentation orders` could become `close to
+    chance`. Below chance is the damaging reading and it is what the number says."""
+    import csv as _csv
+    import os as _os
+    rows = [r for r in _csv.DictReader(open(_os.path.join(
+        ROOT, "results", "order_averaged_h2h__opp2.csv"), encoding="utf-8"))
+        if r["quantity"] == "order consistency"]
+    met = [float(r["value"]) for r in rows if r["arm"].startswith("metered")]
+    assert met, "the metered arm's order consistency is gone from that pass"
+    assert met[0] < 0.5, f"order consistency is {met[0]}, no longer below chance; revisit"
+    assert "below chance agreement" in _app_sel(), \
+        f"the appendix softened a consistency of {met[0]}, which is below chance"
+
+
+def test_the_audited_anchors_empty_rate_is_quoted_with_its_own_threshold():
+    """The audited anchor emits an empty completion on 6.8% of prompts, above the 5% its own
+    registration set (caution (p)). Both the rate and the ladder it sits in deleted cleanly."""
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import body
+    rows = list(_csv.DictReader(open(_os.path.join(
+        ROOT, "results", "selection_breadth.csv"), encoding="utf-8")))
+    empties = sorted({round(float(r[c]) * 100, 1) for r in rows
+                      for c in r if c.startswith("empty") and r[c] not in ("", None)})
+    txt = body("appendix_limitations.tex")
+    # `$6.8\%$` appears twice -- once as the anchor's own rate, once in the ladder -- so a bare
+    # membership test passed the mutation that deleted the first (caution (an)).
+    assert "emits one on $6.8\\%$ of the $500$ prompts" in txt, (
+        "the audited anchor's empty rate was deleted; it is the one that exceeds the 5% threshold "
+        f"its own registration set (rates on record: {empties})")
+    for lit in ("$0.0\\%$", "$0.2\\%$", "$3.0\\%$"):
+        assert lit in txt, f"the empty-fraction ladder lost {lit}, so 6.8% has nothing to sit in"
