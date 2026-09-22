@@ -451,3 +451,23 @@ def test_the_prompt_template_is_excluded_by_two_header_free_arms():
     for r in carried:                    # the agreeing classes need only their values
         assert f"${float(r['d3']):+.4f}$" in claim, f"{r['arm']}'s gain left the paragraph"
     assert "$500$" in claim and "$850$" in claim, "the class sizes that make the point were cut"
+
+
+def test_the_support_ceiling_direction_is_flagged_where_it_is_stated():
+    """Caution (ao): the same file said the opposite budget response is 'what a support ceiling
+    predicts' and, two paragraphs later, that the support account is measurably wrong. Both
+    sentences were true of their own quantity and the pair read as a contradiction. The flag has to
+    live WITH the observation, not only in the refutation, or a reader meets them in the wrong
+    order."""
+    from tests.manuscript import body
+    txt = body("appendix_selection.tex")
+    i = txt.find("respond to a binding budget in \\emph{opposite} directions")
+    assert i > 0, "the opposite-direction observation was cut"
+    near = txt[i:i + 700]
+    assert "refutes" in near or "refuted" in near, \
+        "the observation no longer says the decomposition below refutes the account it matches"
+    j = txt.find("across five passes")
+    assert j > 0, "the five-passes claim was cut"
+    assert "these two" in txt[j:j + 160], \
+        "the five-passes claim is no longer scoped to the two workloads it is about; MT-Bench and " \
+        "any later workload are not among those five"
