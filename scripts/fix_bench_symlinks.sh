@@ -13,14 +13,17 @@
 set -u
 cd "$(dirname "$0")/.."
 ROOT="$PWD"
+PROJ=$(basename "$PWD")
 fixed=0; dangling=0
 for link in data/bench/*/*; do
   [ -L "$link" ] || continue
   [ -e "$link" ] && continue
   dangling=$((dangling + 1))
   target=$(readlink "$link")
-  # Re-anchor any absolute target that ends in .../DA5001_Project/<rest> onto THIS repo.
-  rest="${target##*/DA5001_Project/}"
+  # Re-anchor any absolute target that ends in .../<this repo>/<rest> onto THIS repo.
+  # The name is taken from the checkout rather than written in, so the artifact does
+  # not ship the repository name (scripts/build_artifact.sh refuses a tree with it).
+  rest="${target##*/$PROJ/}"
   if [ "$rest" != "$target" ] && [ -e "$ROOT/$rest" ]; then
     ln -sfn "$ROOT/$rest" "$link"
     fixed=$((fixed + 1))

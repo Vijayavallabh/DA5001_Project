@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -uo pipefail
 source "$HOME/v/env.sh"
-cd "$HOME/v/DA5001_Project"
+# Derived, not hardcoded: a literal `$HOME/v/<project>` puts the repository name inside
+# every launcher, and scripts/build_artifact.sh refuses to ship a tree containing it.
+cd "$(dirname "$0")/.."
 MARK="$HOME/v/logs/cpfuse"
 rm -f "${MARK}.done" "${MARK}.fail"
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=6,7

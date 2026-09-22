@@ -1,3 +1,4 @@
 opponent,status,n,strength,anchor_win,d3,d3_lo95,d3_hi95,verdict,g1,g3,n_gen,empty_frac,mean_words
 meta-llama/Llama-3.1-8B-Instruct,committed,500,0.555,0.445,0.0645,0.03,0.0995,REVERSAL CONFIRMED,PASS,PASS,500,0.0,154.08
-Qwen/Qwen2.5-14B-Instruct,on record,500,0.85,0.15,-0.0065,-0.0385,0.0255,REVERSAL UNRESOLVED,PASS,NOT SCORED,0,nan,nan
+Qwen/Qwen2.5-0.5B-Instruct,new,500,0.7035,0.2965,0.049,0.0135,0.085,REVERSAL CONFIRMED,PASS,PASS,500,0.0,123.5
+Qwen/Qwen2.5-14B-Instruct,on record,500,0.85,0.15,-0.0065,-0.0385,0.0255,REVERSAL UNRESOLVED,PASS,PASS,500,0.0,133.25

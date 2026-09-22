@@ -3,7 +3,9 @@
 # Bands: results/onset_prediction_frontier_judge.md, committed before this ran.
 set -uo pipefail
 source "$HOME/v/env.sh"
-cd "$HOME/v/DA5001_Project"
+# Derived, not hardcoded: a literal `$HOME/v/<project>` puts the repository name inside
+# every launcher, and scripts/build_artifact.sh refuses to ship a tree containing it.
+cd "$(dirname "$0")/.."
 JUDGE="$1"; TAG="$2"; CARDS="$3"
 MARK="$HOME/v/logs/fj_${TAG}"
 rm -f "${MARK}.done" "${MARK}.fail"

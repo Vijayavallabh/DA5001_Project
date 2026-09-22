@@ -12,7 +12,9 @@
 set -uo pipefail
 MODEL=${1:?model}; TAG=${2:?tag}; CARDS=${3:?cards}; DM=${4:-}
 source "$HOME/v/env.sh"
-cd "$HOME/v/DA5001_Project"
+# Derived, not hardcoded: a literal `$HOME/v/<project>` puts the repository name inside
+# every launcher, and scripts/build_artifact.sh refuses to ship a tree containing it.
+cd "$(dirname "$0")/.."
 MARK="$HOME/v/logs/opp_$TAG"
 rm -f "${MARK}.done" "${MARK}.fail"
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="$CARDS"
