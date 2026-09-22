@@ -48,6 +48,17 @@ would have put caution (w) inside the gate built to check the corpus. **G3 is on
 scoring log must say so:** the instrument reads `0.000` on the protected corpus too, so a pass
 cannot establish unfamiliarity, only fail to find leakage.
 
+**Two registrations are committed and unscored, which is what the table above is for.**
+`onset_prediction_sixth_workload.md` is feat-177, in flight: G3 passed, the binding cell ran at
+`k=1.0` (`0.59x` the target, inside G0's `2x`, so **no refinement was registered** --- refining a
+grid whose argmin already clears the band would be choosing an instrument after seeing it), and
+`scripts/after.sh` is holding the scorer on card 2 behind the draws with a 4-hour deadline.
+`onset_prediction_opponent_by_workload.md` is **feat-178**, registered at 23:30 and not yet run:
+it asks whether the workload split is the OPPONENT's strength rather than the task type, by
+running feat-175's five-rung ladder on AlpacaEval through one generator and changing only
+`--baseline-dir`. Its P1 half is a no-GPU reanalysis of `u_anchor_k0`, which is already a column of
+every per-prompt h2h CSV on disk, and it is registered before being computed for that reason.
+
 `analysis/score_fifth_workload.py` is now `analysis/score_workload.py --workload {cotaeval_qa,
 gutenberg,unseenbooks}`; Gutenberg re-scores byte-identically through it. feat-177's spec carries
 `bind_k=None`, so its binding budget is taken from its own refined grid once that exists --- and

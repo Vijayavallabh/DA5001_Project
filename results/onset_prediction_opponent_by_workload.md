@@ -148,3 +148,45 @@ bench directory's other two slots carry --- the judge intersects to the `805`, a
 `30%` is cheaper than building a sixth corpus directory), then five judge passes.
 
 ## Scoring log
+
+### P1/L3/L4 SCORED, 2026-09-22 23:45 --- CONSISTENT, with one inversion that matters
+
+Five workloads at their rate-matched **binding** budgets (the cell the workload comparisons are
+primary on; mixing a binding cell with a vacuous one would compare two mechanisms). unseenbooks is
+still generating and enters this table when it lands.
+
+| workload | task type | n | opponent strength | `D3` | `D3`/headroom |
+|---|---|---|---|---|---|
+| Gutenberg | completion | `500` | `0.4865` | `+0.0990` `[+0.0795, +0.1185]` | `+0.2035` |
+| CoTaEval-QA | comprehension | `500` | `0.5685` | `+0.0070` `[-0.0175, +0.0320]` | `+0.0162` |
+| ours | completion | `850` | `0.5735` | `+0.0965` `[+0.0765, +0.1162]` | `+0.2263` |
+| MT-Bench | instruction | `80` | `0.6594` | `-0.0250` `[-0.0781, +0.0281]` | `-0.0734` |
+| AlpacaEval | instruction | `805` | `0.6792` | `-0.0339` `[-0.0534, -0.0137]` | `-0.1057` |
+
+**L3: `rho = -0.900`, exact `p = 0.0833` over all `120` permutations --- CONSISTENT.**
+**L4: normalised by the available headroom, `rho = -0.700`, `p = 0.2333` --- CONSISTENT**, and
+exactly on the registered threshold. So the ordering is not an arithmetic ceiling effect, and the
+normalised reading is the weaker of the two; both are quoted and neither is a significance claim
+(at `n=5` the smallest attainable two-sided `p` is `0.0167`).
+
+**The inversion is the finding, not the correlation.** CoTaEval-QA has almost exactly our own
+workload's opponent strength --- `0.5685` against `0.5735` --- and a `D3` an order of magnitude
+smaller, `+0.0070` against `+0.0965`. A pure opponent-strength account predicts those two
+workloads look alike and they do not. So opponent strength orders the five and does **not** predict
+the magnitude, and whatever the AlpacaEval ladder returns, this table already says a single-variable
+opponent account is incomplete.
+
+**And the confound the registration named is present in the data, measurably.** The two completion
+workloads have the two weakest opponents (`0.4865`, `0.5735`) and the two instruction workloads the
+two strongest (`0.6594`, `0.6792`); comprehension sits between. Strength and task type move
+together across these five arms, so **no reanalysis of them can separate the two**, which is why
+this half of feat-178 is registered as suggestive and the intervention is registered as the test.
+
+**One scale worth having beside the spread.** feat-175 measured the same opponent at `0.555` on our
+corpus's committed `500`-prompt judged pass; this table reads `0.5735` for the same opponent on the
+`850`-prompt binding pass. That `0.018` is what changing the prompt SUBSET of one workload does,
+against a between-workload spread of `0.19` --- an order of magnitude larger. The quantity is
+therefore about the workload and not about which of its prompts were drawn.
+
+Reproduction: `.venv/bin/python analysis/opponent_by_workload.py --out results`
+-> `results/opponent_by_workload.csv`.
