@@ -295,7 +295,35 @@ and **zero files**. Directories intact, contents removed.
   user from `09:33`, and AGENTS.md already records other active sessions on this box (one of whose
   `51`GB jobs OOM-killed our `neutral` class twice on 2026-09-19).
 
-**Refined 2026-09-22, on the user's word:** those concurrent sessions are the **user's own other
+**Second refinement, 2026-09-22 12:10 --- a RECURRENCE was traced, and it was ours.** The same
+failure signature returned at `12:06` and killed eight freshly launched cells, and this time the
+cause is established: **`sync_status.sh push-results`, which this session added at about `11:00`.**
+Its filter is `--include 'results/***' --include '*/' --exclude '*'` and it carried no exclusions,
+so `--include '*/'` told rsync to create **every local directory** on the remote --- including all
+of `.venv`. It recreated this host's `tqdm-4.70.0.dist-info` and thirty others as **empty shells**
+beside host B's real `tqdm-4.70.1.dist-info`, and a duplicate `dist-info` makes
+`importlib.metadata.version` return `None`, which transformers checks at import. The evidence is
+exact: the duplicated names and versions are **this host's** (`tqdm-4.70.0`, `transformers-5.16.1`,
+`pandas-3.0.5`, `urllib3-2.7.0`), their remote mtimes are **this host's directory mtimes** offset by
+the timezone, and the recurrences line up with the two `push-results` runs.
+
+**The first diagnosis reasoned about the wrong verb.** It checked whether rsync could *remove* a
+file --- it cannot without `--delete`, and that reasoning was correct --- and never asked whether it
+could *add* a directory, which it does freely. **A sync that cannot delete can still destroy, by
+adding.** `push-results` now carries `$EX`, verified by a dry run showing zero `.venv` paths in the
+transfer list.
+
+Whether the ORIGINAL `10:52` failure had the same cause is still **undetermined**: `push-results`
+did not exist until about `11:00` and `push` has always excluded `.venv`. It is not claimed either
+way.
+
+**Two defences added.** `scripts/gpu_env.sh`, which every launcher sources, now scans for duplicate
+`dist-info` directories, removes the stale ones and **says so on stderr** --- a silent repair would
+hide the next recurrence, and knowing it recurs is the point. And on the user's instruction this
+project now keeps its own `UV_CACHE_DIR` inside the repo, so a package cache is no longer a mutable
+dependency shared with a sibling project.
+
+**Earlier framing, kept for the record:** those concurrent sessions are the **user's own other
 project**, not a stranger's --- the two share one account on both hosts. That makes the most likely
 explanation a sibling-project environment operation rather than an outsider: a `uv` cache clean, a
 venv rebuild or an IDE-driven reinstall touching a shared cache. It is still **not established**,

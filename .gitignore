@@ -23,3 +23,6 @@ NVIDIA-Linux-x86_64-580.173.02.run
 !manuscript_snapshot/**/*.bib
 data/bench/
 .pt_now.txt
+
+# uv package cache, project-local so a sibling project cannot mutate ours (2026-09-22)
+.uv_cache/

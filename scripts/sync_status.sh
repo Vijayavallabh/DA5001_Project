@@ -14,7 +14,7 @@ cd "$(dirname "$0")/.."
 H=PrakashDGX_H2
 R='~/v/DA5001_Project'
 EX="--exclude .git --exclude __pycache__ --exclude hf_cache --exclude output --exclude .venv
-    --exclude data/bench/cotaeval_raw --exclude '*.pyc' --exclude .pt_now.txt"
+    --exclude .uv_cache --exclude data/bench/cotaeval_raw --exclude *.pyc --exclude .pt_now.txt"
 
 case "${1:-status}" in
   push)   # code out
@@ -54,7 +54,14 @@ case "${1:-status}" in
     # 14.7701 on host B for a day after 14.7700 was measured and fixed here (caution (ax)): a
     # number typed from knowledge, corrected in one place only. --update means a newer file on B
     # is never clobbered, so a fresh arm scored there still wins.
-    rsync -az --update --include 'results/***' --include '*/' --exclude '*' \
+    # $EX IS NOT OPTIONAL HERE. Without it `--include '*/'` tells rsync to create every local
+    # directory on the remote, and that includes all of `.venv`: it recreated this host's
+    # `tqdm-4.70.0.dist-info` and thirty others as EMPTY directories beside host B's real
+    # `tqdm-4.70.1.dist-info`, which makes `importlib.metadata.version` return None and kills every
+    # job with "Unable to compare versions for tqdm>=4.60: found=None". Eight cells died of it on
+    # 2026-09-22 before the cause was found. rsync without `--delete` cannot REMOVE a file, which
+    # is what the first diagnosis checked; it can freely ADD a directory, which is what broke it.
+    rsync -az --update $EX --include 'results/***' --include '*/' --exclude '*' \
           ./ "$H:$R/" && echo "[sync] corrected results -> host B ok" ;;
   verify) # content equality over code + results, IGNORING line endings
     # A raw md5 comparison reports five permanent phantom diffs: `csv.writer` with `newline=""`
