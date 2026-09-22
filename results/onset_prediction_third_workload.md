@@ -134,3 +134,53 @@ the predictor is dead and the appendix must say the cause is unidentified.
 **Stated plainly:** we registered this expecting the predictor to work, wrote in advance that
 "if they all read the same sign regardless of competence the predictor is weakened", and that is
 what happened. The weakening is recorded against our own account of the result.
+
+## Scoring, 2026-09-22 --- B1, B2 and the gates
+
+### Gates
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G-cal | the grid brackets `8.008%` | `0.765`, `0.684`, `0.077`, `0.005`, `0.0002`; `2` above, `3` below | **PASS** |
+| G0a | binding cell within `2x` of `8.008%` | `818`/`11{,}263` = **`7.263%`**, `0.91x` | **PASS** |
+| G0b | under `10%` byte-identical to the opponent | **`1.2%`** (`1`/`80`) | **PASS** |
+| G1 | `80` prompts, factual slot | `80` | **PASS** |
+
+`argmin` picked `k = 1.0` at `0.91x` the target on the first grid --- no refinement was needed
+here, unlike feat-174, because MT-Bench's activity curve happens to have a point near the target.
+
+### B1 --- **UNRESOLVED** at the binding budget
+
+| budget | binds | `==` opponent | `g_sel` | `g_met` | paired `D3` | reading |
+|---|---|---|---|---|---|---|
+| `k=1.0` | `7.26%` | `1.2%` | `+0.0656 [+0.0219, +0.1125]` | `+0.0906 [+0.0500, +0.1344]` | **`-0.0250 [-0.0781, +0.0281]`** | **UNRESOLVED** |
+| `k=10` | `0.033%` | `95.0%` | `+0.0656 [+0.0219, +0.1125]` | `+0.1531 [+0.1062, +0.2000]` | **`-0.0875 [-0.1375, -0.0375]`** | **WITH ALPACAEVAL** |
+
+**B1 is UNRESOLVED and is reported as a failure to resolve, not as a null result** --- which is
+what the registration committed to in advance, having named `80` prompts as small enough for this
+to happen. The interval half-width is `0.053`, twice AlpacaEval's `0.020` on `805` prompts, so the
+arm simply cannot separate `-0.025` from zero. **B2 at the paper's own `k=10` does resolve, and
+lands WITH ALPACAEVAL.**
+
+We predicted WITH ALPACAEVAL. That is right at `k=10` and unresolved at the binding budget, so the
+prediction is **half confirmed and we do not claim the other half.**
+
+**The `k=10` cell is a third instance of the degeneracy**, on a third workload: `0.033%` activity
+and `95.0%` of completions byte-identical to the opponent. Every workload measured so far shows the
+paper's own budget doing essentially nothing.
+
+### What this does and does not buy
+
+It does **not** settle the question the arm was registered for. The registration said two points
+cannot separate *"instruction-following breaks the reversal"* from *"anything that is not our
+corpus"*, and MT-Bench --- being a third instruction benchmark, and underpowered --- leaves that
+open. What it adds is a second instruction benchmark agreeing at the paper's own budget, and a
+third independent measurement of the vacuity.
+
+The decomposition holds again and is the consistent finding across all three workloads:
+`g_sel` moves little between workloads (`+0.0656` here against `+0.0835` on AlpacaEval and
+`+0.1218` on ours) while `g_met` moves a lot (`+0.0906` / `+0.1174` / `+0.0253`). **The meter is
+what the workload changes.**
+
+feat-174's NewsQA arm is the one that can separate the two readings, because it is neither
+instruction-following nor our corpus, and it has `500` prompts rather than `80`.

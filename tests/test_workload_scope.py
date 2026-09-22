@@ -204,3 +204,25 @@ def test_the_paper_does_not_assert_a_mechanism_its_own_data_refutes():
     assert len(within) == 3, within
     assert len({r["winner"] for r in within}) == 1, \
         "the three classes no longer agree; revisit the retraction, the predictor may live"
+
+
+def test_every_d3_verdict_agrees_with_its_own_interval():
+    """`order_averaged_h2h.py` called ANY negative point estimate REVERSAL REFUTED without
+    consulting its interval, while the mirror image -- positive, straddling zero -- was correctly
+    UNRESOLVED. So -0.0065 [-0.0385, +0.0255], indistinguishable from zero, got the most definite
+    word available. feat-124's log caught it in prose for that arm and the script was never fixed,
+    so it mislabelled feat-173's MT-Bench cell the same way. A verdict a human must correct every
+    time is one the code should not emit (caution (av))."""
+    import glob
+    bad = []
+    for path in sorted(glob.glob(os.path.join(ROOT, "results", "order_averaged_h2h__*.csv"))):
+        for r in csv.reader(open(path, encoding="utf-8")):
+            if not r or not r[0].startswith("D3"):
+                continue
+            g, lo, hi, got = float(r[2]), float(r[3]), float(r[4]), r[7].strip()
+            want = ("REVERSAL UNRESOLVED" if lo <= 0 <= hi else
+                    "REVERSAL CONFIRMED" if g > 0 else "REVERSAL REFUTED")
+            if got != want:
+                bad.append(f"{os.path.basename(path)}: {g:+.4f} [{lo:+.4f}, {hi:+.4f}] "
+                           f"says {got!r}, arithmetic says {want!r}")
+    assert not bad, "verdicts disagree with their intervals:\n  " + "\n  ".join(bad)

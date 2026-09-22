@@ -215,8 +215,17 @@ def main():
 
     d1 = "SURVIVES" if not (loS <= 0 <= hiS) else "DISSOLVES"
     d2 = "SURVIVES" if not (loM <= 0 <= hiM) else "DISSOLVES"
-    d3 = ("REVERSAL REFUTED" if gD <= 0 else
-          "REVERSAL CONFIRMED" if not (loD <= 0 <= hiD) else "REVERSAL UNRESOLVED")
+    # SYMMETRIC in the sign, which it was not until 2026-09-22. The old rule called ANY negative
+    # point estimate "REVERSAL REFUTED" without consulting its interval, while the mirror image --
+    # positive, interval straddling zero -- was correctly called UNRESOLVED. So a difference of
+    # -0.0065 [-0.0385, +0.0255], which is indistinguishable from zero, was labelled with the most
+    # definite word available. feat-124's scoring log caught it for that arm and said so in prose;
+    # the script was never fixed, so it mislabelled feat-173's MT-Bench cell the same way months
+    # later. A verdict that a human has to correct every time is a verdict the code should not emit
+    # (caution (av): a label must not outlive the number it describes).
+    straddles = loD <= 0 <= hiD
+    d3 = ("REVERSAL UNRESOLVED" if straddles else
+          "REVERSAL CONFIRMED" if gD > 0 else "REVERSAL REFUTED")
 
     cons = {arm: sum(CONS[(arm, p)] for p in pids) / len(pids) for arm in arms}
 
