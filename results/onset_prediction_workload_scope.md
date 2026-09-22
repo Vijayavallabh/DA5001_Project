@@ -292,8 +292,17 @@ and **zero files**. Directories intact, contents removed.
   is worth stating: **a directory mtime on the far side of an `rsync -a` is the near side's mtime,
   not a record of what happened there.**
 - The account is shared. An interactive VS Code server session with Copilot was running as this
-  user from `09:33`, and AGENTS.md already records other active users on this box (one of their
+  user from `09:33`, and AGENTS.md already records other active sessions on this box (one of whose
   `51`GB jobs OOM-killed our `neutral` class twice on 2026-09-19).
+
+**Refined 2026-09-22, on the user's word:** those concurrent sessions are the **user's own other
+project**, not a stranger's --- the two share one account on both hosts. That makes the most likely
+explanation a sibling-project environment operation rather than an outsider: a `uv` cache clean, a
+venv rebuild or an IDE-driven reinstall touching a shared cache. It is still **not established**,
+and naming a specific action without evidence would be the same guess in nicer clothes. What it
+does change is the remedy: this is coordinable rather than merely survivable, and the practical
+defence is that a long arm must be re-runnable from its last written artefact --- which is what
+saved Arm C, whose generation was on disk when its judging died.
 
 Asserting which of these did it would be a guess, and a guess in this file is worth less than
 nothing.
