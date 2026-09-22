@@ -24,7 +24,19 @@ echo "$OUT" | grep -q "G-cal PASS" || {
 }
 K=$(echo "$OUT" | sed -n 's/^CHOSEN k = \([0-9.]*\).*/\1/p')
 [ -n "$K" ] || { echo "[$CORPUS:bindpick] could not read the chosen k" >> "$LOG"; exit 4; }
-echo "[$CORPUS:bindpick] chosen k=$K" >> "$LOG"
+# BRACKETING IS NOT SUFFICIENT, and this script did not know it. feat-174 amended G-cal "for this
+# arm and every later one": the chosen point must ALSO satisfy G0's 2x tolerance, and if no grid
+# point does, the answer is REFINE rather than a choice. A rule that returns the nearest of five
+# useless points is caution (p)'s gate-that-passes-everything wearing an argmin. Without this check
+# the Gutenberg arm launched its binding cell at 0.47x the target on 2026-09-22.
+RATIO=$(echo "$OUT" | sed -n 's/.*ratio \([0-9.]*\)x.*/\1/p')
+[ -n "$RATIO" ] || { echo "[$CORPUS:bindpick] could not read the ratio" >> "$LOG"; exit 4; }
+if ! .venv/bin/python -c "import sys; sys.exit(0 if 0.5 <= $RATIO <= 2.0 else 1)"; then
+  echo "[$CORPUS:bindpick] REFINE: argmin k=$K is ${RATIO}x the target, outside G0's 2x band." >> "$LOG"
+  echo "[$CORPUS:bindpick] The binding cell is NOT RUN; register a refined grid first." >> "$LOG"
+  exit 6
+fi
+echo "[$CORPUS:bindpick] chosen k=$K at ${RATIO}x the target" >> "$LOG"
 
 bash scripts/run_workload.sh "$CORPUS" "$CAP" "bind:$K" "$GPU" || exit 5
 # h1.py writes the CLI k string verbatim into filenames (caution (o)), so the k handed to the

@@ -152,3 +152,47 @@ prompt length moves `170.4 -> 169.4` words; G1's tolerance is restated against *
 This was found by reading four generations rather than by trusting the field (caution (au)): the
 first check printed `metadata.prompt_text`, which does not exist in these records, and reported
 `no-header` for every row --- the right answer for the wrong reason.
+
+### Calibration, 2026-09-22 18:25 --- G-cal passes, the grid is useless, and the launcher did not know
+
+`500` Gutenberg excerpts, target `0.08008` derived from feat-168's arm.
+
+| `k` | `0.1` | `0.3` | `1.0` | `3.0` | `10.0` |
+|---|---|---|---|---|---|
+| activity | `0.67922` | `0.64352` | `0.03725` | `0.00176` | `0.00043` |
+
+**G-cal PASSES** --- two points above the target, three below. **And the grid is useless here**, for
+exactly the reason feat-174 recorded: activity falls by a factor of `17` between `k=0.3` and
+`k=1.0`, the target sits inside that gap, and the `argmin` lands on `k=1.0` at **`0.47x`** the
+target --- which **G0's own `2x` tolerance rejects**.
+
+feat-174 amended G-cal *"for this arm and every later one"*: bracketing is necessary and not
+sufficient, and if no grid point satisfies G0 the answer is **REFINE**, not a choice. This
+registration adopts that rule by reference. It fires here.
+
+**A defect in the launcher, not only in the grid.** `scripts/run_workload_bind.sh` --- written
+today to apply the argmin rule mechanically --- checked only for `G-cal PASS` and **not** for the
+`2x` condition the amendment added, so it went ahead and started the binding cell at `k=1.0`. The
+chain was stopped by killing the bind shell (its generation child is reparented and finishes, which
+is caution (c) used deliberately rather than suffered), **before `run_workload_score.sh` ran**, so
+**no judge has seen a Gutenberg completion and no band below has a number.** The launcher now reads
+the ratio and refuses outside the band; `tests/test_bind_ratio_gate.py` pins it against the real
+values on record (`0.91x` and `0.97x` pass, `0.47x` and `0.08x` are refused).
+
+### The refinement, fixed here before it runs
+
+> Sweep `k` over `{0.5, 0.6, 0.7, 0.8, 0.9}` --- five points strictly inside the bracketing
+> interval `(0.3, 1.0)` --- on the same `500` prompts, `--trajectories-per-prompt 1`,
+> `--batch-size 64`. **Choose the `argmin` of `|activity(k) - 0.08008|` over the refined grid
+> alone**, and only if it satisfies G0's `2x`. Ties to the larger `k`.
+
+The endpoints are where the original grid bracketed and nothing else. A log-linear interpolation
+between the two bracketing activities puts the target near `k = 0.72`, so the five points straddle
+that rather than ending on it --- the same construction feat-174 used, and for the same reason.
+
+**The `k=1.0` cell is kept**, not deleted: it is a real measurement of this corpus's activity at a
+budget the registered grid chose, and it is the evidence that the grid was too coarse. It is **not**
+judged and takes no band.
+
+**Bands are untouched.** Per caution (w) a defect in our own specification makes the instrument
+invalid, not the question, and B1/B2/B3 stand exactly as registered.
