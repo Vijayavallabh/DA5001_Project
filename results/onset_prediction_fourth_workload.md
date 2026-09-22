@@ -81,3 +81,46 @@ Host B, the five cards the sibling project is not using: about `2` hours for the
 each small cell, `20` minutes for the rewards and an hour for judging.
 
 ## Scoring log
+
+## Scoring log
+
+### Calibration, and a defect in our own grid --- recorded before the binding cell ran
+
+`500` NewsQA prompts, target `0.08008` derived from feat-168's arm.
+
+| `k` | `0.1` | `0.3` | `1.0` | `3.0` | `10.0` |
+|---|---|---|---|---|---|
+| activity | `0.44464` | `0.65563` | `0.20908` | `0.00630` | `0.00231` |
+
+**G-cal PASSES** --- three points above the target and two below, so it is bracketed. **And the
+grid is still useless here**, which G-cal as written cannot see. Activity falls by a factor of
+`33` between `k=1.0` and `k=3.0`, the target sits inside that gap, and the `argmin` therefore lands
+on `k=3.0` at `0.00630` --- **`0.08x` the target**, which G0's own `2x` tolerance would reject by a
+factor of twelve.
+
+So bracketing is necessary and not sufficient: a grid can straddle a target and still have no point
+near it. **That is a defect in this registration**, which reused the grid that worked for AlpacaEval
+and MT-Bench without asking whether it resolves on a corpus nobody had run it on. Per caution (w) a
+defect in our own specification makes the arm INVALID rather than failed, and must not retire the
+question --- so the instrument is refined and the **bands are untouched**.
+
+**Nothing has been read.** The binding cell has not been generated, no judge has run on this
+corpus, and no band below has a number. The refinement is to the instrument, exactly as feat-168's
+calibration was, and this section is committed before the refined sweep runs.
+
+### The refinement rule, fixed here before it runs
+
+> Sweep `k` over `{1.2, 1.4, 1.6, 2.0, 2.5}` --- five points strictly inside the bracketing
+> interval `(1.0, 3.0)` --- on the same `500` prompts, `--trajectories-per-prompt 1`,
+> `--batch-size 64`. **Choose the `argmin` of `|activity(k) - 0.08008|` over the refined grid
+> alone.** Ties to the larger `k`.
+
+The endpoints come from where the original grid bracketed, not from anything measured about the
+answer; the five interior points are a plain geometric-ish fill of that interval. A log-linear
+interpolation between the two bracketing activities puts the target near `k = 1.35`, so the grid is
+placed to straddle that rather than to end on it.
+
+**G-cal is amended, for this arm and every later one:** bracketing is no longer sufficient. The
+chosen point must also satisfy G0's `2x`, and if no grid point does, the answer is **REFINE**, not
+a choice. A rule that returns the nearest of five useless points is caution (p)'s gate that passes
+everything, wearing an `argmin`.
