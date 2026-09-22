@@ -190,3 +190,11 @@ multilingual re-run runs on host B, where its memoriser and corpus live and wher
 was generated.
 
 ## Scoring log
+
+### Part B, `multilingual`, landed 2026-09-23 (host B) --- gates G0, G1, G2 PASS
+
+`selfix_clean_multilingual` against `selection_extraction_multilingual`: the memoriser's `k=-1`
+draw identical on 100/100 passages (`0.5455 / 0.9882 / 94.0%`), the anchor's pool identical on
+every G1 field, and G2 clean. The corrected selector serves a different completion on **39 of 100**
+passages at $n=8$ and **51 of 100** at $n=64$ --- the defect was moving about half the picks. B4 is
+read once all three Part B re-runs are in, not on this one.

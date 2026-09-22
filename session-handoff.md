@@ -78,7 +78,20 @@ combined as registered and no OLMo re-run is needed. `./init.sh` after registeri
 about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
 control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
-## Arms in flight (2026-09-23 02:30)
+## Arms in flight (2026-09-23 04:40)
+
+| host | card | arm | state |
+|---|---|---|---|
+| local | 1+2, then 1 and 2 | feat-180 70B rungs, then the OLMo ladder / feat-179 Part A | 70B `L=100` (G1 PASS) and `L=20` done |
+| local | 4 | feat-179 Part B `n256`, `paraphrase`, then Part A | `n256` sampling |
+| host B | 5 | feat-178 re-judge of `qwen05b`, `qwen15b`, `qwen3b` (their judges OOM'd beside the sibling's vLLM) | `scripts/run_oppalp_judge.sh`, running |
+| host B | 0, 6 | feat-172 Arms A, B | still generating |
+
+feat-179 Part B `multilingual` is DONE on host B (G0/G1/G2 PASS; the fix moved 39/100 picks at
+`n=8`, 51/100 at `n=64`). feat-178 `llama8b` and `qwen14b` judged; score the ladder with
+`analysis/score_oppalp.py` once the three re-judges write `order_averaged_h2h__oppalp_<tag>.csv`.
+
+## Arms in flight (2026-09-23 02:30, superseded)
 
 | host B | arm | state |
 |---|---|---|

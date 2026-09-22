@@ -308,3 +308,14 @@ within one workload.
 The unseen books have the **weakest** opponent of all six (`0.4755`): the instruction-tuned opponent
 is least good at continuing a novel it has not seen, which is the direction the account predicts,
 and it is reported as a sixth point, not as confirmation.
+
+### Mechanical failure and re-run, 2026-09-23 --- three AlpacaEval rungs' judges ran out of memory
+
+The AlpacaEval ladder's `qwen05b`, `qwen15b` and `qwen3b` rungs finished generating (`generate
+exit=0`) and then died in the judge step with `torch.OutOfMemoryError`: their cards (host B 3, 4, 7)
+also hold the sibling project's vLLM workers at 70--75 GB, which left room for the small generators
+and not for Phi-3.5. `llama8b` and `qwen14b` judged normally. No judged number from the three failed
+rungs exists. The judge step alone is re-run at the identical specification on host B's GPU 5, empty
+at launch, by `scripts/run_oppalp_judge.sh`, whose judge command is `scripts/run_oppalp.sh`'s
+character for character (checked by `diff` before launch). Nothing else about the rungs changes, and
+the gates in `analysis/score_oppalp.py` are read on the re-judged output exactly as registered.
