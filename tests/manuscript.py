@@ -50,9 +50,18 @@ def carries_band(g, lo, hi, *sections, tol=5e-4):
         import re
         txt = body(*sections)
         pat = re.compile(r"\$([+-]?\d*\.\d+)\$ ?\$\[([+-]?\d*\.\d+), ?([+-]?\d*\.\d+)\]\$")
+
+        def rounds_to(printed, value):
+            """Caution (j): a paper number rounds from the CSV, ONCE -- so compare at the precision
+            the paper printed, not against a fixed tolerance. A flat 5e-4 is exactly wrong at the
+            boundary: a CSV 0.0665 printed as $+0.067$ differs by 5e-4 and is a correct rounding,
+            and a `< tol` test rejects it."""
+            d = len(printed.split(".")[1])
+            return f"{value:+.{d}f}" == printed or abs(float(printed) - value) < tol
+
         for m in pat.finditer(txt):
-            a, b, c = (float(x) for x in m.groups())
-            if abs(a - g) < tol and abs(b - lo) < tol and abs(c - hi) < tol:
+            a, b, c = m.groups()
+            if rounds_to(a, g) and rounds_to(b, lo) and rounds_to(c, hi):
                 return True
     for _label, (fg, flo, fhi), _cost, _cert, _gate in _forest():
         if flo is None:
