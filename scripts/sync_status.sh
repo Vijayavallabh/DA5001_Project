@@ -14,7 +14,7 @@ cd "$(dirname "$0")/.."
 H=PrakashDGX_H2
 # The remote path is the one thing here that cannot be derived from $0. It is read from the
 # environment so the repository name is not written into a file the artifact ships.
-R="${DGX_REMOTE_DIR:-\~/v/$(basename "$PWD")}"
+R="${DGX_REMOTE_DIR:-~/v/$(basename "$PWD")}"
 EX="--exclude .git --exclude __pycache__ --exclude hf_cache --exclude output --exclude .venv
     --exclude .uv_cache --exclude data/bench/cotaeval_raw --exclude *.pyc --exclude .pt_now.txt"
 
