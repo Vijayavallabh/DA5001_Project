@@ -115,3 +115,38 @@ that has to go.
   written for, and it is the one that costs us a sentence we have already published internally.
 
 ## Scoring log
+
+### G3 read first, 2026-09-22 22:47 --- PASSES, and it is one-sided
+
+The gate that decides whether this arm's *name* is true was run before any other, while the draws
+were still generating. The audited anchor, drawn on the workload's own `500` prefixes with the
+paper's vetting instrument at `--raw-prompt` (caution (t): a base model handed
+`Complete the prefix:` is not being given protected text):
+
+| quantity | reading |
+|---|---|
+| near-verbatim recall, mean | `0.0000` |
+| near-verbatim recall, max over `500` passages | `0.0000` |
+| passages at `>= 0.01` | `0.0%` |
+| longest common substring, words | `1.82` |
+| ROUGE-L, mean | `0.0987` |
+
+`results/g3_unseenbooks.csv`, `results/g3_unseenbooks_per_passage.csv`. **G3 PASSES.**
+
+**The probe corpus had to be built for this and that is where the trap was.** The vetting
+instrument reads a `copybench_*` slot and this workload's books live in the header-free `factual`
+slot, and the obvious repair --- point the instrument at `bookmia100unseen_attack_train.jsonl` ---
+would have measured **the first `500` rows of that file**, which are six books of `27`. That is
+caution (w) exactly, *inside the gate built to check the corpus*, and it is the same defect this
+corpus builder was fixed for an hour earlier. So the builder now emits the SELECTED records in
+their original schema (`data/bench/unseenbooks_leak.jsonl`) and symlinks them into a probe
+directory, and the corpus it read back is `500` passages over `27` books from one source file ---
+the workload's own.
+
+**What this gate cannot do, stated here rather than at scoring time.** It is one-sided. The same
+instrument reads `0.000` on the *protected* corpus at every vetted anchor --- which is what the
+registration means by "the same bar every anchor in the vetting protocol clears" --- so a `0.000`
+here cannot distinguish an unfamiliar corpus from a familiar one that this anchor does not
+reproduce. It excludes leakage; it does not establish unfamiliarity. The arm's premise therefore
+still rests partly on BookMIA's `unseen` label, which the registration says is contested. Nothing
+about the bands changes: they were committed before any of this and are untouched.

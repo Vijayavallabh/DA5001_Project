@@ -7,21 +7,51 @@ reviews). The reports are consistent on one thing above all --- the paper's head
 claim outruns its own theorem --- and that is what most of this session did. The manuscript is
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
 prose above it), **0 overfull**, **0 `??`**, tectonic exit `0`, `pdffonts | grep -ci bold` = 3.
-**43 pages total as of 2026-09-22**, up from the 32 the 2026-09-19 reduction reached: the appendix
+**45 pages total as of 2026-09-22 23:00**, up from the 32 the 2026-09-19 reduction reached: the appendix
 has taken this week's arms. That is content, not layout --- caution (ar)'s rule is that the
 appendix's floor is set by the tables whose cells are guarded --- but if it has to come down again,
 the lever is the newest additions and never a concession.
 
-## Arms in flight (2026-09-22 18:40)
+## Arms in flight (2026-09-22 23:05)
 
 | card | arm | state |
 |---|---|---|
-| 0 | feat-172 Arm A, off-support ladder | `109,480`/`206,080` |
-| 2 | feat-174 CoTaEval-QA draws | `~27,000`/`32,000`; scoring chained on `after.sh` |
-| 3 | feat-172 Arm B, small shard | neutral done, creative `6,300`/`38,400` |
-| 4+5 | feat-175 post-hoc, Mixtral on the `0.704` rung | judging |
-| 6 | feat-172 Arm B, factual shard | `38,500`/`128,000` |
-| 7 | feat-176 Gutenberg, **refinement** grid `{0.5..0.9}` | bind+score chained |
+| 0 | feat-172 Arm A, off-support ladder | `132,825`/`206,080` |
+| 1 | feat-177 unseenbooks, `opponent` then `k10` | re-dealt off card 7 |
+| 2 | feat-177 unseenbooks, `kcal:0.1`, `kcal:0.3` | re-dealt off card 7 |
+| 3 | feat-172 Arm B, small shard | `34,200`/`38,400` |
+| 4 | feat-177 unseenbooks, `kcal:1.0`, `kcal:3.0` | re-dealt off card 7 |
+| 5 | feat-177 unseenbooks, `kcal:10.0` | re-dealt off card 7 |
+| 6 | feat-172 Arm B, factual shard | `60,500`/`128,000` |
+| 7 | feat-177 unseenbooks `draws` | `6,000`/`32,000` |
+
+All eight cards are busy. feat-177's queue was eight cells deep on one card; the QUEUE SHELL was
+killed by PID after its argv was confirmed and the in-flight `draws` child kept running (caution
+(c)'s reparenting, used deliberately), and the seven remaining cells were re-dealt as four new
+queue shells. No cell runs twice and no PID was captured (caution (x)).
+
+**feat-174 is SCORED --- B1 UNRESOLVED, B2 WITH ALPACAEVAL.** All four gates pass. Reading
+comprehension half-answers the task-type axis: `+0.0070 [-0.0175, +0.0320]` at the binding budget
+and `-0.0375 [-0.0600, -0.0145]` at `k=10`, so the axis is **not falsified** (that needed a WITH
+OURS reading) and not cleanly confirmed either. B3 is feat-173's finding again --- selection gains
+`+0.0235` whatever the budget while the meter gains `+0.0165` then `+0.0610`, so the variation
+across workloads is in the METER. Its `k=10` cell is the least degenerate vacuous cell on record
+(activity `0.231%` against `0.008%`--`0.043%`; `76.6%` byte-identical against `95.0%`--`99.5%`),
+and the one workload whose headline budget still binds a little is the one where the meter gains
+most. Paragraph in `appendix_selection.tex`, three guards, seven mutations, seven named failures.
+
+**feat-177's G3 already passes, and it is the gate that is easiest to get wrong.** The audited
+anchor reads nv-recall `0.0000` over all `500` unseenbooks passages (`0.0%` at `>= 0.01`, LCS
+`1.82` words). The probe corpus is emitted by the corpus builder in copybench shape so that it is
+the same `500` round-robin passages the workload uses --- reading the source file's own order
+would have put caution (w) inside the gate built to check the corpus. **G3 is one-sided and the
+scoring log must say so:** the instrument reads `0.000` on the protected corpus too, so a pass
+cannot establish unfamiliarity, only fail to find leakage.
+
+`analysis/score_fifth_workload.py` is now `analysis/score_workload.py --workload {cotaeval_qa,
+gutenberg,unseenbooks}`; Gutenberg re-scores byte-identically through it. feat-177's spec carries
+`bind_k=None`, so its binding budget is taken from its own refined grid once that exists --- and
+the refinement points may not be chosen until the coarse grid has been read (feat-174's amendment).
 
 **feat-175 is SCORED and its manuscript paragraph has been written, corrected, and corrected
 again.** H1 is **NOT TESTED** --- the band needed an opponent weaker than the committed one's

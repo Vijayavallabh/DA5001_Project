@@ -6738,3 +6738,58 @@ bash scripts/run_workload_queue.sh gutenberg 500 7 kcal:0.5 kcal:0.6 kcal:0.7 kc
 bash scripts/after.sh gutenberg_kcal09 900 -- \
   bash scripts/run_workload_bind.sh gutenberg data/bench/gutenberg 500 64 0.08008 7 0.5 0.6 0.7 0.8 0.9
 ```
+
+## 2026-09-22 (late evening) --- feat-174 scored, feat-177's G3 measured
+
+**feat-174 SCORED: B1 UNRESOLVED, B2 WITH ALPACAEVAL.** Four gates, all passing, read in the
+registered order. Reading comprehension lands between the two clusters: `+0.0070
+[-0.0175, +0.0320]` at the rate-matched binding budget (`k=1.4`, active on `7.756%` of steps,
+`0.97x` the target) and `-0.0375 [-0.0600, -0.0145]` at `k=10`. The prediction recorded before the
+judge ran was WITH ALPACAEVAL; it is confirmed at the vacuous budget and not resolved at the
+binding one, so the task-type axis is **not falsified** --- which needed a WITH OURS reading ---
+and not cleanly confirmed. B3 repeats feat-173's finding: selection gains `+0.0235
+[+0.0010, +0.0470]` whatever the budget while the meter gains `+0.0165 [-0.0030, +0.0355]` then
+`+0.0610 [+0.0420, +0.0800]`, so the variation across workloads is in the METER.
+
+**And this arm has the least degenerate vacuous cell on record** --- activity `0.231%` against
+`0.008%`--`0.043%` for the other five, `76.6%` byte-identical to the unconstrained opponent against
+`95.0%`--`99.5%` on the four cells where that comparison is interpretable. The one workload whose
+`k=10` budget still binds a little is the one where the meter gains most: the direction the
+dichotomy predicts, far too few points to call a cause, reported as an observation.
+
+**feat-177 G3 PASSES, measured rather than assumed.** The audited anchor reads nv-recall `0.0000`
+over all `500` unseenbooks passages, `0.0%` at `>= 0.01`, LCS `1.82` words. The probe corpus is
+emitted by `build_gutenberg_bench.py` in copybench shape so the vetting instrument sees the same
+`500` round-robin passages the workload uses; reading `bookmia100unseen_attack_train.jsonl` in its
+own order would have reproduced caution (w) **inside the gate built to check the corpus**.
+**G3 is one-sided**: the same instrument reads `0.000` on the protected corpus at every vetted
+anchor, so a pass cannot establish unfamiliarity, only fail to find leakage. That limitation is
+the registration's own ("the same bar every anchor in the vetting protocol clears") and is carried
+into the scoring log rather than quietly dropped.
+
+**Tooling.** `analysis/score_fifth_workload.py` -> `analysis/score_workload.py` (one `git mv`,
+gates unchanged), each workload's registration transcribed as its own spec because two G1s
+genuinely differ --- Gutenberg counts books, CoTaEval-QA names one --- and each keeps its own
+output file (caution (ax)). Gutenberg re-scores byte-identically through it, `+0.0990` and
+`+0.0950`. The eight-cell feat-177 queue was re-dealt across four free cards by killing only the
+queue shell after confirming its argv, leaving the in-flight `draws` child running.
+
+### Commands
+
+```bash
+.venv/bin/python analysis/build_gutenberg_bench.py \
+  --src data/bench/bookmia100unseen_attack_train.jsonl --limit 500 --name unseenbooks
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
+  .venv/bin/python analysis/selection_extraction.py \
+    --data data/bench/unseenbooks_leak --split attack_train --raw-prompt \
+    --safe-model jacquelinehe/tinycomma-1.8b-llama3-tokenizer \
+    --risky-model jacquelinehe/tinycomma-1.8b-llama3-tokenizer \
+    --n-values 1 --limit 500 --out results --prefix g3_unseenbooks
+.venv/bin/python analysis/budget_calibration.py --root output/cotaeval_qa \
+  --grid 0.1 0.3 1.0 3.0 10.0 --target 0.08008 --out results/cotaeval_qa_kcal.csv
+.venv/bin/python analysis/budget_calibration.py --root output/cotaeval_qa \
+  --grid 1.2 1.4 1.6 2.0 2.5 --target 0.08008 --out results/cotaeval_qa_kcal_refined.csv
+.venv/bin/python analysis/score_workload.py --workload cotaeval_qa
+.venv/bin/python analysis/score_workload.py --workload gutenberg   # regression: unchanged
+.venv/bin/python analysis/workload_degeneracy.py
+```
