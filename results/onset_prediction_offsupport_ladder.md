@@ -133,3 +133,34 @@ our own "ceiling" sentence wrong in the most interesting way: the ceiling would 
 the workload where selection is *already winning*, not of the one where it loses.
 
 **Compute.** Local, two cards, about `9` hours for the larger shard.
+
+### Arm B was launched on the wrong host, and could never have passed its own gate
+
+Caught 2026-09-22 16:22, when the `small` shard died of CUDA OOM --- the sibling project grew to
+`56.76` GB on the card it shared. Diagnosing the OOM surfaced the larger error.
+
+**Arm B's gate requires ranks `0`--`63` bit-identical to `results/wscope_rewards64_a.csv`. That
+cache was generated and scored on host B. Arm B was launched on the local host.** feat-136 measured
+what that costs: across hosts only **`17.6%`** of rewards agree to `1e-2` and the served completion
+changes on `5.1%` of cells, because a different bf16 reduction order gives different text and
+different scores. Bit-identity across hosts is not merely unlikely, it is something feat-136
+already established cannot happen.
+
+So the arm was doomed at launch and the OOM saved about nine hours of it. **The registration named
+the right gate and the launch ignored what the gate implies about where the arm must run** --- the
+`## Compute` line even says "Local host, GPUs 2 and 4", written in the same session that wrote the
+gate. Per caution (w) this is a defect in our own specification, the arm is INVALID rather than
+failed, and it is re-run on host B.
+
+**The rule, which caution (at) half-stated and this completes:** a bit-identity gate against
+another arm's cache is a constraint on the **host**, not only on the flags. Caution (at) says
+derive the reference from the arm being replicated and assert the pipelines match; the pipeline
+includes the silicon, and feat-136 measured exactly how much. Any arm whose gate is `==` must run
+where its reference ran.
+
+**Also recorded: caution (c), tenth incident, in the cleanup.** The kill used
+`ps -eo pid,args | awk '/h1\.py/ && /cap-factual 500/ && /256/'`, and the invoking shell's own
+command line contained all three patterns, so awk returned the shell's PID and killing it killed
+the shell (exit `144`). The caution's own prescription --- match on the **executable field**,
+`$2 ~ /python$/` --- was not followed. Both jobs did stop and no CUDA child was orphaned, checked
+by `nvidia-smi --query-compute-apps`.

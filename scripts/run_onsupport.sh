@@ -6,8 +6,12 @@
 # particular is part of the seed (caution (u)) and is what makes the bit-identity gate against
 # results/wscope_rewards64_a.csv possible at all.
 #
-# LOCAL host: GPUs 2 and 4 are the free cards here (0 and 1 hold another user's jobs, 3 is the 4 GB
-# T400 and is never used). CUDA_DEVICE_ORDER=PCI_BUS_ID is mandatory or index 4 lands on the T400.
+# HOST B ONLY. This arm's gate is `==` against results/wscope_rewards64_a.csv, which was generated
+# and scored on host B, and feat-136 measured that only 17.6% of rewards agree to 1e-2 across hosts
+# because a different bf16 reduction order gives different text and different scores. A bit-identity
+# gate is a constraint on the SILICON, not only on the flags. The first launch ran this locally and
+# was doomed before it started; it died of an unrelated OOM nine hours short of finding out.
+# CUDA_DEVICE_ORDER=PCI_BUS_ID is still mandatory.
 #
 # Usage: run_onsupport.sh <shard> <gpu>   shard = small | factual
 set -u
