@@ -142,6 +142,13 @@ def main():
                     help="suffix for the output filenames, so a second corpus "
                          "(AlpacaEval) does not overwrite the first")
     ap.add_argument("--out", default="results")
+    ap.add_argument("--rewards-only", action="store_true",
+                    help="write the reward cache and STOP, before any judged number exists. This "
+                         "is what lets a reproduction gate on the cache genuinely PRECEDE the "
+                         "reading it gates: an arm whose registration says 'no n>64 number is read "
+                         "until the gate clears' could otherwise only keep that promise by not "
+                         "looking at numbers already on disk, and caution (ap) records exactly "
+                         "that order being broken.")
     a = ap.parse_args()
     rng = random.Random(a.seed)
     grid = n_grid(a.max_n)
@@ -181,6 +188,10 @@ def main():
         print(f"wrote {a.reward_cache}", flush=True)
         del rm
         torch.cuda.empty_cache()
+    if a.rewards_only:
+        print(f"[sel] --rewards-only: {a.reward_cache} is written; no judged number computed.",
+              flush=True)
+        return
     rewards = load_rewards(a.reward_cache)
 
     # arm n serves the argmax over the FIRST n candidates in seed order, so the arms nest and a
