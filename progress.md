@@ -6596,3 +6596,94 @@ bash scripts/run_anchor_only.sh 0
 .venv/bin/python analysis/cost_grid.py --report-width  --out results
 .venv/bin/python analysis/cost_grid.py --report-anchor --out results
 ```
+
+## 2026-09-22 (evening) --- three defects found, two arms registered, eight cards busy
+
+### feat-173 CORRECTED: the G-cal row printed AlpacaEval's grid, not MT-Bench's
+
+`analysis/budget_calibration.py --out` defaulted to the literal `results/mixpow_kcal.csv` whatever
+`--root` was, so two workloads wrote one file --- caution (ax) --- and **MT-Bench's grid was
+committed nowhere**, leaving a scoring log written by hand with no artefact of its own to round
+from. The row read `0.765, 0.684, 0.077, 0.005, 0.0002`; MT-Bench's own grid is
+`0.659, 0.589, 0.0726, 0.0060, 0.00033`.
+
+**The verdict and the chosen budget are unchanged, and that was checked rather than assumed**: `2`
+above and `3` below the registered `0.08008` target either way, and the `argmin` is `k=1.0` at
+`|0.07263 - 0.08008| = 0.00745` against `k=3.0`'s `0.07405`. G0a had always used MT-Bench's own
+`818`/`11,263`. The default now follows `--root`; both grids are committed
+(`results/mixpow_kcal.csv`, `results/mtb_kcal.csv`) and
+`tests/test_workload_scope.py` reads the row against the CSV and pins the two grids apart.
+
+### `analysis/workload_degeneracy.py` --- the vacuity argument becomes an artefact
+
+Three numbers carried it across three workloads with no producing script: the appendix's
+`794 of 805`, feat-170's `4.3%` and the committed arm's `24 of 299,843`. All eight
+(workload, budget) cells now come from one CSV and **every published one reproduces**. Two scope
+traps were fixed at the root on the way:
+
+- `budget_calibration.activity()` globbed `trajectories_*.jsonl`, so on `output/phase2/conc_all`
+  --- a six-point `k` sweep --- it summed the whole sweep. **That is the 1046x error's cause**, and
+  it now asserts a directory holds one budget unless a `k` is passed.
+- both columns are pinned to the **judged intersection**, which is what turns the committed arm's
+  `0.0145%` back into the `0.008%` the appendix quotes. A directory is not a prompt set either.
+
+The one row whose byte-identity is uninterpretable --- the committed pass samples its metered arm
+and its opponent independently, so it reads `2.8%` where `wscope`'s same-workload same-budget arm
+reads `99.5%` --- is flagged from the two measured columns rather than from a typed note.
+
+### The prompt TEMPLATE is excluded as the workload split, on data already on disk
+
+`dap/shared.py` prepends `Complete the prefix:` to copyright-domain prompts and the external
+benchmarks are routed through the factual slot so their numbers stay their own --- so "ours versus
+theirs" has also been "header versus no header" throughout, and nothing had separated them. Our own
+workload is not uniform: its `factual` class is `500` of the `850` prompts, goes through that same
+slot, carries the header on `0` of them, and reads `+0.0990 [+0.0720, +0.1260]` against
+AlpacaEval's `-0.0339 [-0.0540, -0.0137]`. **Two header-free arms, opposite signs, both intervals
+clear of zero.** No compute. `results/prompt_header_audit.csv`.
+
+The header is read off what the models were **served** (`aggregate.full_text`). A first check used
+`metadata.prompt_text`, which does not exist in these records, so it returned `0/500` for every
+class --- the right answer for the wrong reason, and caution (au)'s exact shape.
+
+### MT-Bench into the appendix, with two more judges post-hoc
+
+Three judges on the binding cell all UNRESOLVED (`-0.0250`, `-0.0094`, `-0.0250`, every interval
+containing zero), so the failure to resolve is the arm's and not the instrument's; the `k=10` cell
+resolves WITH AlpacaEval. Judge~C and Mixtral were run **after** B1's verdict was read and are
+labelled post-hoc: they agree with the registered instrument, which is the one direction in which
+a post-hoc check carries no temptation.
+
+### Two arms registered and generating
+
+- **feat-175, `results/onset_prediction_opponent_ladder.md`** --- the appendix's "does not survive
+  a second opponent" is built on two points whose swap moved family and size together. Measured
+  before the arm was designed: opponent strength (the anchor control's order-averaged loss rate
+  against it) is `0.555` for the committed opponent and `0.850` for `Qwen2.5-14B`. Three more
+  opponents in **one family**, so size is the only variable.
+- **feat-176, `results/onset_prediction_fifth_workload.md`** --- with competence refuted, the
+  support ceiling retracted and the template excluded, task TYPE is the last candidate, and no
+  completion workload we did not choose has ever been measured. `500` Gutenberg excerpts through
+  the factual slot. The training-data confound is written down before the run.
+
+### Commands
+
+```bash
+.venv/bin/python analysis/budget_calibration.py --root output/mtb --target 0.08008
+.venv/bin/python analysis/workload_degeneracy.py --out results
+.venv/bin/python analysis/prompt_header_audit.py --out results
+.venv/bin/python analysis/opponent_strength.py --out results
+.venv/bin/python analysis/build_gutenberg_bench.py --limit 500
+bash scripts/run_opponent.sh Qwen/Qwen2.5-0.5B-Instruct qwen05b 1
+bash scripts/run_workload_queue.sh gutenberg 500 7 draws opponent k10 kcal:0.1 kcal:0.3 kcal:1.0 kcal:3.0 kcal:10.0
+bash scripts/run_workload_h2h.sh mtb data/bench/mtbench conc_bind 1.0 \
+  meta-llama/Meta-Llama-3.1-8B-Instruct judgeC 3
+```
+
+### Blockers / risks
+
+- **The appendix is 34 pages again** (43 total, body still 9 of 9). The 2026-09-19 reduction
+  reached 20. If it has to come down, the lever is this week's newest additions, never a
+  concession (caution (ag)).
+- `scripts/sync_status.sh` had no default case, so `pull-results` --- a subcommand that does not
+  exist --- printed a status table and looked exactly like a successful sync. Three files scored on
+  host B were believed pulled and were not. It now exits `2` on an unknown subcommand.
