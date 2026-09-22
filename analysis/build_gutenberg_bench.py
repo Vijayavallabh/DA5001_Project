@@ -43,6 +43,14 @@ def main():
         # continuation is not a completion prompt.
         if not text or not (r.get("reference_text") or "").strip():
             continue
+        # THE EXCERPTS ARE RAW CHARACTER SLICES AND SOME BEGIN MID-WORD ("rk hall, and wander
+        # about..." is Alice's "dark hall"). Mid-SENTENCE is right -- our own protected prompts
+        # are 930 characters cut out of a novel and start that way too -- but mid-word is a
+        # different thing, and a prompt nobody can parse depresses every arm's completion and
+        # costs the comparison power. Drop one leading token where the slice did not start at a
+        # word boundary; the rule is uniform and is fixed here, before any generation.
+        if text[0].islower():
+            text = text.split(None, 1)[1] if " " in text else text
         w = text.split()
         rows.append(dict(prompt_id=r["prompt_id"],
                          source_novel=r.get("source_novel") or "gutenberg",

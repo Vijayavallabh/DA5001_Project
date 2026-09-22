@@ -99,7 +99,7 @@ a win cannot be used to revive it. Both are recorded.
   under `10%` of completions byte-identical to the opponent. **Scoped to the binding cell only**,
   because the two legs contradict each other wherever the budget is vacuous (caution (at)).
 - **G1 (the corpus is what this document names).** `500` prompts in the factual slot, `0` of them
-  carrying the `Complete the prefix:` header, mean prompt length within `10%` of `170.4` words,
+  carrying the `Complete the prefix:` header, mean prompt length within `10%` of `169.4` words,
   and at least `40` distinct books. Read back out of the run's own trajectories, never assumed
   (caution (w)).
 - **G2 (the anchor is not degenerate here).** Under `10%` empty completions at `n=1`, measured on
@@ -129,3 +129,26 @@ retired by it.
   above is written for.
 
 ## Scoring log
+
+### Amendment, 2026-09-22 16:20, BEFORE any generation of the registered arm
+
+A four-prompt smoke on one card (corpus `gutsmoke`, deleted afterwards, no band read and no
+comparison made) showed the corpus loads, the factual slot applies no header --- `0` of `4` --- and
+the served text begins with the corpus prompt in all four. It also showed something the
+registration's `raw_text` **as built** wording had not anticipated: **the excerpts are raw
+character slices and some begin mid-WORD.** Alice's opened `rk hall, and wander about...`, which is
+`dark hall`.
+
+Mid-*sentence* is correct and deliberate --- our own protected prompts are `930` characters cut out
+of a novel and start the same way, and that parallel is the point of the arm. Mid-*word* is a
+different thing: it does not bias the comparison, because every arm is shown the one prompt from
+the corpus and the reading is a paired difference, but a prompt nobody can parse depresses every
+completion and costs the arm power it cannot spare.
+
+So the builder now drops one leading token where a slice did not begin at a word boundary. The
+rule is uniform, mechanical and fixed here, before any generation of the registered arm. Mean
+prompt length moves `170.4 -> 169.4` words; G1's tolerance is restated against **`169.4`**.
+
+This was found by reading four generations rather than by trusting the field (caution (au)): the
+first check printed `metadata.prompt_text`, which does not exist in these records, and reported
+`no-header` for every row --- the right answer for the wrong reason.
