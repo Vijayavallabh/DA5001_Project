@@ -449,3 +449,17 @@ general trap and not a fact about these judges.
 manuscript, and a single extra judging pass --- ten minutes on an idle GPU --- inverted its
 conclusion. Where a series is being read for a shape, measure the rung the OTHER instrument's
 crossing is likely to sit on, not only the rungs the new arms happen to have.
+
+### A third instrument on the rung where the two disagree, launched 2026-09-22 18:01
+
+Judge~B confirms at `0.704` and judge~C does not, so that rung --- and not the ones they agree on
+--- is where a third judge can say whether the crossing location is instrument-specific.
+`Mixtral-8x7B` is the one family-clean frontier judge on this paper's panel and is running on it.
+Post-hoc and labelled, like the other two; it cannot change H1.
+
+**A launch note, because it cost one.** The first attempt was issued inside an `ssh` that the
+caller timed out at `120`s, and the `setsid nohup ... &` never exec'd before the connection went
+--- no log, no marker, no process, and nothing to say so, because the launcher's `stderr` was
+redirected to `/dev/null` by the caller. That is caution (x)'s shape (the shell had not exec'd
+yet) with the evidence suppressed. The relaunch used `nohup setsid ... & disown` and was verified
+by reading the log back, which is the check that distinguishes a job from an intention.
