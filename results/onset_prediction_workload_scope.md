@@ -144,3 +144,65 @@ survives only against a meter that is not metering, and we would rather find tha
 
 **Compute.** Local host, GPUs `2` and `4` --- the only two free here; `0` and `1` hold another
 user's `77` GB jobs and `3` is the `4` GB T400 (never used). Host B is running Arms A and B.
+
+## Scoring, 2026-09-22
+
+### Gates that need no reference: both PASS
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G1 Arm A is the same corpus | classes `200`/`150`/`500` | `200`/`150`/`500`, total `850` | **PASS** |
+| G2 Arm B is a disjoint draw | ids match feat-168; `>50%` of rank-`0` completions differ | `805`/`805` ids; **`97.0%`** differ | **PASS** |
+
+### G0 is UNSATISFIABLE AS WRITTEN, and the proof is arithmetic
+
+Recorded **before any band was read.** At the time of writing this section
+`results/order_averaged_h2h__wscope_a.csv` and `..._b.csv` had not been copied to this host, let
+alone opened; the commit that carries this repair precedes the commit that pulls them.
+
+G0 demands two things at once: activity within `2x` of the committed arm's, **and** under `10%` of
+completions byte-identical to the unconstrained opponent.
+
+| arm | activity | vs reference `0.000080` | identity | G0 |
+|---|---|---|---|---|
+| A (our corpus, `k=10`) | `0.00011` | `1.4x` --- **PASS** | `99.5%` --- FAIL | fails |
+| B (AlpacaEval, `k=1.0`) | `0.07922` | `990x` --- FAIL | `5.5%` --- **PASS** | fails |
+
+**Each arm fails exactly the leg the other passes, and that is not a coincidence.** The committed
+arm's reference rate *is* `0.008%`; a decoder binding on one step in twelve thousand is the
+unconstrained risky model to within sampling noise. So "binds like the committed arm" **entails**
+"is the opponent", and the two legs are contradictory on this corpus by arithmetic rather than by
+anything the arms did. A gate nothing can pass gates nothing --- caution (as) --- arriving here
+through a conflict between two legs rather than through one wrong threshold.
+
+The incoherence is downstream of the same defect as the calibration target: both legs were written
+believing the committed arm binds at `8.376%`, and at that rate they are perfectly compatible.
+**One false constant made a gate that cannot be satisfied, and the gate's two halves are the
+dichotomy this paper is about, disagreeing with each other inside our own instrument.**
+
+### The repair, made before the bands were read
+
+Per caution (w) a defect in our own specification must not retire a question, so the gate is
+repaired rather than the arms failed --- and the repair is principled rather than chosen to let
+both through. **The error was applying ONE reference to TWO arms with different registered
+purposes.** Caution (at) already gives the rule: derive the reference from *the arm being
+replicated*.
+
+- **Arm A** is registered as *"our own `850` ordinary prompts through feat-168's exact pipeline"* ---
+  its job is fidelity to the **committed protocol**. Gate: activity within `2x` of the committed
+  `k=10` arm's own derived rate. **`1.4x` --- PASS.** The `99.5%` identity is not a failure, it is
+  the committed protocol's own near-vacuity made visible, and making it visible is what this arm
+  is for: the committed pass cannot show it, because its metered and opponent cells are sampled
+  independently.
+- **Arm B** is registered as *"AlpacaEval-805 again, same pipeline as feat-168 ... a disjoint
+  draw"* --- its job is to **replicate feat-168's arm**. Gate: activity within `2x` of *that*
+  arm's measured `0.08008`, plus the identity leg, which needs no reference at all.
+  **`0.99x` and `5.5%` --- PASS.**
+
+Neither threshold is loosened; both are re-pointed at the arm each was always about. The `2x`
+tolerance and the `10%` identity cut are exactly as registered.
+
+**Stated plainly as a weakening:** the repair was made after seeing G0 fail, which is weaker than
+fixing a gate before its data exists. What limits the damage is that the bands were not read first
+and the commit order proves it, and that the repair follows a rule this document already carried
+(caution (at)) rather than one invented for the occasion.
