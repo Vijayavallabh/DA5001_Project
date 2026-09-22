@@ -85,3 +85,51 @@ Host B, one card, about `11` hours for the generation, `40` minutes for the rewa
 judging.
 
 ## Scoring log
+
+## Arm B, registered 2026-09-22 12:20 --- the ON-support control, before it runs
+
+**Why the arm as registered is not enough.** B2 asks whether the AlpacaEval ladder is still
+climbing at `n = 128` and `256`. Whatever it says, that reading alone cannot support the sentence
+it is meant to inform. If the off-support ladder climbs, the honest question is immediately
+*"compared to what?"* --- our own workload's ladder must be measured on the **same pipeline, the
+same `n` grid and the same prompt count**, or the comparison is against feat-129's `500`-prompt
+`n <= 128` pass at a different batch size, which is exactly the cross-pass comparison this project
+keeps getting wrong (cautions (u), (v), (ap)).
+
+**What runs.** The anchor on our own `850` ordinary prompts at `--trajectories-per-prompt 256`,
+`--batch-size 64`, sharded by prompt class across the two free local cards --- `neutral` + `creative`
+(`350`) on one and `factual` (`500`) on the other, the sharding `scripts/run_wscope.sh` already
+uses and which feat-170 Arm A validated (its three shards reassembled to exactly `200`/`150`/`500`).
+Every other flag matches feat-170 Arm A, whose `n <= 64` draws this extends.
+
+Runs **locally**, on GPUs `2` and `4`: those are the only free cards here (`0` and `1` hold another
+user's `65` and `62` GB, `3` is the `4` GB T400). Host B is running Arm A of this registration on
+card `0` and MT-Bench on card `1`, with its other six cards taken by another user of that shared
+account.
+
+**Gate.** Ranks `0`--`63` of this arm's reward cache must be bit-identical to
+`results/wscope_rewards64_a.csv`, all `54{,}400` floats compared with `==`. Same construction as
+Arm A's gate and feat-134's; **no `n > 64` number is read until it clears**, and a failure means
+the pools are different draws and is INAPPLICABLE rather than a result.
+
+**B5 --- the ladder shape, on support.** The paired `g(128) - g(64)` and `g(256) - g(128)` within
+this pass, judge~B. **STILL CLIMBING** if the latter is `> 0` with its interval excluding zero,
+**SATURATED** if it contains zero.
+
+**B6 --- the comparison B2 needs.** The two ladders' shapes set side by side, each measured within
+its own pass and never by comparing levels across them (caution (ap)). The claim the manuscript may
+then make is about **shape**: if the on-support ladder saturates by `64` and the off-support one is
+still climbing at `256`, then "selection has hit its ceiling off support" is **false** and the
+opposite of what our appendix said this morning; if both saturate, the ceiling language is right
+and only its reason was wrong; if both climb, `n = 64` is simply not where either ladder ends and
+the paper's choice of `64` is the thing to defend.
+
+**Excluded in advance:** reading B5 or B6 if the gate fails; extending past `256` inside this arm;
+and quoting `g(256)` from this pass beside `g(256)` from Arm A's --- the shapes are compared, the
+levels are not.
+
+**We predict SATURATED on support and STILL CLIMBING off it**, which is the combination that makes
+our own "ceiling" sentence wrong in the most interesting way: the ceiling would be a property of
+the workload where selection is *already winning*, not of the one where it loses.
+
+**Compute.** Local, two cards, about `9` hours for the larger shard.
