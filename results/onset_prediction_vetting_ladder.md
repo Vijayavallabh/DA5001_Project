@@ -135,3 +135,10 @@ threshold.** Run on the local A100s, the host every $L=100$ reference ran on. Wi
 the two arms together are about 38 GPU-hours; each is under the threshold on its own.
 
 ## Scoring log
+
+### G1, read 2026-09-23 03:53, before any other rung finished --- PASS
+
+`vetladder_L100_llama70b` (local GPUs 1+2, 03:39--03:53) against `selection_extraction_70b_hp2`:
+`risky_alone_recall` identical on **50 of 50** passages --- 25 leaking, mean `0.2475`, max `1.0000`,
+exactly the arm on record. The host has not drifted since 2026-09-13, so the on-record $L=100$ rungs
+are combined with the new ones as registered, and the OLMo fallback is not needed.

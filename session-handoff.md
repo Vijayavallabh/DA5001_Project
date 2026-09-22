@@ -72,9 +72,9 @@ Launchers: `scripts/run_selfix_vetladder_local.sh` (one shell, a queue per card,
 cards 1+2) and `scripts/run_selfix_multilingual.sh` (host B, behind feat-178's `qwen14b` rung via
 `scripts/after.sh`). Scorers: `analysis/selector_n256.py`, `analysis/vetting_ladder.py`, both
 mutation-tested on synthetic arms before any data (`tests/test_selector_n256.py`,
-`tests/test_vetting_ladder.py`). **Read feat-180's G1 first** (the 70B's `L = 100` rung runs first
-and must reproduce `selection_extraction_70b_hp2` on 50/50): if it fails, `L = 100` must be re-run
-for both OLMo models before V1 is read. About 21 + 17 GPU-hours; the local queues should drain
+`tests/test_vetting_ladder.py`). **feat-180's G1 PASSED at 03:53**: the 70B's `L = 100` re-run
+reproduces `selection_extraction_70b_hp2` on 50/50 passages, so the on-record `L = 100` rungs are
+combined as registered and no OLMo re-run is needed. `./init.sh` after registering: 1060 passed. About 21 + 17 GPU-hours; the local queues should drain
 about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
 control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
