@@ -96,3 +96,51 @@ Host B. Arm A about `1`h`45` sharded over three cards; Arm B about `2`h`50` on o
 opponent cells minutes each; rewards about `15` minutes per arm; judge B about an hour per arm.
 
 ## Scoring log
+
+## Arm C, registered 2026-09-22 10:00 --- before its calibration sweep runs
+
+Arms A and B compare the two workloads at **the paper's own `k`** --- Arm A at `k=10` on our
+corpus, feat-166 at `k=10` on AlpacaEval --- and that is now a matched comparison in a way it was
+not before: both are run by the same launcher with a shared seed stream, so both exhibit the same
+near-degenerate metered arm (Arm A: `99.5%` of completions byte-identical to the opponent;
+feat-166: `98.6%`). The committed pass cannot exhibit that, because its metered and opponent cells
+were sampled independently, which is exactly why the degeneracy went unnoticed for a year.
+
+What is still missing is the other matched pair: **the two workloads at the same BINDING RATE.**
+feat-168 has AlpacaEval at `8.008%`. Our corpus has nothing there --- `k=10` binds at `0.008%` and
+the correction above shows the sweep values that bracket `8%` on this corpus lie between `k=0.5`
+(`48.1%`) and `k=1.0` (`5.5%`).
+
+**The rule, fixed here before the sweep.** Run `k` over `{0.5, 0.7, 0.8, 0.9, 1.0}` on the first
+`200` prompts of our own corpus, `--trajectories-per-prompt 1`, `--batch-size 64`,
+`--max-new-tokens 200`, one card per point. **Choose the single `k` minimising
+`|activity(k) - 0.08008|`**, where `0.08008` is feat-168's chosen arm's own measured binding rate,
+read out of its trajectories by `analysis/budget_calibration.py` rather than typed. Ties go to the
+larger `k` (the weaker constraint), which cannot occur at this precision.
+
+**G-cal (the grid brackets the target).** At least one grid point above `8.008%` and one below, or
+Arm C reports NOT RUN. The grid is deliberately wide at the bottom (`k=0.5` measured `48%` under
+the old pipeline) so a pipeline-induced shift cannot silently leave it one-sided.
+
+**G0 (the budget binds, and the arm is not the opponent).** The chosen cell's activity within `2x`
+of `8.008%`, and under `10%` of its completions byte-identical to the unconstrained opponent ---
+the same two legs feat-168 used, and the second is the one that needs no reference at all.
+
+**B4 --- the matched-rate comparison.** Judge B's paired `D3` on our corpus at the chosen `k`,
+against feat-168's `-0.0339 [-0.0534, -0.0137]` on AlpacaEval at `8.008%`. **REVERSAL HOLDS** if
+`> 0` with the interval excluding zero; **PIPELINE** if `<= 0` with the interval excluding zero,
+which would mean the meter beats selection on *both* workloads once it genuinely binds and the
+scoping story in `app:workload` is wrong in a way that matters far beyond AlpacaEval; UNRESOLVED
+if it contains zero.
+
+**Excluded in advance:** extending the grid after seeing it; choosing `k` by anything but the
+`argmin`; reading B4 if G-cal or G0 fails; pooling Arm C with Arm A, which is the same corpus at a
+different budget and not a replication of it.
+
+**What we predict.** **REVERSAL HOLDS.** The support-ceiling account says the anchor is competent
+on this workload and therefore `64` draws from it are worth having, whatever the meter is allowed
+to spend. If Arm C instead reads PIPELINE, the honest conclusion is that this paper's headline
+survives only against a meter that is not metering, and we would rather find that ourselves.
+
+**Compute.** Local host, GPUs `2` and `4` --- the only two free here; `0` and `1` hold another
+user's `77` GB jobs and `3` is the `4` GB T400 (never used). Host B is running Arms A and B.
