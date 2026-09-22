@@ -190,3 +190,36 @@ therefore about the workload and not about which of its prompts were drawn.
 
 Reproduction: `.venv/bin/python analysis/opponent_by_workload.py --out results`
 -> `results/opponent_by_workload.csv`.
+
+### AMENDMENT: L5, the decomposition --- registered 2026-09-22 23:58, before it is computed
+
+P1 is scored above and the ladder is still generating. This adds one analysis to the P1 table and
+is committed **before the numbers exist**, in its own section, so that it is auditable as an
+addition rather than presented as part of the original design.
+
+**Why it is not a fishing expedition.** The appendix already carries the claim this tests, written
+when the third workload landed and repeated when the fourth did: *"the meter is what the workload
+changes"* --- over the binding-budget passes `g_sel` spans `0.056` and `g_met` spans `0.092`, and it
+is the meter that crosses. feat-174 repeated it a fourth time. If opponent strength is the variable
+behind the workload split, it should therefore act **through the meter**, and that is a prediction
+the existing sentence makes about numbers nobody has correlated.
+
+**L5.** Over the same arms and the same binding budgets, compute Spearman between opponent strength
+and `g_sel` (`D1`) and between opponent strength and `g_met` (`D2`), from the committed h2h CSVs.
+
+| reading | band |
+|---|---|
+| **THE METER AGAIN** | `abs(rho_met) > abs(rho_sel) + 0.2` |
+| **SELECTION, NOT THE METER** | `abs(rho_sel) > abs(rho_met) + 0.2` |
+| **UNRESOLVED** | within `0.2` of each other |
+
+The `0.2` margin is there because at `n=5` a Spearman can only take a handful of values
+(`+-1.0, +-0.9, +-0.8, +-0.7, ...`), so a bare inequality would resolve on a single rank swap.
+
+**We predict THE METER AGAIN.** A SELECTION, NOT THE METER reading contradicts a sentence the
+appendix has carried for three workloads and would require revisiting it rather than being
+reported as a curiosity; that is the cost this prediction is here to fix in advance.
+
+**What may not be claimed from L5**: nothing causal, and no significance --- the same `n=5`
+permutation floor applies, and the two correlations are computed on the same five arms and are not
+independent of each other or of L3.

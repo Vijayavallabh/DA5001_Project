@@ -73,6 +73,21 @@ def d3(tag):
     return float(r[0]["value"]), float(r[0]["lo95"]), float(r[0]["hi95"]), r[0]["reading"].strip()
 
 
+def d1d2(tag):
+    """L5: selection's own gain and the meter's, from the same pass. The appendix has said for
+    three workloads that "the meter is what the workload changes"; if opponent strength is the
+    variable behind the split it should act through the meter, and that is a prediction the
+    existing sentence makes about numbers nobody had correlated."""
+    p = f"results/order_averaged_h2h__{tag}.csv"
+    out = {}
+    for r in csv.DictReader(open(p, encoding="utf-8")):
+        for prefix in ("D1", "D2"):
+            if r["quantity"].startswith(prefix):
+                out[prefix] = float(r["value"])
+    assert set(out) == {"D1", "D2"}, p
+    return out["D1"], out["D2"]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
@@ -87,17 +102,20 @@ def main():
         u = [float(r["u_anchor_k0"]) for r in csv.DictReader(open(pp, encoding="utf-8"))]
         anchor_win = statistics.fmean(u)
         g, lo, hi, reading = d3(tag)
+        gs, gm = d1d2(tag)
         head = min(anchor_win, 1 - anchor_win)     # L4: the room a difference of win rates has
         rows.append(dict(workload=name, task_type=kind, tag=tag, n_prompts=len(u),
                          anchor_win=round(anchor_win, 6),
                          opponent_strength=round(1 - anchor_win, 6),
-                         d3=g, d3_lo95=lo, d3_hi95=hi, reading=reading,
+                         d3=g, d3_lo95=lo, d3_hi95=hi, reading=reading, g_sel=gs, g_met=gm,
                          headroom=round(head, 6), d3_normalised=round(g / head, 6)))
 
     rows.sort(key=lambda r: r["opponent_strength"])
     xs = [r["opponent_strength"] for r in rows]
     rho, p, n = exact_p(xs, [r["d3"] for r in rows])
     rho_n, p_n, _ = exact_p(xs, [r["d3_normalised"] for r in rows])
+    rho_s, p_s, _ = exact_p(xs, [r["g_sel"] for r in rows])
+    rho_m, p_m, _ = exact_p(xs, [r["g_met"] for r in rows])
 
     def band(r):
         return "CONSISTENT" if r <= -0.7 else ("REFUTED" if r >= 0.3 else "UNRESOLVED")
@@ -113,6 +131,11 @@ def main():
           f"permutations   **{band(rho)}**")
     print(f"L4  strength vs D3/headroom rho = {rho_n:+.3f}  exact p = {p_n:.4f}"
           f"                        **{band(rho_n)}**")
+    l5 = ("THE METER AGAIN" if abs(rho_m) > abs(rho_s) + 0.2 else
+          "SELECTION, NOT THE METER" if abs(rho_s) > abs(rho_m) + 0.2 else "UNRESOLVED")
+    print(f"L5  strength vs g_sel        rho = {rho_s:+.3f}  exact p = {p_s:.4f}")
+    print(f"L5  strength vs g_met        rho = {rho_m:+.3f}  exact p = {p_m:.4f}"
+          f"                        **{l5}**")
     print("\nNo significance is claimed: at n=%d the smallest attainable two-sided p is %.4f."
           % (len(rows), 2 / n))
 
@@ -120,12 +143,14 @@ def main():
     with open(out, "w", newline="", encoding="utf-8") as f:
         wr = csv.DictWriter(f, fieldnames=list(rows[0].keys()) + ["rho", "exact_p", "verdict",
                                                                  "rho_normalised", "exact_p_norm",
-                                                                 "verdict_normalised"])
+                                                                 "verdict_normalised",
+                                                                 "rho_gsel", "rho_gmet", "l5"])
         wr.writeheader()
         for r in rows:
             wr.writerow(dict(r, rho=round(rho, 6), exact_p=round(p, 6), verdict=band(rho),
                              rho_normalised=round(rho_n, 6), exact_p_norm=round(p_n, 6),
-                             verdict_normalised=band(rho_n)))
+                             verdict_normalised=band(rho_n),
+                             rho_gsel=round(rho_s, 6), rho_gmet=round(rho_m, 6), l5=l5))
     print(f"wrote {out}")
 
 
