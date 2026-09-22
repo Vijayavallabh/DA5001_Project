@@ -161,6 +161,34 @@ def test_the_control_that_makes_the_scoping_claim_defensible_is_in_the_paper():
         "the observation that the two workloads respond oppositely was trimmed"
 
 
+def test_no_judge_crosses_between_the_two_workloads():
+    """The strongest form of the workload claim: three judges, two workloads, and every point
+    estimate positive on one and negative on the other. If any judge ever crosses, the split is
+    partly a judge effect and the appendix must say so -- so the SIGNS are asserted from the CSVs,
+    not the prose."""
+    def d3(tag):
+        rows = [r for r in csv.reader(open(os.path.join(
+            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))
+            if r and r[0].startswith("D3")]
+        assert len(rows) == 1, tag
+        return float(rows[0][2]), float(rows[0][3]), float(rows[0][4])
+
+    pairs = (("wscope_c", "mixpowk_judgeB"), ("armc_judgeC", "mixpowk_judgeC"),
+             ("armc_mixtral", "mixpowk_mixtral"))
+    txt = M.body("appendix_selection.tex")
+    for ours, alpaca in pairs:
+        go, _lo, _hi = d3(ours)
+        ga, _la, hia = d3(alpaca)
+        assert go > 0, f"{ours}: our workload no longer favours selection ({go:+.4f})"
+        assert ga < 0, f"{alpaca}: AlpacaEval no longer favours the meter ({ga:+.4f})"
+        assert hia < 0, f"{alpaca}: no longer clears zero ({hia:+.4f})"
+    # Every one of the six bands must be in the paper -- this is the claim's whole evidence.
+    for tag in (t for pair in pairs for t in pair):
+        g, lo, hi = d3(tag)
+        assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in txt, f"{tag}'s band left the appendix"
+    assert "no judge crosses" in txt, "the appendix no longer states the strongest form"
+
+
 def test_the_split_is_two_judge_on_both_sides():
     """One judge on each side would leave the workload claim confounded with the judge. Judge C
     reads the same sign as judge B on our workload and on AlpacaEval, and both readings are in the
