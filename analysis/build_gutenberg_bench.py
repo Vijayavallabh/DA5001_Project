@@ -24,6 +24,32 @@ import json
 import os
 
 
+def select(rows, limit, mode):
+    """`limit` rows, spread over books unless `mode` is "first".
+
+    Extracted so it can be tested without a corpus: `first` is what produced a six-book "27-book"
+    workload, and the only way to see that a round robin fixes it is to run it on an input whose
+    book sizes are lopsided."""
+    if mode == "first":
+        return rows[:limit]
+    by_book = {}
+    for r in rows:
+        by_book.setdefault(r["source_novel"], []).append(r)
+    picked, i = [], 0
+    while len(picked) < limit:
+        added = False
+        for b in sorted(by_book):
+            if i < len(by_book[b]):
+                picked.append(by_book[b][i])
+                added = True
+                if len(picked) >= limit:
+                    break
+        if not added:
+            break
+        i += 1
+    return picked
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default="data/gutenberg/excerpts.jsonl")
@@ -69,24 +95,8 @@ def main():
     # file holds 27. That is caution (w) exactly, the defect that made feat-109's corpus Fifty
     # Shades instead of Harry Potter. Take a round robin over books instead, which is a prefix
     # only when one book supplies everything.
-    by_book = {}
-    for r in rows:
-        by_book.setdefault(r["source_novel"], []).append(r)
-    picked, i = [], 0
-    if a.select == "first":
-        picked = rows[:a.limit]
-    while a.select == "roundrobin" and len(picked) < a.limit:
-        added = False
-        for b in sorted(by_book):
-            if i < len(by_book[b]):
-                picked.append(by_book[b][i])
-                added = True
-                if len(picked) >= a.limit:
-                    break
-        if not added:
-            break
-        i += 1
-    rows, books = picked, {r["source_novel"] for r in picked}
+    rows = select(rows, a.limit, a.select)
+    books = {r["source_novel"] for r in rows}
     assert len(rows) == a.limit, f"only {len(rows)} usable excerpts of {a.limit} requested"
 
     with open(out_file, "w", encoding="utf-8") as f:

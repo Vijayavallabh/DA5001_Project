@@ -49,6 +49,10 @@ fi
 echo "[$CORPUS:bindpick] chosen k=$K at ${RATIO}x the target" >> "$LOG"
 
 bash scripts/run_workload.sh "$CORPUS" "$CAP" "bind:$K" "$GPU" || exit 5
+# SCORE=0 runs the gate and the binding cell and STOPS. The scorer needs the n=64 draws, which on a
+# re-dealt queue can still be hours away; without this the binding cell would have to idle a free
+# card until they land, or be launched past the 2x gate this script exists to apply.
+[ "${SCORE:-1}" = "0" ] && { echo "[$CORPUS:bindpick] SCORE=0; chain the scorer separately" >> "$LOG"; exit 0; }
 # h1.py writes the CLI k string verbatim into filenames (caution (o)), so the k handed to the
 # scorer must be the same token this script passed to the generator.
 bash scripts/run_workload_score.sh "$CORPUS" "$DATA" "$MAXN" "$GPU" "conc_k10:10" "conc_bind:$K"

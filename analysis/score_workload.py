@@ -44,7 +44,9 @@ SPECS = {
     # feat-177, results/onset_prediction_sixth_workload.md
     "unseenbooks": dict(
         root="output/unseenbooks", corpus="data/bench/unseenbooks", bind_k=None,
-        refined="results/unseenbooks_kcal_refined.csv", out="sixth_workload.csv",
+        # No refinement was needed: the registered coarse grid's argmin, k=1.0, already clears
+        # G0's 2x at 0.59x, so refining it would be choosing an instrument after seeing the grid.
+        refined="results/unseenbooks_kcal.csv", out="sixth_workload.csv",
         n_prompts=500, min_books=20, prompt_words=163.9, no_header=True, max_empty=0.10,
         leak_csv="results/g3_unseenbooks.csv"),
 }

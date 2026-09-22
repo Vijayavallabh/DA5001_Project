@@ -1,0 +1,150 @@
+# Pre-registration: is the workload split the OPPONENT's strength? (feat-178)
+
+Committed **before any generation and before the reanalysis in P1 is computed**. Nothing above the
+`## Scoring log` line is edited afterwards.
+
+## Why this arm exists
+
+Two axes have been measured this week and neither has been set against the other.
+
+**The workload axis** (feat-166/168/170/173/174/176): selection's advantage over a rate-matched
+metered decoder is positive on prefix-completion workloads --- ours `+0.0645`, Gutenberg `+0.0990`
+--- and negative or absent on instruction-following and reading comprehension --- AlpacaEval
+`-0.0339`, MT-Bench `-0.0875`, CoTaEval-QA `+0.0070` and `-0.0375`. feat-176's own registration
+says four points do not identify a cause and that a mechanism would have to come from a designed
+intervention rather than from more benchmarks.
+
+**The opponent axis** (feat-175): on ONE workload --- ours --- the same comparison falls
+monotonically with the strength of the fixed opponent it is judged against. Judge~B reads
+`+0.0645`, `+0.0490`, `+0.0195`, `-0.0200`, `-0.0065` over opponent strengths `0.555`, `0.704`,
+`0.773`, `0.825`, `0.850`, Spearman `-0.900`; judge~C agrees on the shape and crosses earlier.
+
+**These may be the same axis.** Every external benchmark is judged against the same fixed opponent,
+`Llama-3.1-8B-Instruct`, which is an INSTRUCTION-TUNED model: strong where the task is to follow an
+instruction and weak where it is to continue a passage. If so, "task type" is a proxy and the real
+variable is how good the opponent happens to be at the workload --- which would be a mechanism, and
+would also sharply limit what the workload result means.
+
+## The quantity, and why it is comparable across passes at all
+
+**Opponent strength** is `1 - mean(u_anchor_k0)`: how often the fixed opponent beats the anchor's
+own `n=1` completion, order-averaged, on that workload's own prompts. It is a judged LEVEL, and
+caution (ap) forbids setting judged levels from different sweeps against each other --- with one
+measured exception this arm depends on. **Order averaging judges both orders and so draws nothing
+from the presentation-order RNG**, which makes it a deterministic function of the text under a
+greedy judge; `results/n128_order_averaged_note.md` measured a case where a single-order gain moved
+`+0.142 -> +0.076` on byte-identical text while the order-averaged reading reproduced to four
+decimals. Every number here is order-averaged for that reason, and no single-order level is quoted.
+
+It is **workload-relative by construction**, and that is the hypothesis rather than a defect: the
+claim under test is precisely that the same opponent is strong on one workload and weak on another.
+
+## What runs
+
+**P1 --- the reanalysis, on data already committed, no GPU.** `u_anchor_k0` is a column of every
+`results/order_averaged_h2h_per_prompt__*.csv` already on disk, so opponent strength is measurable
+for all six workload arms at no cost: ours, AlpacaEval, MT-Bench, Gutenberg, CoTaEval-QA and
+(when it lands) unseenbooks. Written to `results/opponent_by_workload.csv` by
+`analysis/opponent_by_workload.py`.
+
+**L --- the designed intervention.** Run feat-175's ladder ON ALPACAEVAL. Five opponents ---
+`meta-llama/Llama-3.1-8B-Instruct`, `Qwen/Qwen2.5-{0.5B,1.5B,3B,14B}-Instruct` --- each generating
+one completion for every AlpacaEval prompt, **all five through one generator**
+(`analysis/blocklist_decode.py --arms plain --chat --max-new 200 --temperature 1.0 --seed 1234`,
+`--data-dir data/bench/alpaca --split ordinary`). The committed ladder mixes two generators and
+records which; this one does not, so its slope is measured inside one pipeline (caution (at)).
+
+Then `analysis/order_averaged_h2h.py` under judge~B at the binding budget, changing **only
+`--baseline-dir`** from `scripts/run_mixpow_judge_k.sh`: selection arm `output/mixpow/sel_anchor64`,
+metered arm `output/mixpow/conc_k10` (which holds `k=1`, the binding cell --- the directory names
+in that tree are swapped with respect to their contents), anchor control the same selection
+directory, rewards `results/mixpow_rewards64.csv`, `--n 64 --k 1 --seed 7717`.
+
+## Gates, read in this order, before any band
+
+- **G0 (one pipeline)**: all five opponent directories carry the same generator, the same decoding
+  flags and the same prompt count. A rung generated differently is dropped, not compared.
+- **G1 (one prompt set)**: every rung's judged intersection with the selection arm is the same set
+  of AlpacaEval prompts, and its size equals the committed pass's `805`.
+- **G2 (no degenerate opponent)**: each opponent's empty-completion fraction is under `10%`, and
+  its mean completion length is within a factor of `2` of the median rung's. An opponent that
+  emits nothing wins nothing, and that is an artefact rather than weakness.
+- **G3 (the instrument has range HERE)**: the five measured AlpacaEval strengths must span at least
+  `0.10`. If they do not, the ladder has no leverage on this workload and the arm is
+  **NOT TESTED** --- feat-175's own outcome when no reachable model was weaker than the committed
+  opponent, and the honest label for an instrument with no range. It is not a refutation.
+
+## Bands, committed before the run
+
+**L1 --- does the slope reproduce off our corpus?** Spearman between AlpacaEval-measured opponent
+strength and AlpacaEval `D3`, over the five rungs.
+
+| reading | band |
+|---|---|
+| **CONSISTENT** | `rho <= -0.7` |
+| **REFUTED** | `rho >= +0.3` |
+| **UNRESOLVED** | between them |
+
+Exact permutation `p` is reported. At `n=5` the smallest attainable two-sided `p` is `0.0167`, so
+**no significance claim is made from this arm**, whatever `rho` reads.
+
+**L2 --- does AlpacaEval ever cross?** The decisive reading.
+
+| reading | band |
+|---|---|
+| **OPPONENT EXPLAINS THE SPLIT** | some rung reads `D3 > 0` with its 95% interval excluding zero |
+| **TASK TYPE SURVIVES** | no rung crosses, and G3 passed so the ladder had range |
+| **NOT TESTED** | G3 failed |
+
+**L3 --- P1's table.** Opponent strength per workload against the committed opponent, beside each
+workload's `D3`, and the Spearman over the six. Same three-band rule as L1. This is a reanalysis of
+committed arms and is reported as one: it can suggest the unification and it cannot establish it,
+because strength and task type are themselves correlated across these six workloads and no
+reanalysis can separate two variables that move together in the data it is given.
+
+**L4 --- the arithmetic check, registered because it could explain L1 and L3 away.** `D3` is a
+difference of win rates against the same opponent, so it has less room when `u_anchor_k0` is near
+`0` or `1`. Report `D3` divided by the available headroom `min(u_anchor_k0, 1 - u_anchor_k0)` and
+re-run L1's Spearman on it. If the ordering survives the normalisation it is not a ceiling effect;
+if it does not, say so and withdraw the unification claim.
+
+## What each outcome does to the manuscript, fixed now
+
+- **OPPONENT EXPLAINS THE SPLIT.** The appendix's task-type scoping is rewritten as an
+  opponent-strength scoping, which is a stronger and more useful statement for a deployer: it says
+  when selection helps in terms of the baseline being compared against rather than in terms of a
+  benchmark's genre. The workload paragraphs stay, re-read through it.
+- **TASK TYPE SURVIVES.** The two axes are independent, the appendix says so, and feat-175's
+  paragraph gains the sentence that its ladder is a property of our workload and does not transfer.
+- **NOT TESTED.** Reported as an instrument failure with its span, exactly as feat-175's H1 was.
+
+**We predict CONSISTENT and TASK TYPE SURVIVES** --- that the slope reproduces (the ladder is
+measuring something real about opponents) but that AlpacaEval does not cross even at the weakest
+rung, because its committed `D3` is `-0.0339` and feat-175's ladder spans only about `0.07` of
+`D3` end to end. If it crosses, the task-type sentence in the appendix is the one that has to go.
+
+## What may not be claimed
+
+- No significance from `n=5` or `n=6` rank correlations. The bands are descriptive thresholds.
+- No causal claim from P1/L3, which are reanalyses of arms run for other reasons.
+- No judged level quoted across passes except the order-averaged `u_anchor_k0` this document
+  defines, and never a single-order one.
+- Nothing about judge~C or Mixtral here. Judge~B only, as the committed AlpacaEval pass used.
+
+## Excluded alternatives
+
+- Adding a sixth rung after seeing the five.
+- Re-running any rung at a different budget after seeing its `D3`.
+- Dropping a rung because its point is inconvenient; G0/G2 are the only reasons a rung leaves, and
+  both are about the generation rather than the reading.
+- Pooling this ladder with feat-175's. Different workload, different prompt set; they are reported
+  side by side and never averaged.
+
+## Compute
+
+Host B, the cards the sibling project and the in-flight arms are not using. Five generations of
+about `1{,}155` prompts each (AlpacaEval's `805` plus the `350` committed ordinary prompts the
+bench directory's other two slots carry --- the judge intersects to the `805`, and the extra
+`30%` is cheaper than building a sixth corpus directory), then five judge passes.
+
+## Scoring log
