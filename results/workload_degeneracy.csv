@@ -11,3 +11,5 @@ Gutenberg,vacuous,10.0,43,100000,500,0.00043,500,491,0.982,yes,judged pass
 Gutenberg,binding,0.9,6822,98143,500,0.06951082,500,18,0.036,yes,judged pass
 CoTaEval-QA,vacuous,10.0,231,99806,500,0.00231449,500,383,0.766,yes,judged pass
 CoTaEval-QA,binding,1.4,7469,96302,500,0.0775581,500,6,0.012,yes,judged pass
+unseenbooks,vacuous,10.0,8,100000,500,8e-05,500,498,0.996,yes,judged pass
+unseenbooks,binding,1.0,4764,100000,500,0.04764,500,19,0.038,yes,judged pass

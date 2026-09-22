@@ -150,3 +150,52 @@ here cannot distinguish an unfamiliar corpus from a familiar one that this ancho
 reproduce. It excludes leakage; it does not establish unfamiliarity. The arm's premise therefore
 still rests partly on BookMIA's `unseen` label, which the registration says is contested. Nothing
 about the bands changes: they were committed before any of this and are untouched.
+
+### SCORED, 2026-09-23 --- B1 WITH OURS, B2 WITH OURS, as predicted
+
+All six gates pass, read in the registered order by `analysis/score_workload.py --workload
+unseenbooks`:
+
+| gate | reading | verdict |
+|---|---|---|
+| G-cal (argmin clears `2x`) | `k=1.0` at `0.04764` = `0.59x`; no refinement registered, because the rule did not call for one | **PASS** |
+| G0a (activity within `2x` of `8.008%`) | `4{,}764`/`100{,}000` = `4.764%`, `0.59x` | **PASS** |
+| G0b (`< 10%` byte-identical) | `19`/`500` = `3.8%` | **PASS** |
+| G1 (the corpus) | `500` prompts, `500` served, `27` books, `163.9` words, `0` carry the header | **PASS** |
+| G2 (anchor not degenerate) | `0.0%` empty at `n=1` | **PASS** |
+| G3 (anchor does not reproduce the corpus) | nv-recall `0.0000` over all `500` | **PASS**, one-sided (above) |
+
+| band | budget | judge~B paired `D3` | verdict |
+|---|---|---|---|
+| **B1** | `k=1.0`, binding | `+0.1040` `[+0.0850, +0.1230]` | **WITH OURS** |
+| **B2** | `k=10`, vacuous | `+0.0885` `[+0.0735, +0.1035]` | **WITH OURS** |
+
+**B3, the vacuity a sixth time:** at `k=10` the budget is active on `0.00800%` of steps and
+`99.6%` (`498`/`500`) of served completions are the opponent's byte for byte --- the most degenerate
+vacuous cell on record, beside CoTaEval-QA's least degenerate.
+
+**The decomposition.** Selection gains `+0.0640 [+0.0485, +0.0795]`. The metered decoder does
+**worse than its own control at both budgets**, `-0.0400 [-0.0585, -0.0215]` binding and
+`-0.0245 [-0.0400, -0.0085]` at `k=10`, both clear of zero --- the first workload where that is
+true on intervals rather than point estimates (see the correction to feat-176 below).
+
+**The consequence registered for WITH OURS is applied**: feat-176's confound is removed, and the
+appendix's scoping loses its caveat --- *as far as it can be removed*, which is the phrase the
+appendix now uses, because G3 is one-sided and the rest of the premise is BookMIA's contested
+label. The abstract does not change, as registered. The main text's "as does changing the
+workload" was already too broad after feat-176 and is now "as does moving off prefix completion",
+which `tests/test_workload_scope.py` checks against all six workloads' intervals.
+
+**Process note, the same deviation as feat-174.** The scoring pipeline prints `D3` at the end of its
+own log, and that log's tail was read before `score_workload.py` ran the gates. The gates are this
+document's, committed before generation, and were not edited.
+
+### A correction to feat-176, found while scoring this arm
+
+The appendix called Gutenberg "the only workload on which the metered decoder *loses* to its own
+control". It does not lose, on intervals: `-0.0185 [-0.0380, +0.0005]` and
+`-0.0145 [-0.0315, +0.0030]`, both touching zero, both read DISSOLVES by the pipeline itself. The
+sentence rested on point estimates, and its guard named four workloads by hand, so neither
+CoTaEval-QA nor this arm could ever have fired it. The appendix now says Gutenberg's meter "does no
+better than its own control"; the guard derives the set from every binding arm and requires an
+interval clear of zero to call a loss, and on that definition the unseen books are the only one.

@@ -217,3 +217,18 @@ The gates were committed in this document before generation and were not edited 
 diff shows `analysis/score_workload.py` transcribing them, and G1's `newsqa` check is this
 registration's own wording), but the ordering discipline the scorer implements was not honoured by
 the human reading around it.
+
+### A correction to this log's "one thing no other workload has", 2026-09-23
+
+The section above said the `k=10` cell binding a little "is exactly where its gain is largest
+(`+0.0610`)", and the appendix paragraph written from it said *the one workload whose `k=10` budget
+still binds a little is the one where the meter gains most*. The within-arm reading is true
+(`+0.0610` at `k=10` against `+0.0165` at the binding budget); **the cross-workload reading is
+false**: at `k=10` the meter gains `+0.1792` on AlpacaEval, `+0.1531` on MT-Bench and `+0.0735` on
+ours. And the within-arm pattern is not distinctive either --- the meter gains more at `k=10` than
+at its binding budget on every workload where the risky model beats the anchor, because at `k=10`
+it *is* the risky model. The sentence is removed from the appendix, the degeneracy observation it
+followed is kept (it is true: `0.231%` activity and `76.6%` byte-identity are the extremes), and a
+guard now fails if the claim returns without the data to support it. The guard written for this arm
+checked the within-arm inequality, which is why it passed a sentence making the other claim ---
+caution (ai), in a paragraph whose own subject was a claim about a set.

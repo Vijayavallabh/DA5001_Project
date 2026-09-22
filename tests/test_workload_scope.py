@@ -64,7 +64,20 @@ def test_the_body_scopes_the_claim_and_points_at_the_evidence():
     txt = M.body("experiments.tex")
     assert "not across opponents or workloads" in txt, \
         "the body's replication claim dropped the workload scope"
-    assert "as does changing the \\emph{workload}" in txt, \
+    # "moving off prefix completion" is a claim about SIX workloads, so it is checked against all
+    # six: every completion workload must hold the difference clear of zero at its binding budget,
+    # and no other workload may. Gutenberg (feat-176) and the unseen books (feat-177) are what made
+    # "changing the workload" too broad -- two workloads we did not make, and it survives both.
+    rows = list(csv.DictReader(open(os.path.join(ROOT, "results", "opponent_by_workload.csv"),
+                                    encoding="utf-8")))
+    assert len(rows) >= 6, f"only {len(rows)} workloads in the table the scope is read from"
+    comp = [r for r in rows if r["task_type"] == "completion"]
+    rest = [r for r in rows if r["task_type"] != "completion"]
+    assert comp and all(float(r["d3_lo95"]) > 0 for r in comp), \
+        [(r["workload"], r["d3_lo95"]) for r in comp]
+    assert not any(float(r["d3_lo95"]) > 0 for r in rest), \
+        "a non-completion workload now holds the difference; 'moving off prefix completion' is stale"
+    assert "as does moving off prefix completion" in txt, \
         "the body no longer says what breaks it"
     assert "anchor's support" not in txt, \
         "the body attributes the split to support again; the appendix's decomposition refutes it"
@@ -531,28 +544,29 @@ def test_the_completion_workload_is_reported_with_its_confound_in_the_same_sente
         "the reason for the confound -- that these anchors are trained on this kind of text -- was cut"
 
 
-def test_the_completion_workload_is_the_only_one_where_the_meter_loses_to_its_control():
-    """A claim ABOUT a set (caution (ai)): rebuild g_met across every workload and check the
-    adjective. If another workload ever joins it, the sentence is wrong and must be re-derived."""
-    import csv as _csv
-    import os as _os
-    from tests.manuscript import ROOT, body
-
-    def gmet(tag):
-        rows = [r for r in _csv.DictReader(open(_os.path.join(
-            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))
-            if r["quantity"].startswith("D2")]
-        assert len(rows) == 1, tag
-        return float(rows[0]["value"])
-
-    binding = {"Gutenberg": "gutenberg_conc_bind", "AlpacaEval": "mixpowk_judgeB",
-               "ours": "wscope_c", "MT-Bench": "mtb_conc_bind"}
-    neg = sorted(w for w, t in binding.items() if gmet(t) < 0)
-    assert neg == ["Gutenberg"], \
-        f"the meter now loses to its control on {neg}; the 'only workload' sentence is stale"
-    txt = body("appendix_selection.tex")
-    assert "only workload on which the metered decoder \\emph{loses}" in txt, \
-        "the observation that the meter loses to its own control here was cut"
+def test_the_meter_loses_to_its_control_only_where_the_appendix_says_it_does():
+    """A claim ABOUT a set (caution (ai)), and its first version failed twice over. It named four
+    workloads by hand, so the two that joined later could never fire it; and it called Gutenberg a
+    loss on point estimates whose intervals touch zero ([-0.0380, +0.0005] and [-0.0315, +0.0030]).
+    Now the set is every binding arm in results/opponent_by_workload.csv and a loss means the
+    interval is clear of zero."""
+    rows = list(csv.DictReader(open(os.path.join(ROOT, "results", "opponent_by_workload.csv"),
+                                    encoding="utf-8")))
+    loses = sorted(r["workload"] for r in rows if _d(r["tag"], "D2")[2] < 0)
+    assert loses == ["unseenbooks"], (
+        f"the meter now loses, clear of zero, on {loses}; the appendix's sentences are stale")
+    txt = M.body("appendix_selection.tex")
+    g, glo, ghi, _ = _d("gutenberg_conc_bind", "D2")
+    assert ghi > 0 > glo, "Gutenberg's meter interval now excludes zero; 'no better' understates it"
+    assert "does no better than its own control there" in txt
+    assert f"${g:+.4f}$ $[{glo:+.4f}, {ghi:+.4f}]$" in txt, "Gutenberg's meter interval is not printed"
+    assert "only workload on which the metered decoder" not in txt, \
+        "the refuted 'only workload' claim is back"
+    u, ulo, uhi, _ = _d("unseenbooks_conc_bind", "D2")
+    assert f"${u:+.4f}$ $[{ulo:+.4f}, {uhi:+.4f}]$" in txt
+    assert "does \\emph{worse} than its own control at both budgets" in txt
+    v = _d("unseenbooks_conc_k10", "D2")
+    assert v[2] < 0, "the meter no longer loses at k=10 on the unseen books; 'both budgets' is stale"
 
 
 # ---- feat-174: reading comprehension, the arm the task-type axis was predicted against ---------
@@ -636,4 +650,51 @@ def test_the_least_degenerate_vacuous_cell_claim_matches_the_degeneracy_csv():
     shi = max(float(r["byte_ident"]) for r in ok) * 100
     assert f"${slo:.1f}\\%$--${shi:.1f}\\%$" in txt, \
         f"the interpretable byte-identity range {slo:.1f}--{shi:.1f} left the paragraph"
-    assert len(ok) == 4, f"the paragraph says four interpretable cells; the CSV has {len(ok)}"
+    word = {3: "three", 4: "four", 5: "five", 6: "six", 7: "seven"}
+    assert f"on the {word[len(others)]} others" in txt, \
+        f"the paragraph's count of other vacuous cells is not the CSV's {len(others)}"
+    assert f"on the {word[len(ok)]} where that comparison is interpretable" in txt, \
+        f"the paragraph's count of interpretable cells is not the CSV's {len(ok)}"
+    # The cross-workload claim that sat here -- that this is 'the one where the meter gains most'
+    # -- was false: at k=10 the meter gains +0.1792 on AlpacaEval and +0.1531 on MT-Bench against
+    # +0.0610 here. It may return only if the data make it true.
+    vac_gmet = {w: _d(t, "D2")[0] for w, t in (
+        ("AlpacaEval", "mixpow_judgeB"), ("MT-Bench", "mtb_conc_k10"), ("ours", "wscope_a"),
+        ("Gutenberg", "gutenberg_conc_k10"), ("CoTaEval-QA", "cotaeval_qa_conc_k10"),
+        ("unseenbooks", "unseenbooks_conc_k10"))}
+    if "where the meter\ngains most".replace("\n", " ") in txt or "the meter gains most" in txt:
+        assert max(vac_gmet, key=vac_gmet.get) == "CoTaEval-QA", vac_gmet
+
+
+# ---- feat-177: completion on books the anchor does not reproduce -------------------------------
+
+def test_the_sixth_workload_carries_its_bands_its_gate_and_its_limits():
+    """feat-177 removed feat-176's familiarity confound 'as far as it can be removed', and both
+    halves of that phrase are claims: the bands, and the one-sided gate that bounds them."""
+    txt = M.body("appendix_selection.tex")
+
+    def band(g, lo_, hi_):
+        return f"${g:+.4f}$ $[{lo_:+.4f}, {hi_:+.4f}]$"
+
+    six = {r["band"]: r for r in csv.DictReader(open(os.path.join(
+        ROOT, "results", "sixth_workload.csv"), encoding="utf-8"))}
+    for key, sfx in (("B1 binding", "unseenbooks_conc_bind"), ("B2 vacuous", "unseenbooks_conc_k10")):
+        g, lo, hi, reading = _d(sfx, "D3")
+        assert six[key]["verdict"] == ("WITH OURS" if lo > 0 else six[key]["verdict"]), six[key]
+        assert lo > 0, f"{key} no longer excludes zero on the winning side; 'with ours' is stale"
+        assert band(g, lo, hi) in txt, f"{key} band {band(g, lo, hi)} is not printed"
+    sel = _d("unseenbooks_conc_bind", "D1")
+    assert band(sel[0], sel[1], sel[2]) in txt, "selection's own gain on the unseen books is gone"
+    assert "\\textbf{with ours at both\nbudgets}".replace("\n", " ") in txt
+    # G3, and that it is ONE-SIDED -- the concession that keeps 'as far as it can be removed' true
+    g3 = [r for r in csv.DictReader(open(os.path.join(ROOT, "results", "g3_unseenbooks.csv"),
+                                         encoding="utf-8")) if r["n"] == "1"][0]
+    assert float(g3["nv_recall_mean"]) == 0.0 and int(g3["n_passages"]) == 500
+    assert "near-verbatim recall $0.0000$ on all $500$" in txt
+    assert "one-sided" in txt and "excludes leakage without proving unfamiliarity" in txt, \
+        "the gate's limit was cut: a 0.000 here cannot distinguish unseen from unreproduced"
+    assert "membership label whose reliability is contested" in txt
+    # the vacuity, a sixth time, from the degeneracy CSV
+    d = _deg("unseenbooks", "vacuous")
+    assert f"${float(d['activity']) * 100:.3f}\\%$ of steps" in txt
+    assert f"${float(d['byte_ident']) * 100:.1f}\\%$ of served" in txt

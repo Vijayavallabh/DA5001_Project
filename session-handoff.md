@@ -62,17 +62,22 @@ would have put caution (w) inside the gate built to check the corpus. **G3 is on
 scoring log must say so:** the instrument reads `0.000` on the protected corpus too, so a pass
 cannot establish unfamiliarity, only fail to find leakage.
 
-**feat-178 has the session's biggest result and its manuscript paragraph is NOT yet written.**
-Over the five workloads at their rate-matched binding budgets, the METER's gain over the anchor is
-a *perfectly* monotone function of the fixed opponent's strength --- `rho = +1.000`, exact
-`p = 0.0167`, the floor `n=5` can produce --- while SELECTION's gain is uncorrelated with it,
-`rho = +0.300`, `p = 0.6833`. Since `D3 = g_sel - g_met`, that is the entire workload split:
-`g_sel` is flat, `g_met` climbs, `D3` falls and changes sign. The arithmetic objection is refuted
-by the analysis's own control (both gains are differences against the same `u_anchor_k0`, so if the
-correlation were forced it would appear in both), and all five arms are verified to face the same
-opponent, the same anchor and the same generator, so opponent strength IS the risky model's
-advantage over the anchor on that workload. **This is the support ceiling in its correct form**,
-which the appendix currently calls *measurably wrong*.
+**feat-177 is SCORED (2026-09-23): WITH OURS at both budgets, as predicted.** `+0.1040
+[+0.0850, +0.1230]` binding, `+0.0885 [+0.0735, +0.1035]` at `k=10`; all six gates pass, G3 one-sided
+as its log says. The appendix now has the sixth-workload paragraph and the main text says the result
+dissolves when moving off prefix completion rather than when "changing the workload". Two
+corrections came with it, both recorded in the scoring logs: Gutenberg's meter does **not** lose to
+its control on intervals (both touch zero), and a sentence claiming CoTaEval-QA is where the meter
+gains most at `k=10` was false (AlpacaEval `+0.1792`, MT-Bench `+0.1531`, CoTaEval `+0.0610`).
+
+**feat-178, updated by the sixth arm: the headline claim is WITHDRAWN, the decomposition stands.**
+With six workloads, L3 strengthens (`rho = -0.943`, `p = 0.0167`) but L4, the registered headroom
+check, falls from `-0.700` (on its threshold) to `-0.657`, UNRESOLVED --- and its registered
+consequence is to withdraw the claim that opponent strength orders `D3` beyond arithmetic. What
+stands is L5: the METER's gain rises in perfect rank order with opponent strength across all six
+(`rho = +1.000`, `p = 0.0028`, the floor) while selection's does not (`+0.486`). So the variation
+is in the meter and tracks the risky model's advantage over the anchor; whether that orders the
+difference is open, and the AlpacaEval ladder is the within-workload test.
 
 **Do not write that paragraph until the AlpacaEval ladder lands.** It is the within-workload test
 of the same variable and it is generating on cards 1, 3, 4, 5 (the fifth rung queued behind the

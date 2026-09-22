@@ -59,6 +59,10 @@ ARMS = [
     # instruction-following, and the arm the task-type axis was predicted against before it ran.
     ("CoTaEval-QA", "vacuous", 10.0, "output/cotaeval_qa/conc_k10",  "output/cotaeval_qa/baseline", "__cotaeval_qa_conc_k10"),
     ("CoTaEval-QA", "binding",  1.4, "output/cotaeval_qa/conc_bind", "output/cotaeval_qa/baseline", "__cotaeval_qa_conc_bind"),
+    # feat-177: completion on books the anchor provably does not reproduce (G3) and BookMIA labels
+    # unseen -- the arm that removes feat-176's familiarity confound.
+    ("unseenbooks", "vacuous", 10.0, "output/unseenbooks/conc_k10",  "output/unseenbooks/baseline", "__unseenbooks_conc_k10"),
+    ("unseenbooks", "binding",  1.0, "output/unseenbooks/conc_bind", "output/unseenbooks/baseline", "__unseenbooks_conc_bind"),
 ]
 
 

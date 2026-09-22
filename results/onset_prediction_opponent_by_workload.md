@@ -271,3 +271,40 @@ unusually much --- `g_met = +0.0165` sits exactly where its strength predicts --
 `g_sel` is the lowest of the five, `+0.0235` against a median of `+0.0805`. So the one arm that
 breaks the opponent account breaks it on the SELECTION side, which is the side the account says
 nothing about.
+
+### The sixth arm enters, 2026-09-23 --- L3 strengthens, L4 falls to UNRESOLVED, L5 holds
+
+The registration said unseenbooks enters P1 "when it lands". It landed; the table was re-run with no
+other change.
+
+| workload | opponent strength | `g_sel` | `g_met` | `D3` | `D3`/headroom |
+|---|---|---|---|---|---|
+| unseenbooks | `0.4755` | `+0.0640` | `-0.0400` | `+0.1040` | `+0.2187` |
+| Gutenberg | `0.4865` | `+0.0805` | `-0.0185` | `+0.0990` | `+0.2035` |
+| CoTaEval-QA | `0.5685` | `+0.0235` | `+0.0165` | `+0.0070` | `+0.0162` |
+| ours | `0.5735` | `+0.1218` | `+0.0253` | `+0.0965` | `+0.2263` |
+| MT-Bench | `0.6594` | `+0.0656` | `+0.0906` | `-0.0250` | `-0.0734` |
+| AlpacaEval | `0.6792` | `+0.0835` | `+0.1174` | `-0.0339` | `-0.1057` |
+
+- **L3: `rho = -0.943`, exact `p = 0.0167` over `720` permutations --- CONSISTENT**, stronger
+  than at five.
+- **L4: `rho = -0.657`, `p = 0.1750` --- UNRESOLVED.** At five arms it read `-0.700`, exactly on
+  the threshold, and this log called it CONSISTENT. A reading on its threshold is the marginal kind
+  caution (ap) says will not hold, and the one registered addition moved it.
+- **L5: `rho(strength, g_met) = +1.000`, `p = 0.0028` (the `n=6` floor); `rho(strength, g_sel) =
+  +0.486`, `p = 0.3556` --- THE METER AGAIN**, with the margin unchanged in kind.
+
+**The registered consequence of L4 is applied.** L4 said: "if [the ordering] does not [survive the
+normalisation], say so and withdraw the unification claim." It does not clearly survive, so **the
+claim that opponent strength orders `D3` beyond the arithmetic of a difference of win rates is
+withdrawn.** What stands is L5, which is a different statement and was registered as the control
+for exactly this objection: across six workloads the *meter's* gain rises in perfect rank order with
+the opponent's strength while selection's does not, and both gains carry the same arithmetic
+dependence on `u_anchor_k0`. So the variation is in the meter and it tracks the risky model's
+advantage over the anchor; whether that also orders the *difference* once headroom is taken out is
+now UNRESOLVED, and the AlpacaEval ladder --- still generating --- is the test that can settle it
+within one workload.
+
+The unseen books have the **weakest** opponent of all six (`0.4755`): the instruction-tuned opponent
+is least good at continuing a novel it has not seen, which is the direction the account predicts,
+and it is reported as a sixth point, not as confirmation.
