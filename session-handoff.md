@@ -48,6 +48,26 @@ would have put caution (w) inside the gate built to check the corpus. **G3 is on
 scoring log must say so:** the instrument reads `0.000` on the protected corpus too, so a pass
 cannot establish unfamiliarity, only fail to find leakage.
 
+**feat-178 has the session's biggest result and its manuscript paragraph is NOT yet written.**
+Over the five workloads at their rate-matched binding budgets, the METER's gain over the anchor is
+a *perfectly* monotone function of the fixed opponent's strength --- `rho = +1.000`, exact
+`p = 0.0167`, the floor `n=5` can produce --- while SELECTION's gain is uncorrelated with it,
+`rho = +0.300`, `p = 0.6833`. Since `D3 = g_sel - g_met`, that is the entire workload split:
+`g_sel` is flat, `g_met` climbs, `D3` falls and changes sign. The arithmetic objection is refuted
+by the analysis's own control (both gains are differences against the same `u_anchor_k0`, so if the
+correlation were forced it would appear in both), and all five arms are verified to face the same
+opponent, the same anchor and the same generator, so opponent strength IS the risky model's
+advantage over the anchor on that workload. **This is the support ceiling in its correct form**,
+which the appendix currently calls *measurably wrong*.
+
+**Do not write that paragraph until the AlpacaEval ladder lands.** It is the within-workload test
+of the same variable and it is generating on cards 1, 3, 4, 5 (the fifth rung queued behind the
+unseenbooks draws on card 7), about four hours at `13`s per prompt --- `blocklist_decode` runs one
+prompt at a time by design and that is the pipeline the committed ladder used. `analysis/
+score_oppalp.py` and `tests/test_oppalp_gates.py` are already written and mutation-tested against
+five synthetic defects, before the data exist. feat-175's paragraph was written, corrected and
+corrected again in one evening; this one waits.
+
 **Two registrations are committed and unscored, which is what the table above is for.**
 `onset_prediction_sixth_workload.md` is feat-177, in flight: G3 passed, the binding cell ran at
 `k=1.0` (`0.59x` the target, inside G0's `2x`, so **no refinement was registered** --- refining a
