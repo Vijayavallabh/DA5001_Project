@@ -166,3 +166,45 @@ today and are recorded so that a change in them is visible, not so that they can
   is not a clean point.
 
 ## Scoring log
+
+### Amendment, 2026-09-22 15:40, BEFORE any of the three opponents produced data
+
+`blocklist_decode.py --split ordinary` writes **`850`** generations, while
+`order_averaged_h2h.py` judges the **`500`** prompts present in all four arms as well. The first
+version of the scorer computed G3 over the whole run, which is a gate on `350` texts no judge was
+ever shown. Both gates are now scoped to **the judged intersection**, read off each pass's own
+per-prompt file, and a second gate is added:
+
+- **G1 is now explicit and mechanical.** The judged prompt id set must equal the committed pass's,
+  as sets. An opponent run that silently lost prompts is not a weaker opponent, it is a smaller
+  comparison, and G3 cannot see it --- a `400`-prompt subset has a perfectly ordinary empty rate
+  and mean length. An arm failing G1 is excluded from H1 and H2.
+
+The derived reference is **unchanged** by the scoping (`500` judged prompts, `0.0000` empty,
+`154.08` mean words), which is the check that this was a correction and not a move.
+
+`tests/test_opponent_ladder.py` gains `test_g1_excludes_an_arm_judged_on_a_different_prompt_set`.
+Eleven band and gate mutations now pass, and all of them were written and run **before the three
+opponents existed**: the `0.5`B arm was still generating and neither the `1.5`B nor the `3`B
+checkpoint had reached host B.
+
+### Incident, 2026-09-22 15:36 --- a model directory is not a model
+
+Two of the three arms died immediately on `LocalEntryNotFoundError`. `hf_cache/` held
+`models--Qwen--Qwen2.5-1.5B-Instruct` and `models--Qwen--Qwen2.5-3B-Instruct` on host B as **`24`K
+empty skeletons** --- `blobs`, `snapshots`, `trees` and an **empty `refs/`** --- which `ls` renders
+identically to the `28`G `Qwen2.5-14B-Instruct` beside them. The model list for this arm was chosen
+off that listing. This is caution (q) again (`refs/main` missing, so `HF_HUB_OFFLINE=1` cannot
+resolve a cache whose files are on disk) crossed with caution (aw) (a dependency you cannot see is
+the one that stops a launch), and the new part is that **the directory existed and was empty**, so
+neither of those checks would have caught it.
+
+`scripts/run_opponent.sh` now preflights the way `HF_HUB_OFFLINE` itself resolves --- a non-empty
+`refs/main` **and** a snapshot holding `.safetensors` --- and exits `3` before taking a card.
+
+**The more dangerous half of the same incident: the judge ran anyway.** The launcher's steps were a
+plain sequence, so a generation that failed was followed by a judging pass against an empty
+opponent directory. It was caught only by an assertion inside `order_averaged_h2h.py` about there
+being no shared prompt --- an accident of the failure being total. **A *partial* generation would
+have judged a quietly smaller prompt set and produced a healthy-looking CSV**, which is exactly what
+G1 was added above to catch, and the launcher now aborts on a non-zero generation exit.

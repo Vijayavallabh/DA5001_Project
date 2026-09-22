@@ -111,3 +111,12 @@ def test_g3_fires_on_both_shapes_it_was_written_for():
     # And the reference is a PARAMETER: halve it and a run that passed now fails, which is what
     # stops the threshold from quietly becoming a literal.
     assert g3(0.00, 150.0, ref / 4) == "FAIL"
+
+
+def test_g1_excludes_an_arm_judged_on_a_different_prompt_set():
+    # An opponent run that lost prompts is not a weaker opponent, it is a smaller comparison, and
+    # G3 cannot see it: a 400-prompt subset can have a perfectly ordinary empty rate and length.
+    ok = [REF, dict(row("a", 0.40, 0.01, 0.05), g1="PASS")]
+    assert h1_h2(ok)[0] == "STRENGTH SUPPORTED"
+    bad = [REF, dict(row("a", 0.40, 0.01, 0.05), g1="FAIL")]
+    assert h1_h2(bad)[0] == "NOT TESTED"

@@ -73,11 +73,17 @@ def d3_row(sfx):
     return rows[0]
 
 
-def shape(run_dir):
-    """(n, empty fraction, mean words) of an opponent's served completions."""
+def shape(run_dir, pids=None):
+    """(n, empty fraction, mean words) of the opponent completions THE JUDGE SAW.
+
+    blocklist_decode.py --split ordinary writes 850 generations and order_averaged_h2h.py judges
+    the 500 that are present in all four arms as well, so a gate computed over the whole run is a
+    gate on 350 texts nobody was shown. `pids` restricts it to the judged intersection, read off
+    that pass's own per-prompt file."""
     if not os.path.isdir(run_dir):
         return None
-    texts = list(load_baseline(run_dir).values())
+    served = load_baseline(run_dir)
+    texts = [t for p, t in served.items() if pids is None or p in pids]
     if not texts:
         return None
     return (len(texts),
@@ -133,7 +139,8 @@ def h1_h2(rows):
     ref = next((r for r in rows if r["status"] == "committed"), None)
     assert ref, "the committed pass is not in the table; H1's threshold has no source"
     thr = ref["strength"]
-    new = [r for r in rows if r["status"] == "new" and r["g3"] == "PASS"]
+    new = [r for r in rows if r["status"] == "new"
+           and r["g3"] == "PASS" and r.get("g1", "PASS") == "PASS"]
     below = [r for r in new if r["strength"] < thr]
 
     # H2 first: a floor artefact is reported INSTEAD of a refutation for that opponent, so it has
@@ -159,11 +166,14 @@ def main():
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
-    ref = shape("output/sweep_plain")
+    ref_pp = per_prompt("")
+    assert ref_pp, "the committed pass's per-prompt file is missing; G1 and G3 have no reference"
+    ref_pids = {r["prompt_id"] for r in ref_pp}
+    ref = shape("output/sweep_plain", ref_pids)
     assert ref, "the committed opponent's generations are missing; G3 has no derived reference"
     ref_n, ref_empty, ref_words = ref
-    print(f"[G3 reference, DERIVED from output/sweep_plain] n={ref_n} "
-          f"empty={ref_empty:.4f} mean_words={ref_words:.2f}")
+    print(f"[G1/G3 reference, DERIVED from output/sweep_plain over the committed pass's own "
+          f"{ref_n} judged prompts] empty={ref_empty:.4f} mean_words={ref_words:.2f}")
 
     rows = []
     for model, tag, run_dir, status in ARMS:
@@ -171,6 +181,8 @@ def main():
         if pp is None:
             print(f"[skip] {model}: results/order_averaged_h2h_per_prompt{tag}.csv not written yet")
             continue
+        pids = {r["prompt_id"] for r in pp}
+        g1 = "PASS" if pids == ref_pids else "FAIL"
         row = d3_row(tag)
         assert row, f"{model}: the per-prompt file exists but the D3 file does not"
         anchor = [float(r["u_anchor_k0"]) for r in pp]
@@ -184,7 +196,7 @@ def main():
         assert verdict == row["reading"].strip(), \
             f"{model}: {verdict} from [{lo}, {hi}] disagrees with the recorded {row['reading']}"
 
-        sh = shape(run_dir)
+        sh = shape(run_dir, {r["prompt_id"] for r in pp})
         if sh is None:
             g3v, g3n, g3e, g3w = "NOT SCORED", 0, float("nan"), float("nan")
         else:
@@ -195,7 +207,7 @@ def main():
                          strength=round(strength, 4),
                          anchor_win=round(statistics.fmean(anchor), 4),
                          d3=d3, d3_lo95=lo, d3_hi95=hi,
-                         verdict=verdict, g3=g3v, n_gen=g3n,
+                         verdict=verdict, g1=g1, g3=g3v, n_gen=g3n,
                          empty_frac=round(g3e, 4), mean_words=round(g3w, 2)))
 
     rows.sort(key=lambda r: r["strength"])
