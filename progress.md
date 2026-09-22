@@ -6687,3 +6687,54 @@ bash scripts/run_workload_h2h.sh mtb data/bench/mtbench conc_bind 1.0 \
 - `scripts/sync_status.sh` had no default case, so `pull-results` --- a subcommand that does not
   exist --- printed a status table and looked exactly like a successful sync. Three files scored on
   host B were believed pulled and were not. It now exits `2` on an unknown subcommand.
+
+## 2026-09-22 (late) --- two corrections to my own work, one of them inverted
+
+### feat-175 scored, then corrected twice
+
+The opponent concession is now five measured points instead of a two-point anecdote, and the
+"second opponent" turns out to have been a `0.295` move on a bounded scale --- something neither
+the registration nor the appendix had said. **H1 is NOT TESTED**: the band needed an opponent
+weaker than the committed one's `0.555` and none exists. `Qwen2.5-0.5B`, sixteen times smaller,
+scores `0.704`, and not by length (the committed opponent's completions are the longest of the
+five). Opponent strength here is not parameter count, though within a family it is ordered by it.
+
+**The correction that matters.** A post-hoc judge-C pass over the three NEW rungs read `0 of 3`
+confirmed with no ordering, and I wrote *"the decay is one judge's"* into the appendix on it. All
+three rungs lie past judge~C's **own** crossing, and a monotone series sampled entirely past its
+crossing has no ordering left to show. One more pass --- judge~C on the committed rung, ten minutes
+on an idle card --- read `+0.0475 [+0.0015, +0.0930]`, CONFIRMED, giving `-0.800` over four rungs
+and inverting the conclusion. **The two judges agree on the shape and differ on where it crosses**,
+and the boundary is exactly the quantity a compression account would need. Both wrong sentences are
+withdrawn in the manuscript, with the first reading left standing in the scoring log beneath its
+correction. **Where a series is read for a shape, measure the rung the OTHER instrument's crossing
+is likely to sit on, not only the rungs the new arms happen to have.**
+
+### Two launcher defects, both found the same way
+
+- **`opponent_strength.py` overwrote its own fully scored ladder.** G1 and G3 can only be scored
+  where `output/opponent_*` lives; run anywhere else the script writes `NOT SCORED` and `nan` into
+  those columns --- to the canonical filename. And `sync_status.sh pull` uses `--update`, so the
+  degraded *newer* local file was never replaced by host B's good one. Caught by two guards,
+  afterwards. It now refuses to write a ladder that scores fewer gates than the one on disk. The
+  same episode surfaced a word count typed from a partial run into both the scoring log and the
+  appendix (`114.6`--`133.3` against the CSV's `109.45`--`133.25`); corrected and pinned.
+- **`run_workload_bind.sh` did not enforce the rule feat-174 registered.** That amendment says
+  *bracketing is necessary and not sufficient* --- the chosen `k` must also satisfy G0's `2x` ---
+  and the launcher checked only `G-cal PASS`. feat-176's grid duly bracketed and its argmin landed
+  at `0.47x`, and the binding cell started. The chain was stopped before the scorer ran (killing
+  the bind shell leaves its generation child reparented, which is caution (c) used deliberately),
+  so **no judge has seen a Gutenberg completion**. The launcher now reads the ratio, refuses
+  outside the band, and takes an explicit grid so a refinement cannot silently reselect the coarse
+  points it replaced.
+
+### Commands
+
+```bash
+bash scripts/run_opponent.sh Qwen/Qwen2.5-0.5B-Instruct qwen05b 1
+bash scripts/run_opponent_judge.sh committed meta-llama/Meta-Llama-3.1-8B-Instruct judgeC 1 "" output/sweep_plain
+.venv/bin/python analysis/opponent_strength.py --out results
+bash scripts/run_workload_queue.sh gutenberg 500 7 kcal:0.5 kcal:0.6 kcal:0.7 kcal:0.8 kcal:0.9
+bash scripts/after.sh gutenberg_kcal09 900 -- \
+  bash scripts/run_workload_bind.sh gutenberg data/bench/gutenberg 500 64 0.08008 7 0.5 0.6 0.7 0.8 0.9
+```

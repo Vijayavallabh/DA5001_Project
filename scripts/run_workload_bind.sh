@@ -7,16 +7,20 @@
 # endpoint is what caution (g) forbids, and a refinement grid is a decision for the registration,
 # not for a launcher.
 #
-# Usage: run_workload_bind.sh <corpus> <datadir> <cap> <maxn> <target> <gpu>
+# Usage: run_workload_bind.sh <corpus> <datadir> <cap> <maxn> <target> <gpu> [grid...]
+#   [grid...] restricts the argmin to the named k values. A refinement is registered as a choice
+#   over the REFINED grid alone, so an arm that has both grids on disk must say which one --
+#   otherwise budget_calibration.py's default reselects the coarse points the refinement replaced.
 set -uo pipefail
 CORPUS=${1:?corpus}; DATA=${2:?datadir}; CAP=${3:?cap}; MAXN=${4:?maxn}; TARGET=${5:?target}; GPU=${6:?gpu}
+shift 6; GRID=${*:+--grid $*}
 cd "$(dirname "$0")/.."
 . scripts/gpu_env.sh
 LOG=output/logs/${CORPUS}_bindpick.log
-echo "[$CORPUS:bindpick] START $(date +%H:%M:%S) target=$TARGET" >> "$LOG"
+echo "[$CORPUS:bindpick] START $(date +%H:%M:%S) target=$TARGET grid=${GRID:-default}" >> "$LOG"
 
 OUT=$(.venv/bin/python analysis/budget_calibration.py --root "output/$CORPUS" \
-        --target "$TARGET" 2>&1) || { echo "$OUT" >> "$LOG"; exit 2; }
+        --target "$TARGET" $GRID 2>&1) || { echo "$OUT" >> "$LOG"; exit 2; }
 echo "$OUT" >> "$LOG"
 echo "$OUT" | grep -q "G-cal PASS" || {
   echo "[$CORPUS:bindpick] G-cal FAILED; the binding cell is NOT RUN (caution (g))" >> "$LOG"

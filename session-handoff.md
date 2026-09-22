@@ -12,7 +12,33 @@ has taken this week's arms. That is content, not layout --- caution (ar)'s rule 
 appendix's floor is set by the tables whose cells are guarded --- but if it has to come down again,
 the lever is the newest additions and never a concession.
 
-## Arms in flight (2026-09-22 16:25) --- ALL EIGHT HOST B CARDS BUSY
+## Arms in flight (2026-09-22 18:40)
+
+| card | arm | state |
+|---|---|---|
+| 0 | feat-172 Arm A, off-support ladder | `109,480`/`206,080` |
+| 2 | feat-174 CoTaEval-QA draws | `~27,000`/`32,000`; scoring chained on `after.sh` |
+| 3 | feat-172 Arm B, small shard | neutral done, creative `6,300`/`38,400` |
+| 4+5 | feat-175 post-hoc, Mixtral on the `0.704` rung | judging |
+| 6 | feat-172 Arm B, factual shard | `38,500`/`128,000` |
+| 7 | feat-176 Gutenberg, **refinement** grid `{0.5..0.9}` | bind+score chained |
+
+**feat-175 is SCORED and its manuscript paragraph has been written, corrected, and corrected
+again.** H1 is **NOT TESTED** --- the band needed an opponent weaker than the committed one's
+`0.555` and none exists; a `0.5`B Qwen scores `0.704`, and not by length. The exploratory series is
+`+0.0645`, `+0.0490`, `+0.0195`, `-0.0200`, `-0.0065` over strengths `0.555`--`0.850`.
+**Read the correction before touching that paragraph:** a three-rung judge-C check said the decay
+was one judge's; all three rungs lay past judge C's OWN crossing, and adding the committed rung
+(`+0.0475`, CONFIRMED) gave `-0.800` and inverted the conclusion. The two judges agree on the shape
+and differ on where it crosses. Mixtral is on the rung where they disagree.
+
+**feat-176's registered grid was too coarse and the launcher did not catch it.** G-cal passed and
+the argmin sat at `0.47x` the target, which G0 rejects --- feat-174's amendment (*bracketing is
+necessary and not sufficient*) applies by reference and fires. The bind chain was killed before the
+scorer ran, so **no judge has seen a Gutenberg completion**. `run_workload_bind.sh` now enforces the
+`2x` band and takes an explicit grid, so a refinement cannot silently reselect the coarse points.
+
+## Arms in flight (superseded, 2026-09-22 16:25)
 
 | card | arm | what |
 |---|---|---|
