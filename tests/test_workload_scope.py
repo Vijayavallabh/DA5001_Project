@@ -37,15 +37,33 @@ def test_the_appendix_states_the_workload_where_the_reversal_fails():
         assert band(v, vlo, vhi) in txt, \
             f"the {arm} gain on that workload ({band(v, vlo, vhi)}) left the appendix"
     assert "AlpacaEval" in txt, "the benchmark is no longer named"
-    assert "support ceiling" in txt, "the mechanism of the loss is no longer named"
+    # NAMED AND REFUTED, not merely named, and at EVERY occurrence. This assertion predates the
+    # retraction and went on passing afterwards because the retraction itself says `support
+    # ceiling` -- a guard satisfied by a different occurrence of its own phrase is not guarding its
+    # sentence (caution (an)). What is guarded is the property: wherever the paper raises the
+    # support account, a refutation is within reach of the same reader.
+    DENIAL = ("refut", "not selection's", "cannot identify", "measurably wrong", "magnitude is not")
+    hits = [k for k in range(len(txt)) if txt.startswith("support ceiling", k)]
+    assert hits, "the candidate mechanism of the loss is no longer named"
+    for k in hits:
+        near = txt[max(0, k - 200):k + 700]
+        assert any(d in near for d in DENIAL), \
+            f"the appendix raises the support ceiling with no refutation near it: {txt[k:k+160]!r}"
 
 
 def test_the_body_scopes_the_claim_and_points_at_the_evidence():
+    """This guard USED TO REQUIRE the body to say `moving off the anchor's support`, which is the
+    mechanism the appendix's own decomposition refutes --- a guard enforcing a wrong claim, and the
+    reason the body still asserted it for days after the appendix retracted it (caution (af): a
+    withdrawn claim has to be chased through every section that made it). The body must scope the
+    result to the WORKLOAD, which is what is measured, and must not name a cause."""
     txt = M.body("experiments.tex")
     assert "not across opponents or workloads" in txt, \
         "the body's replication claim dropped the workload scope"
-    assert "moving off the anchor's support" in txt, \
-        "the body no longer says what kind of workload breaks it"
+    assert "as does changing the \\emph{workload}" in txt, \
+        "the body no longer says what breaks it"
+    assert "anchor's support" not in txt, \
+        "the body attributes the split to support again; the appendix's decomposition refutes it"
 
 
 def test_the_discarded_first_pass_is_reported_not_buried():
