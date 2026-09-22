@@ -343,3 +343,24 @@ bash scripts/run_opponent.sh Qwen/Qwen2.5-3B-Instruct   qwen3b  5
 ```
 
 `results/opponent_ladder.csv`, `results/order_averaged_h2h__opp_qwen{05b,15b,3b}.csv`.
+
+### Post-hoc, launched 2026-09-22 21:35 --- judge C on three rungs, and which way it cuts
+
+**Registered instrument: judge~B only.** The registration says a second judge here *"would be
+post-hoc and would be labelled so"*, which is what this is. It is launched **after** the ladder was
+scored and it cannot change H1, which is NOT TESTED and stays NOT TESTED. The only question it can
+answer is whether the decay's shape is one instrument's.
+
+**Stated before the numbers exist: judge~C cuts toward the result, not against it.** Judge~C is
+`Meta-Llama-3.1-8B-Instruct`, which is the **metered arm's own risky model** --- the
+self-preference relation this paper already discloses (caution (aa)). If it favours anything it
+favours the metered arm, which pushes `g_sel - g_met` DOWN and makes the decay look stronger. So a
+confirmation under judge~C is weak evidence and a *refutation* would be strong. Whichever way it
+reads, it is reported with this sentence attached.
+
+Three rungs: `qwen05b`, `qwen15b`, `qwen3b`. The committed opponent's judge~C reading is already on
+record and the `14`B arm's is not re-run.
+
+```
+bash scripts/run_opponent_judge.sh qwen15b meta-llama/Meta-Llama-3.1-8B-Instruct judgeC 1
+```
