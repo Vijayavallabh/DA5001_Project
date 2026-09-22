@@ -23,7 +23,10 @@ OUT=output/opponent_$TAG
 # identically, and two of these three arms died on LocalEntryNotFoundError against a cache a
 # directory listing said was there (2026-09-22). Resolve it the way HF_HUB_OFFLINE does -- a
 # refs/main, and a snapshot holding weights -- before spending a card on it.
-D="hf_cache/models--$(echo "$MODEL" | tr / -)"
+# HF replaces the org/name separator with a DOUBLE dash, not a single one. `tr / -` gave
+# models--Qwen-Qwen2.5-1.5B-Instruct and the preflight failed a cache that was complete --
+# loudly, which is the right direction for a new check to be wrong in.
+D="hf_cache/models--${MODEL//\//--}"
 if [ ! -s "$D/refs/main" ] || ! ls "$D"/snapshots/*/*.safetensors >/dev/null 2>&1; then
   echo "[opp:$TAG] PREFLIGHT FAIL: $MODEL is not resolvable offline under $D"
   exit 3

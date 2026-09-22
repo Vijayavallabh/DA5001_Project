@@ -42,9 +42,18 @@ def carries_band(g, lo, hi, *sections, tol=5e-4):
     paper chooses to print it, so check both surfaces.
     """
     if sections:
+        # MATCH NUMERICALLY, NOT BY SPELLING. This used to build one f-string at 3 decimals, so a
+        # band the paper prints at 4 -- which is the appendix's own convention -- did not count as
+        # printed, and a guard that cannot see the claim passes by never running (caution (aj)).
+        # Reading the triples out and comparing them as numbers is spelling-independent, which is
+        # caution (an)'s rule: guard the property, not the spelling.
+        import re
         txt = body(*sections)
-        if f"${g:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$" in txt:
-            return True
+        pat = re.compile(r"\$([+-]?\d*\.\d+)\$ ?\$\[([+-]?\d*\.\d+), ?([+-]?\d*\.\d+)\]\$")
+        for m in pat.finditer(txt):
+            a, b, c = (float(x) for x in m.groups())
+            if abs(a - g) < tol and abs(b - lo) < tol and abs(c - hi) < tol:
+                return True
     for _label, (fg, flo, fhi), _cost, _cert, _gate in _forest():
         if flo is None:
             continue

@@ -356,3 +356,52 @@ def test_the_one_uninterpretable_byte_identity_row_is_flagged_as_such():
     # and the two rows that make the point must disagree as sharply as the appendix says
     k10 = {r["workload"]: float(r["byte_ident"]) for r in rows if r["budget"] == "vacuous"}
     assert k10["ours (committed)"] < 0.10 < 0.90 < k10["ours"], k10
+
+
+def test_the_third_workload_paragraph_carries_its_bands_and_its_shape_claim():
+    """MT-Bench entered the appendix on 2026-09-22. Caution (af): a claim added without a guard is
+    the first thing a length edit deletes, and caution (ai): the CLAIM ABOUT a set of numbers is
+    what nothing checks. Both bands and the decomposition's shape are rebuilt from their CSVs."""
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import ROOT, body, carries_band
+
+    def gains(tag):
+        d = {r["quantity"][:2]: r for r in _csv.DictReader(open(_os.path.join(
+            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))}
+        return {k: (float(v["value"]), float(v["lo95"]), float(v["hi95"]))
+                for k, v in d.items() if k in ("D1", "D2", "D3")}
+
+    sec = "appendix_selection.tex"
+    # the three judges on MT-Bench's binding cell, all unresolved
+    for tag in ("mtb_conc_bind", "mtb_conc_bind_judgeC", "mtb_conc_bind_mixtral"):
+        g, lo, hi = gains(tag)["D3"]
+        assert lo < 0 < hi, f"{tag} no longer straddles zero; the paragraph says all three do"
+        assert carries_band(g, lo, hi, sec), f"the paragraph dropped {tag}'s band {g} [{lo}, {hi}]"
+    # and the k=10 cell, which does resolve
+    g, lo, hi = gains("mtb_conc_k10")["D3"]
+    assert hi < 0, "the MT-Bench k=10 cell no longer resolves against the meter"
+    assert carries_band(g, lo, hi, sec), "the k=10 band was cut"
+
+    # THE SHAPE CLAIM: the meter's gain spans more than selection's, and it is the meter that
+    # crosses -- below selection on our corpus, above it on both external ones.
+    ours, alp, mtb = gains("wscope_c"), gains("mixpowk_judgeB"), gains("mtb_conc_bind")
+    sel = [x["D1"][0] for x in (ours, alp, mtb)]
+    met = [x["D2"][0] for x in (ours, alp, mtb)]
+    assert all(v > 0 for v in sel), "the paragraph says selection gains on all three"
+    span_s, span_m = max(sel) - min(sel), max(met) - min(met)
+    assert round(span_s, 3) == 0.056 and round(span_m, 3) == 0.092, (span_s, span_m)
+    assert met[0] < sel[0] and met[1] > sel[1] and met[2] > sel[2], \
+        "the meter no longer crosses the way the paragraph says it does"
+    # SCOPE THE CHECK TO ITS OWN SENTENCE (caution (an)). `"$0.092$" in txt` passed a mutation
+    # that changed this sentence's span to 0.091, because the OLDER two-workload decomposition
+    # 10 lines below prints $0.092$ as well -- a guard satisfied by a different occurrence of its
+    # own number is not guarding its sentence.
+    txt = body(sec)
+    i = txt.find("the decomposition holds a third time")
+    assert i > 0, "the third-workload decomposition sentence is gone"
+    claim = txt[i:i + 420]
+    assert f"${span_s:.3f}$" in claim and f"${span_m:.3f}$" in claim, \
+        f"the two spans no longer round from their CSVs in: {claim[:200]}"
+    assert "gains on all three" in claim, \
+        "the sentence no longer says selection gains on all three, which its own CSVs do"
