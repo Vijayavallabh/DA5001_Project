@@ -405,3 +405,49 @@ def test_the_third_workload_paragraph_carries_its_bands_and_its_shape_claim():
         f"the two spans no longer round from their CSVs in: {claim[:200]}"
     assert "gains on all three" in claim, \
         "the sentence no longer says selection gains on all three, which its own CSVs do"
+
+
+def test_the_prompt_template_is_excluded_by_two_header_free_arms():
+    """A reviewer's obvious objection -- your workload gets a different prompt -- is answered by
+    our own corpus's factual class, which goes through the SAME slot AlpacaEval does. The claim is
+    a shape over four arms, so it is rebuilt from the CSV rather than read (caution (ai)), and the
+    header fractions come from what the models were SERVED, not from a metadata field."""
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import ROOT, body
+    rows = {r["arm"]: r for r in _csv.DictReader(open(
+        _os.path.join(ROOT, "results", "prompt_header_audit.csv"), encoding="utf-8"))}
+    assert set(rows) == {"ours: neutral", "ours: creative", "ours: factual", "AlpacaEval"}
+
+    free = [r for r in rows.values() if float(r["header"]) == 0.0]
+    assert {r["arm"] for r in free} == {"ours: factual", "AlpacaEval"}, \
+        "the two header-free arms are what excludes the template; they moved"
+    assert {r["winner"] for r in free} == {"selection", "meter"}, \
+        "the two header-free arms no longer disagree, so the exclusion no longer holds"
+    for r in free:                       # and each interval must clear zero, in its own direction
+        lo, hi = float(r["lo95"]), float(r["hi95"])
+        assert lo * hi > 0, f"{r['arm']} now straddles zero: [{lo}, {hi}]"
+
+    # the header-carrying classes must agree with the header-free one, or the paragraph's second
+    # half is false even though its first half survives
+    carried = [r for r in rows.values() if float(r["header"]) == 1.0]
+    assert len(carried) == 2 and all(float(r["d3"]) > 0 for r in carried)
+
+    claim = body("appendix_selection.tex")
+    i = claim.find("Nor is it the prompt")
+    assert i > 0, "the template-exclusion sentence was cut"
+    claim = claim[i:i + 1000]
+    # THE TWO HEADER-FREE ARMS CARRY THE ARGUMENT, so they must appear with their INTERVALS --
+    # a bare value is not enough here, and not only in principle: `$+0.0990$` occurs twice in this
+    # very sentence (once as the band, once in the comparison), so perturbing the band alone left
+    # a guard on the bare value passing. Caution (an), inside a guard written for caution (ai).
+    from tests.manuscript import carries_band
+    for r in free:
+        g, lo, hi = float(r["d3"]), float(r["lo95"]), float(r["hi95"])
+        assert carries_band(g, lo, hi, "appendix_selection.tex"), \
+            f"{r['arm']}'s band {g} [{lo}, {hi}] left the paragraph"
+        assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in claim, \
+            f"{r['arm']}'s band is printed somewhere else, not in this sentence"
+    for r in carried:                    # the agreeing classes need only their values
+        assert f"${float(r['d3']):+.4f}$" in claim, f"{r['arm']}'s gain left the paragraph"
+    assert "$500$" in claim and "$850$" in claim, "the class sizes that make the point were cut"
