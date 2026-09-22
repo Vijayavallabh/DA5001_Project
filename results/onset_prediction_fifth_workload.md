@@ -196,3 +196,23 @@ judged and takes no band.
 
 **Bands are untouched.** Per caution (w) a defect in our own specification makes the instrument
 invalid, not the question, and B1/B2/B3 stand exactly as registered.
+
+### The refinement, run 2026-09-22 18:40 --- **k = 0.9 at `0.87x` the target**
+
+| `k` | `0.5` | `0.6` | `0.7` | `0.8` | `0.9` |
+|---|---|---|---|---|---|
+| activity | `0.38830` | `0.29841` | `0.18912` | `0.11657` | `0.06951` |
+
+`argmin` over the refined grid alone is **`k = 0.9`** at `0.06951`, **`0.87x`** the target ---
+inside G0's `2x` band, so the binding cell runs. Four points above the target and one below, so
+G-cal passes on the refined grid too. The log-linear interpolation that placed the grid predicted
+`k ~ 0.72`; the measured curve is flatter than that between `0.3` and `1.0`, which is why the
+choice lands at the top of the interval rather than the middle. The grid straddled the prediction
+and would have caught it either way, which is what straddling is for.
+
+**One more caution (ax) instance, repaired the moment it happened.** `budget_calibration.py`'s
+default output name follows `--root`, which is correct for one grid per corpus and wrong the moment
+a refinement runs: the refined sweep **overwrote the coarse grid's CSV**, deleting the artefact that
+is the evidence the refinement was needed. Both are now regenerated under separate names
+(`results/gutenberg_kcal.csv`, `results/gutenberg_kcal_refined.csv`) and
+`scripts/run_workload_bind.sh` writes `_refined` whenever it is given an explicit grid.

@@ -19,8 +19,14 @@ cd "$(dirname "$0")/.."
 LOG=output/logs/${CORPUS}_bindpick.log
 echo "[$CORPUS:bindpick] START $(date +%H:%M:%S) target=$TARGET grid=${GRID:-default}" >> "$LOG"
 
+# CAUTION (ax): TWO PASSES MUST NOT SHARE A FILE. budget_calibration.py's default name follows
+# --root, which is right for one grid per corpus and wrong the moment a refinement runs: the
+# refined sweep wrote over the coarse one, deleting the CSV that is the EVIDENCE the refinement
+# was needed. A named grid gets its own file.
+KOUT="results/${CORPUS}_kcal.csv"
+[ -n "$GRID" ] && KOUT="results/${CORPUS}_kcal_refined.csv"
 OUT=$(.venv/bin/python analysis/budget_calibration.py --root "output/$CORPUS" \
-        --target "$TARGET" $GRID 2>&1) || { echo "$OUT" >> "$LOG"; exit 2; }
+        --target "$TARGET" $GRID --out "$KOUT" 2>&1) || { echo "$OUT" >> "$LOG"; exit 2; }
 echo "$OUT" >> "$LOG"
 echo "$OUT" | grep -q "G-cal PASS" || {
   echo "[$CORPUS:bindpick] G-cal FAILED; the binding cell is NOT RUN (caution (g))" >> "$LOG"
