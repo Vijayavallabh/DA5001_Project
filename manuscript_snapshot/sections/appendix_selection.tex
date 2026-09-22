@@ -21,7 +21,65 @@ anchor's own rate by $64$ and the realised factor is $1.0$ to $4.0$.}
 \end{figure}
 
 
-\paragraph{The largest $n$, and where the gain stops}
+\paragraph{The judged workload, described.}\label{app:promptset}
+The headline pass judges $500$ prompts in three classes (Table~\ref{tab:promptset}), counted off the
+ids that pass judged rather than off the prompt files, which hold $850$; none is drawn from the
+protected corpus, none shares a word $8$-gram with any of its passages or names any of its sixteen
+works (\texttt{results/\allowbreak prompt\_\allowbreak set\_\allowbreak profile.csv}), and all
+three sets ship with the artifact. Two classes come from public corpora a judge may have read in
+training; every arm is judged on the same prompts against the same opponent, so that familiarity
+can enter a gain only through how differently it treats the two texts. Two classes are served with the fixed
+header \texttt{Complete the prefix:} and one is not. Complexity is given as two measurements rather
+than a label. The opponent answers at about $150$ words in every class --- the $200$-token cap --- so
+answer length does not separate the classes here. The anchor's order-averaged win rate against that
+answer does, from $0.3667$ on biographies, the one class whose answer is checkable facts about a
+named person, to $0.5067$ on story premises.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The $500$ judged prompts, by class (\texttt{results/\allowbreak prompt\_\allowbreak set\_\allowbreak profile.csv}): general-knowledge questions
+written for this project, biography requests of the form \emph{Tell me a bio of X.} over FActScore's
+entities \citep{min2023factscore}, and story premises posted to Reddit's r/WritingPrompts. Lengths
+are words, median with quartiles in brackets (to the nearest word), and the prompt's range; the prompt length excludes the
+fixed header, and \emph{header} counts the prompts served with it. \emph{Anchor wins} is the anchor's
+own $n=1$ completion against the unconstrained opponent, order-averaged: one minus it is that
+opponent's strength on the class.}
+\label{tab:promptset}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llrrllr@{}}
+\toprule
+class & source & $n$ & header & prompt, words & opponent, words & anchor wins \\
+\midrule
+questions & written here & $200$ & $200$ & $10$ $[9, 12]$, $6$--$21$ & $158$ $[147, 166]$ & $0.4575$ \\
+biographies & FActScore & $150$ & $0$ & $7$ $[7, 7]$, $6$--$9$ & $151.5$ $[143, 159]$ & $0.3667$ \\
+story premises & r/WritingPrompts & $150$ & $150$ & $23$ $[17, 35]$, $6$--$40$ & $157$ $[146, 168]$ & $0.5067$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The first scorer failed, and what it spends its budget on.}\label{app:currency}
+The first scorer fixed in advance was the risky model's own per-token log-likelihood, the objective
+anchored decoding tilts toward, at $n=8$ under judge~A with one randomised order per candidate. It
+moves judged utility from $0.319$ to $0.313$, $-0.006$ against a band of $+0.077$, and is not even
+monotone ($0.327$ and $0.290$ at $n=2$ and $4$); the summed log-likelihood reaches $0.271$ by
+shortening the served text from $98.0$ tokens to $15.3$. Selecting by the judge's own verdict among
+the same eight draws reaches $0.807$, $+0.488$ --- circular, since that judge also scores it, and
+an upper bound rather than a mechanism (scored instead by judge~B the same selection gains the
+$+0.081$ of Section~\ref{sec:experiments}) --- so the utility is in the draws and the likelihood
+does not find it (\texttt{results/\allowbreak selection\_\allowbreak decoding.csv}). Why is a
+within-prompt measurement. Over all $5{,}687$ pairs of the eight candidates of one prompt that the
+judge placed differently (win $>$ tie $>$ loss), count how often the better-judged candidate has the
+larger value of a statistic, a tie counting one half. The per-token likelihood is concordant on
+$0.526$ $[0.504, 0.548]$ of them, the summed likelihood on $0.478$ $[0.454, 0.500]$ and the
+completion's length in tokens on $0.537$ $[0.514, 0.560]$, intervals resampling prompts because the
+eight candidates of one prompt are judged against one opponent text. So the likelihood a metered
+decoder buys is barely above chance and \emph{no better} than length --- the difference is
+$+0.011$ $[-0.023, +0.046]$, which does not license \emph{worse} --- and slot, drawn independently
+of both statistics, can blur these figures toward $0.5$ but favours neither
+(\texttt{analysis/\allowbreak currency\_\allowbreak auc.py},
+\texttt{results/\allowbreak currency\_\allowbreak auc.csv}).
+
+\paragraph{The largest $n$, and where the gain stops.}
 Comma-7B was swept to $n=64$ on the same $500$ prompts, reward, judges and opponent. The gain rises
 monotonically within the pass --- $+0.041$, $+0.060$, $+0.072$, $+0.103$, $+0.127$, $+0.173$ at
 $n = 2,4,8,16,32,64$ on the first scorer and $+0.062$ to $+0.230$ on the second, Spearman $+1.000$ in
@@ -32,11 +90,14 @@ grid. Extending the audited anchor to $n=128$, the paired $g(128) - g(64)$ is $+
 $[-0.0180, +0.0460]$, and under order averaging $+0.0140$ $[-0.0015, +0.0295]$: the same point
 estimate, a $2.06\times$ tighter interval, both containing zero. So that anchor has a ceiling between
 $64$ and $128$ while $\log n$ keeps growing past it, and $n$ has an optimum beyond which more draws
-buy certificate and not utility. We did not take Comma-7B past $64$, so where the strongest anchor's
-ceiling sits is open. The gain has \emph{flattened}, not vanished: doubling $n$ costs twice the draws
+buy certificate and not utility. Comma-7B, the strongest anchor, has now been taken to $128$ as
+well, on a pool whose first $64$ ranks are bit-identical to the committed one in all $32{,}000$
+rewards: its paired $g(128) - g(64)$ is $+0.0040$ $[-0.0270, +0.0350]$ under judge~B and $+0.0110$
+$[-0.0190, +0.0410]$ under judge~C, so its ceiling is between $64$ and $128$ too, and the two
+anchors agree. The gain has \emph{flattened}, not vanished: doubling $n$ costs twice the draws
 and $\log 2 = 0.693$ more nats and buys at most about $+0.03$.
 
-\paragraph{Judged single-order levels are grid-dependent}
+\paragraph{Judged single-order levels are grid-dependent.}
 An arm's level moves when other arms join the sweep, because each item's presentation order is drawn
 once per element of a set that grows with the grid and this judge is dominated by slot order: the
 audited anchor's $n=64$ gain read $+0.142$ in one sweep and $+0.076$ in the other on byte-identical
@@ -64,7 +125,166 @@ the $+0.142$ and $+0.072$ measured under arm-specific prompts. What survives is 
 $+0.0645$, visible only once position is removed; Figure~\ref{fig:breadth}'s sweep is single-order
 throughout and says so, so the two must not be read off one another.
 
+\paragraph{Where the reversal stops: a workload we did not choose.}\label{app:workload}
+The headline is a claim about a regime, so we looked for its edge on a benchmark we do not control.
+On AlpacaEval-805 the reversal \emph{fails}: selection gains $+0.0835$ $[+0.0665, +0.1016]$ and the
+metered decoder $+0.1174$ $[+0.0991, +0.1354]$, a paired difference of $-0.0339$ $[-0.0534,
+-0.0137]$ over $805$ prompts. The meter wins.
+
+It took two passes, and what the first one exposed is about \emph{our own} headline rather than
+about AlpacaEval. Run at the paper's own $k=10$ the budget is barely active on either workload:
+$26$ of $160{,}227$ steps here ($0.016\%$), and $24$ of $299{,}843$ ($0.008\%$) for the committed
+metered arm on the workload it was measured on. At $k=10$ that arm \emph{is} the unconstrained
+risky model to within sampling noise --- on AlpacaEval, where the two cells share a seed stream and
+the question can be asked directly, $794$ of $805$ served completions are identical to the opponent
+\emph{byte for byte}. This is the vacuous horn of Proposition~\ref{prop:sparse} arriving in the
+paper's own experiment, and the realised $171.3$ nats against $K = kT_{\max} = 2000$ already said
+so; the activity rate says it in the other currency.
+
+So we re-ran with a budget that genuinely binds, choosing $k$ by matching a \emph{rate} rather than
+reusing a number, over $\{0.1, 0.3, 1.0, 3.0, 10.0\}$: the activity reads $0.765$, $0.684$,
+$0.077$, $0.005$, $0.0002$, and $k=1.0$ gives $8.008\%$ --- about a thousand times the committed
+arm's own binding rate --- while matching the opponent on only $4.3\%$ of prompts, so the
+comparison is between genuinely different texts. That is the $-0.0339$ above. The $k=10$ pass reads
+$-0.0957$, larger, but we do not lead with it: judging a completion against an opponent it is
+byte-identical to is a degenerate comparison, and it is the one the committed protocol cannot
+detect because its two arms are sampled independently. \textbf{The reversal fails on this workload
+at both budgets, and forcing the meter to actually spend is what narrows the gap rather than
+closing it.} Selection's $+0.0835$ is identical across both passes to four decimals, being the same
+generations under the same greedy judge.
+
+\textbf{The control says the split is the workload.} Running our own $850$ prompts through the
+same pipeline, the reversal holds at both budgets --- $+0.0482$ $[+0.0303, +0.0662]$ at $k=10$, and
+$+0.0965$ $[+0.0765, +0.1162]$ at $k=0.9$, chosen by the same rate-matching rule and binding on
+$8.9\%$ of steps with only $2.0\%$ of completions shared with the opponent. A disjoint re-draw of
+the AlpacaEval arm reads $-0.0255$ $[-0.0453, -0.0062]$, replicating, and \textbf{all three judges
+agree on both sides}: on our workload judge~B reads $+0.0965$ $[+0.0765, +0.1162]$, judge~C
+$+0.0903$ $[+0.0629, +0.1176]$ and \texttt{Mixtral-8x7B} $+0.0226$ $[-0.0018, +0.0476]$; on
+AlpacaEval they read $-0.0339$ $[-0.0534, -0.0137]$, $-0.0969$ $[-0.1264, -0.0677]$ and $-0.0854$
+$[-0.1112, -0.0593]$. Every point estimate is positive on one workload and negative on the other,
+all three clear zero on AlpacaEval, and \emph{no judge crosses}. The split is not one judge's. So across five passes
+on \emph{these two} workloads the sign is constant within each and opposite between them, at both a vacuous and a binding
+budget: the split is the workload, not the budget, the batch size, the pipeline or the seed.
+The two also respond to a binding budget in \emph{opposite} directions --- selection's margin grows
+on our corpus and shrinks on AlpacaEval. That is what a support ceiling would predict, and we
+report it as an observation rather than a claim, having registered neither --- and we flag here,
+rather than leaving a reader to notice it two paragraphs down, that the decomposition below
+\emph{refutes} that account. The direction is consistent with a story whose magnitude is not.
+
+\textbf{A third workload, and it is underpowered by construction.} MT-Bench is $80$ prompts, so
+its interval half-width at a binding budget is $0.053$ against AlpacaEval's $0.020$, and the paired
+difference there reads $-0.0250$ $[-0.0781, +0.0281]$: \textsc{unresolved}, which the registration
+named in advance as a possible consequence of that size and which we report as a failure to resolve
+rather than as a null. Two further judges, run post-hoc and labelled so, read $-0.0094$ $[-0.0875,
++0.0656]$ and $-0.0250$ $[-0.0906, +0.0406]$ --- three negative point estimates, three intervals
+containing zero, so the failure is the arm's and not the instrument's. At the paper's own $k=10$ it
+does resolve, at $-0.0875$ $[-0.1375, -0.0375]$, \emph{with} AlpacaEval. \textbf{What the third
+workload does buy is a third independent measurement of the vacuity}, on a prompt set we did not
+choose: at $k=10$ the budget is active on $0.033\%$ of MT-Bench's steps and $95.0\%$ of served
+completions are byte-identical to the opponent. \textbf{And the decomposition holds a third time}: over the three
+binding-budget passes $g_{\mathrm{sel}}$ spans $0.056$ ($+0.1218$, $+0.0835$, $+0.0656$) and
+$g_{\mathrm{met}}$ spans $0.092$ ($+0.0253$, $+0.1174$, $+0.0906$), and it is the meter that
+crosses --- below selection's gain on our corpus and above it on both external ones. Selection
+gains on all three. The meter is what the workload changes.
+
+\textbf{A fourth workload names the axis, and we cannot claim the mechanism it suggests.} Three
+candidates are now refuted --- anchor competence, a support ceiling, the prompt template --- and
+what was left was the task \emph{type}: every external workload measured above is
+instruction-following or reading comprehension, while ours is prefix completion, so ``completion''
+and ``our corpus'' were the same line in the data. They are separable on a corpus we did not make.
+Five hundred excerpts of $42$ public-domain books, routed through the same factual slot AlpacaEval
+uses, read $+0.0990$ $[+0.0795, +0.1185]$ at a rate-matched binding budget ($k=0.9$, active on
+$6.95\%$ of steps, $3.6\%$ of completions shared with the opponent) and $+0.0950$ $[+0.0780,
++0.1120]$ at $k=10$. \textbf{A public completion workload falls with ours at both budgets}, and the
+metered decoder does no better than its own control there, $-0.0185$ $[-0.0380, +0.0005]$ and
+$-0.0145$ $[-0.0315, +0.0030]$, against $+0.1174$ on AlpacaEval and $+0.0253$ on ours.
+
+\textbf{We pre-registered that a win here would be confounded and would be reported so, and it is.}
+These anchors are trained on public-domain and openly licensed text, so this corpus is plausibly
+inside the anchor's training distribution as well as being completion-shaped, and this arm cannot
+separate the two. What it establishes is the empirical scoping --- the reversal is present on
+prefix completion and absent on instruction-following and reading comprehension --- not a mechanism
+for it. The grid needed refining to get there: the registered $\{0.1,\dots,10\}$ sweep brackets the
+target and its \textsc{argmin} still lands at $0.47\times$ it, so a second grid inside the
+bracketing interval was registered before it ran and chose $k=0.9$ at $0.87\times$. And the
+vacuity holds a fifth time: at $k=10$ the budget is active on $0.043\%$ of steps and $98.2\%$ of
+served completions are the opponent byte for byte.
+
+Two things follow. The activity curve is the dichotomy on somebody else's benchmark: across one
+decade of $k$ either side of $1.0$ the budget goes from binding at two thirds of all steps to one
+in two hundred, with no plateau where it is \emph{mildly} active. \textbf{We cannot identify the cause, and the obvious candidate is measurably wrong.} The natural
+story is a support ceiling --- selection serves only what the anchor draws, so on a task the anchor
+cannot do, more draws cannot help. Decomposed, the effect is not selection's: moving from our
+workload to AlpacaEval, selection's gain falls by $0.038$ while the \emph{meter's} rises by
+$0.092$, so nearly three quarters of the swing is the budgeted decoder gaining more, not selection
+gaining less. Nor does anchor competence predict the sign. Splitting our own corpus into its three
+classes --- one pass, one protocol, one judge --- spans $0.137$ of the anchor's own win rate
+against the opponent, twice the $0.065$ that separates the two workloads, and the sign does not
+move at all: $+0.1050$, $+0.0837$ and $+0.0990$, not even monotone in competence. A dose-response
+should be visible where we can see it best and there is none. \textbf{Nor is it the prompt
+template, and that separates itself on data already on disk.} Our corpus and the external
+benchmarks are not served the same prompt --- \texttt{dap/\allowbreak shared.py} prepends
+\texttt{Complete the prefix:} to copyright-domain prompts, and the external benchmarks are routed
+through the factual slot precisely so their numbers stay their own --- so ``ours versus theirs''
+has also been ``header versus no header'' throughout. But our own workload is not uniform: its
+\texttt{factual} class, $500$ of the $850$ prompts, goes through that same slot and carries the
+header on $0$ of them, and it reads $+0.0990$ $[+0.0720, +0.1260]$, while AlpacaEval, equally
+header-free, reads $-0.0339$ $[-0.0540, -0.0137]$. Two header-free arms, opposite signs, both
+intervals clear of zero; and within our corpus the two header-carrying classes agree with the
+header-free one ($+0.0838$ and $+0.1050$ against $+0.0990$). The template is not the split. What we report, then, is the
+empirical scoping and not a mechanism for it. The certificate is untouched
+--- Proposition~\ref{prop:selection} is unconditional --- but the utility claim is scoped, and
+where the boundary sits is not something one benchmark can say.
+
+\textbf{A fifth workload tests that axis where it makes a prediction, and half-answers it.}
+CoTaEval's NewsQA split is reading comprehension --- neither prefix completion nor
+instruction-following --- so on the task-type account it should fall with AlpacaEval. That
+prediction, and the fact that this arm cannot separate the account from ``our corpus versus
+everyone else'' because both predict the same sign here, were recorded before its judge ran. It
+reads $+0.0070$ $[-0.0175, +0.0320]$ at the rate-matched binding budget ($k=1.4$, active on
+$7.76\%$ of steps, $1.2\%$ of completions shared with the opponent) and $-0.0375$ $[-0.0600,
+-0.0145]$ at $k=10$: unresolved at the first, with AlpacaEval at the second. The axis is therefore
+\emph{not falsified} --- that needed a reading with ours, which is the costly outcome the
+prediction was written to expose --- and it is not cleanly confirmed either, because reading
+comprehension lands between the two clusters rather than on either. The decomposition is once more
+the meter's: selection gains $+0.0235$ $[+0.0010, +0.0470]$ whatever the budget, while the meter
+gains $+0.0165$ $[-0.0030, +0.0355]$ at the binding budget and $+0.0610$ $[+0.0420, +0.0800]$ at
+$k=10$. And this is the least degenerate vacuous cell we have measured --- activity $0.231\%$
+against $0.008\%$--$0.043\%$ on the six others, and $76.6\%$ of served completions byte-identical
+to the unconstrained opponent against $95.0\%$--$99.6\%$ on the five where that comparison is
+interpretable.
+
+\textbf{A sixth workload removes the familiarity confound, as far as it can be removed.} The same
+protocol on $500$ excerpts of $27$ novels from the half of BookMIA \citep{shi2024detecting} labelled
+\emph{unseen}, through the same factual slot and with no header, reads $+0.1040$ $[+0.0850, +0.1230]$
+at a rate-matched binding budget ($k=1.0$, active on $4.76\%$ of steps, $3.8\%$ of completions
+shared with the opponent) and $+0.0885$ $[+0.0735, +0.1035]$ at $k=10$: \textbf{with ours at both
+budgets}, the reading registered as the prediction. Before any band was read, the anchor was drawn
+on the workload's own prefixes and scored with the vetting instrument, and it reproduces none of
+them (near-verbatim recall $0.0000$ on all $500$). That check is one-sided --- the same instrument
+reads $0.000$ on the protected corpus --- so it excludes leakage without proving unfamiliarity, and
+the rest of the premise is a membership label whose reliability is contested. Within those limits
+the scoping loses its caveat: the reversal is present on prefix completion whether or not the anchor
+has seen the text, and absent on instruction-following and reading comprehension. Here the metered
+decoder does \emph{worse} than its own control at both budgets, $-0.0400$ $[-0.0585, -0.0215]$ and
+$-0.0245$ $[-0.0400, -0.0085]$, while selection gains $+0.0640$ $[+0.0485, +0.0795]$; and the
+vacuity holds a sixth time, the $k=10$ budget active on $0.008\%$ of steps with $99.6\%$ of served
+completions the opponent's byte for byte.
+
 \paragraph{Does it survive a different judge and a different draw?}\label{app:h2hrepeat}
+\textbf{The one dissenting judge, re-asked with more prompts and on a workload where the effect is
+present.} \texttt{Mixtral-8x7B} is the only family-clean frontier judge and the only one of five
+whose interval contained zero, at $+0.0090$ $[-0.0355, +0.0530]$ on $500$ prompts. Two attempts to
+settle it failed because both ran on AlpacaEval, where the reversal does not hold at all, so the
+gates correctly refused to read it. Re-asked on the $850$-prompt pass at a binding budget, where
+judge~B reads $+0.0965$ and judge~C $+0.0903$, Mixtral reads $+0.0226$ $[-0.0018, +0.0476]$: the
+same sign as every other judge, a half-width of $0.0247$, and an upper end below the $+0.0645$ on
+record. The exception is smallness, not absence, and the extra prompts bought it --- the interval
+tightened from a half-width of $0.0443$ while the point estimate stayed near zero, which is what
+distinguishes a small effect from an under-powered one. Mixtral's disagreement is about the
+\emph{metered} arm and not selection's: it scores the meter at $+0.0971$ where judge~B puts it at
+$+0.0253$, while the three judges agree on selection to within $0.06$.
+
 The $+0.0645$ rests on one generation pass scored by one judge, and this paper has already been burned
 by a judged separation that did not reproduce (Appendix~\ref{app:limitations}). Two independent axes
 were fixed in advance with the verdict rule: re-score the same generations under judge~C instead of
@@ -261,7 +481,77 @@ between them does not survive}: $-0.0065$ $[-0.0385, +0.0255]$, a point estimate
 half-widths from zero, against $+0.0645$ $[+0.0300, +0.0995]$ on the registered pass. The reading
 fixed in advance for an interval containing zero was \textsc{unresolved}, and the consequence fixed
 with it was to report the judged comparison as holding \emph{against one fixed opponent} --- which
-is what the abstract now says. We draw no conclusion from the movement in the two levels, because a
+is what the abstract now says.
+
+\textbf{That swap was not a perturbation, and three more opponents put it on a measured axis.}
+Define an opponent's \emph{strength} as its order-averaged win rate against the anchor control
+--- a level, but one against text that is byte-identical in every pass, under a greedy judge and
+an order-averaged construction that draws nothing, so it differs between passes only through the
+opponent. The committed opponent scores $0.555$ and \texttt{Qwen2.5-14B-Instruct} $0.850$: a
+$0.295$ move on a bounded scale, not a nudge. Three more from one family, so size is the only
+variable, give the five points of Table~\ref{tab:opponentladder}.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The judged head-to-head against five fixed opponents, judge~B, $500$ prompts, every item
+shown in both orders. Only the opponent changes: the selection arm, the metered arm, the anchor
+control, the rewards and the judge are the committed pass's. Strength is the opponent's
+order-averaged win rate against the anchor's own $n=1$ completion, and the reading is the band
+fixed before each run.}
+\label{tab:opponentladder}
+\begin{tabular}{@{}lrll@{}}
+\toprule
+opponent & strength & paired $g_{\mathrm{sel}} - g_{\mathrm{met}}$ & reading \\
+\midrule
+\texttt{Llama-3.1-8B-Instruct} (committed) & $0.555$ & $+0.0645$ $[+0.0300, +0.0995]$ & confirmed \\
+\texttt{Qwen2.5-0.5B-Instruct}             & $0.704$ & $+0.0490$ $[+0.0135, +0.0850]$ & confirmed \\
+\texttt{Qwen2.5-1.5B-Instruct}             & $0.773$ & $+0.0195$ $[-0.0165, +0.0555]$ & unresolved \\
+\texttt{Qwen2.5-3B-Instruct}               & $0.825$ & $-0.0200$ $[-0.0540, +0.0140]$ & unresolved \\
+\texttt{Qwen2.5-14B-Instruct}              & $0.850$ & $-0.0065$ $[-0.0385, +0.0255]$ & unresolved \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Under judge~B the difference decays as the opponent strengthens and crosses zero between
+$0.773$ and $0.825$ (Spearman $-0.900$ over the five, $-0.800$ over the four sharing one family).
+\textbf{We registered a test of that account and it went untested}: the band required an opponent
+\emph{weaker} than $0.555$ to read confirmed, and no instruct model we could reach is weaker.
+
+\textbf{A second judge agrees on the shape and crosses earlier.} Judge~C --- post-hoc, labelled so,
+and unable to change a band --- reads $+0.0475$ $[+0.0015, +0.0930]$ at $0.555$ and then $-0.0090$
+$[-0.0555, +0.0375]$, $-0.0015$ $[-0.0455, +0.0425]$ and $-0.0240$ $[-0.0555, +0.0085]$: a rank
+correlation with strength of $-0.800$, confirming the weakest opponent and nothing beyond it, where
+judge~B confirms up to $0.7035$. It is more conservative at every rung, and the shift it applies is
+strength-dependent ($-0.017$, $-0.058$, $-0.021$, $-0.004$) rather than the uniform one we had
+predicted from its being the metered arm's own checkpoint.
+
+\textbf{We first read this on the three new rungs alone and concluded the decay was one judge's;
+that was wrong, and the way it was wrong is worth the sentence.} All three lie past judge~C's own
+crossing, and a monotone series sampled entirely past its crossing has no ordering left to show ---
+it gave $-0.500$ at $p=1.0$. Adding the rung the other instrument was likely to still be confirming
+on inverted the conclusion. So what the two judges agree on is that the difference is present
+against the committed opponent and absent against stronger ones; what they disagree on is where the
+boundary sits. A third judge on the rung where they differ does not settle it:
+\texttt{Mixtral-8x7B} reads $+0.0355$ $[-0.0105, +0.0810]$ there, agreeing with judge~B in sign and
+with judge~C in failing to resolve --- as it does on the committed pass too, where it is the only
+one of five panel judges whose interval contains zero. \textbf{Two of three judges put that rung
+positive and one of three resolves it}, so the boundary is not pinned down by three instruments,
+and the boundary is the quantity a compression account would need.
+\texttt{Qwen2.5-0.5B}, sixteen times smaller than the committed opponent, scores $0.704$ --- and
+not by length, since the committed opponent's completions are the longest of the five at $154.1$
+words against $109.5$--$133.2$. \textbf{Opponent strength here is not parameter count}, though
+within one family it is ordered by it. So the decay is the shape the data have under two
+instruments that disagree on where it crosses, and not a mechanism we have shown; the abstract's
+qualifier stays, because a compression account explains the disappearance without being established
+by it.
+
+\textbf{One disclosure the ladder surfaced.} The committed opponent's completions come from the
+same \texttt{h1.py} sweep as every arm it is compared against; every \emph{alternative} opponent in
+this paper, including the \texttt{Qwen2.5-14B} arm above, is generated by
+\texttt{analysis/\allowbreak blocklist\_\allowbreak decode.py}, which decodes one prompt at a time
+under a per-prompt seed instead of batching. The quantity is a win rate against a text and a text
+is a text however it was produced, but the comparison to $0.555$ crosses that boundary and the
+four-point series does not. We draw no conclusion from the movement in the two levels, because a
 different opponent changes the content of every pair and a level may not be read across passes; the
 paired difference is within one pass and is the only quantity compared. The
 registration also predicted both levels would fall, which is a cross-pass level comparison its own
@@ -293,7 +583,7 @@ not later be presented as open --- before judges F and G existed.
 % The scorer-scale study (the 0.5B/7B compute-matched grid and the four-scorer ladder) was cut from
 % the manuscript on 2026-09-19 for the page budget. Both arms are unchanged and their CSVs are in
 % results/; every concession they committed the paper to carrying is kept below.
-\paragraph{The joint certificate over many queries, proved}\label{app:compose}
+\paragraph{The joint certificate over many queries, proved.}\label{app:compose}
 Section~\ref{sec:selection} asserts that the certificate composes by addition; one report asks for
 the statement over $m$ queries. Let a user issue queries $x_1,\dots,x_m$, each answered by a
 selection rule over $n$ draws, and let each $x_j$ be chosen \emph{adaptively} from everything served
@@ -320,7 +610,7 @@ response, so $m$ responses are certified at $mkT$, which grows in the length of 
 the $\log n$ figure grows only in their number. That is the same asymmetry as the paper's main
 claim, one level up.
 
-\paragraph{How loose is $\log n$? It is not loose --- it is an equality}\label{app:realisedkl}
+\paragraph{How loose is $\log n$? It is not loose --- it is an equality.}\label{app:realisedkl}
 Three reports ask for the \emph{realised} divergence of the served law rather than the bound, one of
 them for ``the expected max-divergence ratio $q(y)/p_s(y)$ as a function of score dispersion, i.e.\
 how loose is $\log n$ in practice''. The premise is that we are quoting a loose bound. We are not.
@@ -349,7 +639,7 @@ host, and $8.6\%$ across two hosts
 --- cannot loosen it by a single nat. The guarantee is numerically robust exactly where the
 realisation is not.
 
-\paragraph{The cost frontier, and the scorer that is too small to rescue it}\label{app:frontier}
+\paragraph{The cost frontier, and the scorer that is too small to rescue it.}\label{app:frontier}
 Selection's price \emph{in FLOPs} is set by the reward model, not the anchor: at $n$ it runs
 $n(P_s+P_f)(L_p+T)$ forward-pass FLOPs against the metered decoder's $(P_s+P_r)(L_p+T)$, with
 $P_f=7.6$ and $P_s=1.8$, so a $0.5$B scorer divides the price by $4.16$ at every $n$. We specified
@@ -370,7 +660,7 @@ the registered terminal drop $g(64)-g(16)$ measured $-0.0160\,[-0.0340,+0.0010]$
 shape: Spearman between gain and $\log n$ is $0.5429$ for the $0.5$B scorer and exactly $1.0$ ---
 strictly monotone at all six grid points --- for each of $1.5$B, $3$B and $7.6$B.
 
-\paragraph{Scorer capability saturates, and it saturates early}\label{app:saturation}
+\paragraph{Scorer capability saturates, and it saturates early.}\label{app:saturation}
 Only the first of the three adjacent steps at $n=64$ separates: $+0.0700\,[+0.0500,+0.0900]$ from
 $0.5$B to $1.5$B, then $+0.0040\,[-0.0145,+0.0225]$ and $+0.0095\,[-0.0090,+0.0285]$. A scorer must
 clear a bar; past it, a $4.9\times$ larger scorer buys $+0.0135$ and neither step of it separates.
@@ -411,7 +701,7 @@ the same way: on the forward-pass model the bigger anchor is $86\times$ \emph{ch
 $n=64$, so the cheap alternative was available, a deployer would try it first, and on this workload it
 does not measurably work.
 
-\paragraph{The cheapest instance is also the best one, where an answer is checkable}\label{app:scorerfree}
+\paragraph{The cheapest instance is also the best one, where an answer is checkable.}\label{app:scorerfree}
 In forward passes the reward model is what selection costs. \textbf{Majority vote has no such term.}
 Self-consistency serves the modal answer over the same $n$ anchor draws, so its score is a regex and
 costs no forward pass: $n\,P_s(L_p+T)$. It carries the identical $\log n$ certificate, because
@@ -471,7 +761,7 @@ model pointless, since the judged workload has no mode. What changes is the comp
 count, and where an answer is checkable a deployer should not pay it. On the clock it is the other way
 round.
 
-\paragraph{What the price is on a clock, and why the FLOP model has it backwards}\label{app:latency}
+\paragraph{What the price is on a clock, and why the FLOP model has it backwards.}\label{app:latency}
 Every cost figure above is $(P_s + P_r)(L_p + T)$, parameters times tokens. That is a FLOP proxy quoted
 where a deployer reads a price, so we measured the price. Both paths ran on one card held exclusively,
 interleaved \textsc{sel},\textsc{met},\textsc{met},\textsc{sel} so drift cancels, over the same $40$
@@ -480,16 +770,18 @@ ratio of seconds per served token \emph{is} the wall-clock ratio (Table~\ref{tab
 
 \begin{table}[ht]
 \centering\footnotesize
-\caption{Serving latency, measured on one exclusively held card. Both arms serve the same number of tokens, so the ratio of seconds per served token is the wall-clock ratio.}\label{tab:latency}
+\caption{Serving latency, measured on one exclusively held card. Both arms serve the same number of
+tokens, so the ratio of seconds per served token is the wall-clock ratio. The last column is each
+part's share of selection's own clock: the draws, not the scorer, are the price.}\label{tab:latency}
 \setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}lrrr@{}}
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
-path & repeats (s) & mean (s) & s / served token \\
+path & repeats (s) & mean (s) & s / served token & share \\
 \midrule
-selection $n=64$, the $64$ anchor draws & $824.6$, $822.6$ & $823.60$ & $0.1007$ \\
-selection $n=64$, the reward pass       & $85.8$, $83.1$   & $84.44$  & $0.0103$ \\
-selection $n=64$, total                 & $910.4$, $905.7$ & $908.03$ & $0.1110$ \\
-metered $k=10$                          & $23.7$, $27.6$   & $25.64$  & $0.0031$ \\
+selection $n=64$, the $64$ anchor draws & $824.6$, $822.6$ & $823.60$ & $0.1007$ & $\mathbf{90.7\%}$ \\
+selection $n=64$, the reward pass       & $85.8$, $83.1$   & $84.44$  & $0.0103$ & $9.3\%$ \\
+selection $n=64$, total                 & $910.4$, $905.7$ & $908.03$ & $0.1110$ & $100\%$ \\
+metered $k=10$                          & $23.7$, $27.6$   & $25.64$  & $0.0031$ & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -507,15 +799,25 @@ false of the clock: a $1.5$B scorer can return at most the $9.3\%$ it occupies. 
 is $n$. The repeat spread was $0.52\%$ on selection and $15.3\%$ on the metered arm, and taking the
 extremes leaves the ratio in $[32.8, 38.5]$.
 
-\paragraph{What that ratio divides by: the loader, and draws that do not amortise}\label{app:costgrid}
-The table above is a ratio of two totals, and each total contains a model load that a served
+\paragraph{What that ratio divides by: the loader, and draws that do not amortise.}\label{app:costgrid}
+Table~\ref{tab:latency} is a ratio of two totals, and each total contains a model load that a served
 request does not pay --- a server loads once and serves for hours. On a second host, eight H100s
 with nothing else running on any of them, we timed the same two paths with the load separated from
 the work, at $n \in \{1,2,4,8,16,64\}$ and at the metered decoder's one \emph{and two} completions
 so that its own slope is measured rather than fitted. Every cell twice; the repeat spread is
 $0.3$--$2.0\%$ against the $15.3\%$ the metered arm showed above, which is what an idle box buys.
+Table~\ref{tab:costgrid} gives the four cells the argument below uses.
 
-\begin{center}\footnotesize
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Serving cost with the one-time model load separated from the work: four cells of the
+measured grid, $n \in \{1,2,4,8,16,64\}$ at two scorers
+(\texttt{results/\allowbreak cost\_\allowbreak grid.csv}). \emph{draws} is the draw path's
+wall-clock, its load included. The two ratio columns price the whole request, scorer included,
+against one metered completion: with the load subtracted from both paths (\emph{loader out}, what a
+server that loads once pays per request) and with it kept (\emph{loader in}, a ratio of totals, the
+construction of Table~\ref{tab:latency}).}
+\label{tab:costgrid}
 \begin{tabular}{@{}lrrr@{}}
 \toprule
 & draws (s) & loader out & loader in \\
@@ -526,7 +828,7 @@ selection $n=4$, $0.5$B scorer  & $38.66$ & $4.11\times$ & $2.28\times$ \\
 selection $n=64$, $7.6$B scorer & $458.02$ & $67.24\times$ & $26.93\times$ \\
 \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \noindent Three things follow. \textbf{The draws are linear in $n$}: $\mathrm{draws}(n) = 10.31 +
 6.99n$ seconds at $R^2 = 0.99990$, because the harness realises $n$ as $n$ separate seed groups and
@@ -553,14 +855,22 @@ different machine and is not revised by this; what is revised is the reason for 
 fixed before the run, including the two predictions it got wrong: we expected the matched cell at
 $n=2$ and the mispricing at $2.2\times$, and measured $n=1$ and $4.47\times$.
 
-\paragraph{What a selection server would actually pay}\label{app:anchoronly}
+\paragraph{What a selection server would actually pay.}\label{app:anchoronly}
 So we timed the draw loop three ways on the same $200$ prompts and the same $200$ new tokens,
 against the metered decoder: $A$ is the harness path every published draw cost came from (anchor
 $+$ the $8.03$B risky model), $B$ is the same loop with the risky path pointed back at the anchor,
 $C$ is a plain \texttt{generate()} with the anchor alone --- what a server serving best-of-$n$
-would run --- and $D$ is the metered decoder, which needs both models by definition.
+would run --- and $D$ is the metered decoder, which needs both models by definition
+(Table~\ref{tab:anchoronly}).
 
-\begin{center}\footnotesize
+\begin{table}[ht]
+\centering\footnotesize
+\caption{What a selection server would actually pay: draw-loop wall-clock on the same $200$
+prompts and $200$ new tokens at two batch widths. $A$ is the harness path every published draw cost
+came from (anchor plus the $8.03$B risky model), $B$ the same loop self-paired on the anchor, $C$ a
+plain \texttt{generate()} with the anchor alone --- what a best-of-$n$ server runs --- and $D$ the
+metered decoder, which needs both models.}
+\label{tab:anchoronly}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 batch width & $A$ harness, $+8.03$B & $B$ harness, self-paired & $C$ anchor alone & $D$ metered \\
@@ -569,7 +879,7 @@ $64$  & $7.517$s  & $6.780$s & $3.349$s & $7.768$s \\
 $200$ & $12.838$s & $8.515$s & $\mathbf{4.463}$s & $13.074$s \\
 \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 \noindent $B \approx 2C$ ($8.515$ against $8.926$), so the harness loop costs no more than two
 plain generates and every gap in that row is a model forward: the anchor's is $4.463$s and the
@@ -587,7 +897,7 @@ model to be $60$--$80\%$ of the path and it is $34\%$.
 % The vetting table and its discussion were cut on 2026-09-19 for the page budget. The arm is
 % unchanged; what is kept is the measurement the Ethics Statement and Section 4 both point at,
 % including the prefix-length caveat, which is the part a deployer can get wrong.
-\paragraph{Vetting the anchor: the premise is measurable, and we measured it}\label{app:vetting}
+\paragraph{Vetting the anchor: the premise is measurable, and we measured it.}\label{app:vetting}
 Proposition~\ref{prop:selection} bounds $\Pr_q[E]$ by $n\Pr_{p_s}[E]$, so everything rests on the
 anchor's own $\Pr_{p_s}[E]$ being small --- and open-licensed corpora carry only partial provenance
 guarantees. A deployer need not take it on faith. $\Pr_{p_s}[E]$ is the one quantity in the
@@ -615,9 +925,15 @@ complete: near-verbatim recall at a given prefix length is a lower bound on cont
 \emph{passing} is evidence and not proof while \emph{failing} is a demonstration, and like a
 blocklist it speaks only about the works handed to it. What a deployer takes away is that the
 premise is a measurement rather than an assumption, that it costs $n$ forward passes and no attack,
-and that the prefix length must be quoted beside the number.
+and that the prefix length must be quoted beside the number. \textbf{Which prefix, then.} The
+certificate holds prompt by prompt, $\Pr_q[E \mid x] \le n \Pr_{p_s}[E \mid x]$, and the user
+chooses $x$, so the prefix is not a parameter of the test but part of the attack surface: the check
+is sound for a deployment only at the longest genuine prefix that deployment accepts from a user.
+We used a hundred tokens because it is where the one model known to hold the work reproduces it;
+between the fourteen and the hundred we measured nothing, so the check's power as a function of
+prefix length is a curve we have two points of, not a schedule we can recommend below the maximum.
 
-\paragraph{What the two charges buy a user under an odometer}
+\paragraph{What the two charges buy a user under an odometer.}
 Under a per-user cap of $400$ nats --- half the anchor's median surprisal of a protected passage ---
 selection at $n=8$ admits $192$ queries on its pathwise charge of $2.079$ nats and $332$ on the sharper
 KL bound $\log 8 - 7/8 = 1.204$ \citep{beirami2025bestofn}, against $2$ for a metered decoder at $k=3$ on
@@ -727,7 +1043,7 @@ support. We do not pool the two draws: pooling was not specified in advance, the
 candidate sets, and averaging a reading with its own failed replication is the post-hoc rescue the
 protocol excluded.
 
-\paragraph{The judge-free axis: protocol and the full grids}\label{app:judgefree}
+\paragraph{The judge-free axis: protocol and the full grids.}\label{app:judgefree}
 
 \textbf{MMLU, the third task, and why a forced choice was the one to add.} GSM8K and TriviaQA are
 both open-ended generation, so selection's lift there could be an artefact of the format --- more
@@ -942,7 +1258,7 @@ multiplies it. Every band, the admission criterion and the stop rule were fixed 
 the rule that a gate failure would end the line of work and be reported as a limit on the evidence rather
 than a property of the mechanism.
 
-\paragraph{Outside English prose}\label{app:multilingual}
+\paragraph{Outside English prose.}\label{app:multilingual}
 Every extraction number above is English. We built an adversary outside it: $128$ training and $32$
 validation passages from four public-domain works in French and German (\emph{Notre-Dame de Paris},
 \emph{Le Comte de Monte-Cristo}, \emph{Der Prozess}, \emph{Die Leiden des jungen Werther}), splits
@@ -974,7 +1290,7 @@ What this does \emph{not} establish is that selection serves good French. The an
 these languages is unmeasured, and that is the open question this arm leaves in place of the one it
 answers.
 
-\paragraph{What the certificate delivers when its premise fails}\label{app:contaminated}
+\paragraph{What the certificate delivers when its premise fails.}\label{app:contaminated}
 Every leakage result above has a clean anchor, and Proposition~\ref{prop:selection} bounds an
 \emph{event}: $\Pr_q[E] \le n \Pr_{p_s}[E]$. With $\Pr_{p_s}[E] = 0$ that inequality is satisfied by
 any number we could have measured, so it has been reported as confirmed and never tested. It is also
@@ -1004,7 +1320,7 @@ $A(64) = 4.00$ is eight passages over two, and one more would have read $4.5$ --
 what to quote, not the boundary.
 
 \subsection{The judge, in full}\label{app:judgemethod}
-\paragraph{Position dominates, and the correction is asymmetric}
+\paragraph{Position dominates, and the correction is asymmetric.}
 Figure~\ref{fig:selection}(b) is in \emph{levels} for one reason: Theorem~\ref{thm:nfl} bounds a mean
 utility and a gain has no frontier to sit under. Levels are unreliable only \emph{between} passes, and
 every number the paper claims is an order-averaged gain. Re-judging in \emph{both} orders --- $2{,}000$
@@ -1022,4 +1338,9 @@ judge little to read but slot order. \textbf{A judged gain also has a floor}: a 
 $n$-grid moves one by $0.04$ to $0.07$ ($+0.111$ and $+0.072$ at Comma-7B), so a lone estimate of that
 size is not evidence. The head-to-head difference escapes it by being paired within one pass --- at
 disjoint seeds it reads $+0.0635$ against $+0.0645$, under judge~C $+0.0620$ and $+0.1000$, all three
-excluding zero (Appendix~\ref{app:h2hrepeat}).
+excluding zero (Appendix~\ref{app:h2hrepeat}). Read as a ratio instead, the two gains of the headline pass are
+$2.61\times$ $[1.48, 7.45]$ --- a paired bootstrap over prompts, undefined on $0.12\%$ of resamples,
+with Fieller's interval $[1.48, 7.62]$ beside it --- which excludes one but spans a factor of five,
+because its denominator's interval comes within $0.014$ of zero. That is why the claim is carried
+by the difference and the ratio is quoted only with its interval
+(\texttt{results/\allowbreak h2h\_\allowbreak ratio\_\allowbreak interval.csv}).

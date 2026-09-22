@@ -1,0 +1,5 @@
+statistic,column,auc,lo95,hi95,n_pairs,n_prompts,excludes_half
+per-token log-likelihood under p_r,logp_per_token,0.525848,0.503595,0.547615,5687,500,yes
+summed log-likelihood under p_r,logp_total,0.477668,0.454083,0.500428,5687,500,no
+"completion length, tokens",n_tokens,0.53675,0.514157,0.559705,5687,500,yes
+length minus per-token log-likelihood,difference,0.010902,-0.023493,0.045889,5687,500,includes zero

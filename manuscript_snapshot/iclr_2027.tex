@@ -50,11 +50,10 @@ Spending the Copyright Budget on the Draw Instead of the Token}
 \maketitle
 
 \begin{abstract}
-Inference-time copyright defences charge, per decoded token, how far output may drift from a
-\emph{safe} model trained without the protected work. The budget is in the wrong place. Spend it
+Certified inference-time copyright defences charge, per decoded token, how far output drifts
+from a \emph{safe} model trained without the protected work. The budget is in the wrong place. Spend it
 once, on \emph{which draw to serve}: draw $n$ safe-model completions and serve the best under any
-score. Every token served is one the safe model drew, so nothing is metered per step and
-$q(y) \le n\,p_s(y)$ --- a \emph{pathwise} certificate of exactly $\log n$ nats, constant in the
+score. Every token served is one the safe model drew, so $q(y) \le n\,p_s(y)$ --- a \emph{pathwise} certificate of exactly $\log n$ nats, constant in the
 work's length where $K = kT$ is linear. Self-consistency is an instance. No per-token \emph{rate}
 can match it: the chain rule leaves $K$ vacuous --- empty at $K = S(x)$ for every R\'enyi order,
 extraction at $0.88$--$1.17$ of it across nine pairs with nine distinct anchors --- or else bounded
@@ -64,8 +63,9 @@ measured $171.3$ nats, sixty-four draws spend at most $3.175$ and are judged
 better under four of five judges against one fixed opponent; at $n=8$ this repeats at four of six anchors in three families, and with no
 judge $32$ draws lift GSM8K $0.320 \to 0.546$. It reproduces no protected passage at any
 $n \le 64$ or at $256$, even against an adversarial scorer --- \emph{relative} to the anchor, whose
-own leakage $n$ multiplies and which must be vetted. The measured price is $35.4\times$ the meter's
-wall-clock, $21.8\times$ for a server that runs only the anchor.
+own leakage $n$ multiplies and which must be vetted. It costs $35.4\times$ the meter's wall-clock
+($21.8\times$ serving only the anchor) and loses at matched compute; where the anchor cannot do the
+task, no $n$ rescues it.
 \end{abstract}
 
 \input{sections/iclr_intro}
@@ -120,7 +120,9 @@ reproduces one passage in full, and the two open-data models at this scale fail 
 passage. \textbf{The prefix length is part of the test and must be quoted with it}: that same $70$B
 reads $0.0000$ at the fourteen genuine prefix tokens an earlier version of this check used, and
 fails only at a hundred (Appendix~\ref{app:vetting}). A deployer who runs it at too short a prefix
-will clear a model that reproduces the work in full. It is sound rather than complete --- passing is
+will clear a model that reproduces the work in full, and since the user chooses the prompt, the
+prefix is part of the attack surface: run the check at the longest genuine prefix the deployment
+accepts. It is sound rather than complete --- passing is
 evidence, not proof, since a model may hold a work it does not reproduce at the prefix length
 tried --- and like a blocklist it speaks only about the works it is handed.
 

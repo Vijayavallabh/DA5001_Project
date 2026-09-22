@@ -70,8 +70,10 @@ def test_the_paper_reports_the_tokenswap_measurement_and_that_it_loses():
         return float(rows[0][2]), float(rows[0][3]), float(rows[0][4]), rows[0][7].strip()
 
     t = body(SEC)
-    i = t.find("TokenSwap")
-    assert i > 0
+    # The paragraph, not the first mention: since 2026-09-23 Appendix J opens with a table that
+    # names TokenSwap first, and a window from there never reached the concession (caution (an)).
+    i = t.find(r"\textbf{TokenSwap}") + len(r"\textbf{")
+    assert i > len(r"\textbf{")
     w = t[i:i + 4400]  # the paragraph grew when the measurement replaced the concession
 
     # It must say the measurement happened, and that our mechanism is the expensive one.
@@ -127,8 +129,12 @@ def test_neither_is_claimed_to_be_in_this_papers_class():
     """The whole point of the paragraph is the level: these bound a named catalogue, not the served
     law. An edit that blurred that would make the paper's own axis look arbitrary."""
     t = body(SEC)
-    i = t.find("TokenSwap")
+    i = t.find(r"\textbf{TokenSwap}") + len(r"\textbf{")   # the paragraph, not the table's row
+    assert i > len(r"\textbf{")
     w = t[i:i + 2200]
-    assert "served law" in w, "the level distinction has gone from the paragraph"
-    assert re.search(r"neither is in this paper's class|not in this paper's class", w), (
-        "the paragraph no longer says these are outside the certified class")
+    m = re.search(r"neither is in this paper's class|not in this paper's class", w)
+    assert m, "the paragraph no longer says these are outside the certified class"
+    # the distinction must be IN that sentence: the paragraph's later "a bound on the served law"
+    # satisfied a paragraph-wide check with the distinction deleted (caution (an), 2026-09-23)
+    assert "served law" in w[m.start(): w.index(". ", m.start())], \
+        "the level distinction has gone from the paragraph"

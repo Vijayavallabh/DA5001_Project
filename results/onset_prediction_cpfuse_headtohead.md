@@ -160,3 +160,15 @@ one the measurements support.
 
 No `\log n`, no vacuity threshold and no `s(x)` number comes from this arm, and CP-Fuse's
 certificate is not converted into nats.
+
+## Correction, 2026-09-23 --- the phase-3 files were NOT untouched
+
+The scoring section above says the earlier phase's `results/cpfuse_audit.csv` is untouched. It was
+not: `scripts/run_cpfuse.sh` passed `--out results`, so the rebuild wrote `cpfuse_audit.csv` and
+`cpfuse_audit_examples.csv` over the phase-3 files under their own names, and commit `e229f83`
+committed the overwrite (caution (ax), a second time). Both phase-3 files are restored byte-identical
+from `f36aae1`; the rebuild keeps its own two files, `cpfuse_audit_rebuild.csv` and
+`cpfuse_audit_rebuild_examples.csv`; and `analysis/cpfuse_audit.py` now refuses to write over an
+existing `cpfuse_audit.csv` without `--allow-overwrite`. No reading above changes: H1 was scored
+on the rebuild's numbers, which are unchanged. Appendix J now prints both builds, each from its
+own file, and `tests/test_review_r234.py` fails if the two files ever become identical again.

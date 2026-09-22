@@ -12,16 +12,24 @@ against that answer (how hard the task is for the model selection draws from). L
 of the task text; two classes are served with the fixed header `Complete the prefix:`
 (dap/shared.py), which is counted separately so the length describes the task and not the wrapper.
 
+Overlap with the protected works (a referee question, 2026-09-23) is screened two ways, both from
+the committed corpus rather than from a list anyone typed: a prompt counts if it shares any word
+8-gram with any protected passage (analysis/blocklist.py's index), or if it names any of the
+sixteen works by the title recorded in data/copybench_*.jsonl.
+
 Usage:
   .venv/bin/python analysis/prompt_set_profile.py --out results
 """
 import argparse
 import csv
+import glob
+import json
 import os
 import statistics
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from analysis.blocklist import build_index, ngrams, toks  # noqa: E402
 from analysis.selection_decoding import load_baseline  # noqa: E402
 from dap.shared import load_prompt_corpus  # noqa: E402
 
@@ -52,6 +60,12 @@ def main():
     opp = load_baseline(a.opponent)
     assert set(judged) <= set(opp), "the opponent directory does not cover the judged prompts"
 
+    protected = sorted(glob.glob(os.path.join(a.data, "copybench_*.jsonl")))
+    idx8 = build_index(protected, 8)
+    titles = sorted({json.loads(line)["source_novel"].replace("_", " ").lower()
+                     for p in protected for line in open(p, encoding="utf-8")})
+    assert len(titles) == 16, titles
+
     rows = []
     for cls in ("neutral", "factual", "creative"):
         ids = [p for p in judged if corpus[p].split == cls]
@@ -68,14 +82,18 @@ def main():
             prompt_words_median=med, prompt_words_q1=q1, prompt_words_q3=q3,
             prompt_words_min=min(words), prompt_words_max=max(words),
             opponent_words_median=rmed, opponent_words_q1=r1, opponent_words_q3=r3,
-            anchor_win=round(statistics.fmean(judged[p] for p in ids), 4)))
+            anchor_win=round(statistics.fmean(judged[p] for p in ids), 4),
+            shares_8gram_with_protected=sum(1 for x in texts if ngrams(toks(x), 8) & idx8),
+            names_a_protected_title=sum(1 for x in texts if any(ti in x.lower() for ti in titles))))
     assert sum(r["n"] for r in rows) == len(judged), "a judged prompt fell outside the classes"
     for r in rows:
         print(f"{r['cls']:<9} n={r['n']:<4} header {r['served_with_header']:>3}/{r['n']:<4}"
               f" prompt words {r['prompt_words_median']:.0f} [{r['prompt_words_q1']:.0f},"
               f" {r['prompt_words_q3']:.0f}] range {r['prompt_words_min']}-{r['prompt_words_max']}"
               f"   opponent {r['opponent_words_median']:.0f} [{r['opponent_words_q1']:.0f},"
-              f" {r['opponent_words_q3']:.0f}]   anchor wins {r['anchor_win']:.4f}")
+              f" {r['opponent_words_q3']:.0f}]   anchor wins {r['anchor_win']:.4f}"
+              f"   8-gram overlap {r['shares_8gram_with_protected']}"
+              f"   title mentions {r['names_a_protected_title']}")
     out = os.path.join(a.out, "prompt_set_profile.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))

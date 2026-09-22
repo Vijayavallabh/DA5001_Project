@@ -62,9 +62,10 @@ implied by the budget equals $1$ if and only if $K \ge S(x)$.
 The proof (Appendix~\ref{app:proofs}) is three standard conversions --- the $\alpha=\infty$ change
 of measure, the R\'enyi-to-probability bound underwriting reconstruction robustness in R\'enyi
 differential privacy \citep{mironov2017renyi}, and the binary-KL inversion. None is new; what
-matters is that all three break in the same place. Raising $\alpha$ buys a strictly tighter bound
-\emph{below} the threshold and moves it not at all, so the quantity carrying risk is $K/S(x)$ and
-never the rate. \citet{vyas2023provable} already report their budget as a fraction of the safe
+matters is that all three break in the same place. Below it they part company --- the pathwise
+bound falls as $e^{K-S(x)}$, the deployed KL one only as about $K/S(x)$, so half the threshold
+still permits the work half the time (Appendix~\ref{app:belowthreshold}) --- but no order moves
+it, so the quantity carrying risk is $K/S(x)$ and never the rate. \citet{vyas2023provable} already report their budget as a fraction of the safe
 model's entropy; new here is the exact threshold, for a \emph{specific} work and every order at
 once.
 
@@ -116,7 +117,7 @@ $86\times$ less compute (Appendix~\ref{app:biggeranchor}). Majority vote has no 
 it dominates the pointwise reward at every scorer we ran up to $7.6$B --- but not at $14$B, which
 overtakes it on both tasks (Appendix~\ref{app:scorerfree}). What is cheap is not what is best.
 
-The objection is that the gain comes from leaving the decode loop rather than from where the budget
-sits. The causal policy Proposition~\ref{prop:sparse} permits --- a sequence budget granted up
-front, spent freely or \emph{reserved} until a step's demand clears a threshold --- was built and
-priced at three budgets and five placements, and does not reach it (Section~\ref{sec:orders}).
+Nor is the gain an artefact of leaving the decode loop: the causal policy
+Proposition~\ref{prop:sparse} permits, a budget granted up front and spent freely or
+\emph{reserved}, was built and priced at three budgets and five placements and does not reach it
+(Section~\ref{sec:orders}).

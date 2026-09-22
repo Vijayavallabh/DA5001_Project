@@ -108,7 +108,13 @@ def main():
     ap.add_argument("--arms", nargs="+", default=["a", "b", "cpfuse", "mixture"])
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", default="results")
+    ap.add_argument("--allow-overwrite", action="store_true")
     args = ap.parse_args()
+    # Caution (ax): a 2026-09-20 rebuild ran with --out results and replaced the phase-3 audit's
+    # committed CSVs under their own names. Refuse before any model loads.
+    existing = os.path.join(args.out, "cpfuse_audit.csv")
+    if os.path.exists(existing) and not args.allow_overwrite:
+        sys.exit(f"{existing} holds a closed arm; write elsewhere (--out) or pass --allow-overwrite")
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     device = "cuda" if torch.cuda.is_available() else "cpu"

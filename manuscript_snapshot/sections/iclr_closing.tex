@@ -6,7 +6,7 @@
 
 \section{Conclusion}\label{sec:limitations}
 
-\paragraph{Limitations}
+\paragraph{Limitations.}
 
 \looseness=-2 \textbf{The two mechanisms are not substitutes, and the scorer binds first.} A served string is one the safe
 model would have drawn, so an anchor that cannot do the task gains nothing: on TriviaQA with no
@@ -22,8 +22,8 @@ deployer most wants covered and \emph{neither} mechanism covers it.
 $+0.1045$, at $61.3\times$ the meter's forward passes and a measured $21.8$--$67.2\times$ in wall-clock;
 held to the meter's own compute it \emph{loses}. The \emph{gain} is the scorer's capability: a
 $0.5$B scorer never reaches the meter, a $1.5$B one buys $87\%$ of the $7.6$B gain on the judged
-workload and nothing on GSM8K. The \emph{price} is not --- the scorer is $9.3\%$ of the
-clock --- so the bar we have not cleared is the cost of drawing and where that bar sits is open
+workload and nothing on GSM8K. The \emph{price} is the drawing, not the scorer's $9.3\%$ of the
+clock: that is the bar we have not cleared, and where that bar sits is open
 (Appendix~\ref{app:saturation}).\looseness=-3\ Extraction is sixteen English novels plus four in French and German, judged
 levels are position-dominated, and the class-level question is open: the theorem rules out a
 per-token \emph{rate} and not every causal policy, and how close a policy of that shape ---

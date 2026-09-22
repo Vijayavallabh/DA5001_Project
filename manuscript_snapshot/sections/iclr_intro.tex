@@ -8,8 +8,8 @@
 Language models reproduce passages of their training data, and for copyrighted data that is a legal
 exposure rather than a benchmark curiosity: a $70$B open-weights model returns $50$-token windows of
 a popular novel on roughly a quarter of prompts drawn from it \citep{cooper2025extracting}, and
-retraining it away is impractical against a stream of takedowns. Inference-time mechanisms offer
-something cheaper: bound, at decode time, how far the output may drift from a \emph{safe} model that
+retraining it away is impractical against a stream of takedowns. Certified decoders offer something
+cheaper: bound, at decode time, how far the output may drift from a \emph{safe} model that
 never saw the work. The drift is charged in nats, banked in a token bucket, and published as a
 single $k$ --- anchored decoding \citep{he2026anchored} instantiating
 $k$-near-access-freeness \citep{vyas2023provable} --- and the appeal is that $k$ looks like
@@ -46,7 +46,7 @@ Theorem~\ref{thm:nfl}'s frontier, which no policy can sit left of.}
 
 Figure~\ref{fig:selection} is the paper's headline. Where a metered decoder spends a measured
 $171.3$ nats to become judged better than its own safe model, sixty-four draws spend at most
-$3.175$ and win by $2.6\times$ against that opponent --- one fifty-fourth of the divergence, every
+$3.175$ and win by $2.6\times$ $[1.5, 7.5]$ against that opponent --- one fifty-fourth of the divergence, every
 item shown in both presentation orders so that position is removed by construction. At $n=8$ it holds at four of six anchors in three families and on
 AlpacaEval, and with no judge in the loop at all.
 
@@ -59,7 +59,7 @@ at $n=256$, on all $100$ passages. Where the premise fails, the bound degrades g
 twelve deliberately contaminated anchors the realised amplification at $n=64$ runs between $1.0$
 and $4.0$, against the $64$ the certificate permits.
 
-\paragraph{Why this was available: a per-token \emph{rate} cannot be repaired to match it}
+\paragraph{Why this was available: a per-token \emph{rate} cannot be repaired to match it.}
 The natural objection is that a meter could be fixed --- charge more sharply, cap more tightly,
 schedule more cleverly. Not while it charges a rate, and the reason is one line of the chain rule.
 For any policy the sequence divergence is \emph{exactly} the sum of its per-step divergences, so one
@@ -82,10 +82,10 @@ $16{,}500$ logged trajectories realised spend stalls at $171.3$ nats while the c
 Section~\ref{sec:orders} tests and fails all three: a sharper charge cannot move a threshold that is
 order-invariant, a smaller cap buys nothing two judges can separate from the safe model it wraps,
 and a better schedule is bounded by the same chain rule. They share a measurable cause --- the
-currency a metered decoder buys with its nats predicts judged quality at AUC $0.526$, worse than the
+currency a metered decoder buys with its nats predicts judged quality at AUC $0.526$, no better than the
 answer's length at $0.537$.
 
-\paragraph{Contributions}
+\paragraph{Contributions.}
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt,parsep=0pt]
 \item \textbf{A copyright certificate that does not grow with the work.} A selection rule's whole
 budget is a pathwise $\log n$ under any score, tie rule and safe model

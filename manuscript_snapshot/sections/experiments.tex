@@ -11,12 +11,13 @@
 
 A certificate is worth nothing if the mechanism it certifies serves worse text, so we measure what
 selection anchoring buys and what it leaks against the metered decoder, on its own workload and at
-its own anchor, temperature and cap. The anchor is \texttt{TinyComma-1.8B}: trained only on openly
+its own anchor, temperature and cap. The \emph{audited} anchor, the one He et al.\ evaluate, is
+\texttt{TinyComma-1.8B}: trained only on openly
 licensed text, so $p_s$ plausibly never saw the work, and sharing the risky model's tokenizer, so
 the metered decoder can fuse the two at all. The workload is $500$ ordinary prompts
 in three classes, none of them drawn from the protected corpus and all released with the artifact:
 $200$ general-knowledge questions, $150$ FactScore biography requests, and $150$ creative-writing
-prompts, the last two from public corpora rather than written here. Utility is a pairwise judgement against the \emph{unconstrained} risky model
+prompts, the last two from public corpora rather than written here (Table~\ref{tab:promptset}). Utility is a pairwise judgement against the \emph{unconstrained} risky model
 (\texttt{Llama-3.1-8B-Instruct}) scored win/tie/loss as $1$, $\tfrac12$, $0$, order randomised, arms
 nested so that every comparison is paired on the prompt. Judge~A is
 \texttt{Qwen2.5-7B-Instruct}, judge~B \texttt{Phi-3.5-mini-instruct} and judge~C
@@ -29,26 +30,24 @@ a claim.
 \textbf{The scorer decides, and the obvious one fails.} The first scorer we specified in advance was the risky model's own per-token log-likelihood --- the
 objective anchored decoding tilts toward --- and it fails, moving judged utility by $-0.006$ at
 $n=8$ against a band fixed in advance of $+0.077$. A circular oracle over the same eight draws reaches
-$+0.488$, so what fails is the objective and not the budget (Appendix~\ref{app:selection}).
+$+0.488$, so what fails is the objective and not the budget (Appendix~\ref{app:currency}); and
+handed the same reward on TriviaQA the meter gains nothing (Table~\ref{tab:parity}).
 Selecting by judge~A and scoring with judge~B gains $+0.081$ $[+0.034, +0.130]$ at $n=8$; the deployable scorer (Figure~\ref{fig:breadth}) never
 consults the risky model --- a \emph{pointwise} reward, $\log p(\text{Yes}) - \log p(\text{No})$
-from a third model (\texttt{Qwen2.5-7B-Instruct}) on one fixed template, one forward pass per
-candidate, monotone in $\log n$ (Spearman $+0.991$ over seven arms), with a second non-selecting
-judge agreeing at $n=8$, $+0.073$ $[+0.027, +0.120]$ and at $n=64$, $+0.123$ $[+0.076, +0.171]$;
-all specified in advance with refuting bands. The certificate is $\log n$ whatever the arm realises
---- $4.159$ nats at $n=64$ under the pathwise order, $\log 64 - 63/64 = 3.175$ under the sharper KL
-one \citep{beirami2025bestofn}. Both are \emph{bounds}, so the head-to-head sets selection's bound
+from a third model (\texttt{Qwen2.5-7B-Instruct}) on one fixed template, monotone in $\log n$ (Spearman $+0.991$ over seven arms), with a second non-selecting
+judge agreeing at $n=8$, $+0.073$ $[+0.027, +0.120]$ and at $n=64$, $+0.123$ $[+0.076, +0.171]$. The certificate is $4.159$ nats
+at $n=64$ under the pathwise order and $\log 64 - 63/64 = 3.175$ under the sharper KL one
+\citep{beirami2025bestofn}; both are \emph{bounds}, attained for a tie-free score
+(Appendix~\ref{app:realisedkl}), so the head-to-head sets selection's bound
 against the meter's \emph{measured} spend: the conservative direction. We report \emph{gains over
-each arm's own control}, because absolute judged levels do not survive
-the instrument check below. Head to head, paired over the same $500$ prompts with every item shown in both orders, selection gains
+each arm's own control}, never levels, for the reason below. Head to head, paired over the same $500$ prompts with every item shown in both orders, selection gains
 $+0.1045$ $[+0.082, +0.128]$ for $3.175$ nats and the metered decoder $+0.0400$
 $[+0.014, +0.0655]$ for $171.3$, a difference of $+0.0645$ $[+0.030, +0.0995]$ under that judge.
-\looseness=-1 \textbf{It replicates across judges, not across opponents.} Five judges,
+\looseness=-1 \textbf{It replicates across judges, not across opponents or workloads.} Five judges,
 $3.8$--$72$B in four families, re-scored \emph{byte-identical} text: all five put the difference
-positive and \textbf{four of five} put its interval clear of zero, the exception being the
-family-clean \texttt{Mixtral-8x7B}; no family, size or consistency ordering explains it
-(Table~\ref{tab:h2hrepeat}). Swapping the \emph{opponent} instead dissolves it
-(Appendix~\ref{app:selection}). All five agree sixty-four draws buy \emph{at least} the meter's
+positive: it \textbf{replicates under four judges and is bounded below $0.03$ under the one clean
+frontier judge}; no family, size or consistency ordering explains it (Table~\ref{tab:h2hrepeat}). Swapping the \emph{opponent} dissolves it, as does moving off
+prefix completion (Appendix~\ref{app:selection}). All five agree sixty-four draws buy \emph{at least} the meter's
 utility for one fifty-fourth of its divergence, as does Figure~\ref{fig:judgefree}c with no judge
 in it. The advantage is in nats and not in compute --- at the meter's own
 compute selection loses, judged ($-0.0395$) and unjudged alike, the unjudged loss being the larger
@@ -60,7 +59,7 @@ the \emph{single-order} difference is $+0.013$, not $+0.070$, and what survives 
 order-averaged figure (Appendix~\ref{app:selection}). At the two further pairs where the meter runs at all
 (Appendix~\ref{app:second-anchor}) --- no other
 openly licensed anchor shares a vocabulary with the risky model --- the reversal repeats and widens,
-$+0.076$ for $1.204$ nats against $+0.056$ for $123.2$, and $+0.150$ against a meter that resolves
+$+0.076$ for $1.204$ nats against $+0.056$ for $123.2$, and $+0.150$ against a meter whose gain excludes zero
 at no budget, $-0.019$ for $60.6$ (Appendix~\ref{app:proofs}).
 
 \subsection{Ablations and robustness}\label{sec:ablations}
@@ -94,8 +93,7 @@ Table~\ref{tab:extraction}).
 bought it.} Each row is a gain over \emph{that arm's own} anchor-alone control, $95\%$ bootstrap
 interval, single-order; levels are never quoted, because the judge is dominated by slot order. Open
 markers (Comma-1T, and the audited TinyComma at $n=8$) miss the admission criterion specified in
-advance. The right column is the \emph{entire} budget, $\log n$ nats, constant in the work's length,
-against the bottom row --- the meter's best judged arm under the same judge: the same range of gain
+advance: over $5\%$ empty completions, at $16.6\%$ and $6.8\%$. The right column is the \emph{entire} budget, $\log n$ nats, against the bottom row --- the meter's best judged arm under the same judge: the same range of gain
 for $171.3$ nats \emph{spent}, under a $K = 2000$ that certifies nothing about any work here. Both failures are identifiable: MT-Bench's $80$ items resolve nothing at a half-width of
 $0.09$, and the pointwise reward turns over with $n$ (Figure~\ref{fig:judgefree}).}
 \label{fig:breadth}

@@ -240,20 +240,28 @@ def test_every_cost_number_the_paper_prints_rounds_from_the_measured_csv():
 
 
 def test_the_abstract_s_convention_factor_is_the_measured_one():
-    """The abstract says the price is 2.5x more per request. That factor is the ratio of the two
-    conventions at the headline cell, and it is what a deployer reads as a price -- caution (aq),
-    where exactly this sentence was the mutation that passed."""
+    """The abstract carries the deployable price: what a server that runs only the anchor pays at
+    the headline n, 64 * C/D from the anchor-only measurement. It is what a deployer reads as a
+    price -- caution (aq), where a price sentence in the abstract was the mutation that passed.
+
+    Checked as a property since 2026-09-23 (caution (an)): the guard pinned one spelling, "for a
+    server that runs only the anchor", and a length-neutral rewording of the abstract that kept the
+    number and its meaning fired it."""
     import os as _os
+    import re as _re
     g = _grid()
     r = g[("Qwen2.5-7B-Instruct", 64)]
     factor = float(r["ratio_marginal"]) / float(r["ratio_raw"])
     assert f"{factor:.1f}" == "2.5", factor
+    price = f"{64 * float(_ao()[200]['C_over_D']):.1f}"   # the width the anchor-only prose quotes
     tex = _os.environ.get("SATML_DIR") or _os.path.normpath(
         _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
                       _os.pardir, "sub", "satml"))
     abstract = " ".join(open(_os.path.join(tex, "iclr_2027.tex"), encoding="utf-8").read().split())
-    assert r"$21.8\times$ for a server that runs only the anchor" in abstract, (
-        "the abstract dropped the deployable price, which is the number a deployer reads")
+    abstract = abstract.split(r"\begin{abstract}")[1].split(r"\end{abstract}")[0]
+    hits = [m for m in _re.finditer(_re.escape(f"${price}\\times$"), abstract)
+            if "only the anchor" in abstract[m.start(): m.end() + 60]]
+    assert hits, "the abstract dropped the deployable price, which is the number a deployer reads"
 
 
 def test_the_batching_explanation_is_withdrawn_and_not_merely_deleted():

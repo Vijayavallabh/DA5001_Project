@@ -1,5 +1,78 @@
 # Session Progress Log
 
+## 2026-09-23 --- referee reports 2, 3 and 4 audited point by point: thirteen open, all closed
+
+Asked whether every comment of the three full reviews was addressed. Their instruction was selective
+("select only the feedback you genuinely believe will meaningfully improve the draft"), later tightened
+by the user to "don't skip any of it"; most points had been acted on by 2026-09-20. Re-reading every
+weakness, question and roadmap item against the live sources found these open, all now closed:
+
+1. **An inverted statement.** `frontier.tex` and Appendix A said the 50-token window is "vacuous
+   *below* k = 0.8"; `window_vacuity.csv` says vacuous at k >= 0.799. Now "at k >= 0.8".
+2. **The intro's AUC claim had no backing at all.** `0.526` vs `0.537` came from a scoring log with no
+   CSV; its appendix paragraph was cut on 2026-09-19 and `orders.tex` still pointed at Appendix A.
+   `analysis/currency_auc.py` reproduces it exactly (5,687 pairs) and adds prompt-bootstrap intervals:
+   per-token likelihood `0.526 [0.504, 0.548]`, summed `0.478 [0.454, 0.500]`, length
+   `0.537 [0.514, 0.560]`, **difference `+0.011 [-0.023, +0.046]`** -- so "worse than the answer's
+   length" (intro and Section 4.4) is now "**no better than**", as Review 3 said. The failed-scorer
+   numbers (`-0.006`, `+0.077`, `+0.488`) had lost their appendix paragraph the same way; both now live
+   in `app:currency`.
+3. **The abstract lacked two caveats two reports asked for**: the loss at matched compute and "where
+   the anchor cannot do the task, no n rescues it". Added length-neutrally (18 lines, unchanged).
+4. **Below the threshold the orders part company** (Review 3 W3): new Appendix A paragraph
+   (`app:belowthreshold`) -- pathwise bound `e^{K-S}`, KL only `K/S` to within `log 2 / S`, so at k = 0.5
+   a KL budget permits the 50-token window with probability about `0.63`, and an informative KL
+   certificate is already a sparse one at T_max = 200. One clause in Section 3.2.
+5. **The 2.6x ratio had no interval** (Review 3 Q4): `analysis/h2h_ratio_interval.py`,
+   `2.61 [1.48, 7.45]`, Fieller `[1.48, 7.62]`; the intro now prints `2.6x [1.5, 7.5]`.
+6. **Realised KL** (Reviews 2 and 4) was already answered in `app:realisedkl`, with no pointer from the
+   main text; Section 4.2 now says the bounds are attained for a tie-free score and points there.
+7. **CP-Fuse** (three reports): Appendix J claimed "the second mechanism we audit" and printed no
+   number. It now reports both builds. Found on the way: commit `e229f83` had **overwritten the
+   phase-3 `results/cpfuse_audit.csv`** with the rebuild (caution (ax) again) while its scoring log
+   said "untouched"; restored byte-identical from `f36aae1`, the rebuild's examples kept as
+   `cpfuse_audit_rebuild_examples.csv`, `analysis/cpfuse_audit.py` now refuses to overwrite, and the
+   scoring log carries a correction.
+8. **Presentation**: "resolves" defined where first used, "audited" defined in Section 4.1, `n = 73`
+   (a prompt count) no longer reuses the draw-count symbol, and Figure 2's caption says why the open
+   markers miss admission (`16.6%` and `6.8%` empty completions against `5%`).
+9. **Prompt overlap** (Review 2 Q3): `prompt_set_profile.csv` gains a data-driven screen; none of the
+   500 prompts shares a word 8-gram with a protected passage or names one of the sixteen works.
+10. **Which prefix to vet at** (Review 2 Q10, Review 4 Q10): the user chooses the prompt and
+    Proposition 1 holds prompt by prompt, so the check is sound only at the longest genuine prefix the
+    deployment accepts. Ethics Statement and `app:vetting`.
+11. **A phrase guard retired by a rewording**: `test_cost_grid.py` pinned the abstract's exact
+    "for a server that runs only the anchor"; it now checks the property (the CSV-derived `21.8x` beside
+    "only the anchor").
+12. **Theorem 1 at the headline** (Review 2 Q6): Appendix A answered "how far from the frontier" only
+    at n = 8. `analysis/frontier_distance_h2h.py` reads the headline pass: selection at n = 64 is
+    **32x** the frontier on its 3.175-nat bound, the meter **11,646x** on its 171.3 spent.
+13. **A related-work table** (Review 4's roadmap) opens Appendix J, sorted by what each guarantee is
+    about; every "measured" row points at the paragraph that prints the measurement. Two older guards
+    in `test_named_baselines.py` found their paragraph by the first mention of "TokenSwap", which is now
+    the table; both rescoped to the paragraph, and one of them turned out to have been satisfied by a
+    different sentence all along (caution (an)) and now reads the one sentence it is about.
+
+Deliberately not done, with reasons in the handoff: human labels (human-only), a contaminated-anchor
+arm at n = 256 and a prefix-length ladder (GPU arms with no registration yet), a full Pareto plot and
+a table version of Figure 2 (page budget; the cost grid and the forest plot carry the numbers), the
+title's rounding (a title, and the text gives 2.08), and the Spotlight/Oral asks (new theorems or
+frontier-scale pairs).
+
+Evidence: `tests/test_review_r234.py` (15 guards; 31 mutations across it and the two rescoped
+files, all fire); `./init.sh` on the final sources, **1043 passed**; `analysis/audit_numbers.py`:
+3,275 literals, one expected miss (`64256`); build exit 0, 0 overfull, 0 `??`, 3 bold faces, 0
+underfull hboxes at badness 10000, 47 pages, body exactly 9 of 9 -- every section heading and the
+Ethics Statement at the same page and y as a build of the pre-edit sources.
+
+```
+.venv/bin/python analysis/currency_auc.py --out results
+.venv/bin/python analysis/h2h_ratio_interval.py --out results
+.venv/bin/python analysis/prompt_set_profile.py --out results
+.venv/bin/python analysis/frontier_distance_h2h.py --out results
+.venv/bin/python analysis/audit_numbers.py
+```
+
 ## 2026-09-21 15:10 --- feat-161 SCORED: the judged ladder does not lift above `7.6`B, and feat-134's neutral class was rescued from a dead supervisor
 
 **feat-161: SATURATION HOLDS, as predicted, and the ladder is non-monotone.** Six scorers judged in

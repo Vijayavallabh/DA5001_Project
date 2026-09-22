@@ -1,4 +1,4 @@
-# Session handoff --- 2026-09-22
+# Session handoff --- 2026-09-23
 
 ## Current objective
 
@@ -25,6 +25,39 @@ All fixed the same day, with a main-text pointer to the parity arm as an eighth 
 `tests/test_ac_review.py` guards every one and each guard was mutation-tested. Body still exactly
 9 of 9. `progress.md` has the full list, including the one point deliberately left as stated
 (TRBS unmeasured). **Before touching any of these sentences, run `tests/test_ac_review.py`.**
+
+## Referee reports 2, 3 and 4, audited 2026-09-23 --- thirteen open points, all closed
+
+Asked the same question of the three full reviews. Most points had been acted on by 2026-09-20;
+re-reading every weakness, question and roadmap item against the live sources found thirteen
+that had not, listed in `progress.md` under today's date and guarded by
+`tests/test_review_r234.py` (15 guards, 31 mutations, all fire; `./init.sh` 1043 passed). The two that change what the paper claims: **the intro's
+"likelihood predicts judged quality worse than the answer's length" is now "no better than"**
+(`analysis/currency_auc.py`: difference `+0.011 [-0.023, +0.046]`), and **the abstract now carries
+the matched-compute loss and "where the anchor cannot do the task, no n rescues it"**. Also: the
+window-vacuity sentence stated its direction backwards; the AUC and failed-scorer numbers pointed at
+appendices that no longer held them; the phase-3 `results/cpfuse_audit.csv` had been overwritten by
+the 2026-09-20 rebuild and is restored from `f36aae1`. **Body still exactly 9 of 9**: verified by
+building the pre-edit sources side by side and checking every section heading and the Ethics
+Statement land at the same page and y. **Before touching the abstract, Figure 2's caption, Section
+3.2 or Section 4.2, run `tests/test_review_r234.py`.**
+
+Not done, deliberately: human pairwise labels (human-only); a contaminated-anchor arm at `n=256`
+and a prefix-length ladder for the vetting check (GPU arms that would need a registration first;
+the prefix answer given is the one that follows from Proposition 1 holding per prompt); a Pareto
+plot and a table version of Figure 2 (page budget; the cost grid and forest plot carry the
+numbers); the title's "two nats" (the text gives `2.08`); and the Spotlight/Oral-level asks.
+
+## Arms in flight (2026-09-23 02:30)
+
+| host B | arm | state |
+|---|---|---|
+| `h1.py` 256 draws, factual 805 | feat-172 Arm A, off-support ladder | about 11 h in |
+| `h1.py` 256 draws, factual 500 | feat-172 Arm B, on-support | about 7 h in |
+| five `blocklist_decode.py` | feat-178 AlpacaEval opponent ladder (8B, 0.5B, 1.5B, 3B, 14B) | 1.6--2.9 h in, ~4 h each |
+
+feat-177 (unseenbooks) finished and is scored (`bee3767`); every `unseenbooks_*` sentinel is
+`.done`. The table below is the 2026-09-22 23:05 snapshot, kept for its history.
 
 ## Arms in flight (2026-09-22 23:05)
 

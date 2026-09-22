@@ -1,7 +1,7 @@
 % Plan v5 / item F: the full limitations discussion, summarised in Section~\ref{sec:limitations}.
 \section{Limitations in full}\label{app:limitations}
 
-\paragraph{One protected corpus}
+\paragraph{One protected corpus.}
 Every extraction measurement runs on sixteen English genre novels, from CopyBench and BookMIA. The
 robustness cells in Appendix~\ref{app:scaling} are nine re-analyses of those same works, so
 $p = 3.1\times10^{-5}$ is the smallest value sixteen paired items can produce: read it as ``the
@@ -36,7 +36,7 @@ re-seed noise we measured keeps its sign in every draw and $p<0.05$ in $92.3\%$ 
 its median at $-0.849$, so it is a rank ordering that survives and not a coefficient to two decimals
 (Appendix~\ref{app:onset}).
 
-\paragraph{More passages do not narrow the onset interval, and that is why several arms are undecided}
+\paragraph{More passages do not narrow the onset interval, and that is why several arms are undecided.}
 The bootstrap interval on onset\,/\,$s(x)$ has a mean width of $0.285$ across the pairs at $100$
 passages each, and quadrupling the passages does not shrink it: on one pair under one metric the
 width is $0.219$ at $n=100$ and $0.215$ at $n=458$, where independent sampling noise would predict
@@ -46,7 +46,7 @@ bands about $0.1$ wide, narrower than this method can deliver, and several arms 
 where the measured shift is large and in the predicted direction. What would fix that is more
 distinct works, not more windows.
 
-\paragraph{The onset ratio runs over a range, and we can name one cause but not the other}
+\paragraph{The onset ratio runs over a range, and we can name one cause but not the other.}
 $s(x)$ spans $1.87\times$ across the nine pairs in tokenizer-free units, short of the dynamic range
 a data collapse normally rests on, and at the crossing budgets only one to four works in a hundred
 leak. In units of each pair's own $s(x)$, the five pairs at about four characters per token overlap
@@ -66,14 +66,14 @@ for a fixed corpus those are not separate variables --- a finer tokenizer change
 the ratio is ordered. We can name the cause that is not memorisation strength; we cannot separate the
 three the tokenizer moves at once.
 
-\paragraph{The no-free-lunch theorem is a converse}
+\paragraph{The no-free-lunch theorem is a converse.}
 It lower-bounds the budget any policy needs, including the optimal one. Our decoder is causal and
 meters with a token bucket, and we do not bound the gap between the two. That gap is large and
 measurable --- a factor of $5$ to $32$ between the divergence on the risky model's own rollout and
 the divergence paid on a budgeted one --- and closing it is the clearest open problem this paper
 leaves.
 
-\paragraph{What selection anchoring cannot do}
+\paragraph{What selection anchoring cannot do.}
 Six limits, of which the first is not a defect but the guarantee seen from the other side.
 
 \emph{The support ceiling.} $q(y) \le n\,p_s(y)$ says a served string must be one the safe model
@@ -141,7 +141,7 @@ reassuring: the $0.0000$ of Section~\ref{sec:experiments} is $n$ times a base ra
 % The two-judge calibration and the two-pipeline gate were compressed on 2026-09-19 for the page
 % budget. Both are CONCESSIONS, so neither is dropped: every number a pre-registration committed
 % the paper to carrying is below, and only the walkthrough is gone.
-\paragraph{Two judges, one workload}
+\paragraph{Two judges, one workload.}
 Utility is scored by instruction-tuned models on the benchmark's own prompt classes rather than
 deployment traffic. Two judges at $600$ comparisons per arm agree on the sign everywhere and on
 neither endpoint's magnitude: at $k=1$ one reads $-3.66\sigma$ against the anchor and the other
@@ -156,7 +156,7 @@ at matched budget with $n=150$ judged pairs; Appendix~\ref{app:matched} repeats 
 \emph{utility} without a judge on twelve pairs in seven families, where the ranking is non-monotone
 in $\alpha$, reverses on nine of them, and is predicted by nothing measured.
 
-\paragraph{The two leakage measurements cannot be put on one axis, and we tried}
+\paragraph{The two leakage measurements cannot be put on one axis, and we tried.}
 Section~\ref{sec:experiments} reports the metered decoder's extraction onset and selection
 anchoring's zero recall through two pipelines, and the released CSVs disagree about the one quantity
 they share: the same memorising model, $100$ passages, $20$-token seeds and temperature read $0.4921$
@@ -174,7 +174,7 @@ the selection arm decodes a flat $300$. So every leakage number here is read aga
 comparison this paper makes between them is about what they \emph{spend}, which is measured on one
 axis, and not what they leak, which is not.
 
-\paragraph{The scorer is a stated requirement, not a free parameter}
+\paragraph{The scorer is a stated requirement, not a free parameter.}
 Every reward arm in this paper scores with \texttt{Qwen2.5-7B-Instruct}, and every reward
 turn-over it reports is measured there: TriviaQA (Spearman $-0.607$, the $n=16$ interval excluding
 zero on the wrong side) and CoTaEval news at four anchors (to $-0.1836$ at the headline anchor,

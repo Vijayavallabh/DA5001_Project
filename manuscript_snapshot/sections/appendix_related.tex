@@ -5,7 +5,35 @@
 
 \section{Related work in full}\label{app:related}
 
-\paragraph{Access-free guarantees and their discontents}
+One report asks for the defences side by side. Table~\ref{tab:related} sorts them by what their
+guarantee is about, which is the axis this paper's argument runs on; the paragraphs below give each
+one's detail and our measurements.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Copyright defences at or near inference time, by what the guarantee is about. The first
+three rows bound the served text's law against a model, and CPR does so for images; the others
+guarantee something about a named string, an $n$-gram list, an index, a datastore or a takedown
+list.}
+\label{tab:related}
+\begin{tabular}{@{}p{0.27\linewidth}p{0.45\linewidth}p{0.22\linewidth}@{}}
+\toprule
+defence & what the guarantee is about & measured here \\
+\midrule
+anchored decoding \citep{he2026anchored} & the served law against a safe model, charged per token ($K = kT$) & audited throughout \\
+selection anchoring (this paper) & the served law against a safe model, charged once per draw (pathwise, $\log n$) & Sections~\ref{sec:method} and~\ref{sec:experiments} \\
+CP-$\Delta$, CP-$k$, CP-Fuse \citep{vyas2023provable,abad2025cpfuse} & the served law against shard models, per query, given a disjoint split & leakage (below) \\
+$n$-gram blocklist, MemFree \citep{ippolito2023preventing} & listed $n$-grams are never completed; no bound on the served law & leakage and utility (below) \\
+TokenSwap \citep{prashant2025tokenswap} & a memorised string's probability decays in its length & leakage and utility (below) \\
+TRBS \citep{fu2026duplicate} & beams reranked against an index of the corpus & not measured (a code method) \\
+BloomScrub \citep{zhang2025bloomscrub} & takedowns screened by a Bloom filter, with abstention & not measured \\
+SILO \citep{min2024silo} & legal risk isolated in a nonparametric datastore & not measured \\
+CPR \citep{golatkar2024cpr} & near-access-freeness through retrieval, for diffusion models & not measured \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Access-free guarantees and their discontents.}
 Near-access-freeness \citep{vyas2023provable} asks that a served model stay within a divergence of a
 safe model that never saw the protected work, and CP-$\Delta$ and CP-$k$ instantiate it by combining
 models trained on disjoint shards \citep{vyas2023provable,abad2025cpfuse}. Three recent results bear
@@ -29,7 +57,7 @@ sequence-level model satisfy it. Ours is the same shape for a different quantity
 honoured at every step still leaves the sequence-level event $\{\text{output}=x\}$ unprotected once
 the budget reaches $S(x)$ --- priced in nats for a single query rather than stated as a barrier.
 
-\paragraph{Inference-time defences that spend no divergence budget at all}
+\paragraph{Inference-time defences that spend no divergence budget at all.}
 Two recent methods sit in this paper's slot --- decode-time, no retraining --- and reach it without
 a cumulative budget, which makes them the sharpest comparison available and worth stating plainly.
 \textbf{TokenSwap} \citep{prashant2025tokenswap} substitutes the probabilities of high-frequency
@@ -43,16 +71,37 @@ about the \emph{catalogue supplied} --- a sequence that is memorised, or an $n$-
 --- and not about the served law relative to a safe model. TokenSwap's exponential decay is the
 closest any of them comes to a certificate, and it is a statement about a named memorised string
 rather than a bound on $q(y)/p_s(y)$ for every $y$; it says nothing about an unlisted work, a
-paraphrase, or an adversary who supplies the prefix. We did not measure either one. TRBS is a code
-method and porting it to prose would be our construction rather than theirs, and TokenSwap needs a
-paired auxiliary model whose own contamination would have to be vetted before any leakage number
-from it meant anything --- the same requirement Appendix~\ref{app:selection} imposes on our anchor.
-Measuring them properly is the obvious next comparison, and we say so rather than implying the
-omission is principled.
+paraphrase, or an adversary who supplies the prefix. \textbf{We have now measured TokenSwap, and
+it beats this paper's mechanism on both axes we can compare.} We reimplemented it from Algorithm~1
+with their published $110$-word $G$, on the same $100$ protected passages and the same $850$
+ordinary prompts as our blocklist arm. It suppresses \emph{completely} --- near-verbatim recall
+$0.0000$, ROUGE-L $\ge 0.5$ on $0$ of $100$ and $\ge 0.3$ on $0$, against $45$ and $69$ for the
+unconstrained memoriser --- which is stronger than the blocklist, whose non-literal leakage the
+same pass puts at $5$ of $100$. Judged against its own rule-off control it costs $-0.1040$
+$[-0.1255, -0.0820]$, where the blocklist costs exactly $0.0000$ and selection at $n=64$ costs
+$-0.1655$ $[-0.2000, -0.1320]$; run side by side, TokenSwap is ahead of selection by $+0.0615$
+$[+0.0285, +0.0950]$. \textbf{The mechanism this paper is about is the most expensive of the three
+and the only one that publishes a bound on the served law.} That is the comparison, and it is not
+flattering.
 
-\paragraph{Other inference-time defences, and the level none of them certifies}
+Two qualifications, both measured rather than argued. The margin is auxiliary-dependent: at
+\texttt{DistilGPT-2}, the $82$M model \emph{their} paper uses, TokenSwap and selection tie
+($-0.0325$ $[-0.0645, +0.0005]$), and the $+0.0615$ above is at a $1.8$B auxiliary $22\times$
+larger. And the suppression is fragile in a way $G$ does not reveal: with
+\texttt{KL3M-170m} as the auxiliary, recall returns to $0.2113$ with $23$ of $100$ passages over
+ROUGE-L $0.5$, because that tokenizer keeps $171$ of $431$ $G$ token ids but only $1.0\%$ of the
+probability mass, so the swap fires on $1.8\%$ of steps instead of $25$--$29\%$. Holding the
+auxiliary fixed and shrinking $G$ by hand shows $|G|$ is not the axis: at $|G|=174$ the rule still
+suppresses at $0.0044$, and interpolating that ladder predicts \texttt{KL3M} from its firing rate
+to $0.017$ and from $|G|$ to $0.006$ --- wrong by $0.206$. A deployer who checks $G$'s size will
+not see this. The vetting requirement we said would have to come first is also discharged: all four
+candidate auxiliaries, \texttt{DistilGPT-2} included, read $0.0000$ on the protected passages
+alone. TRBS remains unmeasured --- it is a code method and porting it to prose would be our
+construction rather than theirs.
+
+\paragraph{Other inference-time defences, and the level none of them certifies.}
 CP-Fuse combines models trained on disjoint shards under a balancing property \citep{abad2025cpfuse}
-and is the second mechanism we audit; BloomScrub certifies takedowns by Bloom-filter screening with
+and is the second mechanism we audit (Appendix~\ref{app:cpfuse}); BloomScrub certifies takedowns by Bloom-filter screening with
 abstention \citep{zhang2025bloomscrub}; SILO isolates legal risk in a nonparametric datastore
 \citep{min2024silo}; others refuse \citep{liu2024shield} or randomise the decoder
 \citep{chen2024randomization}, and for diffusion models retrieval carries a NAF guarantee
@@ -73,7 +122,7 @@ running maximum are standard objects in queueing and network calculus
 \citep{loynes1962stability,cruz1991calculus,leboudec2001network}, which is where our second boundary
 comes from.
 
-\paragraph{The incumbent that publishes no number, measured}\label{app:blocklist}
+\paragraph{The incumbent that publishes no number, measured.}\label{app:blocklist}
 The alternative a deployer would otherwise run is not another budget, it is a blocklist: refuse any
 continuation matching an $n$-gram of a listed work \citep{ippolito2023preventing}, the rule CoTaEval
 \citep{wei2024cotaeval} benchmarks alongside unlearning and system-prompt defences. It is outside
@@ -125,7 +174,31 @@ served request in our harness and $21.8\times$ in a server that runs only the an
 They are complements, not competitors: nothing stops a deployer running both, and a deployer who
 runs only one should know which of the two questions it has answered.
 
-\paragraph{Self-consistency, and why it is the instance that matters}
+\paragraph{CP-Fuse, measured on leakage and deliberately not on utility.}\label{app:cpfuse}
+Three reports ask for CP-$\Delta$/CP-$k$ fusion head to head. We rebuilt it from
+\citet{abad2025cpfuse}'s description --- not their code --- as two LoRA copies of the risky model,
+each fine-tuned on one of two disjoint halves of the protected passages and fused at every step by
+the balancing rule, and ran this paper's extraction protocol on $60$ passages. Each shard model
+reproduces its own half, near-verbatim recall $0.6905$ and $0.6965$, and not the other's,
+$0.0000$; the fusion reproduces neither, $0.0000$ on both halves from a single query and $0.0209$
+and $0.0199$ under the oracle-prefix windows that lift anchored decoding
+(\texttt{results/\allowbreak cpfuse\_\allowbreak audit\_\allowbreak rebuild.csv}). A plain $50/50$
+mixture with the balancing switched off already holds single queries to $0.0295$ and $0.0000$, so
+most of the suppression is the disjoint split and the balancing supplies the rest. An earlier build
+with its own fine-tunes has the same shape, $0.7538$ and $0.7988$ on the own shard against $0.0000$
+fused (\texttt{results/\allowbreak cpfuse\_\allowbreak audit.csv}).
+
+The utility half was fixed in advance and withdrawn before it ran, and we record why rather than
+drop it. On ordinary prompts CP-Fuse is the risky model with a safety device attached, and so is the
+blocklist decoder above, whose judged utility is the unconstrained model's exactly: every arm here
+is judged against that model, so a judged win for a second such device is arithmetic, not evidence.
+What separates the mechanisms is the guarantee. CP-Fuse's holds per query, given a split that only
+the trainer can attest, and per-query access-freeness does not compose \citep{cohen2025blameless};
+selection needs one named safe model and its max-divergence adds exactly across queries
+(Appendix~\ref{app:compose}). Neither is a statement about which serves better text, and no CP-Fuse
+number is converted into nats.
+
+\paragraph{Self-consistency, and why it is the instance that matters.}
 The cheapest instance of Proposition~\ref{prop:selection} is one nobody proposed for this purpose.
 Self-consistency \citep{wang2023selfconsistency} samples $n$ reasoning paths and serves the majority
 answer; a mode is a score, and the proposition assumes nothing whatever about the score, so

@@ -14,7 +14,26 @@ $\alpha = 1$ the tightest bound is the binary-KL inversion
 $\max\{p : d(p \,\|\, e^{-S(x)}) \le K\}$, which attains $1$ exactly when $d(1 \| e^{-S(x)}) = S(x)
 \le K$. In all three cases the threshold is $K = S(x)$. \qed
 
-\paragraph{The threshold for a \emph{window} event, which is what extraction actually measures}
+\paragraph{Below the threshold the orders part company.}\label{app:belowthreshold}
+The threshold is where the tightest bound on $\Pr_q[E]$ reaches $1$, and it says nothing about how
+fast that bound falls below it. There the orders differ by more than a constant. Write
+$S = -\log p_s(E)$ and take $K < S$. At $\alpha = \infty$ the bound is $e^{K-S}$, and for
+$\alpha \in (1,\infty)$ it is $e^{-(1-1/\alpha)(S-K)}$, both exponential in the shortfall $S-K$. At
+$\alpha = 1$, the order the deployed decoder charges, it is only linear. Every $q$ with
+$d(q(E) \,\|\, p_s(E)) \le K$ has $q(E) \le (K + \log 2)/S$, since $d(a \,\|\, e^{-S}) \ge aS - h(a)
+\ge aS - \log 2$ with $h$ the binary entropy; and the law that emits $x$ with probability $a$ and
+otherwise follows $p_s$ costs $aS - h(a) \le aS$ to first order in $e^{-S}$, so $a = K/S$ is within
+budget. The tightest KL bound is therefore $K/S$ to within $\log 2/S$: a KL budget of half a work's
+surprisal still permits the work half the time. With the window thresholds of
+Table~\ref{tab:windowvacuity}: at $k = 0.5$, where neither of two judges separates the decoder from
+its anchor, $K = 100$ nats against a $50$-token window's $159.8$ permits that window with probability
+about $0.63$ under the KL charge and about $e^{-60}$ under the pathwise one. A KL certificate that
+bounds the window by $\delta$ needs $K \le \delta S$, which by Proposition~\ref{prop:sparse} leaves
+the decoder at most $\delta S/\varepsilon$ steps above $\varepsilon$ in expectation --- $1.6$ at
+$\delta = 0.01$ and $\varepsilon = 1$ --- so at a finite horizon, and in the order that is deployed,
+a certificate informative about a work is already a sparse one.
+
+\paragraph{The threshold for a \emph{window} event, which is what extraction actually measures.}
 \label{app:windowvacuity}
 Proposition~\ref{prop:threshold} is stated for an arbitrary event $E$, so it applies verbatim to
 $E_w$ = ``reproduce some $w$-token window of the work''. One report asks for that analogue, and it
@@ -49,8 +68,8 @@ $100$-token window  & $319.7$ & $1.598$ & $76.9\times$ \\
 
 Two things follow. First, \textbf{at every budget the mechanism's own evaluation uses} --- $k = 1, 3, 5,
 10, 20$ --- the certificate is vacuous for a $10$-token window, a $20$-token window, a $50$-token
-window and the whole passage alike; the $50$-token event is already vacuous below $k = 0.8$, and
-the authors' book setting is $k = 3$. Second, selection's certificate of $\log 64 = 4.159$ nats
+window and the whole passage alike; the $50$-token event is vacuous at every $k \ge 0.8$, below the
+smallest of them, and the authors' book setting is $k = 3$. Second, selection's certificate of $\log 64 = 4.159$ nats
 --- a bound, against thresholds derived from measured surprisal --- sits below \emph{every}
 threshold on this grid, by $7.7\times$ at the smallest window here. The asymmetry
 the paper is about does not depend on choosing a generous event, nor on a generous corpus
@@ -98,7 +117,8 @@ applies verbatim to any work with $S(x) \le \Lambda^*_s(u) \le K$. \qed
 \begin{proposition}[Protection outruns certification]\label{prop:outrun}
 Under the banking rule, if the decoder emits each token of $x$ with probability at least $1-\eta$
 then $k \ge (1-\eta)\,k_{\mathrm{crit}}(x) - \log 2$, and $k_{\mathrm{crit}}(x) \ge s(x) + \delta/N$
-for every work, with equality iff the surprisal accumulates at a constant rate.
+for every work, with equality iff the running ratio in Eq.~\eqref{eq:rates} is maximised at the last
+token --- which a constant surprisal rate achieves only when $\delta = 0$.
 \end{proposition}
 
 \emph{Proof.} Apply the data-processing inequality to the indicator of the true token: the step
@@ -225,7 +245,7 @@ depends on the cap at all. At $k=20$ the decoder serves $p_{r,t}$ unchanged at e
 $N_\varepsilon = \Theta(T)$ for every $\varepsilon$ below the pair's imitation rate --- the vacuous
 horn in Proposition~\ref{prop:sparse}'s own currency.
 
-\paragraph{Selection anchoring does not evade the chain rule, and saying so was an error}
+\paragraph{Selection anchoring does not evade the chain rule, and saying so was an error.}
 Earlier versions of this appendix argued that a selection rule ``is not a causal policy at all'',
 that every token it emits is drawn from $p_{s,t}$ so $N_\varepsilon = 0$ identically, and that its
 $\log n$ is spent where the chain rule does not reach. The first clause is a statement about the
@@ -256,7 +276,7 @@ every term nonnegative. Markov's inequality at each step gives
 $\Pr_q[D_{\mathrm{KL}}(q_t \| p_{s,t}) > \varepsilon] \le \mathbb{E}_q[D_{\mathrm{KL}}(q_t \| p_{s,t})]/\varepsilon$,
 and summing over $t$ bounds $\mathbb{E}_q[N_\varepsilon]$ by $K/\varepsilon$. \qed
 
-\paragraph{Proposition~\ref{prop:sparse} holds surely, not just in expectation, for the deployed class}
+\paragraph{Proposition~\ref{prop:sparse} holds surely, not just in expectation, for the deployed class.}
 The proposition bounds a count in expectation, because $D_{\mathrm{KL}}(q\|p_s)$ is an expectation
 over trajectories. The deployed class enforces more: the token bucket caps the \emph{realised}
 charges of each trajectory, $\sum_{t \le T} a_t \le K$ pathwise, the accounting under which no
@@ -268,7 +288,7 @@ authors' own $k=3$ with $T_{\max}=200$ the count is $600/\varepsilon$ against a 
 steps, so it constrains nothing below $\varepsilon = 3$ nats in a single step, which is the first
 horn again in another currency.
 
-\paragraph{The dichotomy at finite $T$, and in probability rather than in expectation}
+\paragraph{The dichotomy at finite $T$, and in probability rather than in expectation.}
 Two reports ask for the dichotomy without an asymptotic in it. Proposition~\ref{prop:sparse} is
 already non-asymptotic --- it holds at every $T$ --- but it bounds a mean, and the statement worth
 having bounds a tail. Markov applied once more to the count gives, for every $\varepsilon > 0$ and
@@ -337,7 +357,7 @@ reading unreadable. Those are this paper's floor on \emph{generation-run} variat
 a different quantity from position bias, and every comparison here between gains from
 \emph{different} passes carries it. The ones that do not are read inside one pass: the rows above,
 and every $n$-sweep.
-\paragraph{Proposition~\ref{prop:imitation}'s shape is the mechanism's, not the pair's}
+\paragraph{Proposition~\ref{prop:imitation}'s shape is the mechanism's, not the pair's.}
 Two further anchors and a $70$B risky model were run on the same $500$ ordinary prompts, budget grid
 and $200$-token cap, with both mandatory baselines and bands fixed in advance. They vary the distance
 between the two distributions while the mechanism, the workload and the judges stay fixed.
@@ -376,7 +396,7 @@ base-to-instruct shift the $70$B does not pay. Read as \emph{tuning} rather than
 levels order cleanly, $0.303$, $0.617$, $0.857$, $0.908$, with realised spend following exactly. The
 prediction that the same-family instruct rate would fall below half the same-family base rate passed narrowly, by $2.2\%$ of its threshold on $r_{\rm imit}(3)$, the column it was specified on, and is
 reported as narrow.
-\paragraph{The causal placement Proposition~\ref{prop:sparse} permits}
+\paragraph{The causal placement Proposition~\ref{prop:sparse} permits.}
 The front-loaded decoder is granted $\log 8 = 2.0794$ nats up front rather than metered per token,
 and spends them, realised median \emph{and} maximum $2.0794$. On the same $500$ prompts and judge it
 gains $-0.008$ $[-0.056, +0.041]$; the uniform rate at the same total gains $-0.032$
@@ -403,16 +423,16 @@ $\tau = 0,1,2,4,8$, the last a tick above the fourth rather than a continued fal
 bar releases the budget less often ($0\%$ to $86.7\%$ of trajectories never spend) \emph{and} buys
 less when it does ($+0.0215$ to $+0.0081$ conditional on spending). The one reading that favours
 concentration is reported and not leaned on: at $\tau=8$ the conditional gain is the grid's largest,
-$+0.0342$, but on $n=73$ with interval $[-0.0068,+0.0753]$, which includes zero and overlaps
+$+0.0342$, but on the $73$ prompts that spend at all, with interval $[-0.0068,+0.0753]$, which includes zero and overlaps
 $\tau=0$'s almost entirely.
 
-\paragraph{Proposition~\ref{prop:selection} is tight}
+\paragraph{Proposition~\ref{prop:selection} is tight.}
 If $f$ is maximised at a single $y^\star$ with $p_s(y^\star) = p$, then
 $q(y^\star) = 1-(1-p)^n \to np$ as $p \to 0$, so no constant below $n$ works in
 $q(y) \le n\,p_s(y)$ and the $\log n$ charge cannot be improved without assuming something about
 $f$ or $p_s$ --- which is the point of assuming neither.
 
-\paragraph{What Theorem~\ref{thm:nfl} is worth in numbers}
+\paragraph{What Theorem~\ref{thm:nfl} is worth in numbers.}
 The utility is the judge's verdict scored $1/\tfrac12/0$ and its law under $p_s$ is read off the
 anchor-only arm; realised spend is the decoder's own sequence divergence, which never reaches its cap.
 At $k=0.5,1,3,20$ the decoder spends $79.0$, $134.6$, $165.0$ and $171.3$ nats to reach
@@ -422,9 +442,14 @@ Eq.~\eqref{eq:nfl} by three to five orders of magnitude ($2.8\times10^{5}$, $590
 times over), and bootstrapping over judged pairs at the \emph{weakest} end of each interval still
 leaves the ratio between $1.3\times10^{3}$ and $8.6\times10^{3}$. The two mechanisms sit at very
 different distances from the frontier under judge~B's own law of $U$: selection at $n=8$ is $58\times$
-it, and the metered decoder's best arm $7{,}995\times$.
+it, and the metered decoder's best arm $7{,}995\times$. One report asks the same of the headline,
+whether $\log 64$ is near $\Lambda^*_s$. On that pass, order-averaged and with each arm's own
+control as the safe law of $U$, selection at $n=64$ is $32\times$ the frontier on its $3.175$-nat
+bound and the metered decoder $11{,}646\times$ on its $171.3$ nats spent
+(\texttt{results/\allowbreak frontier\_\allowbreak distance\_\allowbreak h2h.csv}): nearer than at
+$n=8$, and still more than an order of magnitude off it.
 
-\paragraph{Why better scheduling cannot close the gap}
+\paragraph{Why better scheduling cannot close the gap.}
 The decoder trades two quantities and on the geodesic both are closed forms in $\psi(u) = \log Z(u)$:
 \begin{equation}
 C(\theta) = \theta\psi'(\theta) - \psi(\theta), \quad C'(\theta) = \theta\psi''(\theta), \qquad
@@ -470,7 +495,7 @@ the price of that target, not of the schedule.
 % tab:repairs cut 2026-09-19 for the page budget. Section~\ref{sec:orders} names all four escapes
 % and where each lands in prose, and each one's numbers are in the paragraphs above; the table was
 % a second telling of both. The row that was only here -- the vacuity count -- is kept below.
-\paragraph{Where the four escapes land}
+\paragraph{Where the four escapes land.}
 Every escape the dichotomy leaves a per-token meter is measured above: sharpening the charge
 ($\alpha: 1 \to 8$ at $k=3$) cuts oracle recall $0.0965 \to 0.0012$, an $80\times$ cut at no
 measurable utility cost, and lands on the bounded horn because it stops serving the risky model
