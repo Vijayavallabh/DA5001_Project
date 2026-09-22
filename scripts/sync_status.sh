@@ -48,6 +48,62 @@ case "${1:-status}" in
       echo "[sync] no remote-only code"
     fi ;;
   both)   "$0" push && "$0" pull ;;
+  push-results)  # a results file CORRECTED here must reach host B, and nothing else pushes it
+    # `push` sends code patterns only and `pull` runs B -> local, so a correction made locally to a
+    # committed CSV never crossed. results/scorer_scale_6rung{,_bands}.csv carried the stale
+    # 14.7701 on host B for a day after 14.7700 was measured and fixed here (caution (ax)): a
+    # number typed from knowledge, corrected in one place only. --update means a newer file on B
+    # is never clobbered, so a fresh arm scored there still wins.
+    rsync -az --update --include 'results/***' --include '*/' --exclude '*' \
+          ./ "$H:$R/" && echo "[sync] corrected results -> host B ok" ;;
+  verify) # content equality over code + results, IGNORING line endings
+    # A raw md5 comparison reports five permanent phantom diffs: `csv.writer` with `newline=""`
+    # uses the csv module's default lineterminator, which is CRLF, so a file freshly written on
+    # host B carries \r\n while its committed twin here is LF (git tracks them `i/lf w/lf`).
+    # Row-for-row the data are identical. Comparing raw bytes would have this check crying drift
+    # forever and so training us to ignore it, which is worse than not having it.
+    python3 - "$H" "$R" <<'PYEND'
+import hashlib, os, subprocess, sys
+host, remote = sys.argv[1], sys.argv[2]
+EXT = (".py", ".sh", ".md", ".csv", ".json")
+DIRS = ("analysis", "scripts", "tests", "results")
+
+def norm(b):
+    return hashlib.md5(b.replace(b"\r\n", b"\n")).hexdigest()
+
+local = {}
+for d in DIRS:
+    for root, _sub, files in os.walk(d):
+        if "__pycache__" in root:
+            continue
+        for f in files:
+            if f.endswith(EXT):
+                fp = os.path.join(root, f)
+                local[fp] = norm(open(fp, "rb").read())
+
+cmd = (f"cd {remote} && find " + " ".join(DIRS) + " -type f "
+       + r"\( " + " -o ".join(f"-name '*{e}'" for e in EXT) + r" \) "
+       + "-not -path '*__pycache__*' -print0 "
+       + "| xargs -0 -n1 sh -c 'printf \"%s \" \"$0\"; tr -d \"\\r\" < \"$0\" | md5sum | cut -d\" \" -f1'")
+out = subprocess.run(["ssh", host, cmd], capture_output=True, text=True).stdout
+rem = {}
+for line in out.splitlines():
+    path, _, h = line.rpartition(" ")
+    if path.strip():
+        rem[path.strip()] = h.strip()
+
+both = set(local) & set(rem)
+diff = sorted(p for p in both if local[p] != rem[p])
+only_l, only_r = sorted(set(local) - set(rem)), sorted(set(rem) - set(local))
+print(f"  verify  {len(both)} files on both, {len(diff)} differ in CONTENT")
+for p in diff[:15]:
+    print("    DIFF", p)
+print(f"  verify  local-only {len(only_l)}, hostB-only {len(only_r)}")
+for p in only_r[:10]:
+    print("    hostB-only (never pulled!)", p)
+print("  verify  IN SYNC" if not diff and not only_r else "  verify  ACTION NEEDED")
+PYEND
+    ;;
 esac
 
 echo

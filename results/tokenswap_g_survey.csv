@@ -1,0 +1,14 @@
+auxiliary,vocab_size,g_token_ids,words_unpaired,shared_with_main
+distilbert/distilgpt2,50257,426,0,0
+alea-institute/kl3m-002-170m,32768,171,5,0
+alea-institute/kl3m-002-520m,32768,171,5,0
+alea-institute/kl3m-003-1.7b,32768,171,5,0
+alea-institute/kl3m-003-3.7b,32768,171,5,0
+PleIAs/Pleias-350m-Preview,65536,397,0,0
+PleIAs/Pleias-1.2b-Preview,65536,397,0,0
+PleIAs/Pleias-3b-Preview,65536,397,0,0
+jacquelinehe/tinycomma-1.8b-llama3-tokenizer,128256,431,0,0
+common-pile/comma-v0.1-1t,64000,404,0,0
+common-pile/comma-v0.1-2t,64000,404,0,0
+allenai/OLMo-2-1124-7B,100278,431,0,0
+Qwen/Qwen2.5-0.5B-Instruct,151665,431,0,0

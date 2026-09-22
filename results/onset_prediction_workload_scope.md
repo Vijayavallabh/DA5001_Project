@@ -206,3 +206,107 @@ tolerance and the `10%` identity cut are exactly as registered.
 fixing a gate before its data exists. What limits the damage is that the bands were not read first
 and the commit order proves it, and that the repair follows a rule this document already carried
 (caution (at)) rather than one invented for the occasion.
+
+### B1 --- REVERSAL HOLDS. The failure on AlpacaEval is the workload, not our pipeline.
+
+Arm A, our own `850` prompts through feat-168's exact pipeline, judge B, order-averaged:
+
+| quantity | value | reading |
+|---|---|---|
+| `D1` selection gain | `+0.1218 [+0.1038, +0.1400]` | SURVIVES |
+| `D2` metered gain, `k=10` | `+0.0735 [+0.0556, +0.0912]` | SURVIVES |
+| **`D3` paired difference** | **`+0.0482 [+0.0303, +0.0662]`** | **REVERSAL CONFIRMED** |
+
+Positive with the interval clear of zero, so the registered branch applies: **the failure on
+AlpacaEval is attributable to the workload, and `app:workload`'s claim stands as written.** The
+`PIPELINE` branch --- which would have withdrawn that paragraph and put the committed `+0.0675`
+itself in question --- does not fire.
+
+**The single-order column is the reason this construction exists.** Arm A's single-order `D3` reads
+**`-0.1494`**, which would have said the reversal is *refuted* on our own corpus; order-averaged it
+is `+0.0482`. A `0.198` swing between the two constructions on identical text, and the wrong sign
+on the naive one. Caution (m) measured position dominance; this is the largest instance of it this
+project has produced, and it is on the paper's own workload.
+
+### B2 --- REPLICATES.
+
+Arm B, AlpacaEval again at `--seeds 52`, `97.0%` of rank-`0` completions different:
+
+| pass | `D3` |
+|---|---|
+| feat-168 | `-0.0339 [-0.0534, -0.0137]` |
+| **Arm B (disjoint draw)** | **`-0.0255 [-0.0453, -0.0062]`** |
+
+Same sign, interval still excluding zero: **REPLICATES**, having moved `0.0084`.
+
+**And that is a fourth data point for caution (ap), which it weakens.** The rule on record said a
+paired difference at about `1.7` interval half-widths does not survive a fresh draw, resting on one
+case (`KL3M`, `1.71`, moved `0.061`). This reading sits at `1.71` and moved `0.0084`. The table is
+now:
+
+| half-widths from zero | distance moved | verdict |
+|---|---|---|
+| `1.71` (`KL3M` breadth) | `0.061` | did not replicate |
+| **`1.71` (this arm)** | **`0.0084`** | **replicated** |
+| `1.96` (committed `D3`) | --- | --- |
+| `2.12` (audited anchor) | `0.0000` | replicated |
+| `2.43` (Comma-7B) | `0.013` | replicated |
+
+**Two readings at the same ratio, opposite outcomes.** So the ratio is a weak heuristic and not a
+law, and the honest statement is that it flags a reading as *worth re-drawing* rather than
+predicting what the re-draw will say. Caution (ap) is amended accordingly rather than kept as
+written, and the amendment costs us: it removes the tidy rule we had, and the only thing that
+replaces it is re-drawing marginal readings, which is what we did here.
+
+### The degeneracy signature tracks the identity rate across four passes
+
+Reported because it fell out and is a usable diagnostic. The metered arm's order-consistency:
+
+| pass | budget | identical to opponent | order consistency |
+|---|---|---|---|
+| feat-166 | `k=10` | `98.6%` | `0.868` **STABLE** |
+| **Arm A** | `k=10` | `99.5%` | **`0.846` STABLE** |
+| feat-168 | `k=1.0` | `4.3%` | `0.335` UNUSABLE |
+| **Arm B** | `k=1.0` | `5.5%` | **`0.368` UNUSABLE** |
+
+Every other arm this project has judged reads `0.24`--`0.52`. A metered arm reading above `0.8` is
+the tell that it is serving the opponent's own text, and it is the cheapest available check that a
+budget is doing nothing --- cheaper than counting active steps, because the judging pass produces
+it anyway.
+
+### Incident, 2026-09-22 ~10:52 --- host B's virtualenv was destroyed mid-arm
+
+Arm C's metered cell finished `rc=0` at `10:51:55`; its head-to-head died at `10:53:31` on
+`ModuleNotFoundError: No module named 'transformers.models.phi3.configuration_phi3'`, ninety-six
+seconds later, with the same judge that had scored Arms A and B an hour earlier. The venv was
+gone: `.venv/bin` empty, `pyvenv.cfg` absent, and `site-packages` holding `293` directory entries
+and **zero files**. Directories intact, contents removed.
+
+**The cause is UNDETERMINED and is recorded as such.** What can be said:
+
+- **It was not the `rsync`.** Neither `sync_status.sh push` nor the new `push-results` passes
+  `--delete`, and rsync without it cannot remove a remote file. Both also ran *after* the failure.
+- The `.venv/bin` mtime read `Sep 5 12:36` while the directory was empty, which is not a deletion
+  timestamp --- it is the **local** directory's mtime, propagated by `rsync -a` when the filter
+  `--include '*/'` recreated the empty directory. That misled the first pass of this diagnosis and
+  is worth stating: **a directory mtime on the far side of an `rsync -a` is the near side's mtime,
+  not a record of what happened there.**
+- The account is shared. An interactive VS Code server session with Copilot was running as this
+  user from `09:33`, and AGENTS.md already records other active users on this box (one of their
+  `51`GB jobs OOM-killed our `neutral` class twice on 2026-09-19).
+
+Asserting which of these did it would be a guess, and a guess in this file is worth less than
+nothing.
+
+**Repair.** `uv venv` plus `uv pip install -r requirements.txt` restored it from uv's local cache
+in seconds --- `306` packages, `torch 2.10.0+cu128`, `transformers 5.17.0`, CUDA visible, and the
+`Phi-3.5` tokenizer that had failed loading cleanly. **No measurement is affected**: every arm
+scored before the incident wrote its CSV before it, Arm C's generation completed `rc=0` and its
+trajectories are on disk, and only the head-to-head had to be re-run --- which reads the same
+generations and the same reward cache.
+
+**What this changes going forward.** A long arm on that host can lose its interpreter between two
+steps of one launcher, so a multi-stage launcher must not assume the environment it started in
+still exists. `run_wscope_armc.sh` happened to be safe because its two stages write separate
+artefacts and the second is re-runnable from the first's output; a launcher that had piped one
+stage into the next would have lost the generation too.
