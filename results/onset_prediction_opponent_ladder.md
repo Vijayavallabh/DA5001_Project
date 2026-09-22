@@ -364,3 +364,43 @@ record and the `14`B arm's is not re-run.
 ```
 bash scripts/run_opponent_judge.sh qwen15b meta-llama/Meta-Llama-3.1-8B-Instruct judgeC 1
 ```
+
+### Scoring the post-hoc judge, 2026-09-22 --- **THE DECAY IS NOT REPRODUCED**
+
+| opponent | strength | judge~B | judge~C | shift | judge~C reading |
+|---|---|---|---|---|---|
+| `Qwen2.5-0.5B` | `0.704` | `+0.0490 [+0.0135, +0.0850]` | `-0.0090 [-0.0555, +0.0375]` | `-0.0580` | UNRESOLVED |
+| `Qwen2.5-1.5B` | `0.773` | `+0.0195 [-0.0165, +0.0555]` | `-0.0015 [-0.0455, +0.0425]` | `-0.0210` | UNRESOLVED |
+| `Qwen2.5-3B`   | `0.825` | `-0.0200 [-0.0540, +0.0140]` | `-0.0240 [-0.0555, +0.0085]` | `-0.0040` | UNRESOLVED |
+
+Over these three rungs judge~B's rank correlation with strength is **`-1.000`** and judge~C's is
+**`-0.500`** at exact `p = 1.0000` --- no ordering at all. Judge~C reads **`0` of `3`** rungs
+CONFIRMED against judge~B's `1`.
+
+**This is the refutation branch, and it was named as the strong one before the numbers existed.**
+The decay in H3 is a property of judge~B on this ladder and is not reproduced by a second
+instrument. H1 is untouched --- it was NOT TESTED and stays NOT TESTED.
+
+**And the direction argument written in advance was half right, which is worth recording.** It said
+judge~C favours the metered arm and so pushes `D3` down, making the decay look *stronger*. Judge~C
+did push every rung down --- but **not uniformly**: `-0.0580`, `-0.0210`, `-0.0040`, largest where
+the opponent is weakest. A strength-dependent shift **flattens** a decaying series rather than
+steepening it, and the pre-stated argument was about the LEVEL and did not anticipate that. The
+prediction is therefore not scored as confirmed; what was right is that a refutation under this
+judge is strong evidence, and that is the branch that fired.
+
+The mechanism is at least coherent: against a weak opponent every arm wins often, so a judge with
+a preference for the metered arm's own checkpoint has the most room to express it exactly where
+judge~B saw the largest positive difference.
+
+**Manuscript consequence.** The appendix paragraph written from the judge~B ladder is corrected in
+place: the five-point series stays, because it is what judge~B measures and the concession it
+sharpens is real, but the sentence now says the decay is **one judge's** and that a second judge
+reads every rung unresolved with no ordering. The strength account is **weaker** after this arm
+than before it, and the paper says so.
+
+```
+bash scripts/run_opponent_judge.sh qwen05b meta-llama/Meta-Llama-3.1-8B-Instruct judgeC 5
+```
+
+`results/opponent_ladder_judgeC.csv`, `results/order_averaged_h2h__opp_qwen{05b,15b,3b}_judgeC.csv`.

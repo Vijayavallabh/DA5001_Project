@@ -271,6 +271,50 @@ def main():
     rank_report("H3, EXPLORATORY -- all five, MIXED generators", lambda r: True)
     rank_report("H3, EXPLORATORY -- one generator, one family",
                 lambda r: r["generator"] == "blocklist_decode")
+
+    # ---- the same ladder under a second judge, POST-HOC and labelled --------------------------
+    # The registration fixes judge B and says a second judge here "would be post-hoc and would be
+    # labelled so". It cannot change H1. What it can say is whether the decay above is a property
+    # of the data or of one instrument -- and judge C is the METERED arm's own risky model, so it
+    # favours the side that would make the decay look STRONGER. A confirmation under it is weak
+    # evidence; a refutation is strong.
+    jc = []
+    for model, sfx, run_dir, status in ARMS:
+        alt = sfx.replace("__opp_", "__opp_") + "_judgeC" if sfx.startswith("__opp_") else None
+        if not alt:
+            continue
+        row = d3_row(alt)
+        if not row:
+            continue
+        base = next((r for r in rows if r["opponent"] == model), None)
+        if not base:
+            continue
+        jc.append(dict(opponent=model, strength=base["strength"],
+                       d3_judgeB=base["d3"], lo_judgeB=base["d3_lo95"], hi_judgeB=base["d3_hi95"],
+                       verdict_judgeB=base["verdict"],
+                       d3_judgeC=float(row["value"]), lo_judgeC=float(row["lo95"]),
+                       hi_judgeC=float(row["hi95"]), verdict_judgeC=row["reading"].strip(),
+                       shift=round(float(row["value"]) - base["d3"], 4)))
+    if len(jc) >= 3:
+        jc.sort(key=lambda r: r["strength"])
+        out2 = os.path.join(a.out, "opponent_ladder_judgeC.csv")
+        with open(out2, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=list(jc[0].keys()))
+            w.writeheader(); w.writerows(jc)
+        xs = [r["strength"] for r in jc]
+        print(f"\n[POST-HOC, judge C -- {len(jc)} rungs; cannot change H1]")
+        print(f"{'opponent':<30} {'str':>6} {'judge B':>9} {'judge C':>9} {'shift':>8}  verdict C")
+        for r in jc:
+            print(f"{r['opponent']:<30} {r['strength']:>6.3f} {r['d3_judgeB']:>+9.4f} "
+                  f"{r['d3_judgeC']:>+9.4f} {r['shift']:>+8.4f}  {r['verdict_judgeC']}")
+        print(f"  Spearman(strength, D3) judge B = "
+              f"{spearman(xs, [r['d3_judgeB'] for r in jc]):+.4f}, "
+              f"judge C = {spearman(xs, [r['d3_judgeC'] for r in jc]):+.4f} "
+              f"(exact p {exact_p(xs, [r['d3_judgeC'] for r in jc]):.4f})")
+        conf = [r for r in jc if r["lo_judgeC"] > 0]
+        print(f"  judge C reads {len(conf)} of {len(jc)} rungs CONFIRMED "
+              f"(judge B: {sum(1 for r in jc if float(r['lo_judgeB']) > 0)})")
+        print(f"  wrote {out2}")
     print(f"\nwrote {out}")
 
 
