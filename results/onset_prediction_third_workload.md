@@ -86,3 +86,51 @@ read the same sign regardless of competence the predictor is weakened.
 Host B, four cards, about `90` minutes total: `80` prompts is `20{,}480` draws at `n=256`.
 
 ## Scoring log
+
+## Scoring log --- B4 (partial), 2026-09-22
+
+MT-Bench is still generating. B4 costs no compute and is reported now; B1, B2 and the full B3
+table follow when the third workload lands.
+
+### B4 --- the per-class decomposition, and it does **not** support our stated mechanism
+
+`analysis/workload_predictor.py`, `results/workload_predictor.csv`. Every number below is computed
+within **one** pass (feat-170 Arm C, judge~B, `k=0.9`), so no judged level crosses a pass boundary
+and the predictor and the outcome are measured on the same prompts under the same judge.
+
+| workload | `n` | anchor's own `u` at `n=1` | paired `D3` | 95% CI | winner |
+|---|---|---|---|---|---|
+| ours, all `850` | `850` | `0.4265` | `+0.0965` | `[+0.0774, +0.1162]` | selection |
+| ours: `creative` | `150` | `0.5233` | `+0.1050` | `[+0.0683, +0.1400]` | selection |
+| ours: `neutral` | `200` | `0.4550` | `+0.0838` | `[+0.0450, +0.1237]` | selection |
+| ours: `factual` | `500` | `0.3860` | `+0.0990` | `[+0.0720, +0.1260]` | selection |
+| AlpacaEval | `805` | `0.3208` | `-0.0339` | `[-0.0540, -0.0137]` | meter |
+
+Read naively the predictor looks fine: selection wins wherever the anchor scores `0.386`--`0.523`
+and the meter wins at `0.321`, ranges separating with a gap of `+0.0652`. **That reading is wrong
+and the decomposition is what shows it.**
+
+**Inside one pass, at one protocol, the three classes span `0.1373` of anchor competence --- more
+than twice the `0.0652` gap that is supposed to separate the two workloads --- and the sign does
+not move at all.** `D3` spans `0.0212` across them and is **not monotone** in competence: the
+*least* competent class (`factual`, `0.3860`) gives a *larger* `D3` than the middle one
+(`neutral`, `0.4550`). If anchor competence drove the sign there would be a dose-response in the
+place we can see it best, and there is none.
+
+So the appendix's sentence --- *"the mechanism of the loss is the support ceiling ... a `1.8`B base
+anchor on instruction-following has `64` draws of the same inadequacy to offer"* --- is **not
+supported by the best within-pass evidence available**, and we flag it here rather than waiting for
+someone else to. What survives untouched is the **empirical** scoping, which rests on five passes
+one side and three the other and on no mechanism at all: the reversal holds on our workload and
+fails on AlpacaEval, at both a vacuous and a binding budget.
+
+Two arms now in flight bear on the same sentence from different directions --- feat-172 asks
+whether the AlpacaEval ladder has a ceiling at all (it is still climbing at `n=64`), and this arm's
+B1 asks whether a third instruction benchmark falls where competence says it should. **The
+mechanism claim in `app:workload` is under review pending both, and will be revised once rather
+than twice.** If MT-Bench's anchor win rate sits near AlpacaEval's and it still reads *selection*,
+the predictor is dead and the appendix must say the cause is unidentified.
+
+**Stated plainly:** we registered this expecting the predictor to work, wrote in advance that
+"if they all read the same sign regardless of competence the predictor is weakened", and that is
+what happened. The weakening is recorded against our own account of the result.
