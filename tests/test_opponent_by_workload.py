@@ -86,3 +86,39 @@ def test_the_confound_is_stated_because_it_is_present():
     assert max(comp) < min(instr), (
         "completion workloads no longer all have weaker opponents than instruction ones; the "
         "confound the registration concedes has gone, so the concession must be revisited")
+
+
+def test_l5_reads_the_meter_and_both_halves_are_in_the_csv():
+    """L5 is a PAIR by design: the two gains are differences against the same anchor level, so a
+    large rho on g_met alone could be arithmetic. The control is g_sel, and the test pins that the
+    two disagree -- if they ever stop disagreeing, the arithmetic objection is live again."""
+    r = rows()[0]
+    s, m = float(r["rho_gsel"]), float(r["rho_gmet"])
+    if r["l5"] == "THE METER AGAIN":
+        assert abs(m) > abs(s) + 0.2, f"verdict says the meter, rhos say {s:+.3f} vs {m:+.3f}"
+    elif r["l5"] == "SELECTION, NOT THE METER":
+        assert abs(s) > abs(m) + 0.2
+    else:
+        assert abs(abs(s) - abs(m)) <= 0.2
+    assert all(float(x["rho_gmet"]) == m and float(x["rho_gsel"]) == s for x in rows())
+
+
+def test_the_meters_gain_is_monotone_in_opponent_strength_as_the_log_claims():
+    """Caution (ai): the CLAIM about the series is what nothing checks. The log says 'perfectly
+    monotone', which is a shape, so the shape is rebuilt from the CSV in strength order."""
+    rs = sorted(rows(), key=lambda r: float(r["opponent_strength"]))
+    g = [float(r["g_met"]) for r in rs]
+    assert g == sorted(g), f"g_met is no longer monotone in strength: {g}"
+    sel = [float(r["g_sel"]) for r in rs]
+    assert sel != sorted(sel) and sel != sorted(sel, reverse=True), \
+        "g_sel has become monotone too; the contrast L5 rests on is gone"
+
+
+def test_the_cotaeval_inversion_is_on_the_selection_side():
+    by = {r["workload"]: r for r in rows()}
+    cta = by["CoTaEval-QA"]
+    import statistics
+    med = statistics.median(float(r["g_sel"]) for r in rows())
+    assert float(cta["g_sel"]) < med, "CoTaEval-QA's selection gain is no longer the low one"
+    assert float(cta["g_sel"]) == min(float(r["g_sel"]) for r in rows()), \
+        "the log calls it the lowest of the five"

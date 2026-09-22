@@ -223,3 +223,51 @@ reported as a curiosity; that is the cost this prediction is here to fix in adva
 **What may not be claimed from L5**: nothing causal, and no significance --- the same `n=5`
 permutation floor applies, and the two correlations are computed on the same five arms and are not
 independent of each other or of L3.
+
+### L5 SCORED, 2026-09-23 00:05 --- THE METER AGAIN, at the permutation floor
+
+| workload | opponent strength | `g_sel` | `g_met` | `D3` |
+|---|---|---|---|---|
+| Gutenberg | `0.4865` | `+0.0805` | `-0.0185` | `+0.0990` |
+| CoTaEval-QA | `0.5685` | `+0.0235` | `+0.0165` | `+0.0070` |
+| ours | `0.5735` | `+0.1218` | `+0.0253` | `+0.0965` |
+| MT-Bench | `0.6594` | `+0.0656` | `+0.0906` | `-0.0250` |
+| AlpacaEval | `0.6792` | `+0.0835` | `+0.1174` | `-0.0339` |
+
+**`rho(strength, g_met) = +1.000`, exact `p = 0.0167` --- the smallest value `n=5` can produce.
+`rho(strength, g_sel) = +0.300`, exact `p = 0.6833`. L5 reads THE METER AGAIN**, and the margin is
+`0.7`, not the `0.2` the band asked for.
+
+The meter's gain over the anchor is a **perfectly monotone** function of the opponent's strength
+across five workloads, and selection's gain is not a function of it at all. That is the whole
+workload split in one line: `D3 = g_sel - g_met`, `g_sel` is roughly flat, `g_met` climbs, so `D3`
+falls and eventually changes sign.
+
+**The arithmetic objection is refuted by the analysis's own control, which is why L5 was registered
+as a PAIR.** Both gains are differences against the same anchor level, `u_anchor_k0`, so both carry
+exactly the same mechanical dependence on it. If a strong opponent forced a large `g_met` by
+arithmetic it would force a large `g_sel` too. It does not: `+1.000` against `+0.300` on the same
+five numbers. No post-hoc normalisation is needed to say this, and none was computed.
+
+**What the mechanism appears to be, stated as an interpretation and not a measurement.** The
+opponent in all five arms is the unconstrained risky model, so "opponent strength" is how much
+better the risky model is than the anchor on that workload. A metered decoder is that risky model
+pulled toward the anchor, so it inherits the advantage wherever there is one; selection can only
+reorder the anchor's own samples and cannot exceed what the anchor could have produced. **This is
+the support ceiling in its correct form** --- the appendix retracted that story because selection's
+gain barely moved between two workloads while the meter's rose, and that observation is exactly
+this one, now generalised to five workloads and with the variable named and measured.
+
+**Three limitations, none of which the numbers above remove.**
+`n=5`, so `p = 0.0167` is the floor rather than evidence, and the registration's ban on
+significance claims stands. MT-Bench is `80` prompts against the others' `500`--`850`, so one of
+the five ranks is far noisier than the rest. And this is a reanalysis of arms run for other
+reasons: strength and task type move together across them (P1's own concession), so it identifies
+the variable that ORDERS the outcome, not the variable that CAUSES it. The within-workload test is
+the AlpacaEval ladder, which was generating while this was scored.
+
+**And the CoTaEval-QA inversion is now located.** Its `D3` is small not because its meter gains
+unusually much --- `g_met = +0.0165` sits exactly where its strength predicts --- but because its
+`g_sel` is the lowest of the five, `+0.0235` against a median of `+0.0805`. So the one arm that
+breaks the opponent account breaks it on the SELECTION side, which is the side the account says
+nothing about.
