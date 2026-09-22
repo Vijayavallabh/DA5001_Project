@@ -20,6 +20,33 @@ instrument: a five-point `k` grid on `200` prompts, and the budget is chosen by 
 be tuned to an answer. Bands carry over from feat-166 unchanged. The anchor draws, the opponent and
 the `51,520` reward scores are NOT re-run --- they do not depend on `k`.
 
+**`results/onset_prediction_third_workload.md` (feat-173) is REGISTERED and generating** ---
+MT-Bench as a third workload, because two points cannot distinguish "instruction-following breaks
+the reversal" from "AlpacaEval breaks it", and with two points every candidate mechanism fits. Full
+feat-170 protocol at `n=256`, both the paper's `k=10` and a rate-matched binding budget. It also
+registers, as explicitly **exploratory**, a predictor --- the anchor's own `n=1` win rate against
+the opponent, measurable before any comparison --- and the per-class decomposition of our own
+corpus, which gives three more workloads inside one pass at one protocol for no compute. If the
+three classes span enough anchor competence to flip the sign within a single pass, that is stronger
+evidence for the support-ceiling mechanism than any number of external benchmarks.
+
+**`results/onset_prediction_mixtral_armc.md` (feat-171) is REGISTERED and judging** --- Mixtral,
+third attempt, and the first on a workload where the comparison exists. feat-166 and feat-168 both
+failed for the same reason we only understood this morning: both ran on AlpacaEval, where the
+reversal does not hold, so judge~B read the difference negative and their gates correctly refused
+to let Mixtral be read. feat-170 Arm C is `850` prompts at a binding budget with judge~B reading
+`+0.0965`, and its generations and reward cache are on disk, so **only the judge changes**. Judge~C
+runs beside it.
+
+**`results/onset_prediction_offsupport_ladder.md` (feat-172) is REGISTERED and generating** --- it
+attacks a weakness in our own appendix. The scoping paragraph attributes the AlpacaEval loss to a
+support ceiling, but the AlpacaEval ladder is **still climbing at `n=64`** (`+0.0130` on the last
+doubling), so a ceiling is asserted where we merely stopped measuring. One run at
+`--trajectories-per-prompt 256` yields `n = 64/128/256` via the prefix property feat-134 proved,
+gated on `51{,}520` bit-identical rewards at ranks `0`--`63`. The meter is only `+0.0410` ahead,
+about three doublings. We predict CLOSES and not CATCHES --- i.e. that our own "ceiling" language
+is wrong and its conclusion is right.
+
 **`results/onset_prediction_workload_scope.md` (feat-170) is SCORED.** B1 **REVERSAL HOLDS**
 (`+0.0482 [+0.0303, +0.0662]` on our own corpus through feat-168's pipeline), B2 **REPLICATES**
 (`-0.0255` against feat-168's `-0.0339`, moved `0.0084`), B4 **REVERSAL HOLDS** at a matched

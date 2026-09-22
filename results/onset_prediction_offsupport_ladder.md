@@ -1,0 +1,87 @@
+# Pre-registration: off the anchor's support, is selection beaten or just under-drawn? (feat-172)
+
+Committed **before any generation**. Nothing above the `## Scoring log` line is edited afterwards.
+
+## Why
+
+feat-170 established that the headline reversal fails on AlpacaEval and holds on our own workload,
+at both a vacuous and a binding budget, and the manuscript now scopes the claim to workloads inside
+the anchor's support. **That scoping is stated more strongly than the evidence supports in one
+specific way, and this arm is here to fix it.**
+
+The appendix attributes the loss to a support ceiling: selection serves only what the anchor draws,
+so on a workload the anchor cannot do, more draws cannot help. **The AlpacaEval ladder does not
+show a ceiling.** Its gains are `+0.0000, -0.0081, +0.0031, +0.0180, +0.0335, +0.0634, +0.0764`
+over `n = 1 ... 64`, and the last doubling still adds `+0.0130`. A curve still climbing at the
+right edge of its grid is not evidence of a ceiling; it is evidence that we stopped measuring.
+
+So the appendix's mechanism may be right and may be an artefact of `n = 64`. The distinction is
+not cosmetic: the meter's binding-budget gain there is `+0.1174`, only `+0.0410` above selection's
+`+0.0764`, which is about three doublings at the observed rate. **If selection catches a binding
+meter off-support at `n = 256` or `512`, then the paper's own scoping concession is too strong ---
+and it would be caught at a certificate of `\log 512 = 6.24` nats against the meter's realised
+`171.3`, still a factor of `27`.**
+
+## What runs
+
+One generation: the anchor (`TinyComma-1.8B`, `k=0`) on the same `805` AlpacaEval prompts at
+`--trajectories-per-prompt 256`, `--batch-size 64`, every other flag identical to feat-166's
+`sel_anchor64`. **One run yields `n = 64`, `128` and `256`**, because `h1.py` seeds per trajectory
+index and feat-134 demonstrated the prefix property directly (its first `64` of `128` draws were
+bit-identical to the committed `64` in all `32{,}000` rewards).
+
+Then the reward pass over the new candidates and `analysis/selection_scaling.py` under judge~B.
+The metered arm, the opponent and the `n <= 64` rewards are **not** re-run.
+
+## The reproduction gate --- on the reward cache, never on a judged number
+
+Ranks `0`--`63` of this arm's reward cache must be **bit-identical** to
+`results/mixpow_rewards64.csv`, all `51{,}520` floats compared with `==`. This is feat-134's gate,
+which passed at `32{,}000` of `32{,}000`, and it is the only thing that licenses treating the new
+draws as an extension of the committed ladder rather than a fresh pool.
+
+**No `n > 64` number is read until it clears.** If it fails the reading is INAPPLICABLE rather than
+a failure of the arm: it would mean the batch size or the seeding differs and the two pools are
+different draws, and the response is to chase that, not to read the ladder anyway.
+
+## Bands, committed before the data
+
+- **B1 --- does selection catch the binding meter off-support?** Judge~B's paired `D3` against the
+  `k=1.0` metered arm at each of `n = 128` and `256`. **CATCHES** if `D3 >= 0` at either, with the
+  interval containing or above zero; **CLOSES** if `D3` is still negative but its magnitude at
+  `n=256` is less than half the `-0.0339` at `n=64`; **CEILING** if the magnitude does not fall by
+  at least a quarter. Reported with the `n` at which each happens.
+- **B2 --- where does the ladder stop?** The paired `g(128) - g(64)` and `g(256) - g(128)` within
+  this pass. **STILL CLIMBING** if the latter is `> 0` with its interval excluding zero;
+  **SATURATED** if it contains zero. This is feat-134's construction and is the one that speaks to
+  the ceiling directly.
+- **B3 --- the price of catching up.** Whatever B1 says, report the certificate at the crossing or
+  at the grid's end: `\log n` nats against the metered arm's realised spend on this corpus,
+  as a ratio. A selection arm that needs `256` draws still publishes `5.55` nats.
+
+## Excluded in advance
+
+- Extending past `n = 256` inside this arm after seeing where the curve goes. If the answer is "it
+  would cross at `512`", that is a **separate** registration with its own bands.
+- Reading any band if the reproduction gate fails.
+- Comparing a judged level from this pass to one from any other (caution (ap)); B1 and B2 are
+  paired differences within this pass, and the metered arm it is set against is judged in the
+  same pass.
+- Presenting a CATCHES reading as rescuing the headline. The headline is a claim about `n = 64`;
+  if it takes `256` draws off-support, the honest statement is that the workload costs selection
+  two doublings, and the scoping concession is **rewritten, not deleted**.
+
+## What we predict
+
+**CLOSES, not CATCHES.** We expect the gap to narrow and not to close by `n = 256`: extrapolating
+`+0.0130` per doubling gives about `+0.102` at `n=256` against the meter's `+0.1174`. We predict
+B2 reads STILL CLIMBING at `128` and is marginal at `256`. **We are predicting that our own
+appendix's "ceiling" language is wrong and its conclusion is right** --- the reversal really does
+fail off-support at the `n` the paper uses, but not because more draws cannot help.
+
+## Compute
+
+Host B, one card, about `11` hours for the generation, `40` minutes for the rewards, an hour for
+judging.
+
+## Scoring log
