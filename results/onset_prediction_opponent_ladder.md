@@ -208,3 +208,41 @@ opponent directory. It was caught only by an assertion inside `order_averaged_h2
 being no shared prompt --- an accident of the failure being total. **A *partial* generation would
 have judged a quietly smaller prompt set and produced a healthy-looking CSV**, which is exactly what
 G1 was added above to catch, and the launcher now aborts on a non-zero generation exit.
+
+### Amendment, 2026-09-22 20:50 --- the committed opponent came from a DIFFERENT GENERATOR
+
+**Written with one of the three arms already read** (`Qwen2.5-0.5B`, which measured strength
+`0.7035` and so fell outside H1 as the NOT TESTED branch anticipated) and before the other two
+existed. **No band is changed and no threshold moves**; what is added is a column and a caveat,
+and it is recorded here rather than discovered later.
+
+Caution (at) says two arms compared must have come from the same pipeline and that the runs record
+enough to check it. Checked: they did not.
+
+| opponent | generator |
+|---|---|
+| `Llama-3.1-8B-Instruct` (committed) | **`h1.py`** |
+| `Qwen2.5-0.5B` / `1.5B` / `3B` / `14B` | **`analysis/blocklist_decode.py`** |
+
+`blocklist_decode.py` generates one prompt at a time under a per-prompt seed; `h1.py` batches and
+seeds per trajectory index. It is read off the records themselves --- `blocklist_decode` stamps
+`blocklist_ngram` into every one and `h1.py` never does --- so `analysis/opponent_strength.py` now
+carries a `generator` column and no directory name is trusted.
+
+**What this costs, stated plainly.** H1's threshold is the committed opponent's own strength,
+`0.555`, so **H1 is a cross-pipeline reading** and part of any gap between `0.555` and a ladder
+point could be the generator rather than the opponent. That does not invalidate it --- the
+quantity is the anchor control's win rate against a *text*, and a text is a text however it was
+produced --- but it is a confound the reading has to carry, and it was not in the registration.
+
+**What is clean and was the ladder's stated purpose.** The four Qwen opponents share one
+generator, one family and one prompt set, with size the only variable, which is exactly what the
+registration says the ladder is for (*"within one family so that size is the only thing that
+moves"*). The within-pipeline four-point ordering is therefore the arm's primary exploratory
+content, and the committed Llama point is reported beside it as the paper's existing reference
+rather than as a fifth rung.
+
+The `blocklist_decode` route is not new here: `onset_prediction_second_opponent.md` (feat-153) used
+it for `Qwen2.5-14B`, and that arm's `-0.0065 [-0.0385, +0.0255]` is the concession in
+`app:h2hrepeat`. So the confound is already in the paper, undisclosed, and this ladder is what
+surfaced it. The appendix sentence will say which generator produced which side.

@@ -34,12 +34,13 @@ Usage:
 """
 import argparse
 import csv
+import json
 import os
 import statistics
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from analysis.selection_decoding import load_baseline  # noqa: E402
+from analysis.selection_decoding import CLASSES, load_baseline  # noqa: E402
 
 # (label, FILE SUFFIX, generation dir, status). order_averaged_h2h.py writes `_` + its --tag, so
 # `--tag _opp2` lands on `..__opp2.csv`; these are the suffixes as they appear on disk, not the tags.
@@ -50,6 +51,30 @@ ARMS = [
     ("Qwen/Qwen2.5-3B-Instruct", "__opp_qwen3b", "output/opponent_qwen3b", "new"),
     ("Qwen/Qwen2.5-14B-Instruct", "__opp2", "output/opponent_qwen14b", "on record"),
 ]
+
+
+def pipeline(run_dir):
+    """Which GENERATOR wrote this opponent's completions, read off the records themselves.
+
+    Caution (at): two arms compared must have come from the same pipeline, and the runs record
+    enough to check it mechanically. They do NOT all match here, which is exactly why this column
+    exists. The committed opponent is an `h1.py` sweep; every opponent on this ladder comes from
+    `analysis/blocklist_decode.py`, which generates one prompt at a time under a per-prompt seed
+    instead of batching. `blocklist_decode` stamps `blocklist_ngram` into every record and `h1.py`
+    never does, so the two are distinguishable without trusting a directory name.
+
+    The consequence is stated rather than hidden: H1's threshold is the committed opponent's own
+    strength, so H1 is a CROSS-PIPELINE reading, while the four Qwen opponents share one pipeline
+    and one family and are the clean dose-response the ladder was designed to be."""
+    if not os.path.isdir(run_dir):
+        return "?"
+    for cls in CLASSES:
+        f = os.path.join(run_dir, f"trajectories_k-1_{cls}.jsonl")
+        if not os.path.exists(f):
+            continue
+        m = json.loads(open(f, encoding="utf-8").readline())["metadata"]
+        return "blocklist_decode" if "blocklist_ngram" in m else "h1.py"
+    return "?"
 
 
 def per_prompt(sfx):
@@ -207,7 +232,8 @@ def main():
                          strength=round(strength, 4),
                          anchor_win=round(statistics.fmean(anchor), 4),
                          d3=d3, d3_lo95=lo, d3_hi95=hi,
-                         verdict=verdict, g1=g1, g3=g3v, n_gen=g3n,
+                         verdict=verdict, g1=g1, g3=g3v,
+                         generator=pipeline(run_dir), n_gen=g3n,
                          empty_frac=round(g3e, 4), mean_words=round(g3w, 2)))
 
     rows.sort(key=lambda r: r["strength"])
