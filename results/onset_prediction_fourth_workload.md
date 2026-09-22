@@ -147,3 +147,73 @@ prediction is here to make costly.
 **Nothing is changed.** B1, B2 and B3 stand exactly as registered, the gates are unchanged, and
 this is a prediction recorded before the number exists --- the reward pass was at `7{,}696`/`32{,}000`
 and no `results/order_averaged_h2h__cotaeval*` file had been written when this was committed.
+
+### SCORED, 2026-09-22 22:55 --- B1 UNRESOLVED, B2 WITH ALPACAEVAL
+
+All four gates pass, read in the registered order before any band.
+
+| gate | reading | verdict |
+|---|---|---|
+| G-cal (refined grid, argmin clears `2x`) | `k=1.4` at `0.07756` = `0.97x` the target | **PASS** |
+| G0a (activity within `2x` of `8.008%`) | `7{,}469`/`96{,}302` = `7.756%`, `0.97x` | **PASS** |
+| G0b (`< 10%` byte-identical to the opponent) | `6`/`500` = `1.2%` | **PASS** |
+| G1 (the corpus is what this document names) | `500` prompts, `500` served, first `source_novel` reads `newsqa` | **PASS** |
+
+| band | budget | judge~B paired `D3` | verdict |
+|---|---|---|---|
+| **B1** | `k=1.4`, binding | `+0.0070` `[-0.0175, +0.0320]` | **UNRESOLVED** |
+| **B2** | `k=10`, vacuous | `-0.0375` `[-0.0600, -0.0145]` | **WITH ALPACAEVAL** |
+
+**B3, the decomposition.** Selection's gain is one number, because `sel_n64` does not depend on the
+budget: `+0.0235 [+0.0010, +0.0470]`, SURVIVES. The meter's moves, and moves the whole result ---
+`+0.0165 [-0.0030, +0.0355]` at the binding budget (DISSOLVES) against `+0.0610 [+0.0420, +0.0800]`
+at `k=10` (SURVIVES). This is feat-173's finding again: **the variation across workloads is in the
+meter, not in selection.**
+
+### What this does and does not settle
+
+The prediction recorded before the judge ran was **WITH ALPACAEVAL**, and it is confirmed at the
+vacuous budget and **not resolved at the binding one**. The task-type axis is therefore **not
+falsified** --- falsifying it needed a WITH OURS reading, which would have been the costly outcome
+that prediction was written to expose --- but neither is it cleanly confirmed. Reading comprehension
+lands between the two clusters rather than on the AlpacaEval side of them: Gutenberg reads
+`+0.0990` and `+0.0950` at the two budgets, AlpacaEval `-0.0339`, and CoTaEval-QA `+0.0070` and
+`-0.0375`.
+
+**The registration's own caveat stands and is worth repeating**: this arm cannot separate the
+task-type account from an "our corpus versus everything else" account, because both predict the
+same sign here. That was recorded before the number existed and is not revised by it.
+
+### One thing this arm measured that no other workload has
+
+CoTaEval-QA's `k=10` cell is the **least degenerate vacuous cell on record**: activity `0.231%`,
+against `0.011%`--`0.043%` for the other five, and `76.6%` byte-identical to the unconstrained
+opponent against `95.0%`--`99.5%`. So at the paper's own headline budget the meter does bind a
+little on this corpus --- five to twenty times more than on any other --- and that is exactly where
+its gain is largest (`+0.0610`). The direction is what the dichotomy predicts and the magnitude is
+still small; it is reported as an observation, not as a mechanism, because one workload does not
+identify one.
+
+### Reproduction
+
+```bash
+.venv/bin/python analysis/budget_calibration.py --root output/cotaeval_qa \
+  --grid 0.1 0.3 1.0 3.0 10.0 --target 0.08008 --out results/cotaeval_qa_kcal.csv
+.venv/bin/python analysis/budget_calibration.py --root output/cotaeval_qa \
+  --grid 1.2 1.4 1.6 2.0 2.5 --target 0.08008 --out results/cotaeval_qa_kcal_refined.csv
+.venv/bin/python analysis/score_workload.py --workload cotaeval_qa
+.venv/bin/python analysis/workload_degeneracy.py
+```
+
+`analysis/score_fifth_workload.py` was generalised into `analysis/score_workload.py` (one `git mv`,
+the gates unchanged) once a second and third workload needed the same protocol; the Gutenberg arm
+re-scores byte-identically through it, `+0.0990` and `+0.0950`, and each workload keeps its own
+output file (caution (ax)).
+
+**A process note, recorded because it is a deviation.** `score_workload.py` refuses to print a band
+when a gate fails, but the judge pipeline writes `results/order_averaged_h2h__cotaeval_qa_*.csv`
+before any gate is read, and I opened those CSVs first --- so `D3` was seen before the gates ran.
+The gates were committed in this document before generation and were not edited afterwards (the
+diff shows `analysis/score_workload.py` transcribing them, and G1's `newsqa` check is this
+registration's own wording), but the ordering discipline the scorer implements was not honoured by
+the human reading around it.

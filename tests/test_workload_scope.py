@@ -553,3 +553,87 @@ def test_the_completion_workload_is_the_only_one_where_the_meter_loses_to_its_co
     txt = body("appendix_selection.tex")
     assert "only workload on which the metered decoder \\emph{loses}" in txt, \
         "the observation that the meter loses to its own control here was cut"
+
+
+# ---- feat-174: reading comprehension, the arm the task-type axis was predicted against ---------
+
+def _deg(workload, budget):
+    path = os.path.join(ROOT, "results", "workload_degeneracy.csv")
+    rows = [r for r in csv.DictReader(open(path, encoding="utf-8"))
+            if r["workload"] == workload and r["budget"] == budget]
+    assert len(rows) == 1, f"{workload}/{budget}: {len(rows)} rows"
+    return rows[0]
+
+
+def test_the_fifth_workload_carries_both_its_bands_and_its_decomposition():
+    """B1, B2 and B3 as measured. The bands are the whole arm: B1 straddles zero and B2 does not,
+    and a paragraph that printed only one of them would be reporting half a result."""
+    txt = M.body("appendix_selection.tex")
+
+    def band(g, lo_, hi_):
+        return f"${g:+.4f}$ $[{lo_:+.4f}, {hi_:+.4f}]$"
+
+    b1 = _d("cotaeval_qa_conc_bind", "D3")
+    b2 = _d("cotaeval_qa_conc_k10", "D3")
+    assert b1[1] < 0 < b1[2], "B1 no longer straddles zero; the UNRESOLVED reading is stale"
+    assert b2[2] < 0, "B2 no longer excludes zero on the losing side"
+    assert b1[3] == "REVERSAL UNRESOLVED" and b2[3] == "REVERSAL REFUTED", (b1[3], b2[3])
+    for v in (b1, b2):
+        assert band(v[0], v[1], v[2]) in txt, f"the CoTaEval band {band(v[0], v[1], v[2])} left it"
+    # B3: selection is one number at both budgets, the meter is two. That asymmetry IS the claim.
+    sel = _d("cotaeval_qa_conc_bind", "D1")
+    assert _d("cotaeval_qa_conc_k10", "D1")[:3] == sel[:3], \
+        "selection's gain now differs between the two cells; it does not depend on the budget"
+    assert band(sel[0], sel[1], sel[2]) in txt, "selection's own gain left the paragraph"
+    for sfx in ("cotaeval_qa_conc_bind", "cotaeval_qa_conc_k10"):
+        m = _d(sfx, "D2")
+        assert band(m[0], m[1], m[2]) in txt, f"the meter's gain on {sfx} left the paragraph"
+    assert _d("cotaeval_qa_conc_k10", "D2")[0] > _d("cotaeval_qa_conc_bind", "D2")[0], \
+        "the meter no longer gains MORE at the vacuous budget; the sentence says it does"
+
+
+def test_the_task_type_axis_is_reported_as_neither_falsified_nor_confirmed():
+    """The verdict is a string over two numbers (caution (av)). Falsification needed B1 or B2 to
+    exclude zero ABOVE it; neither does, so 'not falsified' must stand -- and neither resolves
+    with AlpacaEval at the binding budget, so a claim of confirmation must not appear."""
+    txt = M.body("appendix_selection.tex")
+    b1, b2 = _d("cotaeval_qa_conc_bind", "D3"), _d("cotaeval_qa_conc_k10", "D3")
+    assert not (b1[1] > 0 or b2[1] > 0), \
+        "a CoTaEval band now excludes zero on the winning side: the axis IS falsified, rewrite it"
+    assert "not falsified" in txt, "the non-falsification left the paragraph"
+    assert b1[1] < 0 < b1[2], "B1 resolved; 'not cleanly confirmed either' is now stale"
+    assert "not cleanly confirmed" in txt, \
+        "the paragraph claims more than two readings, one of which straddles zero, support"
+    # The pre-registered caveat: this arm cannot separate the two accounts, recorded before it ran.
+    assert "cannot separate" in txt, "the registered caveat about the two accounts was deleted"
+
+
+def test_the_least_degenerate_vacuous_cell_claim_matches_the_degeneracy_csv():
+    """A claim ABOUT a set of numbers, checked against the set (caution (ai)). Both the adjective
+    and the two ranges are rebuilt here; a new workload that beat 0.231% would fire this."""
+    txt = M.body("appendix_selection.tex")
+    path = os.path.join(ROOT, "results", "workload_degeneracy.csv")
+    vac = [r for r in csv.DictReader(open(path, encoding="utf-8")) if r["budget"] == "vacuous"]
+    mine = _deg("CoTaEval-QA", "vacuous")
+    others = [r for r in vac if r is not mine and r["workload"] != "CoTaEval-QA"]
+    act = float(mine["activity"]) * 100
+    assert act == max(float(r["activity"]) for r in vac) * 100, \
+        "CoTaEval-QA is no longer the most active vacuous cell; 'least degenerate' is stale"
+    assert f"${act:.3f}\\%$" in txt, f"the activity {act:.3f}% left the paragraph"
+    lo = min(float(r["activity"]) for r in others) * 100
+    hi = max(float(r["activity"]) for r in others) * 100
+    assert f"${lo:.3f}\\%$--${hi:.3f}\\%$" in txt, \
+        f"the other workloads' activity range {lo:.3f}--{hi:.3f} left the paragraph"
+    # Byte-identity is quoted only over the cells where the comparison is interpretable, because
+    # the committed arm's two cells are sampled independently and cannot be compared this way.
+    ok = [r for r in others if r["byte_ident_interpretable"] == "yes"]
+    same = float(mine["byte_ident"]) * 100
+    assert same == min(float(r["byte_ident"]) for r in vac
+                       if r["byte_ident_interpretable"] == "yes") * 100, \
+        "CoTaEval-QA is no longer the least byte-identical vacuous cell"
+    assert f"${same:.1f}\\%$" in txt, f"the byte-identity {same:.1f}% left the paragraph"
+    slo = min(float(r["byte_ident"]) for r in ok) * 100
+    shi = max(float(r["byte_ident"]) for r in ok) * 100
+    assert f"${slo:.1f}\\%$--${shi:.1f}\\%$" in txt, \
+        f"the interpretable byte-identity range {slo:.1f}--{shi:.1f} left the paragraph"
+    assert len(ok) == 4, f"the paragraph says four interpretable cells; the CSV has {len(ok)}"

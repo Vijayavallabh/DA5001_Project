@@ -55,6 +55,10 @@ ARMS = [
     # feat-176: a public-domain COMPLETION corpus, the first workload of that kind we did not make.
     ("Gutenberg",  "vacuous", 10.0, "output/gutenberg/conc_k10",  "output/gutenberg/baseline", "__gutenberg_conc_k10"),
     ("Gutenberg",  "binding",  0.9, "output/gutenberg/conc_bind", "output/gutenberg/baseline", "__gutenberg_conc_bind"),
+    # feat-174: reading comprehension (CoTaEval's NewsQA split), neither completion nor
+    # instruction-following, and the arm the task-type axis was predicted against before it ran.
+    ("CoTaEval-QA", "vacuous", 10.0, "output/cotaeval_qa/conc_k10",  "output/cotaeval_qa/baseline", "__cotaeval_qa_conc_k10"),
+    ("CoTaEval-QA", "binding",  1.4, "output/cotaeval_qa/conc_bind", "output/cotaeval_qa/baseline", "__cotaeval_qa_conc_bind"),
 ]
 
 

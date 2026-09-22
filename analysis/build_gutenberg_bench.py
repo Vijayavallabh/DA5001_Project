@@ -39,7 +39,7 @@ def main():
 
     out_file = f"data/bench/{a.name}_factual.jsonl"
     out_dir = f"data/bench/{a.name}"
-    rows, books = [], set()
+    rows, books, src = [], set(), {}
     for line in open(a.src, encoding="utf-8"):
         r = json.loads(line)
         text = (r.get("raw_text") or "").strip()
@@ -62,6 +62,7 @@ def main():
                          prompt_text=" ".join(w[:a.words]) if a.words else text,
                          expected_answer=""))
         books.add(rows[-1]["source_novel"])
+        src[r["prompt_id"]] = r
 
     # `--limit N` MUST NOT MEAN "the first N". These files are ordered by book, so a prefix of
     # them is a few books repeated -- 500 rows of the BookMIA unseen half gave 6 books where the
@@ -107,6 +108,32 @@ def main():
         if os.path.islink(p) or os.path.exists(p):
             os.remove(p)
         os.symlink(os.path.join(here, target), p)
+
+    # A LEAKAGE PROBE MUST SEE THE SAME PASSAGES THE WORKLOAD USES. The vetting instrument reads a
+    # copybench-shaped slot, so the SELECTED records are written back in their original schema and
+    # symlinked into one. Without this, G3 would measure the first N passages of the source file --
+    # caution (w) again, in the gate rather than the corpus.
+    leak_file = f"data/bench/{a.name}_leak.jsonl"
+    leak_dir = f"data/bench/{a.name}_leak"
+    with open(leak_file, "w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(dict(src[r["prompt_id"]], split="attack_train"),
+                               ensure_ascii=False) + "\n")
+    os.makedirs(leak_dir, exist_ok=True)
+    # Only the attack_train slot holds the probe corpus. The other two keep the committed files,
+    # whose records carry their own `split`, so `--split attack_train` reads the 500 selected
+    # passages and nothing else -- pointing all three at the leak file would triple them.
+    for name, target in {"copybench_attack_train.jsonl": leak_file,
+                         "copybench_test.jsonl": "data/copybench_test.jsonl",
+                         "copybench_val.jsonl": "data/copybench_val.jsonl",
+                         "creative.jsonl": "data/creative.jsonl",
+                         "neutral.jsonl": "data/neutral.jsonl",
+                         "factscore.jsonl": out_file}.items():
+        q = os.path.join(leak_dir, name)
+        if os.path.islink(q) or os.path.exists(q):
+            os.remove(q)
+        os.symlink(os.path.join(os.path.abspath("."), target), q)
+    print(f"wrote {leak_file} and {leak_dir}/ for the leakage probe")
 
     # CAUTION (w): print the corpus you selected, and read it back.
     n = sum(len(r["prompt_text"].split()) for r in rows) / len(rows)
