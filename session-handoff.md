@@ -43,10 +43,40 @@ Statement land at the same page and y. **Before touching the abstract, Figure 2'
 3.2 or Section 4.2, run `tests/test_review_r234.py`.**
 
 Not done, deliberately: human pairwise labels (human-only); a contaminated-anchor arm at `n=256`
-and a prefix-length ladder for the vetting check (GPU arms that would need a registration first;
-the prefix answer given is the one that follows from Proposition 1 holding per prompt); a Pareto
+and a prefix-length ladder for the vetting check (**both since registered and launched, see the
+next section**); a Pareto
 plot and a table version of Figure 2 (page budget; the cost grid and forest plot carry the
 numbers); the title's "two nats" (the text gives `2.08`); and the Spotlight/Oral-level asks.
+
+## feat-179 and feat-180, registered 2026-09-23 --- and the selector defect found on the way
+
+The user asked for both arms ("yes, register and queue both arms"). Writing the first registration
+found a defect: **`analysis/selection_extraction.py:score()` read a LEFT-padded batch as if it were
+right-padded**, so the adversarial selector scored the prompt's tail and the padding for every
+candidate shorter than the longest in its batch (a one-token continuation scored as
+`<|end_of_text|>`). It has been there since the script was written (`335f3ea`, 2026-09-11). Fixed at
+the one place both scoring calls route through; `tests/test_selection_extraction_scoring.py` fails
+on the old indexing and passes on the new. **The headline zero is selector-free**: all thirteen
+clean-anchor extraction arms have `anchor_max_recall = 0.0000` on every passage, so no draw in any
+pool reproduced anything. **What it touches**: the contaminated-anchor `1.0`--`4.0` (intro, Section
+3, Appendix I) and the ROUGE-L counts at `n > 1` (`tab:extraction`, Appendix I's multilingual
+paragraph). Both are re-measured by feat-179. **Do not quote either set of old numbers again until
+feat-179 is scored.**
+
+| registration | arm | where | state |
+|---|---|---|---|
+| `onset_prediction_selector_n256.md` | **feat-179**: twelve contaminated anchors at `n <= 256` with the corrected selector (Part A), and the three clean arms whose ROUGE-L counts are published re-run on their identical pools (Part B) | local GPUs 4, 2, 1; multilingual on host B GPU 5 | queued 2026-09-23 |
+| `onset_prediction_vetting_ladder.md` | **feat-180**: the screen at `L in {20, 50, 150, 200}` (+ `35, 75` for the 70B), `L = 100` on record; 70B, both OLMo models, the six licensed anchors | local GPUs 1+2 then 1, 2 | queued 2026-09-23 |
+
+Launchers: `scripts/run_selfix_vetladder_local.sh` (one shell, a queue per card, the 70B first on
+cards 1+2) and `scripts/run_selfix_multilingual.sh` (host B, behind feat-178's `qwen14b` rung via
+`scripts/after.sh`). Scorers: `analysis/selector_n256.py`, `analysis/vetting_ladder.py`, both
+mutation-tested on synthetic arms before any data (`tests/test_selector_n256.py`,
+`tests/test_vetting_ladder.py`). **Read feat-180's G1 first** (the 70B's `L = 100` rung runs first
+and must reproduce `selection_extraction_70b_hp2` on 50/50): if it fails, `L = 100` must be re-run
+for both OLMo models before V1 is read. About 21 + 17 GPU-hours; the local queues should drain
+about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
+control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
 ## Arms in flight (2026-09-23 02:30)
 

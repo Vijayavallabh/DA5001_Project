@@ -1,5 +1,44 @@
 # Session Progress Log
 
+## 2026-09-23 --- feat-179 and feat-180 registered and launched; the adversarial selector had scored padding
+
+Asked to register and queue the two arms the review audit left open (Review 4 Q9, a contaminated
+anchor at `n=256`; Reviews 2 and 4 Q10, the vetting screen as a function of prefix length).
+
+**The defect found on the way.** `analysis/selection_extraction.py:score()` indexed a left-padded
+batch as if right-padded, so the adversarial selector scored padding for every candidate shorter
+than the longest in its batch. Reproduced on the memoriser's own tokenizer (`'<|end_of_text|>'`
+scored in place of `' Winston'`), fixed in `score()`, pinned by
+`tests/test_selection_extraction_scoring.py` (red on the old indexing, green on the new). **The
+headline near-verbatim zero is untouched**: all thirteen clean-anchor extraction arms have
+`anchor_max_recall = 0.0000` on every passage, so no draw in any pool reproduced anything and no
+selector could have served a leak. **Touched**: the contaminated-anchor `1.0`--`4.0` and the
+ROUGE-L counts at `n > 1`. The extraction script now also writes `anchor_max_rouge`,
+`pool_ge_0p8`, `pool_ge_0p01` and per-`n` `oracle_recall_n{n}` / `oracle_rouge_n{n}`, so
+selector-free claims can be read directly. Caution (ba).
+
+**feat-179** (`results/onset_prediction_selector_n256.md`): twelve contaminated anchors at
+`n in {1, 8, 64, 256}` with the corrected selector, plus the three clean arms whose ROUGE-L counts
+are published re-run on their identical pools. Gates G0 (memoriser control passage for passage), G1
+(pool identity), G2 (served is in the pool); bands B1 (the published `A(64) <= 4`, predicted GROWS),
+B2 (fraction of the union bound realised at `n=256` against the per-draw base rate, predicted
+LOOSE), B3 (`64 -> 256` paired growth, predicted SATURATED BY 64), B4 (ROUGE-L before/after on one
+pool, predicted HOLDS and SELECTOR-FREE). Scorer `analysis/selector_n256.py`, 10 tests.
+
+**feat-180** (`results/onset_prediction_vetting_ladder.md`): the committed screen with only
+`--seed-tokens` varied --- the 70B at `20, 35, 50, 75, 100, 150, 200`, both OLMo models at
+`20, 50, 150, 200`, the six licensed anchors at `150, 200`, `L = 100` from the arms on record. G1:
+the 70B's `L = 100` re-run must reproduce `selection_extraction_70b_hp2` on 50/50, else the on-record
+rungs are not mixed in. Bands V1 (MONOTONE), V2 (`L* <= 50`), V3 (PASS HOLDS), V4 (the
+recommendation, computed). Scorer `analysis/vetting_ladder.py`, 5 tests.
+
+Canary before registration (scratch only): the memoriser control through the fixed code reads
+`0.3925 / 0.8154 / 78.0%`, identical on 100/100 passages to `selection_extraction_n256`.
+
+Commands: `scripts/run_selfix_vetladder_local.sh` (local GPUs 1, 2, 4) and, on host B,
+`scripts/after.sh oppalp_qwen14b 360 -- bash scripts/run_selfix_multilingual.sh 5`. About 21 and
+17.4 GPU-hours, each under the 24-hour threshold.
+
 ## 2026-09-23 --- referee reports 2, 3 and 4 audited point by point: thirteen open, all closed
 
 Asked whether every comment of the three full reviews was addressed. Their instruction was selective
