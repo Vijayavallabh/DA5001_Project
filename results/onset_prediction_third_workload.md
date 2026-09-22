@@ -184,3 +184,39 @@ what the workload changes.**
 
 feat-174's NewsQA arm is the one that can separate the two readings, because it is neither
 instruction-following nor our corpus, and it has `500` prompts rather than `80`.
+
+### Post-hoc, 2026-09-22 --- two more judges on the binding cell
+
+**Registered instrument: judge~B only.** Judge~C and `Mixtral-8x7B` were run on this arm's binding
+cell **after** B1's verdict was read, so they are a post-hoc robustness check and are labelled one.
+What that costs is real and is stated rather than argued around: a post-hoc judge can only
+*weaken* a reading, never rescue one, and had either of them resolved the difference it would
+**not** have been allowed to overturn `UNRESOLVED`. Both are reported because both agree with the
+registered instrument, which is the one direction in which a post-hoc check carries no temptation.
+
+Only the judge changed: the generations, the reward cache and the `k=1.0` cell are the committed
+ones, so this is the same construction as `app:h2hrepeat`.
+
+| judge | paired `D3` | half-width | reading |
+|---|---|---|---|
+| B (registered) | `-0.0250 [-0.0781, +0.0281]` | `0.053` | **UNRESOLVED** |
+| C | `-0.0094 [-0.0875, +0.0656]` | `0.077` | **UNRESOLVED** |
+| `Mixtral-8x7B` | `-0.0250 [-0.0906, +0.0406]` | `0.066` | **UNRESOLVED** |
+
+All three point estimates are negative, all three intervals contain zero, and no half-width is
+below `0.05`. **The failure to resolve is the arm's, not the instrument's** --- `80` prompts cannot
+separate a difference of this size under any of the three judges, which is what the registration
+said in advance would happen if the effect were small. It is evidence that B1 should not be quoted
+as a null, and it is not evidence of anything else.
+
+Commands (host B; only `--judge` differs between the two):
+
+```
+bash scripts/run_workload_h2h.sh mtb data/bench/mtbench conc_bind 1.0 \
+  meta-llama/Meta-Llama-3.1-8B-Instruct judgeC 3
+bash scripts/run_workload_h2h.sh mtb data/bench/mtbench conc_bind 1.0 \
+  mistralai/Mixtral-8x7B-Instruct-v0.1 mixtral 4,5 --device-map=auto
+```
+
+`results/order_averaged_h2h__mtb_conc_bind_judgeC.csv`,
+`results/order_averaged_h2h__mtb_conc_bind_mixtral.csv`.

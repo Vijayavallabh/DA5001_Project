@@ -38,6 +38,16 @@ to let Mixtral be read. feat-170 Arm C is `850` prompts at a binding budget with
 `+0.0965`, and its generations and reward cache are on disk, so **only the judge changes**. Judge~C
 runs beside it.
 
+**`results/onset_prediction_fourth_workload.md` (feat-174) is REGISTERED and generating** ---
+CoTaEval-QA as a fourth workload, and the first that is neither instruction-following nor our own
+corpus, which is the only kind of point that can separate *"instruction-following breaks the
+reversal"* from *"anything that is not our corpus"*. `500` prompts against MT-Bench's `80`, so it
+is also the first workload arm with the power to resolve a difference the size of MT-Bench's. Its
+`G-cal` gate was **amended before any band was read**: the first grid dropped `33x` between
+`k=1.0` and `k=3.0` and its `argmin` sat at `0.08x` the target, so bracketing alone was shown not
+to be sufficient and a refinement grid was registered on top of it. `k=1.4` was selected at
+`0.97x`.
+
 **`results/onset_prediction_offsupport_ladder.md` (feat-172) is REGISTERED and generating** --- it
 attacks a weakness in our own appendix. The scoping paragraph attributes the AlpacaEval loss to a
 support ceiling, but the AlpacaEval ladder is **still climbing at `n=64`** (`+0.0130` on the last

@@ -39,8 +39,12 @@ case "${1:-status}" in
     # else -- including run_memfree.sh, run_cpfuse.sh and run_frontier_judge.sh, which PRODUCED
     # COMMITTED NUMBERS. A producing command that exists on one host is not reproducible and would
     # not have shipped in the artifact. Report anything remote-only rather than silently ignoring.
-    NEW=$(rsync -rn --ignore-existing --out-format='%n' \
-          --include 'analysis/***' --include 'scripts/***' --include '*/' --exclude '*' \
+    # ANCHOR THE PATTERNS. An rsync include with no leading slash matches at ANY depth, so
+    # 'analysis/***' also matched .uv_cache/archive-v0/*/torch/_inductor/analysis/, and the
+    # remote-only report filled with a package cache the moment UV_CACHE_DIR moved into the repo.
+    # A report that cries wolf is a report nobody reads, which is the whole point of this check.
+    NEW=$(rsync -rn --ignore-existing --out-format='%n' $EX \
+          --include '/analysis/***' --include '/scripts/***' --include '*/' --exclude '*' \
           "$H:$R/" ./ 2>/dev/null | grep -Ev '/$|__pycache__' || true)
     if [ -n "$NEW" ]; then
       echo "[sync] REMOTE-ONLY CODE (not in the repo):"; echo "$NEW" | sed 's/^/          /'
@@ -111,6 +115,13 @@ for p in only_r[:10]:
 print("  verify  IN SYNC" if not diff and not only_r else "  verify  ACTION NEEDED")
 PYEND
     ;;
+  status) : ;;
+  # AN UNKNOWN SUBCOMMAND MUST NOT BE A SILENT NO-OP. `case` with no default falls straight through
+  # to the status block, so `pull-results` -- a name that does not exist -- printed the GPU tables
+  # and the .done markers and looked exactly like a successful sync. Three files scored on host B
+  # were believed pulled and were not (2026-09-22). A typo in a sync direction is the one place
+  # where doing nothing must never look like doing the thing.
+  *) echo "usage: $0 {push|pull|both|push-results|verify|status}" >&2; exit 2 ;;
 esac
 
 echo
