@@ -42,6 +42,10 @@ def test_the_appendix_states_the_workload_where_the_reversal_fails():
     # ceiling` -- a guard satisfied by a different occurrence of its own phrase is not guarding its
     # sentence (caution (an)). What is guarded is the property: wherever the paper raises the
     # support account, a refutation is within reach of the same reader.
+    # The paragraph's own HEADING said `a workload outside the anchor's support` -- the retracted
+    # mechanism, asserted in the one line a reader meets first and that no band guard can see.
+    assert "outside the anchor's support" not in txt, \
+        "the workload paragraph's heading asserts the mechanism its own decomposition refutes"
     DENIAL = ("refut", "not selection's", "cannot identify", "measurably wrong", "magnitude is not")
     hits = [k for k in range(len(txt)) if txt.startswith("support ceiling", k)]
     assert hits, "the candidate mechanism of the loss is no longer named"
