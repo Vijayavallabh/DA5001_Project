@@ -203,3 +203,55 @@ this registration forbids reading and which nobody could unsee. The honest next 
 inside the anchor's support and fail outside it --- with the support measured in advance rather
 than inferred after a failure. That arm is not written yet and this file does not pre-empt its
 bands.
+
+### CORRECTION, 2026-09-22 09:30 --- the calibration target was wrong by a factor of `1046`
+
+Caught by feat-170's Arm A, whose G0 read `0.00011` activity on the very corpus the target was
+supposed to describe. That is the gate doing its job, and the defect is ours.
+
+**`output/phase2/conc_all` is a `k`-SWEEP, not an arm.** It holds six budgets (`0.5` to `20`) and
+six prompt classes, including the protected corpus. The target `0.08376` came from scanning the
+whole directory --- pooling `k=0.5`, which binds on `48%` of steps, with the protected classes the
+judge never reads. **The arm the paper actually judges is `k=10` over the three ordinary classes,
+and it reads `24` of `299{,}843` = `0.000080`.**
+
+This is caution (v) verbatim --- *a reference number carries its protocol, and a gate built on one
+without it is a gate built on nothing* --- and it was committed **in the same session in which
+feat-166's scoring log generalised that caution from reference numbers to reference findings.**
+Knowing the rule is not applying it. The repair is structural rather than a corrected constant:
+`analysis/budget_calibration.py` no longer accepts a typed target at all; it derives one from the
+arm the judge loads, by the same `(k, classes)` selection `analysis/selection_decoding.py` uses.
+
+**What this changes, stated in full.**
+
+1. **G0's activity leg was measured against a number that did not mean what it said.** Its *other*
+   leg --- `4.3%` of completions byte-identical to the opponent, against feat-166's `98.6%` ---
+   needs no reference and stands: at `k=1.0` the arm genuinely serves text the opponent does not.
+2. **With the correct target the `argmin` rule picks `k=10`,** which is feat-166's arm, and
+   **G-cal FAILS**, because all five grid points sit above `0.000080`; a grid that does not bracket
+   the target reports NOT RUN rather than taking the nearest endpoint. So the calibrated arm this
+   registration built is **not** matched to the committed protocol --- it binds about a thousand
+   times harder.
+3. **feat-166 is therefore re-labelled VALID.** Its INVALID note argued *"the arm labelled metered
+   decoder is not one"*; at `k=10` it binds on `0.016%` of steps where the committed arm binds on
+   `0.008%`, so it is as metered as the paper's own headline arm and rather more so. **What was
+   wrong was the comparison, not the arm.** Its `G0` still FAILED --- judge B read `-0.0957`, where
+   the gate required positive --- so B1 remains unread on that arm too, and no band moves.
+4. **Nothing about `-0.0339` changes.** It is a within-pass paired difference at a budget that
+   binds on `8.008%` of steps; what changes is the sentence describing that budget, which said
+   "calibrated to bind as hard as on our own corpus" and should have said "about a thousand times
+   harder".
+
+**And the finding hiding under the defect is worth more than the arm was.** At `k=10` the paper's
+own metered decoder is active on `0.008%` of its own workload's steps --- one step in twelve
+thousand. The realised `171.3` nats against `K = kT_{max} = 2000` already implied it and the paper
+reports both, but the activity rate states it in the currency a reader checks: **the paper's
+headline opponent is, at its headline budget, the unconstrained risky model to within sampling
+noise.** That is the vacuous horn of the paper's own dichotomy, in the paper's own experiment. The
+manuscript now says so in `app:workload`.
+
+**The manuscript carried the false number for about five hours** (`4276727` through `09:30`), in
+the sentence *"$0.016\%$, against $8.376\%$ for the same $k$ on our workload"*. It is corrected to
+the measured `0.008%`, and the paragraph's conclusion is strengthened rather than weakened: the
+reversal fails on AlpacaEval at the paper's own budget **and** at one that binds a thousand times
+harder, so it cannot be explained away as an artefact of a vacuous meter.

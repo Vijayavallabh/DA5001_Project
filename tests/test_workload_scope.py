@@ -72,3 +72,52 @@ def test_the_calibration_curve_matches_its_csv_and_the_argmin_is_what_the_paper_
         a = float(r["activity"])
         assert f"{a:.3f}" in txt or f"{a:.4f}" in txt, \
             f"the activity at k={r['k']} ({a:.4f}) is not in the appendix"
+
+
+def test_the_committed_arms_activity_is_derived_not_typed():
+    """The calibration target was typed as 0.08376 from a scan of a whole k-SWEEP directory --
+    pooling k=0.5, which binds on 48% of steps, and the protected classes the judge never reads.
+    The arm the paper judges is k=10 over the three ordinary classes and reads 0.000080: wrong by
+    a factor of 1046, and a false comparison built on it reached the compiled PDF.
+
+    So this asserts the paper quotes the DERIVED number and never the pooled one, and it derives
+    it here the same way `analysis/budget_calibration.py` does rather than trusting either.
+    """
+    import sys
+    sys.path.insert(0, ROOT)
+    from analysis.budget_calibration import committed_activity
+
+    rate, act, tot, n = committed_activity()
+    assert n == 1500, f"the reference arm no longer has 1500 trajectories ({n})"
+    assert rate < 0.001, f"the committed k=10 arm now binds at {rate:.6f}; the paragraph is stale"
+
+    txt = M.body("appendix_selection.tex")
+    count = f"${act}$ of ${tot:,}$".replace(",", "{,}")
+    assert count in txt, \
+        f"the appendix does not quote the committed arm's own activity ({act} of {tot})"
+    # The rate must sit WITH its count. A bare "0.008" check passed when the rate was deleted,
+    # because "0.008" is a substring of the chosen budget's "8.008" further down the paragraph --
+    # caution (an), a guard satisfied by a different occurrence of its own digits.
+    i = txt.index(count)
+    near = txt[i:i + 60]
+    assert f"{100 * rate:.3f}" in near, \
+        f"the derived rate ({100 * rate:.3f}%) is not printed beside its count: {near!r}"
+
+    # The pooled figure must never come back, in either spelling.
+    for bad in ("8.376", "0.08376"):
+        assert bad not in txt, \
+            f"the appendix has reacquired the pooled sweep figure {bad}; it is not an arm's rate"
+
+
+def test_the_paper_does_not_claim_the_budgets_were_matched():
+    """The k=1.0 arm binds about 1000x harder than the committed arm, not 'as hard as'. The
+    corrected paragraph must say which, because the whole point of quoting a rate is the reader
+    comparing it to the paper's own."""
+    txt = M.body("appendix_selection.tex")
+    assert "calibrated to bind as hard as it does" not in txt, \
+        "the withdrawn 'matched budget' claim is back in the appendix"
+    assert "thousand times" in txt, \
+        "the appendix no longer says how much harder the chosen budget binds than the paper's own"
+    body_txt = M.body("experiments.tex")
+    assert "calibrated to bind as hard as" not in body_txt, \
+        "the withdrawn 'matched budget' claim is in the body"

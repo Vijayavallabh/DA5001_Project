@@ -15,10 +15,40 @@ import csv
 import glob
 import json
 import os
+import sys
 
-# output/phase2/conc_all, the committed metered arm, over the three counters that partition the
-# true decoded length (caution (ah)): 261,239 active of 3,118,893.
-TARGET = 261239 / 3118893
+# `output/phase2/conc_all` is a k-SWEEP over six budgets and six prompt classes, not an arm. The
+# first version of this file set TARGET = 261239/3118893 = 0.08376 by scanning the whole directory,
+# which pools every k (including k=0.5, which binds on 48% of steps) and every class (including the
+# protected corpus). The arm the paper judges is k=10 over the three ordinary classes alone, and it
+# reads 0.000080 -- the typed constant was wrong by a factor of 1046, and a false comparison built
+# on it reached the compiled manuscript.
+#
+# That is caution (v) exactly: a reference number carries its protocol. So the target is no longer
+# typed at all -- it is computed from the arm the judge actually loads, by the same (k, classes)
+# selection `analysis/selection_decoding.py` uses, and written to the CSV beside the sweep it gates.
+REF_DIR = "output/phase2/conc_all"
+REF_K = "10"
+
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def committed_activity(ref_dir=REF_DIR, k=REF_K):
+    """The committed metered arm's own activity, filtered exactly as the judge filters it."""
+    from analysis.utility import CLASSES
+    act = tot = n = 0
+    for cls in CLASSES:
+        path = os.path.join(ref_dir, f"trajectories_k{k}_{cls}.jsonl")
+        assert os.path.exists(path), f"{path} missing; the reference cannot be derived"
+        for line in open(path, encoding="utf-8"):
+            a = json.loads(line)["aggregate"]
+            n += 1
+            act += a.get("steps_active", 0)
+            tot += (a.get("steps_active", 0) + a.get("steps_forced_safe", 0)
+                    + a.get("steps_risky_unchanged", 0))
+    assert tot, ref_dir
+    return act / tot, act, tot, n
 
 
 def activity(gen_dir):
@@ -41,10 +71,15 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default="output/mixpow")
     ap.add_argument("--grid", nargs="+", type=float, default=[0.1, 0.3, 1.0, 3.0, 10.0])
-    ap.add_argument("--target", type=float, default=TARGET)
+    ap.add_argument("--target", type=float, default=0.0,
+                    help="0 (default) derives it from the committed arm; never type it in")
     ap.add_argument("--out", default="results/mixpow_kcal.csv")
     a = ap.parse_args()
 
+    if not a.target:
+        a.target, racr, rtot, rn = committed_activity()
+        print(f"reference derived from {REF_DIR} k={REF_K} over the judge's own classes: "
+              f"{racr}/{rtot} = {a.target:.6f}  (n={rn})")
     rows = []
     for k in a.grid:
         d = os.path.join(a.root, "kcal_" + str(k).replace(".", ""))

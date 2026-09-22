@@ -137,6 +137,19 @@ an instruction benchmark*, which it wins easily and consistently --- hence `+0.1
 reliably. And `D3` measures *selection from that anchor against the unconstrained risky model*,
 which is not the comparison the reversal is about and was never a claim this paper makes.
 
+**RE-LABELLED 2026-09-22: this arm is VALID, and the paragraph below is wrong about why.** The
+`8.376%` it compares against is not the committed arm's activity --- it came from scanning a whole
+`k`-sweep directory, pooling `k=0.5` and the protected classes. The committed `k=10` arm on the
+classes the judge reads is `0.000080`, so **this arm's `0.016%` binds twice as hard as the paper's
+own metered decoder, not `500x` less.** It is as metered as the headline arm. `G0` still FAILED on
+its own terms --- judge B read `-0.0957` where the gate required positive --- so **no band was read
+and none is read now**; what is withdrawn is the reason, not the reading.
+`results/onset_prediction_mixtral_power_k.md` carries the full correction, and
+`analysis/budget_calibration.py` now derives the reference instead of accepting a typed one.
+
+The paragraph as written on 2026-09-21 is kept below, unedited, because a superseded diagnosis that
+disappears cannot be audited.
+
 **Per caution (w) the arm is INVALID rather than FAILED.** The defect is in our specification: the
 "What runs" table named `k=10` on a corpus where `k=10` is vacuous, and nothing in the
 pre-registration checked that the budget binds there. A question must not be retired by our own
