@@ -410,3 +410,42 @@ bash scripts/run_opponent_judge.sh qwen05b meta-llama/Meta-Llama-3.1-8B-Instruct
 The G3 row first read ``123.5`, `114.6`, `118.9`` --- numbers from a partial run, typed in before all three arms had been scored on the host that holds their generations. The CSV reads `123.5`, `109.45`, `124.4`. The gate's verdict is unchanged (every arm is inside `3x` of `154.08` either way) and only the printed evidence was wrong: caution (j), a paper number rounds from the CSV, once.
 
 **The cause is worth more than the correction.** `analysis/opponent_strength.py` can only score G1 and G3 where `output/opponent_*` lives, and run anywhere else it writes `NOT SCORED` and `nan` into those columns --- to the canonical filename. Run locally it therefore **replaced a fully scored ladder with a worse one**, and `sync_status.sh pull` uses `--update`, so the degraded local file, being newer, was never overwritten by host B's good one. Two guards caught it, afterwards. The script now refuses to write a ladder that scores fewer gates than the one already on disk unless `--allow-overwrite` is passed.
+
+### Correction, 2026-09-22 22:10 --- **THE THREE-RUNG READING WAS OVER-CORRECTED**
+
+The section above scored the post-hoc judge on the **three new rungs only** and concluded that the
+decay is not reproduced. A fourth pass --- judge~C on the **committed** rung, which names its own
+directory rather than an `output/opponent_*` one and so had been skipped by the scorer --- changes
+that reading, and the earlier one is left standing above with this correction beneath it.
+
+| opponent | strength | judge~B | judge~C | shift | judge~C reading |
+|---|---|---|---|---|---|
+| `Llama-3.1-8B-Instruct` | `0.555` | `+0.0645` | `+0.0475 [+0.0015, +0.0930]` | `-0.0170` | **CONFIRMED** |
+| `Qwen2.5-0.5B` | `0.704` | `+0.0490` | `-0.0090 [-0.0555, +0.0375]` | `-0.0580` | UNRESOLVED |
+| `Qwen2.5-1.5B` | `0.773` | `+0.0195` | `-0.0015 [-0.0455, +0.0425]` | `-0.0210` | UNRESOLVED |
+| `Qwen2.5-3B` | `0.825` | `-0.0200` | `-0.0240 [-0.0555, +0.0085]` | `-0.0040` | UNRESOLVED |
+
+Over four rungs judge~C's rank correlation with strength is **`-0.800`**, not the `-0.500` the
+three-rung subset gave, and **judge~C confirms exactly the weakest opponent and nothing beyond it**
+--- the same qualitative shape as judge~B, whose own crossing sits one rung later (`0.7035`).
+
+**So the correct reading is agreement on the shape and disagreement on where it crosses**, and the
+reason the three-rung subset said otherwise is now obvious: all three of those rungs lie on the
+flat part of judge~C's curve, because judge~C's crossing is below the weakest of them. **A
+monotone series sampled entirely past its own crossing has no ordering left to show.** That is a
+general trap and not a fact about these judges.
+
+**What stands from the first scoring and what does not.**
+
+- Stands: judge~C shifts every rung down, and the shift is strength-dependent
+  (`-0.0170`, `-0.0580`, `-0.0210`, `-0.0040`), so our pre-stated direction argument --- which
+  predicted a uniform downward shift that would *steepen* the decay --- is still only half right.
+- Stands: judge~C is more conservative everywhere, and its crossing is one rung earlier.
+- **Withdrawn**: *"the decay is not reproduced"* and *"the decay is one judge's"*. Both were read
+  off three points chosen without regard to where the second judge's own crossing lies.
+- Unchanged: **H1 is NOT TESTED**, before and after. Nothing here is a band.
+
+**This is a case for taking the extra card.** The three-rung version was committed to the
+manuscript, and a single extra judging pass --- ten minutes on an idle GPU --- inverted its
+conclusion. Where a series is being read for a shape, measure the rung the OTHER instrument's
+crossing is likely to sit on, not only the rungs the new arms happen to have.

@@ -127,35 +127,49 @@ def test_the_generator_disclosure_is_made():
             "the generators now agree; the disclosure paragraph should be revisited"
 
 
-def test_the_decay_is_attributed_to_one_judge_because_the_other_does_not_see_it():
-    """The post-hoc judge refuted the shape, and the appendix paragraph had already been written
-    from the judge-B ladder. This is caution (af) in the small: a claim corrected in one place has
-    to stay corrected, and the tempting edit later is to drop the qualifier and keep the decay.
+def test_the_two_judges_are_reported_as_agreeing_on_shape_and_differing_on_the_crossing():
+    """The first version of this paragraph said the decay was one judge's, read off three rungs
+    that all lie past the second judge's own crossing. Adding the rung it was still confirming on
+    inverted that. What is guarded is the corrected claim, rebuilt from the second judge's CSV:
+    both judges confirm the weakest opponent, neither confirms the strongest, and their crossings
+    differ.
 
-    Conditioned on the second judge's own CSV, so if judge C ever does reproduce the ordering the
-    guard fails and says to revisit the wording rather than quietly permitting the stronger claim
-    (caution (ao))."""
+    If a future pass makes them agree on the crossing, or makes one stop confirming everywhere,
+    the guard fails and says to revisit the wording rather than quietly keeping the stronger
+    sentence (caution (ao))."""
     import csv as _csv
     import os as _os
     f = _os.path.join(ROOT, "results", "opponent_ladder_judgeC.csv")
-    assert _os.path.exists(f), "the post-hoc judge's ladder is gone; the correction is unsourced"
-    jc = list(_csv.DictReader(open(f, encoding="utf-8")))
-    assert len(jc) >= 3
-    conf_c = [r for r in jc if float(r["lo_judgeC"]) > 0]
-    conf_b = [r for r in jc if float(r["lo_judgeB"]) > 0]
+    assert _os.path.exists(f), "the second judge's ladder is gone; the correction is unsourced"
+    jc = sorted(_csv.DictReader(open(f, encoding="utf-8")), key=lambda r: float(r["strength"]))
+    assert len(jc) >= 4, f"{len(jc)} rungs; the four-rung reading needs four"
+
+    def cross(side):
+        conf = [r for r in jc if float(r[f"lo_judge{side}"]) > 0]
+        return max((float(r["strength"]) for r in conf), default=None)
+
+    cb, cc = cross("B"), cross("C")
+    assert cb is not None and cc is not None, \
+        "a judge now confirms nothing; the agreement sentence must be revisited"
+    assert cc < cb, \
+        f"judge C's crossing ({cc}) is no longer earlier than judge B's ({cb}); revisit"
+    # both must confirm the weakest rung, which is what 'agree on the shape' means here
+    assert float(jc[0]["lo_judgeB"]) > 0 and float(jc[0]["lo_judgeC"]) > 0, \
+        "the two judges no longer agree at the weakest opponent"
+    assert float(jc[-1]["lo_judgeB"]) <= 0 and float(jc[-1]["lo_judgeC"]) <= 0, \
+        "a judge now confirms the strongest opponent; the shape claim is stale"
+
     txt = body(SEC)
-    if conf_c or len(conf_c) >= len(conf_b):
-        assert "the decay is one judge's" not in txt.lower(), \
-            "judge C now confirms a rung; the attribution sentence must be revisited"
-    else:
-        assert "the decay is one judge's" in txt.lower(), \
-            "the appendix dropped the fact that a second judge does not reproduce the decay"
-        assert f"${len(conf_c)}$ of ${len(jc)}$ confirmed" in txt, \
-            f"the appendix no longer prints judge C's {len(conf_c)} of {len(jc)} confirmed"
-        for r in jc:
-            g, lo, hi = (float(r["d3_judgeC"]), float(r["lo_judgeC"]), float(r["hi_judgeC"]))
-            assert carries_band(g, lo, hi, SEC), \
-                f"judge C's band at strength {r['strength']} left the appendix"
+    assert "agrees on the shape and crosses earlier" in txt, \
+        "the appendix no longer reports the two judges as agreeing on shape"
+    assert "that was wrong" in txt, (
+        "the appendix dropped the record that we first read this on three rungs and got it "
+        "backwards -- the correction is the part a length edit would take")
+    assert f"up to ${cb}$" in txt, f"judge B's crossing {cb} left the paragraph"
+    for r in jc:
+        g, lo, hi = (float(r["d3_judgeC"]), float(r["lo_judgeC"]), float(r["hi_judgeC"]))
+        assert carries_band(g, lo, hi, SEC), \
+            f"judge C's band at strength {r['strength']} left the appendix"
 
 
 def test_the_pre_stated_direction_argument_is_reported_as_only_half_right():
@@ -173,7 +187,7 @@ def test_the_pre_stated_direction_argument_is_reported_as_only_half_right():
     assert abs(shifts[0]) > abs(shifts[-1]), \
         "the shift is no longer largest at the weakest opponent, which is what flattens the series"
     txt = body(SEC)
-    assert "flattens a decaying series rather than steepening it" in txt, \
+    assert "rather than the uniform one we had\npredicted".replace("\n", " ") in " ".join(txt.split()), \
         "the correction to our own pre-stated direction argument was cut"
     for x in shifts:
         assert f"${x:+.3f}$" in txt, f"the shift {x:+.3f} left the appendix"

@@ -293,9 +293,14 @@ def main():
     # of the data or of one instrument -- and judge C is the METERED arm's own risky model, so it
     # favours the side that would make the decay look STRONGER. A confirmation under it is weak
     # evidence; a refutation is strong.
+    # The committed rung's judge-C pass names its own directory rather than an output/opponent_*
+    # one, so its suffix is mapped explicitly. Leaving it out is what made the first reading of
+    # this series wrong: over the three NEW rungs judge C shows no ordering, and those three are
+    # all on the flat part of its curve.
+    JC_SFX = {"": "__opp_committed_judgeC"}
     jc = []
     for model, sfx, run_dir, status in ARMS:
-        alt = sfx.replace("__opp_", "__opp_") + "_judgeC" if sfx.startswith("__opp_") else None
+        alt = JC_SFX.get(sfx) or (sfx + "_judgeC" if sfx.startswith("__opp_") else None)
         if not alt:
             continue
         row = d3_row(alt)
@@ -329,6 +334,11 @@ def main():
         conf = [r for r in jc if r["lo_judgeC"] > 0]
         print(f"  judge C reads {len(conf)} of {len(jc)} rungs CONFIRMED "
               f"(judge B: {sum(1 for r in jc if float(r['lo_judgeB']) > 0)})")
+        for lab, key in (("judge B", "d3_judgeB"), ("judge C", "d3_judgeC")):
+            c = [r for r in jc if float(r["lo_" + key.split("_")[1]]) > 0]
+            hi = max((r["strength"] for r in c), default=None)
+            print(f"  {lab} confirms up to strength "
+                  f"{hi if hi is not None else 'nowhere'} and not beyond")
         print(f"  wrote {out2}")
     print(f"\nwrote {out}")
 
