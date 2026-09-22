@@ -151,3 +151,63 @@ def test_the_judge_free_lift_rounds_from_the_csv_and_the_section_still_makes_the
         (mv[1]["acc"], best["acc"], "the GSM8K lift does not round from the CSV")
     assert "no judge" in _body("experiments.tex"), \
         "Section 4 dropped the judge-free claim the abstract makes"
+
+
+from tests.manuscript import ROOT  # noqa: E402
+
+
+def _abstract_text():
+    from tests.manuscript import tex as _tex
+    b = open(_tex("iclr_2027.tex"), encoding="utf-8").read()
+    return " ".join(b.split(r"\begin{abstract}")[1].split(r"\end{abstract}")[0].split())
+
+
+def test_the_abstract_says_self_consistency_is_an_instance_because_the_csv_shows_it_is():
+    """Found by mutation-testing the abstract (caution (aq)): `Self-consistency is an instance.`
+    could be DELETED with all 492 manuscript guards passing. tests/test_selfconsistency_positioning
+    pins Related Work and the appendix -- the places a reviewer checks a positioning claim -- and
+    nothing pinned the place the claim is MADE.
+
+    Conditioned on measured data and not on a phrase elsewhere: the judge-free CSV carries an arm
+    literally named `majority vote (self-consistency)` whose budget column is exactly log n, the
+    same certificate the pointwise-reward arm gets. So it IS an instance, by construction, and the
+    abstract has to say so while that row exists."""
+    import csv as _csv
+    import math as _math
+    import os as _os
+    rows = list(_csv.DictReader(open(_os.path.join(
+        ROOT, "results", "selection_verifiable_comma7b.csv"), encoding="utf-8")))
+    sc = [r for r in rows if "self-consistency" in r["arm"]]
+    assert sc, "the self-consistency arm is gone; this guard and the abstract need revisiting"
+    for r in sc:
+        n, k = int(r["n"]), float(r["budget_nats"])
+        assert abs(k - _math.log(n)) < 5e-4, \
+            f"self-consistency at n={n} no longer carries exactly log n ({k}); it is not an instance"
+    txt = _abstract_text()
+    assert "Self-consistency is an instance" in txt, \
+        "the abstract dropped the positioning claim its own judge-free arm measures"
+
+
+def test_the_abstract_keeps_the_vetting_requirement_because_contamination_amplifies():
+    """The second mutation nothing caught. `and which must be vetted` could be deleted with the
+    suite green -- a CONCESSION, which caution (ag) says a length edit reaches for first, and a
+    safety-relevant one: it is the clause that stops a deployer reading log n as an absolute bound
+    rather than one relative to the anchor.
+
+    Conditioned on the arm that forces it: over the contaminated anchors, selecting by the
+    memorising model's own likelihood raises the rate at which a passage is reproduced by up to 4x.
+    While any anchor amplifies, the abstract must say the anchor has to be vetted."""
+    import csv as _csv
+    import os as _os
+    rows = list(_csv.DictReader(open(_os.path.join(
+        ROOT, "results", "contaminated_anchor.csv"), encoding="utf-8")))
+    amp = [float(r["amplification"]) for r in rows if r["amplification"] not in ("", None)]
+    assert amp, "the contaminated-anchor arm has no amplification column any more"
+    assert max(amp) > 1.0, \
+        "no contaminated anchor amplifies; the vetting requirement may be revisited"
+    txt = _abstract_text()
+    assert "must be vetted" in txt, (
+        f"the abstract dropped the vetting requirement while contamination still amplifies by up "
+        f"to {max(amp):.3f}x -- the clause that keeps the certificate RELATIVE to the anchor")
+    assert "relative" in txt.lower(), \
+        "the abstract no longer says the guarantee is relative to the anchor"
