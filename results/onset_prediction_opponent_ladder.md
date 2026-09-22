@@ -463,3 +463,25 @@ caller timed out at `120`s, and the `setsid nohup ... &` never exec'd before the
 redirected to `/dev/null` by the caller. That is caution (x)'s shape (the shell had not exec'd
 yet) with the evidence suppressed. The relaunch used `nohup setsid ... & disown` and was verified
 by reading the log back, which is the check that distinguishes a job from an intention.
+
+### The third instrument, scored 2026-09-22 --- **the crossing is not settled**
+
+`Mixtral-8x7B` on the `0.704` rung, the one where judge~B and judge~C disagree:
+
+| judge | `0.704` rung | half-width | reading |
+|---|---|---|---|
+| B | `+0.0490 [+0.0135, +0.0850]` | `0.036` | **CONFIRMED** |
+| `Mixtral-8x7B` | `+0.0355 [-0.0105, +0.0810]` | `0.046` | UNRESOLVED |
+| C | `-0.0090 [-0.0555, +0.0375]` | `0.046` | UNRESOLVED |
+
+Mixtral's point estimate agrees in **sign** with judge~B and its interval does not exclude zero, so
+it lands between the two and **resolves nothing**. That is also how it behaves on the committed
+pass, where it is the only one of five panel judges whose interval contains zero
+(`+0.0090 [-0.0355, +0.0530]`), so its non-resolution here is its habit rather than news about this
+rung.
+
+**Two of three judges put this rung positive and one of three resolves it.** The boundary between
+"present" and "absent" is therefore not pinned down by three instruments, which is exactly the
+quantity a compression account of the opponent-dependence would need. The appendix says so.
+
+`results/order_averaged_h2h__opp_qwen05b_mixtral.csv`.
