@@ -1202,3 +1202,52 @@ bash scripts/run_n128_card2.sh 2    # creative+factual 300 x 128, then the merge
 number unless the `n <= 64` half reproduces `results/selection_scaling.csv`. Note that `--max-n`
 could not form an arm above 64 until `analysis.selection_scaling.n_grid` replaced a filter over a
 hardcoded grid; at `--max-n 64` it returns exactly the tuple every arm on record was formed with.
+
+### Phase 8 (2026-09-22): what the workload split is not
+
+Three candidate mechanisms for the scoping result in `app:workload` have now been measured and
+refuted, and the appendix reports the scoping without naming a cause. Two of the three cost no GPU
+time at all, because the data were already on disk.
+
+```bash
+# The paper's own budget, per workload and per budget, as one artefact. Activity and the fraction
+# of served completions byte-identical to the unconstrained opponent, both over exactly the
+# prompts the judged pass shared. Reproduces every number the appendix quotes, including the
+# committed arm's 24 of 299,843.
+.venv/bin/python analysis/workload_degeneracy.py --out results   # -> results/workload_degeneracy.csv
+
+# Is the split the prompt TEMPLATE? dap/shared.py prepends "Complete the prefix:" to
+# copyright-domain prompts and the external benchmarks go through the factual slot, so
+# "ours vs theirs" has also been "header vs no header". Our own factual class is header-free and
+# still reads +0.0990; AlpacaEval, equally header-free, reads -0.0339.
+.venv/bin/python analysis/prompt_header_audit.py --out results   # -> results/prompt_header_audit.csv
+
+# Each workload's calibration grid, under its OWN name. The --out default now follows --root, so
+# two workloads can no longer write one file.
+.venv/bin/python analysis/budget_calibration.py --root output/mtb    --target 0.08008
+.venv/bin/python analysis/budget_calibration.py --root output/mixpow --target 0.08376
+```
+
+Two things these scripts enforce rather than assume. `budget_calibration.activity()` refuses to sum
+a directory holding more than one budget unless a `k` is passed: `output/phase2/conc_all` holds six,
+and summing it reads `8.376%` where its `k=10` arm is `0.008%`. And `workload_degeneracy.py` pins
+both of its columns to the judged prompt intersection, because a directory is not a prompt set
+either -- the same arm reads `0.0080%` over the three classes the judge sees and `0.0145%` over all
+six.
+
+`analysis/workload_degeneracy.py` also flags the one row whose byte-identity is **not**
+interpretable. The committed pass samples its metered arm and its opponent independently, so at
+`k=10` it reads `2.8%` byte-identical while `wscope`'s `k=10` arm -- same workload, same budget --
+reads `99.5%`. The flag is derived from the two measured columns (a near-zero activity beside a low
+identity can only be independent sampling), not from a note.
+
+```bash
+# A generic workload cell, its queue, its scorer and the registered budget choice applied by code.
+bash scripts/run_workload_queue.sh <corpus> <cap> <gpu> draws opponent k10 kcal:0.1 kcal:0.3 kcal:1.0 kcal:3.0 kcal:10.0
+bash scripts/run_workload_bind.sh  <corpus> <datadir> <cap> <maxn> <target> <gpu>
+bash scripts/run_workload_h2h.sh   <corpus> <datadir> <cell> <k> <judge> <tag> <cards>
+```
+
+`run_workload_bind.sh` applies the `argmin |activity(k) - target|` rule the pre-registrations fix,
+and **refuses** to run the binding cell when the grid does not bracket the target: taking the
+nearest endpoint is what a ceilinged grid makes wrong.
