@@ -159,3 +159,48 @@ def test_the_control_that_makes_the_scoping_claim_defensible_is_in_the_paper():
         "the appendix no longer states what the control establishes"
     assert "opposite} directions" in txt, \
         "the observation that the two workloads respond oppositely was trimmed"
+
+
+def test_the_split_is_two_judge_on_both_sides():
+    """One judge on each side would leave the workload claim confounded with the judge. Judge C
+    reads the same sign as judge B on our workload and on AlpacaEval, and both readings are in the
+    paper. Signs come from the CSVs so a re-run that flipped one fails here, not in review."""
+    txt = M.body("appendix_selection.tex")
+
+    def d3(tag):
+        rows = [r for r in csv.reader(open(os.path.join(
+            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))
+            if r and r[0].startswith("D3")]
+        assert len(rows) == 1, tag
+        return float(rows[0][2]), float(rows[0][3]), float(rows[0][4])
+
+    ours_b, ours_c = d3("wscope_c"), d3("armc_judgeC")
+    alp_b, alp_c = d3("mixpowk_judgeB"), d3("mixpowk_judgeC")
+    for label, (g, lo, _hi) in (("ours/judgeB", ours_b), ("ours/judgeC", ours_c)):
+        assert lo > 0, f"{label} no longer favours selection ({g:+.4f})"
+    for label, (g, _lo, hi) in (("alpaca/judgeB", alp_b), ("alpaca/judgeC", alp_c)):
+        assert hi < 0, f"{label} no longer favours the meter ({g:+.4f})"
+    for tag, (g, lo, hi) in (("armc_judgeC", ours_c), ("mixpowk_judgeC", alp_c)):
+        assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in txt, \
+            f"judge C's {tag} reading left the appendix; the split reverts to one judge"
+    assert "not one judge's" in txt, "the appendix no longer says the split survives a second judge"
+
+
+def test_the_paper_does_not_assert_a_mechanism_its_own_data_refutes():
+    """The support-ceiling sentence was measurably wrong: nearly three quarters of the swing is the
+    METER gaining, not selection losing, and the three classes of our own corpus span twice the
+    competence gap with no sign change. Guard the retraction, and the two numbers that force it."""
+    txt = M.body("appendix_selection.tex")
+    assert "cannot identify the cause" in txt, \
+        "the appendix reasserts a mechanism; its own decomposition does not support one"
+    assert "$0.038$" in txt and "$0.092$" in txt, \
+        "the decomposition that shows the meter moves, not selection, was trimmed"
+    assert "$0.137$" in txt and "$0.065$" in txt, \
+        "the within-corpus competence span that kills the predictor was trimmed"
+    # And the per-class D3s must still all share a sign, or the retraction is stale.
+    rows = list(csv.DictReader(open(os.path.join(ROOT, "results", "workload_predictor.csv"),
+                                    encoding="utf-8")))
+    within = [r for r in rows if r["workload"].startswith("ours: ")]
+    assert len(within) == 3, within
+    assert len({r["winner"] for r in within}) == 1, \
+        "the three classes no longer agree; revisit the retraction, the predictor may live"
