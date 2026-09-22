@@ -398,3 +398,37 @@ free by simply *being* the risky model.
 *"the honest conclusion is that this paper's headline survives only against a meter that is not
 metering, and we would rather find that ourselves"* --- and the measurement that would have fired
 it is exactly the one that did not.
+
+### A second judge on Arm A: the vacuous-budget cell is the weakest version of our own claim
+
+Arm A is our corpus at the paper's **own** `k=10`, and until now it had one judge. Judge~C:
+
+| cell | budget | binds | judge~B | judge~C |
+|---|---|---|---|---|
+| Arm A | `k=10` | `0.011%` | `+0.0482 [+0.0303, +0.0662]` CONFIRMED | **`+0.0244 [-0.0029, +0.0512]` UNRESOLVED** |
+| Arm C | `k=0.9` | `8.86%` | `+0.0965 [+0.0765, +0.1162]` CONFIRMED | `+0.0903 [+0.0629, +0.1176]` CONFIRMED |
+
+**At a budget that genuinely binds, both judges clear zero; at the paper's own `k=10` the second
+judge does not.** Both point estimates are positive and the two cells agree in sign, so nothing
+here reverses anything --- but it says where the claim is strongest, and it is not where the paper
+measures it.
+
+This does **not** contradict the committed headline, and the reason matters: that reading is a
+different pass (`500` prompts, `--batch-size 8`) and Table~\ref{tab:h2hrepeat} already reports
+judge~C clearing zero on it at `+0.0620` and `+0.1000`. Caution (ap) forbids setting these against
+each other as levels, and we do not. What is comparable is the **shape** across the two cells of
+*this* pass, which share prompts, pipeline and judges: the binding cell is the cleaner measurement
+on both judges, and the vacuous one is the marginal one on both (`+0.0482` against `+0.0965`;
+`+0.0244` against `+0.0903`).
+
+**The mechanism is the degeneracy already reported.** At `k=10` the metered arm is byte-identical
+to the opponent on `99.5%` of prompts, so the comparison is very nearly selection against the
+unconstrained risky model with the budget doing nothing. That the reversal is *harder* to establish
+there, under a judge that was not used to pick it, is what one should expect and is worth saying
+out loud rather than leaving for a reader to notice.
+
+**And the single-order column is again the reason for the construction**: judge~C's single-order
+`D3` on Arm A reads `-0.1971` against the order-averaged `+0.0244`, a swing of `0.22` with the
+wrong sign, on identical text. That is the largest position artefact this project has measured,
+and it is at the vacuous budget where the two arms' texts are nearly the same --- which is exactly
+where a position-dominated judge has least else to go on.
