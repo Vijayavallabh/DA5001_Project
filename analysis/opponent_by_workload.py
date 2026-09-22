@@ -26,15 +26,42 @@ import itertools
 import os
 import statistics
 
-# (workload, task type, per-prompt tag at the RATE-MATCHED BINDING budget)
+# (workload, task type, per-prompt tag at the RATE-MATCHED BINDING budget, opponent dir)
 ARMS = [
-    ("ours",        "completion",  "wscope_c"),
-    ("AlpacaEval",  "instruction", "mixpowk_judgeB"),
-    ("MT-Bench",    "instruction", "mtb_conc_bind"),
-    ("Gutenberg",   "completion",  "gutenberg_conc_bind"),
-    ("CoTaEval-QA", "comprehension", "cotaeval_qa_conc_bind"),
-    ("unseenbooks", "completion",  "unseenbooks_conc_bind"),
+    ("ours",        "completion",  "wscope_c",            "output/wscope/a_baseline"),
+    ("AlpacaEval",  "instruction", "mixpowk_judgeB",      "output/mixpow/baseline"),
+    ("MT-Bench",    "instruction", "mtb_conc_bind",       "output/mtb/baseline"),
+    ("Gutenberg",   "completion",  "gutenberg_conc_bind", "output/gutenberg/baseline"),
+    ("CoTaEval-QA", "comprehension", "cotaeval_qa_conc_bind", "output/cotaeval_qa/baseline"),
+    ("unseenbooks", "completion",  "unseenbooks_conc_bind", "output/unseenbooks/baseline"),
 ]
+
+
+def opponent(run_dir):
+    """WHO the opponent is, read off the records rather than assumed from a directory name.
+
+    The whole axis is that ONE opponent is strong on one workload and weak on another. If an arm
+    were judged against a different model, or against the same model through a different
+    generator, its "strength" would be a statement about the opponent instead of the workload and
+    the correlation would mean nothing. So the identity is written into the CSV and asserted
+    uniform -- caution (at), two arms compared must have come from the same pipeline, and the runs
+    record enough to check it.
+
+    It returns blanks off-host, where output/ does not exist; main() then refuses to overwrite a
+    populated CSV with them, so the committed columns cannot be silently emptied (caution (ax)).
+    """
+    import glob
+    import json
+    # A workload's opponent cell caps every class but `factual` at 0, so most of these files exist
+    # and are EMPTY. Taking the first glob match reads `attack_train` and dies on an empty line.
+    for f in sorted(glob.glob(os.path.join(run_dir, "trajectories_k-1_*.jsonl"))):
+        line = next((ln for ln in open(f, encoding="utf-8") if ln.strip()), "")
+        if not line:
+            continue
+        m = json.loads(line)["metadata"]
+        return (m.get("target_model") or "", m.get("anchor_model") or "",
+                "blocklist_decode" if "blocklist_ngram" in m else "h1.py")
+    return "", "", ""
 
 
 def spearman(xs, ys):
@@ -94,7 +121,7 @@ def main():
     a = ap.parse_args()
 
     rows = []
-    for name, kind, tag in ARMS:
+    for name, kind, tag, opp_dir in ARMS:
         pp = f"results/order_averaged_h2h_per_prompt__{tag}.csv"
         if not os.path.exists(pp):
             print(f"[skip] {name}: {pp} not written yet")
@@ -104,11 +131,26 @@ def main():
         g, lo, hi, reading = d3(tag)
         gs, gm = d1d2(tag)
         head = min(anchor_win, 1 - anchor_win)     # L4: the room a difference of win rates has
+        opp, anc, gen = opponent(opp_dir)
         rows.append(dict(workload=name, task_type=kind, tag=tag, n_prompts=len(u),
+                         opponent=opp, anchor=anc, opponent_generator=gen,
                          anchor_win=round(anchor_win, 6),
                          opponent_strength=round(1 - anchor_win, 6),
                          d3=g, d3_lo95=lo, d3_hi95=hi, reading=reading, g_sel=gs, g_met=gm,
                          headroom=round(head, 6), d3_normalised=round(g / head, 6)))
+
+    # THE AXIS IS ONE OPPONENT SEEN BY DIFFERENT WORKLOADS. Asserted, not assumed.
+    seen = {(r["opponent"], r["anchor"], r["opponent_generator"]) for r in rows if r["opponent"]}
+    assert len(seen) <= 1, (
+        f"the arms do not share an opponent, an anchor and a generator: {sorted(seen)}. "
+        "Opponent strength would then be a statement about the opponent, not the workload.")
+
+    out = os.path.join(a.out, "opponent_by_workload.csv")
+    if not seen and os.path.exists(out):
+        prev = list(csv.DictReader(open(out, encoding="utf-8")))
+        assert not any(p.get("opponent") for p in prev), (
+            f"{out} records who the opponent was and this run cannot see output/ to confirm it; "
+            "refusing to overwrite those columns with blanks. Run this where the arms live.")
 
     rows.sort(key=lambda r: r["opponent_strength"])
     xs = [r["opponent_strength"] for r in rows]
@@ -139,7 +181,6 @@ def main():
     print("\nNo significance is claimed: at n=%d the smallest attainable two-sided p is %.4f."
           % (len(rows), 2 / n))
 
-    out = os.path.join(a.out, "opponent_by_workload.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:
         wr = csv.DictWriter(f, fieldnames=list(rows[0].keys()) + ["rho", "exact_p", "verdict",
                                                                  "rho_normalised", "exact_p_norm",

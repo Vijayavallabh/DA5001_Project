@@ -122,3 +122,16 @@ def test_the_cotaeval_inversion_is_on_the_selection_side():
     assert float(cta["g_sel"]) < med, "CoTaEval-QA's selection gain is no longer the low one"
     assert float(cta["g_sel"]) == min(float(r["g_sel"]) for r in rows()), \
         "the log calls it the lowest of the five"
+
+
+def test_every_arm_faced_the_same_opponent_through_the_same_pipeline():
+    """The axis is ONE opponent seen by different workloads. If an arm were judged against another
+    model, its 'strength' would be a statement about the opponent instead of the workload and the
+    correlation would mean nothing -- caution (at), and the runs record enough to check it."""
+    seen = {(r["opponent"], r["anchor"], r["opponent_generator"]) for r in rows()}
+    assert len(seen) == 1, f"the arms do not share an opponent: {sorted(seen)}"
+    opp, anc, gen = seen.pop()
+    assert opp and anc and gen, (
+        "the opponent columns are blank -- this CSV was written somewhere output/ does not exist, "
+        "so nothing checked who the arms were judged against")
+    assert gen == "h1.py", gen
