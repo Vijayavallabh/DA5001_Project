@@ -121,3 +121,41 @@ def test_the_paper_does_not_claim_the_budgets_were_matched():
     body_txt = M.body("experiments.tex")
     assert "calibrated to bind as hard as" not in body_txt, \
         "the withdrawn 'matched budget' claim is in the body"
+
+
+def test_the_control_that_makes_the_scoping_claim_defensible_is_in_the_paper():
+    """Without the same-pipeline control on our own workload, app:workload is one benchmark
+    measured once and the obvious reviewer question -- workload or pipeline? -- has no answer.
+    feat-170 Arm A and Arm C supply it, and Arm B replicates the AlpacaEval reading. All four
+    bands are rebuilt from their CSVs here, and the SIGNS are asserted per workload, because the
+    whole claim is that the sign is constant within a workload and opposite between them."""
+    txt = M.body("appendix_selection.tex")
+
+    def d3(tag):
+        rows = [r for r in csv.reader(open(os.path.join(
+            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))
+            if r and r[0].startswith("D3")]
+        assert len(rows) == 1, tag
+        return float(rows[0][2]), float(rows[0][3]), float(rows[0][4]), rows[0][7].strip()
+
+    ours = {"wscope_a": "k=10", "wscope_c": "k=0.9"}
+    alpaca = {"mixpowk_judgeB": "k=1.0", "wscope_b": "k=1.0 re-drawn"}
+
+    for tag, label in ours.items():
+        g, lo, hi, reading = d3(tag)
+        assert lo > 0, f"our workload at {label} no longer favours selection ({g:+.4f})"
+        assert reading == "REVERSAL CONFIRMED", f"{tag}: {reading!r}"
+    for tag, label in alpaca.items():
+        g, lo, hi, reading = d3(tag)
+        assert hi < 0, f"AlpacaEval at {label} no longer favours the meter ({g:+.4f})"
+        assert reading == "REVERSAL REFUTED", f"{tag}: {reading!r}"
+
+    # The two bands the paragraph prints for the control, and the replication.
+    for tag in ("wscope_a", "wscope_c", "wscope_b"):
+        g, lo, hi, _ = d3(tag)
+        assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in txt, \
+            f"{tag}'s band left the appendix; the control or the replication was trimmed"
+    assert "split is the workload, not the budget, the batch size, the pipeline or the seed" in txt, \
+        "the appendix no longer states what the control establishes"
+    assert "opposite} directions" in txt, \
+        "the observation that the two workloads respond oppositely was trimmed"

@@ -20,7 +20,19 @@ instrument: a five-point `k` grid on `200` prompts, and the budget is chosen by 
 be tuned to an answer. Bands carry over from feat-166 unchanged. The anchor draws, the opponent and
 the `51,520` reward scores are NOT re-run --- they do not depend on `k`.
 
-**`results/onset_prediction_workload_scope.md` (feat-170) is REGISTERED and generating** --- the
+**`results/onset_prediction_workload_scope.md` (feat-170) is SCORED.** B1 **REVERSAL HOLDS**
+(`+0.0482 [+0.0303, +0.0662]` on our own corpus through feat-168's pipeline), B2 **REPLICATES**
+(`-0.0255` against feat-168's `-0.0339`, moved `0.0084`), B4 **REVERSAL HOLDS** at a matched
+binding rate (`+0.0965 [+0.0765, +0.1162]` at `k=0.9`, binding `8.9%`). Across five passes the
+sign is constant within each workload and opposite between them, at both a vacuous and a binding
+budget, so **the split is the workload** --- the PIPELINE branch did not fire and `app:workload`
+stands, now with its control and its replication in the paper. Two things to carry forward:
+G0 was **unsatisfiable as written** (its two legs contradict each other wherever the budget is
+vacuous) and was re-pointed per arm before any band was read; and caution (ap)'s half-width rule is
+**weakened** --- two readings at `1.71` half-widths, one replicated and one did not, so the ratio
+flags a reading as worth re-drawing and does not predict the outcome.
+
+**(superseded) feat-170 as registered** --- the
 control and the replication that feat-168's manuscript edit needs. Arm A puts our own `850`
 ordinary prompts through feat-168's exact pipeline, so a reviewer asking *"is that the workload or
 your new pipeline?"* has an answer; the committed pass differs from feat-168 in batch size,

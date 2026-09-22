@@ -310,3 +310,54 @@ steps of one launcher, so a multi-stage launcher must not assume the environment
 still exists. `run_wscope_armc.sh` happened to be safe because its two stages write separate
 artefacts and the second is re-runnable from the first's output; a launcher that had piped one
 stage into the next would have lost the generation too.
+
+### Arm C --- G-cal PASS, G0 PASS on both legs, and **B4: REVERSAL HOLDS**
+
+Calibration on our corpus, `200` prompts, target `0.08008` derived from feat-168's chosen arm
+rather than typed:
+
+| `k` | `0.5` | `0.7` | `0.8` | **`0.9`** | `1.0` |
+|---|---|---|---|---|---|
+| activity | `0.44756` | `0.20675` | `0.13336` | **`0.08203`** | `0.04939` |
+
+**G-cal PASS** --- four points above the target and one below, so it is bracketed and the choice is
+an interpolation. `argmin` picks **`k = 0.9`** at `1.02x` the target; no tie rule needed.
+
+**G0 PASS on both legs at the full `850`:** activity `13{,}523` of `152{,}591` = **`8.862%`**
+(`1.11x` the target) and **`2.0%`** byte-identical to the opponent. Unlike Arms A and B, this arm
+satisfies the gate as originally written --- because at a budget that genuinely binds the two legs
+stop contradicting each other, which is the clearest possible statement of what went wrong with
+G0.
+
+| quantity | value | reading |
+|---|---|---|
+| `D1` selection gain | `+0.1218 [+0.1038, +0.1400]` | SURVIVES |
+| `D2` metered gain, `k=0.9` | `+0.0253` | SURVIVES |
+| **`D3` paired difference** | **`+0.0965 [+0.0765, +0.1162]`** | **REVERSAL CONFIRMED** |
+
+### The `2x2`, which is the result this arm was built for
+
+| workload | budget | binds | metered `==` opponent | paired `D3` |
+|---|---|---|---|---|
+| **ours** | `k=10` | `0.011%` | `99.5%` | **`+0.0482 [+0.0303, +0.0662]`** |
+| **ours** | **`k=0.9`** | **`8.86%`** | **`2.0%`** | **`+0.0965 [+0.0765, +0.1162]`** |
+| AlpacaEval | `k=10` | `0.016%` | `98.6%` | `-0.0957 [-0.1124, -0.0792]` |
+| AlpacaEval | `k=1.0` | `8.01%` | `4.3%` | `-0.0339 [-0.0534, -0.0137]` |
+| AlpacaEval | `k=1.0`, re-drawn | `7.92%` | `5.5%` | `-0.0255 [-0.0453, -0.0062]` |
+
+**The reversal holds on our workload at both budgets and fails on AlpacaEval at both.** Every
+interval excludes zero and the sign is constant within each workload, so the split is the workload
+and nothing else --- not the budget, not the batch size, not the pipeline, not the seed.
+
+**And the two workloads respond to a binding budget in opposite directions.** Forcing the meter to
+spend makes selection's margin *grow* on our corpus (`+0.0482 -> +0.0965`) and *shrink* on
+AlpacaEval (`-0.0957 -> -0.0339`). Both are what the support-ceiling account predicts and neither
+was registered, so both are reported as observations rather than claims: where the anchor is
+competent, a budget that actually constrains the risky model hurts the risky model; where the
+anchor is out of its depth, the same constraint costs the meter the advantage it was getting for
+free by simply *being* the risky model.
+
+**We predicted REVERSAL HOLDS and it does.** We also wrote the PIPELINE branch out in advance ---
+*"the honest conclusion is that this paper's headline survives only against a meter that is not
+metering, and we would rather find that ourselves"* --- and the measurement that would have fired
+it is exactly the one that did not.
