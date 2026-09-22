@@ -246,3 +246,100 @@ The `blocklist_decode` route is not new here: `onset_prediction_second_opponent.
 it for `Qwen2.5-14B`, and that arm's `-0.0065 [-0.0385, +0.0255]` is the concession in
 `app:h2hrepeat`. So the confound is already in the paper, undisclosed, and this ladder is what
 surfaced it. The appendix sentence will say which generator produced which side.
+
+## Scoring, 2026-09-22 --- gates, then H1, then H2, then H3
+
+### Gates
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G1 | the judged prompt id set equals the committed pass's | `500`/`500` on all three | **PASS** |
+| G3 | `<10%` empty, mean length within `3x` of the committed opponent's `154.08` words | `0.0%` empty at every arm; `123.5`, `114.6`, `118.9` words | **PASS** |
+| generator | (added by amendment, not registered) | committed `h1.py`, all four ladder arms `blocklist_decode` | **MIXED** |
+
+No arm is excluded. The mixed generator is a caveat on H1's threshold, recorded above.
+
+### The ladder
+
+| opponent | strength | paired `D3` | verdict | generator |
+|---|---|---|---|---|
+| `Llama-3.1-8B-Instruct` (committed) | `0.555` | `+0.0645 [+0.0300, +0.0995]` | **CONFIRMED** | `h1.py` |
+| `Qwen2.5-0.5B-Instruct` | `0.704` | `+0.0490 [+0.0135, +0.0850]` | **CONFIRMED** | `blocklist_decode` |
+| `Qwen2.5-1.5B-Instruct` | `0.773` | `+0.0195 [-0.0165, +0.0555]` | UNRESOLVED | `blocklist_decode` |
+| `Qwen2.5-3B-Instruct` | `0.825` | `-0.0200 [-0.0540, +0.0140]` | UNRESOLVED | `blocklist_decode` |
+| `Qwen2.5-14B-Instruct` (on record) | `0.850` | `-0.0065 [-0.0385, +0.0255]` | UNRESOLVED | `blocklist_decode` |
+
+### H1 --- **NOT TESTED**
+
+**No new opponent measured below the committed one's `0.555`.** The band required every opponent
+weaker than that to read REVERSAL CONFIRMED; none was weaker, so the primary hypothesis is
+untested and is reported as untested. That is the fourth branch of the registration, and it says
+what to do: *"if a `0.5`B instruct model beats the anchor control more often than
+`Llama-3.1-8B-Instruct` does, that is itself worth a sentence and nothing more."*
+
+**It is worth the sentence.** `Qwen2.5-0.5B-Instruct` --- sixteen times smaller than the committed
+opponent --- beats the anchor control on `70.4%` of prompts against the `8`B Llama's `55.5%`, and
+it is **not length**: the Llama's completions are the LONGEST of the five (`154.1` words against
+`114.6`--`133.3`), and length usually helps under an LLM judge. **Opponent strength on this axis is
+not parameter count.** Within the Qwen family it is ordered by size (`0.704`, `0.773`, `0.825`,
+`0.850` at `0.5`, `1.5`, `3`, `14`B), so size orders strength *within* a family and the family
+shift dominates across them.
+
+**We predicted STRENGTH SUPPORTED and did not get to test it.** The prediction is neither
+confirmed nor refuted and is not quietly converted into the exploratory result below.
+
+### H2 --- **NOT FIRED**
+
+No opponent measured below `0.30`, so the floor branch had nothing to fire on. The registered
+concern --- that the committed opponent sits near the only place the instrument has room --- is
+untested at the low end and remains open.
+
+### H3 --- exploratory, and labelled
+
+Two series, because the generators are not uniform:
+
+| series | Spearman | exact two-sided `p` |
+|---|---|---|
+| all five, **mixed** generators | `-0.900` | `0.0833` |
+| the four Qwen arms: **one generator, one family, size the only variable** | `-0.800` | `0.3333` |
+
+`p = 0.333` is the *smallest* value four points can produce short of a perfect ordering, so the
+four-point series cannot be significant and is not offered as significance. What it shows is the
+**shape**: `+0.0490`, `+0.0195`, `-0.0200`, `-0.0065` against strengths `0.704`, `0.773`, `0.825`,
+`0.850`. The difference decays as the opponent strengthens, crosses zero between `0.773` and
+`0.825`, and the two points past the crossing are both UNRESOLVED rather than reversed.
+
+Two points already seen enter both series. Neither is a band.
+
+### What this does to the manuscript
+
+`app:h2hrepeat` says the judged difference *"does not survive"* a second opponent, on two points
+whose swap moved family and size together. It now has **five points on a measured axis**, and the
+sentence becomes specific rather than anecdotal:
+
+- the second opponent was **not a perturbation** --- it moved the opponent's win rate against a
+  fixed reference from `0.555` to `0.850`, a `0.295` move on a bounded scale;
+- the difference is **CONFIRMED at `0.555` and `0.704`** and **UNRESOLVED at `0.773` and above**,
+  so the boundary lies between them;
+- **the strength account is consistent with all five points and is not established by them**:
+  H1 was the test and it went untested, the four-point series cannot reach significance, and the
+  five-point series mixes generators. It is offered as the shape the data have, not as a mechanism.
+
+The abstract's *"against one fixed opponent"* qualifier **stays**. A compression account explains
+the disappearance at `0.850`; it does not restore the claim there.
+
+**The generator disclosure goes into the appendix**, as the amendment promised: the committed
+opponent's completions come from `h1.py` and every alternative opponent this paper has ever used
+--- including the `Qwen2.5-14B` arm whose `-0.0065` is the published concession --- comes from
+`analysis/blocklist_decode.py`.
+
+### Commands
+
+```
+bash scripts/run_opponent.sh Qwen/Qwen2.5-0.5B-Instruct qwen05b 1
+bash scripts/run_opponent.sh Qwen/Qwen2.5-1.5B-Instruct qwen15b 4
+bash scripts/run_opponent.sh Qwen/Qwen2.5-3B-Instruct   qwen3b  5
+.venv/bin/python analysis/opponent_strength.py --out results
+```
+
+`results/opponent_ladder.csv`, `results/order_averaged_h2h__opp_qwen{05b,15b,3b}.csv`.

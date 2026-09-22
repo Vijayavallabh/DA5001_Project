@@ -256,14 +256,21 @@ def main():
         print(f"[H1] **{h1}**")
         print(f"[H2] **{h2}**")
 
-    usable = [r for r in rows if r["g3"] in ("PASS", "NOT SCORED")]
-    if len(usable) >= 3:
-        xs = [r["strength"] for r in usable]
-        ys = [r["d3"] for r in usable]
-        rho = spearman(xs, ys)
-        print(f"\n[H2, EXPLORATORY -- includes points already seen] "
-              f"Spearman(strength, D3) = {rho:+.4f} over {len(usable)} opponents, "
-              f"exact two-sided p = {exact_p(xs, ys):.4f}")
+    def rank_report(label, sel):
+        u = [r for r in rows if r["g3"] in ("PASS", "NOT SCORED") and sel(r)]
+        if len(u) < 3:
+            return
+        xs, ys = [r["strength"] for r in u], [r["d3"] for r in u]
+        print(f"\n[{label}] Spearman(strength, D3) = {spearman(xs, ys):+.4f} over "
+              f"{len(u)} opponents, exact two-sided p = {exact_p(xs, ys):.4f}")
+        print("          " + ", ".join(f"{r['strength']:.3f}->{r['d3']:+.4f}" for r in u))
+
+    # The five-point series mixes generators (see pipeline()); the four-point one does not, and
+    # the registration's own words for the ladder are "within one family so that size is the only
+    # thing that moves". Both are exploratory and both include points already seen.
+    rank_report("H3, EXPLORATORY -- all five, MIXED generators", lambda r: True)
+    rank_report("H3, EXPLORATORY -- one generator, one family",
+                lambda r: r["generator"] == "blocklist_decode")
     print(f"\nwrote {out}")
 
 
