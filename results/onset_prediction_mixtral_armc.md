@@ -80,3 +80,71 @@ latter and we say the question is not settleable with the prompts we have.
 Host B, judging only. Mixtral about `6` hours across two cards; judge~C about an hour on one.
 
 ## Scoring log
+
+## Scoring, 2026-09-22
+
+### Gates
+
+| gate | requirement | measured | reading |
+|---|---|---|---|
+| G0 same inputs | the pass reads Arm C's own directories and reward cache | `--sel-dir output/wscope/a_sel`, `--rewards results/wscope_rewards64_a.csv`, no generation | **PASS** |
+| G1 the effect is present | judge~B's `D3` on this arm excludes zero, positive | `+0.0965 [+0.0765, +0.1162]` | **PASS** |
+
+G1 is the condition feat-166 and feat-168 both failed. It is the whole difference between this arm
+and the two before it, and it is why this reading can be interpreted at all.
+
+### B1 --- **TIGHT ZERO**
+
+| judge | paired `D3` | half-width | reading |
+|---|---|---|---|
+| B, `Phi-3.5-mini` | `+0.0965 [+0.0765, +0.1162]` | `0.0199` | REVERSAL CONFIRMED |
+| C, `Llama-3.1-8B-Instruct` | `+0.0903 [+0.0629, +0.1176]` | `0.0274` | REVERSAL CONFIRMED |
+| **Mixtral-8x7B-Instruct** | **`+0.0226 [-0.0018, +0.0476]`** | **`0.0247`** | **TIGHT ZERO** |
+
+The interval contains zero and its half-width is `0.0247`, below the committed `0.030`, so the band
+reads **TIGHT ZERO** and its consequence applies. **We predicted TIGHT ZERO and it is TIGHT ZERO.**
+
+**What that means, precisely.** Under the one family-clean frontier judge the difference is
+*positive* (`+0.0226`) and *bounded*: its upper end is `+0.0476`, well below the `+0.0645` on
+record and below what the other judges read. The effect is not absent under Mixtral --- the point
+estimate has the same sign as every other judge --- it is **small**, and at `850` prompts we can
+now say how small rather than shrugging at a wide interval. The hypothesis that the committed
+`+0.0090` was merely under-powered is refuted: with `1.7x` the prompts the interval tightened from
+a half-width of `0.0443` to `0.0247` and the point estimate stayed near zero.
+
+### B2 --- the sentence, as committed in advance
+
+The TIGHT ZERO branch was fixed before any of this ran and it is adopted verbatim: the paper says
+the reversal *"replicates under four judges and is bounded below `0.03` under the one clean
+frontier judge"*, **weakened in the body and not in a footnote**. Section 4's current
+*"four of five ... the exception being the family-clean `Mixtral-8x7B`"* is replaced by a statement
+that says how large the exception is rather than only that it exists, which is strictly more
+informative and strictly less flattering.
+
+### B3 --- reported whatever it says
+
+| judge | `g_sel` | `g_met` | order consistency, `sel_n64` |
+|---|---|---|---|
+| B | `+0.1218 [+0.1038, +0.1400]` | `+0.0253 [+0.0074, +0.0432]` | `0.2894` |
+| C | `+0.1782 [+0.1556, +0.2009]` | `+0.0879 [+0.0618, +0.1144]` | `0.6482` |
+| Mixtral | `+0.1197 [+0.0971, +0.1429]` | `+0.0971 [+0.0735, +0.1209]` | `0.4141` |
+
+Mixtral's order-consistency is `0.4141`, inside the `0.358`--`0.426` on record and well below the
+`0.4807` it read on AlpacaEval, so nothing here revises caution (m) and the judge is behaving as it
+always has.
+
+**Where Mixtral differs from the other two is on the metered arm, not the selection arm.** All
+three judges put selection within `0.06` of each other (`+0.1197` to `+0.1782`); Mixtral scores the
+*meter* at `+0.0971` where judge~B puts it at `+0.0253`, a gap of `0.072`. The disagreement about
+the difference is a disagreement about how good a budgeted decoder's text is, not about selection's
+--- which is worth saying, because a reader meeting one dissenting judge will assume the opposite.
+
+### What it took to get here, recorded because it is the lesson
+
+Three arms. feat-166 ran on AlpacaEval at `k=10` and its budget was vacuous; feat-168 fixed the
+budget and stayed on AlpacaEval, where the reversal does not hold; both gates fired correctly and
+both refused to let Mixtral be read, which is the system working and also two arms spent. **The
+question was never about Mixtral or about statistical power --- it was that we twice asked it on a
+workload where the quantity being judged does not exist.** The rule this leaves: before adding
+power to resolve a marginal reading, check that the effect the reading is about is present in the
+pass you are adding power to.
