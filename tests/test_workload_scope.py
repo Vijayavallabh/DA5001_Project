@@ -493,3 +493,63 @@ def test_the_support_ceiling_direction_is_flagged_where_it_is_stated():
     assert "these two" in txt[j:j + 160], \
         "the five-passes claim is no longer scoped to the two workloads it is about; MT-Bench and " \
         "any later workload are not among those five"
+
+
+def test_the_completion_workload_is_reported_with_its_confound_in_the_same_sentence():
+    """feat-176's registration fixed the WITH OURS consequence before the run: a win is reported as
+    a SCOPING and never as a mechanism, because these anchors are trained on public-domain text and
+    the arm cannot separate 'completion' from 'in the anchor's training distribution'.
+
+    That concession is the part a length edit deletes (caution (ag)), and it is the part that keeps
+    the paragraph honest, so it is pinned to the band it qualifies."""
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import ROOT, body, carries_band
+    rows = {r["band"]: r for r in _csv.DictReader(open(
+        _os.path.join(ROOT, "results", "fifth_workload.csv"), encoding="utf-8"))}
+    assert set(rows) == {"B1 binding", "B2 vacuous"}
+    sec = "appendix_selection.tex"
+    txt = body(sec)
+    for k, r in rows.items():
+        g, lo, hi = float(r["d3"]), float(r["lo95"]), float(r["hi95"])
+        assert r["verdict"] == "WITH OURS", \
+            f"{k} no longer reads WITH OURS; the scoping sentence must be revisited"
+        assert carries_band(g, lo, hi, sec), f"{k}'s band left the appendix"
+
+    i = txt.find("A fourth workload names the axis")
+    assert i > 0, "the completion-workload paragraph was cut"
+    claim = txt[i:i + 2400]
+    assert "confounded" in claim and "cannot\nseparate".replace("\n", " ") in " ".join(claim.split()), \
+        "the training-data confound left the paragraph that reports the win"
+    assert "not a mechanism" in claim, \
+        "the paragraph no longer says this is a scoping rather than a mechanism"
+    # SCOPED (caution (an)): `public-domain` also names the corpus two sentences earlier, so a bare
+    # membership test passed the mutation that removed the REASON the confound exists.
+    j = claim.find("confounded")
+    assert j > 0
+    assert "trained on public-domain" in claim[j:j + 400], \
+        "the reason for the confound -- that these anchors are trained on this kind of text -- was cut"
+
+
+def test_the_completion_workload_is_the_only_one_where_the_meter_loses_to_its_control():
+    """A claim ABOUT a set (caution (ai)): rebuild g_met across every workload and check the
+    adjective. If another workload ever joins it, the sentence is wrong and must be re-derived."""
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import ROOT, body
+
+    def gmet(tag):
+        rows = [r for r in _csv.DictReader(open(_os.path.join(
+            ROOT, "results", f"order_averaged_h2h__{tag}.csv"), encoding="utf-8"))
+            if r["quantity"].startswith("D2")]
+        assert len(rows) == 1, tag
+        return float(rows[0]["value"])
+
+    binding = {"Gutenberg": "gutenberg_conc_bind", "AlpacaEval": "mixpowk_judgeB",
+               "ours": "wscope_c", "MT-Bench": "mtb_conc_bind"}
+    neg = sorted(w for w, t in binding.items() if gmet(t) < 0)
+    assert neg == ["Gutenberg"], \
+        f"the meter now loses to its control on {neg}; the 'only workload' sentence is stale"
+    txt = body("appendix_selection.tex")
+    assert "only workload on which the metered decoder \\emph{loses}" in txt, \
+        "the observation that the meter loses to its own control here was cut"
