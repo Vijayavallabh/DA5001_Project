@@ -1,4 +1,4 @@
-# Session handoff --- 2026-09-20
+# Session handoff --- 2026-09-22
 
 ## Current objective
 
@@ -6,9 +6,55 @@
 reviews). The reports are consistent on one thing above all --- the paper's headline impossibility
 claim outruns its own theorem --- and that is what most of this session did. The manuscript is
 current: main text **exactly 9 of 9 pages** (Ethics Statement at the top of page 10 with no body
-prose above it), **0 overfull**, **0 `??`**, 34 pages total, `pdffonts | grep -ci bold` = 3.
+prose above it), **0 overfull**, **0 `??`**, tectonic exit `0`, `pdffonts | grep -ci bold` = 3.
+**43 pages total as of 2026-09-22**, up from the 32 the 2026-09-19 reduction reached: the appendix
+has taken this week's arms. That is content, not layout --- caution (ar)'s rule is that the
+appendix's floor is set by the tables whose cells are guarded --- but if it has to come down again,
+the lever is the newest additions and never a concession.
 
-## Arms in flight (2026-09-22 02:10)
+## Arms in flight (2026-09-22 16:25) --- ALL EIGHT HOST B CARDS BUSY
+
+| card | arm | what |
+|---|---|---|
+| 0 | feat-172 Arm A | off-support ladder, AlpacaEval `n=256`; `84,525`/`206,080`, ~7 h left |
+| 1 | feat-175 | opponent `Qwen2.5-0.5B-Instruct`, generating `700`/`850` |
+| 2 | feat-174 | CoTaEval-QA draws |
+| 3 | feat-172 Arm B | on-support ladder, `small` shard |
+| 4 | feat-175 | opponent `Qwen2.5-1.5B-Instruct`, generating |
+| 5 | feat-175 | opponent `Qwen2.5-3B-Instruct`, generating |
+| 6 | feat-172 Arm B | on-support ladder, `factual` shard |
+| 7 | feat-176 | Gutenberg completion workload, draws `500`/`32,000` |
+
+**`results/onset_prediction_opponent_ladder.md` (feat-175) is REGISTERED and generating.** The
+appendix concedes that the judged head-to-head *"does not survive"* a second opponent, on two
+points, and the swap that produced it moved **family and size together** so nothing is identified.
+Measured before the arm was designed, from per-prompt files already on disk: the committed opponent
+beats the anchor control on `0.555` of prompts and `Qwen2.5-14B-Instruct` on `0.850`. **The
+"second opponent" was not a perturbation** --- a `0.295` move on a bounded scale --- and
+compression is a live, untested and far less damaging explanation for the whole result. Three more
+opponents, **one family so size is the only variable**. H1 is on new data only: every opponent
+measuring weaker than `0.555` must read REVERSAL CONFIRMED. H2 registers the ceiling at the other
+end so it cannot be discovered. Eleven band and gate mutations pass, all written before any of the
+three existed.
+
+**`results/onset_prediction_fifth_workload.md` (feat-176) is REGISTERED and generating.** The last
+candidate mechanism for the workload split. Anchor competence is refuted (feat-173 B4), the support
+ceiling is retracted, and the prompt template is now **excluded** --- so the task TYPE is what is
+left, and no completion workload we did not choose has ever been measured. `500` Gutenberg
+excerpts through the factual slot, feat-170's protocol at `n=64`. **The training-data confound is
+written down before the run**, with the rule that a win may not be used to revive the support story
+it would appear to support: a loss here is decisive, a win is confounded and will be reported so.
+
+**`results/onset_prediction_offsupport_ladder.md` (feat-172).** Arm A generating on card 0. Arm B
+was **INVALID as first launched** --- its gate requires bit-identity against a reward cache built
+on host B, and it was launched locally, where feat-136 measured only `17.6%` agreement. A
+bit-identity gate is a constraint on the **silicon**, not only on the flags. Re-running on host B.
+
+**`results/onset_prediction_fourth_workload.md` (feat-174) is REGISTERED and generating** ---
+CoTaEval-QA, `500` prompts, the first workload that is neither instruction-following nor ours. Its
+`G-cal` gate was amended before any band was read.
+
+## Arms in flight (superseded, 2026-09-22 02:10)
 
 **`results/onset_prediction_mixtral_power_k.md` (feat-168) is REGISTERED, calibration running** on
 host B cards 0--4. feat-166 failed G0 because at `k=10` on AlpacaEval the budget is active on
@@ -37,16 +83,6 @@ reversal does not hold, so judge~B read the difference negative and their gates 
 to let Mixtral be read. feat-170 Arm C is `850` prompts at a binding budget with judge~B reading
 `+0.0965`, and its generations and reward cache are on disk, so **only the judge changes**. Judge~C
 runs beside it.
-
-**`results/onset_prediction_fourth_workload.md` (feat-174) is REGISTERED and generating** ---
-CoTaEval-QA as a fourth workload, and the first that is neither instruction-following nor our own
-corpus, which is the only kind of point that can separate *"instruction-following breaks the
-reversal"* from *"anything that is not our corpus"*. `500` prompts against MT-Bench's `80`, so it
-is also the first workload arm with the power to resolve a difference the size of MT-Bench's. Its
-`G-cal` gate was **amended before any band was read**: the first grid dropped `33x` between
-`k=1.0` and `k=3.0` and its `argmin` sat at `0.08x` the target, so bracketing alone was shown not
-to be sufficient and a refinement grid was registered on top of it. `k=1.4` was selected at
-`0.97x`.
 
 **`results/onset_prediction_offsupport_ladder.md` (feat-172) is REGISTERED and generating** --- it
 attacks a weakness in our own appendix. The scoping paragraph attributes the AlpacaEval loss to a
