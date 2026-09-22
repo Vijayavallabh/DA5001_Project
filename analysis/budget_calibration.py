@@ -51,10 +51,25 @@ def committed_activity(ref_dir=REF_DIR, k=REF_K):
     return act / tot, act, tot, n
 
 
-def activity(gen_dir):
-    """(active steps, total decode steps, n trajectories) for one arm."""
+def activity(gen_dir, k=None):
+    """(active steps, total decode steps, n trajectories) for one arm at one budget.
+
+    A DIRECTORY IS NOT A BUDGET. output/phase2/conc_all holds k in {0.5, 1, 3, 5, 10, 20} and
+    summing it gives the mean over the whole sweep: that is how this arm's reference activity was
+    once read as 8.376% instead of 0.008%, a factor of 1046, and the wrong number reached the
+    compiled PDF. Pass `k` to select one budget; with k=None the directory must hold exactly one,
+    and the assertion below is what stops a sweep being summed by accident a second time."""
+    pat = ("trajectories_*.jsonl" if k is None
+           else f"trajectories_k{k:g}_*.jsonl".replace("k1_", "k1_"))
+    files = sorted(glob.glob(os.path.join(gen_dir, pat)))
+    if k is None:
+        ks = {os.path.basename(f).split("_")[1] for f in files}
+        assert len(ks) <= 1, (
+            f"{gen_dir} holds {len(ks)} budgets {sorted(ks)}; pass k= to pick one rather than "
+            "summing a sweep")
+    assert files, f"{gen_dir}: no trajectories for k={k}"
     act = tot = n = 0
-    for f in sorted(glob.glob(os.path.join(gen_dir, "trajectories_*.jsonl"))):
+    for f in files:
         for line in open(f, encoding="utf-8"):
             a = json.loads(line)["aggregate"]
             n += 1

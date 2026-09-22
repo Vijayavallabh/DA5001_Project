@@ -301,3 +301,58 @@ def test_the_two_calibration_files_belong_to_different_roots():
             _os.path.join(here, "results", path), encoding="utf-8"))}
     assert n("mtb_kcal.csv") == {80}, "MT-Bench is 80 prompts"
     assert n("mixpow_kcal.csv") == {200}, "the AlpacaEval calibration is 200 prompts"
+
+
+def test_every_degeneracy_number_in_the_appendix_rounds_from_its_own_csv():
+    """Three numbers carried the vacuity argument across three workloads with NO producing script:
+    `794 of 805`, `4.3%`, `8.008%`, and the committed arm's `24 of 299,843`. Each was computed once
+    by hand into a scoring log -- caution (ai) crossed with caution (j). They now come from
+    results/workload_degeneracy.csv and this reads the paragraph against it mechanically.
+    """
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import ROOT, body
+    rows = list(_csv.DictReader(open(
+        _os.path.join(ROOT, "results", "workload_degeneracy.csv"), encoding="utf-8")))
+    by = {(r["workload"], r["budget"]): r for r in rows}
+    txt = body("appendix_selection.tex")
+
+    # The committed arm: the rate AND its count, which is what makes the rate checkable.
+    c = by[("ours (committed)", "vacuous")]
+    assert c["steps_active"] == "24" and c["steps_total"] == "299843"
+    assert f"{float(c['activity']):.3%}".rstrip("%") in ("0.008",), c["activity"]
+
+    # AlpacaEval at the paper's own budget: the byte-identity count the appendix leads with.
+    a = by[("AlpacaEval", "vacuous")]
+    assert a["n_byte_identical"] == "794" and a["n_prompts"] == "805"
+    assert a["steps_active"] == "26" and a["steps_total"] == "160227"
+    assert "794 of 805" in txt or ("$794$" in txt and "$805$" in txt), \
+        "the byte-identity count moved out of the paragraph without this guard moving with it"
+
+    # AlpacaEval at the binding budget: the chosen rate and the share it matched on.
+    b = by[("AlpacaEval", "binding")]
+    assert round(float(b["activity"]) * 100, 3) == 8.008, b["activity"]
+    assert round(float(b["byte_ident"]) * 100, 1) == 4.3, b["byte_ident"]
+
+    # Our own corpus at its binding budget.
+    o = by[("ours", "binding")]
+    assert round(float(o["activity"]) * 100, 1) == 8.9, o["activity"]
+    assert round(float(o["byte_ident"]) * 100, 1) == 2.0, o["byte_ident"]
+
+
+def test_the_one_uninterpretable_byte_identity_row_is_flagged_as_such():
+    """The committed pass samples its metered arm and its opponent independently, so at k=10 it
+    reads 2.8% byte-identical while wscope's k=10 arm -- same workload, same budget -- reads 99.5%.
+    Exactly one row may be flagged, and it must be that one: if the flag ever spreads, the
+    signature it is derived from has stopped meaning what it means."""
+    import csv as _csv
+    import os as _os
+    from tests.manuscript import ROOT
+    rows = list(_csv.DictReader(open(
+        _os.path.join(ROOT, "results", "workload_degeneracy.csv"), encoding="utf-8")))
+    flagged = [r for r in rows if r["byte_ident_interpretable"] != "yes"]
+    assert [r["workload"] for r in flagged] == ["ours (committed)"], \
+        f"expected exactly the committed pass to be flagged, got {[r['workload'] for r in flagged]}"
+    # and the two rows that make the point must disagree as sharply as the appendix says
+    k10 = {r["workload"]: float(r["byte_ident"]) for r in rows if r["budget"] == "vacuous"}
+    assert k10["ours (committed)"] < 0.10 < 0.90 < k10["ours"], k10
