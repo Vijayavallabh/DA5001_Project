@@ -254,7 +254,7 @@ surfaced it. The appendix sentence will say which generator produced which side.
 | gate | requirement | measured | reading |
 |---|---|---|---|
 | G1 | the judged prompt id set equals the committed pass's | `500`/`500` on all three | **PASS** |
-| G3 | `<10%` empty, mean length within `3x` of the committed opponent's `154.08` words | `0.0%` empty at every arm; `123.5`, `114.6`, `118.9` words | **PASS** |
+| G3 | `<10%` empty, mean length within `3x` of the committed opponent's `154.08` words | `0.0%` empty at every arm; `123.5`, `109.45`, `124.4` words | **PASS** |
 | generator | (added by amendment, not registered) | committed `h1.py`, all four ladder arms `blocklist_decode` | **MIXED** |
 
 No arm is excluded. The mixed generator is a caveat on H1's threshold, recorded above.
@@ -404,3 +404,9 @@ bash scripts/run_opponent_judge.sh qwen05b meta-llama/Meta-Llama-3.1-8B-Instruct
 ```
 
 `results/opponent_ladder_judgeC.csv`, `results/order_averaged_h2h__opp_qwen{05b,15b,3b}_judgeC.csv`.
+
+### Correction, 2026-09-22 --- the G3 row quoted a stale word count
+
+The G3 row first read ``123.5`, `114.6`, `118.9`` --- numbers from a partial run, typed in before all three arms had been scored on the host that holds their generations. The CSV reads `123.5`, `109.45`, `124.4`. The gate's verdict is unchanged (every arm is inside `3x` of `154.08` either way) and only the printed evidence was wrong: caution (j), a paper number rounds from the CSV, once.
+
+**The cause is worth more than the correction.** `analysis/opponent_strength.py` can only score G1 and G3 where `output/opponent_*` lives, and run anywhere else it writes `NOT SCORED` and `nan` into those columns --- to the canonical filename. Run locally it therefore **replaced a fully scored ladder with a worse one**, and `sync_status.sh pull` uses `--update`, so the degraded local file, being newer, was never overwritten by host B's good one. Two guards caught it, afterwards. The script now refuses to write a ladder that scores fewer gates than the one already on disk unless `--allow-overwrite` is passed.

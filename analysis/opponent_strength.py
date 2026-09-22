@@ -189,6 +189,8 @@ def h1_h2(rows):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
+    ap.add_argument("--allow-overwrite", action="store_true",
+                    help="permit writing a ladder that scores FEWER gates than the one on disk")
     a = ap.parse_args()
 
     ref_pp = per_prompt("")
@@ -238,6 +240,19 @@ def main():
 
     rows.sort(key=lambda r: r["strength"])
     out = os.path.join(a.out, "opponent_ladder.csv")
+    # CAUTION (ax): A NEW PASS MUST NOT DEGRADE THE CLOSED ONE. G1 and G3 can only be scored where
+    # the generations live, so running this on a host that has the CSVs but not output/opponent_*
+    # produces a table with `NOT SCORED` and `nan` in every gate column -- and, written to the
+    # canonical filename, it silently replaces a fully scored arm with a worse one. It happened
+    # on 2026-09-22 and two guards caught it only afterwards. Refuse instead.
+    if os.path.exists(out) and not a.allow_overwrite:
+        old = {r["opponent"]: r for r in csv.DictReader(open(out, encoding="utf-8"))}
+        lost = [r["opponent"] for r in rows
+                if r["g3"] == "NOT SCORED"
+                and old.get(r["opponent"], {}).get("g3") in ("PASS", "FAIL")]
+        assert not lost, (
+            f"{out} already scores G3 for {lost} and this run cannot (their generations are not on "
+            "this host). Run it where output/opponent_* lives, or pass --allow-overwrite.")
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
