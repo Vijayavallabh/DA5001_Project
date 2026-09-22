@@ -216,3 +216,65 @@ a refinement runs: the refined sweep **overwrote the coarse grid's CSV**, deleti
 is the evidence the refinement was needed. Both are now regenerated under separate names
 (`results/gutenberg_kcal.csv`, `results/gutenberg_kcal_refined.csv`) and
 `scripts/run_workload_bind.sh` writes `_refined` whenever it is given an explicit grid.
+
+## Scoring, 2026-09-22 --- gates, then B1, B2, B3
+
+### Gates, read in the registered order
+
+| gate | measured | reading |
+|---|---|---|
+| G-cal (refined grid brackets, argmin clears `2x`) | `k=0.9` at `0.06951` = `0.87x` | **PASS** |
+| G0a (activity within `2x` of `8.008%`) | `6{,}822`/`98{,}143` = `6.951%`, `0.87x` | **PASS** |
+| G0b (`<10%` byte-identical to the opponent) | `18`/`500` = `3.6%` | **PASS** |
+| G1 (corpus is what this document names) | `500` prompts, `42` books, `169.4` words, `0` carry the header | **PASS** |
+| G2 (anchor not degenerate) | `0.0%` empty over `500` prompts at `n=1` | **PASS** |
+
+Scored by `analysis/score_fifth_workload.py`, which **refuses to compute a band if any gate fails**
+(caution (v)).
+
+### B1 --- **WITH OURS** · B2 --- **WITH OURS**
+
+| budget | binds | `==` opponent | `g_sel` | `g_met` | paired `D3` | reading |
+|---|---|---|---|---|---|---|
+| `k=0.9` (binding) | `6.95%` | `3.6%` | `+0.0805 [+0.0630, +0.0975]` | `-0.0185 [-0.0380, +0.0005]` | **`+0.0990 [+0.0795, +0.1185]`** | **WITH OURS** |
+| `k=10` (vacuous) | `0.043%` | `98.2%` | `+0.0805 [+0.0630, +0.0975]` | `-0.0145 [-0.0315, +0.0030]` | **`+0.0950 [+0.0780, +0.1120]`** | **WITH OURS** |
+
+**A public-domain completion corpus we did not make falls with our corpus, not with the
+instruction and reading-comprehension benchmarks.** That is the last live candidate confirmed: the
+split tracks the **task type**, not the provenance. It holds at both budgets, and the binding cell
+is the larger of the two.
+
+**And the meter loses to its own control here**, `-0.0185` and `-0.0145`, which no other workload
+has shown: on AlpacaEval and MT-Bench the metered decoder gains (`+0.1174`, `+0.0906`) and on our
+own corpus it gains a little (`+0.0253`). Reported as an observation; no band covers it.
+
+### B3 --- the vacuity, a fifth independent measurement
+
+At `k=10` the budget is active on **`0.043%`** of steps and **`98.2%`** (`491`/`500`) of served
+completions are byte-identical to the unconstrained opponent. The five workloads now on record run
+`0.008%`--`0.043%` activity and `95.0%`--`99.5%` byte-identical
+(`results/workload_degeneracy.csv`). Every workload measured shows the paper's own budget doing
+essentially nothing.
+
+### What may NOT be claimed, per this registration
+
+**The training-data confound stands and the win is reported as confounded.** These anchors are
+trained on public-domain and openly licensed text, so a win here is `completion` **and** `in the
+anchor's training distribution` at once, and this arm cannot separate them. The registration fixed
+that consequence before the run --- *"We will not claim the mechanism from a win. We say so now so
+it cannot be claimed later."* --- and it is honoured: the appendix gains a measured **scoping**,
+stated with the confound in the same sentence, and **the abstract does not change**.
+
+### Commands
+
+```
+.venv/bin/python analysis/build_gutenberg_bench.py --limit 500
+bash scripts/run_workload_queue.sh gutenberg 500 7 draws opponent k10 kcal:0.1 kcal:0.3 kcal:1.0 kcal:3.0 kcal:10.0
+bash scripts/run_workload_queue.sh gutenberg 500 7 kcal:0.5 kcal:0.6 kcal:0.7 kcal:0.8 kcal:0.9
+bash scripts/run_workload_bind.sh gutenberg data/bench/gutenberg 500 64 0.08008 7 0.5 0.6 0.7 0.8 0.9
+.venv/bin/python analysis/score_fifth_workload.py --out results
+.venv/bin/python analysis/workload_degeneracy.py --out results
+```
+
+`results/fifth_workload.csv`, `results/order_averaged_h2h__gutenberg_conc_{bind,k10}.csv`,
+`results/gutenberg_kcal{,_refined}.csv`, `results/workload_degeneracy.csv`.

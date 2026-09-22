@@ -52,6 +52,9 @@ ARMS = [
     ("AlpacaEval re-draw", "binding", 1.0, "output/wscope/b_conc", "output/wscope/b_baseline", "__wscope_b"),
     ("MT-Bench",   "vacuous", 10.0, "output/mtb/conc_k10",    "output/mtb/baseline",      "__mtb_conc_k10"),
     ("MT-Bench",   "binding",  1.0, "output/mtb/conc_bind",   "output/mtb/baseline",      "__mtb_conc_bind"),
+    # feat-176: a public-domain COMPLETION corpus, the first workload of that kind we did not make.
+    ("Gutenberg",  "vacuous", 10.0, "output/gutenberg/conc_k10",  "output/gutenberg/baseline", "__gutenberg_conc_k10"),
+    ("Gutenberg",  "binding",  0.9, "output/gutenberg/conc_bind", "output/gutenberg/baseline", "__gutenberg_conc_bind"),
 ]
 
 
