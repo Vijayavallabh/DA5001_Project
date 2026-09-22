@@ -31,6 +31,10 @@ def main():
     ap.add_argument("--words", type=int, default=0,
                     help="0 (default) uses the excerpt as built; a positive value truncates")
     ap.add_argument("--name", default="gutenberg")
+    ap.add_argument("--select", default="roundrobin", choices=("first", "roundrobin"),
+                    help="roundrobin (default) takes an even spread over books; `first` is the "
+                         "original prefix behaviour and is kept ONLY so the feat-176 Gutenberg "
+                         "arm's corpus file still reproduces the corpus it ran on")
     a = ap.parse_args()
 
     out_file = f"data/bench/{a.name}_factual.jsonl"
@@ -58,8 +62,30 @@ def main():
                          prompt_text=" ".join(w[:a.words]) if a.words else text,
                          expected_answer=""))
         books.add(rows[-1]["source_novel"])
-        if len(rows) >= a.limit:
+
+    # `--limit N` MUST NOT MEAN "the first N". These files are ordered by book, so a prefix of
+    # them is a few books repeated -- 500 rows of the BookMIA unseen half gave 6 books where the
+    # file holds 27. That is caution (w) exactly, the defect that made feat-109's corpus Fifty
+    # Shades instead of Harry Potter. Take a round robin over books instead, which is a prefix
+    # only when one book supplies everything.
+    by_book = {}
+    for r in rows:
+        by_book.setdefault(r["source_novel"], []).append(r)
+    picked, i = [], 0
+    if a.select == "first":
+        picked = rows[:a.limit]
+    while a.select == "roundrobin" and len(picked) < a.limit:
+        added = False
+        for b in sorted(by_book):
+            if i < len(by_book[b]):
+                picked.append(by_book[b][i])
+                added = True
+                if len(picked) >= a.limit:
+                    break
+        if not added:
             break
+        i += 1
+    rows, books = picked, {r["source_novel"] for r in picked}
     assert len(rows) == a.limit, f"only {len(rows)} usable excerpts of {a.limit} requested"
 
     with open(out_file, "w", encoding="utf-8") as f:
@@ -85,7 +111,7 @@ def main():
     # CAUTION (w): print the corpus you selected, and read it back.
     n = sum(len(r["prompt_text"].split()) for r in rows) / len(rows)
     print(f"wrote {out_file}: {len(rows)} prompts from {len(books)} books, "
-          f"mean prompt {n:.1f} words")
+          f"mean prompt {n:.1f} words  (--select {a.select})")
     print(f"wrote {out_dir}/ as {len(links)} symlinks")
     print("first prompt:", repr(rows[0]["prompt_text"][:100]))
 
