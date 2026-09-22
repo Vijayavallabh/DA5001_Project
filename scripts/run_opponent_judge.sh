@@ -6,11 +6,15 @@
 # Usage: run_opponent_judge.sh <tag> <judge> <judge-tag> <cards> [--device-map auto]
 set -uo pipefail
 TAG=${1:?tag}; JUDGE=${2:?judge}; JT=${3:?judge tag}; CARDS=${4:?cards}; DM=${5:-}
+# The committed opponent is not under output/opponent_*; it is the k=-1 half of an h1.py sweep.
+# A sixth argument names its directory so the same launcher can put a second judge on that rung
+# too, which is what makes the second-instrument series four points instead of three.
+BDIR=${6:-}
 # Derived, not hardcoded: a literal `$HOME/v/<project>` puts the repository name inside
 # every launcher, and scripts/build_artifact.sh refuses to ship a tree containing it.
 cd "$(dirname "$0")/.."
 . scripts/gpu_env.sh
-OUT=output/opponent_$TAG
+OUT=${BDIR:-output/opponent_$TAG}
 [ -d "$OUT" ] || { echo "no such opponent run: $OUT" >&2; exit 2; }
 MARK="$HOME/v/logs/oppj_${TAG}_${JT}"
 rm -f "${MARK}.done" "${MARK}.fail"
