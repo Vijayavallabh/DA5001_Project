@@ -141,7 +141,7 @@ what happened. The weakening is recorded against our own account of the result.
 
 | gate | requirement | measured | reading |
 |---|---|---|---|
-| G-cal | the grid brackets `8.008%` | `0.765`, `0.684`, `0.077`, `0.005`, `0.0002`; `2` above, `3` below | **PASS** |
+| G-cal | the grid brackets `8.008%` | `0.659`, `0.589`, `0.073`, `0.006`, `0.0003`; `2` above, `3` below | **PASS** |
 | G0a | binding cell within `2x` of `8.008%` | `818`/`11{,}263` = **`7.263%`**, `0.91x` | **PASS** |
 | G0b | under `10%` byte-identical to the opponent | **`1.2%`** (`1`/`80`) | **PASS** |
 | G1 | `80` prompts, factual slot | `80` | **PASS** |
@@ -220,3 +220,30 @@ bash scripts/run_workload_h2h.sh mtb data/bench/mtbench conc_bind 1.0 \
 
 `results/order_averaged_h2h__mtb_conc_bind_judgeC.csv`,
 `results/order_averaged_h2h__mtb_conc_bind_mixtral.csv`.
+
+### Correction, 2026-09-22 --- the G-cal row quoted the WRONG ARM'S grid
+
+The G-cal row above originally read `0.765`, `0.684`, `0.077`, `0.005`, `0.0002`. **Those are
+AlpacaEval's activities, not MT-Bench's.** MT-Bench's own grid, recomputed from
+`output/mtb/kcal_*` by the same script, is `0.659`, `0.589`, `0.0726`, `0.0060`, `0.00033`. The row
+is corrected in place and this section says what it used to say, because a corrected number with no
+record of the correction is worse than the error.
+
+**The verdict and the chosen budget are unchanged, and that was checked rather than assumed.**
+Against the registered target of `0.08008` the real grid has `2` points above and `3` below, so
+G-cal PASSes as recorded, and the `argmin` is `k=1.0` at `|0.07263 - 0.08008| = 0.00745` against
+`k=3.0`'s `0.07405` --- the same `k`, and the same `0.91x` ratio G0a already reported from
+MT-Bench's own `818`/`11{,}263`. So G0a was computed from the right arm all along; only G-cal's
+printed evidence was another's.
+
+**The cause is caution (ax) and the repair is structural.**
+`analysis/budget_calibration.py --out` defaulted to the literal `results/mixpow_kcal.csv`
+regardless of `--root`, so an MT-Bench calibration and an AlpacaEval one were written to one
+filename --- which means **MT-Bench's grid was never committed anywhere**, and a scoring log
+written by hand had no artefact of its own to round from (caution (j): a paper number must round
+from the CSV, once). The default is now `results/<basename of --root>_kcal.csv`, so two workloads
+cannot share a file, and both grids are committed: `results/mixpow_kcal.csv` (AlpacaEval, feat-168,
+unchanged and correct) and `results/mtb_kcal.csv` (this arm).
+
+`tests/test_workload_scope.py` gains a check that every activity quoted in this document's G-cal
+row is present in `results/mtb_kcal.csv`.

@@ -254,3 +254,50 @@ def test_every_d3_verdict_agrees_with_its_own_interval():
                 bad.append(f"{os.path.basename(path)}: {g:+.4f} [{lo:+.4f}, {hi:+.4f}] "
                            f"says {got!r}, arithmetic says {want!r}")
     assert not bad, "verdicts disagree with their intervals:\n  " + "\n  ".join(bad)
+
+
+def test_the_mtbench_gcal_row_rounds_from_mtbenchs_own_grid():
+    """The G-cal row once printed AlpacaEval's activities under MT-Bench's heading, because
+    budget_calibration.py wrote both workloads to one filename and MT-Bench's grid was committed
+    nowhere (caution (ax)). Read the row against the CSV mechanically -- caution (j), reading it is
+    not enough -- and pin the two grids apart so the same swap cannot happen silently again."""
+    import csv as _csv
+    import os as _os
+    import re as _re
+    here = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+
+    def grid(path):
+        return [float(r["activity"]) for r in _csv.DictReader(open(
+            _os.path.join(here, "results", path), encoding="utf-8"))]
+
+    mtb, alp = grid("mtb_kcal.csv"), grid("mixpow_kcal.csv")
+    assert len(mtb) == len(alp) == 5
+    # The two workloads must not be confusable at the precision the document prints.
+    assert sum(1 for a, b in zip(mtb, alp) if round(a, 3) == round(b, 3)) < 3, \
+        "the two grids agree at 3 dp on most points; the swap this guards against is undetectable"
+
+    doc = open(_os.path.join(here, "results", "onset_prediction_third_workload.md"),
+               encoding="utf-8").read()
+    row = [ln for ln in doc.splitlines() if ln.startswith("| G-cal |")]
+    assert len(row) == 1, "expected exactly one G-cal row in the scored table"
+    quoted = [float(x) for x in _re.findall(r"`([0-9]*\.[0-9]+)`", row[0])]
+    # the target is quoted as a percentage with a % sign and so is not picked up here
+    assert len(quoted) == 5, f"expected five activities in the G-cal row, got {quoted}"
+    for q in quoted:
+        assert any(abs(q - m) < 5e-4 for m in mtb), \
+            f"{q} is not an MT-Bench activity; mtb_kcal.csv holds {mtb}"
+        assert not (any(abs(q - a) < 5e-4 for a in alp)
+                    and not any(abs(q - m) < 5e-4 for m in mtb)), q
+
+
+def test_the_two_calibration_files_belong_to_different_roots():
+    """One file per workload is the repair; assert the trajectory counts differ, which is the
+    cheapest thing that cannot be true if one overwrote the other."""
+    import csv as _csv
+    import os as _os
+    here = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    def n(path):
+        return {int(r["n_trajectories"]) for r in _csv.DictReader(open(
+            _os.path.join(here, "results", path), encoding="utf-8"))}
+    assert n("mtb_kcal.csv") == {80}, "MT-Bench is 80 prompts"
+    assert n("mixpow_kcal.csv") == {200}, "the AlpacaEval calibration is 200 prompts"

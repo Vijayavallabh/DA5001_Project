@@ -73,8 +73,18 @@ def main():
     ap.add_argument("--grid", nargs="+", type=float, default=[0.1, 0.3, 1.0, 3.0, 10.0])
     ap.add_argument("--target", type=float, default=0.0,
                     help="0 (default) derives it from the committed arm; never type it in")
-    ap.add_argument("--out", default="results/mixpow_kcal.csv")
+    ap.add_argument("--out", default="",
+                    help="default: results/<basename of --root>_kcal.csv, so two workloads can "
+                         "never share one file")
     a = ap.parse_args()
+    # CAUTION (ax): TWO PASSES MUST NOT SHARE A FILENAME. The default used to be the literal
+    # results/mixpow_kcal.csv whatever --root was, so an MT-Bench calibration and an AlpacaEval
+    # one wrote the same file. MT-Bench's grid was then never committed anywhere, and feat-173's
+    # scored G-cal row was filled in from AlpacaEval's numbers -- 0.765/0.684/0.077/0.005/0.0002
+    # where MT-Bench's own are 0.659/0.589/0.073/0.006/0.0003. The choice of k was unaffected
+    # (the argmin is k=1.0 under either grid) but the printed evidence was another arm's.
+    if not a.out:
+        a.out = os.path.join("results", os.path.basename(a.root.rstrip("/")) + "_kcal.csv")
 
     if not a.target:
         a.target, racr, rtot, rn = committed_activity()
