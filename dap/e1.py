@@ -31,6 +31,10 @@ class AuditConfig:
     risky_model_path: str = "meta-llama/Llama-3.1-8B-Instruct"
     k_values: Tuple[float, ...] = (1.0, 3.0, 5.0)
     trajectories_per_prompt: int = 30
+    # feat-181: generate trajectory indices [trajectory_start, trajectory_start + n) only. Each batch
+    # is seeded by its own trajectory seed and batched over every prompt, so a tail run gives exactly
+    # the draws a full run would -- an n=512 pool can be extended from a committed n=256 one.
+    trajectory_start: int = 0
     seeds: Tuple[int, ...] = (42, 43, 44)
     prefix_n: int = 5
     use_prefix_debt: bool = True
@@ -141,10 +145,12 @@ class H1AuditRunner:
     def _build_jobs(self, prompts: List[PromptRecord]) -> List[Dict[str, Any]]:
         jobs = []
         for prompt in prompts:
-            traj_seeds = build_trajectory_seeds(prompt.prompt_id, self.config.seeds, self.config.trajectories_per_prompt)
+            traj_seeds = build_trajectory_seeds(prompt.prompt_id, self.config.seeds, self.config.trajectories_per_prompt,
+                                                start=self.config.trajectory_start)
             prompt_len = self._prompt_token_length(prompt.prompt_text)
             for traj_idx, seed in enumerate(traj_seeds):
-                jobs.append({"prompt": prompt, "seed": int(seed), "trajectory_id": int(traj_idx), "prompt_len": prompt_len})
+                jobs.append({"prompt": prompt, "seed": int(seed), "trajectory_id": int(self.config.trajectory_start + traj_idx),
+                             "prompt_len": prompt_len})
         return jobs
 
     def _group_jobs_by_seed(self, jobs: List[Dict[str, Any]]) -> Dict[int, List[Dict[str, Any]]]:
@@ -465,6 +471,8 @@ def parse_args() -> AuditConfig:
     p.add_argument("--risky-model-path", default="meta-llama/Llama-3.1-8B-Instruct")
     p.add_argument("--k-values", nargs="+", type=float, default=[3.0, 5.0])
     p.add_argument("--trajectories-per-prompt", type=int, default=10)
+    p.add_argument("--trajectory-start", type=int, default=0,
+                   help="first trajectory index to generate (feat-181); 0 reproduces every run on record")
     p.add_argument("--seeds", nargs="+", type=int, default=[42, 43, 44])
     p.add_argument("--prefix-n", type=int, default=5)
     p.add_argument("--temperature", type=float, default=1.0)
@@ -522,6 +530,7 @@ def parse_args() -> AuditConfig:
         data_dir=args.data_dir, output_dir=args.output_dir,
         safe_model_path=args.safe_model_path, risky_model_path=args.risky_model_path,
         k_values=tuple(args.k_values), trajectories_per_prompt=args.trajectories_per_prompt,
+        trajectory_start=args.trajectory_start,
         seeds=tuple(args.seeds), prefix_n=args.prefix_n, use_prefix_debt=not args.no_prefix_debt,
         initial_bank=args.initial_bank,
         spend_threshold=args.spend_threshold,

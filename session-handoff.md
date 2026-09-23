@@ -103,6 +103,15 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
+## feat-181 registered and launching on host B (2026-09-23 15:00) --- both ladders to n = 512
+
+`results/onset_prediction_n512_ladder.md`: feat-172's deferred next doubling, on host B's eight idle H100s
+at the user's instruction. Only trajectory indices 256-511 are drawn (`--trajectory-start`, new in
+`dap/e1.py`, pinned by `tests/test_seeds.py`); G0 regenerates trajectory 255 and must match the
+committed draw byte for byte, G1 is the reward bit-identity against the n=256 caches, G2 the merged
+pool (`analysis/n512_pool.py`). Launch: `scripts/run_n512_hostb.sh` (one queue per card); logs
+`output/logs/n512_*.log`, markers `~/v/logs/n512_*.{done,fail}` on host B.
+
 ## Arms in flight (2026-09-23 14:10) --- both hosts checked
 
 | host | card | arm | state |
