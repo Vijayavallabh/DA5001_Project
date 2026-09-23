@@ -114,6 +114,7 @@ Appendix I extended to `512`, no main-text change).
 | host | cards | arm | state | next step |
 |---|---|---|---|---|
 | host B | 4-7 | **feat-182** by declared deviation (`cb532ed`; anchors `76/76` md5, `507ae1e`): `local_dispatch.py --cards 4,5,6,7 --only selfixR_` | 11 of 12 placed, first done 23:30 IST | waiter `brgg29p1k` (host B `output/logs/selfix_redraw_queue.log`); `sync_status.sh pull`; `analysis/selector_n256.py --redraw`; then the registered consequence: **the amplification at `n=64` and `n=256` quoted per draw, both draws, at every site** (intro, Section 3, Section 4, the Ethics Statement, the `fig:safety` caption, `tab:contam` and its prose), and a verdict in the main text only if it REPLICATES. The three main-text sites are in a 9/9 body: measure heading positions before and after (caution (az)) |
+| host B | 4-7 | **feat-183** (`onset_prediction_vetting_short.md`, registered `b11046f` at the user's instruction): the six licensed anchors at `L = 20, 35, 50, 75`, 24 rungs, one dispatcher with feat-182 (`--only selfixR_,vetladder_L`) | first rung placed 00:09 IST | waiter `b6pvjj1qi` (dispatcher's last line `all done`/`gave up`); pull; `analysis/vetting_ladder.py` prints S1; consequences as registered: `tab:vetladder`'s licensed dashes become counts; HOLDS -> 'unmeasured' becomes 'every rung from 20 to 200' (Appendix I, Ethics); BREAKS -> main text |
 | host B | 0-3 | the user's other project's vLLM | not ours | never touch |
 | local | none | nothing of ours is running | | |
 
