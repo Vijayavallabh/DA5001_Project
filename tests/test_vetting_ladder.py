@@ -37,14 +37,30 @@ def _run(d, capsys):
     return capsys.readouterr().out
 
 
+def _complete(d, skip=()):
+    """every registered rung, monotone, the licensed anchors clean; `skip` leaves rungs out"""
+    for L, k in ((20, 0), (35, 2), (50, 8), (75, 14), (100, 25), (150, 28), (200, 30)):
+        if ("llama70b", L) not in skip:
+            _write(d, f"vetladder_L{L}_llama70b", k, col="risky_alone_recall")
+    _write(d, "vet_olmo2_7b", 4)
+    for t in ("olmo2_13b", "olmo2_7b"):
+        for L, k in ((20, 0), (50, 2), (150, 8), (200, 9)):
+            if (t, L) not in skip:
+                _write(d, f"vetladder_L{L}_{t}", k)
+    for t, (_, ref, role) in v.MODELS.items():
+        if role == "openly licensed":
+            if not os.path.exists(os.path.join(d, f"{ref}_per_passage.csv")):
+                _write(d, ref, 0)                          # its L = 100 screen on record
+            for L in (150, 200):
+                if (t, L) not in skip:
+                    _write(d, f"vetladder_L{L}_{t}", 0)
+
+
 def test_a_monotone_ladder_that_reproduces_reads_cleanly(tmp_path, capsys):
     _base(tmp_path)
-    for L, k in ((20, 0), (50, 8), (100, 25), (200, 30)):
-        _write(tmp_path, f"vetladder_L{L}_llama70b", k, col="risky_alone_recall")
-    for L, k in ((20, 0), (200, 9)):
-        _write(tmp_path, f"vetladder_L{L}_olmo2_13b", k)
-    _write(tmp_path, "vetladder_L200_comma7b", 0)
+    _complete(tmp_path)
     out = _run(tmp_path, capsys)
+    assert "rungs missing: none" in out
     assert "G0 PASS" in out and "G1 PASS" in out
     assert "V1 MONOTONE" in out and "V2 L* = 50" in out and "V3 PASS HOLDS" in out
     assert "olmo2_13b  L=100  leaks on  6/50" in out and "[on record]" in out
@@ -80,6 +96,17 @@ def test_a_fall_of_three_passages_is_non_monotone_and_a_licensed_leak_breaks_the
 
 def test_a_fall_of_two_is_within_tolerance(tmp_path, capsys):
     _base(tmp_path)
-    _write(tmp_path, "vetladder_L100_llama70b", 25, col="risky_alone_recall")
-    _write(tmp_path, "vetladder_L150_olmo2_13b", 4)
+    _complete(tmp_path)
+    _write(tmp_path, "vetladder_L150_olmo2_13b", 4)        # 6 on record at 100 -> 4: a fall of two
     assert "V1 MONOTONE" in _run(tmp_path, capsys)
+
+
+def test_a_missing_rung_is_not_read_as_a_pass_but_a_leak_still_breaks_it(tmp_path, capsys):
+    _base(tmp_path)
+    _complete(tmp_path, skip={("pleias3b", 150), ("llama70b", 35), ("olmo2_7b", 20)})
+    out = _run(tmp_path, capsys)
+    assert "V3 NOT READ (incomplete)" in out and "PASS HOLDS" not in out, out
+    assert "V1 NOT READ (incomplete)" in out and "V2 NOT READ (incomplete)" in out
+    assert "V4 NOT READ (incomplete)" in out
+    _write(tmp_path, "vetladder_L200_kl3m17b", 1)         # a leak is a leak on any subset
+    assert "V3 PASS BREAKS" in _run(tmp_path, capsys)

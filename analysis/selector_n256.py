@@ -149,6 +149,18 @@ def readings(out, rows_by_tag):
     return dict(B1=(b1, a64), B2=(b2, tight), B3=(b3, growth))
 
 
+def flatten(rd):
+    """B1-B3 as rows, so every value the paper quotes rounds from a committed CSV (caution (j)).
+    Added 2026-09-23 with 4 of 12 Part A anchors still generating and no band read."""
+    rows = []
+    for band, (verdict, detail) in rd.items():
+        for tag, v in sorted(detail.items()):
+            b, c, p = v if band == "B3" else ("", "", None)
+            rows.append(dict(band=band, anchor=tag, value="" if band == "B3" else round(v, 4),
+                             b=b, c=c, p="" if p is None else round(p, 4), verdict=verdict))
+    return rows
+
+
 def part_b(results):
     out = []
     for arm, ref_prefix in CLEAN.items():
@@ -218,8 +230,20 @@ def main():
         write(os.path.join(a.out, "selector_n256.csv"), out)
         rows_by_tag = {t: load(os.path.join(a.results, f"selfix256_{t}_per_passage.csv"))
                        for t in gates}
-        for k, (verdict, detail) in readings(out, rows_by_tag).items():
-            print(f"  {k} {verdict}: {detail}")
+        # Every anchor the committed arm holds must be here and pass G0/G2 before B1-B3 are read:
+        # "dropping an anchor" is excluded in advance, and SATURATES / LOOSE / SATURATED BY 64 are
+        # claims about ALL twelve. The set is read off the arm on record, not typed (caution (at)).
+        want = {re.sub(r"^contam_|_per_passage\.csv$", "", os.path.basename(f))
+                for f in glob.glob(os.path.join(a.results, "contam_*_per_passage.csv"))}
+        ok = {t for t, (g0, g2) in gates.items() if not g0 and not g2}
+        if want - ok:
+            print(f"  B1-B3 NOT READ: incomplete, missing or gated out {sorted(want - ok)}")
+        else:
+            rd = readings(out, rows_by_tag)
+            for k, (verdict, detail) in rd.items():
+                print(f"  {k} {verdict}: {detail}")
+            if any(detail for _, detail in rd.values()):
+                write(os.path.join(a.out, "selector_n256_readings.csv"), flatten(rd))
     clean, (b4, free) = part_b(a.results)
     if clean:
         write(os.path.join(a.out, "selector_n256_clean.csv"), clean)

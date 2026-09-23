@@ -242,3 +242,14 @@ passages, so the memoriser's `k=-1` draw is the one on record and only the selec
 `anchor_max_recall` at `n=256`, the pool counts consistent). Read with `gate_g0`/`gate_g2` alone;
 `part_a` and `readings` were not run, so no rate, amplification or McNemar count exists yet. B1--B3
 are read once all twelve have landed.
+
+### Scorer amended 2026-09-23 14:12, before B1--B3 were read (8 of 12 anchors landed)
+
+Two changes to `analysis/selector_n256.py`, neither touching a band's definition. (1) B1--B3 are
+refused unless **every** anchor the committed arm holds (the twelve `contam_*_per_passage.csv`) has
+landed and passed G0 and G2; before this the readings ran over whatever anchors were present, so a
+failed job would have been dropped silently, which the registration excludes and which would have let
+SATURATES, LOOSE or SATURATED BY 64 --- claims about all twelve --- be read on eleven. (2) The readings
+are written to `results/selector_n256_readings.csv` (band, anchor, value, McNemar `b`/`c`/`p`,
+verdict) so every value the paper quotes rounds from a committed file. Both are in
+`tests/test_selector_n256.py`, and the refusal was mutation-checked (disabled, the test fails).

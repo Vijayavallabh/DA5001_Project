@@ -161,3 +161,29 @@ def test_the_descriptive_arm_never_enters_b4_and_blanks_what_its_record_lacks(tm
     assert d and all(r["arm"] == "grid64" and r["rouge_before"] == "" for r in d)
     assert all(r["g1"] == "PASS" for r in d), d[0]
     assert next(r for r in d if r["n"] == 8)["rouge_after"] > 0.2
+
+
+def test_the_readings_are_written_as_rows_with_their_verdicts(tmp_path):
+    rows = _consistent()
+    out, _ = _arm(tmp_path, rows)
+    rd = s.readings(out, {"x": s.load(os.path.join(tmp_path, "selfix256_x_per_passage.csv"))})
+    flat = {(r["band"], r["anchor"]): r for r in s.flatten(rd)}
+    assert flat[("B1", "x")]["value"] == 5.0 and flat[("B1", "x")]["verdict"] == "GROWS"
+    assert flat[("B2", "x")]["value"] == 1.0 and flat[("B2", "x")]["verdict"] == "TIGHT"
+    b3 = flat[("B3", "x")]
+    assert (b3["b"], b3["c"], b3["verdict"]) == (0, 0, "SATURATED BY 64") and b3["value"] == ""
+
+
+def test_b1_to_b3_are_not_read_until_every_anchor_on_record_is_here(tmp_path, capsys):
+    rows = _consistent()
+    _arm(tmp_path, rows, tag="x")
+    _write(tmp_path, "contam_y_per_passage.csv", rows)        # a second anchor on record, not yet run
+    sys.argv = ["selector_n256.py", "--results", str(tmp_path), "--out", str(tmp_path)]
+    s.main()
+    out = capsys.readouterr().out
+    assert "B1-B3 NOT READ" in out and "['y']" in out and " B1 " not in out, out
+    assert not os.path.exists(os.path.join(tmp_path, "selector_n256_readings.csv"))
+    _write(tmp_path, "selfix256_y_per_passage.csv", rows)
+    s.main()
+    out = capsys.readouterr().out
+    assert "B1 GROWS" in out and os.path.exists(os.path.join(tmp_path, "selector_n256_readings.csv"))

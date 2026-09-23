@@ -149,3 +149,12 @@ All seven 70B rungs (`L` = 20, 35, 50, 75, 100, 150, 200) and OLMo-2-13B at `L` 
 exactly the `50` `prompt_id`s of `vet_comma7b`. Checked with `vetting_ladder.load` and a set
 comparison only; `main()` was not run, so no V-reading exists. The ladder is read once every rung
 has landed.
+
+### Scorer amended 2026-09-23 14:12, before V1--V4 were read (17 of 27 new rungs landed)
+
+`analysis/vetting_ladder.py` never checked that the ladder was complete: V3 read PASS HOLDS over
+whichever licensed rungs existed, so a failed job would have read as a pass. Every registered rung is
+now listed (`EXPECTED`), missing rungs are printed, and a verdict that needs an absent rung reads
+**NOT READ (incomplete)** --- except PASS BREAKS and NON-MONOTONE, which a leak or a fall establishes
+on any subset. Four mutations (each new branch disabled, and the missing-set emptied), four caught by
+`tests/test_vetting_ladder.py`. No band's definition changed.

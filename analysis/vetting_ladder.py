@@ -30,6 +30,13 @@ MODELS = {
     "pleias12b": ("anchor_max_recall", "vet_pleias12b", "openly licensed"),
     "pleias3b": ("anchor_max_recall", "vet_pleias3b", "openly licensed"),
 }
+# Every rung the registration names; a verdict that needs a rung which is absent (never ran, or
+# refused by G0) is NOT READ rather than read on what is left -- "dropping a rung" is excluded in
+# advance, and a missing licensed rung must never read as PASS HOLDS. Added 2026-09-23, before V1-V4
+# were read, with 10 rungs still generating.
+EXPECTED = dict({"llama70b": (20, 35, 50, 75, 100, 150, 200),
+                 "olmo2_13b": (20, 50, 100, 150, 200), "olmo2_7b": (20, 50, 100, 150, 200)},
+                **{t: (150, 200) for t, m in MODELS.items() if m[2] == "openly licensed"})
 DROP = 3            # V1: a fall of 3 or more of 50 passages between adjacent rungs is NON-MONOTONE
 SEES = 5            # V2: the screen "sees" the 70B once 5 of 50 passages leak
 
@@ -100,17 +107,25 @@ def main():
               f"max {r['max_recall']:.4f}  [{r['source']}]")
 
     curve = lambda t: [(r["prefix_tokens"], r["leaking"]) for r in rows if r["model"] == t]  # noqa
-    dirty = sorted({r["model"] for r in rows if r["role"] != "openly licensed"})
+    have = {(r["model"], r["prefix_tokens"]) for r in rows}
+    missing = {t: [L for L in Ls if (t, L) not in have] for t, Ls in EXPECTED.items()}
+    missing = {t: m for t, m in missing.items() if m}
+    print(f"  rungs missing: {missing or 'none'}")
+    dirty = [t for t in EXPECTED if MODELS[t][2] != "openly licensed"]
     falls = {t: [(l1, l2) for (l1, k1), (l2, k2) in zip(curve(t), curve(t)[1:]) if k1 - k2 >= DROP]
              for t in dirty}
-    v1 = "NON-MONOTONE" if any(falls.values()) else "MONOTONE"
+    v1 = ("NON-MONOTONE" if any(falls.values()) else
+          "NOT READ (incomplete)" if any(t in missing for t in dirty) else "MONOTONE")
     seen = [L for L, k in curve("llama70b") if k >= SEES]
-    v2 = f"L* = {min(seen)}" if seen else "NOT SEEN AT ANY RUNG"
+    v2 = ("NOT READ (incomplete)" if "llama70b" in missing else
+          f"L* = {min(seen)}" if seen else "NOT SEEN AT ANY RUNG")
     long = [r for r in rows if r["role"] == "openly licensed" and r["prefix_tokens"] > 100]
-    v3 = ("NOT READ" if not long else
-          "PASS BREAKS" if any(r["leaking"] for r in long) else "PASS HOLDS")
-    v4 = ("screen at the longest prefix the deployment accepts" if v1 == "MONOTONE"
-          else "screen at every rung: no single prefix length dominates")
+    licensed_missing = any(MODELS[t][2] == "openly licensed" for t in missing)
+    v3 = ("PASS BREAKS" if any(r["leaking"] for r in long) else
+          "NOT READ (incomplete)" if licensed_missing or not long else "PASS HOLDS")
+    v4 = ("screen at the longest prefix the deployment accepts" if v1 == "MONOTONE" else
+          "screen at every rung: no single prefix length dominates" if v1 == "NON-MONOTONE"
+          else "NOT READ (incomplete)")
     print(f"\n  V1 {v1} {falls if v1 != 'MONOTONE' else ''}\n  V2 {v2}\n  V3 {v3}\n  V4 {v4}")
     print(f"wrote {path}")
 
