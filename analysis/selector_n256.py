@@ -29,6 +29,9 @@ GRID = (1, 8, 64, 256)
 CLEAN = {"n256": "selection_extraction_n256", "paraphrase": "selection_extraction_paraphrase",
          "multilingual": "selection_extraction_multilingual"}
 POOL_FIELDS = ("anchor_mean_recall", "anchor_max_recall", "recall_n1", "lcs_n1", "rouge_n1")
+# Declared 2026-09-23, before it ran, with no band: the full-grid arm behind tab:extraction's
+# n = 2, 4, 16, 32 columns. It feeds descriptive() only and never B4.
+DESCRIPTIVE = dict(CLEAN, grid64="selection_extraction")
 
 
 def load(path):
@@ -171,6 +174,28 @@ def part_b(results):
     return out, (b4, free)
 
 
+def descriptive(results):
+    """Served-pick MEANS before and after the fix, on the identical pool: the table's substring row
+    and the multilingual paragraph's means read the pick, so they move with the selector. A column
+    the arm on record never wrote is left blank rather than invented."""
+    out = []
+    for arm, ref_prefix in DESCRIPTIVE.items():
+        path = os.path.join(results, f"selfix_clean_{arm}_per_passage.csv")
+        if not os.path.exists(path):
+            continue
+        rows, ref = load(path), load(os.path.join(results, f"{ref_prefix}_per_passage.csv"))
+        gates = dict(g0=gate_g0(rows, ref) or "PASS", g1=gate_g1(rows, ref) or "PASS",
+                     g2=gate_g2(rows) or "PASS")
+        mean = lambda d, col: (round(sum(float(r[col]) for r in d.values()) / len(d), 4)  # noqa
+                               if col in next(iter(d.values())) else "")
+        for n in grid_of(rows):
+            out.append(dict(arm=arm, n=n, lcs_before=mean(ref, f"lcs_n{n}"),
+                            lcs_after=mean(rows, f"lcs_n{n}"),
+                            rouge_before=mean(ref, f"rouge_n{n}"),
+                            rouge_after=mean(rows, f"rouge_n{n}"), **gates))
+    return out
+
+
 def write(path, rows):
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0]))
@@ -199,6 +224,9 @@ def main():
     if clean:
         write(os.path.join(a.out, "selector_n256_clean.csv"), clean)
         print(f"  B4 {b4}, {free}")
+    desc = descriptive(a.results)
+    if desc:
+        write(os.path.join(a.out, "selector_n256_descriptive.csv"), desc)
 
 
 if __name__ == "__main__":

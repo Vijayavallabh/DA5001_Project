@@ -143,3 +143,21 @@ def test_part_b_holds_on_an_unchanged_clean_pool(tmp_path):
     _write(tmp_path, "selfix_clean_n256_per_passage.csv", rows)
     _, (b4, free) = s.part_b(str(tmp_path))
     assert (b4, free) == ("HOLDS", "SELECTOR-FREE")
+
+
+def test_the_descriptive_arm_never_enters_b4_and_blanks_what_its_record_lacks(tmp_path):
+    """grid64 was declared with no band: its reference predates the ROUGE columns, so its
+    rouge_before is blank rather than invented, and B4 is read on the registered three only."""
+    rows = [_row(i, rouge=0.2) for i in range(100)]
+    ref = [{k: v for k, v in r.items() if "rouge" not in k} for r in rows]
+    _write(tmp_path, "selection_extraction_per_passage.csv", ref)
+    after = [dict(r) for r in rows]
+    after[0].update({"rouge_n8": "0.9", "oracle_rouge_n8": "0.9", "oracle_rouge_n64": "0.9",
+                     "oracle_rouge_n256": "0.9", "anchor_max_rouge": "0.9"})
+    _write(tmp_path, "selfix_clean_grid64_per_passage.csv", after)
+    out, (b4, _) = s.part_b(str(tmp_path))
+    assert out == [] and b4 == "NOT READ", "a declared-descriptive arm reached B4"
+    d = s.descriptive(str(tmp_path))
+    assert d and all(r["arm"] == "grid64" and r["rouge_before"] == "" for r in d)
+    assert all(r["g1"] == "PASS" for r in d), d[0]
+    assert next(r for r in d if r["n"] == 8)["rouge_after"] > 0.2

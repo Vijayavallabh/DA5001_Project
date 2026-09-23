@@ -78,6 +78,15 @@ combined as registered and no OLMo re-run is needed. `./init.sh` after registeri
 about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
 control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
+## feat-179 Part B is READ: B4 HOLDS and SELECTOR-FREE (2026-09-23)
+
+All three clean re-runs pass G0/G1/G2; no draw in any pool reaches ROUGE-L `0.3`. But the served
+MEANS moved (the table's substring row, the multilingual paragraph's means): at `n=64` on the
+audited anchor lcs `1.89 -> 1.60` words, ROUGE-L `0.109 -> 0.072`. A declared, band-free re-run of
+the full-grid arm (`selfix_clean_grid64`, for the table's `n = 2, 4, 16, 32` columns) waits on GPU 4
+behind that card's queue (`scripts/run_selfix_grid64.sh`, deadline 20 h). Update `tab:extraction`
+and the multilingual paragraph from `results/selector_n256_descriptive.csv` together with Part A.
+
 ## feat-178 is SCORED (2026-09-23) and in the manuscript
 
 TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised (`-0.800`); the

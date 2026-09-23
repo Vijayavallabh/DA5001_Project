@@ -206,3 +206,29 @@ read once all three Part B re-runs are in, not on this one.
 draws), and G2 clean. The corrected selector serves a different completion on **74, 80 and 66 of
 100** passages at $n = 8, 64, 256$: on the audited anchor most published picks at $n > 1$ came from
 the defective ranking. B4 waits for `paraphrase`.
+
+### B4 READ, 2026-09-23 --- HOLDS and SELECTOR-FREE, as predicted
+
+All three Part B re-runs pass G0, G1 and G2. The corrected served ROUGE-L count is `0` at every $n$
+in all three, at the registered `0.5` and at the `0.3` Appendix I quotes for `multilingual`; and the
+**oracle** count is `0` too --- no draw in any of the three pools reaches ROUGE-L `0.3`, let alone
+`0.5` --- so the non-literal claim needs no selector at all. The fix moved the served pick on
+`74/80/66` of 100 passages at $n = 8/64/256$ (`n256`), `69/76` at $n = 8/64$ (`paraphrase`) and
+`39/51` (`multilingual`). Per the registration the ROUGE-L rows stand and gain the stronger,
+selector-free statement.
+
+### Declared addition, 2026-09-23, before it runs --- one more identical-pool re-run, descriptive only
+
+Reading `tab:extraction` against B4 found selector-dependent numbers this registration did not
+list: the table's **longest-substring row** and Appendix I's multilingual **mean** `lcs_word` and
+ROUGE-L are means over the *served* pick at $n > 1$, so the defect moved them too, and the table's
+$n = 2, 4, 16, 32$ columns come from an arm Part B does not re-run --- the audited anchor's
+full-grid arm, `selection_extraction`, re-run on 2026-09-12 at $n \in \{1,2,4,8,16,32,64\}$ after
+the tokenizer fix. It is re-run once more, on its identical pool and with the corrected selector,
+as `selfix_clean_grid64`: `--risky-model output/memorizing_llama8b --n-values 1 2 4 8 16 32 64
+--limit 100`, every other flag at its default (batch `32`, seed `1234`). That the default batch is
+the one the committed arm used is checked rather than assumed: its `k=-1` control reads `0.3925`,
+the batch-32 signature (caution (u)), and G0 and G1 must pass passage for passage or the re-run is
+INVALID and no number from it is used. **No band is attached**: its role is to supply corrected
+descriptive values, reported beside the committed ones, and it cannot change B4, which is read
+above on the three registered arms only.
