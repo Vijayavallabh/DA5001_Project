@@ -232,3 +232,13 @@ the batch-32 signature (caution (u)), and G0 and G1 must pass passage for passag
 INVALID and no number from it is used. **No band is attached**: its role is to supply corrected
 descriptive values, reported beside the committed ones, and it cannot change B4, which is read
 above on the three registered arms only.
+
+### Part A gates, read as anchors land (2026-09-23 08:03) --- no band computed
+
+Three of the twelve contaminated anchors have finished (`selfix256_{llama32_1b,llama32_3b,pleias350m}`).
+On each, **G0 PASS** --- `risky_alone_recall` equals `contam_<tag>_per_passage.csv` on all `100`
+passages, so the memoriser's `k=-1` draw is the one on record and only the selector changed --- and
+**G2 PASS** (served within the pool at every passage and `n`, the oracle non-decreasing and equal to
+`anchor_max_recall` at `n=256`, the pool counts consistent). Read with `gate_g0`/`gate_g2` alone;
+`part_a` and `readings` were not run, so no rate, amplification or McNemar count exists yet. B1--B3
+are read once all twelve have landed.

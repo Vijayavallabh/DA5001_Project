@@ -142,3 +142,10 @@ the two arms together are about 38 GPU-hours; each is under the threshold on its
 `risky_alone_recall` identical on **50 of 50** passages --- 25 leaking, mean `0.2475`, max `1.0000`,
 exactly the arm on record. The host has not drifted since 2026-09-13, so the on-record $L=100$ rungs
 are combined with the new ones as registered, and the OLMo fallback is not needed.
+
+### G0, read on the nine rungs landed by 2026-09-23 08:03 --- PASS, no band read
+
+All seven 70B rungs (`L` = 20, 35, 50, 75, 100, 150, 200) and OLMo-2-13B at `L` = 20 and 200 hold
+exactly the `50` `prompt_id`s of `vet_comma7b`. Checked with `vetting_ladder.load` and a set
+comparison only; `main()` was not run, so no V-reading exists. The ladder is read once every rung
+has landed.
