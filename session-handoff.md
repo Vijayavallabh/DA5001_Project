@@ -78,6 +78,17 @@ combined as registered and no OLMo re-run is needed. `./init.sh` after registeri
 about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
 control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
+## feat-172: draws done, reward passes running, judges queued behind their own gate (2026-09-23)
+
+All draws finished overnight (Arm A 805 x 256 at 01:45; Arm B's two shards 200/150/500 x 256), rc=0.
+Reward passes on host B GPUs 0 (Arm A) and 6 (Arm B), `scripts/run_offonsup_rewards.sh`,
+`--rewards-only` at the committed caches' batch 16, so nothing is judged before the gate. Behind
+each, `scripts/after.sh offonsup_rewards_<a|b> 900 -- bash scripts/run_offonsup_judge.sh <a|b>
+<gpu>`, which RE-CHECKS the registered gate (ranks 0-63 bit-identical to `mixpow_rewards64.csv` /
+`wscope_rewards64_a.csv`) and judges only if it passes. Score with `analysis/score_offsupport.py`
+ON HOST B (B3 reads the metered arm's trajectories there), written and mutation-tested before any
+number existed (`tests/test_offsupport_gates.py`). Watch `~/v/logs/offonsup_{rewards,judge}_*`.
+
 ## feat-179 Part B is READ: B4 HOLDS and SELECTOR-FREE (2026-09-23)
 
 All three clean re-runs pass G0/G1/G2; no draw in any pool reaches ROUGE-L `0.3`. But the served

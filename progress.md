@@ -1,5 +1,16 @@
 # Session Progress Log
 
+## 2026-09-23 --- feat-172's scoring pipeline built and launched behind its gate
+
+Draws were complete (Arm A `805 x 256`, Arm B `850 x 256`), and nothing downstream existed. Built:
+`scripts/run_offonsup_rewards.sh` (the reward pass, `--rewards-only`, batch 16 as the committed
+caches, host B), `scripts/run_offonsup_judge.sh` (re-checks the gate with `score_n128.reward_gate`
+and refuses to judge on failure --- its refusal path was run locally, exit 4, nothing launched; then
+`selection_scaling.py` to `n=256` and, for Arm A, `order_averaged_h2h.py` at `n=128` and `256`), and
+`analysis/score_offsupport.py` (B1, B2, B3, B5, B6 as registered; the two outcomes the registration
+leaves unnamed are printed as unregistered). `tests/test_offsupport_gates.py`: 5 tests, the gate
+refusing one reward off by `1e-5` and one missing rank-0 row. Launched on host B GPUs 0 and 6.
+
 ## 2026-09-23 --- feat-178 SCORED: TASK TYPE SURVIVES; the ladder's raw slope inverts and its registered normalisation turns it back
 
 Three of the five AlpacaEval rungs' judges had died of CUDA OOM beside the sibling project's vLLM
