@@ -187,3 +187,43 @@ def test_b1_to_b3_are_not_read_until_every_anchor_on_record_is_here(tmp_path, ca
     s.main()
     out = capsys.readouterr().out
     assert "B1 GROWS" in out and os.path.exists(os.path.join(tmp_path, "selector_n256_readings.csv"))
+
+
+def test_the_redraw_gate_is_distributional_and_refuses_a_gross_shift():
+    ref = {f"p{i:03d}": dict(risky_alone_recall="0.5" if i < 78 else "0.0") for i in range(100)}
+    near = {f"p{i:03d}": dict(risky_alone_recall="0.5" if i < 72 else "0.0") for i in range(100)}
+    far = {f"p{i:03d}": dict(risky_alone_recall="0.5" if i < 40 else "0.0") for i in range(100)}
+    assert s.gate_g0_dist(near, ref) == ""                      # 78 -> 72: z = -0.98
+    assert "78 -> 40" in s.gate_g0_dist(far, ref)                # a wrong header or split
+    assert "passage sets differ" in s.gate_g0_dist({"x": ref["p000"]}, ref)
+
+
+def test_the_redraw_is_read_beside_part_a_and_a_changed_verdict_does_not_replicate(tmp_path, capsys,
+                                                                                   monkeypatch):
+    def _no(*_):
+        raise AssertionError("the re-draw ran Part B or the descriptive table")
+    monkeypatch.setattr(s, "part_b", _no)
+    monkeypatch.setattr(s, "descriptive", _no)
+    rows = _consistent()
+    _write(tmp_path, "contam_x_per_passage.csv", rows)
+    fresh = [dict(r, risky_alone_recall="0.3100") for r in rows]  # a fresh k=-1 draw, same fraction
+    _write(tmp_path, "selfixR_x_per_passage.csv", fresh)
+    _write(tmp_path, "selector_n256_readings.csv",
+           [dict(band="B1", anchor="x", value=5.0, b="", c="", p="", verdict="GROWS"),
+            dict(band="B2", anchor="x", value=1.0, b="", c="", p="", verdict="LOOSE"),
+            dict(band="B3", anchor="x", value="", b=0, c=0, p=1.0, verdict="SATURATED BY 64")])
+    sys.argv = ["selector_n256.py", "--results", str(tmp_path), "--out", str(tmp_path), "--redraw"]
+    s.main()
+    out = capsys.readouterr().out
+    assert "R1 (B1): Part A GROWS, re-draw GROWS -> REPLICATES" in out, out
+    assert "R2 (B2): Part A LOOSE, re-draw TIGHT -> DOES NOT REPLICATE" in out, out
+    assert "R3 (B3)" in out and "-> REPLICATES" in out.split("R3 (B3)")[1]
+    assert not os.path.exists(os.path.join(tmp_path, "selector_n256.csv")), "the redraw overwrote Part A"
+
+
+def test_no_readable_anchor_is_written_as_a_verdict_row():
+    rd = {"B1": ("NO READABLE ANCHOR", {}), "B2": ("NO READABLE ANCHOR", {}),
+          "B3": ("SATURATED BY 64", {"x": (0, 0, 1.0)})}
+    rows = s.flatten(rd)
+    assert {(r["band"], r["verdict"]) for r in rows} >= {("B1", "NO READABLE ANCHOR"),
+                                                          ("B2", "NO READABLE ANCHOR")}

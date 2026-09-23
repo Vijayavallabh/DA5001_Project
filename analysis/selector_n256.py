@@ -52,6 +52,19 @@ def gate_g0(rows, ref):
     return f"risky_alone_recall differs on {len(bad)} passages" if bad else ""
 
 
+def gate_g0_dist(rows, ref, zmax=2.58):
+    """feat-182's G0': the k=-1 draw is FRESH under a new seed, so it cannot match bit for bit. The
+    same passages, and the fraction with k=-1 recall >= 0.01 within a two-proportion z test of the
+    arm on record. Excludes gross defects (wrong split, header or model) and nothing finer."""
+    if set(rows) != set(ref):
+        return f"passage sets differ ({len(rows)} vs {len(ref)})"
+    k1, k0 = (sum(float(r["risky_alone_recall"]) >= 0.01 for r in x.values()) for x in (rows, ref))
+    n = len(rows)
+    p = (k0 + k1) / (2 * n)
+    z = (k1 - k0) / n / math.sqrt(2 * p * (1 - p) / n) if 0 < p < 1 else 0.0
+    return f"k=-1 fraction >= 0.01 moved {k0} -> {k1} of {n}, z = {z:+.2f}" if abs(z) >= zmax else ""
+
+
 def gate_g1(rows, ref):
     """the anchor's own draws, passage for passage: the pool is the pool on record"""
     fields = [f for f in POOL_FIELDS if f in next(iter(ref.values()))]
@@ -90,14 +103,16 @@ def mcnemar(b, c):
     return min(1.0, 2 * tail)
 
 
-def part_a(results):
-    """one row per anchor x event x n, plus per-anchor gate outcomes"""
+def part_a(results, prefix="selfix256"):
+    """one row per anchor x event x n, plus per-anchor gate outcomes. prefix="selfixR" reads
+    feat-182's re-draw, whose k=-1 draw is fresh by construction, so its G0 is gate_g0_dist."""
     out, gates = [], {}
-    for path in sorted(glob.glob(os.path.join(results, "selfix256_*_per_passage.csv"))):
-        tag = re.sub(r"^selfix256_|_per_passage\.csv$", "", os.path.basename(path))
+    g0_fn = gate_g0 if prefix == "selfix256" else gate_g0_dist
+    for path in sorted(glob.glob(os.path.join(results, f"{prefix}_*_per_passage.csv"))):
+        tag = re.sub(rf"^{prefix}_|_per_passage\.csv$", "", os.path.basename(path))
         rows = load(path)
         ref = os.path.join(results, f"contam_{tag}_per_passage.csv")
-        g0 = gate_g0(rows, load(ref)) if os.path.exists(ref) else f"no counterpart {ref}"
+        g0 = g0_fn(rows, load(ref)) if os.path.exists(ref) else f"no counterpart {ref}"
         g2 = gate_g2(rows)
         gates[tag] = (g0, g2)
         N, n_max = len(rows), grid_of(rows)[-1]
@@ -154,6 +169,8 @@ def flatten(rd):
     Added 2026-09-23 with 4 of 12 Part A anchors still generating and no band read."""
     rows = []
     for band, (verdict, detail) in rd.items():
+        if not detail:          # NO READABLE ANCHOR is a verdict too, and must survive into the file
+            rows.append(dict(band=band, anchor="", value="", b="", c="", p="", verdict=verdict))
         for tag, v in sorted(detail.items()):
             b, c, p = v if band == "B3" else ("", "", None)
             rows.append(dict(band=band, anchor=tag, value="" if band == "B3" else round(v, 4),
@@ -208,6 +225,22 @@ def descriptive(results):
     return out
 
 
+def replication(results, out_dir, rd):
+    """feat-182's R1-R3: each re-drawn verdict against Part A's, read from its committed readings"""
+    p = os.path.join(results, "selector_n256_readings.csv")
+    if not os.path.exists(p):
+        print("  R1-R3 NOT READ: Part A's readings are not on disk")
+        return
+    part_a_verdict = {r["band"]: r["verdict"] for r in csv.DictReader(open(p, encoding="utf-8"))}
+    rows = []
+    for i, band in enumerate(("B1", "B2", "B3"), 1):
+        mine, theirs = rd[band][0], part_a_verdict.get(band, "")
+        word = "REPLICATES" if mine == theirs else "DOES NOT REPLICATE"
+        print(f"  R{i} ({band}): Part A {theirs}, re-draw {mine} -> {word}")
+        rows.append(dict(band=f"R{i}", part_a_band=band, part_a=theirs, redraw=mine, reading=word))
+    write(os.path.join(out_dir, "selector_redraw_replication.csv"), rows)
+
+
 def write(path, rows):
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0]))
@@ -221,14 +254,17 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results", default="results")
     ap.add_argument("--out", default="results")
+    ap.add_argument("--redraw", action="store_true",
+                    help="feat-182: read the selfixR_ re-draw and set its B1-B3 beside Part A's")
     a = ap.parse_args()
+    prefix, name = ("selfixR", "selector_redraw") if a.redraw else ("selfix256", "selector_n256")
 
-    out, gates = part_a(a.results)
+    out, gates = part_a(a.results, prefix)
     for tag, (g0, g2) in gates.items():
         print(f"  {tag:12s} G0 {g0 or 'PASS'}  G2 {g2 or 'PASS'}")
     if out:
-        write(os.path.join(a.out, "selector_n256.csv"), out)
-        rows_by_tag = {t: load(os.path.join(a.results, f"selfix256_{t}_per_passage.csv"))
+        write(os.path.join(a.out, f"{name}.csv"), out)
+        rows_by_tag = {t: load(os.path.join(a.results, f"{prefix}_{t}_per_passage.csv"))
                        for t in gates}
         # Every anchor the committed arm holds must be here and pass G0/G2 before B1-B3 are read:
         # "dropping an anchor" is excluded in advance, and SATURATES / LOOSE / SATURATED BY 64 are
@@ -242,8 +278,11 @@ def main():
             rd = readings(out, rows_by_tag)
             for k, (verdict, detail) in rd.items():
                 print(f"  {k} {verdict}: {detail}")
-            if any(detail for _, detail in rd.values()):
-                write(os.path.join(a.out, "selector_n256_readings.csv"), flatten(rd))
+            write(os.path.join(a.out, f"{name}_readings.csv"), flatten(rd))
+            if a.redraw:
+                replication(a.results, a.out, rd)
+    if a.redraw:
+        return
     clean, (b4, free) = part_b(a.results)
     if clean:
         write(os.path.join(a.out, "selector_n256_clean.csv"), clean)
