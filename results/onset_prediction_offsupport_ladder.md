@@ -164,3 +164,19 @@ command line contained all three patterns, so awk returned the shell's PID and k
 the shell (exit `144`). The caution's own prescription --- match on the **executable field**,
 `$2 ~ /python$/` --- was not followed. Both jobs did stop and no CUDA child was orphaned, checked
 by `nvidia-smi --query-compute-apps`.
+
+### The gate, read 2026-09-23 before any judged number existed --- PASS on both arms
+
+The reward passes ran on host B, where both references were scored (Arm A GPU 0, Arm B GPU 6,
+`scripts/run_offonsup_rewards.sh`, `--rewards-only` at the committed batch size `16`), each in about
+`33` minutes. `scripts/run_offonsup_judge.sh` re-checked the registered gate with
+`analysis/score_n128.py:reward_gate` before judging anything:
+
+- **Arm A**: ranks `0`--`63` of `offsup_rewards256.csv` equal `mixpow_rewards64.csv` exactly ---
+  `51{,}520` of `51{,}520` rewards compared with `==`. **PASS.**
+- **Arm B**: ranks `0`--`63` of `onsup_rewards256.csv` equal `wscope_rewards64_a.csv` exactly ---
+  `54{,}400` of `54{,}400`. **PASS.** Arm B was re-run on host B after its first launch was found
+  to be on the wrong host (above); on the right host its gate is satisfiable and it is satisfied.
+
+So both n=256 pools are the committed ladders extended, not fresh draws, and the bands may be read.
+The judges started at 03:14 (host time), behind the gate by construction.
