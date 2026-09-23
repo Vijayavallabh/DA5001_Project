@@ -1,5 +1,39 @@
 # Session Progress Log
 
+## 2026-09-23 (night) --- feat-181 SCORED: both ladders saturate at 512, the slope stays unresolved, and the off-support deficit is no longer clear of zero
+
+Both chains ran on host B GPUs 6 and 7 (`scripts/run_n512_post.sh a 6`, `b 7`). **G2 PASS** (every prompt
+holds ids `0`--`511` once), **G1 PASS** on both (ranks `0`--`255` `==` the committed `n = 256` caches,
+`206,080` and `217,600` floats), then judge~B to `512` and Arm A's order-averaged head-to-head.
+`analysis/score_n512.py` -> `results/n512_ladder.csv`:
+
+- **C2 SATURATED on both**: `g(512)-g(256)` `+0.0056 [-0.0193, +0.0311]` (AlpacaEval), `+0.0071 [-0.0165, +0.0300]` (ours).
+- **C3 NOT RESOLVED on both**: `g(512)-g(64)` `+0.0311 [-0.0025, +0.0634]`, `+0.0312 [-0.0018, +0.0635]`.
+- **C1 UNRESOLVED**: order-averaged `D3` at `512` is `-0.0053 [-0.0248, +0.0143]` --- no longer clear of zero, not caught.
+  Beside it, order-averaged `g(512)-g(256)` `+0.0186 [+0.0065, +0.0301]` and `g(512)-g(64)` `+0.0286 [+0.0115, +0.0438]`,
+  at `1.58` and `1.77` half-widths: they exclude zero, at the margin where paired differences have failed to replicate.
+- **C4**: `log 512 = 6.238` nats against the meter's `145.10`, `23.3x`.
+
+Predictions: C2 right; C3 (a marginal climb) wrong; C1 (still behind) wrong. **Manuscript, as registered:**
+Appendix I's "we claim neither a ceiling nor a slope" stands and is extended to `512` with every band
+and the prediction it refuted; "the reversal fails off-support at `256` as at `64`" stands (D3 at `256` is
+still clear of zero) and is extended with the word *unresolved* at `512` and C4's ratio; Limitations'
+reach becomes `512`. No main-text change: C1 did not read CATCHES and no main-text sentence states the
+off-support deficit. Guards: `tests/test_n512_ladder_claims.py` (every band from the CSV; every reading
+sentence conditioned on the CSV's reading, not its own wording); twelve mutations, twelve caught after
+one mis-patterned mutation was re-aimed (the harness's `count == 1` assert reported it as not landed
+rather than as a false pass, caution (av)). Build: exit `0`, `0` overfull, `0` `??`, bold `3`, `49`
+pages, body 9/9; audit `3,576` literals, the one expected miss; `./init.sh` **`1114 passed`**.
+
+**feat-182** is running on host B: the dispatcher was widened to cards `4`--`7` when feat-181 released
+6 and 7 (the six running jobs untouched), seven of twelve placed at 23:17.
+
+```bash
+bash scripts/run_n512_post.sh a 6; bash scripts/run_n512_post.sh b 7     # host B
+scripts/sync_status.sh pull
+.venv/bin/python analysis/score_n512.py --out results                   # -> results/n512_ladder.csv
+```
+
 ## 2026-09-23 (late) --- feat-180 SCORED: V3 PASS HOLDS, the ladder is in the paper; feat-182 moves to host B
 
 **feat-180 is complete.** The two missing rungs (TinyComma and KL3M-1.7B at `L = 150`) ran on host B GPUs

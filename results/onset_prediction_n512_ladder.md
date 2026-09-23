@@ -131,3 +131,44 @@ of ours per card, and re-places a job whose process fails. Placement cannot chan
 was produced on three different cards, one of them shared, and matched byte for byte. The index
 ranges are unchanged in union (`256`--`511`), cut finer (`32` for Arm A, `42`--`43` for `factual`,
 `128` for `small`) so that a lost job costs less.
+
+### Read 2026-09-23 23:15 --- G1, G2 PASS; C2 SATURATED on both; C3 NOT RESOLVED on both; C1 UNRESOLVED
+
+All sixteen extension jobs ended `done` (four after one or two re-placements for OOM beside other
+processes; placement cannot change a draw, as G0 showed). `scripts/run_n512_post.sh a 6` and `b 7` on
+host B: **G2 PASS** in the merge (`805` factual; `200` neutral, `150` creative, `500` factual: every prompt
+holds trajectory ids `0`--`511` exactly once), **G1 PASS** on both (ranks `0`--`255` of each `n = 512`
+reward cache `==` the committed `n = 256` cache, `206,080` and `217,600` floats), then judge~B over the
+grid to `512` and Arm A's order-averaged head-to-head at `n = 512`. Pulled with
+`scripts/sync_status.sh pull`; `.venv/bin/python analysis/score_n512.py` -> `results/n512_ladder.csv`
+(G1 and G2' re-read locally: PASS, PASS).
+
+| band | arm | quantity | value [95%] | half-widths | reading |
+|---|---|---|---|---|---|
+| C2 | A (AlpacaEval) | `g(512) - g(256)` | `+0.0056 [-0.0193, +0.0311]` | `0.22` | **SATURATED** |
+| C2 | B (our 850) | `g(512) - g(256)` | `+0.0071 [-0.0165, +0.0300]` | `0.30` | **SATURATED** |
+| C3 | A | `g(512) - g(64)` | `+0.0311 [-0.0025, +0.0634]` | `0.94` | **NOT RESOLVED** |
+| C3 | B | `g(512) - g(64)` | `+0.0312 [-0.0018, +0.0635]` | `0.95` | **NOT RESOLVED** |
+| C1 | A | order-averaged `D3` at `n = 512` | `-0.0053 [-0.0248, +0.0143]` | | **UNRESOLVED** |
+| C1 | A | order-averaged `g(512) - g(256)` | `+0.0186 [+0.0065, +0.0301]` | `1.58` | (beside C1, no band) |
+| C1 | A | order-averaged `g(512) - g(64)` | `+0.0286 [+0.0115, +0.0438]` | `1.77` | (beside C1, no band) |
+| C4 | A | `log 512` against the meter's realised `145.10` | `6.238` nats | | ratio `23.3` |
+
+No C2 or C3 reading is MARGINAL, because none is directional: MARGINAL labels a reading that excludes
+zero at under `1.7` half-widths. The two order-averaged differences exclude zero at `1.58` and `1.77`
+half-widths --- one below and one just above the boundary where a paired difference has already failed
+to replicate here (caution (ap)) --- and they carry no band, so they are reported beside C1 and read
+as nothing.
+
+**Predictions:** C2 SATURATED on both, **right**; C3 CLIMBS PAST 64 on both, MARGINAL, **wrong** (NOT
+RESOLVED on both); C1 STILL BEHIND, **wrong** (UNRESOLVED: the deficit narrowed to `-0.0053`, and its
+interval now contains zero).
+
+**Manuscript, as registered.** C3 NOT RESOLVED on both: Appendix I's *"we claim neither a ceiling nor a
+slope"* stands and is extended to `512`, with the last doubling, the three-doubling totals and the
+order-averaged pair beside them at their half-widths. C1 UNRESOLVED: *"the reversal fails off-support at
+`256` as at `64`"* stands (D3 at `256` is still clear of zero) and is extended to `512` with the reading's
+own word, *unresolved*, and C4's `log 512 = 6.24` nats, `23.3x` below the meter's spend. Nothing in the
+main text changes: C1 did not read CATCHES, and no main-text sentence states the off-support deficit.
+Limitations' "judged arms reach `n = 256`" and "to `n = 256` no judged ladder turns over" become `512`
+(C2 reads SATURATED, not TURNS OVER, on both).

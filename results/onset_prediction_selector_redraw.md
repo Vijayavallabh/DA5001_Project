@@ -117,3 +117,8 @@ either partial local run.
 was checked for feat-180 (`17/17`). Launch: `scripts/local_dispatch.py --cards 4,5 --only selfixR_` on
 host B, which places the twelve registered commands by free memory; its drained marker is written to host
 B's `output/logs/selfix_redraw_queue.log`.
+
+**Cards widened, 2026-09-23 23:17 IST (19:47 host).** Host B's GPUs 6 and 7 went idle when feat-181's
+chains finished, so the dispatcher was restarted as `--cards 4,5,6,7`; the six jobs already running on
+4 and 5 were left untouched (the new instance finds them by `--prefix` and does not re-place them).
+Which H100 a job lands on is not part of the command: seed `5678` and batch `32` are unchanged.
