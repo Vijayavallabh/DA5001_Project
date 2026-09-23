@@ -24,6 +24,7 @@ LOG=output/logs/n512_$JOB.log
 MARK=~/v/logs/n512_$JOB
 if [ -e "$MARK.done" ]; then echo "[n512:$JOB] already done" >> "$LOG"; exit 0; fi
 rm -f "$MARK.fail"
+rm -rf "$OUT"      # a re-placed job starts clean: a partial file would duplicate ids (G2)
 echo "[n512:$JOB] START $(date '+%F %T') gpu=$GPU" >> "$LOG"
 CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
   .venv/bin/python h1.py --k-values 0.0 --trajectories-per-prompt "$COUNT" --trajectory-start "$START" \

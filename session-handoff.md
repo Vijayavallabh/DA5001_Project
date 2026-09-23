@@ -109,8 +109,11 @@ it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or f
 at the user's instruction. Only trajectory indices 256-511 are drawn (`--trajectory-start`, new in
 `dap/e1.py`, pinned by `tests/test_seeds.py`); G0 regenerates trajectory 255 and must match the
 committed draw byte for byte, G1 is the reward bit-identity against the n=256 caches, G2 the merged
-pool (`analysis/n512_pool.py`). Launch: `scripts/run_n512_hostb.sh` (one queue per card); logs
-`output/logs/n512_*.log`, markers `~/v/logs/n512_*.{done,fail}` on host B.
+pool (`analysis/n512_pool.py`). **G0 PASSED** (805/805, 200/200, 150/150, 500/500 byte-identical).
+Launch: `scripts/n512_dispatch.py` on host B places 16 jobs by free memory (another project's vLLM
+moves between cards there); log `output/logs/n512_dispatch.log` (ends `all done` or `gave up`), job
+logs `output/logs/n512_*.log`, markers `~/v/logs/n512_*.{done,fail}`. Then merge + G2
+(`n512_pool.py merge`), rewards + G1, judge, score --- scripts still to write.
 
 ## Arms in flight (2026-09-23 14:10) --- both hosts checked
 

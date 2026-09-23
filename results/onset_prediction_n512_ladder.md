@@ -113,3 +113,21 @@ the head-to-head about `4`. About `35` GPU-hours in all, `17` to `18` per arm. *
 instruction of 2026-09-23 to use host B's free cards**, which were all idle when this was written.
 
 ## Scoring log
+
+### G0, read 2026-09-23 before any extension draw --- PASS on all three processes
+
+Trajectory `255` regenerated through `--trajectory-start 255 --trajectories-per-prompt 1`
+(`analysis/n512_pool.py g0`) is byte-identical in `generation` to the committed draw on **805/805**
+AlpacaEval prompts, **200/200** `neutral`, **150/150** `creative` and **500/500** `factual` --- the
+new code path is the committed pipeline on this host. One of the three ran on a card shared with
+another project's vLLM server, which started there minutes before the launch; the draw is identical
+regardless.
+
+**Launch changed from fixed cards to placement by free memory, before any extension draw.** Host B
+was not idle for long: within twenty minutes of the check above, another project's vLLM servers
+took GPUs 0--3 and moved between cards twice. Our processes peak at `21`--`30` GB, so
+`scripts/n512_dispatch.py` places each job on whichever card has at least `36` GB free, at most two
+of ours per card, and re-places a job whose process fails. Placement cannot change a draw: G0 above
+was produced on three different cards, one of them shared, and matched byte for byte. The index
+ranges are unchanged in union (`256`--`511`), cut finer (`32` for Arm A, `42`--`43` for `factual`,
+`128` for `small`) so that a lost job costs less.
