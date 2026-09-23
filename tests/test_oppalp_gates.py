@@ -108,3 +108,17 @@ def test_a_crossing_rung_reads_opponent_explains_the_split(capsys):
     out = run(spec, capsys)
     assert "**OPPONENT EXPLAINS THE SPLIT**" in out, out
     assert "llama8b" in out.split("cross zero from below")[1]
+
+
+def test_l4_is_read_beside_l1_and_can_disagree_with_it(capsys):
+    """The registration's L4 re-runs L1 on D3 divided by the room a difference of win rates has.
+    The AlpacaEval ladder is the case it exists for: strengths 0.78-0.88, so the anchor's win rate
+    falls from 0.22 to 0.12 and |D3| shrinks with it while the SHARE of the room it takes grows.
+    Raw rho is positive (REFUTED) and the normalised rho negative (CONSISTENT); a scorer that drops
+    L4 reports only the first."""
+    spec = {t: dict(v, pids=set(v["pids"]), strength=s, d3=d, lo=d - 0.02, hi=d + 0.01)
+            for (t, v), s, d in zip(CLEAN.items(), [0.775, 0.835, 0.852, 0.861, 0.881],
+                                    [-0.0814, -0.0736, -0.0593, -0.0689, -0.0584])}
+    out = run(spec, capsys)
+    assert "L1  rho = +0.900" in out and "**REFUTED**" in out, out
+    assert "L4  D3/headroom rho = -0.800" in out and "**CONSISTENT** (normalised L1)" in out, out

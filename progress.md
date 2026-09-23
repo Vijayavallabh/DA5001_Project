@@ -1,5 +1,37 @@
 # Session Progress Log
 
+## 2026-09-23 --- feat-178 SCORED: TASK TYPE SURVIVES; the ladder's raw slope inverts and its registered normalisation turns it back
+
+Three of the five AlpacaEval rungs' judges had died of CUDA OOM beside the sibling project's vLLM
+workers (generations intact); `scripts/run_oppalp_judge.sh` re-ran the judge step alone at the
+identical specification on host B GPU 5 (4 min each). `analysis/score_oppalp.py`, on host B where
+`output/oppalp_*` lives: G0--G3 PASS (G3 narrowly, span `0.1056` against `0.10`).
+
+- **L2 TASK TYPE SURVIVES** (predicted): every rung's `D3` is negative with its interval clear of
+  zero, `-0.0584` to `-0.0814`, over strengths `0.7752`--`0.8807`.
+- **L1 REFUTED** (predicted CONSISTENT): `rho = +0.900`, `p = 0.0833`.
+- **L4, registered beside L1, CONSISTENT**: `rho = -0.800`, `p = 0.1333`, one rank from UNRESOLVED.
+  The scorer as written had left L4 out; it now computes it (`tests/test_oppalp_gates.py` pins it,
+  red without it). The raw inversion is the headroom: the anchor's win rate halves across the ladder.
+- **Scope the gates do not state**: the same Llama-3.1-8B-Instruct reads `0.6792` through the
+  committed `h1.py` pipeline and `0.8519` through `blocklist_decode --chat` on the same 805 prompts,
+  a `0.17` gap against a `0.106` span; no instruct model reachable is weak on AlpacaEval.
+
+Manuscript (Appendix I): a paragraph on the opponent axis (P1's `-0.943`, withdrawn at `-0.657`
+after normalisation; L5's meter `+1.000` against selection `+0.486`; the within-workload ladder and
+its two limits) and, in feat-175's paragraph, the registered sentence that its slope does not
+transfer as measured. `tests/test_opponent_axis.py`, 7 guards, 10 of 10 mutations caught. Build
+exit 0, 0 overfull, 0 `??`, bold 3, 48 pages, body 9 of 9 (page 10 opens on the Ethics Statement).
+Audit: 3,291 literals, one expected miss. One existing guard fired on the edit and was right to be
+examined: `test_opponent_strength_paragraph.py` looked for feat-175's "not a mechanism" concession
+within a fixed 2,600 characters of "went untested", and the registered sentence moved it to +2,621
+with the concession untouched. Rescoped to the paragraph's own end marker; it still fires when the
+concession is removed from that paragraph while the same phrase survives in an earlier one.
+
+Also landed: feat-179 Part B `n256` and `multilingual` (G0/G1/G2 PASS; the fix moved `74/80/66` of
+100 picks at `n=8/64/256` on the audited anchor, `39/51` on the multilingual one) and all seven
+70B rungs of feat-180. Both arms are scored only when complete.
+
 ## 2026-09-23 --- feat-179 and feat-180 registered and launched; the adversarial selector had scored padding
 
 Asked to register and queue the two arms the review audit left open (Review 4 Q9, a contaminated

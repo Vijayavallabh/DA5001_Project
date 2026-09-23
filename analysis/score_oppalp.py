@@ -123,14 +123,28 @@ def main():
     print(f"\nL1  rho = {rho:+.3f}, exact p = {p:.4f} over {n} permutations   **{l1}**")
     print(f"L2  {len(crossing)} rung(s) cross zero from below"
           f"{': ' + ', '.join(r['tag'] for r in crossing) if crossing else ''}   **{l2}**")
+    # L4, registered beside L1: D3 is a difference of win rates against one opponent, so it has
+    # less room as the anchor's own win rate u = 1 - strength falls. Re-run L1 on D3 / min(u, 1 - u),
+    # the same normalisation analysis/opponent_by_workload.py applies to P1. Added 2026-09-23, after
+    # the ladder landed, because the scorer had left out a reading the registration asks for.
+    head = [min(x, 1 - x) for x in xs]
+    for r, h in zip(rows, head):
+        r["d3_normalised"] = round(r["d3"] / h, 6)
+    rho_n, p_n, _ = exact_p(xs, [r["d3_normalised"] for r in rows])
+    l4 = "CONSISTENT" if rho_n <= -0.7 else ("REFUTED" if rho_n >= 0.3 else "UNRESOLVED")
+    print(f"L4  D3/headroom rho = {rho_n:+.3f}, exact p = {p_n:.4f}   **{l4}** (normalised L1)")
     print(f"\nNo significance is claimed: at n={len(rows)} the smallest two-sided p is {2 / n:.4f}.")
 
     out = os.path.join(a.out, "oppalp_ladder.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()) + ["rho", "exact_p", "l1", "l2"])
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()) + ["rho", "exact_p", "l1", "l2",
+                                                                 "rho_normalised",
+                                                                 "exact_p_normalised", "l4"])
         w.writeheader()
         for r in rows:
-            w.writerow(dict(r, rho=round(rho, 6), exact_p=round(p, 6), l1=l1, l2=l2))
+            w.writerow(dict(r, rho=round(rho, 6), exact_p=round(p, 6), l1=l1, l2=l2,
+                            rho_normalised=round(rho_n, 6), exact_p_normalised=round(p_n, 6),
+                            l4=l4))
     print(f"wrote {out}")
 
 

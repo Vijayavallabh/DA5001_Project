@@ -78,6 +78,12 @@ combined as registered and no OLMo re-run is needed. `./init.sh` after registeri
 about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
 control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
+## feat-178 is SCORED (2026-09-23) and in the manuscript
+
+TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised (`-0.800`); the
+generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
+it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
+
 ## Arms in flight (2026-09-23 04:40)
 
 | host | card | arm | state |

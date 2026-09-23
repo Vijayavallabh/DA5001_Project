@@ -319,3 +319,58 @@ rungs exists. The judge step alone is re-run at the identical specification on h
 at launch, by `scripts/run_oppalp_judge.sh`, whose judge command is `scripts/run_oppalp.sh`'s
 character for character (checked by `diff` before launch). Nothing else about the rungs changes, and
 the gates in `analysis/score_oppalp.py` are read on the re-judged output exactly as registered.
+
+### L1, L2 and L4 SCORED, 2026-09-23 --- TASK TYPE SURVIVES; the raw slope inverts and L4 turns it back
+
+All five AlpacaEval rungs judged (three after the re-judge above). `analysis/score_oppalp.py`, run
+on host B where the generations live:
+
+| gate | reading |
+|---|---|
+| G0, one generator | PASS --- every rung `blocklist_decode` |
+| G1, one prompt set | PASS --- the same `805` AlpacaEval prompts at every rung |
+| G2, no degenerate opponent | PASS --- no empties; median `124.5` words, every rung `116.8`--`129.7` |
+| G3, range here | PASS, **narrowly** --- strengths `0.7752` to `0.8807`, span `0.1056` against `0.10` |
+
+| opponent | strength | `D3` | 95% interval | `D3`/headroom |
+|---|---|---|---|---|
+| Qwen2.5-0.5B-Instruct | `0.7752` | `-0.0814` | `[-0.1019, -0.0606]` | `-0.3620` |
+| Qwen2.5-1.5B-Instruct | `0.8345` | `-0.0736` | `[-0.0925, -0.0547]` | `-0.4446` |
+| Llama-3.1-8B-Instruct | `0.8519` | `-0.0593` | `[-0.0773, -0.0410]` | `-0.4003` |
+| Qwen2.5-3B-Instruct | `0.8612` | `-0.0689` | `[-0.0863, -0.0516]` | `-0.4963` |
+| Qwen2.5-14B-Instruct | `0.8807` | `-0.0584` | `[-0.0755, -0.0407]` | `-0.4897` |
+
+- **L2: TASK TYPE SURVIVES**, as predicted. No rung crosses: every `D3` is negative with its
+  interval excluding zero, so at every opponent the meter beats selection on AlpacaEval.
+- **L1: REFUTED**, against our prediction of CONSISTENT: `rho = +0.900`, exact `p = 0.0833` over
+  `120` permutations. On AlpacaEval `D3` rises toward zero as the opponent strengthens, the opposite
+  sign to feat-175's ladder on our corpus.
+- **L4, the normalisation L1 was registered beside: `rho = -0.800`, exact `p = 0.1333` ---
+  CONSISTENT**, one rank from UNRESOLVED and not monotone (the Llama rung breaks it). The anchor's
+  own win rate falls from `0.22` to `0.12` across the ladder, so the room a difference of win rates
+  has shrinks by nearly half; `|D3|` shrinks with it while the share of that room it takes grows.
+  **The raw inversion is the headroom, and the direction relative to the room is feat-175's.**
+  L4 was computed by the committed scorer only after the ladder landed, because the scorer as
+  written before the data left it out; the normalisation is the registered one, the same
+  `min(u, 1-u)` that `analysis/opponent_by_workload.py` applies to P1, and it is now in
+  `results/oppalp_ladder.csv` and pinned by `tests/test_oppalp_gates.py`.
+
+**The scope the gates do not state.** The ladder reaches strengths `0.78`--`0.88` on AlpacaEval,
+all above the committed opponent's `0.679` on the same workload and far above the completion
+workloads' `0.48`--`0.57`: even a 0.5B instruction-tuned model beats the anchor there three times in
+four. And **the generator moves an opponent's strength by more than the whole ladder**: the same
+Llama-3.1-8B-Instruct on the same `805` prompts reads `0.6792` (`D3` `-0.0339`) through the
+committed `h1.py` pipeline and `0.8519` (`D3` `-0.0593`) through `blocklist_decode --chat`, a gap of
+`0.17` against a span of `0.106` --- caution (at) again, measured. So TASK TYPE SURVIVES over the
+opponents reachable on this workload; whether an opponent as weak on AlpacaEval as ours is on our
+corpus would flip the sign is not tested, because no instruction-tuned model in the ladder is that
+weak there.
+
+**The registered consequence, applied with that scope**: the appendix says the two axes are not the
+same axis --- varying the opponent does not bring selection level with the meter on AlpacaEval ---
+and feat-175's paragraph gains the sentence that its slope does not transfer as measured: on
+AlpacaEval it inverts, and only divided by the available headroom does it point the same way.
+Nothing here is a significance claim.
+
+Reproduction (host B, where `output/oppalp_*` lives): `.venv/bin/python analysis/score_oppalp.py
+--out results` -> `results/oppalp_ladder.csv`.

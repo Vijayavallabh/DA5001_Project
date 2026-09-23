@@ -82,9 +82,14 @@ def test_the_registered_test_is_reported_as_untested():
         assert "went untested" in txt, \
             "no opponent is weaker than the committed one, so the registered test went untested " \
             "and the appendix must say so rather than leaning on the exploratory decay"
-        # scoped: `not a mechanism` also appears in the workload paragraph of the same file
+        # scoped: `not a mechanism` also appears in the workload paragraph of the same file. Scoped
+        # to the paragraph's own end, not to a character count: a fixed 2,600-character window
+        # failed on 2026-09-23 when a registered sentence added to this paragraph pushed the
+        # concession 21 characters past it, with the concession untouched (caution (ar)).
         i = txt.find("went untested")
-        assert "not a mechanism" in txt[i:i + 2600], \
+        end = txt.find(r"\textbf{One disclosure the ladder surfaced", i)
+        assert end > i, "the paragraph's end marker moved; rescope this guard"
+        assert "not a mechanism" in txt[i:end], \
             "the paragraph no longer says the decay is a shape and not a shown mechanism"
 
 

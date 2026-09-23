@@ -271,6 +271,23 @@ $-0.0245$ $[-0.0400, -0.0085]$, while selection gains $+0.0640$ $[+0.0485, +0.07
 vacuity holds a sixth time, the $k=10$ budget active on $0.008\%$ of steps with $99.6\%$ of served
 completions the opponent's byte for byte.
 
+\textbf{The one thing every workload shares is the opponent, and it orders them without explaining
+them.} Every workload above is judged against the same instruction-tuned opponent, so ``task type''
+could stand in for how good that opponent is at the task. Its strength --- its order-averaged win
+rate against the anchor's own $n=1$ completion --- runs from $0.4755$ on the unseen novels to
+$0.6792$ on AlpacaEval and orders the six differences almost perfectly (Spearman $-0.943$); divided
+by the room a difference of win rates has, that falls to $-0.657$, so we withdraw the claim that it
+orders them beyond that arithmetic. What survives is the decomposition: the \emph{meter's} gain
+rises in exact rank order with the opponent's strength ($+1.000$) and selection's does not
+($+0.486$). \textbf{Varied within one workload, the opponent is not the split.} Five opponents on
+AlpacaEval through one generator, strengths $0.7752$ to $0.8807$, and against every one the meter
+beats selection, each difference negative with its interval clear of zero ($-0.0584$ to
+$-0.0814$). Two limits bound that. No instruction-tuned model we could reach is weak on AlpacaEval
+--- the weakest still beats the anchor three times in four --- so an opponent as weak there as ours
+is on our corpus is not tested. And the pipeline that generates the opponent's text moves its
+strength by more than the whole ladder: the committed opponent reads $0.6792$ through our sweep and
+$0.8519$ through the ladder's decoder, on the same $805$ prompts.
+
 \paragraph{Does it survive a different judge and a different draw?}\label{app:h2hrepeat}
 \textbf{The one dissenting judge, re-asked with more prompts and on a workload where the effect is
 present.} \texttt{Mixtral-8x7B} is the only family-clean frontier judge and the only one of five
@@ -515,7 +532,10 @@ opponent & strength & paired $g_{\mathrm{sel}} - g_{\mathrm{met}}$ & reading \\
 \noindent Under judge~B the difference decays as the opponent strengthens and crosses zero between
 $0.773$ and $0.825$ (Spearman $-0.900$ over the five, $-0.800$ over the four sharing one family).
 \textbf{We registered a test of that account and it went untested}: the band required an opponent
-\emph{weaker} than $0.555$ to read confirmed, and no instruct model we could reach is weaker.
+\emph{weaker} than $0.555$ to read confirmed, and no instruct model we could reach is weaker. Nor
+does the slope transfer as measured: the same ladder run on AlpacaEval \emph{rises} with strength
+(Spearman $+0.900$), and only divided by the room a difference of win rates has does it point the
+same way ($-0.800$); five points each, and neither is a significance claim.
 
 \textbf{A second judge agrees on the shape and crosses earlier.} Judge~C --- post-hoc, labelled so,
 and unable to change a band --- reads $+0.0475$ $[+0.0015, +0.0930]$ at $0.555$ and then $-0.0090$
