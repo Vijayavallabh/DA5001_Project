@@ -103,6 +103,18 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
+## Arms in flight (2026-09-23 22:30) --- both hosts, every job placed
+
+| host | cards | arm | state | next step |
+|---|---|---|---|---|
+| host B | 4, 5 | **feat-180** `vetladder_L150_{tinycomma,kl3m17b}` (declared deviation, user's instruction), then `hostcheck_memoriser_n1` on 4 | running since 21:48 IST | waiter `bvj7x8umu`; `sync_status.sh pull`, `analysis/vetting_ladder.py` (reads V3 + the host check), then the one-pass manuscript edit |
+| host B | 6, 7 | **feat-181** `scripts/run_n512_post.sh a 6` / `b 7`: merge+G2, rewards+G1, judge B to 512, Arm A h2h | rewards at 11-14% at 22:25 | waiter `b0q2pdwm7`; pull, `analysis/score_n512.py`, consequences as registered |
+| host B | 4, 5 (after feat-180) | **feat-182** moved here by declared deviation (`cb532ed`): `local_dispatch.py --cards 4,5 --only selfixR_` | anchors copying (`bda12rzmh`), md5 of all 12 dirs to verify and append to the scoring log BEFORE launch | then `selector_n256.py --redraw` |
+| host B | 0-3 | the user's other project's vLLM | not ours | never touch |
+| local | 2 | **grid64** (`local_dispatch.py --only selfix_clean_grid64`), must stay local: its pool is gated bit-identical | sampling since 21:58 | waiter `bo0qd4xum`; refresh `selector_n256_descriptive.csv`, `tab:extraction` substring row |
+
+The two partial local feat-182 runs (kl3m520m, kl3m37b) were stopped at 21:57 before writing anything.
+
 ## Scored tonight (2026-09-23 21:30) and what is still owed
 
 - **feat-179 Part A SCORED and in the manuscript** (`9af5e1d`): B1 GROWS (`A(64)` up to `7.0`), B2 NO
