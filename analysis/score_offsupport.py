@@ -68,6 +68,40 @@ def shape(res, tag):
     return out
 
 
+def _band(arm, quantity, d):
+    a, b = boot_mean(d, random.Random(20260923))
+    return dict(arm=arm, quantity=quantity, value=round(sum(d) / len(d), 4), lo95=round(a, 4),
+                hi95=round(b, 4), n=len(d), reading="POST HOC")
+
+
+def post_hoc(res):
+    """NOT REGISTERED. Added 2026-09-23 after the bands were read, and every row says POST HOC.
+
+    Both registered climbs sit about one half-width from zero, the regime where feat-131's paired
+    difference did not replicate (caution (ap)), so two checks are reported beside them:
+      g(256)-g(64) single-order per arm -- the two doublings from the paper's n, not the last one;
+      Arm A under order averaging, which draws nothing and so pairs exactly across the committed
+        n=64 pass and this arm's n=128/256 passes -- refused unless u_sel_n1 agrees on every prompt.
+    """
+    out = []
+    for arm, A in ARMS.items():
+        per = rows(os.path.join(res, f"selection_scaling_per_prompt{A['tag']}.csv"))
+        if per:
+            pp = [r for r in per if JUDGE_B in r["judge"]]
+            out.append(_band(arm, "g(256)-g(64)", [float(r["u_n256"]) - float(r["u_n64"]) for r in pp]))
+    files = {64: "mixpowk_judgeB", 128: "offsup_n128", 256: "offsup_n256"}
+    per = {n: rows(os.path.join(res, f"order_averaged_h2h_per_prompt__{t}.csv")) for n, t in files.items()}
+    if all(per.values()):
+        by = {n: {r["prompt_id"]: r for r in v} for n, v in per.items()}
+        pids = sorted(set.intersection(*(set(v) for v in by.values())))
+        assert all(len({by[n][p]["u_sel_n1"] for n in by}) == 1 for p in pids), \
+            "u_sel_n1 differs across the order-averaged passes; they do not pair"
+        for hi, lo in ((128, 64), (256, 128), (256, 64)):
+            out.append(_band("A", f"g({hi})-g({lo}) order-averaged",
+                             [float(by[hi][p]["gain_sel"]) - float(by[lo][p]["gain_sel"]) for p in pids]))
+    return out
+
+
 def realised_spend():
     """Mean realised sequence divergence of the k=1 metered arm on AlpacaEval, read from its own
     trajectories; None off host B."""
@@ -157,6 +191,12 @@ def main():
     if len(shapes) == 2:
         print(f"B6: off-support {shapes['A']['verdict']}, on-support {shapes['B']['verdict']} "
               "(shapes only; levels are never set against each other)")
+
+    if shapes:
+        for r in post_hoc(res):
+            print(f"POST HOC Arm {r['arm']}: {r['quantity']} = {r['value']:+.4f} "
+                  f"[{r['lo95']:+.4f}, {r['hi95']:+.4f}] over {r['n']}")
+            out.append(r)
 
     if out:
         path = os.path.join(a.out, "offsupport_ladder.csv")

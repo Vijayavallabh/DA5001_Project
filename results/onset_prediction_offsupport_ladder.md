@@ -180,3 +180,69 @@ The reward passes ran on host B, where both references were scored (Arm A GPU 0,
 
 So both n=256 pools are the committed ladders extended, not fresh draws, and the bands may be read.
 The judges started at 03:14 (host time), behind the gate by construction.
+
+### Scored 2026-09-23 --- B1 BETWEEN, B2 and B5 STILL CLIMBING (marginally), B3 `26.2x`; the appendix's "ceiling" is withdrawn and no slope replaces it
+
+`.venv/bin/python analysis/score_offsupport.py --out results`, run on host B because B3 reads the
+metered arm's own trajectories there -> `results/offsupport_ladder.csv`. Judged by
+`scripts/run_offonsup_judge.sh` behind the gate above: `results/selection_scaling_{offsup,onsup}.csv`
+(+ `_per_prompt_`) and `results/order_averaged_h2h__offsup_n{128,256}.csv` (+ `_per_prompt_`).
+
+**The registered readings.**
+
+- **B2** (Arm A, AlpacaEval): `g(128) - g(64) = -0.0019 [-0.0273, +0.0217]`,
+  `g(256) - g(128) = +0.0280 [+0.0025, +0.0553]` -> **STILL CLIMBING**.
+- **B5** (Arm B, our `850`): `g(128) - g(64) = -0.0094 [-0.0353, +0.0147]`,
+  `g(256) - g(128) = +0.0306 [+0.0047, +0.0547]` -> **STILL CLIMBING**.
+- **B6**: both climb, so the registered consequence applies verbatim: *"`n = 64` is simply not where
+  either ladder ends and the paper's choice of `64` is the thing to defend."*
+- **B1**: `D3 = -0.0357 [-0.0553, -0.0165]` at `n=128` and `-0.0239 [-0.0429, -0.0050]` at `n=256`,
+  against `-0.0339` at `n=64` on record. `|D3(256)|` is `70.5%` of `0.0339`: it fell by more than a
+  quarter (not CEILING), by less than half (not CLOSES), and stayed below zero with its interval
+  clear of it (not CATCHES). **BETWEEN**, the gap the registration left unnamed, reported as such
+  rather than rounded into either neighbour. The reversal fails off-support at `256` as at `64`.
+- **B3**: no crossing, so the grid's end: `log 256 = 5.545` nats against the metered arm's realised
+  `145.10` on this corpus, a ratio of **`26.2`**. The registration's `171.3` was our own corpus's
+  figure; the scorer takes AlpacaEval's from that arm's own trajectories (`utility_price.spends` over
+  `output/mixpow/conc_k10`), which is caution (at)'s rule.
+
+**The predictions: three of four were wrong.**
+
+- B1: we predicted CLOSES; it is BETWEEN. The gap narrowed by `0.0100` where CLOSES needed `0.0170`,
+  and not at all between `64` and `128`.
+- B2: we predicted STILL CLIMBING at `128` and marginal at `256`. The first is wrong --- flat on both
+  arms --- and the second is right.
+- B5: we predicted SATURATED on support, the combination that would have made our ceiling sentence
+  "wrong in the most interesting way". It climbs: the two ladders have **the same shape**, flat from
+  `64` to `128` and rising from `128` to `256`.
+- The headline prediction survives: the appendix's "ceiling" language is wrong (below) and its
+  conclusion is right --- selection still loses to the binding meter off-support at `n=256`.
+
+**Marginality, which the registered labels do not carry.** The two climbs sit `1.06` (A) and `1.22`
+(B) half-widths from zero, below feat-131's `1.71`, the paired difference that did not replicate
+(caution (ap)). STILL CLIMBING is therefore the registered label and not a measured slope. Two
+checks were added **after** the bands were read; every row they write in `offsupport_ladder.csv`
+reads `POST HOC`, and `analysis/score_offsupport.py:post_hoc` says so in its docstring:
+
+- `g(256) - g(64)`, single-order, the two doublings from the paper's own `n`:
+  `+0.0261 [-0.0056, +0.0565]` (A) and `+0.0212 [-0.0088, +0.0512]` (B). **Both contain zero.**
+- Arm A under order averaging, which draws nothing and so pairs exactly across the committed `n=64`
+  pass and this arm's two (`u_sel_n1` identical on `805/805`, asserted before pairing):
+  `g(128) - g(64) = -0.0019 [-0.0140, +0.0096]`, `g(256) - g(128) = +0.0118 [+0.0003, +0.0239]`
+  (`1.00` half-widths), `g(256) - g(64) = +0.0099 [-0.0050, +0.0248]`. Same shape and direction as
+  the registered construction, and the two-doubling total again contains zero.
+
+And one identity worth writing down: `D3(256) - D3(64)` **is** the order-averaged `g(256) - g(64)`,
+because the metered arm is the same text under the same greedy judge in every pass and cancels. So
+the narrowing B1 reads is `+0.0099 [-0.0050, +0.0248]` and is not distinguishable from zero either.
+
+**Consequence for the manuscript.** Appendix I's *"that anchor has a ceiling between `64` and `128`
+... and `n` has an optimum beyond which more draws buy certificate and not utility"* is withdrawn,
+and so is *"its ceiling is between `64` and `128` too"* for Comma-7B, which was not measured past
+`128` and keeps only *flat between `64` and `128`*. **No slope replaces them**: the registered
+reading says neither ladder ends at `64`, and the post-hoc checks say the climb past `64` is not
+resolved. What the data support is the conservative joint statement --- past `n=64` the step to
+`128` is flat in every pass that measured it (the `500`-prompt headline pass, our `850`, AlpacaEval's
+`805`), the step to `256` rises marginally in both passes that measured it, and each doubling has
+bought at most about `+0.03` for twice the draws and `log 2` more nats. The support-ceiling paragraph
+gains B1: the reversal fails off-support at `256` as it does at `64`.

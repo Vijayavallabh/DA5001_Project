@@ -110,3 +110,31 @@ def test_a_falling_ladder_is_labelled_unregistered_rather_than_saturated(tmp_pat
     res = _setup(tmp_path)
     _shape(res, "_offsup", 0.0, -0.10)
     assert "B2 Arm A: **TURNS OVER (unregistered)**" in _run(tmp_path, monkeypatch, capsys)
+
+
+def _oa(res, sfx, n, u1=0.25):
+    _w(os.path.join(res, f"order_averaged_h2h_per_prompt__{sfx}.csv"),
+       [{"prompt_id": p, f"u_sel_n{n}": 0.5, "u_sel_n1": u1, "gain_sel": 0.25 + 0.001 * n}
+        for p in PIDS])
+
+
+def test_post_hoc_rows_are_labelled_and_refuse_passes_that_do_not_pair(tmp_path, monkeypatch, capsys):
+    res = _setup(tmp_path)
+    _shape(res, "_offsup", 0.03, 0.10)
+    _shape(res, "_onsup", 0.0, 0.0)
+    for sfx, n in (("mixpowk_judgeB", 64), ("offsup_n128", 128), ("offsup_n256", 256)):
+        _oa(res, sfx, n)
+    _run(tmp_path, monkeypatch, capsys)
+    got = list(csv.DictReader(open(os.path.join(res, "offsupport_ladder.csv"), encoding="utf-8")))
+    post = [r for r in got if r["reading"] == "POST HOC"]
+    assert {r["quantity"] for r in post} == {"g(256)-g(64)", "g(128)-g(64) order-averaged",
+                                             "g(256)-g(128) order-averaged",
+                                             "g(256)-g(64) order-averaged"}, post
+    assert all("POST HOC" != r["reading"] for r in got if r["quantity"] == "g(256)-g(128)")
+    _oa(res, "offsup_n256", 256, u1=0.5)            # a pass whose n=1 arm is not the others'
+    try:
+        _run(tmp_path, monkeypatch, capsys)
+    except AssertionError as e:
+        assert "do not pair" in str(e)
+    else:
+        raise AssertionError("order-averaged passes with different n=1 arms were paired")
