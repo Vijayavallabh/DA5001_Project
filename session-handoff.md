@@ -115,6 +115,15 @@ moves between cards there); log `output/logs/n512_dispatch.log` (ends `all done`
 logs `output/logs/n512_*.log`, markers `~/v/logs/n512_*.{done,fail}`. Then merge + G2
 (`n512_pool.py merge`), rewards + G1, judge, score --- scripts still to write.
 
+## feat-182 registered (2026-09-23 15:30) --- Part A re-drawn under a disjoint seed, local
+
+`results/onset_prediction_selector_redraw.md`: feat-179 Part A's command with `--seed 5678` and nothing
+else changed, on the local A100s so the seed is the only difference. Registered before Part A's
+bands are read. Armed as `scripts/run_selfix_redraw_local.sh` (one queue per card, each waiting on
+its card's last feat-179/180 job; log `output/logs/selfix_redraw_queue.log`). Scorer still to write:
+`analysis/selector_n256.py` with prefix `selfixR`, G0' distributional (two-proportion `z` on the
+`k=-1` recall >= 0.01 fraction), then R1-R3 against Part A's verdicts.
+
 ## Arms in flight (2026-09-23 14:10) --- both hosts checked
 
 | host | card | arm | state |
