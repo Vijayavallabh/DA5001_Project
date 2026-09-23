@@ -1,5 +1,53 @@
 # Session Progress Log
 
+## 2026-09-23 (late) --- feat-180 SCORED: V3 PASS HOLDS, the ladder is in the paper; feat-182 moves to host B
+
+**feat-180 is complete.** The two missing rungs (TinyComma and KL3M-1.7B at `L = 150`) ran on host B GPUs
+4 and 5 at the user's instruction, declared as a deviation before either ran, with a host check fixed in
+advance: feat-179 Part A's memoriser draw (seed `1234`, batch `32`) re-run on host B reaches recall
+`>= 0.01` on `82` of `100` passages against `78` locally, `z = +0.707`, **PASS** (same side of `0.01` on
+`82`, recall identical on `28`, a cross-host bf16 re-draw). **V3 PASS HOLDS**: all six licensed anchors
+read `0/50` at `100`, `150` and `200` tokens. V1 NON-MONOTONE, V2 `L* = 50`, V4 a schedule, as read at
+20:40. Predictions: V1 wrong, V2 right, V3 right.
+
+**Manuscript, as registered, in one pass.** Appendix I's vetting paragraph gains `tab:vetladder` (per
+model per rung, dashes for rungs not run, a dagger on the two host-B rungs) and its closing "a curve we
+have two points of" becomes the measured curve; the Ethics Statement's single-length rule ("run the
+check at the longest genuine prefix the deployment accepts") becomes V4's schedule ("at every prefix
+length up to ..."); under NON-MONOTONE the licensed anchors' rungs below `100` are named as unmeasured.
+PASS HOLDS changes nothing in the main text except a count. **Two pre-existing defects in the replaced
+sentences, fixed in the same pass:** the Ethics Statement said the `70`B "reproduces one passage in
+full" at `100` tokens where two read exactly `1.0000` (Section 3 and Appendix I say two; the guard read
+only Section 3, caution (af)), and it set the licensed anchors' `0.000` "on all `100` passages" --- the
+header protocol's count --- beside the `100`-token protocol's numbers, which are on `50`. **"Five
+licensed anchors" is now six** wherever it counts the `100`-token screen: TinyComma is screened in the
+anchor slot of the `70`B control itself, and the ladder lists all six (Ethics, Appendix I, and Section
+3's one clause, a same-length swap; body still 9/9).
+
+**One guard broke on the table, correctly diagnosed and fixed in the guard.**
+`tests/test_breadth64.py` took the first row starting `Comma-7B &` anywhere in the appendix; the new
+table's row came first. It is now scoped to `tab:climb` and still fails when that table's cell changes.
+
+Guards: `tests/test_vetting_ladder_table.py` (every cell against the CSV including dashes and daggers;
+the recommendation follows V1 recomputed from the CSV; the V3 claim follows the licensed rows; every
+ladder number in the prose rebuilt from the CSV; the host check as the scorer reads it) and
+`test_natural_memoriser.py` widened to the Ethics Statement. Fourteen mutations, fourteen caught.
+Build: tectonic exit `0`, `0` overfull, `0` `??`, bold `3`, `49` pages, page 10 opens with the Ethics
+Statement; audit `3,542` literals, the one expected miss. `./init.sh`: `1108 passed, 1 failed` (the
+breadth guard above), then that file `6 passed` after the scoping fix.
+
+**feat-182 moved to host B** (declared deviation `cb532ed`, before any of its draws existed): the local
+cards are held by the sibling project's vLLM, two jobs had died of OOM and two were running at `14` and
+`25` hours each. The two partial local runs were stopped before writing anything; the eleven anchors
+host B lacked are being copied and must hash identically before launch. **grid64 stays local** (its pool
+is gated bit-identical) and has landed: G0, G1, G2 PASS; its manuscript update is next.
+
+```bash
+bash scripts/run_vet150_hostb.sh 4 5          # host B
+scripts/sync_status.sh pull
+.venv/bin/python analysis/vetting_ladder.py   # V1-V4 and the host check -> results/vetting_ladder.csv
+```
+
 ## 2026-09-23 (evening) --- feat-179 Part A scored and in the manuscript; feat-180 read on all but two rungs
 
 **Part A (feat-179), all twelve anchors, G0 and G2 PASS at every one.** B1 **GROWS**: `A(64)` on `E_08`

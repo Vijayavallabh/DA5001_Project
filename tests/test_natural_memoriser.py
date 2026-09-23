@@ -52,6 +52,12 @@ def test_the_adversary_reproduces_whole_passages_and_the_paper_says_two():
     assert len(full) == 2, [r["prompt_id"] for r in full]
     body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
     assert "reproduces two \\emph{in full}" in body, "Section 6 no longer states the count"
+    # the Ethics Statement quotes the same run and said "one passage" until 2026-09-23: a guard on
+    # one section is not a guard on the claim (caution (af))
+    eth = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    eth = eth[eth.index(r"\section*{Ethics Statement}"):]
+    eth = eth[:eth.index(r"\section*", 10)]
+    assert "reproduces two passages in full" in eth and "one passage in full" not in eth
 
 
 def test_selection_recovers_nothing_at_every_n():

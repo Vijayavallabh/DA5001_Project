@@ -6,6 +6,7 @@ comma7b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 comma7b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 comma7b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 kl3m17b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+kl3m17b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 kl3m17b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 llama70b,memorised in pre-training,20,risky_alone_recall,50,1,0.02,0.0991,0.002,this arm
 llama70b,memorised in pre-training,35,risky_alone_recall,50,2,0.04,0.5275,0.0131,this arm
@@ -31,4 +32,5 @@ pleias3b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 pleias3b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 pleias3b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 tinycomma,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+tinycomma,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 tinycomma,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm

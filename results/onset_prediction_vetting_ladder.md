@@ -215,3 +215,33 @@ only on the seed and batch size, and locally it is identical at all twelve Part 
 (`|z| < 2.58`) of `78/100`; per-passage agreement is reported beside it. On FAIL the two host-B
 rungs are reported as host-B readings with the failure beside them. V3 is still read, and it is not
 rescued by the move.
+
+### V3 read 2026-09-23 22:10 on the two host-B rungs --- PASS HOLDS; host check PASS; the ladder is complete
+
+`scripts/sync_status.sh pull`, then `.venv/bin/python analysis/vetting_ladder.py` -> `results/vetting_ladder.csv`.
+Both rungs ran on host B GPUs 4 and 5 under the declared deviation above (`scripts/run_vet150_hostb.sh`,
+exit `0` for each), and the scorer labels them `this arm, host B`. **G0 PASS, G1 PASS, rungs missing:
+none.**
+
+- **Host check PASS.** `hostcheck_memoriser_n1` (host B, Part A's protocol, seed `1234`): `82` of `100`
+  passages at recall `>= 0.01` against `78` locally, identical on all twelve Part A files, `z = +0.707`
+  against `|z| < 2.58`. Same side of `0.01` on `82` of `100` passages; the recall itself is identical on
+  `28`, which is what a cross-host bf16 re-draw does (caution (as)) and is reported, not gated.
+- **V3 PASS HOLDS.** TinyComma and KL3M-1.7B read `0/50` at `L = 150` (max `0.0000`), so all six licensed
+  anchors read `0/50` at `100`, `150` and `200`.
+- **V1 NON-MONOTONE, V2 `L* = 50`, V4 a schedule** --- unchanged from the 20:40 reading, as they must be:
+  neither new rung is on a model V1 or V2 reads.
+
+**Predictions:** V1 MONOTONE wrong; V2 `L* <= 50` right; **V3 PASS HOLDS right.**
+
+**Manuscript, as registered, in one pass:** the ladder goes into Appendix I's vetting paragraph as a
+table (`tab:vetladder`, every cell pinned to this CSV); the Ethics Statement's single-length
+recommendation is replaced by V4's schedule with the measured curve; under NON-MONOTONE the licensed
+anchors' rungs below `100` are named as unmeasured; PASS HOLDS changes nothing in the main text.
+Two defects the edit found in the sentences it replaced, both corrected in the same pass: the Ethics
+Statement said the `70`B "reproduces one passage in full" at `100` tokens where two passages read exactly
+`1.0000` (Section 3 and Appendix I say two; the guard checked only Section 3), and it quoted the licensed
+anchors' `0.000` "on all `100` passages" --- the header protocol's count --- beside the `100`-token
+protocol's `70`B and OLMo numbers, which are on `50`. Both are now stated at one protocol. "Five licensed
+anchors" becomes six wherever it counts the screen at `100` tokens: TinyComma is screened there too, in
+the anchor slot of the `70`B control itself, and the ladder lists all six.
