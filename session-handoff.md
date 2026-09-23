@@ -103,19 +103,19 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
-## State at 2026-09-23 22:50 --- feat-180 and grid64 DONE; feat-181 and feat-182 running on host B
+## State at 2026-09-23 23:40 --- feat-180, grid64 and feat-181 DONE; feat-182 running on host B
 
-**Done tonight:** feat-180 SCORED (`9c8895e`: V3 PASS HOLDS, host check PASS 82 vs 78, `tab:vetladder`,
-the Ethics schedule, the unmeasured short rungs, five -> six licensed anchors, and the Ethics "one
-passage in full" corrected to two); grid64 read (`03a3664`: G0/G1/G2 PASS, `tab:extraction`'s
-substring row now the corrected selector's). Both are in the manuscript; body 9/9, 49 pages.
+**Done tonight** (all in the manuscript, body 9/9, 49 pages; last `./init.sh` 1114 passed):
+feat-180 (`9c8895e`: V3 PASS HOLDS, `tab:vetladder`, the Ethics schedule, five -> six licensed anchors,
+"one passage in full" -> two); grid64 (`03a3664`: `tab:extraction`'s substring row is the corrected
+selector's); feat-181 (`d446869`: C2 SATURATED on both, C3 NOT RESOLVED on both, C1 UNRESOLVED;
+Appendix I extended to `512`, no main-text change).
 
 | host | cards | arm | state | next step |
 |---|---|---|---|---|
-| host B | 6, 7 | **feat-181** `scripts/run_n512_post.sh a 6` / `b 7`: merge+G2, rewards+G1, judge B to 512, Arm A h2h | reward pass running | waiter `b0q2pdwm7` (markers `~/v/logs/n512_post_{a,b}.{done,fail}`); `sync_status.sh pull`; `analysis/score_n512.py`; consequences as registered (C3 -> Appendix I's "neither a ceiling nor a slope"; C1 -> support-ceiling paragraph; main text only on CATCHES) |
-| host B | 4, 5 | **feat-182** by declared deviation (`cb532ed`, anchors `76/76` md5 at `507ae1e`): `local_dispatch.py --cards 4,5 --only selfixR_`, up to three jobs a card by free memory | first job placed 22:38 IST | waiter `brgg29p1k` (host B `output/logs/selfix_redraw_queue.log`: drained/deadline); pull; `analysis/selector_n256.py --redraw`; R1-R3; main-text verdict only if REPLICATES |
+| host B | 4-7 | **feat-182** by declared deviation (`cb532ed`; anchors `76/76` md5, `507ae1e`): `local_dispatch.py --cards 4,5,6,7 --only selfixR_` | 11 of 12 placed, first done 23:30 IST | waiter `brgg29p1k` (host B `output/logs/selfix_redraw_queue.log`); `sync_status.sh pull`; `analysis/selector_n256.py --redraw`; then the registered consequence: **the amplification at `n=64` and `n=256` quoted per draw, both draws, at every site** (intro, Section 3, Section 4, the Ethics Statement, the `fig:safety` caption, `tab:contam` and its prose), and a verdict in the main text only if it REPLICATES. The three main-text sites are in a 9/9 body: measure heading positions before and after (caution (az)) |
 | host B | 0-3 | the user's other project's vLLM | not ours | never touch |
-| local | none | nothing of ours is running | | local cards are held by the sibling project's vLLM |
+| local | none | nothing of ours is running | | |
 
 Host B's clock is CEST (IST - 3:30); its logs are in host time.
 
