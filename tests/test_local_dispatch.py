@@ -59,3 +59,35 @@ def test_each_host_places_only_its_own_set_and_only_the_redraw_host_speaks_for_i
     D.main(("4", "5"), "selfixR_")
     assert "[redraw] drained" in open("output/logs/selfix_redraw_queue.log").read()
     assert "start: 12 jobs on cards 4,5" in open("output/logs/local_dispatch.log").read()
+
+
+def test_feat183_rungs_are_the_registered_screen_on_the_six_licensed_anchors():
+    short = dict(D.VET_SHORT)
+    assert len(short) == 24
+    assert {p.split("_", 2)[1] for p in short} == {"L20", "L35", "L50", "L75"}
+    assert {m for _, m in D.LICENSED} == {D.TINY, D.K17, "common-pile/comma-v0.1-2t",
+                                         "common-pile/comma-v0.1-1t", "PleIAs/Pleias-1.2b-Preview",
+                                         "PleIAs/Pleias-3b-Preview"}
+    for name, args in short.items():
+        L = name.split("_")[1][1:]
+        a = _flags(args)
+        for f in (f"--seed-tokens {L} ", "--raw-prompt ", "--split test ", "--novel harry_potter ",
+                  "--limit 50 ", "--max-new-tokens 200 ", "--n-values 1 8 64 ", "--batch-size 8 ",
+                  f"--risky-model {D.MEM} "):
+            assert f in a, (name, f)
+        assert "--seed " not in a, "the screen on record ran at the default seed"
+
+
+def test_one_dispatcher_serves_feat182_and_feat183_and_never_grid64(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    os.makedirs("output/logs")
+    placed = []
+    monkeypatch.setattr(D, "done", lambda p: p in placed)
+    monkeypatch.setattr(D, "running", lambda p: False)
+    monkeypatch.setattr(D, "free_after_reserve", lambda cards: {c: 80000 for c in cards})
+    monkeypatch.setattr(D, "launch", lambda p, a, gpu: placed.append(p))
+    monkeypatch.setattr(D.time, "sleep", lambda s: None)
+    D.main(("4", "5", "6", "7"), "selfixR_,vetladder_L")
+    assert len(placed) == 36 and "selfix_clean_grid64" not in placed
+    assert placed[:12] == [p for p, _ in D.JOBS if p.startswith("selfixR_")], "feat-182 goes first"
+    assert "[redraw] drained" in open("output/logs/selfix_redraw_queue.log").read()

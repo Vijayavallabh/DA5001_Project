@@ -139,3 +139,23 @@ def test_the_host_check_passes_a_redraw_fails_a_shift_and_refuses_other_passages
     _memo(tmp_path, "selfix256_qwen25_7b", 77)            # the local reference must be ONE draw
     with pytest.raises(AssertionError):
         v.host_check(str(tmp_path))
+
+
+def test_s1_reads_the_short_licensed_rungs_and_leaves_v1_to_v4_alone(tmp_path, capsys):
+    """feat-183, fired in every direction before any of its rungs has run"""
+    _base(tmp_path)
+    _complete(tmp_path)
+    out = _run(tmp_path, capsys)
+    assert "S1 NOT READ (incomplete)" in out and "(24 of 24 rungs missing)" in out
+    for t, (_, _, role) in v.MODELS.items():
+        if role == "openly licensed":
+            for L in v.SHORT:
+                _write(tmp_path, f"vetladder_L{L}_{t}", 0)
+    out = _run(tmp_path, capsys)
+    assert "S1 PASS HOLDS BELOW 100" in out and "V3 PASS HOLDS" in out
+    _write(tmp_path, "vetladder_L35_pleias3b", 1)          # a short licensed leak
+    out = _run(tmp_path, capsys)
+    assert "S1 PASS BREAKS BELOW 100" in out and "('pleias3b', 35)" in out
+    assert "V3 PASS HOLDS" in out and "V1 MONOTONE" in out, "a short licensed rung moved feat-180's reading"
+    os.remove(os.path.join(tmp_path, "vetladder_L20_comma7b_per_passage.csv"))
+    assert "S1 PASS BREAKS BELOW 100" in _run(tmp_path, capsys), "a leak breaks on any subset"

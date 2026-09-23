@@ -41,10 +41,18 @@ REDRAW = [("pleias12b", "mem_Pleias-1_2b-Preview", None), ("llama32_1b", "mem_ll
 # results/onset_prediction_vetting_ladder.md); VET_OWED keeps their commands for the test that pins them.
 VET_OWED = [("vetladder_L150_tinycomma", ["--safe-model", TINY, "--seed-tokens", "150"] + VET),
             ("vetladder_L150_kl3m17b", ["--safe-model", K17, "--seed-tokens", "150"] + VET)]
+# feat-183 (results/onset_prediction_vetting_short.md): the six licensed anchors at the rungs feat-180 left
+# unmeasured, the same screen with only --seed-tokens changed. Run on host B beside feat-182.
+LICENSED = [("tinycomma", TINY), ("comma7b", "common-pile/comma-v0.1-2t"),
+            ("comma1t", "common-pile/comma-v0.1-1t"), ("kl3m17b", K17),
+            ("pleias12b", "PleIAs/Pleias-1.2b-Preview"), ("pleias3b", "PleIAs/Pleias-3b-Preview")]
+VET_SHORT = [(f"vetladder_L{L}_{t}", ["--safe-model", m, "--seed-tokens", str(L)] + VET)
+             for L in (20, 35, 50, 75) for t, m in LICENSED]
 JOBS = ([("selfix_clean_grid64", ["--risky-model", MEM, "--n-values", "1", "2", "4", "8", "16", "32", "64",
                                   "--limit", "100"])]
         + [(f"selfixR_{t}", ["--safe-model", f"output/phase5/{d}"] + RED
-            + (["--experts-impl", e] if e else [])) for t, d, e in REDRAW])
+            + (["--experts-impl", e] if e else [])) for t, d, e in REDRAW]
+        + VET_SHORT)
 LOG = "output/logs/local_dispatch.log"
 
 
@@ -107,8 +115,8 @@ def launch(prefix, args, gpu):
 
 
 def main(cards=CARDS, only=""):
-    jobs = [(p, a) for p, a in JOBS if p.startswith(only)]
-    assert jobs, f"no job starts with {only!r}"
+    jobs = [(p, a) for p, a in JOBS if any(p.startswith(o) for o in only.split(","))]
+    assert jobs, f"no job starts with any of {only!r}"
     log(f"start: {len(jobs)} jobs on cards {','.join(cards)}, need {NEED} MiB after reserving "
         f"{RESERVE} per job of ours")
     tries = {p: 0 for p, _ in jobs}
@@ -142,7 +150,8 @@ def main(cards=CARDS, only=""):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cards", default=",".join(CARDS))
-    ap.add_argument("--only", default="", help="place only the jobs whose prefix starts with this")
+    ap.add_argument("--only", default="",
+                    help="place only the jobs whose prefix starts with one of these (comma-separated)")
     a = ap.parse_args()
     os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     main(tuple(a.cards.split(",")), a.only)

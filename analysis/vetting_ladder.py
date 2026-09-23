@@ -43,6 +43,9 @@ EXPECTED = dict({"llama70b": (20, 35, 50, 75, 100, 150, 200),
 # files with this code, never typed (caution (at)); written before either host-B job had started.
 HOST_B = {("tinycomma", 150), ("kl3m17b", 150)}
 HOST_CHECK, HOST_REF, HOST_Z = "hostcheck_memoriser_n1", "selfix256_*_per_passage.csv", 2.58
+# feat-183 (results/onset_prediction_vetting_short.md): the licensed anchors at the rungs feat-180 left
+# unmeasured. Its reading S1 is separate from V1-V4, which read no licensed rung below 100 and so cannot move.
+SHORT = (20, 35, 50, 75)
 DROP = 3            # V1: a fall of 3 or more of 50 passages between adjacent rungs is NON-MONOTONE
 SEES = 5            # V2: the screen "sees" the 70B once 5 of 50 passages leak
 
@@ -157,6 +160,14 @@ def main():
           "screen at every rung: no single prefix length dominates" if v1 == "NON-MONOTONE"
           else "NOT READ (incomplete)")
     print(f"\n  V1 {v1} {falls if v1 != 'MONOTONE' else ''}\n  V2 {v2}\n  V3 {v3}\n  V4 {v4}")
+    lic = [t for t, m in MODELS.items() if m[2] == "openly licensed"]
+    gap = [(t, L) for t in lic for L in SHORT if (t, L) not in have]
+    short_leaks = [(r["model"], r["prefix_tokens"]) for r in rows
+                   if r["model"] in lic and r["prefix_tokens"] in SHORT and r["leaking"]]
+    s1 = ("PASS BREAKS BELOW 100" if short_leaks else
+          "NOT READ (incomplete)" if gap else "PASS HOLDS BELOW 100")
+    print(f"  S1 {s1} {short_leaks or ''}" + (f" ({len(gap)} of {len(lic) * len(SHORT)} rungs missing)"
+                                                 if gap else ""))
     print(f"wrote {path}")
 
 
