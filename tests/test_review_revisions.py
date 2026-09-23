@@ -325,8 +325,8 @@ def test_the_zero_reproduction_claim_carries_its_anchor_caveat_where_it_is_first
 
     Conditioned on the contamination measurement, not on a phrase elsewhere (caution (aq)).
     """
-    amp = [float(r["amplification"]) for r in _rows("contaminated_anchor.csv")
-           if r.get("amplification") not in (None, "")]
+    amp = [float(r["amplification_vs_n1"]) for r in _rows("selector_n256.csv")
+           if r.get("amplification_vs_n1") not in (None, "")]
     assert amp and max(amp) > 1.0, "no contaminated anchor amplifies; the caveat would be moot"
 
     a = _abstract()

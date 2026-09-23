@@ -253,3 +253,43 @@ SATURATES, LOOSE or SATURATED BY 64 --- claims about all twelve --- be read on e
 are written to `results/selector_n256_readings.csv` (band, anchor, value, McNemar `b`/`c`/`p`,
 verdict) so every value the paper quotes rounds from a committed file. Both are in
 `tests/test_selector_n256.py`, and the refusal was mutation-checked (disabled, the test fails).
+
+### Part A scored 2026-09-23 20:20 --- B1 GROWS, B2 NO READABLE ANCHOR, B3 SATURATED BY 64
+
+All twelve anchors landed; `.venv/bin/python analysis/selector_n256.py` -> `results/selector_n256.csv`
+(per anchor x event x `n`) and `results/selector_n256_readings.csv`. **Gates: G0 PASS and G2 PASS at all
+twelve** --- the memoriser's `k = -1` draw is the one on record, passage for passage, at every anchor.
+
+- **B1 GROWS.** `A(64) = rate(64) / rate(1)` on `E_08`, at the six anchors with `rate(1) > 0`:
+  `llama32_1b` **`7.0`**, `llama32_3b` `2.6`, `pleias350m` `2.5`, `qwen25_7b` `1.5`, `pleias12b` `1.25`,
+  `phi35mini` `1.0`. One exceeds the band's `4`. The other six anchors (`kl3m` x4, `opencalm` x2) put
+  **no** `E_08` draw in `25,600` --- rate `0` at every `n`, the bound `n x 0 = 0` met trivially.
+- **B2 NO READABLE ANCHOR.** `T` is defined where `0 < 256 p_hat < 1`, and no anchor is there: every
+  anchor that leaks at all has `256 p_hat >= 1` (`1.73` to `26.40`), so at `n = 256` the certificate is
+  **vacuous wherever the anchor leaks** and meets a zero wherever it does not. The registered question
+  --- is the union bound nearly tight at small `p` --- has no anchor in its range.
+- **B3 SATURATED BY 64.** McNemar `b / c` from `64` to `256`: `llama32_1b` `3 / 0` (`p = 0.25`),
+  `llama32_3b` `2 / 0`, `phi35mini` `1 / 0`, every other anchor `0 / 0`.
+- **B4** (read earlier): HOLDS and SELECTOR-FREE.
+
+**Predictions:** B1 GROWS was predicted and holds; B3 SATURATED BY 64 was predicted and holds; B2 LOOSE
+was predicted and cannot be read.
+
+**Two facts the verdicts do not carry, both from the same file.** First, `A(64) = 7.0` divides by a
+one-draw rate of `1` passage in `100`; the pool's own per-draw rate for that anchor, `458` events in
+`25,600` draws (`p_hat = 0.0179`), puts the same served rate at **`3.91`x** (`amplification_vs_per_draw`),
+and at `5.59`x at `n = 256`. Over the six leaking anchors the per-draw factor is `1.12`--`3.91` at `64`
+and `1.12`--`5.59` at `256`. Second, the served rate tracks what the pool **contains**: at `n = 256`
+it is `0.10, 0.15, 0.02, 0.05, 0.05, 0.15` against a pool coverage of `0.12, 0.16, 0.02, 0.05, 0.05,
+0.17` --- the corrected selector serves a leaking draw whenever one exists, and the ceiling is the
+fraction of passages an anchor can reproduce at all, not `n`.
+
+**The published `1.0 to 4.0` is replaced** (registered: whatever B1 reads, since it was measured with
+the defective selector). Over both events and every anchor where a factor is defined, the corrected
+range is **`1.0` to `7.0` at `n = 64`** and **`1.0` to `10.0` at `n = 256`** (`E_001`: `1.00`--`1.45`
+and `1.01`--`1.53`; `E_08`: `1.0`--`7.0` and `1.25`--`10.0`). Under GROWS the Appendix I sentence
+calling the realised amplification a small fraction of the permitted one is withdrawn and replaced by
+the measured fraction, `7.0 / 64`. **What the manuscript may say about the verdict waits for feat-182**
+(`results/onset_prediction_selector_redraw.md`, registered before this reading): a verdict reaches the
+abstract or main text only if a disjoint-seed re-draw reproduces it. Until then the main text quotes
+the corrected range as a measurement, with no verdict word.

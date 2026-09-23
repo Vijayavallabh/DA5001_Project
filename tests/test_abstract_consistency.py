@@ -200,8 +200,8 @@ def test_the_abstract_keeps_the_vetting_requirement_because_contamination_amplif
     import csv as _csv
     import os as _os
     rows = list(_csv.DictReader(open(_os.path.join(
-        ROOT, "results", "contaminated_anchor.csv"), encoding="utf-8")))
-    amp = [float(r["amplification"]) for r in rows if r["amplification"] not in ("", None)]
+        ROOT, "results", "selector_n256.csv"), encoding="utf-8")))
+    amp = [float(r["amplification_vs_n1"]) for r in rows if r["amplification_vs_n1"] not in ("", None)]
     assert amp, "the contaminated-anchor arm has no amplification column any more"
     assert max(amp) > 1.0, \
         "no contaminated anchor amplifies; the vetting requirement may be revisited"

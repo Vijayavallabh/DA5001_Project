@@ -853,15 +853,19 @@ def safety_rows():
 
 
 def contamination_rows():
-    """(anchor, event, base_rate, realised amplification) at n=64, where the premise FAILS."""
-    p = RESULTS / "contaminated_anchor.csv"
+    """(anchor, event, base_rate, realised amplification) at n=64, where the premise FAILS.
+
+    Read from feat-179's corrected-selector arm (results/selector_n256.csv). The earlier
+    contaminated_anchor.csv was measured with a selector that ranked partly on padding (caution
+    (ba)) and its n > 1 numbers are never shown beside these (the registration excludes it)."""
+    p = RESULTS / "selector_n256.csv"
     if not p.exists():
         raise FileNotFoundError(p)
     out = []
     for r in csv.DictReader(open(p, encoding="utf-8")):
-        if r["n"] == "64" and r["amplification"]:
-            out.append((r["anchor"], r["event"], float(r["base_rate"]),
-                        float(r["amplification"])))
+        if r["n"] == "64" and r["amplification_vs_n1"]:
+            out.append((r["anchor"], r["event"], float(r["base_rate_n1"]),
+                        float(r["amplification_vs_n1"])))
     return sorted(out, key=lambda t: t[3])
 
 
@@ -907,7 +911,7 @@ def safety_envelope():
             continue
         ys = [0.5 + 0.30 * (_rnd.random() - 0.5) + (0.22 if ev == "E_08" else -0.22) for _ in xs]
         bx.scatter(xs, ys, s=17, c=c, marker=mk, alpha=0.85, zorder=3,
-                   label={"E_001": "recall 0.001 event", "E_08": "recall 0.8 event"}[ev])
+                   label={"E_001": "recall 0.01 event", "E_08": "recall 0.8 event"}[ev])  # E_001 is >= 0.01
     bx.axvline(64, color="0.25", ls="--", lw=1.1, zorder=4)
     bx.annotate("$n=64$: what the\ncertificate permits", xy=(120, 0.97), ha="right",
                 fontsize=6.3, color="0.15", va="top")

@@ -1,5 +1,47 @@
 # Session Progress Log
 
+## 2026-09-23 (evening) --- feat-179 Part A scored and in the manuscript; feat-180 read on all but two rungs
+
+**Part A (feat-179), all twelve anchors, G0 and G2 PASS at every one.** B1 **GROWS**: `A(64)` on `E_08`
+is `7.0` at Llama-3.2-1B (a one-draw base of one passage in a hundred; `3.91` against the pool's own
+per-draw rate), `2.6`, `2.5`, `1.5`, `1.25`, `1.0` at the other five that leak, and six anchors (KL3M x4,
+OpenCALM x2) put no draw in `E_08` in `25,600`. B2 **NO READABLE ANCHOR**: `256 p_hat >= 1` wherever an
+anchor leaks, so the bound is vacuous there. B3 **SATURATED BY 64**. The published `1.0 to 4.0` is
+replaced at every site by `1.0 to 7.0` (Ethics Statement, introduction, Sections 3 and 4, the figure
+caption) --- a same-length swap, so the body stays 9/9 --- and Appendix I's contamination section is
+rewritten: the selector defect in one sentence, **Table `tab:contam`** (per-anchor rates at `n = 1, 8,
+64, 256`, `p_hat`, pool coverage, `A(64)`, `A(256)`: Review 4 Q9), the `~6%` fraction withdrawn for
+the measured `7.0/64`, and the defective run's `rho = -0.700` and its Phi-3.5 bound-test paragraph
+removed (the registration forbids quoting them beside corrected numbers). Figure 5(b) now reads
+`results/selector_n256.csv`; its legend's `recall 0.001 event` was wrong since the figure was made
+(`E_001` is `>= 0.01`) and is fixed. The main-text verdict wording waits for feat-182.
+
+**Part B's multilingual means corrected**: served `lcs_word` `1.51`--`1.65` -> `1.51`--`1.53`, ROUGE-L
+`0.082`--`0.094` -> `0.070`--`0.082` (from `selector_n256_descriptive.csv`'s after columns).
+
+**feat-180 read on every rung but two**: V1 **NON-MONOTONE** (OLMo-2-13B `6 -> 3` between `L = 150` and
+`200`, the registered threshold, at the rung with the declared shrinking-target confound), V2 **`L* =
+50`**, V4 a schedule. V3 is not read: TinyComma and KL3M-1.7B at `L = 150` died of OOM.
+
+**Why jobs died, and the repair.** From about 16:00 the sibling project's vLLM servers took `54`--`71` GB
+on local GPUs 0+4 and 1+2, and the fixed per-card queues failed four jobs at model load (the two
+feat-180 rungs, the grid64 re-run, feat-182's pleias12b) --- a fixed queue fails its next job the same
+way within a minute. The redraw queue shells were retired (their running jobs left alone) and
+`scripts/local_dispatch.py` now places every owed job by free memory after reserving `24` GB per job of
+ours, in priority order: the two feat-180 rungs, grid64, then feat-182. Its commands carry every
+registered flag (`tests/test_local_dispatch.py`). On host B the same thing happens at a smaller scale:
+four feat-181 jobs have OOM'd beside other processes and been re-placed; 11 of 16 are done.
+
+Guards: `tests/test_contaminated_selfix.py` (every `tab:contam` cell and every quoted range from the CSV,
+the old numbers absent from every live file, the multilingual means); four older guards rewired from
+`contaminated_anchor.csv` to `selector_n256.csv` rather than deleted. Mutation-tested: 7 + 2 + 2, all
+caught after one guard was re-scoped (caution (an): "A defect of ours" also opens an unrelated paragraph).
+
+```bash
+.venv/bin/python analysis/selector_n256.py        # Part A readings, selector_n256{,_readings}.csv
+.venv/bin/python analysis/vetting_ladder.py       # results/vetting_ladder.csv
+```
+
 ## 2026-09-23 --- feat-172 SCORED: both ladders flat 64->128 and rising 128->256, marginally; the appendix's ceiling is withdrawn and no slope replaces it
 
 Gate PASS on both arms (`51,520/51,520` and `54,400/54,400` rewards `==`), then, as registered:

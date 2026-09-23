@@ -16,7 +16,7 @@ passages and seeds, the memoriser alone at $0.3925$ mean and $0.8154$ maximum. \
 memoriser ours}: \texttt{Llama-3.1-70B} memorised \emph{Harry Potter} in pre-training and unaided
 recovers $0.2475$ at a $100$-token prefix, reproducing two passages \emph{in full}. \textbf{(b)} The premise broken on purpose --- twelve contaminated anchors
 fine-tuned on these passages, attacker selecting at $n=64$: the bound permits multiplying the
-anchor's own rate by $64$ and the realised factor is $1.0$ to $4.0$.}
+anchor's own rate by $64$ and the realised factor is $1.0$ to $7.0$.}
 \label{fig:safety}
 \end{figure}
 
@@ -1310,8 +1310,8 @@ languages and the arm would be inadmissible --- and that prediction failed in th
 makes the test harder for us.
 
 Against it, selection reads $0.0000$ near-verbatim recall at $n = 1$, $8$ and $64$, maximum
-$0.0000$, with $\texttt{lcs\_word}$ of $1.51$--$1.65$ words (function words, not text) and ROUGE-L
-$0.082$--$0.094$ against the memoriser's $0.678$; $0$ of $100$ passages reach ROUGE-L $\ge 0.3$
+$0.0000$, with $\texttt{lcs\_word}$ of $1.51$--$1.53$ words (function words, not text) and ROUGE-L
+$0.070$--$0.082$ against the memoriser's $0.678$; $0$ of $100$ passages reach ROUGE-L $\ge 0.3$
 where the memoriser reaches $93\%$. The anchor's own leakage --- the quantity $n$ multiplies --- is
 $0.0000$, so this is a clean result and not a clean arm over a contaminated anchor. Bands were
 fixed before the memoriser was trained
@@ -1332,25 +1332,56 @@ over \textbf{twelve deliberately memorised anchors} --- LoRA copies fine-tuned o
 passages, spanning GPT-NeoX, Llama, Mixtral, Phi and Qwen at $170$M to $7$B --- on the same $100$
 passages and seeds, all twelve reproducing the memorising model's own control at $0.3925$ mean
 recall, which is twelve independent checks that only the anchor changed.
-Figure~\ref{fig:safety}(b) plots the result for $E = \{\text{near-verbatim recall} \ge 0.8\}$, most
-of the passage reproduced. \textbf{The headline is the last column against the $64$ the certificate
-permits}: an adversary maximising the memorising model's own likelihood over $64$ draws realises
-$1.0$ to $4.0\times$ the anchor's rate, about $6\%$ of the allowed amplification. Selection is a
-multiplier on what the anchor already leaks, not a floor under it, and the actionable consequence is
-that the anchor is the thing to vet. Amplification \emph{falls} as contamination rises
-($\rho = -0.700$), as predicted before the run, because an anchor that emits the passage on most
-draws leaves a selector nothing to find.
+\textbf{A defect of ours, and every number here is after its repair}: until 2026-09-23 the adversarial
+selector read a left-padded batch as if it were right-padded, so it ranked partly on padding; the
+arm was re-run with the corrected selector to $n=256$, and no number from the defective run is quoted
+beside these. Table~\ref{tab:contam} and Figure~\ref{fig:safety}(b) give the result for
+$E = \{\text{near-verbatim recall} \ge 0.8\}$, most of the passage reproduced.
 
-Three limits, all fixed in advance and none worked around. The bound test \textbf{fails at the letter
-of its own band}: Phi-3.5-mini reads $0.010$ against a bound of $n \times 0.000 = 0$, exceeding it by
-$5\times10^{-5}$ on a \emph{single} passage, and where the base rate is exactly zero the empirical
-bound collapses so any non-zero rate violates it at any $n$ --- we report the band as violated rather
-than re-specifying it, and note that at the five anchors where the test has power it holds with a
-wide margin. Next, \textbf{seven of twelve anchors sit at exactly zero}, the vacuity this arm was
-built to escape reappearing at the high threshold, because a LoRA memoriser tends to reproduce a
-passage always or never. Last, the amplifications are counts over $100$ passages ---
-$A(64) = 4.00$ is eight passages over two, and one more would have read $4.5$ --- so the magnitude is
-what to quote, not the boundary.
+\begin{table}[t]
+\centering\footnotesize
+\caption{Contaminated anchors, corrected selector. The rate of $E=\{\text{near-verbatim recall}\ge 0.8\}$
+served at each $n$ over the same $100$ passages; $\hat p$, the anchor's own per-draw rate of $E$ over
+its whole pool of $25{,}600$ draws; the fraction of passages whose $256$ draws hold any draw in $E$;
+and the realised factor $A(n)$ against the one-draw rate, defined where that rate is non-zero. The
+certificate permits $n$.}\label{tab:contam}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+anchor & $n=1$ & $8$ & $64$ & $256$ & $\hat p$ & pool holds $E$ & $A(64)$ & $A(256)$ \\
+\midrule
+Qwen2.5-7B & $0.10$ & $0.15$ & $0.15$ & $0.15$ & $0.1031$ & $0.17$ & $1.5$ & $1.5$ \\
+Llama-3.2-3B & $0.05$ & $0.11$ & $0.13$ & $0.15$ & $0.0469$ & $0.16$ & $2.6$ & $3.0$ \\
+Pleias-1.2B & $0.04$ & $0.05$ & $0.05$ & $0.05$ & $0.0447$ & $0.05$ & $1.25$ & $1.25$ \\
+Pleias-350M & $0.02$ & $0.05$ & $0.05$ & $0.05$ & $0.0417$ & $0.05$ & $2.5$ & $2.5$ \\
+Llama-3.2-1B & $0.01$ & $0.04$ & $0.07$ & $0.10$ & $0.0179$ & $0.12$ & $7.0$ & $10.0$ \\
+Phi-3.5-mini & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.0068$ & $0.02$ & $1.0$ & $2.0$ \\
+KL3M-1.7B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
+KL3M-170M & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
+KL3M-3.7B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
+KL3M-520M & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
+OpenCALM-1B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
+OpenCALM-3B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Six anchors never enter $E$}: no draw in $25{,}600$ reproduces a passage, so the bound
+$n \times 0 = 0$ is met at every $n$ and cannot be tested. At the six that do, an adversary maximising
+the memorising model's own likelihood over $64$ draws raises the anchor's one-draw rate by $1.0$ to
+$7.0\times$, at most $7.0/64$ of the amplification the certificate allows, and by $1.25$ to $10.0\times$
+at $n=256$. The largest factor divides by one passage in a hundred: against the per-draw rate over the
+whole pool the same served rates are $1.12$ to $3.91\times$ at $n=64$ and $1.12$ to $5.59\times$ at
+$256$. \textbf{Where an anchor leaks at all, the bound is vacuous by $n=256$} --- $256\hat p$
+runs from $1.73$ to $26.40$ --- and what caps the realised rate is not $n$ but what the pool holds:
+the served rate at $256$ tracks the fraction of passages with any leaking draw, because the corrected
+selector finds one whenever it exists. Selection is a multiplier on what the anchor already leaks,
+not a floor under it, and the actionable consequence is that the anchor is the thing to vet.
+
+Two limits. The factors are counts over $100$ passages --- $A(64) = 7.0$ is seven passages over
+one, and one more at $n=1$ would have read $3.5$ --- so the magnitude is what to quote, not the
+boundary; the band we registered, $A(64) \le 4$ at every anchor, is crossed by that one anchor. And
+the served rate does not measurably grow from $64$ to $256$: the most any anchor gains is three
+passages against none lost ($p = 0.25$).
 
 \subsection{The judge, in full}\label{app:judgemethod}
 \paragraph{Position dominates, and the correction is asymmetric.}

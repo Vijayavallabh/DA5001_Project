@@ -121,19 +121,27 @@ def test_no_markdown_bold_survives_into_the_manuscript():
     assert not bad, bad
 
 
-@pytest.mark.skipif(not os.path.exists(CSV), reason="the contaminated-anchor arm has not run")
 def test_the_appendix_quotes_the_amplification_range_and_its_caveats():
+    """Rewired 2026-09-23 onto feat-179's corrected-selector arm (results/selector_n256.csv): the
+    committed contaminated_anchor.csv was measured with a selector that ranked partly on padding, and
+    the registration forbids quoting its n > 1 numbers beside the corrected ones."""
+    import csv as _csv
     apx = " ".join(open(_tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
-    amps = [float(r["amplification"]) for r in _rows()
-            if r["event"] == "E_08" and r["n"] == "64" and r["amplification"]]
+    rows = list(_csv.DictReader(open("results/selector_n256.csv", encoding="utf-8")))
+    amps = [float(r["amplification_vs_n1"]) for r in rows
+            if r["event"] == "E_08" and r["n"] == "64" and r["amplification_vs_n1"]]
     assert amps
     lo, hi = min(amps), max(amps)
     assert f"${lo:.1f}$ to ${hi:.1f}\\times$" in apx, (lo, hi)
-    # the three limits must stay with the number they qualify
-    for phrase in ("seven of twelve anchors sit at exactly zero",
-                   "violated rather than re-specifying it",
-                   "eight passages over two"):
-        assert phrase in apx, phrase
+    # the limits and the defect disclosure must stay with the numbers they qualify -- scoped to this
+    # section, because "A defect of ours" also opens an unrelated paragraph of the same appendix and
+    # satisfied the first version of this check after the disclosure was deleted (caution (an))
+    sec = apx[apx.index("\\label{app:contaminated}"):]
+    sec = sec[:sec.index("\\subsection{")]
+    for phrase in ("Six anchors never enter", "seven passages over one", "the band we registered",
+                   "ranked partly on padding", "no number from the defective run is quoted"):
+        assert phrase in sec, phrase
+    assert "about $6\\%$ of the allowed amplification" not in apx, "the withdrawn fraction is back"
     # and the Ethics Statement must carry the measurement, not the old assertion
     eth = " ".join(open(_tex("iclr_2027.tex"), encoding="utf-8").read().split())
     assert "worthless if the safe model is itself contaminated" not in eth
