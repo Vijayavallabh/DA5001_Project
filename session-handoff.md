@@ -115,6 +115,18 @@ moves between cards there); log `output/logs/n512_dispatch.log` (ends `all done`
 logs `output/logs/n512_*.log`, markers `~/v/logs/n512_*.{done,fail}`. Then merge + G2
 (`n512_pool.py merge`), rewards + G1, judge, score --- scripts still to write.
 
+## Arms in flight (2026-09-23 15:45) --- host B in use, local queued
+
+| host | cards | arm | state | next step |
+|---|---|---|---|---|
+| host B | 4-7, two of ours per card, placed by free memory | feat-181 extension draws, 16 jobs | G0 PASS; 4 placed at 11:20 host time, rest placing | `scripts/run_n512_post.sh a|b <gpu>` then `analysis/score_n512.py` |
+| host B | 0-3 | another project's vLLM (74 and 73 GB) | not ours | never touch |
+| local | 1, 2, 4 | feat-179 Part A + feat-180, then grid64 on 4 | 27 jobs done, all exit 0 | `analysis/selector_n256.py`, `analysis/vetting_ladder.py` |
+| local | 1, 2, 4 | feat-182 re-draw (`--seed 5678`), each card behind its last feat-179/180 job | armed | `analysis/selector_n256.py --redraw` after Part A is read |
+
+Scorers for all four arms are written, tested and mutation-checked before their data. Task list #18-#22
+tracks the five scoring steps; #22 (feat-182) is blocked on #18 (Part A).
+
 ## feat-182 registered (2026-09-23 15:30) --- Part A re-drawn under a disjoint seed, local
 
 `results/onset_prediction_selector_redraw.md`: feat-179 Part A's command with `--seed 5678` and nothing
