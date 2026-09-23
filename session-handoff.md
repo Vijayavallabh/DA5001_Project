@@ -103,6 +103,18 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
+## Scored tonight (2026-09-23 21:30) and what is still owed
+
+- **feat-179 Part A SCORED and in the manuscript** (`9af5e1d`): B1 GROWS (`A(64)` up to `7.0`), B2 NO
+  READABLE ANCHOR, B3 SATURATED BY 64; `1.0 to 4.0` -> `1.0 to 7.0` at every site; `tab:contam`;
+  Figure 5(b) on the corrected CSV. **Main-text verdict wording waits for feat-182.**
+- **feat-180 read on all but two rungs** (`a47a378`): V1 NON-MONOTONE, V2 `L* = 50`; **V3 waits** for
+  TinyComma and KL3M-1.7B at `L = 150` (OOM'd); manuscript changes go in one pass once V3 is read.
+- **Owed locally, placed by `scripts/local_dispatch.py`** (log `output/logs/local_dispatch.log`): the two
+  feat-180 rungs, the grid64 re-run, feat-182's remaining anchors. The sibling project's vLLM holds
+  54-71 GB on GPUs 0, 1, 2, 4, so placement waits for room; three feat-182 jobs run beside it, slowly.
+- **Host B**: feat-181 12/16 extension jobs done; waiter `bsi9d1igh` fires on the dispatcher's end.
+
 ## feat-181 registered and launching on host B (2026-09-23 15:00) --- both ladders to n = 512
 
 `results/onset_prediction_n512_ladder.md`: feat-172's deferred next doubling, on host B's eight idle H100s
