@@ -293,3 +293,19 @@ the measured fraction, `7.0 / 64`. **What the manuscript may say about the verdi
 (`results/onset_prediction_selector_redraw.md`, registered before this reading): a verdict reaches the
 abstract or main text only if a disjoint-seed re-draw reproduces it. Until then the main text quotes
 the corrected range as a measurement, with no verdict word.
+
+### grid64 read 2026-09-23 22:35 --- G0, G1, G2 PASS; its corrected values are in `tab:extraction`
+
+`selfix_clean_grid64` ran locally on GPU 2 (21:58--22:22) through `scripts/local_dispatch.py --only
+selfix_clean_grid64`, the declared command with every other flag at its default. Its `k = -1` control
+reads `0.3925 / 0.8154 / 78.0%`, the batch-`32` signature (caution (u)), and **G0** (the memoriser's draw),
+**G1** (the pool) and **G2** pass passage for passage against `selection_extraction`: it is that arm's
+pool with only the selector changed. `analysis/selector_n256.py` adds its rows to
+`results/selector_n256_descriptive.csv`; every other output of the scorer is byte-identical to the
+committed one. Served `lcs_word` means, before -> after: `n = 1` `1.59 -> 1.59` (nothing to select),
+`2` `1.80 -> 1.72`, `4` `1.83 -> 1.76`, `8` `1.93 -> 1.73`, `16` `1.91 -> 1.66`, `32` `1.87 -> 1.58`,
+`64` `1.85 -> 1.56`. The before column reproduces `tab:extraction`'s printed row cell for cell, which
+confirms where those columns came from. No draw in the pool has recall above zero (max `0.0000`) or
+reaches ROUGE-L `0.5` (max `0.1939`; `n256`'s pool `0.2091`), so the table's other two rows could not
+move. `tab:extraction`'s substring row now reads the after columns (its `n = 256` cell from `n256`,
+`1.72 -> 1.56`) and the caption says why that row alone moved. No band is attached, as declared.

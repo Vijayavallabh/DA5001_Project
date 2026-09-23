@@ -98,3 +98,28 @@ def test_the_multilingual_paragraph_quotes_the_corrected_served_means():
     assert f"ROUGE-L ${min(rg):.3f}$--${max(rg):.3f}$" in sec, (min(rg), max(rg))
     before = [float(r["rouge_before"]) for r in rows]
     assert f"${max(before):.3f}$" not in sec, "a defective-selector mean is back in the paragraph"
+
+
+def test_the_extraction_tables_substring_row_is_the_corrected_selectors():
+    """grid64 (declared addition to feat-179, read 2026-09-23): tab:extraction's substring row is a
+    mean over the SERVED pick, so the padding defect moved it. Columns 1-64 come from the full-grid arm
+    re-run on its identical pool (grid64), 256 from the n256 arm; every cell must be the 'after'
+    column, and the claim that no other row could move is rebuilt from every draw in both pools."""
+    desc = {(r["arm"], int(r["n"])): r for r in
+            csv.DictReader(open(os.path.join(ROOT, "results", "selector_n256_descriptive.csv"),
+                                encoding="utf-8"))}
+    for arm in ("grid64", "n256"):
+        assert all(desc[(a, n)]["g0"] == desc[(a, n)]["g1"] == "PASS" for a, n in desc if a == arm), arm
+    want = [desc[("grid64", n)]["lcs_after"] for n in (1, 4, 8, 16, 32, 64)] + [desc[("n256", 256)]["lcs_after"]]
+    apx = open(os.path.join(DIR, "sections", "appendix_selection.tex"), encoding="utf-8").read()
+    t = apx[apx.index("\\label{tab:extraction}"):]
+    row = next(l for l in t[:t.index("\\bottomrule")].splitlines() if l.startswith("longest substring"))
+    cells = [c.strip() for c in row.rstrip("\\ ").split("&")][1:8]
+    assert cells == [f"${float(w):.2f}$" for w in want], (cells, want)
+    for f in ("selfix_clean_grid64", "selfix_clean_n256"):
+        rows = list(csv.DictReader(open(os.path.join(ROOT, "results", f"{f}_per_passage.csv"),
+                                        encoding="utf-8")))
+        assert max(float(r["anchor_max_recall"]) for r in rows) == 0.0, f
+        assert max(float(r["anchor_max_rouge"]) for r in rows) < 0.5, f
+    cap = apx[apx.rfind("\\caption{", 0, apx.index("\\label{tab:extraction}")):apx.index("\\label{tab:extraction}")]
+    assert "It is the only row the selector can move" in " ".join(cap.split())
