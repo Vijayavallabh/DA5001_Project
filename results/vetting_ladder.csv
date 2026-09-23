@@ -1,0 +1,34 @@
+model,role,prefix_tokens,statistic,n_passages,leaking,frac_leaking,max_recall,mean_recall,source
+comma1t,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+comma1t,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+comma1t,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+comma7b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+comma7b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+comma7b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+kl3m17b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+kl3m17b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+llama70b,memorised in pre-training,20,risky_alone_recall,50,1,0.02,0.0991,0.002,this arm
+llama70b,memorised in pre-training,35,risky_alone_recall,50,2,0.04,0.5275,0.0131,this arm
+llama70b,memorised in pre-training,50,risky_alone_recall,50,11,0.22,0.9408,0.0788,this arm
+llama70b,memorised in pre-training,75,risky_alone_recall,50,20,0.4,1.0,0.189,this arm
+llama70b,memorised in pre-training,100,risky_alone_recall,50,25,0.5,1.0,0.2475,this arm
+llama70b,memorised in pre-training,150,risky_alone_recall,50,31,0.62,1.0,0.4142,this arm
+llama70b,memorised in pre-training,200,risky_alone_recall,50,30,0.6,1.0,0.5046,this arm
+olmo2_13b,open data,20,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+olmo2_13b,open data,50,anchor_max_recall,50,1,0.02,0.4142,0.0083,this arm
+olmo2_13b,open data,100,anchor_max_recall,50,6,0.12,0.5659,0.0405,on record
+olmo2_13b,open data,150,anchor_max_recall,50,6,0.12,0.5208,0.0406,this arm
+olmo2_13b,open data,200,anchor_max_recall,50,3,0.06,1.0,0.0426,this arm
+olmo2_7b,open data,20,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+olmo2_7b,open data,50,anchor_max_recall,50,1,0.02,0.2899,0.0058,this arm
+olmo2_7b,open data,100,anchor_max_recall,50,2,0.04,0.2677,0.0089,on record
+olmo2_7b,open data,150,anchor_max_recall,50,1,0.02,0.5208,0.0104,this arm
+olmo2_7b,open data,200,anchor_max_recall,50,2,0.04,0.75,0.0273,this arm
+pleias12b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+pleias12b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+pleias12b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+pleias3b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+pleias3b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+pleias3b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+tinycomma,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
+tinycomma,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm

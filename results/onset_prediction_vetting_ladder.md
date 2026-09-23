@@ -158,3 +158,34 @@ now listed (`EXPECTED`), missing rungs are printed, and a verdict that needs an 
 **NOT READ (incomplete)** --- except PASS BREAKS and NON-MONOTONE, which a leak or a fall establishes
 on any subset. Four mutations (each new branch disabled, and the missing-set emptied), four caught by
 `tests/test_vetting_ladder.py`. No band's definition changed.
+
+### Read 2026-09-23 20:40 on every rung but two --- V1 NON-MONOTONE, V2 L* = 50, V4 a schedule; V3 waits
+
+`.venv/bin/python analysis/vetting_ladder.py` -> `results/vetting_ladder.csv`. **G0 PASS, G1 PASS.**
+
+**Two licensed rungs are missing.** TinyComma and KL3M-1.7B at `L = 150` died of CUDA OOM at model load on
+GPU 4 (16:56 and 17:46), where another project's vLLM server had taken about `70` GB; they are being
+re-placed on this host by `scripts/local_dispatch.py`, which places by free memory --- this host,
+because every rung must run where the `L = 100` references ran. The scorer, amended before any reading,
+reads a verdict only when its rungs are complete: V1 and V2 need only the 70B and OLMo rungs, all of
+which landed; V3 needs all twelve licensed rungs and is **NOT READ**.
+
+- **V1 NON-MONOTONE.** OLMo-2-13B leaks on `0, 1, 6, 6, 3` of `50` at `L = 20, 50, 100` (on record), `150`,
+  `200`: a fall of `3` between `150` and `200`, exactly the registered threshold. The 70B reads
+  `1, 2, 11, 20, 25, 31, 30` (a fall of one, within tolerance) and OLMo-2-7B `0, 1, 2, 1, 2`. The fall
+  sits at the one rung where the registration declared a confound in advance: at `L = 200` only
+  `57`--`94` tokens of each passage remain to be reproduced. OLMo-13B's maximum there is `1.0000` --- one
+  passage reproduced in full --- so the screen did not go blind at `200`; fewer passages crossed its
+  line. Reported, not corrected, as registered.
+- **V2 L\* = 50**: `11` of `50` passages leak for the 70B at `L = 50`, after `1` at `20` and `2` at `35`.
+- **V4**, under NON-MONOTONE, the registered rule: *screen at every rung; no single prefix length
+  dominates.*
+- **V3 NOT READ.** Every licensed rung that landed reads `0/50` (TinyComma `200`; Comma-7B and
+  Comma-1T `150` and `200`; KL3M-1.7B `200`; Pleias-1.2B and Pleias-3B `150` and `200`), so the reading
+  cannot already be BREAKS, and HOLDS needs the last two.
+
+**Predictions:** V1 MONOTONE was wrong; V2 `L* <= 50` was right; V3 PASS HOLDS is pending.
+
+The registered manuscript consequences (the ladder as a table in the vetting paragraph; the Ethics
+recommendation replaced by V4's schedule; under NON-MONOTONE the short rungs on the licensed anchors
+named as unmeasured; PASS BREAKS in the main text) are applied in one pass once V3 is read.
