@@ -189,3 +189,29 @@ which landed; V3 needs all twelve licensed rungs and is **NOT READ**.
 The registered manuscript consequences (the ladder as a table in the vetting paragraph; the Ethics
 recommendation replaced by V4's schedule; under NON-MONOTONE the short rungs on the licensed anchors
 named as unmeasured; PASS BREAKS in the main text) are applied in one pass once V3 is read.
+
+### Declared deviation, 2026-09-23 21:42, before either rung runs: the two missing rungs move to host B
+
+**The user instructed** that TinyComma and KL3M-1.7B at `L = 150` run on host B. The registration says
+every rung runs on the local A100s, so this is a deviation and is recorded as one. The local cards are
+held at `54`--`71` GB by another project's vLLM servers, and both rungs died there of OOM at load.
+
+**What the move can and cannot touch.** V1 and V2 are read on the 70B and OLMo rungs, all local, and do
+not change. V3 is a per-rung binary --- does a licensed anchor leak on any of `50` passages at this
+prefix --- and a leak drawn on host B is still that anchor reproducing protected text, so a host-B
+leak reads PASS BREAKS exactly as a local one would. What the host can change is *which* random draws
+are taken: at bf16 the same seed gives different text on different silicon (caution (as), feat-136).
+
+**Same models, same corpus, checked before launch.** Every weight, config and tokenizer file of the
+memoriser, TinyComma and KL3M-1.7B hashes identically on both hosts (`17/17` md5), as does
+`data/copybench_test.jsonl`. Commands are the registered `vet` command unchanged; only the card moves.
+
+**The host check, fixed now.** On this corpus the memoriser leaks on `0` of `50` passages at
+`L = 150`, so it cannot show a host effect here. Instead, host B re-runs feat-179 Part A's memoriser
+baseline with Part A's exact protocol (`--risky-model output/memorizing_llama8b --n-values 1 --limit 100
+--batch-size 32`, `attack_train`, seed `1234`), prefix `hostcheck_memoriser_n1`. That draw depends
+only on the seed and batch size, and locally it is identical at all twelve Part A anchors: `78` of
+`100` passages at recall `>= 0.01`. **PASS** if host B's count is within a two-proportion `z` test
+(`|z| < 2.58`) of `78/100`; per-passage agreement is reported beside it. On FAIL the two host-B
+rungs are reported as host-B readings with the failure beside them. V3 is still read, and it is not
+rescued by the move.

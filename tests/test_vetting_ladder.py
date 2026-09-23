@@ -8,6 +8,8 @@ import csv
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis import vetting_ladder as v  # noqa: E402
 
@@ -64,6 +66,7 @@ def test_a_monotone_ladder_that_reproduces_reads_cleanly(tmp_path, capsys):
     assert "G0 PASS" in out and "G1 PASS" in out
     assert "V1 MONOTONE" in out and "V2 L* = 50" in out and "V3 PASS HOLDS" in out
     assert "olmo2_13b  L=100  leaks on  6/50" in out and "[on record]" in out
+    assert out.count("[this arm, host B]") == 2 and "host check NOT RUN" in out
 
 
 def test_g1_fails_on_one_changed_draw_and_the_record_is_then_not_mixed_in(tmp_path, capsys):
@@ -110,3 +113,29 @@ def test_a_missing_rung_is_not_read_as_a_pass_but_a_leak_still_breaks_it(tmp_pat
     assert "V4 NOT READ (incomplete)" in out
     _write(tmp_path, "vetladder_L200_kl3m17b", 1)         # a leak is a leak on any subset
     assert "V3 PASS BREAKS" in _run(tmp_path, capsys)
+
+
+def _memo(d, name, hits, pids=None):
+    with open(os.path.join(d, f"{name}_per_passage.csv"), "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=["prompt_id", "risky_alone_recall"])
+        w.writeheader()
+        for i, p in enumerate(pids or [f"bookmia.00.{i:02d}" for i in range(100)]):
+            w.writerow({"prompt_id": p, "risky_alone_recall": "0.3" if i < hits else "0.0"})
+
+
+def test_the_host_check_passes_a_redraw_fails_a_shift_and_refuses_other_passages(tmp_path):
+    """the declared host check of 2026-09-23, fired in every direction before host B has run"""
+    for t in ("qwen25_7b", "kl3m17b"):
+        _memo(tmp_path, f"selfix256_{t}", 78)
+    assert v.host_check(str(tmp_path))[0] == "NOT RUN"
+    _memo(tmp_path, v.HOST_CHECK, 70)                     # z = -1.29: a re-draw, not a host effect
+    word, d = v.host_check(str(tmp_path))
+    assert word == "PASS" and (d["local"], d["host_b"], d["same_side"]) == (78, 70, 92), d
+    for hits in (60, 92):                                 # z = -2.75 and +2.77
+        _memo(tmp_path, v.HOST_CHECK, hits)
+        assert v.host_check(str(tmp_path))[0] == "FAIL", hits
+    _memo(tmp_path, v.HOST_CHECK, 78, pids=[f"bookmia.01.{i:02d}" for i in range(100)])
+    assert v.host_check(str(tmp_path))[0].startswith("FAIL: not the 100")
+    _memo(tmp_path, "selfix256_qwen25_7b", 77)            # the local reference must be ONE draw
+    with pytest.raises(AssertionError):
+        v.host_check(str(tmp_path))

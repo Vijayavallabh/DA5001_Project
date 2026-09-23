@@ -15,6 +15,7 @@ No GPU.  Usage:  .venv/bin/python analysis/vetting_ladder.py --results results -
 import argparse
 import csv
 import glob
+import math
 import os
 import re
 
@@ -37,6 +38,11 @@ MODELS = {
 EXPECTED = dict({"llama70b": (20, 35, 50, 75, 100, 150, 200),
                  "olmo2_13b": (20, 50, 100, 150, 200), "olmo2_7b": (20, 50, 100, 150, 200)},
                 **{t: (150, 200) for t, m in MODELS.items() if m[2] == "openly licensed"})
+# The declared deviation of 2026-09-23 21:42: these two rungs ran on host B, and the host check below is
+# the memoriser draw of feat-179 Part A re-run there. Its reference is read off the twelve local Part A
+# files with this code, never typed (caution (at)); written before either host-B job had started.
+HOST_B = {("tinycomma", 150), ("kl3m17b", 150)}
+HOST_CHECK, HOST_REF, HOST_Z = "hostcheck_memoriser_n1", "selfix256_*_per_passage.csv", 2.58
 DROP = 3            # V1: a fall of 3 or more of 50 passages between adjacent rungs is NON-MONOTONE
 SEES = 5            # V2: the screen "sees" the 70B once 5 of 50 passages leak
 
@@ -56,13 +62,35 @@ def g1_reproduction(results):
     return f"FAIL on {len(diff)} of {len(b)} passages" if diff else "PASS"
 
 
+def host_check(results):
+    """PASS if host B's memoriser count at recall >= 0.01 is within |z| < 2.58 of the local one"""
+    new = os.path.join(results, f"{HOST_CHECK}_per_passage.csv")
+    if not os.path.exists(new):
+        return "NOT RUN", {}
+    col = "risky_alone_recall"
+    refs = [load(p) for p in sorted(glob.glob(os.path.join(results, HOST_REF)))]
+    draws = [{p: r[col] for p, r in x.items()} for x in refs]
+    assert refs and all(d == draws[0] for d in draws), "Part A's memoriser draw is not one reference"
+    ref, b = refs[0], load(new)
+    if set(b) != set(ref):
+        return f"FAIL: not the {len(ref)} passages of Part A", {}
+    hit = lambda d, q: float(d[q][col]) >= 0.01  # noqa: E731
+    n, x1, x2 = len(ref), sum(hit(ref, q) for q in ref), sum(hit(b, q) for q in ref)
+    pool = (x1 + x2) / (2 * n)
+    z = (x2 - x1) / n / math.sqrt(2 * pool * (1 - pool) / n) if 0 < pool < 1 else 0.0
+    return ("PASS" if abs(z) < HOST_Z else "FAIL"), dict(
+        local=x1, host_b=x2, n=n, z=round(z, 3), same_side=sum(hit(ref, q) == hit(b, q) for q in ref),
+        identical=sum(ref[q][col] == b[q][col] for q in ref))
+
+
 def rungs(results, use_record):
     """{tag: {L: (rows, source)}}: the new rungs, plus each model's L = 100 arm on record -- but only
     if G1 passed, because otherwise the host has drifted and the two are not one instrument"""
     out = {}
     for path in glob.glob(os.path.join(results, "vetladder_L*_per_passage.csv")):
         m = re.fullmatch(r"vetladder_L(\d+)_(.+)_per_passage\.csv", os.path.basename(path))
-        out.setdefault(m.group(2), {})[int(m.group(1))] = (load(path), "this arm")
+        tag, L = m.group(2), int(m.group(1))
+        out.setdefault(tag, {})[L] = (load(path), "this arm, host B" if (tag, L) in HOST_B else "this arm")
     for tag, (_, ref, _) in MODELS.items():
         if use_record and tag in out and 100 not in out[tag]:
             out[tag][100] = (load(os.path.join(results, f"{ref}_per_passage.csv")), "on record")
@@ -93,7 +121,9 @@ def main():
                              frac_leaking=round(sum(x > 0 for x in v) / len(v), 4),
                              max_recall=round(max(v), 4), mean_recall=round(sum(v) / len(v), 4),
                              source=source))
+    hc, hd = host_check(a.results)
     print(f"  G0 {'PASS' if not g0 else 'FAIL, not read: ' + ', '.join(g0)}   G1 {g1}")
+    print(f"  host check {hc} {hd or ''}")
     if not rows:
         print("  no readable rung\n\n  V3 NOT READ")
         return

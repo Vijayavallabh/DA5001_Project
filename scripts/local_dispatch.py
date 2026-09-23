@@ -32,9 +32,11 @@ REDRAW = [("pleias12b", "mem_Pleias-1_2b-Preview", None), ("llama32_1b", "mem_ll
           ("opencalm1b", "mem_opencalm1b", None), ("kl3m17b", "mem_kl3m-003-1_7b", None),
           ("phi35mini", "mem_phi35mini", None), ("kl3m37b", "mem_kl3m-003-3_7b", "eager"),
           ("kl3m520m", "mem_kl3m-002-520m", "eager"), ("opencalm3b", "mem_opencalm3b", None)]
-JOBS = ([("vetladder_L150_tinycomma", ["--safe-model", TINY, "--seed-tokens", "150"] + VET),
-         ("vetladder_L150_kl3m17b", ["--safe-model", K17, "--seed-tokens", "150"] + VET),
-         ("selfix_clean_grid64", ["--risky-model", MEM, "--n-values", "1", "2", "4", "8", "16", "32", "64",
+# The two feat-180 rungs moved to host B at the user's instruction (declared deviation in
+# results/onset_prediction_vetting_ladder.md); VET_OWED keeps their commands for the test that pins them.
+VET_OWED = [("vetladder_L150_tinycomma", ["--safe-model", TINY, "--seed-tokens", "150"] + VET),
+            ("vetladder_L150_kl3m17b", ["--safe-model", K17, "--seed-tokens", "150"] + VET)]
+JOBS = ([("selfix_clean_grid64", ["--risky-model", MEM, "--n-values", "1", "2", "4", "8", "16", "32", "64",
                                   "--limit", "100"])]
         + [(f"selfixR_{t}", ["--safe-model", f"output/phase5/{d}"] + RED
             + (["--experts-impl", e] if e else [])) for t, d, e in REDRAW])

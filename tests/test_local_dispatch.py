@@ -8,7 +8,7 @@ _spec = importlib.util.spec_from_file_location(
                                    "scripts", "local_dispatch.py"))
 D = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(D)
-JOBS = dict(D.JOBS)
+JOBS = dict(D.JOBS + D.VET_OWED)
 
 
 def _flags(args):
@@ -39,3 +39,8 @@ def test_grid64_and_the_redraw_match_their_launchers():
 def test_choose_refuses_cards_without_room():
     assert D.choose({"0": 5000, "1": 30000, "2": 29000, "4": 0}) == "1"
     assert D.choose({"0": 5000, "1": 27999}) is None
+
+
+def test_the_two_rungs_moved_to_host_b_are_not_also_placed_here():
+    names = [p for p, _ in D.JOBS]
+    assert "vetladder_L150_tinycomma" not in names and "vetladder_L150_kl3m17b" not in names
