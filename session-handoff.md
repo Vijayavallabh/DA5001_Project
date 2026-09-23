@@ -103,17 +103,21 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
-## Arms in flight (2026-09-23 22:30) --- both hosts, every job placed
+## State at 2026-09-23 22:50 --- feat-180 and grid64 DONE; feat-181 and feat-182 running on host B
+
+**Done tonight:** feat-180 SCORED (`9c8895e`: V3 PASS HOLDS, host check PASS 82 vs 78, `tab:vetladder`,
+the Ethics schedule, the unmeasured short rungs, five -> six licensed anchors, and the Ethics "one
+passage in full" corrected to two); grid64 read (`03a3664`: G0/G1/G2 PASS, `tab:extraction`'s
+substring row now the corrected selector's). Both are in the manuscript; body 9/9, 49 pages.
 
 | host | cards | arm | state | next step |
 |---|---|---|---|---|
-| host B | 4, 5 | **feat-180** `vetladder_L150_{tinycomma,kl3m17b}` (declared deviation, user's instruction), then `hostcheck_memoriser_n1` on 4 | running since 21:48 IST | waiter `bvj7x8umu`; `sync_status.sh pull`, `analysis/vetting_ladder.py` (reads V3 + the host check), then the one-pass manuscript edit |
-| host B | 6, 7 | **feat-181** `scripts/run_n512_post.sh a 6` / `b 7`: merge+G2, rewards+G1, judge B to 512, Arm A h2h | rewards at 11-14% at 22:25 | waiter `b0q2pdwm7`; pull, `analysis/score_n512.py`, consequences as registered |
-| host B | 4, 5 (after feat-180) | **feat-182** moved here by declared deviation (`cb532ed`): `local_dispatch.py --cards 4,5 --only selfixR_` | anchors copying (`bda12rzmh`), md5 of all 12 dirs to verify and append to the scoring log BEFORE launch | then `selector_n256.py --redraw` |
+| host B | 6, 7 | **feat-181** `scripts/run_n512_post.sh a 6` / `b 7`: merge+G2, rewards+G1, judge B to 512, Arm A h2h | reward pass running | waiter `b0q2pdwm7` (markers `~/v/logs/n512_post_{a,b}.{done,fail}`); `sync_status.sh pull`; `analysis/score_n512.py`; consequences as registered (C3 -> Appendix I's "neither a ceiling nor a slope"; C1 -> support-ceiling paragraph; main text only on CATCHES) |
+| host B | 4, 5 | **feat-182** by declared deviation (`cb532ed`, anchors `76/76` md5 at `507ae1e`): `local_dispatch.py --cards 4,5 --only selfixR_`, up to three jobs a card by free memory | first job placed 22:38 IST | waiter `brgg29p1k` (host B `output/logs/selfix_redraw_queue.log`: drained/deadline); pull; `analysis/selector_n256.py --redraw`; R1-R3; main-text verdict only if REPLICATES |
 | host B | 0-3 | the user's other project's vLLM | not ours | never touch |
-| local | 2 | **grid64** (`local_dispatch.py --only selfix_clean_grid64`), must stay local: its pool is gated bit-identical | sampling since 21:58 | waiter `bo0qd4xum`; refresh `selector_n256_descriptive.csv`, `tab:extraction` substring row |
+| local | none | nothing of ours is running | | local cards are held by the sibling project's vLLM |
 
-The two partial local feat-182 runs (kl3m520m, kl3m37b) were stopped at 21:57 before writing anything.
+Host B's clock is CEST (IST - 3:30); its logs are in host time.
 
 ## Scored tonight (2026-09-23 21:30) and what is still owed
 
