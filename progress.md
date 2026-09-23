@@ -40,7 +40,12 @@ breadth guard above), then that file `6 passed` after the scoping fix.
 cards are held by the sibling project's vLLM, two jobs had died of OOM and two were running at `14` and
 `25` hours each. The two partial local runs were stopped before writing anything; the eleven anchors
 host B lacked are being copied and must hash identically before launch. **grid64 stays local** (its pool
-is gated bit-identical) and has landed: G0, G1, G2 PASS; its manuscript update is next.
+is gated bit-identical) and has landed: G0, G1, G2 PASS. **In the manuscript (`03a3664`)**: `tab:extraction`'s
+substring row now reads the corrected selector's served means (`1.59, 1.76, 1.73, 1.66, 1.58, 1.56` at
+`n = 1 ... 64`, `1.56` at `256`, from `1.83`--`1.93` at `n >= 4`), and its caption says why only that row
+could move: no draw in either pool has recall above zero or reaches ROUGE-L `0.5`. Guarded cell by cell
+against `selector_n256_descriptive.csv` (4 mutations, 4 caught). `./init.sh` after both edits:
+**`1110 passed`**, exit `0`.
 
 ```bash
 bash scripts/run_vet150_hostb.sh 4 5          # host B
