@@ -12,8 +12,13 @@ scripts/run_selfix_redraw_local.sh); only the card moves, and all of these arms 
 A job is DONE when its per-passage CSV exists, RUNNING while a process carries its --prefix, and is
 placed again (at most TRIES times) otherwise. Log lines match the launchers' own, so existing readers
 work; when every feat-182 job is done it writes "[redraw] drained" to selfix_redraw_queue.log.
-Usage: setsid nohup .venv/bin/python scripts/local_dispatch.py > /dev/null 2>&1 < /dev/null &
+Since 22:10 the same placement runs on BOTH hosts over disjoint job sets: grid64 must stay here (its
+pool is gated bit-identical, a host constraint) and feat-182 moved to host B (declared deviation in
+results/onset_prediction_selector_redraw.md). --only picks the set by prefix, --cards the cards.
+Usage: setsid nohup .venv/bin/python scripts/local_dispatch.py [--cards 0,1,2,4] [--only PREFIX] \
+         > /dev/null 2>&1 < /dev/null &
 """
+import argparse
 import os
 import subprocess
 import time
@@ -67,7 +72,7 @@ def running(prefix):
     return any(f"--prefix {prefix} " in cmdline(p) + " " for p in os.listdir("/proc") if p.isdigit())
 
 
-def free_after_reserve():
+def free_after_reserve(cards=CARDS):
     """{card: free MiB after reserving RESERVE for every job of ours on it}"""
     idx = {u: i for i, u in smi("--query-gpu=index,uuid")}
     ours = {}
@@ -75,7 +80,7 @@ def free_after_reserve():
         if "analysis/selection_extraction.py" in cmdline(pid) and u in idx:
             ours[idx[u]] = ours.get(idx[u], 0) + max(0, RESERVE - int(used))
     return {i: int(t) - int(u) - ours.get(i, 0)
-            for i, t, u in smi("--query-gpu=index,memory.total,memory.used") if i in CARDS}
+            for i, t, u in smi("--query-gpu=index,memory.total,memory.used") if i in cards}
 
 
 def choose(free, need=NEED):
@@ -101,19 +106,22 @@ def launch(prefix, args, gpu):
                      start_new_session=True)
 
 
-def main():
-    log(f"start: {len(JOBS)} jobs, need {NEED} MiB after reserving {RESERVE} per job of ours")
-    tries = {p: 0 for p, _ in JOBS}
-    redraw_logged = False
+def main(cards=CARDS, only=""):
+    jobs = [(p, a) for p, a in JOBS if p.startswith(only)]
+    assert jobs, f"no job starts with {only!r}"
+    log(f"start: {len(jobs)} jobs on cards {','.join(cards)}, need {NEED} MiB after reserving "
+        f"{RESERVE} per job of ours")
+    tries = {p: 0 for p, _ in jobs}
+    redraw_logged = not any(p.startswith("selfixR_") for p, _ in jobs)   # not this host's to report
     while True:
-        todo = [(p, a) for p, a in JOBS if not done(p) and not running(p) and tries[p] < TRIES]
-        live = [p for p, _ in JOBS if running(p)]
-        if not redraw_logged and all(done(p) for p, _ in JOBS if p.startswith("selfixR_")):
+        todo = [(p, a) for p, a in jobs if not done(p) and not running(p) and tries[p] < TRIES]
+        live = [p for p, _ in jobs if running(p)]
+        if not redraw_logged and all(done(p) for p, _ in jobs if p.startswith("selfixR_")):
             with open("output/logs/selfix_redraw_queue.log", "a") as fh:
                 fh.write(f"[redraw] drained {time.strftime('%F %T')}\n")
             redraw_logged = True
         if not todo and not live:
-            left = [p for p, _ in JOBS if not done(p)]
+            left = [p for p, _ in jobs if not done(p)]
             log("all done" if not left else f"gave up on {left}")
             if not redraw_logged:
                 with open("output/logs/selfix_redraw_queue.log", "a") as fh:
@@ -121,7 +129,7 @@ def main():
             return
         placed = False
         if todo:
-            gpu = choose(free_after_reserve())
+            gpu = choose(free_after_reserve(cards))
             if gpu is not None:
                 p, a = todo[0]
                 tries[p] += 1
@@ -132,5 +140,9 @@ def main():
 
 
 if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--cards", default=",".join(CARDS))
+    ap.add_argument("--only", default="", help="place only the jobs whose prefix starts with this")
+    a = ap.parse_args()
     os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    main()
+    main(tuple(a.cards.split(",")), a.only)

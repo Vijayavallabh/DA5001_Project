@@ -44,3 +44,18 @@ def test_choose_refuses_cards_without_room():
 def test_the_two_rungs_moved_to_host_b_are_not_also_placed_here():
     names = [p for p, _ in D.JOBS]
     assert "vetladder_L150_tinycomma" not in names and "vetladder_L150_kl3m17b" not in names
+
+
+def test_each_host_places_only_its_own_set_and_only_the_redraw_host_speaks_for_it(tmp_path, monkeypatch):
+    """grid64 stays local (bit-identical pool) and feat-182 moved to host B: the grid64-only
+    dispatcher must never write the redraw marker a waiter wakes on, and the redraw one must"""
+    monkeypatch.chdir(tmp_path)
+    os.makedirs("output/logs")
+    monkeypatch.setattr(D, "done", lambda p: True)
+    monkeypatch.setattr(D, "running", lambda p: False)
+    D.main(("0", "1", "2", "4"), "selfix_clean_grid64")
+    assert not os.path.exists("output/logs/selfix_redraw_queue.log")
+    assert "start: 1 jobs" in open("output/logs/local_dispatch.log").read()
+    D.main(("4", "5"), "selfixR_")
+    assert "[redraw] drained" in open("output/logs/selfix_redraw_queue.log").read()
+    assert "start: 12 jobs on cards 4,5" in open("output/logs/local_dispatch.log").read()

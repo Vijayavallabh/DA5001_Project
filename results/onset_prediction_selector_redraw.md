@@ -80,3 +80,33 @@ Part A's anchors took `1.1` to `3.2` hours each on one A100 (its own logs), abou
 twelve, on the three local A100s behind the current queues: about seven hours.
 
 ## Scoring log
+
+### Declared deviation, 2026-09-23 22:10, before any draw of this arm exists: the arm moves to host B
+
+**Why.** The local A100s are held at `54`--`71` GB each by another project's vLLM servers. Two of the
+twelve jobs died of OOM at load (`selfixR_pleias12b`, `selfixR_opencalm3b`), two were running beside
+the servers at `7,712` and `1,632` of `25,600` anchor draws after `4.2` and `1.6` hours --- about `14`
+and `25` hours each --- and the other eight had no card with room to be placed. At that rate the arm
+does not finish before the paper deadline. The user directed that host B's free cards be used.
+
+**What changes.** All twelve anchors run on host B. The two partial local runs are stopped before they
+finish --- neither has written a per-passage file, so no number from either exists --- and are re-run
+there from the start, so the arm is on ONE host, not split. The command is the registered one,
+character for character; only the host moves. The contaminated anchors were not on host B and are
+copied there; every file of every anchor directory (weights, config, tokenizer, recipe) must hash
+identically on both hosts before any job starts, as must the memoriser (`17/17`, checked for feat-180)
+and `data/copybench_attack_train.jsonl` (identical). The count is appended below before launch.
+
+**What this costs, said plainly.** The registration held the host fixed so that the seed was the only
+change (caution (at)). This makes it two: seed and host. A **REPLICATES** is then a verdict that
+survived a fresh draw on different silicon --- a harder test than the registered one, not an easier
+one. A **DOES NOT REPLICATE** can no longer be laid on the seed alone; but the manuscript consequence
+of a failure is the conservative one whatever its cause (the verdict is stated as draw-dependent with
+both readings), so the confound cannot make a claim read stronger than it is. What it weakens is what
+a failure would tell us, and it is said to be a weakening.
+
+**The instrument check.** feat-180's declared host check (`hostcheck_memoriser_n1`: the memoriser under
+Part A's protocol at seed `1234` on host B, against the twelve local Part A files, `|z| < 2.58`) is the
+check that host B is the same instrument, and it is reported beside R1--R3. G0' and G2 are unchanged
+and are read per anchor. Still excluded: pooling or choosing between draws, and resuming or using
+either partial local run.
