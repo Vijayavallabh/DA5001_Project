@@ -110,3 +110,10 @@ Part A's protocol at seed `1234` on host B, against the twelve local Part A file
 check that host B is the same instrument, and it is reported beside R1--R3. G0' and G2 are unchanged
 and are read per anchor. Still excluded: pooling or choosing between draws, and resuming or using
 either partial local run.
+
+**Checked before launch, 2026-09-23 22:45.** Every file of the twelve anchor directories under
+`output/phase5/mem_*` (`75` files: weights, config, tokenizer, recipe; `12` weight files) and
+`data/copybench_attack_train.jsonl` hash identically on both hosts: **`76/76` md5-identical**. The memoriser
+was checked for feat-180 (`17/17`). Launch: `scripts/local_dispatch.py --cards 4,5 --only selfixR_` on
+host B, which places the twelve registered commands by free memory; its drained marker is written to host
+B's `output/logs/selfix_redraw_queue.log`.
