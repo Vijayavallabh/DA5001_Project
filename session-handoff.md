@@ -103,6 +103,24 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
+## Arms in flight (2026-09-23 14:10) --- both hosts checked
+
+| host | card | arm | state |
+|---|---|---|---|
+| local | 4 | feat-179 Part A `kl3m17b` (running), `kl3m170m`; feat-180 `L=150` tinycomma, kl3m17b; then `selfix_clean_grid64` | 27 jobs done, all exit 0 |
+| local | 1 | feat-180 OLMo-7B `L=150` (running), `L=200` tinycomma/pleias12b/kl3m17b, feat-179 `phi35mini`, `L=150` pleias12b/pleias3b | |
+| local | 2 | feat-179 `kl3m37b` (running), feat-180 `L=150` comma7b/comma1t | |
+| host B | --- | nothing of ours | cards 0-3 run another account's training job, 4-7 hold 81 GB each at 0%; no shells, waiters or live logs of ours |
+
+Part A: 8 of 12 anchors landed, G0/G2 PASS on the three checked; feat-180: 17 of 27 new rungs, G0 PASS on
+nine. Both scorers now refuse to read a band on an incomplete arm (`e23ad8e`). Waiters: `bxh080axe`
+(queue drained) and `b0t93wcem` (queue drained AND grid64 ended, 12 h). **When they fire: run
+`analysis/selector_n256.py` and `analysis/vetting_ladder.py`, append each scoring log, then apply
+the registered manuscript consequences** (Part A: replace `1.0 to 4.0` at every site --- abstract,
+intro, Section 3, Section 4, `fig:safety` caption and panel (b), `app:contaminated` --- add the
+per-anchor rate table, disclose the selector defect in one sentence; feat-180: ladder table in
+`app:vetting`, Ethics recommendation per V4, main text if PASS BREAKS).
+
 ## Arms in flight (2026-09-23 04:40, rows updated 07:40)
 
 | host | card | arm | state |
