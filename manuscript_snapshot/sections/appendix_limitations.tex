@@ -118,10 +118,13 @@ four points, and descriptive.
 
 \emph{Overoptimisation.} As $n$ grows the argmax is optimised harder against the scorer's own
 errors, which for reward models is known to turn the gain over rather than saturate it
-\citep{gao2023scaling}. Our extraction arm reaches $n=64$ and our judged arm $n=8$; whether judged
-utility keeps rising to $n=64$ was measured against intervals fixed in advance partitioning the line
-into a growing, a saturating and an overoptimising reading. Nothing in
-Proposition~\ref{prop:selection} prevents the third.
+\citep{gao2023scaling}. Our extraction and judged arms reach $n=256$ at the audited anchor; whether
+judged utility keeps rising was measured against intervals fixed in advance partitioning the line
+into a growing, a saturating and an overoptimising reading, and to $n=256$ no judged ladder turns
+over. Where the answer is scored by a task metric instead, the third reading is not hypothetical:
+the pointwise reward turns over on TriviaQA and, at four anchors, on CoTaEval's news questions (both
+in Appendix~\ref{app:selection}). Nothing in
+Proposition~\ref{prop:selection} prevents it on a judged workload at larger $n$.
 
 \emph{The scorer is a second model.} It cannot break the certificate --- that is the content of the
 proposition --- but it can degrade utility arbitrarily, and a compromised or badly calibrated scorer

@@ -1,5 +1,40 @@
 # Session Progress Log
 
+## 2026-09-23 --- feat-172 SCORED: both ladders flat 64->128 and rising 128->256, marginally; the appendix's ceiling is withdrawn and no slope replaces it
+
+Gate PASS on both arms (`51,520/51,520` and `54,400/54,400` rewards `==`), then, as registered:
+**B2** (AlpacaEval) and **B5** (our `850`) both **STILL CLIMBING** --- `g(256)-g(128) = +0.0280
+[+0.0025, +0.0553]` and `+0.0306 [+0.0047, +0.0547]`, with `g(128)-g(64)` flat on both (`-0.0019`,
+`-0.0094`, intervals containing zero). **B1 BETWEEN** (the unnamed gap): `D3 = -0.0357` at `128` and
+`-0.0239 [-0.0429, -0.0050]` at `256` against `-0.0339` at `64` --- the reversal still fails
+off-support at `256`. **B3** `log 256 = 5.545` against the meter's realised `145.10`, `26.2x`.
+Three of four predictions were wrong (CLOSES; STILL CLIMBING at 128; SATURATED on support) and the
+scoring log says so.
+
+**Why no slope is claimed.** Each climb sits `1.06`/`1.22` half-widths from zero, below feat-131's
+`1.71` that did not replicate. Post hoc and labelled so in every CSV row (`score_offsupport.py:
+post_hoc`): `g(256)-g(64)` contains zero on both arms (`+0.0261 [-0.0056, +0.0565]`, `+0.0212
+[-0.0088, +0.0512]`) and under order averaging (`+0.0099 [-0.0050, +0.0248]`), which is also exactly
+`D3(256)-D3(64)` since the metered arm cancels.
+
+**Manuscript.** Appendix I: the paragraph is now *The largest n, and whether the gain stops*;
+"ceiling between 64 and 128" and "n has an optimum" withdrawn, both n=256 ladders and the post-hoc
+totals added, closing on "we claim neither a ceiling nor a slope"; the breadth paragraph's
+"anchor-dependent ceiling" became "flattens at an anchor-dependent n"; the support-ceiling paragraph
+gains B1/B3. Limitations: the stale "extraction arm reaches n=64 and judged arm n=8" replaced, and
+the overoptimisation sentence now names CoTaEval as well as TriviaQA, where the scorer does turn
+over. Guards: new `tests/test_offsupport_ladder_claims.py` (5, every one conditioned on the CSV;
+10 mutations, 10 caught, sources restored byte-identical); `tests/test_n128_frontier.py` rewired
+from "ceiling" to "flat between" and "neither a ceiling nor a slope". Build: exit 0, 0 overfull,
+0 `??`, bold 3, 48 pages, body 9/9; audit 3,337 literals, one expected miss (`64256`).
+The first full run failed one guard, and rightly: `test_reference_targets.py::test_no_sentence_names_the_same_number_twice` caught the new Limitations sentence citing `app:judgefree` and `app:selection`, which both render as Appendix I. Merged into one reference.
+
+```bash
+# host B (B3 reads output/mixpow/conc_k10 there)
+.venv/bin/python analysis/score_offsupport.py --out results
+.venv/bin/python -m pytest -q tests/test_offsupport_gates.py tests/test_offsupport_ladder_claims.py tests/test_n128_frontier.py
+```
+
 ## 2026-09-23 --- feat-172's scoring pipeline built and launched behind its gate
 
 Draws were complete (Arm A `805 x 256`, Arm B `850 x 256`), and nothing downstream existed. Built:

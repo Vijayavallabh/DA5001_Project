@@ -78,16 +78,15 @@ combined as registered and no OLMo re-run is needed. `./init.sh` after registeri
 about 13 h after launch. A canary run before registration (scratch only) reproduced the memoriser
 control `0.3925 / 0.8154 / 78.0%` on 100/100 passages through the fixed code.
 
-## feat-172: draws done, reward passes running, judges queued behind their own gate (2026-09-23)
+## feat-172 is SCORED (2026-09-23) and in the manuscript
 
-All draws finished overnight (Arm A 805 x 256 at 01:45; Arm B's two shards 200/150/500 x 256), rc=0.
-Reward passes on host B GPUs 0 (Arm A) and 6 (Arm B), `scripts/run_offonsup_rewards.sh`,
-`--rewards-only` at the committed caches' batch 16, so nothing is judged before the gate. Behind
-each, `scripts/after.sh offonsup_rewards_<a|b> 900 -- bash scripts/run_offonsup_judge.sh <a|b>
-<gpu>`, which RE-CHECKS the registered gate (ranks 0-63 bit-identical to `mixpow_rewards64.csv` /
-`wscope_rewards64_a.csv`) and judges only if it passes. Score with `analysis/score_offsupport.py`
-ON HOST B (B3 reads the metered arm's trajectories there), written and mutation-tested before any
-number existed (`tests/test_offsupport_gates.py`). Watch `~/v/logs/offonsup_{rewards,judge}_*`.
+Gate PASS both arms. B2 and B5 **STILL CLIMBING** (`128->256`, about one half-width from zero; `64->128`
+flat on both), B1 **BETWEEN** (`D3(256) = -0.0239 [-0.0429, -0.0050]`, reversal still fails
+off-support), B3 `26.2x`. Post hoc (labelled): `g(256)-g(64)` contains zero on both arms and under
+order averaging. Appendix I withdrew "ceiling between 64 and 128" and "optimum" and claims **neither a
+ceiling nor a slope**; `tests/test_offsupport_ladder_claims.py` guards it against the CSV. Before
+touching the "largest n" paragraph, the breadth paragraph or Limitations' overoptimisation
+sentence, run that file and `tests/test_n128_frontier.py`.
 
 ## feat-179 Part B is READ: B4 HOLDS and SELECTOR-FREE (2026-09-23)
 
@@ -104,14 +103,14 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
-## Arms in flight (2026-09-23 04:40)
+## Arms in flight (2026-09-23 04:40, rows updated 07:40)
 
 | host | card | arm | state |
 |---|---|---|---|
-| local | 1+2, then 1 and 2 | feat-180 70B rungs, then the OLMo ladder / feat-179 Part A | 70B `L=100` (G1 PASS) and `L=20` done |
-| local | 4 | feat-179 Part B `n256`, `paraphrase`, then Part A | `n256` sampling |
-| host B | 5 | feat-178 re-judge of `qwen05b`, `qwen15b`, `qwen3b` (their judges OOM'd beside the sibling's vLLM) | `scripts/run_oppalp_judge.sh`, running |
-| host B | 0, 6 | feat-172 Arms A, B | still generating |
+| local | 1+2, then 1 and 2 | feat-180 70B rungs, then the OLMo ladder / feat-179 Part A | all seven 70B rungs done; OLMo-13B `L=20`, `200` done, `L=50` sampling; Part A `llama32_1b`, `llama32_3b` done, `pleias350m` sampling |
+| local | 4 | feat-179 Part B (done), then Part A, then `selfix_clean_grid64` | Part A `pleias12b` sampling |
+| host B | 5 | feat-178 re-judge of `qwen05b`, `qwen15b`, `qwen3b` | **done; feat-178 SCORED** |
+| host B | 0, 6 | feat-172 Arms A, B | **SCORED 2026-09-23** --- cards free |
 
 feat-179 Part B `multilingual` is DONE on host B (G0/G1/G2 PASS; the fix moved 39/100 picks at
 `n=8`, 51/100 at `n=64`). feat-178 `llama8b` and `qwen14b` judged; score the ladder with
