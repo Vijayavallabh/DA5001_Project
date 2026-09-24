@@ -1251,3 +1251,41 @@ bash scripts/run_workload_h2h.sh   <corpus> <datadir> <cell> <k> <judge> <tag> <
 `run_workload_bind.sh` applies the `argmin |activity(k) - target|` rule the pre-registrations fix,
 and **refuses** to run the binding cell when the grid does not bracket the target: taking the
 nearest endpoint is what a ceilinged grid makes wrong.
+
+### Phase 9 (2026-09-24): the review points the fifth round had skipped
+
+Every arm below has its bands or its descriptive note committed before its first reading
+(`results/onset_prediction_*.md`, `results/*_note.md`). GPU arms ran on 80 GB A100s and H100s; the
+launchers name the cards they were given and none is required.
+
+```bash
+# the authors' byte-level decoder at their recommended pair (feat-187); needs their package,
+# github.com/jacqueline-he/anchored-decoding at a12ecd9, installed editable
+bash scripts/run_anchoredbyte.sh 0,1,2 "0.5 2"; bash scripts/run_anchoredbyte.sh 3,4,5 0.1
+bash scripts/run_anchoredbyte_judge.sh 6        # three judge passes, then analysis/anchoredbyte_score.py
+# the headline re-drawn on disjoint seeds (feat-188)
+bash scripts/run_replic.sh a 0; bash scripts/run_replic.sh b 1; bash scripts/run_replic_post_parallel.sh 2 3 4
+.venv/bin/python analysis/replic_score.py --out results
+# one certificate split between the draw and the token (feat-189)
+bash scripts/run_hybrid.sh
+# one request with its draws batched, at both pairs and at the byte-level pair (feat-190 and its note)
+bash scripts/run_batched_latency.sh 0 - - single; bash scripts/run_batched_latency.sh 1 1,2,3 - 70b
+bash scripts/run_batched_latency_ab.sh 0 0,1,2
+.venv/bin/python analysis/batched_latency.py --report --logs output/logs/batched_latency.log --out results
+# the authors' own utility metrics (feat-191): dump, Prometheus, FActScore, report
+.venv/bin/python analysis/he_metrics.py --do-dump --arm ...   # arm specs as in results/he_metrics_note.md
+bash scripts/run_he_metrics.sh prometheus 0; bash scripts/run_he_metrics.sh factscore 0
+bash scripts/run_he_ab.sh 0 0.5 0.1 2
+.venv/bin/python analysis/he_metrics.py --report --out results
+# CoTaEval's infringement split (feat-193)
+bash scripts/run_cotaeval_inf.sh 0            # or run_cotaeval_inf_split.sh over two cards
+# descriptive arms: the covert channel, the ROUGE threshold, adaptive n, the older passes and the
+# forest re-judged on recovered text, the empty-completion preference, the joint frontier
+.venv/bin/python analysis/covert_channel.py --out results
+.venv/bin/python analysis/rouge_threshold.py --out results
+.venv/bin/python analysis/adaptive_n.py --out results
+bash scripts/run_deecho_rejudge.sh; bash scripts/run_forest_rejudge.sh 0
+.venv/bin/python analysis/forest_rejudge_score.py --out results && .venv/bin/python analysis/selection_breadth.py --rejudged --out results
+.venv/bin/python analysis/empty_preference.py --out results
+.venv/bin/python analysis/pareto_frontier.py --out results
+```
