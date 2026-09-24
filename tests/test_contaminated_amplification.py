@@ -44,8 +44,11 @@ def _leakage_section():
     """Section 4.4's prose, without the fig:safety float (its caption is a site of its own)."""
     exp = body("experiments.tex")
     sec = exp[exp.index("\\label{sec:leakage}"):exp.index("\\subsection{", exp.index("\\label{sec:leakage}"))]
-    a, b = sec.index("\\begin{figure}"), sec.index("\\end{figure}")
-    return sec[:a] + sec[b:]
+    # v11 (2026-09-24): the fig:safety float moved to Appendix E; cut it only where it still sits
+    if "\\begin{figure}" in sec:
+        a, b = sec.index("\\begin{figure}"), sec.index("\\end{figure}")
+        sec = sec[:a] + sec[b:]
+    return sec
 
 
 def _contaminated_paragraph():

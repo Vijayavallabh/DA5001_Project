@@ -33,13 +33,18 @@ def test_the_safety_figure_plots_zero_at_every_n_and_a_non_zero_reference():
     assert {1, 8, 64, 256} <= ns, sorted(ns)
     bases = [b for _, _, b in arms if b]
     assert max(bases) > 0.3, (bases, "the figure has no non-zero reference; zero would be unreadable")
-    cap = _exp()
+    # v11 (2026-09-24): Figure fig:safety moved to Appendix E. Its caption is read by label; the
+    # reference level it plots is ALSO stated in Section 4.1's prose, so a zero never reaches the
+    # main text without the non-zero baseline that gives it meaning.
+    from manuscript import caption_of
+    cap = caption_of("fig:safety")
     assert f"${max(bases):.4f}$ mean" in cap, max(bases)
+    assert f"${max(bases):.4f}$ mean" in _exp(), (max(bases), "Section 4 lost the baseline")
     assert f"all {len(arms)} arms" not in cap or True   # the count lives in the figure label
     # v9 said "... on every passage and at all six anchors"; v10 (2026-09-24) says it in two places,
     # the Figure 5 caption ("Nine arms (six anchors, ...) read $0.0000$ ...") and the leakage prose.
     assert "(six anchors," in cap, "the caption no longer says the zero covers all six anchors"
-    assert "is $0.0000$ at every anchor, at every $n$ to $64$ and at $n=256$" in cap, \
+    assert "is $0.0000$ at every anchor, at every $n$ to $64$ and at $n=256$" in _exp(), \
         "the leakage prose no longer states the zero at every anchor and every n"
 
 
