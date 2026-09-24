@@ -1,0 +1,13 @@
+quantity,n,value,count,of
+draws empty,64,0.1388,4441,32000
+"median reward, empty draws",64,-18.75,4441,
+"median reward, non-empty draws",64,-26.12,27559,
+served empty,1,0.128,64,500
+"judged level, served empty",1,0.4531,64,
+"judged level, served non-empty",1,0.4536,436,
+served empty,8,0.218,109,500
+"judged level, served empty",8,0.4771,109,
+"judged level, served non-empty",8,0.5211,391,
+served empty,64,0.082,41,500
+"judged level, served empty",64,0.4939,41,
+"judged level, served non-empty",64,0.5605,459,
