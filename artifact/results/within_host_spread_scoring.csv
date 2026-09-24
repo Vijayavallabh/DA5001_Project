@@ -1,0 +1,17 @@
+anchor,name,pair,move,kind
+Pleias-1.2B,pleias12bhb,42-62,0.009,within-host
+Pleias-1.2B,pleias12bhb,42-72,0.029,within-host
+Pleias-1.2B,pleias12bhb,62-72,0.02,within-host
+Pleias-3B,pleias3bhb,42-62,0.067,within-host
+Pleias-3B,pleias3bhb,42-72,0.016,within-host
+Pleias-3B,pleias3bhb,62-72,0.051,within-host
+KL3M-1.7B,kl3m17bhb,42-62,0.029,within-host
+KL3M-1.7B,kl3m17bhb,42-72,0.009,within-host
+KL3M-1.7B,kl3m17bhb,62-72,0.02,within-host
+KL3M-3.7B,kl3m37bhb,42-62,0.007,within-host
+Comma-7B (1T),comma1t,42-52,0.011,within-host
+Comma-7B (1T),comma1t,42-62,0.014,within-host
+Comma-7B (1T),comma1t,52-62,0.003,within-host
+Pleias-3B,pleias3bhb,cross-host,0.07,cross-host
+Pleias-1.2B,pleias12bhb,cross-host,0.02,cross-host
+KL3M-1.7B,kl3m17bhb,cross-host,0.018,cross-host

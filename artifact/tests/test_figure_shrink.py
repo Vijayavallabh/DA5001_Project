@@ -56,7 +56,10 @@ def _width_pt(name):
 def test_the_document_still_places_figures():
     """A test that finds nothing to check is a test that passes by never running (caution (aj))."""
     placed = _placed()
-    assert len(placed) >= 8, f"only {len(placed)} placed figures found -- the scan is broken"
+        # Floor lowered 8 -> 5 on 2026-09-19: units_law, seed_effect and context_intervention left the
+    # manuscript with appendix_seed, and order_invariance and imitation_cost were cut the same day
+    # (both duplicated a proof or a table beside them). Still a non-vacuity check on the scan.
+    assert len(placed) >= 5, "the figure scan is broken"
     # the path form is easy to miss: the forest plot is included as figures/<name>.pdf
     assert "selection_breadth_forest" in placed, "the forest plot was not seen by the scan"
     assert "selection_frontier" in placed, "Figure 1 was not seen by the scan"

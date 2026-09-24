@@ -74,9 +74,35 @@ def test_the_appendix_withdrew_the_still_climbing_claim_and_says_where_it_stops(
         "the withdrawn claim is back; the committed consequence of an interval containing zero"
     assert "still rising where its grid stops" in txt, "the replacement wording was lost"
     assert "$+0.0140$ $[-0.0180, +0.0460]$" in txt, "the measured band was trimmed"
-    assert "\\textsc{saturated by 64}" in txt, "the verdict was trimmed"
-    assert "where the strongest anchor's ceiling sits is open" in txt, \
-        "the scope concession -- Arm A tested TinyComma, not Comma-7B -- was trimmed"
+    # The verdict LABEL was internal vocabulary and is gone; the finding it named is asserted
+    # instead, which is the thing a reader needs (2026-09-19 de-jargoning pass).
+    # feat-172 took the audited anchor to n=256 and the next doubling rose again, so "ceiling" was
+    # withdrawn; what this arm measured, and what must survive, is the flat step itself.
+    # tests/test_offsupport_ladder_claims.py guards the withdrawal against its CSV.
+    assert "flat between $64$ and $128$" in txt, "the appendix no longer says the step to 128 is flat"
+    # feat-134 settled the scope concession by measurement rather than by trimming it. Arm A tested
+    # TinyComma; Comma-7B has now been taken to 128 and SATURATED BY 64 there too. The concession
+    # is therefore replaced by the bracket, and what must be guarded is the replacement -- with the
+    # sign and the reading taken from the CSV, so a stale verdict cannot outlive a number that
+    # moved (caution (av)).
+    import csv as _csv
+    rows = [r for r in _csv.DictReader(
+        open(os.path.join(ROOT, "results", "selection_scaling_comma7b128.csv"), encoding="utf-8"))]
+    for judge, band in (("Phi-3.5-mini-instruct", "$+0.0040$ $[-0.0270, +0.0350]$"),
+                        ("Meta-Llama-3.1-8B-Instruct", "$+0.0110$ $[-0.0190, +0.0410]$")):
+        got = [r for r in rows if r["judge"] == judge and int(r["n"]) in (64, 128)]
+        assert len(got) == 2, f"{judge}: the n=64/128 rows are not both in the CSV"
+        g64, g128 = (float(r["gain"]) for r in sorted(got, key=lambda r: int(r["n"])))
+        assert g128 >= g64, f"{judge}: g(128) now sits BELOW g(64); the bracket wording is stale"
+        assert band in txt, f"{judge}'s paired band left the appendix"
+    assert "flat between $64$ and $128$ too, and the two anchors agree" in txt, \
+        "the appendix no longer says the two anchors' flat steps agree"
+    # "bit-identical" occurs twice in this appendix -- the other is the TinyComma grid-dependence
+    # paragraph -- so a bare substring check is satisfied by the wrong sentence (caution (an)).
+    # Scope it to the Comma-7B clause by requiring the phrase that only it carries.
+    assert "first $64$ ranks are bit-identical to the committed one" in txt, \
+        "the reproduction gate that licenses reading n>64 left the Comma-7B sentence"
+    assert "strongest anchor" in txt, "the anchor the bracket is about is no longer named"
 
 
 def test_the_post_hoc_order_averaged_check_agrees_and_is_labelled_post_hoc():
@@ -119,10 +145,13 @@ def test_order_averaging_reproduced_across_passes_where_single_order_did_not():
 
 def test_the_appendix_reports_the_post_hoc_check_as_post_hoc():
     txt = body("appendix_selection.tex")
-    assert "Post hoc, with no committed band" in txt, \
+    # phrasing de-jargoned 2026-09-19; the post-hoc LABEL is science and is still required
+    assert "post hoc" in txt.lower(), \
         "the order-averaged check must be labelled post hoc wherever it is quoted"
     assert "$+0.0140$ $[-0.0015, +0.0295]$" in txt, "the order-averaged band was trimmed"
-    assert "flattened" in txt, "the honest both-directions reading was trimmed"
+    # feat-172: "flattened, not vanished" became "neither a ceiling nor a slope" once n=256 rose
+    # again; the both-directions reading is the same concession, re-derived from more data.
+    assert "neither a ceiling nor a slope" in txt, "the honest both-directions reading was trimmed"
     assert "grid-dependent" in txt, "the instrument finding was trimmed"
     assert "$+0.1045$ $[+0.0820, +0.1280]$ both times" in txt, \
         "the exact-reproduction evidence for order averaging was trimmed"

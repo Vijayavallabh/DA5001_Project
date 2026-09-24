@@ -60,7 +60,13 @@ def test_the_headline_safety_sentences_carry_the_n256_point():
     main = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     assert "at any $n \\le 64$ or at $256$" in main, "the abstract lost the n=256 extension"
     intro = body("iclr_intro.tex")
-    assert intro.count("$n=256$") >= 2, "the intro's two safety sentences must both carry n=256"
+    # Re-derived 2026-09-24: the rescoped intro states the zero-recall result once rather than
+    # twice, so the guard now asks what it always meant -- EVERY intro sentence that states the zero
+    # carries n=256 -- instead of counting occurrences.
+    zero = [x for x in intro.split(". ") if "zero near-verbatim" in x or "$0.0000$" in x]
+    assert zero, "the intro no longer states the zero-recall result"
+    for x in zero:
+        assert "$n=256$" in x, ("an intro safety sentence lost n=256", x[:160])
     exp = body("experiments.tex")
     assert "and at $n=256$" in exp, "Section 3's adversarial-scorer paragraph lost n=256"
 

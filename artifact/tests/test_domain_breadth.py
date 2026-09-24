@@ -119,7 +119,7 @@ def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
     body = _manuscript("experiments.tex")
     want = {}
     for bench in ("alpaca", "mtbench"):
-        for r in rows(os.path.join(ROOT, "results", f"selection_scaling_{bench}.csv")):
+        for r in rows(os.path.join(ROOT, "results", f"selection_scaling_{bench}_deecho.csv")):
             if int(r["n"]) == 8:
                 want[(bench, r["judge"])] = (float(r["gain"]), float(r["gain_lo95"]),
                                              float(r["gain_hi95"]))
@@ -138,12 +138,14 @@ def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
 def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():
     """The paragraph says MT-Bench 'at a half-width of 0.09 could not' resolve anything. That is a
     claim about the widest CI the benchmark produces at n=8, and it has to be true of both judges."""
-    hw = []
-    for r in rows(os.path.join(ROOT, "results", "selection_scaling_mtbench.csv")):
+    # Repaired text since 2026-09-24: the figure (judge B) and the caption quote judge B's
+    # half-width, the limitations the wider of the two judges'.
+    hw = {}
+    for r in rows(os.path.join(ROOT, "results", "selection_scaling_mtbench_deecho.csv")):
         if int(r["n"]) == 8:
-            hw.append((float(r["gain_hi95"]) - float(r["gain_lo95"])) / 2)
-    assert min(hw) >= 0.085, hw          # 0.09 must not overstate how tight the arm is
-    assert "half-width of $0.09$" in _manuscript("experiments.tex")
+            hw[r["judge"].split("/")[-1]] = (float(r["gain_hi95"]) - float(r["gain_lo95"])) / 2
+    assert f"half-width of ${hw['Phi-3.5-mini-instruct']:.2f}$" in _manuscript("experiments.tex"), hw
+    assert f"half-width of ${max(hw.values()):.2f}$" in _manuscript("appendix_limitations.tex"), hw
 
 
 def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
@@ -161,8 +163,23 @@ def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
     apx = _manuscript("appendix_limitations.tex")
     assert "$-0.79$" in apx and "$-0.70$" in apx, "the correlations left Section 6 unpinned"
     assert f"$-{-float(c['null_mean']):.2f} \\pm {float(c['null_sd']):.2f}$" in apx, c
-    assert "$0.09$" in apx and "$0.17$" in apx
+    # scoped to the sentence: a bare "$0.09$" was satisfied by MT-Bench's half-width (caution (an))
+    assert f"$P = {float(c['p_vs_null']):.2f}$ and ${float(b['p_vs_null']):.2f}$" in apx
 
+
+
+def _states_the_across_not_within_distinction(body):
+    """The claim, not its spelling: the ceiling binds ACROSS anchors and not WITHIN one.
+
+    Two phrasings of this have been in the manuscript ("binds at the anchor and not within one",
+    "binds across anchors, not within one"). A guard on either alone retires itself on the next
+    reword (caution (ar)), so this asks whether the sentence makes the distinction.
+    """
+    i = body.find("ceiling binds")
+    if i < 0:
+        return False
+    window = body[i:i + 160].lower()
+    return "within one" in window and ("across anchors" in window or "at the anchor" in window)
 
 def test_section6_separates_the_two_axes_the_ceiling_was_tested_on():
     """Superseded 2026-09-12 evening. The earlier version of this test guarded the sentence 'the
@@ -170,8 +187,7 @@ def test_section6_separates_the_two_axes_the_ceiling_was_tested_on():
     feat-096 tested the ANCHOR axis and the ceiling was confirmed there. What must not drift is the
     distinction: the ceiling binds at the anchor, and the domain split remains uninformative."""
     body = _manuscript("experiments.tex")
-    assert "binds at the anchor and not within one" in body
-    assert "binds at the anchor and not within one" in body
+    assert _states_the_across_not_within_distinction(body), body[:200]
     assert "inseparable from a no-effect null" in body
     low = body.lower()
     assert "inseparable from a no-effect null" in low, "the domain null must stay beside it"
@@ -236,6 +252,6 @@ def test_section6_and_the_appendix_name_the_axis_each_result_speaks_to():
     apx = " ".join(open(
         __import__("tests.manuscript", fromlist=["tex"]).tex("sections/appendix_limitations.tex"),
         encoding="utf-8").read().split())
-    assert "binds at the anchor and not within one" in body
+    assert _states_the_across_not_within_distinction(body), body[:200]
     assert "Across anchors" in apx and "Within one anchor" in apx
     assert "not measurable" in apx

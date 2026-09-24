@@ -1,0 +1,2 @@
+gen_dir,target_model,anchor_model,n_prompts,mean_words,empty_frac,n_empty,mean_words_nonempty,median_words_nonempty,empty_neutral,n_neutral,empty_creative,n_creative,empty_factual,n_factual
+output/phase5/sel_kl3m520m_64s52,output/phase5/anchor_kl3m-002-520m,output/phase5/anchor_kl3m-002-520m,500,70.724,0.0,0,70.724,72.0,0,200,0,150,0,150

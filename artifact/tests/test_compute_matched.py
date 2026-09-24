@@ -88,19 +88,28 @@ def _tex(name):
     return " ".join(open(tex(name), encoding="utf-8").read().split())
 
 
-def test_the_appendix_frontier_table_rounds_from_the_csv():
-    """Caution (j): a paper number rounds from the CSV once, and a table is checked mechanically
-    rather than read. Twelve gains and twelve cost ratios."""
-    apx = _tex("sections/appendix_selection.tex")
-    checked = 0
-    for r in _rows("results/compute_matched.csv"):
-        if r["scorer"] == "--":
-            continue
-        assert f"${float(r['gain']):+.4f}$" in apx or \
-               f"$\\mathbf{{{float(r['gain']):+.4f}}}$" in apx, (r["arm"], r["gain"])
-        assert f"${float(r['cost_vs_metered']):.2f}\\times$" in apx, (r["arm"], r["cost_vs_metered"])
-        checked += 1
-    assert checked == 12, checked
+def test_the_appendix_frontier_cells_the_paper_still_claims_round_from_the_csv():
+    """Caution (j), rescoped 2026-09-19. The twelve-cell grid left the manuscript with the appendix
+    reduction; the arm and `results/compute_matched.csv` are unchanged. What the paper still claims
+    is the three cells the concession rests on, and each must round from the CSV once -- above all
+    the matched-compute arm, whose gain is indistinguishable from zero at 0.92x the meter's cost and
+    which caution (aq) found in no test at all. A length edit deletes exactly this sentence first
+    (caution (ag)), so it is pinned here by its cost, its best cell and its own words."""
+    apx = " ".join(_tex("sections/appendix_selection.tex").split())
+    R = {r["arm"]: r for r in _rows("results/compute_matched.csv")}
+    best, matched, big = R["sel05b_n16"], R["sel05b_n4"], R["sel7b_n64"]
+    # the 0.5B scorer's best cell, quoted with its interval, and its cost
+    assert f"${float(best['gain']):+.4f}\\,[{float(best['lo95']):+.4f},{float(best['hi95']):+.4f}]$" \
+        in apx, (best, "the 0.5B best cell is not quoted with its interval")
+    assert f"${float(best['cost_vs_metered']):.2f}\\times$" in apx, best["cost_vs_metered"]
+    # the matched-compute cell: its cost is quoted and it is described as a loss
+    assert f"${float(matched['cost_vs_metered']):.2f}\\times$" in apx, matched["cost_vs_metered"]
+    assert float(matched["hi95"]) > 0 > float(matched["lo95"]), matched
+    assert "loses outright" in apx, "the matched-compute arm is no longer reported as a loss"
+    assert "never reaches the meter" in apx, "the committed 0.5B concession is gone"
+    # and the 7B arm the 61.3x concession is about
+    assert f"${float(big['gain']):+.4f}$" in apx, big["gain"]
+    assert f"${float(big['cost_vs_metered']):.1f}\\times$" in apx, big["cost_vs_metered"]
 
 
 def test_limitations_carries_the_committed_consequence_of_f1_and_f3():
@@ -185,11 +194,11 @@ def test_the_saturation_finding_rounds_from_the_scorer_scale_csv():
     61.3x concession is the scorer's price and not the mechanism's. Checked against the CSV."""
     apx = _tex("sections/appendix_selection.tex")
     R = {r["arm"]: r for r in _rows("results/scorer_scale.csv")}
+    # The per-scorer cost column left the manuscript with the four-scorer table on 2026-09-19; the
+    # four gains and the two ratios the claim is made of are still printed, and still checked.
     for tag in ("05b", "15b", "3b", "7b"):
         r = R[f"sel{tag}_n64"]
         assert f"${float(r['gain']):+.4f}$" in apx, (tag, r["gain"])
-        assert f"${float(r['cost_vs_metered']):.2f}\\times$" in apx or \
-               f"$\\mathbf{{{float(r['cost_vs_metered']):.2f}\\times}}$" in apx, (tag, r["cost_vs_metered"])
     frac = float(R["sel15b_n64"]["gain"]) / float(R["sel7b_n64"]["gain"])
     cost = float(R["sel15b_n64"]["cost_vs_metered"]) / float(R["sel7b_n64"]["cost_vs_metered"])
     assert f"${frac * 100:.1f}\\%$" in apx, round(frac * 100, 1)
@@ -200,12 +209,29 @@ def test_the_matched_compute_cost_is_the_one_the_csv_computed():
     """The F4 band's label was a hardcoded '0.94x' while the same run's compute_matched.csv gave
     cost_vs_metered = 0.92 for sel05b_n4, and the main text picked up the label rather than the
     column on 2026-09-17. Caution (j): a paper number rounds from the CSV, once. Every place that
-    quotes this cost must now agree with the column."""
+    quotes this cost must now agree with the column.
+
+    AMENDED 2026-09-21 by feat-162, which found that this test had itself inherited the defect it
+    was written to catch. `cost_vs_metered` is the parameter-count FLOP proxy, and the assertion
+    below used to read `cost < 1.0, "F4 is only 'matched compute' if the arm costs no more than the
+    meter"` -- treating a FLOP count as a price, which is the exact error caution (ay) records. The
+    cell measures 4.11x on a clock. The chain column -> label -> manuscript is what this test is
+    for and it is kept; what changes is that the manuscript must now print this number AS the
+    forward-pass count, with the measured price of the same cell beside it."""
     cost = next(float(r["cost_vs_metered"]) for r in _rows("results/compute_matched.csv")
                 if r["arm"] == "sel05b_n4")
-    assert cost < 1.0, "F4 is only 'matched compute' if the arm costs no more than the meter"
+    assert cost < 1.0, "sel05b_n4 is the cell F4 was built on; its FLOP cost is below the meter's"
     bands = open("results/compute_matched_bands.csv", encoding="utf-8").read()
     assert f"({cost:.2f}x)" in bands, f"the bands label disagrees with the column ({cost})"
     body = _tex("sections/selection.tex")          # where a stale label does real damage
-    assert f"${cost:.2f}\\times$ the cost" in body, \
-        f"Section 2 must quote the computed matched-compute cost, {cost:.2f}x"
+    apx = _tex("sections/appendix_selection.tex")
+    assert f"${cost:.2f}\\times$" in apx, \
+        f"the appendix must quote the computed cost, {cost:.2f}x"
+    measured = next(float(r["ratio_marginal"]) for r in _rows("results/cost_grid.csv")
+                    if r["n"] == "4" and r["scorer_b"] == "0.494")
+    assert f"${measured:.2f}\\times$" in apx, \
+        "the measured price of the same cell must travel with the proxy, or the reader is told "\
+        f"that {cost:.2f}x is what it costs when it is {measured:.2f}x"
+    # feat-164: the body now carries the DEPLOYABLE cell, and the superseded one with it
+    assert "the forward-pass count had put it at $n=4$" in body, \
+        "Section 2 dropped the cell the concession was originally stated at"

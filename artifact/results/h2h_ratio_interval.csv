@@ -1,0 +1,2 @@
+numerator,denominator,n_prompts,gain_numerator,gain_denominator,ratio,ratio_lo95,ratio_hi95,undefined_frac,corr_of_gains,fieller_lo95,fieller_hi95,excludes_one
+"selection n=64, order-averaged gain",metered k=10,500,0.1045,0.04,2.6125,1.47973,7.451613,0.0012,-0.0184,1.481173,7.619708,yes

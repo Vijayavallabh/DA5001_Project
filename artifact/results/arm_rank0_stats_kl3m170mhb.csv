@@ -1,0 +1,2 @@
+gen_dir,target_model,anchor_model,n_prompts,mean_words,empty_frac,n_empty,mean_words_nonempty,median_words_nonempty,empty_neutral,n_neutral,empty_creative,n_creative,empty_factual,n_factual
+output/phase5/sel_kl3m170mhb_64,alea-institute/kl3m-002-170m,alea-institute/kl3m-002-170m,500,71.936,0.0,0,71.936,74.0,0,200,0,150,0,150

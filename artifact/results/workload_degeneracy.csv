@@ -1,0 +1,15 @@
+workload,budget,k,steps_active,steps_total,n_trajectories,activity,n_prompts,n_byte_identical,byte_ident,byte_ident_interpretable,pids_from
+ours (committed),vacuous,10.0,24,299843,1500,8.004e-05,500,14,0.028,no: arms sampled independently,judged pass
+ours,vacuous,10.0,19,169683,850,0.00011197,850,846,0.995294,yes,judged pass
+ours,binding,0.9,13523,152591,850,0.08862253,850,17,0.02,yes,judged pass
+AlpacaEval,vacuous,10.0,26,160227,805,0.00016227,805,794,0.986335,yes,judged pass
+AlpacaEval,binding,1.0,11499,143598,805,0.08007772,805,35,0.043478,yes,judged pass
+AlpacaEval re-draw,binding,1.0,11144,140668,805,0.079222,805,44,0.054658,yes,judged pass
+MT-Bench,vacuous,10.0,5,15005,80,0.00033322,80,76,0.95,yes,judged pass
+MT-Bench,binding,1.0,818,11263,80,0.07262719,80,1,0.0125,yes,judged pass
+Gutenberg,vacuous,10.0,43,100000,500,0.00043,500,491,0.982,yes,judged pass
+Gutenberg,binding,0.9,6822,98143,500,0.06951082,500,18,0.036,yes,judged pass
+CoTaEval-QA,vacuous,10.0,231,99806,500,0.00231449,500,383,0.766,yes,judged pass
+CoTaEval-QA,binding,1.4,7469,96302,500,0.0775581,500,6,0.012,yes,judged pass
+unseenbooks,vacuous,10.0,8,100000,500,8e-05,500,498,0.996,yes,judged pass
+unseenbooks,binding,1.0,4764,100000,500,0.04764,500,19,0.038,yes,judged pass

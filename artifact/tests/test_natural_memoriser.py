@@ -52,6 +52,12 @@ def test_the_adversary_reproduces_whole_passages_and_the_paper_says_two():
     assert len(full) == 2, [r["prompt_id"] for r in full]
     body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
     assert "reproduces two \\emph{in full}" in body, "Section 6 no longer states the count"
+    # the Ethics Statement quotes the same run and said "one passage" until 2026-09-23: a guard on
+    # one section is not a guard on the claim (caution (af))
+    eth = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    eth = eth[eth.index(r"\section*{Ethics Statement}"):]
+    eth = eth[:eth.index(r"\section*", 10)]
+    assert "reproduces two passages in full" in eth and "one passage in full" not in eth
 
 
 def test_selection_recovers_nothing_at_every_n():
@@ -61,18 +67,6 @@ def test_selection_recovers_nothing_at_every_n():
         assert float(r["nv_recall_mean"]) == 0.0, (n, r["nv_recall_mean"])
         assert float(r["nv_recall_max"]) == 0.0, (n, r["nv_recall_max"])
     assert {"1", "8", "64"} <= set(rows()), sorted(rows())
-
-
-def test_section6_quotes_the_control_and_the_appendix_the_history():
-    body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
-    k1 = rows()["-1"]
-    assert f"recovers ${float(k1['nv_recall_mean']):.4f}$" in body, k1["nv_recall_mean"]
-    assert "Nor is the memoriser ours" in body
-    assert "pre-training" in body and "$100$-token prefix" in body
-    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
-    # the three failed arms are disclosed, not quietly dropped
-    assert "four attempts" in apx and "gate failed" in apx and "invalid" in apx
-    assert f"$\\mathbf{{{float(k1['nv_recall_mean']):.4f}}}$" in apx, k1["nv_recall_mean"]
 
 
 def test_limitations_no_longer_claims_the_memoriser_is_only_ours():
@@ -88,3 +82,9 @@ def test_the_stop_rule_and_the_four_arm_history_are_on_the_record():
     assert "0.1996" in t, "the reference the gate was set against is not quoted"
     for phrase in ("INVALID", "GATE FAILED"):
         assert phrase in t, phrase
+
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_section6_quotes_the_control_and_the_appendix_the_history

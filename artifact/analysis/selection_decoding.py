@@ -44,6 +44,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.utility import CLASSES, judge_batch, served_prompt  # noqa: E402
+from dap.shared import served_generation  # noqa: E402
 
 VERDICT_U = {"win": 1.0, "tie": 0.5, "loss": 0.0}
 
@@ -53,8 +54,9 @@ def kl_best_of_n(n):
     return math.log(n) - (n - 1) / n if n > 1 else 0.0
 
 
-def load_candidates(run_dir, k="0"):
-    """prompt_id -> [(seed, class, prompt, generation)], sorted by seed so arms nest."""
+def load_candidates(run_dir, k="0", deecho=False):
+    """prompt_id -> [(seed, class, prompt, generation)], sorted by seed so arms nest. `deecho`: see
+    dap.shared.served_generation (caution (bc)); off by default so every CSV on record reproduces."""
     out = {}
     for cls in CLASSES:
         path = os.path.join(run_dir, f"trajectories_k{k}_{cls}.jsonl")
@@ -64,13 +66,16 @@ def load_candidates(run_dir, k="0"):
             r = json.loads(line)
             m, a = r["metadata"], r["aggregate"]
             out.setdefault(m["prompt_id"], []).append(
-                (m["seed"], cls, served_prompt(a), a.get("generation") or ""))
+                (m["seed"], cls, served_prompt(a),
+                 served_generation(a, r.get("prefix_analysis", {}).get("prefix_text", "")) if deecho
+                 else a.get("generation") or ""))
     return {p: sorted(v) for p, v in out.items()}
 
 
-def load_baseline(run_dir):
-    """prompt_id -> the unconstrained risky completion at its lowest seed. One fixed opponent per
-    prompt, so every candidate of that prompt is judged against the same text."""
+def load_baseline(run_dir, deecho=False, rank=0):
+    """prompt_id -> the unconstrained risky completion at its lowest seed (or its `rank`-th lowest).
+    One fixed opponent per prompt, so every candidate of that prompt is judged against the same
+    text. `deecho`: see dap.shared.served_generation (caution (bc))."""
     out = {}
     for cls in CLASSES:
         path = os.path.join(run_dir, f"trajectories_k-1_{cls}.jsonl")
@@ -79,11 +84,10 @@ def load_baseline(run_dir):
         for line in open(path):
             r = json.loads(line)
             m, a = r["metadata"], r["aggregate"]
-            key = m["prompt_id"]
-            cand = (m["seed"], a.get("generation") or "")
-            if key not in out or cand < out[key]:
-                out[key] = cand
-    return {p: v[1] for p, v in out.items()}
+            gen = (served_generation(a, r.get("prefix_analysis", {}).get("prefix_text", "")) if deecho
+                   else a.get("generation") or "")
+            out.setdefault(m["prompt_id"], []).append((m["seed"], gen))
+    return {p: sorted(v)[rank][1] for p, v in out.items() if len(v) > rank}
 
 
 def score_candidates(pairs, model_id, device, dtype, batch_size=8):

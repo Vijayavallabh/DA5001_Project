@@ -1,0 +1,10 @@
+quantity,value,lo95,hi95,n,note
+"served words, sel_n64",75.0,33.0,136.25,500,median [IQR]; empty on 41 prompts
+"served words, sel_n1",54.0,13.0,126.0,500,median [IQR]; empty on 64 prompts
+"served words, metered_k10",151.0,142.0,160.0,500,median [IQR]; empty on 0 prompts
+"served words, anchor_k0",63.0,16.0,134.25,500,median [IQR]; empty on 62 prompts
+"served words, opp",154.0,143.75,162.25,500,median [IQR]; empty on 0 prompts
+"D3, as judged (de-echoed pass)",0.0505,0.0165,0.0855,500,difference of gains; reproduces the pass's own D3
+"D3, length-controlled",0.0605,0.0236,0.0971,500,"u ~ arm + beta*tanh(dlen/62.7); prompts resampled, refit"
+length coefficient beta,0.0179,-0.0085,0.045,500,"score change from a much shorter to a much longer answer, per unit tanh"
+D3 on prompts whose two anchor controls are non-empty,0.0441,0.0024,0.0864,414,86 prompts dropped

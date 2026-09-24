@@ -1,0 +1,2 @@
+gen_dir,target_model,anchor_model,n_prompts,mean_words,empty_frac,n_empty,mean_words_nonempty,median_words_nonempty,empty_neutral,n_neutral,empty_creative,n_creative,empty_factual,n_factual
+output/phase5/sel_comma1t_64s52,common-pile/comma-v0.1-1t,common-pile/comma-v0.1-1t,500,89.046,0.116,58,100.7308,125.0,8,200,0,150,50,150

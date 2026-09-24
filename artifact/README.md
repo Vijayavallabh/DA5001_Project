@@ -1202,3 +1202,92 @@ bash scripts/run_n128_card2.sh 2    # creative+factual 300 x 128, then the merge
 number unless the `n <= 64` half reproduces `results/selection_scaling.csv`. Note that `--max-n`
 could not form an arm above 64 until `analysis.selection_scaling.n_grid` replaced a filter over a
 hardcoded grid; at `--max-n 64` it returns exactly the tuple every arm on record was formed with.
+
+### Phase 8 (2026-09-22): what the workload split is not
+
+Three candidate mechanisms for the scoping result in `app:workload` have now been measured and
+refuted, and the appendix reports the scoping without naming a cause. Two of the three cost no GPU
+time at all, because the data were already on disk.
+
+```bash
+# The paper's own budget, per workload and per budget, as one artefact. Activity and the fraction
+# of served completions byte-identical to the unconstrained opponent, both over exactly the
+# prompts the judged pass shared. Reproduces every number the appendix quotes, including the
+# committed arm's 24 of 299,843.
+.venv/bin/python analysis/workload_degeneracy.py --out results   # -> results/workload_degeneracy.csv
+
+# Is the split the prompt TEMPLATE? dap/shared.py prepends "Complete the prefix:" to
+# copyright-domain prompts and the external benchmarks go through the factual slot, so
+# "ours vs theirs" has also been "header vs no header". Our own factual class is header-free and
+# still reads +0.0990; AlpacaEval, equally header-free, reads -0.0339.
+.venv/bin/python analysis/prompt_header_audit.py --out results   # -> results/prompt_header_audit.csv
+
+# Each workload's calibration grid, under its OWN name. The --out default now follows --root, so
+# two workloads can no longer write one file.
+.venv/bin/python analysis/budget_calibration.py --root output/mtb    --target 0.08008
+.venv/bin/python analysis/budget_calibration.py --root output/mixpow --target 0.08376
+```
+
+Two things these scripts enforce rather than assume. `budget_calibration.activity()` refuses to sum
+a directory holding more than one budget unless a `k` is passed: `output/phase2/conc_all` holds six,
+and summing it reads `8.376%` where its `k=10` arm is `0.008%`. And `workload_degeneracy.py` pins
+both of its columns to the judged prompt intersection, because a directory is not a prompt set
+either -- the same arm reads `0.0080%` over the three classes the judge sees and `0.0145%` over all
+six.
+
+`analysis/workload_degeneracy.py` also flags the one row whose byte-identity is **not**
+interpretable. The committed pass samples its metered arm and its opponent independently, so at
+`k=10` it reads `2.8%` byte-identical while `wscope`'s `k=10` arm -- same workload, same budget --
+reads `99.5%`. The flag is derived from the two measured columns (a near-zero activity beside a low
+identity can only be independent sampling), not from a note.
+
+```bash
+# A generic workload cell, its queue, its scorer and the registered budget choice applied by code.
+bash scripts/run_workload_queue.sh <corpus> <cap> <gpu> draws opponent k10 kcal:0.1 kcal:0.3 kcal:1.0 kcal:3.0 kcal:10.0
+bash scripts/run_workload_bind.sh  <corpus> <datadir> <cap> <maxn> <target> <gpu>
+bash scripts/run_workload_h2h.sh   <corpus> <datadir> <cell> <k> <judge> <tag> <cards>
+```
+
+`run_workload_bind.sh` applies the `argmin |activity(k) - target|` rule the pre-registrations fix,
+and **refuses** to run the binding cell when the grid does not bracket the target: taking the
+nearest endpoint is what a ceilinged grid makes wrong.
+
+### Phase 9 (2026-09-24): the review points the fifth round had skipped
+
+Every arm below has its bands or its descriptive note committed before its first reading
+(`results/onset_prediction_*.md`, `results/*_note.md`). GPU arms ran on 80 GB A100s and H100s; the
+launchers name the cards they were given and none is required.
+
+```bash
+# the authors' byte-level decoder at their recommended pair (feat-187); needs their package,
+# github.com/jacqueline-he/anchored-decoding at a12ecd9, installed editable
+bash scripts/run_anchoredbyte.sh 0,1,2 "0.5 2"; bash scripts/run_anchoredbyte.sh 3,4,5 0.1
+bash scripts/run_anchoredbyte_judge.sh 6        # three judge passes, then analysis/anchoredbyte_score.py
+# the headline re-drawn on disjoint seeds (feat-188)
+bash scripts/run_replic.sh a 0; bash scripts/run_replic.sh b 1; bash scripts/run_replic_post_parallel.sh 2 3 4
+.venv/bin/python analysis/replic_score.py --out results
+# one certificate split between the draw and the token (feat-189)
+bash scripts/run_hybrid.sh
+# one request with its draws batched, at both pairs and at the byte-level pair (feat-190 and its note)
+bash scripts/run_batched_latency.sh 0 - - single; bash scripts/run_batched_latency.sh 1 1,2,3 - 70b
+bash scripts/run_batched_latency_ab.sh 0 0,1,2
+.venv/bin/python analysis/batched_latency.py --report --logs output/logs/batched_latency.log --out results
+# the authors' own utility metrics (feat-191): dump, Prometheus, FActScore, report
+.venv/bin/python analysis/he_metrics.py --do-dump --arm ...   # arm specs as in results/he_metrics_note.md
+bash scripts/run_he_metrics.sh prometheus 0; bash scripts/run_he_metrics.sh factscore 0
+bash scripts/run_he_ab.sh 0 0.5 0.1 2
+.venv/bin/python analysis/he_metrics.py --report --out results
+# CoTaEval's infringement split (feat-193)
+bash scripts/run_cotaeval_inf.sh 0            # or run_cotaeval_inf_split.sh over two cards
+bash scripts/run_cotaeval_reward_shards.sh 0 1 2 4   # the reward in prompt shards; same values as one pass
+.venv/bin/python analysis/cotaeval_infringement.py --out results
+# descriptive arms: the covert channel, the ROUGE threshold, adaptive n, the older passes and the
+# forest re-judged on recovered text, the empty-completion preference, the joint frontier
+.venv/bin/python analysis/covert_channel.py --out results
+.venv/bin/python analysis/rouge_threshold.py --out results
+.venv/bin/python analysis/adaptive_n.py --out results
+bash scripts/run_deecho_rejudge.sh; bash scripts/run_forest_rejudge.sh 0
+.venv/bin/python analysis/forest_rejudge_score.py --out results && .venv/bin/python analysis/selection_breadth.py --rejudged --out results
+.venv/bin/python analysis/empty_preference.py --out results
+.venv/bin/python analysis/pareto_frontier.py --out results
+```

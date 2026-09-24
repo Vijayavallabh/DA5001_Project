@@ -1,0 +1,61 @@
+pass,judge,quantity,value_old,lo_old,hi_old,reading_old,value_deecho,lo,hi,reading_deecho,survives
+panel k=10,D Qwen2.5-72B,D1 selection gain,0.195,0.166,0.2245,POSITIVE,0.1895,0.159,0.22,POSITIVE,YES
+panel k=10,D Qwen2.5-72B,D2 metered gain,0.133,0.093,0.172,POSITIVE,0.1345,0.0945,0.174,POSITIVE,YES
+panel k=10,D Qwen2.5-72B,D3 difference of gains,0.062,0.0145,0.11,POSITIVE,0.055,0.0075,0.1025,POSITIVE,YES
+panel k=10,E Mixtral-8x7B,D1 selection gain,0.106,0.0755,0.1375,POSITIVE,0.0975,0.067,0.1285,POSITIVE,YES
+panel k=10,E Mixtral-8x7B,D2 metered gain,0.097,0.0635,0.13,POSITIVE,0.099,0.066,0.132,POSITIVE,YES
+panel k=10,E Mixtral-8x7B,D3 difference of gains,0.009,-0.0355,0.053,COVERS ZERO,-0.0015,-0.0455,0.042,COVERS ZERO,YES
+panel k=10,F Qwen2.5-14B,D1 selection gain,0.168,0.14,0.1955,POSITIVE,0.174,0.1455,0.202,POSITIVE,YES
+panel k=10,F Qwen2.5-14B,D2 metered gain,0.061,0.026,0.0965,POSITIVE,0.053,0.0165,0.0895,POSITIVE,YES
+panel k=10,F Qwen2.5-14B,D3 difference of gains,0.107,0.063,0.151,POSITIVE,0.121,0.077,0.1645,POSITIVE,YES
+panel k=10,G gemma-2-27b,D1 selection gain,0.1975,0.163,0.2325,POSITIVE,0.176,0.1395,0.2125,POSITIVE,YES
+panel k=10,G gemma-2-27b,D2 metered gain,0.1185,0.075,0.161,POSITIVE,0.1215,0.078,0.165,POSITIVE,YES
+panel k=10,G gemma-2-27b,D3 difference of gains,0.079,0.0265,0.1325,POSITIVE,0.0545,0.0015,0.1075,POSITIVE,YES
+panel k=10,B Phi-3.5-mini,D1 selection gain,0.1045,0.082,0.128,POSITIVE,0.1015,0.0765,0.126,POSITIVE,YES
+panel k=10,B Phi-3.5-mini,D2 metered gain,0.04,0.014,0.0655,POSITIVE,0.051,0.025,0.076,POSITIVE,YES
+panel k=10,B Phi-3.5-mini,D3 difference of gains,0.0645,0.03,0.0995,POSITIVE,0.0505,0.0155,0.086,POSITIVE,YES
+ladder opp Llama-3.1-8B,B Phi-3.5-mini,D1 selection gain,0.1045,0.082,0.128,POSITIVE,0.1015,0.0765,0.126,POSITIVE,YES
+ladder opp Llama-3.1-8B,B Phi-3.5-mini,D2 metered gain,0.04,0.014,0.0655,POSITIVE,0.051,0.025,0.076,POSITIVE,YES
+ladder opp Llama-3.1-8B,B Phi-3.5-mini,D3 difference of gains,0.0645,0.03,0.0995,POSITIVE,0.0505,0.0155,0.086,POSITIVE,YES
+ladder opp Qwen2.5-0.5B,B Phi-3.5-mini,D1 selection gain,0.1225,0.0995,0.146,POSITIVE,0.118,0.0945,0.142,POSITIVE,YES
+ladder opp Qwen2.5-0.5B,B Phi-3.5-mini,D2 metered gain,0.0735,0.0475,0.1,POSITIVE,0.0715,0.045,0.098,POSITIVE,YES
+ladder opp Qwen2.5-0.5B,B Phi-3.5-mini,D3 difference of gains,0.049,0.0135,0.085,POSITIVE,0.0465,0.011,0.0825,POSITIVE,YES
+ladder opp Qwen2.5-1.5B,B Phi-3.5-mini,D1 selection gain,0.108,0.083,0.1335,POSITIVE,0.109,0.0825,0.1355,POSITIVE,YES
+ladder opp Qwen2.5-1.5B,B Phi-3.5-mini,D2 metered gain,0.0885,0.0635,0.114,POSITIVE,0.081,0.0555,0.1065,POSITIVE,YES
+ladder opp Qwen2.5-1.5B,B Phi-3.5-mini,D3 difference of gains,0.0195,-0.0165,0.0555,COVERS ZERO,0.028,-0.0085,0.0645,COVERS ZERO,YES
+ladder opp Qwen2.5-3B,B Phi-3.5-mini,D1 selection gain,0.0675,0.0445,0.091,POSITIVE,0.07,0.046,0.0935,POSITIVE,YES
+ladder opp Qwen2.5-3B,B Phi-3.5-mini,D2 metered gain,0.0875,0.0635,0.1115,POSITIVE,0.0725,0.049,0.096,POSITIVE,YES
+ladder opp Qwen2.5-3B,B Phi-3.5-mini,D3 difference of gains,-0.02,-0.054,0.014,COVERS ZERO,-0.0025,-0.036,0.0315,COVERS ZERO,YES
+ladder opp Qwen2.5-14B,B Phi-3.5-mini,D1 selection gain,0.054,0.032,0.0765,POSITIVE,0.067,0.0455,0.0895,POSITIVE,YES
+ladder opp Qwen2.5-14B,B Phi-3.5-mini,D2 metered gain,0.0605,0.0385,0.082,POSITIVE,0.058,0.036,0.08,POSITIVE,YES
+ladder opp Qwen2.5-14B,B Phi-3.5-mini,D3 difference of gains,-0.0065,-0.0385,0.0255,COVERS ZERO,0.009,-0.022,0.0405,COVERS ZERO,YES
+ladder opp Llama-3.1-8B,C Llama-3.1-8B,D1 selection gain,0.1315,0.104,0.161,POSITIVE,0.133,0.102,0.165,POSITIVE,YES
+ladder opp Llama-3.1-8B,C Llama-3.1-8B,D2 metered gain,0.084,0.0445,0.1235,POSITIVE,0.0565,0.015,0.0975,POSITIVE,YES
+ladder opp Llama-3.1-8B,C Llama-3.1-8B,D3 difference of gains,0.0475,0.0015,0.093,POSITIVE,0.0765,0.029,0.1235,POSITIVE,YES
+ladder opp Qwen2.5-0.5B,C Llama-3.1-8B,D1 selection gain,0.1505,0.1205,0.181,POSITIVE,0.1475,0.116,0.179,POSITIVE,YES
+ladder opp Qwen2.5-0.5B,C Llama-3.1-8B,D2 metered gain,0.1595,0.122,0.199,POSITIVE,0.152,0.113,0.1925,POSITIVE,YES
+ladder opp Qwen2.5-0.5B,C Llama-3.1-8B,D3 difference of gains,-0.009,-0.0555,0.0375,COVERS ZERO,-0.0045,-0.053,0.044,COVERS ZERO,YES
+ladder opp Qwen2.5-1.5B,C Llama-3.1-8B,D1 selection gain,0.1375,0.108,0.1675,POSITIVE,0.1275,0.0975,0.158,POSITIVE,YES
+ladder opp Qwen2.5-1.5B,C Llama-3.1-8B,D2 metered gain,0.139,0.104,0.174,POSITIVE,0.1185,0.083,0.1545,POSITIVE,YES
+ladder opp Qwen2.5-1.5B,C Llama-3.1-8B,D3 difference of gains,-0.0015,-0.0455,0.0425,COVERS ZERO,0.009,-0.034,0.0515,COVERS ZERO,YES
+ladder opp Qwen2.5-3B,C Llama-3.1-8B,D1 selection gain,0.0625,0.04,0.085,POSITIVE,0.0595,0.0345,0.0845,POSITIVE,YES
+ladder opp Qwen2.5-3B,C Llama-3.1-8B,D2 metered gain,0.0865,0.0615,0.112,POSITIVE,0.075,0.049,0.102,POSITIVE,YES
+ladder opp Qwen2.5-3B,C Llama-3.1-8B,D3 difference of gains,-0.024,-0.0555,0.0085,COVERS ZERO,-0.0155,-0.0515,0.0195,COVERS ZERO,YES
+workload AlpacaEval k=1,B Phi-3.5-mini,D1 selection gain,0.0835,0.0665,0.1016,POSITIVE,0.0801,0.0627,0.0978,POSITIVE,YES
+workload AlpacaEval k=1,B Phi-3.5-mini,D2 metered gain,0.1174,0.0991,0.1354,POSITIVE,0.113,0.0941,0.132,POSITIVE,YES
+workload AlpacaEval k=1,B Phi-3.5-mini,D3 difference of gains,-0.0339,-0.0534,-0.0137,NEGATIVE,-0.0329,-0.0528,-0.0127,NEGATIVE,YES
+workload MT-Bench k=1.0,B Phi-3.5-mini,D1 selection gain,0.0656,0.0219,0.1125,POSITIVE,0.0375,-0.0125,0.0875,COVERS ZERO,NO
+workload MT-Bench k=1.0,B Phi-3.5-mini,D2 metered gain,0.0906,0.05,0.1344,POSITIVE,0.0688,0.0219,0.1187,POSITIVE,YES
+workload MT-Bench k=1.0,B Phi-3.5-mini,D3 difference of gains,-0.025,-0.0781,0.0281,COVERS ZERO,-0.0312,-0.0813,0.0219,COVERS ZERO,YES
+workload Gutenberg k=0.9,B Phi-3.5-mini,D1 selection gain,0.0805,0.063,0.0975,POSITIVE,0.0775,0.06,0.096,POSITIVE,YES
+workload Gutenberg k=0.9,B Phi-3.5-mini,D2 metered gain,-0.0185,-0.038,0.0005,COVERS ZERO,-0.0275,-0.047,-0.008,NEGATIVE,NO
+workload Gutenberg k=0.9,B Phi-3.5-mini,D3 difference of gains,0.099,0.0795,0.1185,POSITIVE,0.105,0.085,0.1255,POSITIVE,YES
+workload unseen books k=1.0,B Phi-3.5-mini,D1 selection gain,0.064,0.0485,0.0795,POSITIVE,0.049,0.033,0.065,POSITIVE,YES
+workload unseen books k=1.0,B Phi-3.5-mini,D2 metered gain,-0.04,-0.0585,-0.0215,NEGATIVE,-0.0425,-0.0615,-0.0235,NEGATIVE,YES
+workload unseen books k=1.0,B Phi-3.5-mini,D3 difference of gains,0.104,0.085,0.123,POSITIVE,0.0915,0.0715,0.111,POSITIVE,YES
+workload CoTaEval-QA k=1.4,B Phi-3.5-mini,D1 selection gain,0.0235,0.001,0.047,POSITIVE,0.007,-0.0165,0.03,COVERS ZERO,NO
+workload CoTaEval-QA k=1.4,B Phi-3.5-mini,D2 metered gain,0.0165,-0.003,0.0355,COVERS ZERO,-0.012,-0.0335,0.009,COVERS ZERO,YES
+workload CoTaEval-QA k=1.4,B Phi-3.5-mini,D3 difference of gains,0.007,-0.0175,0.032,COVERS ZERO,0.019,-0.006,0.0445,COVERS ZERO,YES
+workload ours (Arm C) k=0.9,B Phi-3.5-mini,D1 selection gain,0.1218,0.1038,0.14,POSITIVE,0.1321,0.1147,0.1506,POSITIVE,YES
+workload ours (Arm C) k=0.9,B Phi-3.5-mini,D2 metered gain,0.0253,0.0074,0.0432,POSITIVE,0.0282,0.01,0.0468,POSITIVE,YES
+workload ours (Arm C) k=0.9,B Phi-3.5-mini,D3 difference of gains,0.0965,0.0765,0.1162,POSITIVE,0.1038,0.0844,0.1238,POSITIVE,YES

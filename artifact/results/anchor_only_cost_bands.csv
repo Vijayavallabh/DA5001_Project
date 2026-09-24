@@ -1,0 +1,6 @@
+band,quantity,value,reading
+"G0 inherited instrument, A(64) within 25% of 6.99s",gate,7.517,PASS
+G0b cell C served W sequences,gate,"{64: 64, 200: 200}",PASS
+B1 discarded-model share of the published draw cost,(A - B)/A at W=200,0.3367,SUBSTANTIAL
+B2 deployable draw cost,C/A at W=200,0.3476,every published selection serving number overstates a deployment by 2.88x
+"B3 compute-matched cell, re-derived on the deployable draw cost",argmin |n*C/D - 1| with C/D = 0.3414; paired gain of sel05b_n2,2,"matched at n=2, 0.68x; gain vs meter -0.0330 [-0.0625, -0.0025]"

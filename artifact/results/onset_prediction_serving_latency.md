@@ -124,3 +124,28 @@ batch sizes were held across repeats; both repeats of each arm are reported; and
 re-run was substituted for this one.
 
 **This arm prices the claims; it cannot and does not touch the certificate.**
+
+---
+
+### Correction appended 2026-09-21 by feat-162, which measured the explanation and falsified it
+
+This arm's scoring log explains the gap between the FLOP proxy's `61.3x` and the measured `35.4x`
+by saying that *"64 completions generated in one batch do not cost 64 sequential ones"*. **They
+do.** `results/onset_prediction_cost_matched_measured.md` timed the same two paths on an idle
+second host at `n` in `{1, 2, 4, 8, 16, 64}` and found `draws(n) = 10.31 + 6.99n` seconds at
+`R^2 = 0.99990` --- exactly linear, with no amortisation across the candidate dimension at all,
+because `dap/e1.py:_run_seed_group` batches across **prompts** within one seed and realises
+`--trajectories-per-prompt n` as `n` separate seed groups.
+
+**The measured ratio on this arm is not revised**: `908.031 / 25.637 = 35.418` is what those two
+totals divide to, it was measured on a local A100 and feat-162 ran on an H100. What is revised is
+the *reason*. On the second host the same two totals read `26.9x` while the per-request ratio ---
+both arms' one-time model load taken out, which is what a server that stays up actually pays ---
+reads `67.2x`, because loading checkpoints is `10.97` of the metered path's `17.94` seconds and
+`10.31` of selection's `458.0`. A ratio of totals divides by a denominator that is `61%` startup.
+
+So this arm's number stands as a ratio of totals, its headline finding stands (the reward pass is a
+small share of the clock, `9.3%` here and `4.6%` there, so the lever is `n` and not the scorer),
+and its *explanation* is withdrawn. The manuscript now carries both conventions wherever it quotes
+a price. Same class as cautions (ae), (ah) and (am), one level up: the number was right, the
+mechanism given for it was not.

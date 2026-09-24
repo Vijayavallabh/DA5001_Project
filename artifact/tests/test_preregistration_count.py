@@ -30,15 +30,6 @@ WORDS = {12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixte
              ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]) if w}}
 
 
-def test_the_statement_counts_the_logs_that_exist():
-    n = len(glob.glob(os.path.join(ROOT, "results", "onset_prediction_*.md")))
-    assert n in WORDS, f"extend WORDS past {n}"
-    body = open(tex("iclr_2027.tex"), encoding="utf-8").read().replace("\n", " ")
-    m = re.search(r"the\s+([a-z-]+)\s+pre-registration logs", body)
-    assert m, "the Reproducibility Statement no longer counts the logs"
-    assert m.group(1) == WORDS[n], (m.group(1), WORDS[n], n)
-
-
 def test_every_unscored_log_is_accounted_for_in_the_handoff():
     """A pre-registration with no scoring section is an arm that was committed and never reported.
     That is fine while it runs and not otherwise, so every unscored log must be named in
@@ -47,7 +38,8 @@ def test_every_unscored_log_is_accounted_for_in_the_handoff():
     unscored = []
     for p in glob.glob(os.path.join(ROOT, "results", "onset_prediction_*.md")):
         t = open(p, encoding="utf-8").read()
-        if "## Scoring, " not in t and "## Scoring log" in t:
+        # a scored log carries "## Scoring, <date>" or, under "## Scoring log", "### Scored <date>"
+        if "## Scoring, " not in t and "\n### Scored" not in t and "## Scoring log" in t:
             unscored.append(os.path.basename(p))
     missing = [f for f in unscored if f not in handoff]
     assert not missing, f"unscored and unaccounted for: {missing}"
@@ -60,3 +52,11 @@ def test_the_unregistered_arm_is_labelled_as_one():
     head = open(p, encoding="utf-8").read()[:1600]
     assert "no committed bands" in head
     assert not glob.glob(os.path.join(ROOT, "results", "onset_prediction_*alpaca_note*"))
+
+
+# RETIRED 2026-09-19 with the de-jargoning pass: the Reproducibility Statement no longer
+# counts the protocol logs, because naming an internal record count is bookkeeping a reader
+# cannot use. The statement still says every interval was fixed before the run that produced
+# it, and test_every_unscored_log_is_accounted_for_in_the_handoff below still keeps the repo's
+# own records honest -- which is where that discipline belongs.
+#   test_the_statement_counts_the_logs_that_exist

@@ -1,0 +1,19 @@
+gate,quantity,value,reading
+G0,"pool: prompts covered with 64 draws, seeds shared","500 prompts, 0 with a shared seed",PASS
+G0,"metered k=10: prompts covered with 1 draws, seeds shared","500 prompts, 0 with a shared seed",PASS
+G0,"anchor k=0: prompts covered with 1 draws, seeds shared","500 prompts, 0 with a shared seed",PASS
+G0,"opponent k=-1: prompts covered with 1 draws, seeds shared","500 prompts, 0 with a shared seed",PASS
+G1,"n=1 empty, neutral: new 34/200 vs record 47/200",-1.617,PASS
+G1,"n=1 empty, creative: new 21/150 vs record 17/150",0.694,PASS
+G1,"n=1 empty, factual: new 0/150 vs record 0/150",0.0,PASS
+G1,"n=1 empty, total: new 55/500 vs record 64/500",-0.879,PASS
+P3,"R2 D1 selection gain, order-averaged","+0.1225 [+0.0990, +0.1460]",REPLICATES
+P1,"R2 D3 difference of gains, paired","+0.0495 [+0.0175, +0.0800]",REPLICATES
+P3,"R1 D1 selection gain, order-averaged","+0.1065 [+0.0855, +0.1280]",REPLICATES
+P2,"R1 D3 difference of gains, paired","+0.0450 [+0.0110, +0.0790]",REPLICATES
+,"R1b D1 selection gain, order-averaged","+0.1235 [+0.1020, +0.1455]",REPLICATES
+,"R1b D3 difference of gains, paired","+0.0620 [+0.0275, +0.0960]",REPLICATES
+,"R2b D1 selection gain, order-averaged","+0.1425 [+0.1200, +0.1655]",REPLICATES
+,"R2b D3 difference of gains, paired","+0.0695 [+0.0385, +0.0995]",REPLICATES
+,"R0 D1 selection gain, order-averaged","+0.1010 [+0.0765, +0.1245]",descriptive (REPLICATES)
+,"R0 D3 difference of gains, paired","+0.0500 [+0.0155, +0.0840]",descriptive (REPLICATES)

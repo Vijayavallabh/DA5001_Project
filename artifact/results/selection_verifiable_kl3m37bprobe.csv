@@ -1,0 +1,5 @@
+arm,n,budget_nats,n_problems,acc,acc_lo95,acc_hi95,gain,gain_lo95,gain_hi95,spearman_acc_logn
+majority vote (self-consistency),1,0.0,500,0.014,0.004,0.024,0.0,0.0,0.0,0.0
+pointwise reward (Qwen2.5-7B),1,0.0,500,0.014,0.004,0.024,0.0,0.0,0.0,0.0
+"risky model alone, k=-1 (greedy)",1,,500,0.784,0.748,0.82,,,,
+"risky model alone, k=-1 (sampled)",1,,500,0.722,0.682,0.762,,,,

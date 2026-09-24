@@ -31,7 +31,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.selection_verifiable import (  # noqa: E402
-    N_GRID, boot, boot_gain, correct_tqa, extract_tqa, majority, spearman)
+    N_GRID, boot, boot_gain, correct_tqa, extract_lambada, extract_mmlu, extract_tqa,
+    majority, spearman)
 
 CLASSES = ("factual",)
 
@@ -71,12 +72,17 @@ def main():
     ap.add_argument("--metered-dir", required=True)
     ap.add_argument("--selection-dir", required=True)
     ap.add_argument("--corpus", default="data/bench/triviaqa_factual.jsonl")
+    ap.add_argument("--task", choices=("triviaqa", "mmlu", "lambada"), default="triviaqa",
+                    help="selects the extractor and the correctness rule; the gold\n                         set comes from --corpus either way")
     ap.add_argument("--t-max", type=int, default=24)
     ap.add_argument("--reps", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=8801)
     ap.add_argument("--tag", default="")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
+    extract_fn, ok_fn = ((extract_mmlu, lambda p, g: p in g) if a.task == "mmlu"
+                         else (extract_lambada, lambda p, g: p in g) if a.task == "lambada"
+                         else (extract_tqa, correct_tqa))
 
     gold = gold_map(a.corpus)
     met, sel = arms(a.metered_dir), arms(a.selection_dir)
@@ -89,11 +95,11 @@ def main():
     print(f"[vm] {len(pids)} questions, {n_max} draws each, metered arms {sorted(met)}", flush=True)
 
     def score(pred_by_pid):
-        return [1.0 if correct_tqa(pred_by_pid[p], gold[p]) else 0.0 for p in pids]
+        return [1.0 if ok_fn(pred_by_pid[p], gold[p]) else 0.0 for p in pids]
 
     rows = []
     # ---- selection: majority vote over the anchor's own draws, nested -------------------------
-    ans = {p: [extract_tqa(g) for g, _ in draws[p][:n_max]] for p in pids}
+    ans = {p: [extract_fn(g) for g, _ in draws[p][:n_max]] for p in pids}
     base = None
     for n in [x for x in N_GRID if x <= n_max]:
         picked = {p: ans[p][majority(ans[p][:n])] for p in pids}
@@ -120,12 +126,12 @@ def main():
     zero = met.get("0") or met.get("0.0")
     ctrl = None
     if zero:
-        ctrl = score({p: extract_tqa(zero[p][0][0]) for p in pids if p in zero})
+        ctrl = score({p: extract_fn(zero[p][0][0]) for p in pids if p in zero})
     for k in sorted(met, key=lambda s: float(s)):
         by = met[k]
         if any(p not in by for p in pids):
             continue
-        c = score({p: extract_tqa(by[p][0][0]) for p in pids})
+        c = score({p: extract_fn(by[p][0][0]) for p in pids})
         spend = sum(by[p][0][1] for p in pids) / len(pids)
         acc, lo, hi = boot(c, a.reps, a.seed)
         rec = dict(mechanism="metered decoder", arm=f"k={k}",

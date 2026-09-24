@@ -9,6 +9,7 @@ check that running the gate properly forced.
 """
 import csv
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,7 +17,9 @@ from analysis.selection_breadth import (ANCHORS, GATE_EMPTY, GATE_TOKENS,  # noq
                                         SCORING_JUDGE)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV = os.path.join(ROOT, "results", "selection_breadth.csv")
+# The paper quotes the breadth arm as re-judged on the repaired text since 2026-09-24
+# (results/forest_deecho_note.md fixed that before the re-judge), so every claim is checked there.
+CSV = os.path.join(ROOT, "results", "selection_breadth_rejudged.csv")
 
 
 def rows():
@@ -134,14 +137,16 @@ def test_section6_quotes_the_four_anchor_gains_from_the_breadth_csv():
         g, lo, hi = (float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"]))
         assert carries_band(g, lo, hi, "experiments.tex"), (r["anchor"], g, lo, hi)
     excl = sum(1 for r in new if float(r["gain_lo95"]) > 0)
-    assert excl == 2, excl
+    # two of three on the recorded text; one (Comma-7B) on the repaired, where KL3M-1.7B's
+    # interval reaches zero -- the plot must show whatever the CSV says
+    assert excl >= 1, excl
     # the claim "two of three exclude zero" is now made by the plot, so assert the plot makes it
     assert "selection_breadth_forest" in body, "the figure carrying these bands is not included"
     plotted = {lbl.split(",")[0]: (lo_, hi_) for lbl, (_g, lo_, hi_), *_ in
                __import__("tests.manuscript", fromlist=["_forest"])._forest() if lo_ is not None}
     for r in new:
         assert r["anchor"] in plotted, (r["anchor"], sorted(plotted))
-    assert sum(1 for r in new if plotted[r["anchor"]][0] > 0) == 2, plotted
+    assert sum(1 for r in new if plotted[r["anchor"]][0] > 0) == excl, plotted
     best = max(new, key=lambda r: float(r["gain"]))
     assert "Comma-7B" in best["anchor"], best["anchor"]
     # C2 of the six-anchor pre-registration read NO TREND (rho = +0.543 over six), and its
@@ -205,9 +210,9 @@ def test_the_abstract_claims_the_anchor_count_the_csv_supports():
     assert set(fams) == {r["anchor"] for r in rows()}, "an anchor has no family declared"
     words = ["", "one", "two", "three", "four", "five", "six"]
     n, total = len(gaining), len(fams)
-    claim = f"{words[n]} of {words[total]} anchors in three families"
+    nf = len({fams[a] for a in gaining})
+    claim = f"{words[n]} of {words[total]} anchors in {words[nf]} families"
     assert claim in abstract, (claim, sorted(gaining), sorted(fams))
-    assert len({fams[a] for a in gaining}) == 3, sorted(gaining)
 
 
 def test_the_abstract_scopes_the_repetition_claim_to_the_n_it_was_measured_at():
@@ -228,7 +233,7 @@ def test_the_abstract_scopes_the_repetition_claim_to_the_n_it_was_measured_at():
     import os
     for f in ("iclr_2027.tex", os.path.join("sections", "iclr_intro.tex")):
         body = open(tex(f), encoding="utf-8").read().replace("\n", " ")
-        i = body.index("four of six anchors in three families")
+        i = re.search(r"\w+ of six anchors in \w+ families", body).start()
         sentence = body[max(0, body.rfind(".", 0, i) + 1): body.index(".", i) + 1]
         assert "$n=8$" in sentence, \
             (f"{f}: the breadth claim lost its n=8 scoping and now reads as an n=64 result",

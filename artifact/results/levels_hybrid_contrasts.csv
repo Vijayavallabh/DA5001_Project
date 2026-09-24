@@ -1,0 +1,5 @@
+contrast,expr,value,lo95,hi95,n,reading
+H1_hyb8_vs_sel64,+hyb8-sel64,-0.0555,-0.078,-0.033,500,BELOW ZERO
+H2_pw1_vs_sel64,+pw1-sel64,-0.115,-0.138,-0.0915,500,BELOW ZERO
+H3_hyb2_vs_sel64,+hyb2-sel64,-0.094,-0.117,-0.0715,500,BELOW ZERO
+H4_hyb8_vs_sel8,+hyb8-sel8,-0.012,-0.03,0.006,500,STRADDLES ZERO

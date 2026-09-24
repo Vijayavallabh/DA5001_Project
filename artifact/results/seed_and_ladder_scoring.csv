@@ -1,0 +1,9 @@
+arm,set,delta,lo95,hi95,half_widths,verdict,predicted,verdict_agrees,ref_delta,move,marginal,note
+comma1t,feat-138,0.086,0.044,0.127,2.07,CLIMBS,CLIMBS,YES,0.097,0.011,no,
+pleias350m,feat-138,0.002,-0.038,0.04,0.05,SATURATED BY 8,SATURATED BY 8,YES,0.009,0.007,yes,
+kl3m170m,feat-138,0.021,-0.015,0.057,0.58,SATURATED BY 8,SATURATED BY 8,YES,0.013,0.008,yes,
+kl3m520m,feat-138,0.011,-0.024,0.048,0.31,SATURATED BY 8,SATURATED BY 8,YES,-0.007,0.018,yes,
+pleias12bhb,feat-140,0.056,0.018,0.094,1.47,CLIMBS,SATURATED BY 8,NO,0.036,0.02,yes,
+pleias3bhb,feat-140,0.073,0.032,0.113,1.8,CLIMBS,SATURATED BY 8,NO,0.003,0.07,yes,
+kl3m17bhb,feat-140,0.047,0.011,0.081,1.34,CLIMBS,SATURATED BY 8,NO,0.065,0.018,yes,
+kl3m37bhb,feat-140,,,,,NOT SCORED,,,,,,"prompt counts differ: this arm 500, reference 350. One of them is INCOMPLETE -- a class that has not finished writing yields a partial arm -- so the two means are over different prompt sets and are not comparable"

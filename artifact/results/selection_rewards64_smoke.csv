@@ -1,0 +1,81 @@
+prompt_id,rank,prompt_class,n_words,reward
+1nzes2,0,creative,75,-29.75
+1nzes2,1,creative,75,-29.125
+1nzes2,2,creative,80,-29.1875
+1nzes2,3,creative,78,-28.4375
+1nzes2,4,creative,80,-29.1875
+1nzes2,5,creative,74,-28.8125
+1nzes2,6,creative,72,-28.4375
+1nzes2,7,creative,79,-29.3125
+2786lw,0,creative,79,-28.625
+2786lw,1,creative,69,-29.0
+2786lw,2,creative,79,-28.25
+2786lw,3,creative,71,-28.125
+2786lw,4,creative,76,-29.4375
+2786lw,5,creative,79,-28.6875
+2786lw,6,creative,78,-27.875
+2786lw,7,creative,78,-29.875
+2ov45h,0,creative,7,-28.375
+2ov45h,1,creative,74,-30.5
+2ov45h,2,creative,84,-29.125
+2ov45h,3,creative,27,-28.5625
+2ov45h,4,creative,75,-29.5625
+2ov45h,5,creative,79,-29.625
+2ov45h,6,creative,77,-30.0625
+2ov45h,7,creative,65,-30.25
+fact_00376_14th Dalai Lama,0,factual,72,-29.9375
+fact_00376_14th Dalai Lama,1,factual,85,-29.625
+fact_00376_14th Dalai Lama,2,factual,74,-29.3125
+fact_00376_14th Dalai Lama,3,factual,68,-29.0
+fact_00376_14th Dalai Lama,4,factual,74,-30.3125
+fact_00376_14th Dalai Lama,5,factual,71,-29.9375
+fact_00376_14th Dalai Lama,6,factual,71,-30.1875
+fact_00376_14th Dalai Lama,7,factual,70,-29.9375
+fact_00418_A. K. Ramanujan,0,factual,70,-29.6875
+fact_00418_A. K. Ramanujan,1,factual,69,-30.3125
+fact_00418_A. K. Ramanujan,2,factual,80,-30.25
+fact_00418_A. K. Ramanujan,3,factual,69,-29.875
+fact_00418_A. K. Ramanujan,4,factual,75,-29.75
+fact_00418_A. K. Ramanujan,5,factual,74,-29.8125
+fact_00418_A. K. Ramanujan,6,factual,67,-29.6875
+fact_00418_A. K. Ramanujan,7,factual,75,-29.375
+fact_00433_Aaron Burr,0,factual,67,-29.125
+fact_00433_Aaron Burr,1,factual,40,-28.375
+fact_00433_Aaron Burr,2,factual,75,-29.3125
+fact_00433_Aaron Burr,3,factual,14,-28.3125
+fact_00433_Aaron Burr,4,factual,79,-28.625
+fact_00433_Aaron Burr,5,factual,65,-28.5
+fact_00433_Aaron Burr,6,factual,78,-27.625
+fact_00433_Aaron Burr,7,factual,79,-29.5
+neutral_bio_000,0,neutral,76,-28.3125
+neutral_bio_000,1,neutral,74,-30.625
+neutral_bio_000,2,neutral,77,-30.3125
+neutral_bio_000,3,neutral,70,-28.5
+neutral_bio_000,4,neutral,73,-28.6875
+neutral_bio_000,5,neutral,79,-30.125
+neutral_bio_000,6,neutral,55,-29.8125
+neutral_bio_000,7,neutral,66,-30.375
+neutral_bio_001,0,neutral,83,-28.0625
+neutral_bio_001,1,neutral,86,-28.625
+neutral_bio_001,2,neutral,71,-29.5
+neutral_bio_001,3,neutral,73,-29.8125
+neutral_bio_001,4,neutral,65,-28.9375
+neutral_bio_001,5,neutral,70,-29.3125
+neutral_bio_001,6,neutral,74,-29.5
+neutral_bio_001,7,neutral,72,-28.25
+neutral_bio_002,0,neutral,73,-29.625
+neutral_bio_002,1,neutral,69,-29.375
+neutral_bio_002,2,neutral,71,-29.875
+neutral_bio_002,3,neutral,71,-29.5625
+neutral_bio_002,4,neutral,64,-29.75
+neutral_bio_002,5,neutral,73,-29.5625
+neutral_bio_002,6,neutral,69,-29.0625
+neutral_bio_002,7,neutral,73,-29.8125
+neutral_bio_003,0,neutral,69,-30.0
+neutral_bio_003,1,neutral,73,-29.9375
+neutral_bio_003,2,neutral,74,-30.125
+neutral_bio_003,3,neutral,85,-27.6875
+neutral_bio_003,4,neutral,80,-29.375
+neutral_bio_003,5,neutral,79,-28.8125
+neutral_bio_003,6,neutral,74,-30.1875
+neutral_bio_003,7,neutral,79,-29.5

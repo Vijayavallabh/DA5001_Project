@@ -1,0 +1,851 @@
+judge,prompt_id,u_n1,u_n2,u_n4,u_n8,u_n16,u_n32,u_n64,u_n128,u_n256,u_n512
+Phi-3.5-mini-instruct,1nzes2,0.5,0.5,0.5,1.0,1.0,0.5,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,2786lw,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,2ov45h,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,49u4dh,1.0,0.5,0.5,0.5,1.0,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,4iorz7,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,4xzr87,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,53rqr9,0.0,0.0,0.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5apkek,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5e6rcz,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,5ec7q2,0.0,0.5,0.5,0.5,1.0,0.0,0.5,1.0,0.0,0.0
+Phi-3.5-mini-instruct,5f5p86,0.5,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,5fqwjc,0.5,0.0,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,5g58dz,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,5gq4jc,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,5j7ypk,1.0,0.5,1.0,1.0,0.5,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,5je6l4,0.5,0.5,1.0,0.5,0.5,1.0,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,5nc21f,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,5nzsq6,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,5ozqb9,0.0,0.0,0.5,0.5,1.0,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,5qf97d,0.5,0.5,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,5qwzjo,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,5r104c,0.0,0.0,0.5,0.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,5te65i,1.0,1.0,1.0,0.0,0.5,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,5umucz,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,0.5,0.0
+Phi-3.5-mini-instruct,5w4x14,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,609k0n,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,1.0
+Phi-3.5-mini-instruct,625es0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,63dn97,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,63ku7q,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,64c0w6,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,65458n,0.5,0.0,1.0,0.5,0.5,1.0,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,66uo64,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,68f5c5,1.0,1.0,1.0,0.5,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,68ykga,1.0,1.0,1.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,69dzba,1.0,1.0,1.0,1.0,1.0,0.5,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,6d1iqq,0.0,0.0,0.5,0.5,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,6eytds,0.5,0.5,0.5,1.0,0.5,0.5,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,6gl289,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6hoxmq,1.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6imc4i,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,6isay3,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6ixx9u,0.0,0.0,0.5,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,6k8gdu,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,6l6v6l,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,6m7z8a,0.0,0.5,1.0,0.5,0.5,0.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,6mztko,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,6o18uh,0.5,0.0,0.5,0.0,0.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6o679d,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,6ohgxv,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,6szrbs,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6tsiyd,0.5,0.5,0.5,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6wgtsx,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,6wxzhc,0.0,0.0,0.0,0.0,1.0,1.0,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,6xisxt,0.5,0.5,0.5,0.0,0.5,1.0,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,6xngfe,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,6xsruw,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,71p51h,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,72l2aj,1.0,0.5,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,74ih3z,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,765fhd,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,76b9gc,1.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0,0.5,1.0
+Phi-3.5-mini-instruct,77dd17,0.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,796161,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7adktz,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7bowjq,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,7d0x9k,0.0,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,7dcwik,1.0,1.0,0.5,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7e3im5,0.5,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7en7vl,0.5,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,7ezd5t,0.0,0.0,1.0,0.0,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,7gjj2w,0.0,0.0,0.0,1.0,0.5,0.5,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7h9f8e,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7iltd1,0.5,0.5,0.5,0.0,0.0,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7iubwq,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,7jfvx7,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,7jqj29,0.5,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7l7e1m,1.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,7ld0jk,0.5,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7lzk5g,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,7q0acw,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,7rb6uj,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,7rie85,0.5,0.5,0.5,0.5,0.5,1.0,1.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,7rpy8m,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,7svmp5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7tge90,1.0,1.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7u04a5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,7uezw8,0.0,0.5,0.5,0.5,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,7v8ind,0.0,0.0,0.0,0.0,0.0,0.5,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,80sf6g,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,83mehz,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,849wc3,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,87ak6w,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,87tx3g,0.0,0.0,0.0,1.0,1.0,0.5,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,8a18sf,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8aec6t,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,8fk0hr,1.0,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,8gfhh9,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,8gs4wp,0.5,0.5,0.5,0.0,1.0,1.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,8k4am7,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8myeno,0.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8o89ko,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,1.0,0.0
+Phi-3.5-mini-instruct,8p3ora,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,8pr271,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8tmkfc,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,8vr4k2,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,8vyqdq,0.5,1.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,8x0xa7,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,8x86s0,0.5,0.5,0.0,1.0,1.0,1.0,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,8y8wrr,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,8z1sq1,1.0,0.5,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,9470fc,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,96myl6,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,96xnw9,0.5,0.5,0.5,0.5,0.5,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,99kk88,0.0,0.0,1.0,0.5,0.5,0.5,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,9edjv0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,9f7www,0.5,0.5,0.5,0.0,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,9g2cbq,0.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,9ki47u,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,9l0dam,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,9neuk8,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,9qn4tw,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,a318ye,0.5,0.5,0.0,0.5,0.5,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,a3pdwk,1.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,acjzv0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,afc9c4,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,aowr4t,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,ar7nm2,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,auig0m,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,b4yx63,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,b87jl7,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,b9uzz1,1.0,1.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,bhyplf,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,bk7lic,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,ciifmd,0.5,0.5,1.0,1.0,0.5,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,ck6twx,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,cpxk2b,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,dqn4sj,0.5,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,eu7ub2,1.0,1.0,0.5,0.5,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00000_Suthida,0.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00001_Miguel Ángel Félix Gallardo,1.0,1.0,0.5,0.5,0.5,0.0,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00002_Iggy Azalea,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00003_Fernando da Costa Novaes,1.0,1.0,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00004_Jan Zamoyski,0.0,1.0,0.5,0.5,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00005_Radhika Apte,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00006_David Galloway (writer),1.0,1.0,1.0,0.0,0.0,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00007_Cheyenne Brando,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00008_Mihai Eminescu,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00009_John Atkinson Grimshaw,1.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00010_Maja Jager,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00011_Richie Dorman,0.0,0.0,0.5,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00012_Braulio Lara,0.5,0.5,0.0,0.0,0.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00013_Katherine Ryan,0.5,0.5,0.5,0.0,0.0,0.5,0.5,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00014_Matthew Perry,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00015_Amr Shabana,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00016_Sage Stallone,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00017_Abdulqawi Yusuf,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00018_Namita Gokhale,1.0,1.0,1.0,1.0,1.0,0.0,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00019_Henryk Wieniawski,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00020_Heinrich Himmler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00021_Jan-Michael Gambill,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00022_Muhammad Al-Hafiz,1.0,0.0,0.5,0.5,0.5,0.5,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,"fact_00023_Tracy Somerset, Duchess of Beaufort",1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00024_Josh Mansour,1.0,0.0,0.5,0.0,0.0,1.0,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00025_Carlos P. Romulo,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00026_Kubota Beisen,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00027_Arthur Ewert,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00028_John Morris (curler),1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00029_Matt Hunter (singer),0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00030_Ivan Toms,0.5,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00031_Salome Maswime,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00032_Flavio Méndez Santiago,0.5,0.5,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00033_Lokesh Kanagaraj,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00034_Tappaya Sit-Or,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00035_Ronaldinho,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00036_Rana Sanaullah,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00037_Karni Liddell,0.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00038_Ted Mack (politician),0.0,0.0,0.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00039_Chris Duffield,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00040_Daniil Medvedev,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00041_Giorgi Papunashvili,0.5,0.5,0.5,0.0,0.0,0.0,0.5,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00042_Nancy Onyango,0.5,0.5,0.5,1.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00043_Alexander Vovin,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00044_Cobhams Asuquo,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00045_David Bogue,0.0,0.0,0.0,0.5,0.5,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00046_PewDiePie,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00047_Minako Honda,0.0,0.0,0.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00048_Don Beard,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00049_Isla Fisher,1.0,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00050_Jeremy Northam,0.5,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00051_Harry Cave,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00052_Rory Burns,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00053_Andriy Yarmolenko,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00054_Thierry Henry,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00055_Gary Woodland,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00056_James Theodore Bent,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00057_Kajal Aggarwal,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00058_Danny Faure,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00059_Vicente Guerrero,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00060_Ilhan Omar,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00061_Nelson Mandela,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00062_Joey Jordison,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00063_Ayman al-Zawahiri,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00064_Diego Suarez (garden designer),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00065_Muhammad Qutb,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00066_Daniel Alexander Cameron,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00067_Ivan Perišić,1.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00068_Gemma Arterton,0.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00069_Shin Jea-hwan,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00070_Nuh Omar,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00071_Jeremy Corbyn,0.5,0.0,0.0,0.5,0.0,0.5,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00072_Jeff Long (athletic director),0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00073_Jackie Shroff,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00074_Sami Shalom Chetrit,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00075_Antonio Leviste,1.0,1.0,1.0,0.5,0.5,0.5,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00076_José Hernández Delgadillo,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00077_Sandra Pisani,0.0,0.0,0.5,0.5,0.5,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00078_Chi Pu,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00079_Paul Anka,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,"fact_00080_Felipe (footballer, born 1977)",1.0,0.5,0.5,0.5,0.5,0.0,0.0,0.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00081_Neil Sinclair,1.0,0.0,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00082_Peter Gallagher,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00083_Joseph Kony,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00084_Alfred Hitchcock,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00085_Dascha Polanco,1.0,1.0,0.5,0.5,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00086_Amelia Earhart,0.0,0.0,0.0,0.0,0.5,0.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00087_Chris John (boxer),0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00088_Blair Tugman,0.5,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00089_Tom Coburn,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00090_Mamunul Islam,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00091_Umika Kawashima,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00092_Grayston Burgess,1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00093_David Oyite-Ojok,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00094_Thomas Piketty,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00095_Richard Kuklinski,0.0,0.0,0.0,0.5,0.5,0.5,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00096_Ki Fitzgerald,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00097_Chris Cuomo,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00098_Adnan Sami,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00099_Krystyna Szczepańska,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00100_Rangi Te Kanawa,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00101_Mohamed Abdi Mohamed,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00102_Griselda Blanco,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00103_Jimmy Weldon,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00104_Steve Cummins,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00105_Pallavi Joshi,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00106_Sofiane Feghouli,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00107_Theophilus Annorbaah,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00108_Bhuma Nagi Reddy,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00109_Charmion King,0.0,0.0,0.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00110_Andreea Marin,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00111_Raffaele Maiello,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00112_John Craven,0.0,0.0,0.0,0.0,0.5,0.5,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00113_Fumiko Kaneko,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00114_Ahn Jae-hyun,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00115_Rory Tapner,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00116_Bobo Baldé,0.5,0.0,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00117_Rafael Nadal,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00118_Chacho Gaytán,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00119_Bastian Schweinsteiger,1.0,0.0,0.0,0.0,1.0,1.0,0.5,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00120_Erich Hartmann,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00121_Maya Yoshida,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00122_Flávio Rocha,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00123_John Forbes Nash Jr.,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00124_Zewde Gebre-Sellassie,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00125_Lupe Vélez,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00126_Kevin De Bruyne,0.0,1.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00127_Ezechiel N'Douassel,0.5,0.5,0.5,1.0,1.0,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00128_Noel Malicdem,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00129_Rebecca Romijn,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00130_Robert Guthrie,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00131_Aditya Kalyanpur,0.0,1.0,1.0,0.5,0.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00132_Dennis Andersson,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00133_Daniel Bedingfield,1.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00134_Celâl Bayar,0.0,0.0,1.0,0.0,0.5,0.0,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00135_Michael Coulson (barrister),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00136_Khalid Mahmood Mithu,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00137_Rachel Weisz,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00138_Diana Ivanova,0.0,0.0,0.0,0.0,0.5,1.0,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00139_Jashubhai Dhanabhai Barad,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00140_André Le Nôtre,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00141_Kerwin Bell,0.0,0.0,0.0,1.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00142_Cierre Wood,0.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00143_Stephen Miller (political advisor),1.0,1.0,0.0,0.0,0.0,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00144_Jacques Cousteau,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00145_Carmelo Anthony,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00146_Asafa Powell,0.0,1.0,1.0,1.0,0.0,0.5,1.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00147_Huang Xing,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00148_Rohit Sharma,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00149_Jorge Enríquez,1.0,0.0,0.0,0.0,1.0,1.0,0.5,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00150_Levi Roots,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00151_Jean-Claude Van Damme,1.0,1.0,1.0,0.5,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00152_Felix Newman,1.0,1.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00153_Santiago Vergini,1.0,0.0,0.0,0.5,1.0,1.0,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00154_Earl Garrison,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00155_Tacko Fall,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00156_Karl Eliasberg,0.5,0.5,0.5,0.0,0.0,1.0,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00157_Timothy Evans,0.0,0.0,0.0,0.0,0.5,0.5,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00158_Jeffrey Viggiano,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00159_Yordanka Donkova,0.0,0.0,0.0,1.0,1.0,0.5,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00160_Tony Bellew,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00161_Winston Churchill,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00162_Aleksandar Kolarov,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00163_Alexandre Hohagen,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00164_Jamie Cripps,0.0,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00165_Marcus Aurelius,0.0,0.5,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00166_Emcee N.I.C.E.,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00167_Sun Wenguang,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00168_Jeff Beukeboom,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00169_Phil Vickery (rugby union),0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00170_Shoya Nakajima,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00171_Karyn Pugliese,0.5,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00172_Ingo Titze,0.5,0.5,0.0,1.0,1.0,1.0,0.5,0.5,0.0,1.0
+Phi-3.5-mini-instruct,fact_00173_León Dujovne,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00174_Jennifer Sevilla,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00175_Will Keane,0.5,0.5,0.5,0.0,0.5,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00176_Settimo Mineo,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00177_Yuu Watase,1.0,1.0,1.0,1.0,0.5,1.0,1.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00178_Pablo Ganet,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00179_Sayaka Ando,0.0,0.5,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00180_Édgar Iván López,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00181_Chris Woakes,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00182_Diosdado Cabello,1.0,1.0,1.0,1.0,1.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00183_Muhammad Ali Jinnah,0.0,1.0,1.0,1.0,0.5,0.5,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00184_Dana Awartani,0.5,1.0,1.0,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00185_Brianna Keilar,0.0,0.0,0.0,0.0,0.0,0.0,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00186_Vanda Pignato,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00187_Vadhir Derbez,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00188_Cédric Bakambu,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00189_Neil Googe,0.0,0.0,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00190_Sada Thompson,0.0,0.0,0.0,0.0,0.5,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00191_Thirayuth Boonmee,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00192_Michael L. MacDonald,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00193_Bobby Fischer,0.5,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00194_Jose Canseco,0.0,0.5,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00195_Jeffrey Satinover,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00196_Yehuda Lindell,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00197_Kathleen A. McGrath,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00198_Benjamin Lawrence Reid,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00199_Djimon Hounsou,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00200_Vance Joy,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00201_Jimmy Tompkins (priest),0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00202_Ahsee Tuala,0.5,0.5,0.5,0.0,0.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00203_Susan Sarandon,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00204_Don DeLillo,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00205_Ramli Sarip,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00206_Michael Collins (astronaut),0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00207_Elizabeth Inglis,0.0,0.0,0.0,0.5,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00208_Fifi Cooper,0.0,0.0,0.0,0.5,0.5,0.5,0.5,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00209_Lali Espósito,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00210_Maddy Crippen,0.5,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00211_Francis Nicholson (painter),0.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00212_Will Voigt,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00213_Josiah Maduabuchi,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00214_Thomas Jack,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00215_Ziaur Rahman,1.0,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00216_Loo Kum Zee,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00217_Patoranking,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00218_Richard Burton,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00219_Guillermo Rigondeaux,0.0,1.0,1.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00220_Shaolin (humorist),1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00221_Jessie Mae Brown Beavers,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.0,1.0
+Phi-3.5-mini-instruct,fact_00222_Lennie Hayton,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00223_Ahmed Mumin Warfa,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00224_Rachel Bilson,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00225_Xi Jinping,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00226_Dewi Sartika,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00227_Alf Garland,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00228_Raúl Esparza,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00229_Robin del Castillo,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00230_Abdul Ilah Khatib,1.0,1.0,1.0,0.0,0.5,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00231_Jennifer Maia,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00232_Philippe Coutinho,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00233_Kevin Anderson (tennis),1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00234_Pogo (musician),0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00235_Valerie Harper,0.0,0.5,0.5,0.5,0.5,0.5,1.0,1.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00236_Fuerza Guerrera,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00237_Mukesh (actor),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00238_Serena Tideman,1.0,1.0,0.5,0.0,0.5,0.5,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00239_Bif Naked,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00240_Phife Dawg,0.0,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00241_Michael Folorunsho,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00242_Naz Mitrou-Long,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00243_Julie Bishop,1.0,1.0,1.0,0.5,1.0,1.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00244_Tarik Marzouk,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00245_Dominique Blake,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00246_Lina Marulanda,0.5,1.0,1.0,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00247_Diafra Sakho,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00248_Haruto Takahashi,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00249_Fahadh Faasil,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00250_Dr. Dre,1.0,0.5,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00251_Quincy Jones,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00252_W. Clark Still,1.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00253_Patrick Merrill,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00254_Radja Nainggolan,0.0,0.0,0.5,0.5,0.5,0.5,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00255_Caitlin Lowe,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00256_Salt Bae,0.0,0.0,0.0,0.5,0.5,0.5,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00257_Camille Paulus,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00258_Charley Boorman,0.0,1.0,0.0,0.5,0.0,0.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00259_Michael Douglas,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00260_Douglas Wood (engineer),0.0,0.0,0.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00261_Zubaira Tukhugov,0.5,0.5,0.5,1.0,0.0,0.0,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00262_Riccardo Tisci,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00263_Billy Snedden,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00264_Esteban Espíndola,0.5,0.5,0.5,0.5,0.5,1.0,0.5,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00265_Franck Ribéry,1.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00266_Jamie Dornan,1.0,0.0,0.5,1.0,1.0,1.0,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00267_Gretl Braun,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00268_Patricia Cladis,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00269_Idris Elba,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00270_Daniel Ek,0.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00271_Ushoshi Sengupta,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00272_Joseph Michael Linsner,1.0,1.0,0.5,0.0,1.0,0.5,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00273_Julian Jarrold,1.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00274_Kari Matchett,0.0,1.0,1.0,0.5,0.0,0.0,1.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00275_Belisarius,1.0,1.0,1.0,0.0,0.5,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00276_Carol Dweck,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00277_Johann Christian von Engel,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00278_José Cardozo,0.0,0.0,1.0,1.0,1.0,0.5,1.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00279_Ted Thompson,0.0,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00280_Stephanus Swart,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00281_Grant Bowler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00282_Robert Jennings (rugby league),0.5,0.5,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00283_Leo Kokubo,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00284_Mark Murphy (singer),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00285_Rigoberto Torres,0.5,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.0,1.0
+Phi-3.5-mini-instruct,fact_00286_Amr Diab,0.0,0.0,0.0,0.5,0.5,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00287_Walter Model,1.0,0.0,0.0,0.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00288_Joel Edgerton,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00289_Robbie Horgan,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00290_Vicky Kaushal,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00291_Stan Marple,0.0,0.0,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00292_Tanel Ingi,1.0,1.0,0.0,1.0,1.0,0.5,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00293_John Counter,1.0,1.0,0.5,1.0,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00294_Klaudia Kaczorowska,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00295_Muhammad Alhamid,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00296_Akbar Hossain,0.5,0.5,0.5,1.0,1.0,1.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00297_Wil Nieves,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00298_Jemima Goldsmith,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00299_Roxana Miranda,0.5,0.5,0.5,0.5,0.5,0.0,0.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00300_Coco Chanel,0.0,1.0,0.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00301_Tom Buk-Swienty,0.0,0.5,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00302_Enamul Haque (engineer),0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00303_Jefferson Thomas,0.0,0.5,0.0,0.5,0.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00304_Abdelhamid Shabana,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00305_Mattias Asper,0.5,0.5,0.0,1.0,1.0,1.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00306_G. Fowler Stewart,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00307_Abdullahi Mohammad Ahmad Hassan,0.0,0.0,1.0,0.0,0.0,0.0,0.5,1.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00308_Sérgio Moraes,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00309_Diego Godín,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00310_Lunay (singer),0.5,1.0,1.0,0.5,0.5,0.5,0.5,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00311_Trevor Noah,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00312_Adel Emam,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00313_Samir Kochhar,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00314_Rosé (singer),0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00315_Billy Conigliaro,1.0,0.0,0.5,0.5,0.5,0.5,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00316_Arif Mohammad Khan,0.5,0.5,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00317_Nikole Hannah-Jones,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00318_María José (singer),0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00319_Robert Whittaker (fighter),0.0,0.0,1.0,1.0,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00320_Sergei Bodrov,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00321_Bob Marley,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00322_Jake Tilson,0.5,0.5,0.5,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00323_Michael H. Schneider Sr.,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00324_Zeca Pagodinho,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00325_Irina Shayk,1.0,0.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00326_Maggie Cogan,0.0,1.0,1.0,0.0,0.0,0.5,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,fact_00327_Marcel Hernández,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00328_Dana Ashbrook,0.5,0.0,0.5,0.5,0.5,0.0,1.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00329_Ricky Martin,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00330_Ryan Brasier,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00331_Kathinka Pasveer,1.0,1.0,1.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00332_Cha Eun-woo,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00333_Abdul Halik Hudu,0.0,0.5,1.0,0.0,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00334_Worranit Thawornwong,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00335_Carl Braun (obstetrician),1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00336_Shawn Ashmore,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00337_Sila María Calderón,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00338_Pratibha Patil,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00339_Lodewicus du Plessis,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00340_Shane Fontayne,0.0,0.0,0.0,0.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00341_RM (rapper),0.5,0.5,0.5,0.0,0.0,0.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00342_Francisco Urroz (footballer),0.0,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00343_Ameyaw Debrah,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00344_Cleopatra,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00345_Ana Cláudia Bolzan,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00346_Jean Muir (actress),0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00347_Evgeny Shalunov,0.0,0.0,0.0,0.5,0.5,0.5,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00348_Charles Allen (jurist),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00349_Deyverson,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00350_Ruth Fischer,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00351_Cris Cyborg,0.0,0.5,0.5,0.0,0.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00352_Joe McGinniss,0.0,0.0,0.0,0.0,1.0,1.0,0.5,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00353_Yuyan,0.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,fact_00354_Bobby Thomson,1.0,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00355_Vijay (actor),0.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00356_Eric Winter,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00357_Hoshiar Singh Dahiya,0.5,0.0,0.5,0.5,0.5,0.0,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,fact_00358_Maxime Masson,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,fact_00359_Gopi Sundar,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00360_James Tyrrell,0.0,0.5,1.0,1.0,1.0,0.0,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,fact_00361_Imbolo Mbue,0.0,1.0,0.0,0.5,0.5,0.5,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00362_Aert van der Neer,0.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00363_Karl Urban,0.0,0.0,0.0,1.0,1.0,0.5,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00364_Blanca Errázuriz,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00365_Hayden Panettiere,0.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00366_Deitrick Haddon,0.5,0.5,0.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00367_Andreas Ivanschitz,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00368_Clancy Brown,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00369_Tarik Elyounoussi,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00370_Melvin Van Peebles,1.0,1.0,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00371_Carrie Ann Inaba,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00372_Roman Pavlyuchenko,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00373_Jesse Chacón,1.0,0.5,0.5,0.5,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00374_Cicero,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00375_Kelli White,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00376_14th Dalai Lama,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00377_Christian Almeida,0.0,0.0,0.5,0.5,0.5,0.0,0.5,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00378_Arthur Wakefield,0.5,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00379_Marty Mayberry,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00380_Rui Campos,0.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00381_Vicente Carrillo Fuentes,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00382_Sheldon T. Mills,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00383_Joseph A. Lopez,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00384_Andry Rajoelina,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00385_Hu Qili,0.0,0.0,0.5,0.5,1.0,0.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00386_Vishal (actor),0.5,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00387_George VI,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00388_James Franco,0.5,0.0,0.0,1.0,0.5,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00389_Lisa Ling,0.5,0.5,1.0,1.0,0.5,0.0,0.0,1.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00390_Mike Adenuga,0.0,0.0,0.0,1.0,0.0,0.5,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00391_Idi Amin,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00392_Generoso Rossi,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,"fact_00393_João Lucas (footballer, born 1991)",0.5,0.5,0.0,0.5,1.0,1.0,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00394_Danny Almonte,0.5,0.5,0.0,0.5,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00395_Meg Thalken,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00396_Andy Middleton,1.0,1.0,0.0,0.0,0.0,0.5,1.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00397_Anderson Silva,0.0,1.0,1.0,0.0,1.0,0.5,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00398_Phillip Gillespie,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00399_Edgar Bennett,0.5,1.0,0.5,1.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00400_Mike Melvill,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00401_Balázs Bekő,0.5,0.5,0.5,0.5,0.5,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00402_Lucas Boyé,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00403_Rosaline Elbay,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00404_Abraham Ancer,0.5,0.0,0.5,0.5,0.5,0.5,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00405_Margaret Rose Vendryes,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00406_Jackson Martínez,0.0,0.0,1.0,0.0,0.0,0.0,0.5,0.5,0.5,0.0
+Phi-3.5-mini-instruct,fact_00407_Pablo Zabaleta,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00408_Kaoru Kuroki,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00409_G. Venugopal,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00410_Lionel Messi,0.0,1.0,1.0,1.0,1.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00411_Terrence Romeo,0.0,0.0,0.0,0.0,1.0,0.5,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00412_Luiz Inácio Lula da Silva,0.0,0.0,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00413_Henry VII of England,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00414_Ian Khama,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00415_Juan Nepomucino Goetz,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00416_Sam Michael,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00417_Virginia Christine,0.5,0.5,1.0,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00418_A. K. Ramanujan,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00419_Ramkumar Mukhopadhyay,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00420_Carlos Ghosn,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00421_Anurag Kashyap,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00422_Mateo Correa Magallanes,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00423_Stephanie Beatriz,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00424_Mindy Smith,0.5,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00425_Angela Bairstow,0.5,0.5,0.5,0.5,1.0,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00426_R. Selvaraj (politician),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00427_Ernestine Eckstein,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00428_George Washington,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,1.0
+Phi-3.5-mini-instruct,fact_00429_Nobuhiro Shimatani,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00430_Ezekiel Elliott,0.0,1.0,1.0,0.5,0.5,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00431_Raghav Juyal,0.0,0.5,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00432_Manny Pacquiao,0.5,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00433_Aaron Burr,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00434_Tim Ferguson,0.0,0.0,0.0,0.5,0.5,0.5,1.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00435_Uee,0.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00436_Martha Cunz,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,"fact_00437_Prince Carl Philip, Duke of Värmland",1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00438_Kaká,0.0,0.0,0.0,0.0,0.5,0.5,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00439_Kiara Advani,0.5,0.5,0.5,0.5,0.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00440_Witold Gombrowicz,1.0,1.0,1.0,0.0,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,fact_00441_Maurice Jones-Drew,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00442_Geraldo de Barros,0.5,0.5,1.0,1.0,0.5,0.5,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00443_Roman Šebrle,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00444_Charles B. McVay III,0.0,0.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00445_Shakira,1.0,0.5,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00446_Zié Ouattara,1.0,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00447_Nick Kyrgios,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00448_Carol Chell,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00449_Alen Omić,0.5,0.5,0.0,0.5,0.5,0.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00450_Vasily Chuikov,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00451_George Eacker,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00452_Alice Torriani,0.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00453_Gulshan Kumar,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00454_Albert Outler,1.0,1.0,0.0,0.5,0.0,0.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00455_Félix María Zuloaga,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00456_Frank Middlemass,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00457_William M. Brodhead,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00458_Jo Koy,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00459_Felician of Foligno,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00460_Annie Landouw,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00461_Zhang Yaokun,1.0,1.0,0.0,0.0,0.5,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00462_Bhāskara I,0.0,1.0,0.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,fact_00463_Profit (gamer),1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00464_Damon Herriman,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00465_Liam Neeson,0.0,0.0,0.5,0.5,0.5,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00466_Feroze Gandhi,1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00467_Takuma Asano,1.0,1.0,0.5,0.0,1.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00468_Lemuel W. Joiner,0.0,0.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,fact_00469_Michael Goleniewski,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00470_Neha Sargam,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00471_D. B. Nihalsinghe,0.0,0.5,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00472_Joji (musician),0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00473_Rory Byrne,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,fact_00474_Shigeru Fukudome,1.0,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00475_Vladimir Lenin,0.0,0.0,0.0,0.5,0.5,0.5,0.5,1.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00476_Napoleon,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00477_Kion Smith,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,fact_00478_F. Gwynplaine MacIntyre,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.0
+Phi-3.5-mini-instruct,fact_00479_Jonathan Roy,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00480_Hiren Gohain,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,fact_00481_Stephen J. Mackwell,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00482_William G. Angel,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00483_Vujadin Savić,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00484_Marli Renfro,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,0.5
+Phi-3.5-mini-instruct,fact_00485_Rii Sen,0.0,0.5,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00486_Fidel Castro,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00487_Gubby Allen,0.0,0.5,0.0,0.5,0.5,0.5,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00488_Funke Abimbola,0.0,0.0,0.5,1.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00489_Bir Hambir,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00490_Sayuri Yamauchi,0.5,0.5,0.0,1.0,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00491_Avraham Eilam-Amzallag,0.5,0.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00492_Date Narikuni,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00493_Nonzee Nimibutr,1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00494_Ralph Macchio,0.0,0.0,0.0,0.0,0.0,0.5,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,fact_00495_Ariel Behar,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,fact_00496_Lou Briel,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,fact_00497_Joseph Jaquet,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00498_DeAnna Bennett,0.0,0.0,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,fact_00499_Jennifer Paz,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,g4fs4z,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,gyp3c3,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,hmsv36,1.0,1.0,0.0,0.0,0.0,1.0,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,hrkod1,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,irdp6g,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,iuj8br,0.5,0.5,0.5,1.0,1.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,jizn99,0.5,0.0,0.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,jjrido,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,llrdyo,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,lvcurd,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,m70bt5,1.0,0.5,0.5,1.0,1.0,1.0,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,mjrz7h,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_000,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_001,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_bio_002,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_003,1.0,1.0,1.0,0.5,1.0,1.0,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_004,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_005,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.5,0.5,0.0
+Phi-3.5-mini-instruct,neutral_bio_006,0.5,0.0,0.0,0.5,0.5,1.0,0.5,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_007,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_008,1.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_009,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_010,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_011,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_012,1.0,1.0,0.5,0.5,1.0,0.5,0.5,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_013,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_014,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_015,1.0,0.5,0.5,0.5,0.5,0.5,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_016,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_017,0.5,0.5,0.5,0.5,1.0,1.0,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_018,1.0,1.0,0.5,1.0,1.0,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_019,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_020,0.5,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_021,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_022,0.0,0.0,0.5,0.5,0.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_023,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_024,0.5,0.5,0.5,0.5,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_025,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_026,1.0,1.0,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_027,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_028,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_029,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_bio_030,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_031,0.0,0.0,0.0,0.5,1.0,0.5,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_032,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_033,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_034,0.5,0.0,0.0,0.0,0.0,0.0,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_bio_035,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_036,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_037,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_bio_038,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_bio_039,0.0,0.5,0.5,0.0,0.0,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_000,0.5,0.0,0.0,1.0,0.5,0.5,0.5,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_001,0.5,0.5,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_002,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_003,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_004,0.0,0.5,0.5,0.5,1.0,0.0,0.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_005,0.5,0.0,0.5,0.5,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_006,0.5,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_007,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_008,0.0,0.5,0.5,0.0,0.0,0.5,0.5,0.5,0.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_009,1.0,0.5,0.5,1.0,1.0,0.0,1.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_010,0.5,0.0,0.5,0.5,0.5,0.5,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_011,1.0,1.0,1.0,1.0,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_012,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_013,0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_014,0.5,0.5,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_015,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_016,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_017,0.5,0.5,1.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_018,1.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_nar_019,1.0,0.5,1.0,0.5,0.5,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_020,0.5,0.5,0.5,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_021,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_022,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_023,0.5,1.0,1.0,0.5,0.5,1.0,1.0,0.0,0.5,1.0
+Phi-3.5-mini-instruct,neutral_nar_024,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_025,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_026,0.5,0.5,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_027,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_028,1.0,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_029,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_030,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_031,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_032,0.5,1.0,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_033,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_nar_034,1.0,1.0,1.0,0.5,1.0,0.5,0.5,0.5,1.0,0.5
+Phi-3.5-mini-instruct,neutral_nar_035,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_036,1.0,1.0,0.5,0.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_037,0.5,0.5,0.5,1.0,0.5,0.5,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_nar_038,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_nar_039,0.5,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_000,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_ncs_001,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_002,0.0,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_ncs_003,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_004,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_005,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_006,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_007,0.5,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_008,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_009,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_010,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_011,0.0,0.0,0.5,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_012,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_013,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_014,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_015,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_016,0.5,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_017,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_018,0.5,0.5,0.5,0.5,0.5,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_019,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_020,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_021,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_ncs_022,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_023,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_024,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_025,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_026,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_027,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_028,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_029,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_030,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_031,1.0,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_032,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_033,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_034,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_035,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_036,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_ncs_037,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_ncs_038,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_ncs_039,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_000,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_001,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_002,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.5
+Phi-3.5-mini-instruct,neutral_qa_003,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_004,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_005,0.5,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_006,1.0,1.0,0.5,0.5,0.5,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_007,1.0,1.0,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_008,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_009,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_010,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_011,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_012,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_013,1.0,1.0,1.0,0.5,0.5,1.0,1.0,0.5,1.0,0.5
+Phi-3.5-mini-instruct,neutral_qa_014,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_015,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_016,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_017,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_018,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_019,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_020,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_021,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_022,1.0,0.5,0.5,0.5,0.5,0.5,0.5,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_023,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_024,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_025,0.5,0.0,1.0,1.0,1.0,1.0,1.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_026,0.5,0.5,0.5,0.5,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_027,0.5,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_028,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_029,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_qa_030,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_031,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_032,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_033,1.0,0.5,0.5,1.0,0.5,0.5,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_034,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_035,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_qa_036,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_qa_037,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_qa_038,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_qa_039,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_000,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.5,1.0
+Phi-3.5-mini-instruct,neutral_sum_001,0.0,1.0,1.0,0.5,0.5,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_003,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_004,1.0,1.0,0.5,0.5,0.5,1.0,1.0,1.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_005,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_006,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_007,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_008,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_009,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_010,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_011,1.0,1.0,0.5,1.0,1.0,1.0,1.0,1.0,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_012,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_013,0.5,0.5,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_014,1.0,1.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_015,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,1.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_016,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_017,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0
+Phi-3.5-mini-instruct,neutral_sum_018,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_019,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_020,1.0,0.5,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_021,1.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_022,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_023,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_024,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_025,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.0,0.5
+Phi-3.5-mini-instruct,neutral_sum_026,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_027,0.0,1.0,1.0,1.0,0.5,0.5,0.0,0.0,0.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_028,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.5,0.5,0.5
+Phi-3.5-mini-instruct,neutral_sum_029,1.0,0.5,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_030,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_031,0.5,0.5,0.5,0.5,0.0,0.0,0.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_032,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5
+Phi-3.5-mini-instruct,neutral_sum_033,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_034,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_035,0.0,1.0,1.0,0.5,0.5,0.0,1.0,0.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_036,0.5,0.5,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0
+Phi-3.5-mini-instruct,neutral_sum_037,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_038,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+Phi-3.5-mini-instruct,neutral_sum_039,0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0

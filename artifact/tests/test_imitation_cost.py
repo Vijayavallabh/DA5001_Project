@@ -166,34 +166,23 @@ def test_the_limitations_no_longer_call_the_shape_question_open():
     assert "is open" in closing, "the limitation must say that something is open"
 
 
-def test_the_spend_concentration_beside_the_sparsity_proposition_rounds_from_the_csv():
-    """Proposition 5 needs a policy on an O(1) budget to put its spend on O(1) steps. The deployed
-    rule is at the other extreme, and the appendix quotes two numbers for how far."""
-    r = IMIT[("ordinary", "20")]
-    top1 = 100 * float(r["top1pct_of_steps_share_of_spend"])
-    cov = 100 * float(r["frac_of_steps_for_90pct_of_spend"])
+def test_the_appendix_prose_carries_the_imitation_rate_and_both_shapes():
+    """fig:imitation was cut on 2026-09-19 for the page budget: the table immediately above it
+    carried the same rate-versus-cap series numerically, and the concentration shape its second
+    panel drew is stated in the prose. Caution (f) -- a missing \\includegraphics halts tectonic and
+    leaves the PREVIOUS pdf measurable -- still applies to the figures the document does place, and
+    tests/test_figure_shrink.py checks those; what this guards is that neither shape left the paper
+    with the picture.
+    """
     apx = open(APX, encoding="utf-8").read().replace("\n", " ")
-    m = re.search(r"busiest \$1\\%\$ of steps carry \$([\d.]+)\\%\$", apx)
-    assert m and abs(float(m.group(1)) - top1) < 0.05, (m.group(1) if m else None, top1)
-    m = re.search(r"covering \$90\\%\$ of it takes \$(\d+)\\%\$ of the sequence", apx)
-    assert m and abs(float(m.group(1)) - cov) < 0.5, (m.group(1) if m else None, cov)
-    # the claim is that it is NOT sparse: most of the sequence is needed to cover most of the spend
-    assert cov > 50, cov
-
-
-def test_the_appendix_figure_exists_and_its_caption_numbers_come_from_the_csv():
-    """A missing \\includegraphics halts tectonic and leaves the PREVIOUS pdf in place, which then
-    measures as if nothing were wrong (AGENTS caution (f)). Check the file, not just the caption."""
-    import os
-    from tests.manuscript import tex
-    fig = os.path.join(os.path.dirname(tex("iclr_2027.tex")), "figures", "imitation_cost.pdf")
-    assert os.path.exists(fig), fig
-    apx = open(APX, encoding="utf-8").read().replace("\n", " ")
-    assert r"\label{fig:imitation}" in apx
     sat = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
-    m = re.search(r"imitation rate \$([\d.]+)\$ nats per token", apx)
+    m = re.search(r"(?:imitation rate|realised rate stops at) \$([\d.]+)\$ nats per token", apx)
     assert m and abs(float(m.group(1)) - sat) < 5e-4, (m.group(1) if m else None, sat)
-
+    # the second shape: the spend is spread, not concentrated, which is the trivial horn's evidence
+    assert "busiest" in apx and "of the sequence" in apx, \
+        "the concentration shape left the paper with the figure"
+    assert "nowhere near the left axis" in apx, \
+        "the prose no longer says the deployed rule misses the shape Prop 3 requires"
 
 def test_the_lorenz_curves_end_at_one_and_lie_above_the_diagonal():
     """The claim the figure makes with them: the spend is spread over the sequence, barely above
@@ -308,3 +297,9 @@ def test_the_linearity_claim_is_scoped_by_the_trajectory_count_it_quotes():
     assert min(r for r, _n in by["protected"]) < 0.97, \
         ("both classes now clear 0.97, so the claim could be stated unscoped -- revisit the wording "
          "deliberately rather than leaving it narrower than the evidence", by["protected"])
+
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_the_spend_concentration_beside_the_sparsity_proposition_rounds_from_the_csv

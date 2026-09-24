@@ -1,0 +1,16 @@
+band,W,numerator,denominator,ratio,cell_spreads,predicted,reading
+T1,1,SEL n=64 (70b),MET Meta-Llama-3.1-70B n=1 (70b),0.2203,0.0268,below 1,CONFIRMED
+T2,1,SEL n=64 (single),MET Meta-Llama-3.1-8B-Instruct n=1 (single),0.5144,0.0477,between 0.5 and 2,WITHIN NOISE
+T3,1,SEL n=64 (single),SEL - n=1 (single),1.2819,0.0653,below 8,CONFIRMED
+ref,1,SEL n=64 (70b),RISKY Meta-Llama-3.1-70B n=1 (70b),0.2681,0.0224,,descriptive
+ref,1,SEL n=64 (single),RISKY Meta-Llama-3.1-8B-Instruct n=1 (single),0.9667,0.0469,,descriptive
+T4,8,SEL n=64 (70b),MET Meta-Llama-3.1-70B n=1 (70b),0.6963,0.01,,descriptive
+T4,8,SEL n=64 (single),MET Meta-Llama-3.1-8B-Instruct n=1 (single),1.6894,0.073,,descriptive
+T4,8,SEL n=64 (single),SEL - n=1 (single),4.3466,0.0446,,descriptive
+ref,8,SEL n=64 (70b),RISKY Meta-Llama-3.1-70B n=1 (70b),0.8355,0.0117,,descriptive
+ref,8,SEL n=64 (single),RISKY Meta-Llama-3.1-8B-Instruct n=1 (single),3.167,0.0464,,descriptive
+AB,1,SEL n=1 (ab),METAB Meta-Llama-3.1-70B (ab),0.045,0.0264,descriptive; per served byte 0.0444,descriptive
+AB,1,SEL n=8 (ab),METAB Meta-Llama-3.1-70B (ab),0.0454,0.0233,descriptive; per served byte 0.0441,descriptive
+AB,1,SEL n=64 (ab),METAB Meta-Llama-3.1-70B (ab),0.0609,0.2163,descriptive; per served byte 0.0614,descriptive
+AB,8,SEL n=1 (ab),METAB Meta-Llama-3.1-70B (ab),0.0388,0.0328,descriptive; per served byte 0.0335,descriptive
+AB,8,SEL n=8 (ab),METAB Meta-Llama-3.1-70B (ab),0.0481,0.0338,descriptive; per served byte 0.0435,descriptive

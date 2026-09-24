@@ -1,0 +1,2 @@
+anchor,name,gain8,gain64,gain_diff,lo95,hi95,half_widths,n_prompts,empty_frac_n1,mean_words_n1,reproduction_gate,verdict,marginal
+KL3M-3.7B,kl3m37b,0.022,0.08,0.058,0.02,0.094,1.57,500,0.0,72.1,none by design,CLIMBS,yes

@@ -140,7 +140,12 @@ def test_the_two_retained_anchors_are_read_on_the_same_paired_statistic():
                                         encoding="utf-8"))
                 if "Phi-3.5-mini-instruct" in r["judge"]}
         g8, g64 = float(rows[8]["gain"]), float(rows[64]["gain"])
-        row = next((l for l in txt.split("\\\\") if l.strip().startswith(label + " &")), None)
+        # SCOPED TO tab:climb. Until 2026-09-23 this took the first row starting with the label
+        # anywhere in the appendix, and the vetting ladder's table (tab:vetladder, which also has a
+        # `Comma-7B &` row) landed earlier in the file and was read instead (caution (an)).
+        i = txt.index("\\label{tab:climb}")
+        climb = txt[i: txt.index("\\end{tabular}", i)]
+        row = next((l for l in climb.split("\\\\") if l.strip().startswith(label + " &")), None)
         assert row, (label, "the row is gone from the table")
         # BY COLUMN. The first version of this asked whether each value appeared anywhere in the
         # row, which is membership, not placement -- and its own mutation test proved it: swapping

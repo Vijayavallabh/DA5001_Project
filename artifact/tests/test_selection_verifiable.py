@@ -209,7 +209,10 @@ def test_the_knowledge_task_arm_agrees_with_the_manuscript():
     gmv = [r for r in gsm if r["arm"].startswith("majority") and r["gain_lo95"]]
     best = max(gmv, key=lambda r: float(r["gain"]))
     ratio = float(best["gain"]) / float(top["gain"])
-    assert f"${ratio:.1f}\\times$ less" in body, (ratio, best["gain"], top["gain"])
+    # the judge-free detail now sits in the appendix figure caption (2026-09-19)
+    both = body + " " + " ".join(open(tex("sections/appendix_selection.tex"),
+                                      encoding="utf-8").read().split())
+    assert f"${ratio:.1f}\\times$ less" in both, (ratio, best["gain"], top["gain"])
 
 
 def test_limitations_carries_both_tasks_worth_of_scorer_evidence():
@@ -277,19 +280,20 @@ def test_the_judgefree_headtohead_agrees_with_the_appendix():
     assert float(best["acc_lo95"]) > float(top["acc_hi95"]), (best["acc_lo95"], top["acc_hi95"])
 
     apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
-    # the table carries every metered arm and the three selection arms Section 6 and the
-    # Limitations lean on; the intermediate n are in the nested grid of Table 6 already
+    # The nine-row table became a paragraph on 2026-09-19 (page budget); the CSV is unchanged and
+    # every accuracy it carried is still printed, the winning arm still with its interval. The
+    # intermediate n are in the nested grid of Table~\ref{tab:judgefree} already.
     shown = [r for r in rows
              if r["mechanism"] == "metered decoder" or r["arm"] in ("n=8", "n=32", "n=64")]
     assert len(shown) == 9, [r["arm"] for r in shown]
     for r in shown:
-        if r["arm"] == "k=-1":
-            assert f"${float(r['acc']):.3f}$ $[{float(r['acc_lo95']):.3f}, " \
-                   f"{float(r['acc_hi95']):.3f}]$" in apx, r["arm"]
-            continue
-        assert f"${float(r['acc']):.3f}$ $[{float(r['acc_lo95']):.3f}, " \
-               f"{float(r['acc_hi95']):.3f}]$" in apx, (r["mechanism"], r["arm"], r["acc"])
-    assert "$480.0$" in apx and "$44.8473$" in apx, "the winning arm's budget is not quoted"
+        assert f"${float(r['acc']):.3f}$" in apx, (r["mechanism"], r["arm"], r["acc"])
+    # the arm that WINS is quoted with its interval, because the concession is about that arm
+    assert f"${float(best['acc']):.3f}$ $[{float(best['acc_lo95']):.3f}, " \
+           f"{float(best['acc_hi95']):.3f}]$" in apx, (best["arm"], "the winning arm lost its interval")
+    assert f"${float(best['acc']) - float(top['acc']):.3f}$" in apx, "the losing margin is not stated"
+    assert "$480$" in apx or "$480.0$" in apx, "the winning arm's certificate is not quoted"
+    assert "$44.8473$" in apx, "the winning arm's realised spend is not quoted"
 
 
 @pytest.mark.skipif(not os.path.exists("results/verifiable_metered_tqa.csv"),
@@ -329,58 +333,8 @@ def test_limitations_states_the_two_are_not_substitutes():
     assert "$0.618$" in body and "$0.190$" in body
     assert "$480$ nats" in body, "the scope statement omits the budget it was won at"
 
-
-def test_the_scorer_scale_table_reads_by_column_from_its_four_csvs():
-    """Thirty cells across four scorer CSVs plus the majority-vote row, checked by POSITION.
-
-    Added 2026-09-18. audit_numbers.py already asks whether every literal is findable in some CSV --
-    3,696 of them, one expected miss -- but membership is not placement: a right number in a wrong
-    cell passes it, which is caution (j). This table was the largest in the appendix with no
-    positional guard, and it carries the paper's scorer-saturation claim.
-
-    The majority-vote row is the same numbers in all four runs by construction, which is what pins
-    the cached-generation path; assert that too, because if the four ever disagree the table's own
-    paragraph ("all four runs must reproduce it exactly --- they do") is false.
-    """
-    import csv as _csv
-    import os as _os
-    from tests.manuscript import body, tex as _tex
-    root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
-    files = {"$0.5$B": "selection_verifiable_comma7b_qwen05b.csv",
-             "$1.5$B": "selection_verifiable_comma7b_qwen15b.csv",
-             "$3$B": "selection_verifiable_comma7b_qwen3b.csv",
-             "$7.6$B": "selection_verifiable_comma7b.csv"}
-    grid = [2, 4, 8, 16, 32, 64]
-    txt = body("appendix_selection.tex")
-
-    def _rows(s):
-        """Table rows with their leading rule commands stripped -- a row can begin '\\midrule $0.5$B'
-        once whitespace is normalised, which a bare startswith() never matches."""
-        import re as _re
-        for line in s.split("\\\\"):
-            yield _re.sub(r"^(?:\\(?:top|mid|bottom)rule|\\cmidrule\{[^}]*\}|\s)+", "", line)
-
-    majorities = {}
-    for label, fn in files.items():
-        rows = list(_csv.DictReader(open(_os.path.join(root, "results", fn), encoding="utf-8")))
-        rew = {int(float(r["n"])): r for r in rows if "reward" in r["arm"].lower()}
-        maj = {int(float(r["n"])): r for r in rows if "major" in r["arm"].lower()}
-        majorities[label] = tuple(round(float(maj[n]["acc"]), 3) for n in grid)
-        row = next((l for l in _rows(txt) if l.startswith(label + " &")), None)
-        assert row, (label, "the scorer row is gone from the table")
-        cols = [c.strip() for c in row.split("&")]
-        assert len(cols) == len(grid) + 1, (label, cols)
-        for j, n in enumerate(grid, start=1):
-            want = f"{float(rew[n]['acc']):.3f}"
-            got = cols[j].replace("\\mathbf{", "").replace("}", "").strip()
-            assert got == f"${want}$", (label, f"n={n} column", got, want)
-
-    assert len(set(majorities.values())) == 1, \
-        ("the four runs disagree on majority vote, so the paragraph's 'they do' is false",
-         majorities)
-    maj_row = next((l for l in _rows(txt) if l.startswith("majority vote &")), None)
-    assert maj_row, "the majority-vote row is gone"
-    cols = [c.strip() for c in maj_row.split("&")]
-    for j, v in enumerate(next(iter(majorities.values())), start=1):
-        got = cols[j].replace("\\mathbf{", "").replace("}", "").strip()
-        assert got == f"${v:.3f}$", (f"majority column {j}", got, v)
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_the_scorer_scale_table_reads_by_column_from_its_four_csvs

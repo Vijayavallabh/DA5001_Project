@@ -1,0 +1,5 @@
+defect,n,n_items_affected,mean_abs_diff,max_abs_diff,threshold,caught_by_repaired_g0a
+pad_right,200,200,16.56063,32.23187,1.0,yes
+swapped,200,200,6.29969,34.875,1.0,yes
+no_template,200,200,5.10751,17.12629,1.0,yes
+truncate,200,103,9.39951,38.93573,1.0,yes

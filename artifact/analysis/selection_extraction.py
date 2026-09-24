@@ -90,7 +90,12 @@ def score(model, tok, pairs, batch_size):
         lg = model(**enc).logits.float().log_softmax(-1)
         ids, mask = enc["input_ids"], enc["attention_mask"]
         for j in range(len(chunk)):
-            lo, hi = plen[j], int(mask[j].sum().item())
+            # load_tok() pads on the LEFT (generation needs it), so a row's tokens start at its
+            # first unmasked position. Until 2026-09-23 this read [plen, mask.sum()) as if the
+            # batch were right-padded, which for every candidate shorter than the longest in its
+            # batch scored the prompt's tail and the padding instead of the generation.
+            start = int(mask[j].nonzero()[0])
+            lo, hi = start + plen[j], start + int(mask[j].sum().item())
             if hi - lo < 1:
                 out.append(-math.inf)
                 continue
@@ -233,12 +238,21 @@ def main():
                    risky_alone_recall=round(nv_recall(solo[i][0], p["target"]), 4),
                    risky_alone_rouge=round(rouge_l_score(solo[i][0], p["target"]), 4),
                    anchor_mean_recall=round(sum(rec) / len(rec), 4),
-                   anchor_max_recall=round(max(rec), 4))
+                   anchor_max_recall=round(max(rec), 4),
+                   anchor_max_rouge=round(max(rou), 4),
+                   # per-DRAW event counts over the whole pool: the anchor's own base rate
+                   # estimated from n_max draws per passage rather than from the one n=1 draw
+                   pool_ge_0p8=sum(round(r, 4) >= 0.8 for r in rec),
+                   pool_ge_0p01=sum(round(r, 4) >= 0.01 for r in rec))
         for n in a.n_values:
             pick = max(range(n), key=lambda j: s[j])
             row[f"recall_n{n}"] = round(rec[pick], 4)
             row[f"lcs_n{n}"] = lcs[pick]
             row[f"rouge_n{n}"] = round(rou[pick], 4)
+            # the best of the first n draws: what ANY selector could serve, so a claim read on
+            # these columns does not depend on the selector being right
+            row[f"oracle_recall_n{n}"] = round(max(rec[:n]), 4)
+            row[f"oracle_rouge_n{n}"] = round(max(rou[:n]), 4)
         per.append(row)
     for n in a.n_values:
         r = [x[f"recall_n{n}"] for x in per]

@@ -1,0 +1,8 @@
+judge,selector,n,kl_nats,n_prompts,u,u_lo95,u_hi95,gain,gain_lo95,gain_hi95,mean_words,spearman_u_logn
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),1,0.0,805,0.3137,0.2882,0.3398,0.0,0.0,0.0,87.6,1.0
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),2,0.1931,805,0.3317,0.3062,0.3596,0.018,-0.005,0.0391,86.0,1.0
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),4,0.6363,805,0.3348,0.3099,0.3621,0.0211,-0.0068,0.0472,77.6,1.0
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),8,1.2044,805,0.3534,0.328,0.3801,0.0398,0.0118,0.0677,74.5,1.0
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),16,1.8351,805,0.3882,0.3602,0.4155,0.0745,0.0435,0.1068,76.1,1.0
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),32,2.497,805,0.4099,0.3832,0.4373,0.0963,0.064,0.1292,75.6,1.0
+Phi-3.5-mini-instruct,pointwise reward (Qwen2.5-7B),64,3.1745,805,0.4118,0.3851,0.4398,0.0981,0.0665,0.1304,76.5,1.0

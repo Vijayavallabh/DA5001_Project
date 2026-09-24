@@ -78,7 +78,11 @@ def test_every_ref_resolves_inside_the_build():
 def test_every_float_is_referenced_somewhere():
     labels, refs = _labels_and_refs()
     floats = {k for k in labels if k.split(":")[0] in ("fig", "tab")}
-    assert len(floats) >= 15, sorted(floats)
+    # Floor lowered 15 -> 9 on 2026-09-19: the appendix reduction retired appendix_seed (three
+    # figures) and cut eight floats whose content is carried by a table, a proof or the paragraph
+    # beside them. The floor exists only so a broken build graph cannot make this guard vacuous;
+    # the assertion that matters is the next one, that nothing printed is left unreferenced.
+    assert len(floats) >= 9, sorted(floats)
     orphans = sorted(floats - set(refs))
     assert not orphans, f"floats the prose never sends the reader to: {orphans}"
 
@@ -133,8 +137,9 @@ def test_every_repo_path_the_manuscript_cites_exists():
             raw = raw.replace("\\_", "_").replace("\\", "").replace(" ", "")
             if raw.startswith(prefixes):
                 cited.setdefault(raw, set()).add(rel)
-    assert len(cited) >= 30, (len(cited), "the path extractor matched almost nothing; check "
-                                          "whether \\allowbreak handling has drifted")
+    # The manuscript no longer cites repo paths: they were internal bookkeeping and were
+    # removed on 2026-09-19. There is nothing to require a minimum of; what still matters
+    # is that any path it DOES cite resolves, which the assertion below checks.
     missing = {p: sorted(w) for p, w in cited.items()
                if not os.path.exists(os.path.join(repo, p))}
     assert not missing, f"cited but absent from the repo: {missing}"
@@ -149,9 +154,85 @@ def test_every_citation_key_resolves_to_a_bib_entry():
         txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
         for m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]+)\}", txt):
             keys |= {k.strip() for k in m.group(1).split(",")}
-    assert len(keys) > 50, (len(keys), "the cite extractor matched almost nothing")
+    assert len(keys) > 40  # threshold lowered 2026-09-19: the appendix was cut from 52 to ~37 pages, (len(keys), "the cite extractor matched almost nothing")
     bib = os.path.join(DIR, "references.bib")
     assert os.path.exists(bib), bib
     entries = set(re.findall(r"@\w+\{([^,]+),", open(bib, encoding="utf-8").read()))
     missing = sorted(keys - entries)
     assert not missing, f"cited but not in references.bib: {missing}"
+
+
+def test_no_ladder_sentence_cites_the_appendix_that_has_no_ladder_in_it():
+    r"""Caution (aj): a \ref that resolves to the WRONG content. Tectonic exits 0, `??` is 0 and a
+    real appendix letter renders -- only a reader who follows the click sees it.
+
+    Two sentences, one of them in the main text, sent the reader to `app:scaling` for the
+    fine-tuning-length and seed ladders. That appendix measures the margin `s(x)/c_use` over ten safe
+    models across three corpora and contains no ladder at all; the ladders are in `app:collapse`.
+    Found by the read-through after the 2026-09-19 appendix reduction.
+
+    The guard is stated as a property of the target rather than as a list of citations: whichever
+    section the ladder sentences point at, `app:scaling` is not allowed to be it while its own text
+    reports no ladder. If a ladder is ever moved into that appendix this fails and says to re-check
+    the wording, which is the safe direction.
+    """
+    import re as _re
+    body_of = {}
+    for rel in _build_graph():
+        txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
+        for m in _re.finditer(r"\\section\{[^}]*\}\s*\\label\{([^}]+)\}", txt):
+            end = txt.find("\\section{", m.end())
+            body_of[m.group(1)] = " ".join(txt[m.end():end if end > 0 else len(txt)].split())
+    assert "app:scaling" in body_of and "app:collapse" in body_of, sorted(body_of)
+
+    # the premise: the scaling appendix reports no ladder, the collapse one does
+    assert "ladder" not in body_of["app:scaling"], \
+        "a ladder moved into app:scaling; re-check every citation before relaxing this"
+    assert "$0.8756$" in body_of["app:collapse"] and "ladder" in body_of["app:collapse"], \
+        "the ladders are no longer reported in app:collapse; the citations need re-pointing"
+
+    # and no sentence sends a reader there for one
+    bad = []
+    for rel in _build_graph():
+        flat = " ".join(open(os.path.join(DIR, rel), encoding="utf-8").read().split())
+        for m in _re.finditer(r"Appendix~\\ref\{app:scaling\}", flat):
+            window = flat[max(0, m.start() - 220): m.end() + 80]
+            if "ladder" in window:
+                bad.append(f"{rel}: a ladder sentence cites app:scaling, which has no ladder in it")
+    assert not bad, bad
+
+
+def test_no_numbered_appendix_heading_is_unreachable():
+    """A \\section or \\subsection in the appendix that nothing \\refs is a whole appendix the
+    reader never learns exists. app:second-anchor was exactly that until 2026-09-20.
+
+    WHY ONLY NUMBERED HEADINGS. The first version of this guard required a \\ref for EVERY app:
+    label and found five more -- but almost every app: label in this paper sits on a
+    \\paragraph, which LaTeX does not number, so \\ref to one renders the enclosing SECTION's
+    letter. That is this paper's established convention (app:vetting, app:saturation,
+    app:frontier and app:blocklist all work that way and are cited throughout): the reader is sent
+    to the right appendix, not the exact paragraph. Requiring a ref for those produced three
+    sentences naming the same appendix letter twice, which
+    test_no_sentence_names_the_same_number_twice caught and which is a worse defect than the one
+    being fixed. A paragraph label is reachable through its section; a section is reachable only
+    through a \\ref.
+    """
+    import glob as _glob
+    import os as _os
+    import re as _re
+    from tests.manuscript import DIR
+    files = [f for f in sorted(_glob.glob(_os.path.join(DIR, "sections", "*.tex")))
+             + [_os.path.join(DIR, "iclr_2027.tex")]
+             if not _re.search(r"_v\d+_\d{4}-\d{2}-\d{2}\.tex$", f)]
+    assert len(files) > 10, "section files not found; this guard must not pass by never running"
+    numbered, refs = set(), set()
+    for f in files:
+        lines = [ln for ln in open(f, encoding="utf-8").read().split("\n")
+                 if not ln.lstrip().startswith("%")]
+        text = "\n".join(lines)
+        for m in _re.finditer(r"\\(sub)?section\{[^}]*\}\s*\\label\{(app:[^}]+)\}", text):
+            numbered.add(m.group(2))
+        refs |= set(_re.findall(r"\\ref\{(app:[^}]+)\}", text))
+    assert numbered, "no numbered appendix headings found; the guard would be vacuous"
+    orphans = sorted(numbered - refs)
+    assert not orphans, f"numbered appendix headings nothing points at: {orphans}"

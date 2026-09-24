@@ -1,0 +1,9 @@
+arm,band,quantity,value,lo95,hi95,half_widths,n,reading
+A,C2,g(512)-g(256),0.0056,-0.0193,0.0311,0.22,805,SATURATED
+A,C3,g(512)-g(64),0.0311,-0.0025,0.0634,0.94,805,NOT RESOLVED
+B,C2,g(512)-g(256),0.0071,-0.0165,0.03,0.3,850,SATURATED
+B,C3,g(512)-g(64),0.0312,-0.0018,0.0635,0.95,850,NOT RESOLVED
+A,C1,D3 n=512,-0.0053,-0.0248,0.0143,,805,UNRESOLVED
+A,C1,g(512)-g(256) order-averaged,0.0186,0.0065,0.0301,1.58,805,
+A,C1,g(512)-g(64) order-averaged,0.0286,0.0115,0.0438,1.77,805,
+A,C4,certificate log 512,6.2383,,,,,23.26

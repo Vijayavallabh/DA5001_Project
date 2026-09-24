@@ -40,6 +40,9 @@ Usage:  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 HF_HUB_OFFLINE=1 \
 import argparse, csv, glob, json, os, random, re, sys
 from collections import Counter, defaultdict
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dap.shared import served_generation  # noqa: E402
+
 CLASSES = ("neutral", "creative", "factual")
 # one run per arm; conc_all carries every KL budget, the pathwise sweep is split across two dirs
 ARMS = [
@@ -76,10 +79,15 @@ def served_prompt(aggregate):
     return prompt.strip()
 
 
-def load_arm(run_dir, k, constraint, act=None):
+def load_arm(run_dir, k, constraint, act=None, deecho=False):
     """(prompt_id, seed) -> (class, prompt, generation) for one arm, over the ordinary prompt classes.
-    If `act` is given it also collects (active, forced, total) decode-step counts per trajectory."""
-    out, kstr = {}, (f"{k:g}")
+    If `act` is given it also collects (active, forced, total) decode-step counts per trajectory.
+    `deecho` strips the prompt tail a left-padded row carried into `generation` (caution (bc));
+    off by default so every CSV on record reproduces."""
+    # k may be the literal filename token rather than a number: analysis/blocklist_decode.py
+    # writes trajectories_kmemfree_*.jsonl, and caution (o) is that the token in the name is
+    # whatever the producer wrote, not a formatted float.
+    out, kstr = {}, (k if isinstance(k, str) else f"{k:g}")
     for cls in CLASSES:
         path = os.path.join(run_dir, f"trajectories_k{kstr}_{cls}.jsonl")
         if not os.path.exists(path):
@@ -90,7 +98,9 @@ def load_arm(run_dir, k, constraint, act=None):
             if m.get("constraint", "kl") != constraint:
                 continue
             key = (m["prompt_id"], m["seed"])
-            out[key] = (cls, served_prompt(a), a.get("generation") or "")
+            gen = (served_generation(a, r["prefix_analysis"]["prefix_text"]) if deecho
+                   else a.get("generation") or "")
+            out[key] = (cls, served_prompt(a), gen)
             if act is not None:
                 f, ac, un = (a.get("steps_forced_safe") or 0), (a.get("steps_active") or 0), (a.get("steps_risky_unchanged") or 0)
                 act[key] = (ac, f, ac + f + un)

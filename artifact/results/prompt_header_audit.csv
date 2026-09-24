@@ -1,0 +1,5 @@
+arm,n,n_with_header,header,d3,lo95,hi95,winner
+ours: neutral,200,200,1.0,0.0838,0.045,0.1237,selection
+ours: creative,150,150,1.0,0.105,0.0683,0.14,selection
+ours: factual,500,0,0.0,0.099,0.072,0.126,selection
+AlpacaEval,805,0,0.0,-0.0339,-0.054,-0.0137,meter

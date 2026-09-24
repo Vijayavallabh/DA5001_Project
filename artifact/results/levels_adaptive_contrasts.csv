@@ -1,0 +1,5 @@
+contrast,expr,value,lo95,hi95,n,reading
+q75_vs_n64,+ada64_q75-sel64,-0.0515,-0.072,-0.031,500,BELOW ZERO
+q75_vs_n7,+ada64_q75-fix7,0.004,-0.0125,0.0205,500,STRADDLES ZERO
+q90_vs_n64,+ada64_q90-sel64,-0.0155,-0.034,0.002,500,STRADDLES ZERO
+q90_vs_n17,+ada64_q90-fix17,0.014,-0.003,0.0315,500,STRADDLES ZERO

@@ -81,40 +81,6 @@ def test_the_strongest_anchor_series_really_rises_monotonically():
     assert "$\\log 64 = 4.16$" in apx, "the certificate beside the series must stay log n"
 
 
-def test_the_burstiness_ranking_sentence_is_true_of_the_ranking():
-    """"The two burstiest pairs ... sit at onset ratios of 0.887 and 0.892, MID-RANGE, while the
-    two highest ratios belong to the SECOND AND THIRD least bursty."
-
-    Both halves were false (found 2026-09-17, fourth read-through). Those two ratios are the
-    second and third LOWEST of nine, not mid-range, and the two highest ratios belong to the fifth
-    and sixth least bursty. Nothing caught it: each number rounds from onset_burstiness.csv, and
-    only the sentence built out of them was wrong -- caution (ai) exactly. Stated correctly it is
-    a stronger claim, because the extremes run opposite to the direction Proposition 5 needs.
-    """
-    rows = _rows("onset_burstiness.csv")
-    assert len(rows) == 9, len(rows)
-    by_b = sorted(rows, key=lambda r: float(r["burstiness"]))
-    order = sorted(float(r["ratio"]) for r in rows)
-    rank = {r["pair"]: order.index(float(r["ratio"])) + 1 for r in rows}
-
-    # the two burstiest sit at the second and third LOWEST ratios
-    assert [rank[r["pair"]] for r in by_b[-2:]] == [2, 3], [rank[r["pair"]] for r in by_b[-2:]]
-    # and the two highest ratios belong to the fifth and sixth least bursty
-    pos = {r["pair"]: i + 1 for i, r in enumerate(by_b)}
-    top2 = sorted(rows, key=lambda r: -float(r["ratio"]))[:2]
-    assert sorted(pos[r["pair"]] for r in top2) == [5, 6], [pos[r["pair"]] for r in top2]
-
-    apx = body("appendix_robustness.tex")
-    assert "second and third \\emph{lowest} onset ratios" in apx, \
-        "the corrected ranking claim has been reworded away"
-    assert "fifth and sixth \\emph{least}" in apx
-    assert "mid-range" not in apx, "the withdrawn 'mid-range' reading is back"
-    # the burstiness spread the sentence quotes
-    b = sorted(float(r["burstiness"]) for r in rows)
-    assert f"${b[-2]:.2f}$ and ${b[-1]:.2f}$" in apx, (b[-2], b[-1])
-    assert f"${min(b):.2f}$--${b[-3]:.2f}$" in apx, (min(b), b[-3])
-
-
 def test_the_held_out_prediction_errors_are_the_current_ones_in_the_order_named():
     """"held-out errors of 0.352, 0.251 and 0.481 nats", in two appendices.
 
@@ -155,7 +121,8 @@ def test_the_held_out_prediction_errors_are_the_current_ones_in_the_order_named(
         assert stale not in txt, f"the stale five-pair triple is back: {stale}"
     assert "$-0.18$ where the derivation requires it positive" not in txt, \
         "the Gutenberg rank correlation is back in the CopyBench paragraph"
-    assert "$-0.42$" in txt, "the nine-pair rank correlation is no longer quoted"
+    # the held-out-prediction paragraph was cut in the 2026-09-19 appendix reduction; the two
+    # STALE forms above are still forbidden, which is what this test exists to prevent.
     print("held-out errors in the order named:", quoted)
 
 
@@ -175,3 +142,9 @@ def test_the_reallocation_range_brackets_what_the_table_holds():
     txt = body("orders.tex", "appendix_proofs.tex")
     assert "$3$ to $13\\%$ at $k \\le 1$" in txt, "the low-budget range claim has moved"
     assert "under $1.4\\%$ at $k=3$" in txt, "the k=3 ceiling claim has moved"
+
+# RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
+# when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.
+# A guard for a claim the paper does not make protects nothing; recorded here rather than
+# silently deleted, so the removal is visible to the next reader:
+#   test_the_burstiness_ranking_sentence_is_true_of_the_ranking

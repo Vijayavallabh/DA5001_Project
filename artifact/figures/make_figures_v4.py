@@ -417,71 +417,81 @@ def selection_frontier():
                  color="0.35", ha="left", va="top", xytext=(4, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, TOP)
-    axL.set_xlabel("length of the protected work, tokens")
+    axL.set_xlabel("length of the work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
     axL.set_title("(a) $kT$ grows with the work; $\\log n$ does not",
                   fontsize=7.6 * F, loc="left")
 
-    # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
-    # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
-    # curve would invite exactly the reading the paper refuses. Both series here are judge B.
-    j2 = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "judge_separation_v6_judge2.csv"))
-          if r["decoder"] == "KL"}
-    price = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "utility_price.csv"))}
-    sweep = [r for r in csv.DictReader(open(RESULTS / "selection_scaling.csv"))
-             if "Phi-3.5" in r["judge"]]
-    u_safe = float(sweep[0]["u"])
-    w = math.exp(-float(dec[0]["lambda_star_u_max"]))          # P_{p_s}[U = 1]
-    t = 2 * (u_safe - w)                                        # from u = w + t/2
-    us = [u_safe + i * (1.0 - u_safe) / 200 for i in range(1, 201)]
+    # Panel (b) is ONE pass family (feat-186, results/frontier_levels.csv): every arm judged by
+    # judge B in BOTH presentation orders against the same opponent, on de-echoed text. Until
+    # 2026-09-24 this panel put the meter's levels from one single-order pass beside selection's
+    # from another -- two passes on one axis, which caution (ap) forbids -- on text that carried the
+    # prompt's tail (caution (bc)). Order-averaged levels against one opponent ARE comparable to one
+    # another (a greedy judge shown both orders is a function of the two texts alone), so the y axis
+    # is now a level with 0.5 = parity with serving the risky model, and it says so.
+    import glob
+    from collections import Counter
+    fl = {r["arm"]: r for r in csv.DictReader(open(RESULTS / "frontier_levels.csv"))}
+    anc = None
+    for f in sorted(glob.glob(str(RESULTS / "frontier_levels_per_prompt_*.csv"))):
+        rows_ = list(csv.DictReader(open(f)))
+        if rows_ and "u_anchor_k0" in rows_[0]:
+            anc = [float(r["u_anchor_k0"]) for r in rows_]
+    if anc is None:
+        raise FileNotFoundError("no per-prompt file carries the anchor-alone arm")
+    cnt = Counter(anc)
+    vals = sorted(cnt)
+    probs = [cnt[v] / len(anc) for v in vals]
+    u0 = sum(anc) / len(anc)
 
     def rate(u):
+        # Cramer rate function of the anchor's own order-averaged utility, the empirical law over
+        # the 500 prompts (Theorem 1 applied to the joint law of prompt and output).
         best = 0.0
         for j in range(1, 4001):
             lam = j * 0.02
-            f = lam * u - math.log(w * math.exp(lam) + t * math.exp(lam / 2) + (1 - w - t))
-            best = max(best, f)
+            best = max(best, lam * u - math.log(sum(q * math.exp(lam * v) for v, q in zip(vals, probs))))
         return best
-    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
-            # NOT "Thm.~1": matplotlib is not LaTeX, so a tilde outside $...$ renders as a literal
-            # tilde. It reached the compiled PDF as "Thm.~1" in the legend of the paper's only
-            # main-text figure. Same class as caution (y) -- a LaTeX habit in a non-LaTeX string.
-            label=r"$\Lambda^*_s(u)$, Thm. 1")
+    us = [u0 + i * (0.9 - u0) / 120 for i in range(1, 121)]
+    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2, label=r"$\Lambda^*_s(u)$, Thm. 1")
+    ax.axhline(0.5, color="0.55", lw=0.7, ls="--")
+    # Right-hand end: the Lambda* curve crosses 0.5 near x = 0.1, which struck through a
+    # left-anchored label, and the meter's points all sit below the line (caution (ad)).
+    ax.annotate("parity", (7e3, 0.5), fontsize=6.3 * F, color="0.4",
+                ha="right", va="bottom", xytext=(0, 1.5), textcoords="offset points")
+    ax.axhline(u0, color="0.55", lw=0.7, ls="-.")
+    ax.annotate("anchor alone", (4e-4, u0), fontsize=6.3 * F, color="0.4", va="top",
+                xytext=(0, -1.5), textcoords="offset points")
 
-    ks = sorted(k for k in j2 if k in price)
-    x = [float(price[k]["mean_spend_nats"]) for k in ks]
-    y = [float(j2[k]["utility"]) for k in ks]
+    met = sorted((a_ for a_ in fl if a_.startswith("met_k")), key=lambda a_: float(a_[5:]))
+    x = [float(fl[m]["x_nats"]) for m in met]
+    y = [float(fl[m]["level"]) for m in met]
     ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding")
-    for k, xv, yv in zip(ks, x, y):
-        if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
-            ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5 * F,
-                        xytext=(6, -3) if k == max(ks) else (6, -4),
-                        textcoords="offset points")
-
-    xs = [max(float(r["kl_nats"]), 1e-3) for r in sweep]
-    ys = [float(r["u"]) for r in sweep]
+    for m, xv, yv in zip(met, x, y):
+        if m in (met[0], met[-1]):
+            ax.annotate(f"$k={float(m[5:]):g}$", (xv, yv), fontsize=6.5 * F,
+                        xytext=(6, -3) if m == met[-1] else (-26, -9), textcoords="offset points")
+    sel = sorted((a_ for a_ in fl if a_.startswith("sel_n")), key=lambda a_: int(a_[5:]))
+    xs = [max(float(fl[s]["x_nats"]), 1e-3) for s in sel]
+    ys = [float(fl[s]["level"]) for s in sel]
     ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring")
-    for r, xv, yv in zip(sweep, xs, ys):
-        if r["n"] in ("1", "8", "64"):
-            ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5 * F,
-                        xytext={"1": (4, -10), "64": (7, -4)}.get(r["n"], (6, -10)),
+    for s, xv, yv in zip(sel, xs, ys):
+        if s in ("sel_n1", "sel_n8", "sel_n64"):
+            ax.annotate(f"$n={s[5:]}$", (xv, yv), fontsize=6.5 * F,
+                        xytext={"sel_n1": (4, 3), "sel_n64": (6, -8)}.get(s, (5, -10)),
                         textcoords="offset points")
 
     ax.set_xscale("log")
     ax.set_xlim(3e-4, 8e3)
-    # Headroom for the legend, which now sits upper right: at ylim 0.80 its bottom border cut
-    # through the "n=64" label (u=0.578). Every legend move in this panel trades one collision
-    # for another unless the panel is given the room -- render the page after touching either.
-    # The legend size and this number move together: a taller box covers the n=64 label, which is
-    # caution (ad) reproduced. 0.90 is the headroom a 7.0 * F legend needs at \textwidth.
-    ax.set_ylim(0.37, 0.90)
-    # NOT "realised": only the metered points are measurements. The selection points are the
-    # closed form log n - (n-1)/n, a BOUND, so an axis calling them realised asserts a
-    # measurement nobody made -- cautions (ae)/(ah)/(am), fifth instance. The caption says
-    # which is which; the label must not contradict it.
-    ax.set_xlabel("divergence from the anchor, nats per trajectory")
-    ax.set_ylabel("judged utility $u$ (judge B)")
-    ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
+    # Headroom for the legend: at 0.66 its box covered selection's n = 16..64 points (u up to
+    # 0.555 at x ~ 3); the box needs about 0.1 of this range above them.
+    ax.set_ylim(0.40, 0.72)
+    # NOT "realised": only the metered points are measurements; selection's are the closed form
+    # log n - (n-1)/n, a BOUND (cautions (ae)/(ah)/(am)). Short, so the two panels' x labels no
+    # longer run into each other at \textwidth (a referee saw them collide).
+    ax.set_xlabel("nats from the anchor (bound / spent)")
+    ax.set_ylabel("level vs. the risky model")
+    ax.set_title("(b) what a nat buys, one judge, one opponent", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
     # at readable type sizes the long three-line legend was as wide as the axes and sat on the
     # n=64 point whichever corner it was pinned to. The swept variable is on the curve labels.
@@ -493,7 +503,7 @@ def selection_frontier():
     # that placement, so nominal size is printed size. It was 6.6 at 0.70\textwidth, where it
     # measured 5.4pt on the page and was briefly raised to 8.0 instead; widening the figure is the
     # fix that removes the need. RENDER THE PAGE after changing this.
-    ax.legend(fontsize=7.0 * F, frameon=True, framealpha=1.0, edgecolor="none",
+    ax.legend(fontsize=6.6 * F, frameon=True, framealpha=1.0, edgecolor="none",
               loc="upper right", handlelength=1.6, borderaxespad=0.3)
     for _a in (axL, ax):
         _a.tick_params(labelsize=8 * F)
@@ -692,8 +702,12 @@ def selection_forest_rows():
         return float(r[g]), float(r[f"{g}_lo95"]), float(r[f"{g}_hi95"])
 
     JB = "Phi-3.5-mini-instruct"
-    breadth = {r["anchor"]: r for r in rows_of("selection_breadth.csv") if JB in r["judge"]}
-    scal64 = next(r for r in rows_of("selection_scaling.csv")
+    # Every judged row on recovered text (results/forest_deecho_note.md): the entry gate re-measured
+    # on the true generations (an empty draw that carried the prompt's tail looked non-empty, so the
+    # committed CSV passed Comma-7B at 3.0% where its text is empty on 18.4%), and the gains
+    # re-judged with the judge reading the repaired text, same picks, same judges, same seed.
+    breadth = {r["anchor"]: r for r in rows_of("selection_breadth_rejudged.csv") if JB in r["judge"]}
+    scal64 = next(r for r in rows_of("selection_scaling_deecho.csv")
                   if JB in r["judge"] and int(float(r["n"])) == 64)
 
     def dom(name, tag=""):
@@ -711,32 +725,34 @@ def selection_forest_rows():
     def add(label, r, cost, certified=True, gate=True, g="gain"):
         items.append((label, band(r, g), cost, certified, gate))
 
-    groups.append((len(items), "six anchors, 500 in-house prompts, judge B"))
+    groups.append((len(items), "six anchors, 500 prompts, judge B"))
     for a in ("Pleias-1.2B", "KL3M-1.7B", "Pleias-3B", "Comma-7B (1T tokens)",
               "TinyComma-1.8B (audited)", "Comma-7B"):
         r = breadth[a]
         add(f"{a}, $n=8$", r, math.log(int(float(r["n"]))), gate=r["entry_gate"] == "PASS")
-    add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64))
+    # The n=64 arm's own first draw, de-echoed, as counted by analysis/h2h_length_control.py
+    # ("served words, sel_n1 ... empty on 64 prompts"): 12.8%, above the same 5% gate.
+    lc = {r["quantity"]: r for r in rows_of("h2h_length_control.csv")}
+    e64 = int(lc["served words, sel_n1"]["note"].split("empty on ")[1].split()[0]) / int(
+        lc["served words, sel_n1"]["n"])
+    add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64), gate=e64 < 0.05)
 
     groups.append((len(items), "other workloads, judge B, $n = 8$"))
-    add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca.csv"), math.log(8))
-    add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b.csv"), math.log(8))
-    add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench.csv"), math.log(8))
+    add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca_deecho.csv"), math.log(8))
+    add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b_deecho.csv"), math.log(8))
+    add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench_deecho.csv"), math.log(8))
 
-    groups.append((len(items), "exact match, no judge at all, Comma-7B, 500 problems"))
+    groups.append((len(items), "exact match, no judge, Comma-7B"))
     V, T = "selection_verifiable_comma7b.csv", "selection_verifiable_tqa_comma7b.csv"
     add("GSM8K, majority vote, $n=32$", verif(V, "majority", 32), math.log(32))
     add("GSM8K, pointwise reward, $n=64$", verif(V, "pointwise", 64), math.log(64))
     add("TriviaQA, majority vote, $n=64$", verif(T, "majority", 64), math.log(64))
     add("TriviaQA, pointwise reward, $n=16$", verif(T, "pointwise", 16), math.log(16))
 
-    # The comparator. Its gain is a difference of two levels in one judging pass, so it has no
-    # bootstrap interval on record; drawn as a point with no bar and said so in the caption.
-    groups.append((len(items), "what the metered decoder buys, same judge"))
-    js = {r["k"]: r for r in rows_of("judge_separation_v6_judge2.csv") if JB in r["judge"]}
-    anchor_u = float(js["0.0"]["utility"]) if "0.0" in js else 0.4505
-    met = float(js["10.0"]["utility"]) - anchor_u
-    items.append(("metered decoder, $k=10$", (met, None, None), 171.28, False, True))
+    # No metered row since 2026-09-24. This figure is selection against its OWN anchor; the
+    # head-to-head against the meter is Figure 1(b) and Table 1, both order-averaged against one
+    # opponent. A single-order meter point here set one construction beside another, and a
+    # referee read the figure as the head-to-head it is not.
     return items, groups
 
 
@@ -771,7 +787,7 @@ def selection_breadth_forest():
     # advance-width ratio caught it (the ratio compares DejaVu Sans against Times and overstates
     # by the font-width difference). Reserve the gutters INSIDE a 6.0in canvas instead, so the
     # shrink is ~1 and a drawn point is a printed point. Measure the SAVED file, never figsize.
-    fig, ax = plt.subplots(figsize=(6.0, 2.62))
+    fig, ax = plt.subplots(figsize=(6.0, 1.98))
     fig.subplots_adjust(left=0.345, right=0.875, bottom=0.145, top=0.985)
     # x in AXES fraction, y in data: the label gutters sit outside the data area by construction,
     # so no interval can ever print through a row label (the first draft's MT-Bench and TriviaQA
@@ -815,6 +831,273 @@ def selection_breadth_forest():
     _save(fig, "selection_breadth_forest")
 
 
+
+# --------------------------------------------------------------------------------------------
+# Main-text evidence figures, 2026-09-19. Both replace prose that carried the paper's two most
+# important non-utility claims. Data extraction is split from drawing so a test can read the
+# plotted rows: caution (al) -- a number that moves from prose into a figure takes its guard with
+# it, or the guard passes by never running.
+
+
+def safety_rows():
+    """(label, [(n, nv_recall_mean)], baseline) per extraction arm, read from results/."""
+    import glob
+    arms = []
+    want = [("selection_extraction.csv", "audited anchor, attacker's scorer"),
+            ("selection_extraction_n256.csv", "audited anchor, to $n{=}256$"),
+            ("selection_extraction_comma7b.csv", "Comma-7B"),
+            ("selection_extraction_comma1t.csv", "Comma-7B (1T)"),
+            ("selection_extraction_kl3m17b.csv", "KL3M-1.7B"),
+            ("selection_extraction_pleias12b.csv", "Pleias-1.2B"),
+            ("selection_extraction_pleias3b.csv", "Pleias-3B"),
+            ("selection_extraction_paraphrase.csv", "paraphrase event"),
+            ("selection_extraction_70b_hp2.csv", "Llama-3.1-70B, pre-trained memoriser")]
+    for fname, label in want:
+        p = RESULTS / fname
+        if not p.exists():
+            continue
+        rows = list(csv.DictReader(open(p, encoding="utf-8")))
+        if "nv_recall_mean" not in rows[0]:
+            continue
+        pos = sorted(((int(r["n"]), float(r["nv_recall_mean"])) for r in rows
+                      if int(r["n"]) >= 1), key=lambda t: t[0])
+        base = [float(r["nv_recall_mean"]) for r in rows if r["n"] == "-1"]
+        arms.append((label, pos, base[0] if base else None))
+    if not arms:
+        raise FileNotFoundError("no selection_extraction*.csv")
+    return arms
+
+
+def contamination_rows(fname="selector_n256.csv"):
+    """(anchor, event, base_rate, realised amplification) at n=64, where the premise FAILS.
+
+    Read from feat-179's corrected-selector arm (results/selector_n256.csv), or with
+    fname="selector_redraw.csv" from feat-182's independent re-draw, whose registration requires the
+    factor to be shown per draw, both draws, never pooled. The earlier contaminated_anchor.csv was
+    measured with a selector that ranked partly on padding (caution (ba)) and is never shown."""
+    p = RESULTS / fname
+    if not p.exists():
+        raise FileNotFoundError(p)
+    out = []
+    for r in csv.DictReader(open(p, encoding="utf-8")):
+        if r["n"] == "64" and r["amplification_vs_n1"]:
+            out.append((r["anchor"], r["event"], float(r["base_rate_n1"]),
+                        float(r["amplification_vs_n1"])))
+    return sorted(out, key=lambda t: t[3])
+
+
+def safety_envelope():
+    arms, contam, redraw = safety_rows(), contamination_rows(), contamination_rows("selector_redraw.csv")
+    fig, (ax, bx) = plt.subplots(1, 2, figsize=(5.98, 1.48))
+    fig.subplots_adjust(left=0.085, right=0.995, bottom=0.185, top=0.87, wspace=0.28)
+
+    # (a) Every selection arm sits exactly on zero, so nine legend entries would be nine labels
+    # for one line. Draw them all -- the markers show which n each arm covers -- and let ONE entry
+    # speak for them, with the memoriser baselines labelled in place at the right edge. The first
+    # version put a 9-entry legend and a floating annotation in the same corner and they collided
+    # (caution (ad): render the page and look at it).
+    styles = distinct_styles(len(arms))
+    for i, ((label, pos, base), (c, m)) in enumerate(zip(arms, styles)):
+        ax.plot([n for n, _ in pos], [v for _, v in pos], marker=m, color=c, ms=4.2,
+                lw=1.0, alpha=0.9, zorder=3,
+                label=f"all {len(arms)} arms, every $n$: $0.0000$" if i == 0 else None)
+    for b in sorted({b for _, _, b in arms if b}):
+        ax.axhline(b, ls="--", lw=0.9, color="0.35", zorder=1)
+        ax.annotate(f"${b:.4f}$", xy=(300, b), fontsize=6.0, color="0.15",
+                    bbox=dict(fc="white", ec="none", pad=0.8),
+                    va="center", ha="right")
+    ax.annotate("memoriser alone,\nsame passages and seeds", xy=(1.05, 0.515),
+                fontsize=6.3, color="0.2", va="top")
+    ax.set_xscale("log", base=2)
+    ax.set_xlabel("$n$, completions drawn from the anchor")
+    ax.set_ylabel("near-verbatim recall")
+    ax.set_ylim(-0.035, 0.52)
+    ax.set_xlim(0.78, 340)
+    ax.set_title("(a) selection reproduces nothing, at every $n$", fontsize=8)
+    ax.legend(loc="lower left", fontsize=6.4, frameon=False, bbox_to_anchor=(0.0, 0.055))
+
+    # (b) Where the premise fails. The first version was 17 labelled bars in a 1.5in panel, whose
+    # row labels would have printed at about 4.8pt -- below the legibility floor (caution (af)), and
+    # the anchor NAMES are not the claim: the claim is that every realised amplification sits near
+    # 1 while the certificate permits 64. A strip plot carries that and needs no row labels.
+    import random as _rnd
+    _rnd.seed(0)
+    for ev, c, mk in (("E_001", "C0", "o"), ("E_08", "C3", "s")):
+        # feat-182: the second, independent draw is drawn hollow beside the first, never pooled
+        for rows, fill, lab in ((contam, True, ""), (redraw, False, ", second draw")):
+            xs = [a for _, e, _, a in rows if e == ev]
+            if not xs:
+                continue
+            ys = [0.5 + 0.30 * (_rnd.random() - 0.5) + (0.22 if ev == "E_08" else -0.22) for _ in xs]
+            bx.scatter(xs, ys, s=17, marker=mk, alpha=0.85, zorder=3,
+                       facecolors=c if fill else "none", edgecolors=c, linewidths=0.8,
+                       label=({"E_001": "recall 0.01", "E_08": "recall 0.8"}[ev] + lab))  # E_001 is >= 0.01
+    bx.axvline(64, color="0.25", ls="--", lw=1.1, zorder=4)
+    bx.annotate("$n=64$: what the\ncertificate permits", xy=(56, 1.22), ha="right",
+                fontsize=6.3, color="0.15", va="top")
+    bx.axvspan(min(a for *_, a in contam), max(a for *_, a in contam), color="0.85",
+               alpha=0.45, zorder=0)
+    # matplotlib is not LaTeX: "--" prints as two hyphens, not an en-dash (caution (ad)).
+    lo2, hi2 = min(a for *_, a in redraw), max(a for *_, a in redraw)
+    bx.annotate(f"realised: {min(a for *_, a in contam):.1f} to {max(a for *_, a in contam):.1f};\n"
+                f"second draw {lo2:.1f} to {hi2:.1f}",
+                xy=(0.87, 0.93), fontsize=6.3, color="0.15", ha="left", va="bottom")
+    bx.set_yticks([])
+    bx.set_ylim(0, 1.25)          # headroom: the two-draw annotation sat on the recall-0.01 points
+    bx.set_xscale("log")
+    bx.set_xlim(0.8, 140)
+    bx.set_xlabel("realised amplification at $n=64$, twelve contaminated anchors")
+    bx.set_title("(b) and degrades gracefully where it fails", fontsize=8)
+    # Three keys, not four: a two-column legend of both draws covered the recall-0.01 points
+    # (caution (ad)), so the second draw is one proxy entry for the hollow style.
+    from matplotlib.lines import Line2D
+    keys = [Line2D([], [], marker="o", ls="", color="C0", ms=4, label="recall 0.01"),
+            Line2D([], [], marker="s", ls="", color="C3", ms=4, label="recall 0.8"),
+            Line2D([], [], marker="s", ls="", mfc="none", mec="0.3", ms=4, label="hollow: second draw")]
+    bx.legend(handles=keys, loc="lower right", fontsize=5.8, frameon=True, framealpha=1.0,
+              facecolor="white", edgecolor="none", handletextpad=0.3,
+              bbox_to_anchor=(1.0, 0.02))
+    _save(fig, "safety_envelope")
+
+
+def judge_free_rows():
+    """{task: ({rule: [(n, acc, lo, hi)]}, {baseline: acc})} for the two no-judge arms.
+
+    The rule is matched EXPLICITLY and anything unrecognised raises. The first version classified
+    with `if arm.startswith("majority") else "pointwise"`, which swept the two mandatory k=-1
+    baselines ("risky model alone", greedy and sampled) into the pointwise curve and drew it
+    spiking to 0.79 at n=1, where by construction both rules must equal the anchor's own first
+    draw. An `else` branch over a data-driven column is how a baseline becomes a result.
+    """
+    out = {}
+    for task, fname in (("GSM8K", "selection_verifiable_comma7b.csv"),
+                        ("TriviaQA", "selection_verifiable_tqa_comma7b.csv")):
+        p = RESULTS / fname
+        if not p.exists():
+            raise FileNotFoundError(p)
+        by, base = {}, {}
+        for r in csv.DictReader(open(p, encoding="utf-8")):
+            arm, n = r["arm"], int(r["n"])
+            pt = (n, float(r["acc"]), float(r["acc_lo95"]), float(r["acc_hi95"]))
+            if arm.startswith("majority"):
+                by.setdefault("majority vote", []).append(pt)
+            elif arm.startswith("pointwise"):
+                by.setdefault("pointwise reward", []).append(pt)
+            elif arm.startswith("risky model alone"):
+                base[arm] = float(r["acc"])
+            else:
+                raise ValueError(f"{fname}: unclassified arm {arm!r}")
+        for rule, pts in by.items():
+            pts.sort()
+            assert pts[0][0] == 1, (fname, rule)
+        n1 = {rule: pts[0][1] for rule, pts in by.items()}
+        assert len(set(n1.values())) == 1, \
+            f"{fname}: the rules disagree at n=1, where neither has selected anything: {n1}"
+        out[task] = ({k: sorted(v) for k, v in by.items()}, base)
+    return out
+
+
+def judge_free_metered_rows():
+    """The judge-free HEAD-TO-HEAD: both mechanisms, one anchor, one task, no judge anywhere.
+
+    results/verifiable_metered_tqa.csv is the only arm in the paper where the two mechanisms are
+    compared on an objective metric at a SHARED anchor (TinyComma-1.8B is the one openly licensed
+    safe model whose vocabulary the metered decoder can fuse with). Returned as
+    (selection points, metered points, baselines), each point (nats, acc, lo, hi).
+
+    The x value is not the same KIND of quantity for the two arms and the caller must say so:
+    selection's is `kl_nats`, the CLOSED FORM log n - (n-1)/n, while the metered decoder's is
+    `realised_nats`, a measured mean. That is the conservative direction -- it charges selection a
+    bound and the meter only what it spent -- but it is not like for like (caution (am)).
+    """
+    p = RESULTS / "verifiable_metered_tqa.csv"
+    if not p.exists():
+        raise FileNotFoundError(p)
+    sel, met, base = [], [], {}
+    for r in csv.DictReader(open(p, encoding="utf-8")):
+        acc = (float(r["acc"]), float(r["acc_lo95"]), float(r["acc_hi95"]))
+        if r["mechanism"].startswith("selection"):
+            n = int(r["arm"].split("=")[1])
+            if n > 1:
+                sel.append((float(r["kl_nats"]), *acc))
+        elif r["arm"] == "k=-1":
+            base["risky"] = acc[0]
+        elif r["arm"] == "k=0":
+            base["anchor"] = acc[0]
+        else:
+            met.append((float(r["realised_nats"]), *acc, r["arm"], float(r["certificate_nats"])))
+    assert sel and met and len(base) == 2, (len(sel), len(met), base)
+    # The meter's best arm must BE the unconstrained risky model, which is the whole point of the
+    # panel; if that ever stops being true the caption's claim has to change with it.
+    assert abs(max(m[1] for m in met) - base["risky"]) < 1e-9, \
+        "the metered decoder's best arm is no longer the risky model's own accuracy"
+    return sorted(sel), sorted(met), base
+
+
+def judge_free():
+    data = judge_free_rows()
+    fig = plt.figure(figsize=(5.98, 1.62))
+    gs = fig.add_gridspec(1, 3, width_ratios=(1.0, 1.0, 1.30), wspace=0.34)
+    axes = [fig.add_subplot(gs[0]), fig.add_subplot(gs[1])]
+    cx = fig.add_subplot(gs[2])
+    fig.subplots_adjust(left=0.068, right=0.995, bottom=0.215, top=0.855)
+    style = {"majority vote": ("C0", "o", "-"), "pointwise reward": ("C3", "s", "--")}
+    for axi, (task, (by, base)) in zip(axes, data.items()):
+        for rule, pts in by.items():
+            c, m, ls = style[rule]
+            ns = [n for n, _, _, _ in pts]
+            axi.plot(ns, [a for _, a, _, _ in pts], marker=m, color=c, ls=ls, ms=3.6,
+                     lw=1.2, label=rule, zorder=3)
+            axi.fill_between(ns, [lo for _, _, lo, _ in pts], [hi for _, _, _, hi in pts],
+                             color=c, alpha=0.13, lw=0, zorder=1)
+        if base:
+            b = max(base.values())
+            axi.axhline(b, color="0.35", ls=":", lw=1.0, zorder=2)
+            axi.annotate(f"risky alone, $k={{-1}}$: ${b:.3f}$", xy=(1.05, b),
+                         fontsize=6.2, color="0.2", va="bottom")
+            lo = min(v for _, (by_, _) in [(0, (by, base))] for pts in by_.values()
+                     for _, _, v, _ in pts)
+            axi.set_ylim(lo - 0.03, b + 0.075)
+        axi.set_xscale("log", base=2)
+        axi.set_xlabel("$n$")
+        axi.grid(alpha=0.22, lw=0.5)
+    axes[0].set_ylabel("exact match")
+    axes[0].set_title("(a) GSM8K", fontsize=7.6)
+    axes[1].set_title("(b) TriviaQA", fontsize=7.6)
+    axes[0].legend(loc="lower right", fontsize=6.2, frameon=False)
+
+    # (c) the two mechanisms on one objective axis, one shared anchor, no judge anywhere.
+    sel, met, base = judge_free_metered_rows()
+    cx.axhline(base["anchor"], color="0.55", ls=":", lw=0.9, zorder=1)
+    cx.axhline(base["risky"], color="0.35", ls=":", lw=0.9, zorder=1)
+    cx.plot([m[0] for m in met], [m[1] for m in met], marker="^", color="C3", ls="--",
+            ms=3.6, lw=1.2, label="metered decoder", zorder=3)
+    cx.plot([p[0] for p in sel], [p[1] for p in sel], marker="o", color="C0", ls="-",
+            ms=3.6, lw=1.2, label="selection (majority vote)", zorder=3)
+    cx.fill_between([p[0] for p in sel], [p[2] for p in sel], [p[3] for p in sel],
+                    color="C0", alpha=0.13, lw=0, zorder=1)
+    top = max(m for m in (base["risky"],))
+    k20 = max(met, key=lambda m: m[1])
+    cx.annotate(f"$k{{=}}20$: the risky model,\ncertified at ${k20[5]:.0f}$ nats",
+                xy=(k20[0], k20[1]), xytext=(0.26, 0.58), textcoords="axes fraction",
+                fontsize=6.4, color="0.15", ha="left", va="top",
+                arrowprops=dict(arrowstyle="-", lw=0.6, color="0.45"))
+    cx.annotate("anchor alone", xy=(0.02, base["anchor"]), xycoords=("axes fraction", "data"),
+                fontsize=6.2, color="0.35", va="bottom",
+                bbox=dict(fc="white", ec="none", pad=0.6))
+    cx.set_xscale("log")
+    cx.set_xlabel("nats from the anchor (bound / spent)")
+    cx.set_ylim(base["anchor"] - 0.05, top + 0.30)
+    cx.grid(alpha=0.22, lw=0.5)
+    cx.set_title("(c) both mechanisms, one anchor", fontsize=7.6)
+    # caution (ad): a legend pinned inside a small axes collides with the data. Here the risky
+    # model's dotted rule runs straight through the second entry, so the box is opaque and the
+    # ylim carries the headroom that keeps it off the curves.
+    cx.legend(loc="upper left", fontsize=6.4, frameon=True, framealpha=1.0, facecolor="white",
+              edgecolor="none", handletextpad=0.4, borderpad=0.15, labelspacing=0.2)
+    _save(fig, "judge_free")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--copy-to", default="")
@@ -825,7 +1108,8 @@ def main():
     # PDF in place -- which then measures as if nothing were wrong.
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
                context_intervention, selection_frontier, selection_breadth_forest,
-               units_law, order_no_collapse, imitation_cost)
+               units_law, order_no_collapse, imitation_cost,
+               safety_envelope, judge_free)
     for fn in figures:
         try:
             fn()

@@ -1,0 +1,9 @@
+metric,value,threshold,verdict
+rewards_compared,32000,,
+reward_agree_frac,1.00000,0.999,WITHDRAWN
+reward_max_abs_diff,0.00049,0.01,
+reward_mean_abs_diff,0.00006,,
+argmax_cells,3500,,
+argmax_agree_frac,0.97457,0.99,WITHDRAWN
+reward_mean_abs_diff_blocking,0.00006,1.0,PASS
+G0a,PASS,,PASS

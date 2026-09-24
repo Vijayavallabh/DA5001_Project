@@ -1,0 +1,17 @@
+arm,n,budget_nats,n_problems,acc,acc_lo95,acc_hi95,gain,gain_lo95,gain_hi95,spearman_acc_logn
+majority vote (self-consistency),1,0.0,500,0.404,0.362,0.448,0.0,0.0,0.0,0.955
+majority vote (self-consistency),2,0.6931,500,0.404,0.362,0.446,0.0,0.0,0.0,0.955
+majority vote (self-consistency),4,1.3863,500,0.448,0.404,0.492,0.044,0.014,0.074,0.955
+majority vote (self-consistency),8,2.0794,500,0.468,0.424,0.512,0.064,0.03,0.1,0.955
+majority vote (self-consistency),16,2.7726,500,0.484,0.44,0.528,0.08,0.042,0.118,0.955
+majority vote (self-consistency),32,3.4657,500,0.512,0.468,0.556,0.108,0.066,0.15,0.955
+majority vote (self-consistency),64,4.1589,500,0.488,0.444,0.532,0.084,0.042,0.126,0.955
+pointwise reward (Qwen2.5-7B),1,0.0,500,0.404,0.362,0.448,0.0,0.0,0.0,0.75
+pointwise reward (Qwen2.5-7B),2,0.6931,500,0.408,0.364,0.45,0.004,-0.028,0.036,0.75
+pointwise reward (Qwen2.5-7B),4,1.3863,500,0.45,0.406,0.494,0.046,0.006,0.084,0.75
+pointwise reward (Qwen2.5-7B),8,2.0794,500,0.456,0.414,0.5,0.052,0.006,0.098,0.75
+pointwise reward (Qwen2.5-7B),16,2.7726,500,0.454,0.412,0.498,0.05,0.004,0.096,0.75
+pointwise reward (Qwen2.5-7B),32,3.4657,500,0.432,0.388,0.476,0.028,-0.02,0.076,0.75
+pointwise reward (Qwen2.5-7B),64,4.1589,500,0.46,0.416,0.502,0.056,0.008,0.104,0.75
+"risky model alone, k=-1 (greedy)",1,,500,0.676,0.634,0.716,,,,
+"risky model alone, k=-1 (sampled)",1,,500,0.606,0.564,0.648,,,,

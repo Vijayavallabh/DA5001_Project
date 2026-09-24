@@ -142,6 +142,24 @@ def main():
                     help="suffix for the output filenames, so a second corpus "
                          "(AlpacaEval) does not overwrite the first")
     ap.add_argument("--out", default="results")
+    ap.add_argument("--rewards-only", action="store_true",
+                    help="write the reward cache and STOP, before any judged number exists. This "
+                         "is what lets a reproduction gate on the cache genuinely PRECEDE the "
+                         "reading it gates: an arm whose registration says 'no n>64 number is read "
+                         "until the gate clears' could otherwise only keep that promise by not "
+                         "looking at numbers already on disk, and caution (ap) records exactly "
+                         "that order being broken.")
+    ap.add_argument("--k-token", default="0",
+                    help="the literal k token in the pool's filenames (caution (o)); '0' is every "
+                         "pool on record, a global-budget decoder writes e.g. '1e-09'")
+    ap.add_argument("--deecho", action="store_true",
+                    help="score the de-echoed generation (dap.shared.served_generation, caution "
+                         "(bc)) under the CORPUS prompt (caution (aa)) instead of served_prompt. Off "
+                         "by default so every reward cache on record reproduces.")
+    ap.add_argument("--shard", default="", help="i/n, with --rewards-only: see below")
+    ap.add_argument("--data-dir", default="data",
+                    help="the corpus --deecho takes the true prompt from; data/bench/<corpus> for "
+                         "a pool drawn on another corpus (AlpacaEval, MT-Bench)")
     a = ap.parse_args()
     rng = random.Random(a.seed)
     grid = n_grid(a.max_n)
@@ -149,13 +167,25 @@ def main():
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    cands = load_candidates(a.gen_dir)
-    base = load_baseline(a.baseline_dir)
+    cands = load_candidates(a.gen_dir, k=a.k_token, deecho=a.deecho)
+    if a.deecho:
+        from analysis.order_averaged_h2h import true_prompts   # here: that module imports this one
+        corpus = true_prompts(a.data_dir)
+        cands = {p: [(s, c, corpus[p], g) for s, c, _, g in v] for p, v in cands.items()}
+    base = load_baseline(a.baseline_dir, deecho=a.deecho)   # the opponent carries the echo too
     pids = sorted(p for p in cands if p in base and len(cands[p]) >= a.max_n)
     assert pids, f"no prompt has {a.max_n} candidates in {a.gen_dir}"
     if a.limit:
         pids = pids[:a.limit]
         print(f"[sel] SMOKE: {len(pids)} prompts only, bands do not apply", flush=True)
+    if a.shard:
+        # Rewards-only over prompts i, i+n, ... into <cache>.shard<i>of<n>, merged afterwards. Every
+        # reward batch is `batch_size` consecutive candidates of ONE prompt (batch 8 divides 64), so a
+        # shard builds exactly the batches a single run builds, and the merged cache is that run's.
+        assert a.rewards_only and a.max_n % a.batch_size == 0, "--shard is for --rewards-only"
+        si, sn = map(int, a.shard.split("/"))
+        pids = pids[si::sn]
+        a.reward_cache = f"{a.reward_cache}.shard{si}of{sn}"
     print(f"[sel] {len(pids)} prompts x {a.max_n} candidates", flush=True)
 
     # ---- phase 1: the pointwise reward, cached -----------------------------------------------
@@ -181,6 +211,10 @@ def main():
         print(f"wrote {a.reward_cache}", flush=True)
         del rm
         torch.cuda.empty_cache()
+    if a.rewards_only:
+        print(f"[sel] --rewards-only: {a.reward_cache} is written; no judged number computed.",
+              flush=True)
+        return
     rewards = load_rewards(a.reward_cache)
 
     # arm n serves the argmax over the FIRST n candidates in seed order, so the arms nest and a
