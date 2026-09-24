@@ -67,3 +67,50 @@ mostly the risky model's tokens. Either outcome is reported as measured.
 - Reading a Prometheus level as a statement about book text alone.
 
 ## Scoring log
+
+### Prometheus scored 2026-09-24 14:55 IST --- He et al.'s own fluency rubric orders the arms as the judge does
+
+`scripts/run_he_metrics.sh prometheus` in two disjoint halves on host B GPUs 5 and 6 (`_a`, `_b`),
+`analysis/he_metrics.py --report` -> `results/he_metrics.csv`. Unparsed outputs (no `[RESULT]`) are
+almost all the empty responses; the reading below is the mean over **non-empty** responses, 1--5.
+
+| arm | fluency, non-empty | n |
+|---|---|---|
+| `sel64` | `2.56 [2.43, 2.69]` | `447` |
+| `sel1` | `1.52 [1.43, 1.62]` | `432` |
+| `anchor` | `1.65 [1.55, 1.76]` | `430` |
+| `met_k0.5` | `1.45 [1.37, 1.54]` | `400` |
+| `met_k1` | `1.69 [1.59, 1.79]` | `400` |
+| `met_k10` | `1.88 [1.78, 1.98]` | `489` |
+| `risky8b` | `1.99 [1.88, 2.09]` | `496` |
+| `anchor70` | `1.45 [1.37, 1.54]` | `397` |
+| `met70_k0.5` | `1.42 [1.34, 1.51]` | `399` |
+| `met70_k1` | `1.48 [1.39, 1.56]` | `400` |
+| `met70_k20` | `1.61 [1.53, 1.70]` | `487` |
+| `risky70b` | `1.62 [1.53, 1.71]` | `488` |
+| `chat_k1` | `2.41 [2.28, 2.54]` | `479` |
+| `chat_k10` | `3.39 [3.28, 3.50]` | `495` |
+| `chat_risky` | `3.52 [3.42, 3.63]` | `496` |
+| `csel64` | `3.13 [3.02, 3.24]` | `461` |
+| `csel1` | `1.82 [1.71, 1.93]` | `436` |
+
+| paired difference | fluency | n |
+|---|---|---|
+| `sel64-met_k10` | `+0.70 [+0.53, +0.86]` | `438` |
+| `sel64-met_k0.5` | `+1.12 [+0.98, +1.28]` | `362` |
+| `sel64-met_k1` | `+0.87 [+0.70, +1.03]` | `363` |
+| `sel64-risky8b` | `+0.59 [+0.44, +0.75]` | `444` |
+| `sel64-met70_k0.5` | `+1.15 [+1.01, +1.31]` | `362` |
+| `sel64-met70_k1` | `+1.10 [+0.95, +1.26]` | `362` |
+| `sel64-met70_k20` | `+0.95 [+0.80, +1.10]` | `436` |
+| `sel64-risky70b` | `+0.95 [+0.80, +1.10]` | `437` |
+| `sel64-chat_k10` | `-0.81 [-0.99, -0.64]` | `442` |
+| `csel64-csel1` | `+1.33 [+1.17, +1.48]` | `406` |
+
+**Reading.** On the metric He et al. use, selection at `n=64` is rated more fluent than the metered
+decoder at every budget of both text-continuation configurations and than both risky models served
+that way, and less fluent than the instruct model served through its chat template --- the pattern
+Table 1 shows under the pairwise judge. The expected reading held. Two cautions: the backbone is the
+open `prometheus-7b-v2.0` where He et al. used `gpt-4.1-mini`, and the absolute levels sit well below
+their books numbers (our prompts are ordinary, and TinyComma is a weak writer), so only differences
+between arms are read.
