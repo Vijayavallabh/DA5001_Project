@@ -96,7 +96,8 @@ def main():
             b = band if q == "D3" else ("P3" if run in ("R1", "R2") else "")
             rows.append(dict(gate=b, quantity=f"{run} {r['quantity']}",
                              value=f"{float(r['value']):+.4f} [{lo:+.4f}, {hi:+.4f}]",
-                             reading=reading(lo, hi) if (g0 and g1) or run == "R0" else "INVALID (gate)"))
+                             reading=(f"descriptive ({reading(lo, hi)})" if run == "R0" else
+                                      reading(lo, hi) if (g0 and g1) else "INVALID (gate)")))
     path = os.path.join(a.out, "headline_replication.csv")
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["gate", "quantity", "value", "reading"], lineterminator="\n")

@@ -88,3 +88,29 @@ scoped to it.
 - Reading `k = 0.1` as a statement about other window lengths.
 
 ## Scoring log
+
+### Scored 2026-09-24 16:15 IST --- B1, B2, B3 CONFIRMED; G0, G1, G2 pass
+
+Generation on host B (`k=0.5` then `2` on GPUs 0--2, `k=0.1` on 3,5,6; batch `32`, no OOM retry
+needed); judge passes on host B GPU 7 (`k=0.5` re-run on the same card after it OOM'd beside
+FActScore, so all three passes share silicon); `analysis/anchoredbyte_score.py --out results` ->
+`results/anchoredbyte.csv`.
+
+**G0 PASS** (every arm covers the `500` prompts; `full_text` is prompt plus generation on every record),
+**G1 PASS** (largest realised spend `74.84` of `K = 80`, `362.44` of `400`, `466.34` of `1600`),
+**G2 PASS** (selection's per-prompt levels identical across the three passes).
+
+| `k` | `K` | `K/S_w` | binds | forced | spend median | meter `D2` | `D3` selection `-` meter | band |
+|---|---|---|---|---|---|---|---|---|
+| `0.1` | `80` | `0.57` | `18.4%` | `13.4%` | `47.2` | `+0.0200 [-0.0025, +0.0420]` | `+0.1385 [+0.1155, +0.1620]` | B1 **CONFIRMED** |
+| `0.5` | `400` | `2.86` | `2.8%` | `2.6%` | `78.9` | `+0.0345 [+0.0120, +0.0575]` | `+0.1240 [+0.1010, +0.1470]` | B2 **CONFIRMED** |
+| `2` | `1600` | `11.45` | `0.6%` | `0.6%` | `85.5` | `+0.0240 [+0.0010, +0.0475]` | `+0.1345 [+0.1105, +0.1590]` | B3 **CONFIRMED** |
+
+`S_w = 139.68` nats (the audited anchor's `159.83` rescaled by the two anchors' per-character
+surprisal). Selection at Comma-7B, `n=64`: `D1 +0.1585 [+0.1355, +0.1825]`, level `0.6245` against
+Comma-7B alone `0.4660`. **B4, descriptive:** the unconstrained `70`B base gains `-0.0110 [-0.0340,
++0.0120]` over Comma-7B alone, and selection beats it by `0.1695 [0.1445, 0.1945]`; `33` of the `500`
+AnchoredByte generations are empty at every `k`. Every prediction was right. **What the manuscript
+does, as fixed above:** the rows go to the appendix twin of Table 1 (`tab:anchoredbyte`; the body has
+no room), and since every band reads CONFIRMED the abstract's "the authors' own `70`B pair included"
+gains their byte-level decoder at its recommended pair.
