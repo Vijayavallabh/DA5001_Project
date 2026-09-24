@@ -32,3 +32,23 @@ a different layout.
 a 7B and a 70B for every token of either tokenizer, selection one 7B in one batched call.
 
 ## Scoring log
+
+### Read 2026-09-24 16:30 IST --- selection at Comma-7B serves a request in `0.061x` AnchoredByte's time
+
+Host B, 12:41--12:52 CEST, GPUs 0, 1, 2 (meter) and 0 (selection, right after); `analysis/batched_latency.py
+--report` -> `results/batched_latency.csv` (part `ab`) and the `AB` rows of
+`results/batched_latency_bands.csv`.
+
+| per-request seconds (bytes served) | `W = 1` | `W = 8` |
+|---|---|---|
+| AnchoredByte, Comma-7B + 70B, `k = 0.5` | `68.69` (`800`) | `10.91` (`713`) |
+| selection at Comma-7B, `n = 1` | `3.09` (`812`) | `0.423` (`825`) |
+| selection at Comma-7B, `n = 8` | `3.12` (`822`) | `0.525` (`789`) |
+| selection at Comma-7B, `n = 64` | `4.19` (`794`) | not measured: out of memory |
+
+`SEL(64) / METAB = 0.061` at one request per call (`0.061` per served byte too; the byte-level meter
+served its full `800`-byte budget on all three repeats), and `SEL(8) / METAB = 0.048` at eight per call.
+The expectation held. Two things read against the cell: the `n = 64` selection cell has a `21%` repeat
+spread (its first repeat took `4.19` s of generation against `3.36` and `3.34`), which is far from
+mattering at a ratio of `0.06`; and at eight requests per call `n = 64` did not fit one 80 GB card beside
+the reward model (`512` Comma-7B sequences), so that cell is reported as not measured, as fixed above.

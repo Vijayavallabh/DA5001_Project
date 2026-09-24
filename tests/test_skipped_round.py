@@ -339,3 +339,17 @@ def test_the_anchoredbyte_paragraph_quotes_the_he_metrics_of_its_arms():
     assert lo < 0 < hi, "the k=0.1 meter now separates from selection on precision; 'inseparable' is wrong"
     assert all(float(h[("prometheus_fluency_nonempty", f"csel64-ab_k{k}")]["lo95"]) > 0 for k in ("0.1", "0.5", "2")), \
         "selection is no longer the more fluent at every budget"
+
+
+def test_the_byte_level_timing_is_the_measured_one():
+    c = {(r["part"], r["arm"], r["W"], r["n"]): float(r["per_request_s"]) for r in rows("batched_latency.csv")}
+    t = body("appendix_selection.tex")
+    ab1, ab8 = c[("ab", "METAB", "1", "1")], c[("ab", "METAB", "8", "1")]
+    s64 = c[("ab", "SEL", "1", "64")]
+    assert f"AnchoredByte, Comma-7B $+$ $70$B & ${ab1:.2f}$ & ${ab8:.2f}$" in t
+    assert (f"selection at Comma-7B, $n=1$ / $8$ / $64$ & ${c[('ab', 'SEL', '1', '1')]:.2f}$ / "
+            f"${c[('ab', 'SEL', '1', '8')]:.2f}$ / ${s64:.2f}$ & ${c[('ab', 'SEL', '8', '1')]:.3f}$ / "
+            f"${c[('ab', 'SEL', '8', '8')]:.3f}$ / ---") in t
+    assert ("ab", "SEL", "8", "64") not in c, "the out-of-memory cell was measured after all; fill the dash"
+    p = para("app:batched", "appendix_selection.tex")
+    assert f"${ab1:.2f}$ s against ${s64:.2f}$ s" in p and f"${s64 / ab1:.3f}\\times$" in p
