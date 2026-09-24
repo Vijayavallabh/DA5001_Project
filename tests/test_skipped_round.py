@@ -73,3 +73,43 @@ def test_adaptive_rules_are_certified_at_log_n_max():
     for r in rows("adaptive_n.csv"):
         assert abs(float(r["certificate_nats"]) - math.log(int(r["n_max"]))) < 1e-4
         assert 1 <= float(r["mean_draws"]) <= int(r["n_max"])
+
+
+def _gains(tag):
+    d = {r["quantity"][:2]: r for r in rows(f"order_averaged_h2h__{tag}.csv")}
+    return {k: (float(v["value"]), float(v["lo95"]), float(v["hi95"])) for k, v in d.items()
+            if k in ("D1", "D2", "D3")}
+
+
+def test_every_older_reading_survives_the_repair_as_the_appendix_says():
+    r = rows("deecho_rejudge.csv")
+    d3 = [x for x in r if x["quantity"].startswith("D3")]
+    assert len(d3) == 20 and all(x["survives"] == "YES" for x in d3)
+    panel = [x for x in d3 if x["pass"].startswith("panel")]
+    assert sum(x["reading_deecho"] == "POSITIVE" for x in panel) == 4 and len(panel) == 5
+    moved = sorted((x["pass"], x["quantity"][:2]) for x in r if x["survives"] == "NO")
+    assert moved == [("workload CoTaEval-QA k=1.4", "D1"), ("workload Gutenberg k=0.9", "D2"),
+                     ("workload MT-Bench k=1.0", "D1")], moved
+    t = body("appendix_selection.tex")
+    i = t.index("Every older order-averaged reading was re-judged")
+    p = t[i:i + 1100]
+    assert "all twenty keep their sign class" in p and "four positive judges of five" in p
+    for tag, q in (("mixtral_deecho", "D3"), ("mixpowk_judgeB_deecho", "D3"), ("mtb_conc_bind_deecho", "D1"),
+                   ("cotaeval_qa_conc_bind_deecho", "D1"), ("gutenberg_conc_bind_deecho", "D2")):
+        g, lo, hi = _gains(tag)[q]
+        assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in p or f"${g:+.4f}$" in p, (tag, q, g)
+
+
+def test_the_decomposition_on_repaired_text_is_rebuilt_from_its_csvs():
+    ours, alp, mtb = (_gains(f"{t}_deecho") for t in ("wscope_c", "mixpowk_judgeB", "mtb_conc_bind"))
+    sel = [x["D1"][0] for x in (ours, alp, mtb)]
+    met = [x["D2"][0] for x in (ours, alp, mtb)]
+    ss, sm = round(max(sel) - min(sel), 3), round(max(met) - min(met), 3)
+    assert mtb["D1"][1] < 0 < mtb["D1"][2], "MT-Bench's selection gain no longer covers zero"
+    assert met[0] < sel[0] and met[1] > sel[1] and met[2] > sel[2], "the meter no longer crosses"
+    t = body("appendix_selection.tex")
+    i = t.index("On the repaired text that decomposition does not survive")
+    p = t[i:i + 520]
+    assert f"${ss:.3f}$" in p and f"${sm:.3f}$" in p, (ss, sm, p[:200])
+    for v in sel + met:
+        assert f"${v:+.4f}$" in p, v
