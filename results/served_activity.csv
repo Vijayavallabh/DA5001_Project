@@ -1,13 +1,13 @@
 block,k,run_dir,prompts,decode_steps,active_share,forced_share
 "8B-Instruct, continuing text",0.5,output/sweep_plain,500,83894,0.49137,0.033757
 "8B-Instruct, continuing text",1.0,output/sweep_plain,500,86862,0.066001,0.015461
-"8B-Instruct, continuing text",10.0,output/phase2/conc_all,500,99953,8e-05,0.0
-70B base,0.5,output/phase5/imit_llama70b,500,62457,0.26511,0.045535
-70B base,1.0,output/phase5/imit_llama70b,500,63014,0.063002,0.021948
-70B base,20.0,output/phase5/imit_llama70b,500,84691,0.0,1.2e-05
-"8B-Instruct, chat template",1.0,output/sweep_chat,500,63622,0.167709,0.046148
-"8B-Instruct, chat template",10.0,output/feat184/chat_k10,500,71382,0.001569,0.003054
-"8B-Instruct, chat template",0.5,output/sweep_chat,500,67047,0.624979,0.083688
-"8B-Instruct, chat template",2.0,output/feat196/chat_grid,500,62654,0.02517,0.022712
-"8B-Instruct, chat template",3.0,output/feat196/chat_grid,500,62725,0.010729,0.014715
-"8B-Instruct, chat template",5.0,output/feat196/chat_grid,500,62891,0.00229,0.012355
+"8B-Instruct, continuing text",10.0,output/phase2/conc_all,500,99907,8e-05,0.0
+70B base,0.5,output/phase5/imit_llama70b,500,62456,0.265115,0.04552
+70B base,1.0,output/phase5/imit_llama70b,500,63013,0.063003,0.021932
+70B base,20.0,output/phase5/imit_llama70b,500,84690,0.0,0.0
+"8B-Instruct, chat template",1.0,output/sweep_chat,500,63373,0.168368,0.0424
+"8B-Instruct, chat template",10.0,output/feat184/chat_k10,500,71164,0.001574,0.0
+"8B-Instruct, chat template",0.5,output/sweep_chat,500,66864,0.62669,0.08118
+"8B-Instruct, chat template",2.0,output/feat196/chat_grid,500,62377,0.025282,0.018372
+"8B-Instruct, chat template",3.0,output/feat196/chat_grid,500,62448,0.010777,0.010345
+"8B-Instruct, chat template",5.0,output/feat196/chat_grid,500,62614,0.0023,0.007985

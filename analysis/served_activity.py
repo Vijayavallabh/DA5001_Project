@@ -9,7 +9,7 @@ averaged per trajectory. This fixes one definition and one population for the ta
 
   active  = decode steps whose served token comes from a STRICT blend of the two models
             (0 < bd < 1 in the per-step log), over all decode steps, end-of-text padding removed
-            (dap.stats.strip_pad_steps), pooled over
+            (dap.stats.strip_pad_steps) and nothing after the first end-of-text token, pooled over
   the judged trajectories = the lowest-seed trajectory of each of the 500 ordinary prompts, which is
             what analysis/order_averaged_h2h.py serves to the judge (lowest_seed).
 
@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dap.stats import strip_pad_steps  # noqa: E402
 
 CLASSES = ("neutral", "factual", "creative")
+EOS = {128001, 128009}      # <|end_of_text|>, <|eot_id|>: the convention analysis/window_logratio.py uses
 ROWS = [  # (block, k, directory, filename token) -- Table 3's token-level rows
     ("8B-Instruct, continuing text", 0.5, "output/sweep_plain", "0.5"),
     ("8B-Instruct, continuing text", 1.0, "output/sweep_plain", "1"),
@@ -39,7 +40,27 @@ ROWS = [  # (block, k, directory, filename token) -- Table 3's token-level rows
     ("8B-Instruct, chat template", 2.0, "output/feat196/chat_grid", "2"),
     ("8B-Instruct, chat template", 3.0, "output/feat196/chat_grid", "3"),
     ("8B-Instruct, chat template", 5.0, "output/feat196/chat_grid", "5"),
+    # feat-195: temperature 0.7, penalty 1.1
+    # PENDING ("8B-Instruct, continuing text, T=0.7", 0.5, "output/feat195/t07_8b", "0.5"),
+    # PENDING ("8B-Instruct, continuing text, T=0.7", 1.0, "output/feat195/t07_8b", "1"),
+    # PENDING ("8B-Instruct, continuing text, T=0.7", 10.0, "output/feat195/t07_8b", "10"),
+    # PENDING ("70B base, T=0.7", 0.5, "output/feat195/t07_70b", "0.5"),
+    # PENDING ("70B base, T=0.7", 1.0, "output/feat195/t07_70b", "1"),
+    # PENDING ("70B base, T=0.7", 20.0, "output/feat195/t07_70b", "20"),
 ]
+
+
+def decode_steps(log):
+    """Padding removed (caution (s)) and nothing after the first end-of-text token, kept inclusive.
+    A chat-served risky model's <|eot_id|> is followed by one anchor-sampled <|start_header_id|> at
+    bd = 0 that is not a pad (so strip_pad_steps keeps it) and not a decode step (no aggregate counter
+    counts it); counting it read 218 steps of output/feat184/chat_k10 as 'forced to the anchor'."""
+    out = []
+    for e in strip_pad_steps(log):
+        out.append(e)
+        if e.get("sampled_token_id") in EOS:
+            break
+    return out
 
 
 def judged_logs(d, tok):
@@ -68,7 +89,7 @@ def main():
         assert len(logs) == 500, (d, tok, len(logs))
         act = frc = tot = 0
         for log in logs.values():
-            log = strip_pad_steps(log)
+            log = decode_steps(log)
             act += sum(1 for e in log if 1e-6 < e.get("bd", 0.0) < 1 - 1e-6)
             frc += sum(1 for e in log if e.get("bd", 0.0) <= 1e-6)
             tot += len(log)

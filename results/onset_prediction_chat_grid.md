@@ -105,3 +105,11 @@ On levels (selection minus meter, paired within each pass): `+0.1195 [+0.0925, +
 **Manuscript, as registered.** Table 2's chat block reports all six budgets (`0.5`, `1`, `2`, `3`, `5`,
 `10`); the four new rows are marked as judged on host B, with that host's selection and anchor levels in
 the block header. Section 4 states that the meter overtakes selection from `k=3`, where `K/S_w = 3.75`.
+
+**Correction, 2026-09-24 23:50 IST (descriptive P4 only; no registered reading changes).** The
+"active (forced)" column above counted, on the chat arms, the one anchor-sampled step that follows the
+risky model's `<|eot_id|>`, which is not a decode step (`results/served_activity_note.md`). Corrected by
+`analysis/served_activity.py` stopping at the first end-of-text token: active `62.7%` (`8.1%` forced) at
+`k=0.5`, `2.5%` (`1.8%`) at `k=2`, `1.1%` (`1.0%`) at `k=3`, `0.23%` (`0.80%`) at `k=5`. Table 2 prints
+`62.7%` at `k=0.5`.
+
