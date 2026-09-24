@@ -1,0 +1,11 @@
+quantity,arm,value,lo95,hi95,n,single_order,reading
+"D1 selection gain, order-averaged",sel_n64,0.1015,0.0765,0.126,500,0.091,SURVIVES
+"D2 metered gain, order-averaged",metered_k0.5,-0.0035,-0.0215,0.015,500,-0.002,DISSOLVES
+"D3 difference of gains, paired",sel_n64 - metered_k0.5,0.105,0.0745,0.136,500,0.093,REVERSAL CONFIRMED
+"D4 risky70b gain, order-averaged",risky70b,0.019,-0.004,0.042,500,-0.005,DISSOLVES
+"D5 risky70b minus selection, paired",risky70b - sel_n64,-0.0825,-0.115,-0.0495,500,,INCUMBENT LOSES
+order consistency,sel_n64,0.288,,,500,,UNUSABLE
+order consistency,sel_n1,0.3,,,500,,UNUSABLE
+order consistency,metered_k0.5,0.354,,,500,,UNUSABLE
+order consistency,anchor_k0,0.362,,,500,,UNUSABLE
+order consistency,risky70b,0.302,,,500,,UNUSABLE

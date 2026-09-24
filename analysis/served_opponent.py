@@ -98,6 +98,11 @@ def main():
     # ---- feat-185: the authors' own pair ------------------------------------------------------
     if os.path.exists(s("he70b_k20")) and os.path.exists(s("he70b_k05")):
         k20, k05 = summary(s("he70b_k20")), summary(s("he70b_k05"))
+        ca, cb, pa = per_prompt(f("he70b_k20")), per_prompt(f("he70b_k05")), per_prompt(f("deecho"))
+        g2c = (len(ca) == len(cb) == len(pa) == 500 and
+               all(ca[p][c] == cb[p][c] == pa[p][c] for p in ca for c in ("u_sel_n64", "u_sel_n1")))
+        add("G2C", "selection levels identical in C-a, C-b and Part A", float(g2c),
+            reading="PASS" if g2c else "FAIL")
         for band, src, q in (("C1", k20, "D3 difference of gains, paired"),
                              ("C2", k20, "D5 met70b_k1 minus selection, paired"),
                              ("C3", k05, "D3 difference of gains, paired"),

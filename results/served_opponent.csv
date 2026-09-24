@@ -16,3 +16,13 @@ B1,selection n=64 minus chat meter k=10,-0.138,-0.167,-0.107,500,FAILS
 B2,selection n=64 minus plain meter k=10,0.058,0.0325,0.0845,500,HOLDS
 B3,serving handicap: chat 2nd draw minus committed plain opponent text,0.184,0.155,0.213,500,descriptive
 B3k1,"chat meter k=1 (binds 15.7%): D3 on gains, descriptive",0.0305,-0.0045,0.065,500,descriptive
+G2C,"selection levels identical in C-a, C-b and Part A",1.0,,,,PASS
+C1,"D3 difference of gains, paired (k=20 pass)",0.0825,0.0495,0.116,500,REVERSAL CONFIRMED
+C2,"D5 met70b_k1 minus selection, paired (k=20 pass)",-0.101,-0.1335,-0.0685,500,INCUMBENT LOSES
+C3,"D3 difference of gains, paired (k=0.5 pass)",0.105,0.0745,0.136,500,REVERSAL CONFIRMED
+C4,"D4 risky70b gain, order-averaged (k=0.5 pass)",0.019,-0.004,0.042,500,DISSOLVES
+C4,"D5 risky70b minus selection, paired (k=0.5 pass)",-0.0825,-0.115,-0.0495,500,INCUMBENT LOSES
+C-gain,"D1 selection gain, order-averaged (k=20 pass)",0.1015,0.0765,0.126,500,SURVIVES
+C-gain,"D2 metered gain, order-averaged (k=20 pass)",0.019,-0.004,0.042,500,DISSOLVES
+C-gain,"D1 selection gain, order-averaged (k=0.5 pass)",0.1015,0.0765,0.126,500,SURVIVES
+C-gain,"D2 metered gain, order-averaged (k=0.5 pass)",-0.0035,-0.0215,0.015,500,DISSOLVES

@@ -76,3 +76,46 @@ Two judge passes, `~5,000` Phi-3.5-mini calls each, about an hour on one A100 (l
 feat-184's run B3).
 
 ## Scoring log
+
+### Scored 2026-09-24 10:30 IST --- C1 CONFIRMED, C2 INCUMBENT LOSES, C3 CONFIRMED: selection wins at every budget of the authors' own pair
+
+Both passes exited `0` on GPU 4 (`output/logs/feat185_Ca.done` 10:15, `feat185_Cb.done` 10:21;
+launcher `scripts/run_feat185.sh`). Scored by `.venv/bin/python analysis/served_opponent.py --out
+results` -> `results/served_opponent.csv` (rows `G2C`, `C1`--`C4`, `C-gain`).
+
+**Gates.** G0 PASS: `500` prompts shared by all arms in both passes, and the de-echo recovers
+`500/500` records at every `k` of `output/phase5/imit_llama70b` read here (`-1`, `0`, `0.5`, `1`,
+`20`). G2 PASS: selection's per-prompt levels at `n=64` and `n=1` are identical, prompt by prompt, in
+C-a, C-b and feat-184 Part A.
+
+**One fact the gates surfaced, not banded.** At `k=20` the 70B pair's meter serves text
+**byte-identical** to the unconstrained 70B's on `500` of `500` prompts (same seeds, binding on
+`0.00%` of steps), so C1 and C4 judge the same strings: that is why `D2` at `k=20` and `D4` agree to
+four decimals and in their single-order readings alike.
+
+**C1 --- CONFIRMED.** `D3 = +0.0825 [+0.0495, +0.1160]` at `k=20`: selection `+0.1015 [+0.0765,
++0.1260]`, the meter `+0.0190 [-0.004, +0.042]`. Prediction REFUTED, **wrong**: at temperature `1.0`
+with no penalty the 70B base, continuing `Complete the prefix:`, is judged no better than the
+TinyComma anchor alone.
+
+**C2 --- INCUMBENT LOSES.** The rate-matched `k=1` meter (binding on `6.29%` of steps) gains `+0.0005
+[-0.020, +0.021]`; minus selection, `-0.1010 [-0.1335, -0.0685]`. Prediction INCUMBENT WINS,
+**wrong**, for the same reason as C1.
+
+**C3 --- CONFIRMED.** At `k=0.5`, the one budget whose certificate says anything about a `50`-token
+window, the meter gains `-0.0035 [-0.0215, +0.015]` --- inseparable from its own anchor, as at the
+8B pair --- and `D3 = +0.1050 [+0.0745, +0.1360]`. Prediction CONFIRMED, **right**.
+
+**C4, descriptive.** The unconstrained 70B base gains `+0.0190 [-0.004, +0.042]` over the anchor
+alone, and selection beats it by `0.0825 [0.0495, 0.1150]`.
+
+**Manuscript, as registered.** C1 and C2 did not read against selection, so the one-sentence reading
+fixed for that case does not apply; the pattern is reported as measured. With feat-184 the judged
+comparison now has three serving configurations: against a risky model served as a text continuer
+(the released instruct model without its template, or the authors' 70B base) selection is judged
+better than the meter at every budget tried; against the instruct model served with its chat
+template the `k=10` meter --- that model unchanged at `99.84%` of steps, binding on `0.157%`
+(`output/feat184/chat_k10`; the plain `k=10` meter binds on `0.008%`) --- wins by `0.138`. The paper
+states temperature `1.0` and no penalty beside every one of these numbers, since He et al. serve
+base models at `0.7` with a penalty and a base model's continuation is the thing temperature most
+affects.
