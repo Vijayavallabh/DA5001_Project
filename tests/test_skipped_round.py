@@ -121,3 +121,36 @@ def test_the_main_text_quotes_alpacaeval_on_the_repaired_text_like_its_headline(
     t = body("experiments.tex")
     assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in t, "the main text's AlpacaEval band is not the repaired one"
     assert "$-0.0339$" not in t, "the echo-carrying AlpacaEval number is back in the main text"
+
+
+def test_the_threshold_paragraph_quotes_the_recount():
+    p = para("app:rougethreshold", "appendix_selection.tex")
+    mem = {x["theta"]: x["count"] for x in rows("rouge_threshold.csv")
+           if x["file"] == "selfix_clean_grid64_per_passage.csv" and x["source"] == "memoriser alone"}
+    assert f"${mem['0.3']}$, ${mem['0.4']}$, ${mem['0.5']}$, ${mem['0.6']}$ and ${mem['0.7']}$" in p
+    assert "reaches none of the $100$ passages" in p
+
+
+def test_the_channel_paragraph_quotes_its_csv():
+    p = para("app:channel", "appendix_selection.tex")
+    c = {r["n"]: r for r in rows("covert_channel.csv")}
+    for n in ("8", "16", "64"):
+        assert f"${float(c[n]['bits_per_response']):.2f}$" in p, n
+    assert f"${float(c['64']['analytic_bits']):.2f}$" in p
+    assert f"${1 - float(c['64']['distinct_draw_frac']):.1%}$".replace("%", "\\%") in p
+    w = {(r["n"], r["encoding"]): r for r in rows("covert_channel_windows.csv")}
+    lz = w[("64", "lzma")]
+    assert f"${int(float(lz['mean_bits'])):,}$".replace(",", "{,}") in p
+    assert f"${round(float(lz['mean_responses']))}$" in p and f"${round(float(lz['responses_at_capacity']))}$" in p
+    assert f"= {c['64']['odometer_max_responses']}$ responses" in p
+    assert f"= {float(c['64']['odometer_max_bits']):.0f}$ bits" in p
+
+
+def test_the_adaptive_paragraph_quotes_its_contrasts():
+    p = para("app:adaptive", "appendix_selection.tex")
+    c = {r["contrast"]: r for r in rows("levels_adaptive_contrasts.csv")}
+    for k in ("q75_vs_n64", "q75_vs_n7", "q90_vs_n64"):
+        v, lo, hi = (float(c[k][x]) for x in ("value", "lo95", "hi95"))
+        assert f"${v:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in p, k
+    a = {(r["n_max"], r["q"]): r for r in rows("adaptive_n.csv")}
+    assert f"${float(a[('64', '0.75')]['mean_draws']):.1f}$" in p and f"${float(a[('64', '0.9')]['mean_draws']):.1f}$" in p
