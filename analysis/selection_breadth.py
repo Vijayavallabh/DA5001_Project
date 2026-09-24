@@ -116,13 +116,19 @@ def main():
     # read 6.8%/3.0%/16.6% where the text is empty on 14.6%/18.4%/31.6%. The judged u values are
     # unchanged (they are read from the committed per-prompt files); only emptiness moves.
     ap.add_argument("--deecho", action="store_true")
+    # --rejudged also reads the judged u values from the de-echoed re-judge
+    # (selection_scaling{tag}_deecho.csv, results/forest_deecho_note.md), so the judge read the
+    # recovered text as well; writes selection_breadth_rejudged.csv.
+    ap.add_argument("--rejudged", action="store_true")
     a = ap.parse_args()
+    a.deecho = a.deecho or a.rejudged
+    sfx = "_deecho" if a.rejudged else ""
     import random
     rng = random.Random(a.seed)
 
     rows, gates = [], {}
     for label, tag, model, gen_dir in ANCHORS:
-        path = os.path.join(a.out, f"selection_scaling{tag}.csv")
+        path = os.path.join(a.out, f"selection_scaling{tag}{sfx}.csv")
         if not os.path.exists(path):
             print(f"  [breadth] missing {path}, skipping {label}")
             continue
@@ -145,7 +151,7 @@ def main():
                              mean_tokens_n1=round(tokens, 1),
                              empty_frac_n1=round(empty, 4), n_prompts=npr,
                              entry_gate="PASS" if ok else "FAIL"))
-            ne = nonempty_gain(os.path.join(a.out, f"selection_scaling_per_prompt{tag}.csv"),
+            ne = nonempty_gain(os.path.join(a.out, f"selection_scaling_per_prompt{tag}{sfx}.csv"),
                                gen_dir, j, a.n, rng, a.deecho)
             rows[-1].update(zip(("gain_nonempty", "gain_nonempty_lo95", "gain_nonempty_hi95",
                                  "n_nonempty"), ne if ne else ("", "", "", "")))
@@ -153,7 +159,8 @@ def main():
         print("  [breadth] nothing to aggregate yet")
         return 1
     os.makedirs(a.out, exist_ok=True)
-    name = "selection_breadth_deecho.csv" if a.deecho else "selection_breadth.csv"
+    name = ("selection_breadth_rejudged.csv" if a.rejudged else
+            "selection_breadth_deecho.csv" if a.deecho else "selection_breadth.csv")
     with open(os.path.join(a.out, name), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
