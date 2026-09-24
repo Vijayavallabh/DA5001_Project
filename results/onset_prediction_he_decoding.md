@@ -87,4 +87,20 @@ temperatures. Whatever H2 and H5 read, the sentence about the informative budget
 About two hours of GPUs 1 and 2 for the `70`B, and three of GPU 4 for the `8`B arms, the pool and
 the rewards; four judge passes of about six minutes each.
 
+## Addendum before launch, 2026-09-24 23:15 IST (no token decoded, no judge called)
+
+- **Host.** The first launch (22:05 IST, local) died on a CUDA allocation in every job and wrote no
+  trajectory (`output/logs/feat195_failed_launch_2209/`, `output/feat195/` empty): minutes earlier
+  another job of this account took local GPUs 0, 1, 2 and 4, and they are still held. The arms run on
+  host B's idle H100s instead: the `8`B arms, the pool and the rewards on GPU 4, the `70`B on GPUs 5
+  and 6, J1/J2 on GPU 7 and J3/J4 on GPU 5 (`GPU_MAIN=4 GPUS_70B=5,6 GPU_J12=7 GPU_J34=5`). Every arm
+  and all four judge passes run on this one host, so each paired difference is within one host's
+  arithmetic (caution (as)).
+- **The `70`B's sharding.** The launcher omitted the committed `70`B run's `--risky-device-map auto
+  --max-memory 0=75GiB,1=70GiB` (`output/phase5/imit_llama70b`), without which the factory pins the
+  `70`B to one card (caution (q)); the first launch's `70`B job died on exactly that allocation
+  (`78.05` GiB on one card). Restored, as "the committed `70`B run's" settings above already promise.
+- Nothing else changes: prompts, seeds, budgets, batch sizes, judge, gates and predictions are as
+  written above.
+
 ## Scoring log

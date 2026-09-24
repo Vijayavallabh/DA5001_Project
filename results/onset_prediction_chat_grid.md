@@ -51,4 +51,22 @@ which the meter's interval lies above selection's and its `K/S_w`, whatever it i
 - Budgets or seeds chosen after a judge call; pooling with other passes; level comparisons across
   passes.
 
+## Addendum before launch, 2026-09-24 23:15 IST (no token decoded, no judge called)
+
+- **Host.** Every local card is held by another job of this account (the first launch died at load,
+  `output/logs/feat195_failed_launch_2209/`, `output/feat196/` empty), so the new budgets and both
+  judge passes run on host B's GPU 7, with the committed `output/sweep_chat` copied there unchanged.
+- **G1 needs a same-host reference.** G1 as written compares against feat-184's pass, which was judged
+  on a local A100. A greedy bf16 judge is deterministic on one host (each arm is judged alone, eight
+  items at a time in prompt order), but it is not bit-reproducible across hosts (caution (as)), so G1
+  as written cannot tell a pipeline defect from host arithmetic. The reference is therefore fixed now,
+  before J5 or J6 runs: feat-184 B3's own command (`--baseline-dir output/sweep_chat --metered-dir
+  output/sweep_chat --k 1 --anchor-dir output/sweep_chat`) re-run on host B as `--tag
+  served_k1chat_hostB`, on committed text only. **G1, restated: selection's per-prompt levels in J5
+  and J6 equal that reference's on all `500` prompts.** How far the host-B reference agrees with
+  feat-184's committed pass is recorded as a measurement, with no band. This is not a weakening:
+  exact equality on one host is a stricter test of "same text, opponent and judge" than any
+  cross-host tolerance could be.
+- Nothing else changes.
+
 ## Scoring log
