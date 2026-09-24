@@ -71,7 +71,7 @@ which the meter's interval lies above selection's and its `K/S_w`, whatever it i
 
 ## Scoring log
 
-### Scored 2026-09-24 23:35 IST --- P1 CONFIRMED, P2 TIE, P3 REFUTED / INCUMBENT WINS: the crossover is at `k=3`
+### Scored 2026-09-24 23:28 IST --- P1 CONFIRMED, P2 TIE, P3 REFUTED / INCUMBENT WINS: the crossover is at `k=3`
 
 All jobs exited `0` on host B (`output/logs/feat195_{G1ref,chat,J5,J6}.done`, launcher
 `scripts/run_feat195.sh chat` with `GPU_CHAT=7`): the reference judged in `2` minutes, the three budgets

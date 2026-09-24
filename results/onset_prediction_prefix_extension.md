@@ -53,7 +53,7 @@ this attack and does NOT call the scorer safe on that basis.
 
 ## Scoring log
 
-### Scored 2026-09-24 23:40 IST --- P0 HOLDS, P1 FAILS, P2 HOLDS, P3 HOLDS
+### Scored 2026-09-24 23:00 IST --- P0 HOLDS, P1 FAILS, P2 HOLDS, P3 HOLDS
 
 Run: `.venv/bin/python analysis/prefix_extension.py --out results` (CPU float32, exit `0`, log
 `output/logs/prefix_extension.log`) -> `results/prefix_extension.csv` and

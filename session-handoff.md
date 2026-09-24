@@ -1,21 +1,34 @@
 # Session handoff --- 2026-09-24
 
-## In flight, 2026-09-24 23:00 --- sixth review round: arms registered and running
+## In flight, 2026-09-24 23:40 --- v11 (sixth review round, feat-200): one arm still running on host B
 
-Four referee reports (the fourth marked must-address) are being answered with new measurements
-before the text is revised. Registered and committed before any token was decoded:
+**Running on host B (GPUs 4-7 were idle; 0-3 hold the user's own Qwen3-235B server, never touched):**
+feat-195 (`results/onset_prediction_he_decoding.md`), the head-to-head at temperature `0.7`, penalty
+`1.1`. Launched 23:00 IST with `GPU_MAIN=4 GPUS_70B=5,6 GPU_CHAT=7 GPU_J12=7 GPU_J34=5 setsid nohup bash
+scripts/run_feat195.sh <queue>` for `gpu4`, `gpu12`, `judge_he` (logs `output/logs/feat195_q_*.log`,
+sentinels `output/logs/feat195_<job>.{done,fail}` on host B). `t07_8b` is done; the pool
+(`output/feat195/t07_pool64`), its rewards (`results/selection_rewards64_t07.csv`), the `70`B arm and
+J1-J4 are running. When `judge_he` ends: `scripts/sync_status.sh pull`, score against the registration
+(G0-G2, H1-H5), add the temperature-`0.7` block to Table 2 (`tab:served`) and fix Limitations' "we ran
+the meter at temperature `1.0`" as registered.
 
-- `results/onset_prediction_he_decoding.md` (feat-195): the head-to-head at the authors' decoding
-  settings, temperature `0.7` and repetition penalty `1.1`; `scripts/run_feat195.sh gpu4|gpu12|judge_he`.
-- `results/onset_prediction_chat_grid.md` (feat-196): the chat-template meter at `k = 2, 3, 5`
-  beside the existing `0.5, 1, 10`; `scripts/run_feat195.sh gpu4` then `judge_chat`.
+**Scored this round:** feat-196 (chat grid: crossover at `k=3`, `K/S_w = 3.75`; G1 re-pointed to a
+same-host reference before any judge call, `500/500`), feat-199 (prefix extension: P1 FAILS, the
+attack reconstructs nothing although the composed certificate is vacuous for `88` of `100` windows).
+Post hoc, no bands: `results/{empty_answers,window_logratio,served_activity}_note.md`.
 
-Host B's eight cards are held by the user's own vLLM servers (Qwen3-235B, two copies, GPUs 0-3 and
-4-7); nothing of ours runs there. At 21:52-21:58 the user's own vLLM servers also took local GPUs 0+4 and 1+2, so the feat-195/196
-launch failed at load (OOM, nothing left running; logs in `output/logs/feat195_failed_launch_2209/`);
-they relaunch unchanged when cards free up.
-- `results/onset_prediction_prefix_extension.md` (feat-199): the multi-query attack the composition
-  certificate prices; `analysis/prefix_extension.py`, CPU float32.
+**Manuscript (`~/sub/satml`, never committed; pre-v11 copy in `output/review_audit/pre_v11_2026-09-24/`):**
+body exactly 9 of 9 (page 10 opens on ETHICS), tectonic exit 0, 0 overfull, 0 `??`. Three floats moved
+to the appendix for space: `fig:breadth` and `tab:cost` to Appendix D, `tab:repairs` to Appendix H.
+There is **no page slack** for feat-195's block (about 8 lines): take it from floats or structure
+(caution (n)), never from a guarded concession (caution (ag)).
+
+**Guards:** 35 broke; 13 fixed by restoring the manuscript, 22 re-pointed and listed in
+`tests/RETIRED_2026-09-24_v11.md`; 43 mutations all fire; new `tests/test_v11_review_round6.py`.
+Full sharded suite: 180 files, all passing after the two `test_cost_grid` re-points.
+
+**Deferred, not started:** feat-198 (re-score the committed pool with a scorer from another family);
+the Qwen-family concern is answered in the text by the four non-Qwen judges (three of four exclude zero).
 
 ## Current state, 2026-09-24 night --- v10 restructure done; nothing in flight
 

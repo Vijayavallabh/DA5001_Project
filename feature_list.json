@@ -1417,6 +1417,46 @@
       "dependencies": [],
       "status": "done",
       "evidence": "Build: tectonic exit 0, 0 overfull, 0 ??, bold faces 4; 57 -> 37 pages, body exactly 9 of 9 (page 10 opens on ETHICS STATEMENT), appendix 42 -> 23 pages. New: analysis/certificate_table.py --out results -> results/certificate_table.csv (Table 1); figures/make_figures_v4.py meter_horns (Figure 2) and h2h_forest (Figure 3), each with a row function. Guards: 231 failed after the rewrite; five reconciliation passes restored every cut concession and re-pointed moved claims; four changed guards listed in tests/RETIRED_2026-09-24.md. tests/test_v10_restructure.py 8 tests, 17/17 mutations fail a named test (one silent mutation found and fixed: caption copy satisfied the prose check). audit_numbers: 3,417 literals, 2 expected misses (64256, 0.99990). Full suite on the live manuscript: 1164 passed, 0 failed, 0 skipped (all 178 test files, each its own pytest process, 16 in parallel, output/v10/shards_2035, 20:32-20:42 IST; init.sh steps 1-4 [OK] in output/v10/init_final.log, whose serial pytest step was stopped at 37% in favour of the parallel run). The two restored phrases were mutation-tested: removing either fails its guard."
+    },
+    {
+      "id": "feat-195",
+      "name": "The head-to-head at the authors' decoding settings (temperature 0.7, repetition penalty 1.1)",
+      "description": "Sixth review round: every judged head-to-head ran the meter at temperature 1.0 with no penalty, where He et al. decode books at 0.7 and 1.1. Re-run the 8B arms, the 70B pair and the selection pool at 0.7/1.1 and judge J1-J4 (results/onset_prediction_he_decoding.md, registered before any token; addendum before launch: host B H100s, the 70B's committed sharding flags).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": "Launched on host B 2026-09-24 23:00 IST (scripts/run_feat195.sh gpu4|gpu12|judge_he with GPU_MAIN=4 GPUS_70B=5,6 GPU_J12=7 GPU_J34=5). t07_8b done (exit 0, 11 min); pool, rewards, 70B and J1-J4 running."
+    },
+    {
+      "id": "feat-196",
+      "name": "The chat-template meter across k in {0.5, 2, 3, 5}: where it overtakes selection",
+      "description": "Sixth review round: the crossover between k=1 (selection leads) and k=10 (the meter wins by 0.138) is the most deployment-relevant number. Generate k = 2, 3, 5 as feat-184 generated k=10 and judge J5/J6 (results/onset_prediction_chat_grid.md; addendum: host B, G1 re-pointed at a same-host reference before any judge call).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "scripts/run_feat195.sh chat on host B GPU 7 (G1ref, chat, J5, J6 all exit 0). .venv/bin/python analysis/served_opponent.py --out results -> G1-196 PASS 500/500 in both passes; X-host agreement 471/477/479/486 of 500 (selection 0.367 vs 0.363). G0 PASS (500 prompts per arm, all_within_budget True, 0 violations). P1 k=0.5 D3 +0.1065 [+0.074, +0.1395] CONFIRMED (right); P2 k=2 D5 +0.030 [-0.009, +0.068] TIE (right); P3 k=3 D3 -0.051 [-0.0885, -0.0135] REFUTED and k=5 D5 +0.073 [+0.034, +0.111] INCUMBENT WINS (right). Crossover at k=3, K/S_w 3.75. .venv/bin/python analysis/served_activity.py --out results -> active 62.5/2.5/1.1/0.23% at k=0.5/2/3/5. Table 2's chat block reports all six budgets; tests/test_v11_review_round6.py::test_the_chat_block_reports_every_budget_and_the_crossover_it_shows."
+    },
+    {
+      "id": "feat-199",
+      "name": "The multi-query prefix-extension attack the composition certificate prices",
+      "description": "Sixth review round: the composed certificate m log n reaches a window's surprisal after S/log n queries; run the attack that lives there, a user extending a memorised prefix one token per query through a colluding scorer (results/onset_prediction_prefix_extension.md, registered before any draw).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": ".venv/bin/python analysis/prefix_extension.py --out results (CPU float32, exit 0) -> results/prefix_extension.csv: n=64 certificate 207.9 nats vacuous for 88/100 windows, 0 exact windows, token accuracy 0.057, nv recall 0.0062 (1 passage >= 0.5), true token in pool 12.3%; memoriser alone 0.843, 74 exact. P0 HOLDS, P1 FAILS (wrong), P2 HOLDS, P3 HOLDS. Manuscript: Section 2 composition paragraph reports it as looseness, not safety, with the query-cap rule; Appendix Table tab:prefixext; guard tests/test_v11_review_round6.py::test_the_prefix_extension_arm_is_reported_as_registered."
+    },
+    {
+      "id": "feat-200",
+      "name": "v11: the sixth review round (four reports, one must-address)",
+      "description": "User, 2026-09-24: address the four reviews, selecting what improves the draft, autonomously. Proposition 2 exact at every order with the window threshold; Proposition 4 restated; Table 1 prices query horizon and sampling floor; the windowed meter the dichotomy does not cover; empty answers; Table 2 active column on the judged trajectories; related work repositioned (CP-k, CP-Fuse, private prediction, blockwise best-of-K); feat-195/196/199.",
+      "priority": "high",
+      "dependencies": [
+        "feat-195",
+        "feat-196",
+        "feat-199"
+      ],
+      "status": "in-progress",
+      "evidence": "Guard reconciliation: 35 failures after the rewrite; 13 fixed by restoring registered sentences/concessions, 22 re-pointed (tests/RETIRED_2026-09-24_v11.md), 43 mutations all fire; new tests/test_v11_review_round6.py (5 tests, 11 mutations fire). Build: tectonic exit 0, 0 overfull, 0 ??, body 9/9 (page 10 opens on ETHICS)."
     }
   ]
 }
