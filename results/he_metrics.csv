@@ -1,6 +1,7 @@
 metric,arm,contrast,value,lo95,hi95,n
 prometheus_fluency,ab_k0.1,,1.8919,1.7881,1.9958,472
 prometheus_fluency,ab_k0.5,,2.0362,1.9255,2.1489,470
+prometheus_fluency,ab_k2,,1.9004,1.7987,2.0,472
 prometheus_fluency,anchor,,1.6272,1.529,1.7277,448
 prometheus_fluency,anchor70,,1.4242,1.3389,1.5142,422
 prometheus_fluency,chat_k1,,2.4134,2.286,2.5407,479
@@ -32,8 +33,10 @@ prometheus_fluency,,sel64-chat_k10,-0.8568,-1.0374,-0.6806,454
 prometheus_fluency,,csel64-csel1,1.3247,1.1812,1.4729,425
 prometheus_fluency,,csel64-ab_k0.1,1.2313,1.0862,1.3741,441
 prometheus_fluency,,csel64-ab_k0.5,1.0909,0.9409,1.2341,440
+prometheus_fluency,,csel64-ab_k2,1.2122,1.0767,1.3476,443
 factscore_precision,ab_k0.1,,0.0843,0.0568,0.114,116
 factscore_precision,ab_k0.5,,0.323,0.2745,0.3713,124
+factscore_precision,ab_k2,,0.3192,0.2725,0.3677,131
 factscore_precision,anchor,,0.0479,0.0193,0.0857,74
 factscore_precision,anchor70,,0.0306,0.0093,0.0575,72
 factscore_precision,chat_k1,,0.2927,0.2447,0.3447,104
@@ -65,8 +68,10 @@ factscore_precision,,sel64-chat_k10,-0.3311,-0.3733,-0.2885,77
 factscore_precision,,csel64-csel1,0.024,-0.0104,0.059,75
 factscore_precision,,csel64-ab_k0.1,0.0154,-0.0151,0.0456,112
 factscore_precision,,csel64-ab_k0.5,-0.2028,-0.2496,-0.1569,119
+factscore_precision,,csel64-ab_k2,-0.2029,-0.251,-0.1554,126
 factscore_n_facts,ab_k0.1,,8.64,7.5867,9.72,150
 factscore_n_facts,ab_k0.5,,9.18,8.3067,10.0333,150
+factscore_n_facts,ab_k2,,9.5067,8.62,10.4,150
 factscore_n_facts,anchor,,3.3,2.5667,4.06,150
 factscore_n_facts,anchor70,,3.3733,2.68,4.1067,150
 factscore_n_facts,chat_k1,,6.8267,5.7667,7.9267,150
@@ -98,8 +103,10 @@ factscore_n_facts,,sel64-chat_k10,-0.8067,-2.5333,0.9133,150
 factscore_n_facts,,csel64-csel1,6.5667,5.3467,7.76,150
 factscore_n_facts,,csel64-ab_k0.1,2.5533,1.2467,3.86,150
 factscore_n_facts,,csel64-ab_k0.5,2.0133,0.86,3.18,150
+factscore_n_facts,,csel64-ab_k2,1.6867,0.5333,2.84,150
 prometheus_fluency_nonempty,ab_k0.1,,1.9172,1.8105,2.0283,459
 prometheus_fluency_nonempty,ab_k0.5,,2.061,1.9521,2.1721,459
+prometheus_fluency_nonempty,ab_k2,,1.9239,1.8239,2.0326,460
 prometheus_fluency_nonempty,anchor,,1.6535,1.5465,1.7605,430
 prometheus_fluency_nonempty,anchor70,,1.4509,1.3602,1.5416,397
 prometheus_fluency_nonempty,chat_k1,,2.4134,2.2881,2.5407,479
@@ -131,3 +138,4 @@ prometheus_fluency_nonempty,,sel64-chat_k10,-0.8145,-0.991,-0.6403,442
 prometheus_fluency_nonempty,,csel64-csel1,1.3251,1.1773,1.4729,406
 prometheus_fluency_nonempty,,csel64-ab_k0.1,1.2476,1.0967,1.3986,424
 prometheus_fluency_nonempty,,csel64-ab_k0.5,1.0915,0.939,1.2441,426
+prometheus_fluency_nonempty,,csel64-ab_k2,1.2108,1.0679,1.3513,427

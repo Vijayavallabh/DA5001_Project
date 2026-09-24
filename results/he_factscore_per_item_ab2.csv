@@ -1,0 +1,151 @@
+arm,prompt_id,n_facts,n_supported,precision,abstained
+ab_k2,fact_00003_Fernando da Costa Novaes,7,0,0.0,0
+ab_k2,fact_00006_David Galloway (writer),17,0,0.0,0
+ab_k2,fact_00007_Cheyenne Brando,5,3,0.6,0
+ab_k2,fact_00012_Braulio Lara,5,0,0.0,0
+ab_k2,fact_00015_Amr Shabana,9,2,0.222222,0
+ab_k2,fact_00017_Abdulqawi Yusuf,8,4,0.5,0
+ab_k2,fact_00025_Carlos P. Romulo,13,5,0.384615,0
+ab_k2,fact_00027_Arthur Ewert,12,1,0.083333,0
+ab_k2,fact_00032_Flavio Méndez Santiago,12,0,0.0,0
+ab_k2,fact_00039_Chris Duffield,11,0,0.0,0
+ab_k2,fact_00040_Daniil Medvedev,8,1,0.125,0
+ab_k2,fact_00043_Alexander Vovin,9,0,0.0,0
+ab_k2,fact_00044_Cobhams Asuquo,6,4,0.666667,0
+ab_k2,fact_00045_David Bogue,6,1,0.166667,0
+ab_k2,fact_00048_Don Beard,9,0,0.0,0
+ab_k2,fact_00053_Andriy Yarmolenko,15,4,0.266667,0
+ab_k2,fact_00058_Danny Faure,7,4,0.571429,0
+ab_k2,fact_00063_Ayman al-Zawahiri,0,0,,1
+ab_k2,fact_00064_Diego Suarez (garden designer),6,1,0.166667,0
+ab_k2,fact_00066_Daniel Alexander Cameron,15,0,0.0,0
+ab_k2,fact_00075_Antonio Leviste,0,0,,1
+ab_k2,fact_00078_Chi Pu,5,2,0.4,0
+ab_k2,"fact_00080_Felipe (footballer, born 1977)",3,0,0.0,0
+ab_k2,fact_00084_Alfred Hitchcock,19,14,0.736842,0
+ab_k2,fact_00085_Dascha Polanco,15,8,0.533333,0
+ab_k2,fact_00086_Amelia Earhart,6,3,0.5,0
+ab_k2,fact_00087_Chris John (boxer),7,6,0.857143,0
+ab_k2,fact_00088_Blair Tugman,7,0,0.0,0
+ab_k2,fact_00093_David Oyite-Ojok,10,4,0.4,0
+ab_k2,fact_00097_Chris Cuomo,16,10,0.625,0
+ab_k2,fact_00098_Adnan Sami,13,7,0.538462,0
+ab_k2,fact_00108_Bhuma Nagi Reddy,4,0,0.0,0
+ab_k2,fact_00109_Charmion King,0,0,,1
+ab_k2,fact_00110_Andreea Marin,19,4,0.210526,0
+ab_k2,fact_00114_Ahn Jae-hyun,10,6,0.6,0
+ab_k2,fact_00116_Bobo Baldé,0,0,,1
+ab_k2,fact_00118_Chacho Gaytán,3,0,0.0,0
+ab_k2,fact_00119_Bastian Schweinsteiger,10,9,0.9,0
+ab_k2,fact_00120_Erich Hartmann,4,3,0.75,0
+ab_k2,fact_00127_Ezechiel N'Douassel,11,3,0.272727,0
+ab_k2,fact_00131_Aditya Kalyanpur,7,0,0.0,0
+ab_k2,fact_00132_Dennis Andersson,0,0,,1
+ab_k2,fact_00133_Daniel Bedingfield,6,5,0.833333,0
+ab_k2,fact_00134_Celâl Bayar,13,7,0.538462,0
+ab_k2,fact_00138_Diana Ivanova,12,1,0.083333,0
+ab_k2,fact_00140_André Le Nôtre,7,4,0.571429,0
+ab_k2,fact_00142_Cierre Wood,10,8,0.8,0
+ab_k2,fact_00145_Carmelo Anthony,11,4,0.363636,0
+ab_k2,fact_00146_Asafa Powell,2,2,1.0,0
+ab_k2,fact_00152_Felix Newman,15,0,0.0,0
+ab_k2,fact_00154_Earl Garrison,6,0,0.0,0
+ab_k2,fact_00162_Aleksandar Kolarov,16,6,0.375,0
+ab_k2,fact_00163_Alexandre Hohagen,2,0,0.0,0
+ab_k2,fact_00166_Emcee N.I.C.E.,9,0,0.0,0
+ab_k2,fact_00181_Chris Woakes,17,5,0.294118,0
+ab_k2,fact_00182_Diosdado Cabello,9,4,0.444444,0
+ab_k2,fact_00184_Dana Awartani,14,3,0.214286,0
+ab_k2,fact_00185_Brianna Keilar,12,4,0.333333,0
+ab_k2,fact_00188_Cédric Bakambu,17,7,0.411765,0
+ab_k2,fact_00193_Bobby Fischer,0,0,,1
+ab_k2,fact_00198_Benjamin Lawrence Reid,7,0,0.0,0
+ab_k2,fact_00199_Djimon Hounsou,11,9,0.818182,0
+ab_k2,fact_00202_Ahsee Tuala,11,4,0.363636,0
+ab_k2,fact_00204_Don DeLillo,4,0,0.0,0
+ab_k2,fact_00207_Elizabeth Inglis,0,0,,1
+ab_k2,fact_00208_Fifi Cooper,9,3,0.333333,0
+ab_k2,fact_00223_Ahmed Mumin Warfa,12,1,0.083333,0
+ab_k2,fact_00226_Dewi Sartika,12,4,0.333333,0
+ab_k2,fact_00227_Alf Garland,13,0,0.0,0
+ab_k2,fact_00230_Abdul Ilah Khatib,13,0,0.0,0
+ab_k2,fact_00239_Bif Naked,7,3,0.428571,0
+ab_k2,fact_00245_Dominique Blake,5,2,0.4,0
+ab_k2,fact_00247_Diafra Sakho,19,3,0.157895,0
+ab_k2,fact_00249_Fahadh Faasil,16,11,0.6875,0
+ab_k2,fact_00250_Dr. Dre,14,7,0.5,0
+ab_k2,fact_00255_Caitlin Lowe,0,0,,1
+ab_k2,fact_00257_Camille Paulus,11,0,0.0,0
+ab_k2,fact_00258_Charley Boorman,16,11,0.6875,0
+ab_k2,fact_00260_Douglas Wood (engineer),8,0,0.0,0
+ab_k2,fact_00263_Billy Snedden,13,3,0.230769,0
+ab_k2,fact_00264_Esteban Espíndola,20,0,0.0,0
+ab_k2,fact_00270_Daniel Ek,13,7,0.538462,0
+ab_k2,fact_00275_Belisarius,11,3,0.272727,0
+ab_k2,fact_00276_Carol Dweck,13,11,0.846154,0
+ab_k2,fact_00286_Amr Diab,13,6,0.461538,0
+ab_k2,fact_00296_Akbar Hossain,10,0,0.0,0
+ab_k2,fact_00300_Coco Chanel,19,16,0.842105,0
+ab_k2,fact_00302_Enamul Haque (engineer),14,2,0.142857,0
+ab_k2,fact_00304_Abdelhamid Shabana,12,0,0.0,0
+ab_k2,fact_00307_Abdullahi Mohammad Ahmad Hassan,0,0,,1
+ab_k2,fact_00309_Diego Godín,11,5,0.454545,0
+ab_k2,fact_00312_Adel Emam,14,7,0.5,0
+ab_k2,fact_00315_Billy Conigliaro,12,3,0.25,0
+ab_k2,fact_00316_Arif Mohammad Khan,1,1,1.0,0
+ab_k2,fact_00321_Bob Marley,0,0,,1
+ab_k2,fact_00328_Dana Ashbrook,8,0,0.0,0
+ab_k2,fact_00332_Cha Eun-woo,14,4,0.285714,0
+ab_k2,fact_00333_Abdul Halik Hudu,0,0,,1
+ab_k2,fact_00335_Carl Braun (obstetrician),0,0,,1
+ab_k2,fact_00343_Ameyaw Debrah,11,5,0.454545,0
+ab_k2,fact_00344_Cleopatra,17,7,0.411765,0
+ab_k2,fact_00345_Ana Cláudia Bolzan,0,0,,1
+ab_k2,fact_00347_Evgeny Shalunov,14,0,0.0,0
+ab_k2,fact_00348_Charles Allen (jurist),8,0,0.0,0
+ab_k2,fact_00349_Deyverson,15,5,0.333333,0
+ab_k2,fact_00351_Cris Cyborg,14,8,0.571429,0
+ab_k2,fact_00354_Bobby Thomson,12,4,0.333333,0
+ab_k2,fact_00356_Eric Winter,12,3,0.25,0
+ab_k2,fact_00362_Aert van der Neer,0,0,,1
+ab_k2,fact_00364_Blanca Errázuriz,10,0,0.0,0
+ab_k2,fact_00366_Deitrick Haddon,14,7,0.5,0
+ab_k2,fact_00367_Andreas Ivanschitz,8,2,0.25,0
+ab_k2,fact_00368_Clancy Brown,17,8,0.470588,0
+ab_k2,fact_00371_Carrie Ann Inaba,14,11,0.785714,0
+ab_k2,fact_00374_Cicero,23,17,0.73913,0
+ab_k2,fact_00376_14th Dalai Lama,11,7,0.636364,0
+ab_k2,fact_00377_Christian Almeida,0,0,,1
+ab_k2,fact_00378_Arthur Wakefield,11,4,0.363636,0
+ab_k2,fact_00384_Andry Rajoelina,14,5,0.357143,0
+ab_k2,fact_00394_Danny Almonte,12,1,0.083333,0
+ab_k2,fact_00396_Andy Middleton,9,0,0.0,0
+ab_k2,fact_00397_Anderson Silva,6,4,0.666667,0
+ab_k2,fact_00399_Edgar Bennett,6,0,0.0,0
+ab_k2,fact_00401_Balázs Bekő,10,0,0.0,0
+ab_k2,fact_00404_Abraham Ancer,15,6,0.4,0
+ab_k2,fact_00418_A. K. Ramanujan,0,0,,1
+ab_k2,fact_00420_Carlos Ghosn,8,0,0.0,0
+ab_k2,fact_00421_Anurag Kashyap,19,15,0.789474,0
+ab_k2,fact_00425_Angela Bairstow,0,0,,1
+ab_k2,fact_00427_Ernestine Eckstein,8,3,0.375,0
+ab_k2,fact_00430_Ezekiel Elliott,17,9,0.529412,0
+ab_k2,fact_00433_Aaron Burr,6,5,0.833333,0
+ab_k2,fact_00444_Charles B. McVay III,9,3,0.333333,0
+ab_k2,fact_00448_Carol Chell,4,0,0.0,0
+ab_k2,fact_00449_Alen Omić,12,2,0.166667,0
+ab_k2,fact_00452_Alice Torriani,13,0,0.0,0
+ab_k2,fact_00454_Albert Outler,15,7,0.466667,0
+ab_k2,fact_00459_Felician of Foligno,8,1,0.125,0
+ab_k2,fact_00460_Annie Landouw,6,0,0.0,0
+ab_k2,fact_00462_Bhāskara I,9,9,1.0,0
+ab_k2,fact_00464_Damon Herriman,8,1,0.125,0
+ab_k2,fact_00466_Feroze Gandhi,14,3,0.214286,0
+ab_k2,fact_00471_D. B. Nihalsinghe,15,5,0.333333,0
+ab_k2,fact_00478_F. Gwynplaine MacIntyre,0,0,,1
+ab_k2,fact_00486_Fidel Castro,10,5,0.5,0
+ab_k2,fact_00489_Bir Hambir,10,1,0.1,0
+ab_k2,fact_00491_Avraham Eilam-Amzallag,10,0,0.0,0
+ab_k2,fact_00492_Date Narikuni,0,0,,1
+ab_k2,fact_00495_Ariel Behar,19,1,0.052632,0
+ab_k2,fact_00498_DeAnna Bennett,10,3,0.3,0
