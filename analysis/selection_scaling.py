@@ -156,6 +156,7 @@ def main():
                     help="score the de-echoed generation (dap.shared.served_generation, caution "
                          "(bc)) under the CORPUS prompt (caution (aa)) instead of served_prompt. Off "
                          "by default so every reward cache on record reproduces.")
+    ap.add_argument("--shard", default="", help="i/n, with --rewards-only: see below")
     ap.add_argument("--data-dir", default="data",
                     help="the corpus --deecho takes the true prompt from; data/bench/<corpus> for "
                          "a pool drawn on another corpus (AlpacaEval, MT-Bench)")
@@ -177,6 +178,14 @@ def main():
     if a.limit:
         pids = pids[:a.limit]
         print(f"[sel] SMOKE: {len(pids)} prompts only, bands do not apply", flush=True)
+    if a.shard:
+        # Rewards-only over prompts i, i+n, ... into <cache>.shard<i>of<n>, merged afterwards. Every
+        # reward batch is `batch_size` consecutive candidates of ONE prompt (batch 8 divides 64), so a
+        # shard builds exactly the batches a single run builds, and the merged cache is that run's.
+        assert a.rewards_only and a.max_n % a.batch_size == 0, "--shard is for --rewards-only"
+        si, sn = map(int, a.shard.split("/"))
+        pids = pids[si::sn]
+        a.reward_cache = f"{a.reward_cache}.shard{si}of{sn}"
     print(f"[sel] {len(pids)} prompts x {a.max_n} candidates", flush=True)
 
     # ---- phase 1: the pointwise reward, cached -----------------------------------------------
