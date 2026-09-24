@@ -36,12 +36,16 @@ a certificate informative about a work is already a sparse one.
 \paragraph{The threshold for a \emph{window} event, which is what extraction actually measures.}
 \label{app:windowvacuity}
 Proposition~\ref{prop:threshold} is stated for an arbitrary event $E$, so it applies verbatim to
-$E_w$ = ``reproduce some $w$-token window of the work''. One report asks for that analogue, and it
-is sharper than the whole-work statement in the direction that matters. A shorter event is less
-surprising under the anchor, so $S_w(x) < S(x)$ and the certificate goes vacuous \emph{sooner};
-quoting only the whole-work figure is the lenient reading. It is also the wrong one here, because
-\textbf{every extraction number in this paper is a window event} --- near-verbatim recall is scored
-on $50$-token windows.
+$E_w$ = ``reproduce some $w$-token window of the work'', and that analogue is sharper than the
+whole-work statement in the direction that matters. A shorter event is less surprising under the
+anchor, so $S_w(x) < S(x)$ and the certificate goes vacuous \emph{sooner}; quoting only the
+whole-work figure is the lenient reading. It is also the wrong one here, because \textbf{every
+extraction number in this paper is a window event} --- near-verbatim recall is scored on $50$-token
+windows. The table below uses the surprisal of \emph{one} window, and the scored event is a union
+over windows and positions; a union is at least as probable as any of its members --- in
+particular as the window that opens the continuation --- so its surprisal is at most that window's,
+and each threshold below is an \emph{upper} bound on where the certificate for the full event goes
+vacuous. It can only go vacuous sooner.
 
 With $S_w = w\,s$ and $s$ the anchor's per-token surprisal on protected text, already measured per
 passage by \texttt{analysis/\allowbreak regimes.py} ($758$ CopyBench passages, $16$ novels, median
@@ -115,26 +119,31 @@ applies verbatim to any work with $S(x) \le \Lambda^*_s(u) \le K$. \qed
 
 \subsection{Proposition~\ref{prop:outrun}}
 \begin{proposition}[Protection outruns certification]\label{prop:outrun}
-Under the banking rule, if the decoder emits each token of $x$ with probability at least $1-\eta$
-then $k \ge (1-\eta)\,k_{\mathrm{crit}}(x) - \log 2$, and $k_{\mathrm{crit}}(x) \ge s(x) + \delta/N$
-for every work, with equality iff the running ratio in Eq.~\eqref{eq:rates} is maximised at the last
-token --- which a constant surprisal rate achieves only when $\delta = 0$.
+Take $s(x)$ and $k_{\mathrm{crit}}(x)$ per \emph{token}, the unit the bucket accrues in: Eq.~\eqref{eq:rates}
+with $N_t$ replaced by the token count $t$ and $N$ by $T$. Under the banking rule, if the decoder
+emits each token of $x$ with probability at least $1-\eta$ then
+$k \ge (1-\eta)\,k_{\mathrm{crit}}(x) - \log 2$, and $k_{\mathrm{crit}}(x) \ge s(x) + \delta/T$ for every
+work, with equality iff the running ratio is maximised at the last token --- which a constant
+surprisal rate achieves only when $\delta = 0$.
 \end{proposition}
 
 \emph{Proof.} Apply the data-processing inequality to the indicator of the true token: the step
 charge is at least the binary divergence between the served and reference probabilities of that
-token, and $d(q \,\|\, e^{-s_t}) \ge (1-\eta)s_t - \log 2$ whenever $q \ge 1-\eta$. The banking rule
-enforces $\sum_{i \le t} c_i \le (t+1)k - \delta$ at every step, and combining the two for every $t$
-gives the first claim. The second, $k_{\mathrm{crit}}(x) \ge s(x) + \delta/N$, is the statement that
-a running maximum dominates its own endpoint. \qed
+token, and $c_i \ge d(q \,\|\, e^{-s_i}) \ge (1-\eta)s_i - \log 2$ whenever $q \ge 1-\eta$. The banking
+rule \citep[Algorithm~1]{he2026anchored} caps the charge on the first $t$ tokens at the allowance
+accrued less the opening debt, $\sum_{i \le t} c_i \le tk - \delta$. Combining the two,
+$tk \ge (1-\eta)\sum_{i \le t} s_i + \delta - t\log 2 \ge (1-\eta)\bigl(\sum_{i \le t} s_i + \delta\bigr) - t\log 2$,
+and dividing by $t$ and maximising over $t$ gives the first claim. The second is the statement that
+a running maximum dominates its own endpoint, $(S(x) + \delta)/T$. The per-character form of
+Eq.~\eqref{eq:rates} is the same construction in tokenizer-free units, which is what compares
+anchors with different vocabularies (Appendix~\ref{app:opening} reports both). \qed
 
-\textbf{The equality condition is not a constant rate, and an earlier version of this appendix said
-it was.} Equality holds exactly when the running ratio
-$f(t) = (\sum_{i \le t} s_i + \delta)/N_t$ attains its maximum at the last step. At $\delta = 0$ a
+\textbf{The equality condition is not a constant rate.} Equality holds exactly when the running ratio
+$f(t) = (\sum_{i \le t} s_i + \delta)/t$ attains its maximum at the last step. At $\delta = 0$ a
 constant rate does that, with $f \equiv s(x)$. At $\delta > 0$ it does the opposite: a constant rate
-gives $f(t) = s(x) + \delta/N_t$, which is strictly \emph{decreasing}, so the maximum sits at $t=1$
+gives $f(t) = s(x) + \delta/t$, which is strictly \emph{decreasing}, so the maximum sits at $t=1$
 and the inequality is strict. Equality under a positive opening debt needs the surprisal
-back-loaded enough to outrun the decaying $\delta/N_t$ --- a work that begins predictably and ends
+back-loaded enough to outrun the decaying $\delta/t$ --- a work that begins predictably and ends
 in its rarest material. Only the data-processing step is specific to this decoder; the charge need
 only dominate the KL, which every order $\alpha \ge 1$ does.
 
@@ -245,24 +254,40 @@ depends on the cap at all. At $k=20$ the decoder serves $p_{r,t}$ unchanged at e
 $N_\varepsilon = \Theta(T)$ for every $\varepsilon$ below the pair's imitation rate --- the vacuous
 horn in Proposition~\ref{prop:sparse}'s own currency.
 
-\paragraph{Selection anchoring does not evade the chain rule, and saying so was an error.}
-Earlier versions of this appendix argued that a selection rule ``is not a causal policy at all'',
-that every token it emits is drawn from $p_{s,t}$ so $N_\varepsilon = 0$ identically, and that its
-$\log n$ is spent where the chain rule does not reach. The first clause is a statement about the
-\emph{sampler} and the rest does not follow from it. The served law $q$ is a distribution over
+\paragraph{Selection anchoring does not evade the chain rule.}
+It is tempting to argue that a selection rule is not a causal policy at all: every token it emits
+was drawn from $p_{s,t}$, so $N_\varepsilon$ would be $0$ identically and its $\log n$ would be spent
+where the chain rule does not reach. That is a statement about the \emph{sampler}, and nothing about
+the served law follows from it. The served law $q$ is a distribution over
 sequences like any other, so it factorises as $\prod_t q_t(y_t \mid y_{<t})$ and
 Proposition~\ref{prop:sparse} applies to it with $K$ its own KL, $3.175$ nats at $n=64$; its
 conditionals genuinely differ from $p_{s,t}$, because conditioning on which draw won reweights every
 step. Selection \emph{satisfies} the proposition rather than escaping it --- at most $3.175/\varepsilon$
 steps above $\varepsilon$, so fewer than four of a $204$-token completion carry a whole nat --- and it
-gains $+0.1045$ out of that budget, which is why we now read the second horn as a shape and not a
-verdict.
+gains $+0.1045$ out of that budget, which is why the second horn is a shape and not a verdict.
 
 What is true, and is the operative difference, is that those conditionals are not \emph{causally
 computable}: $q_t(\cdot \mid y_{<t})$ depends on the scores of \emph{complete} candidates, so no
 rule that must commit token $t$ before token $t+1$ exists can serve them. The budget is concentrated
 on a decision the decode loop does not contain. That is why the construction below takes the shape
 it does: it is the closest a policy that must spend online can come to spending late.
+
+\paragraph{Why no separation can be proved at the level of the served law.}\label{app:noseparation}
+The theorem that would close the door Proposition~\ref{prop:sparse} leaves open --- no causal policy
+with an $O(1)$ budget matches selection's utility --- is false as a statement about laws, and its
+counterexamples are already in the paper. Every law on sequences is causal once factorised;
+selection's served law is one, with pathwise budget $\log n$, and Theorem~\ref{thm:nfl}'s optimum,
+the tilt $q^* \propto p_s e^{\lambda U}$, is another, with conditionals
+$q^*_t(y_t \mid y_{<t}) = p_{s,t}(y_t)\, V_t(y_{\le t}) / V_{t-1}(y_{<t})$ for
+$V_t = \mathbb{E}_{p_s}[e^{\lambda U} \mid y_{\le t}]$ and sequence divergence exactly
+$\Lambda^*_s(\mathbb{E}_{q^*}[U])$. What separates a meter from both is \emph{information}: its kernel
+at step $t$ is a function of $p_{s,t}$, $p_{r,t}$ and its bucket, while $V_t$ is an expectation over
+continuations that neither next-token distribution contains. Selection estimates the tilt's effect
+from $n$ finished rollouts and pays in draws rather than in divergence, and a causal policy that
+estimated $V_t$ by rollouts would be selection spread over the decode loop. A provable separation is
+therefore a statement about that information structure, and it is the one
+Proposition~\ref{prop:imitation} makes: where the bucket is slack the local rule takes
+$\theta_t = 1$ and pays the imitation cost whatever $U$ is.
 
 \noindent\emph{Proposition~\ref{prop:sparse}, restated.} Let $q$ be any causal policy,
 $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
@@ -289,8 +314,7 @@ steps, so it constrains nothing below $\varepsilon = 3$ nats in a single step, w
 horn again in another currency.
 
 \paragraph{The dichotomy at finite $T$, and in probability rather than in expectation.}
-Two reports ask for the dichotomy without an asymptotic in it. Proposition~\ref{prop:sparse} is
-already non-asymptotic --- it holds at every $T$ --- but it bounds a mean, and the statement worth
+Proposition~\ref{prop:sparse} is already non-asymptotic --- it holds at every $T$ --- but it bounds a mean, and the statement worth
 having bounds a tail. Markov applied once more to the count gives, for every $\varepsilon > 0$ and
 every $\delta \in (0,1)$,
 \[
@@ -442,8 +466,8 @@ Eq.~\eqref{eq:nfl} by three to five orders of magnitude ($2.8\times10^{5}$, $590
 times over), and bootstrapping over judged pairs at the \emph{weakest} end of each interval still
 leaves the ratio between $1.3\times10^{3}$ and $8.6\times10^{3}$. The two mechanisms sit at very
 different distances from the frontier under judge~B's own law of $U$: selection at $n=8$ is $58\times$
-it, and the metered decoder's best arm $7{,}995\times$. One report asks the same of the headline,
-whether $\log 64$ is near $\Lambda^*_s$. On that pass, order-averaged and with each arm's own
+it, and the metered decoder's best arm $7{,}995\times$. For the headline, the question is whether
+$\log 64$ is near $\Lambda^*_s$. On that pass, order-averaged and with each arm's own
 control as the safe law of $U$, selection at $n=64$ is $32\times$ the frontier on its $3.175$-nat
 bound and the metered decoder $11{,}646\times$ on its $171.3$ nats spent
 (\texttt{results/\allowbreak frontier\_\allowbreak distance\_\allowbreak h2h.csv}): nearer than at

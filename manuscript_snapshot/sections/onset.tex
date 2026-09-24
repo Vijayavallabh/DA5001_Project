@@ -7,10 +7,9 @@
 \paragraph{Where extraction actually begins}\label{sec:onset}
 
 Proposition~\ref{prop:threshold} locates the budget at which the certificate stops saying anything;
-if leakage began far above it, that would be bookkeeping. It does not. On nine pairs with nine
-distinct anchors and six tokenizers, \textbf{every onset falls between $0.88$ and $1.17$ of $s(x)$},
-though one pair, held at one corpus and one anchor, spans $0.88$--$1.35$ when only its memoriser's
-fine-tuning length changes --- $1.64\times$ the whole nine-pair spread, so the \emph{level} is the
-claim and the ordering is not (Table~\ref{tab:onset}, Appendix~\ref{app:collapse}). Part of the
-residual tracks the \emph{words} a fixed-token seed hands the adversary ($\rho = -0.958$), a
-caution for seeds fixed in tokens \citep{carlini2023quantifying}.
+if leakage began far above it, that would be bookkeeping. It does not: on nine pairs with nine
+distinct anchors and six tokenizers \textbf{every onset falls between $0.88$ and $1.17$ of $s(x)$},
+though one pair spans $0.88$--$1.35$ when only its memoriser's fine-tuning length changes --- so the
+\emph{level}, within about $0.8$--$1.35$, is the claim and the ordering is not (Table~\ref{tab:onset},
+Appendix~\ref{app:collapse}). Part of the residual tracks the \emph{words} a fixed-token seed hands
+the adversary ($\rho = -0.958$), a caution for seeds fixed in tokens \citep{carlini2023quantifying}.

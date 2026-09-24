@@ -23,8 +23,10 @@ violations. Three things are sharper on this pair:
 
 \begin{itemize}
 \item \textbf{The anchor is clean.} Serving the safe model alone reproduces $0.0000$ of a passage
-      under every strategy. In the original pair the anchor alone already recovers $0.0032$, so a
-      small part of what looked like leakage through the decoder was the anchor's own corpus.
+      under every strategy. In the original pair the anchor alone also reads $0.0000$ from a single
+      query, but recovers $0.0032$ when an oracle hands it a genuine prefix at every $50$-token
+      window, so a small part of what looked like oracle-window leakage through the decoder was the
+      anchor's own corpus.
 \item \textbf{At $k=20$ the decoder is exactly the identity.} Single-query recall is $0.7189$,
       equal to the unconstrained model's $0.7189$ to four decimals, and oracle windows reach
       $0.9407$ against $0.9435$. This is a budget the mechanism's authors evaluate.

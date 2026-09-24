@@ -6,34 +6,29 @@
 
 \subsection{Why a per-token rate is vacuous, or sparse}\label{sec:frontier}
 
-Selection anchoring buys more utility than a metered decoder for a fraction of the divergence, under
-a strictly stronger order. Can the meter be repaired to match it? The obstruction is one line of the
+Where the risky model continues text, selection anchoring buys more utility than a metered decoder
+for a fraction of the divergence, under a strictly stronger order. Can the meter be repaired to match it? The obstruction is one line of the
 chain rule --- a statement about the \emph{shape} a per-token policy must take, not a lower bound on
 what one could achieve.
 
-\begin{proposition}[An affordable causal policy is the anchor almost everywhere]\label{prop:sparse}
+\begin{proposition}[A bounded budget is sparse]\label{prop:sparse}
 Let $q$ be any causal policy, $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
 $D_{\mathrm{KL}}(q \,\|\, p_s) \le K$, and write
 $N_\varepsilon = \#\{t \le T : D_{\mathrm{KL}}(q_t(\cdot \mid y_{<t}) \,\|\, p_{s,t}) > \varepsilon\}$.
 Then $\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon$ for every $\varepsilon > 0$.
 \end{proposition}
 
-The proof is the exact chain rule followed by Markov at each step, and what it constrains is the
-\emph{shape} of a spend and not its size. Read forwards it says a bounded budget must be
-\emph{sparse}: the policy coincides with the anchor at all but $O(K/\varepsilon)$ of its steps. Read
-backwards it says a policy that moves the distribution at a constant fraction of its steps has a
-budget that is $\Omega(T)$ --- which is what a per-token \emph{rate} does by construction, since it
-issues an allowance at every step whether or not that step needs one. That is the dichotomy of
-Section~\ref{sec:intro}, and \textbf{its second horn is a shape, not a verdict} --- our own
-mechanism being the counterexample to the stronger reading. Selection's served law is a law over
-sequences like any other, so it factorises and Proposition~\ref{prop:sparse} applies to \emph{it},
-at its own $3.175$ nats: fewer than four steps of a $204$-token completion may carry a whole nat,
-and it gains $+0.1045$ out of that. Being the anchor almost everywhere is compatible with being
-useful. What the chain rule forbids is \emph{spreading} a bounded budget, which a rate must do;
-concentrating one it permits. So the proposition rules out a \emph{shape}, not the class, and we
-claim no more: a per-\emph{query} rule such as CP-$\Delta$/CP-$k$ fusion \citep{abad2025cpfuse} is
-outside its scope, and whether a \emph{causal} policy can concentrate well enough to match
-selection stays open --- Section~\ref{sec:orders} builds the best one it permits and prices it.
+The proof is the exact chain rule followed by Markov at each step, and it constrains the
+\emph{shape} of a spend, not its size. Read forwards, a bounded budget is \emph{sparse}: the policy
+coincides with the anchor at all but $O(K/\varepsilon)$ steps. Read backwards, a policy that moves the
+distribution at a constant fraction of its steps --- as a per-token \emph{rate} does by construction
+--- has a budget that is $\Omega(T)$. \textbf{The second horn is a shape, not a verdict}: selection's
+served law factorises like any other, so at its own $3.175$ nats fewer than four steps of a
+$204$-token completion may carry a whole nat, and it is judged above parity with the risky model,
+at $0.555$ (Figure~\ref{fig:selection}b). What the bound forbids is \emph{spreading} a bounded budget, not
+concentrating one, so it rules out a shape and not the class: a per-\emph{query} rule such as
+CP-$\Delta$/CP-$k$ fusion \citep{abad2025cpfuse} is outside it, and whether a \emph{causal} policy can
+concentrate well enough to match selection stays open (Section~\ref{sec:orders}).
 
 \textbf{The class and the rates.} Making both horns measurable takes three quantities and no
 attack. A \emph{bucket-metered decoder} serves, at each step, the largest tilt $\theta_t \in [0,1]$
@@ -52,7 +47,7 @@ $S(x) = \sum_t s_t$, three rates govern everything below:
 \underbrace{c_{\mathrm{use}} = \operatorname{med}_{y \sim p_r} \frac{\log p_r(y) - \log p_s(y)}{|y|}}_{\text{divergence rate of ordinary traffic}} .
 \label{eq:rates}
 \end{equation}
-All three need only forward passes, so a deployer can compute them in advance. Rates are nats per
+All three need only forward passes. Rates are nats per
 \emph{character} where safe models with different vocabularies are compared, per \emph{token} where
 a rate meets a budget (Appendix~\ref{app:opening}).
 
@@ -70,17 +65,19 @@ the Cram\'er rate function of $U$ under the safe model.
 \end{theorem}
 
 The proof is Donsker--Varadhan at the sequence level (Appendix~\ref{app:proofs}); nothing about the
-decoder enters, which is why it prices selection anchoring as readily as a meter, and the optimum it
-describes is not loose \citep{monteiropaes2026limits}. Read beside
+decoder enters, which is why it prices selection anchoring as readily as a meter. The optimum it
+describes is the exponential tilt of $p_s$ toward $U$, the law KL-regularised alignment targets
+\citep{korbak2022rl,rafailov2023dpo} and best-of-$n$ approaches
+\citep{gui2024bonbon,yang2024asymptotics}, and it is not loose \citep{monteiropaes2026limits}. Read beside
 Proposition~\ref{prop:threshold} it settles the shape of the problem: reproducing a particular work
-costs $S(x)$ nats and grows with its length --- $849$ for a target in
-Section~\ref{sec:selection}, and $159.8$ for the $50$-token window our extraction numbers are
+costs $S(x)$ nats and grows with its length --- $849$ for the median target
+(Figure~\ref{fig:selection}a), and $159.8$ for the $50$-token window our extraction numbers are
 actually scored on, which is vacuous at $k \ge 0.8$ (Appendix~\ref{app:windowvacuity}) --- while
-buying mean utility $u$ costs $\Lambda^*_s(u)$, $O(1)$
-\emph{however long the sequence}. There is room for a mechanism both safe and useful, and a rate
-cannot occupy it.
+buying mean utility $u$ costs $\Lambda^*_s(u)$, $O(1)$ \emph{however long the sequence} for any
+utility the safe model itself sometimes attains. There is room for a mechanism both safe and useful,
+and a rate cannot occupy it.
 
-\begin{proposition}[A per-token meter pays the imitation cost, not the utility cost]\label{prop:imitation}
+\begin{proposition}[Where its bucket is slack, a meter pays the imitation cost]\label{prop:imitation}
 Let a decoder of the class run under the deployed charge $\alpha=1$, write
 $Z_T = \sum_{t \le T} D_{\mathrm{KL}}(p_{\theta_t} \| p_{s,t})$ for its realised sequence divergence
 and $\mathcal{S}$ for the steps at which the bucket is \emph{slack}, $|\mathcal{S}| = (1-\beta)T$.
@@ -93,22 +90,20 @@ the overhead $Z_T / \Lambda^*_s(\mathbb{E}_q[U])$ is $\Omega(T)$.
 \end{proposition}
 
 The third proviso is the substantive one: a utility only an exponentially rare sequence attains has
-$\Lambda^*_s = \Theta(T)$ too and no separation survives (Appendix~\ref{app:proofs}). The utility
-here is not of that kind --- winning a judged comparison, which the anchor's own draw already wins
-on a third of prompts, priced at $1.30$ nats at any length. The rest is the vacuous horn \emph{by construction}: where the bucket
-is slack the largest feasible tilt is $\theta_t = 1$, so the step is charged the full cost of
-\emph{imitating} the risky model, wanted or not. Both factors are \emph{measured} over $16{,}500$
-logged trajectories: $\beta$ falls from $0.954$ at $k=0.1$ to $0.033$ at $k=3$ and $0.0000$ at
-$k=20$, the rate it multiplies saturates at $0.857$ nats per token, and the running spend is linear
-in the step index at every budget (median $R^2 \ge 0.97$). Realised spend stalls at $171.30$ nats,
-$4.3\%$ of the allowance certified, while the cap quadruples. All four hold at three further pairs, the authors' own
-$70$B among them, at rates $0.617$, $0.303$, $0.908$ (Table~\ref{tab:imitation-pairs}).
+$\Lambda^*_s = \Theta(T)$ too and no separation survives (Appendix~\ref{app:proofs}). Winning a judged
+comparison is not of that kind: under single-order judging the anchor's own draw wins over a quarter
+of them, so winning \emph{every} one, at any length, would cost an optimal policy $1.30$ nats, and the
+decoder spends $132$ times that to reach parity. Where the bucket is slack the largest feasible tilt
+is $\theta_t = 1$, so the step is charged the full cost of \emph{imitating} the risky model, wanted or
+not, and both factors are \emph{measured} over $16{,}500$ logged trajectories: $\beta$ falls from $0.954$ at $k=0.1$ to
+$0.033$ at $k=3$ and $0.0000$ at $k=20$, the rate it multiplies saturates at $0.857$ nats per token,
+and the running spend is linear in the step index at every budget (median $R^2 \ge 0.97$). Realised spend stalls at
+$171.30$ nats, $4.3\%$ of the allowance, while the cap quadruples, and all four hold at three
+further pairs, the authors' own $70$B among them, at rates $0.617$, $0.303$, $0.908$
+(Table~\ref{tab:imitation-pairs}).
 
-A second and weaker boundary sits above the vacuity threshold, bracketing a regime where the
-decoder protects the work and no budget in the family can say so: the rate needed to emit $x$ at
-all is the Loynes running maximum of the surprisal process \citep{loynes1962stability}, so a budget
-publishes a \emph{drift} where safety is a \emph{workload maximum}
-(Proposition~\ref{prop:outrun}; it bounds the regime and is a poor per-work predictor of onset,
+A second, weaker boundary is the Loynes running maximum \citep{loynes1962stability}: a budget
+publishes a \emph{drift} where safety is a \emph{workload maximum} (Proposition~\ref{prop:outrun},
 Appendix~\ref{app:limitations}). Over ten safe models the margin $s(x)/c_{\mathrm{use}}$ rises
 monotonically with capability in every family (Appendix~\ref{app:scaling}): the raw material is
 improving and a per-token meter cannot use it.

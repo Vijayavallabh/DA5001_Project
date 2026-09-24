@@ -66,7 +66,7 @@ for a fixed corpus those are not separate variables --- a finer tokenizer change
 the ratio is ordered. We can name the cause that is not memorisation strength; we cannot separate the
 three the tokenizer moves at once.
 
-\paragraph{The no-free-lunch theorem is a converse.}
+\paragraph{Theorem~\ref{thm:nfl} is a converse.}
 It lower-bounds the budget any policy needs, including the optimal one. Our decoder is causal and
 meters with a token bucket, and we do not bound the gap between the two. That gap is large and
 measurable --- a factor of $5$ to $32$ between the divergence on the risky model's own rollout and
@@ -85,30 +85,34 @@ produce and pays for it in a currency indexed to the protected work. At the scal
 not bind: the oracle arm reaches $u = 0.807$ among the same eight candidates where the deployed
 scorers reach $0.52$, so the binding constraint at $n=8$ is the scorer, not the anchor.
 
-\emph{Part of any gain could be a degeneracy filter, and is not.} Best-of-$n$ never selects an
-empty completion, and the audited anchor emits one on $6.8\%$ of the $500$ prompts --- above the
-$5\%$ its own admission criterion allows, recorded rather than exempted. On the $466$ prompts whose
-$n=1$ completion is non-empty the gain is $+0.0536$ $[+0.0075, +0.0966]$ against $+0.0540$ on all
-$500$; across the four anchors every gain moves by less than $0.003$ and every interval that
-excluded zero still does. The empty fractions are $0.0\%$, $0.2\%$, $3.0\%$ and $6.8\%$, and the
-anchor with the most of them is not the one with the largest gain.
+\emph{Part of any gain could be a degeneracy filter, and is not.} The text the admission check
+first read carried the tail of its prompt, so an empty draw looked non-empty. On the true
+generations the audited anchor's first draw is empty on $14.6\%$ of the $500$ prompts in its $n=8$
+arm and $12.8\%$ in its $n=64$ arm, against $0.0\%$ at both Pleias anchors, $0.2\%$ at KL3M-1.7B,
+$18.4\%$ at Comma-7B and $31.6\%$ at Comma-7B-1T --- all three Comma-family anchors above the $5\%$
+the admission criterion allows, recorded rather than exempted. Nor does best-of-$n$ always avoid one: the reward,
+which scored the echo-carrying text, served an empty completion at $n=64$ on $41$ prompts that had a
+non-empty candidate. On the $427$ prompts whose $n=1$ completion is non-empty the audited anchor's $n=8$ gain, judged on
+the repaired text, is $+0.079$ $[+0.028, +0.128]$ against $+0.073$ on all $500$; under judge~B the gain
+moves by at most $0.012$ at every anchor, under judge~C it \emph{rises} at both Comma-7B anchors, and
+every interval that excluded zero still does but one --- Comma-1T's under judge~B, whose lower end was
+$+0.001$ --- and the
+headline difference restricted to prompts whose two anchor controls are both non-empty is
+$+0.0441$ $[+0.0024, +0.0864]$ (\texttt{results/\allowbreak forest\_\allowbreak deecho\_\allowbreak note.md}).
 
-\emph{The ceiling binds at the anchor, and we could not measure it within one.} On AlpacaEval's
-$805$ instructions the audited anchor gains $+0.067$ $[+0.034, +0.101]$ under one judge and
-$+0.031$ $[-0.001, +0.062]$ under the other, and MT-Bench's $80$ prompts resolve nothing in either
-direction at a paired half-width of $0.09$. Two tests of the ceiling followed, on two axes, and they
+\emph{The ceiling binds at the anchor, and we could not measure it within one.} On AlpacaEval's $805$ instructions, judged on the repaired text, the audited anchor gains $+0.074$
+$[+0.042, +0.108]$ under one judge and $+0.020$ $[-0.011, +0.052]$ under the other, and MT-Bench's
+$80$ prompts resolve nothing in either direction at a paired half-width of $0.10$. Two tests of the ceiling followed, on two axes, and they
 do not agree.
 
 \emph{Across anchors} it is confirmed: Comma-7B on the same $805$ prompts, the same unconstrained
-opponent and the same judges gains $+0.075$ $[+0.042, +0.108]$ and $+0.167$ $[+0.134, +0.201]$,
-monotone in $\log n$ in both --- roughly double the audited anchor's, with judge~B's interval taken
+opponent and the same judges gains $+0.075$ $[+0.044, +0.106]$ and $+0.152$ $[+0.119, +0.185]$, monotone in $\log n$ in both --- at least double the audited anchor's, with judge~B's interval taken
 off zero, against a band fixed in advance asking for an excess of $0.03$. At the capable anchor the
-standard benchmark is not harder than our own prompts: on judge~C its gain slightly exceeds the
-in-house $+0.155$, so the prompt-set reading does not fire either.
+standard benchmark is not harder than our own prompts: on judge~C its gain slightly exceeds the in-house $+0.141$, so the prompt-set reading does not fire either.
 
 \emph{Within one anchor} it is not measurable. Across AlpacaEval's five constituent sources and two
 MT-Bench families, fixed before the split was computed, the gain does not track the anchor's control
-level in either judge, and the $-0.79$ and $-0.70$ it does show are not separable from a
+level in either judge, and the $-0.79$ and $-0.70$ it does show (on the recorded text) are not separable from a
 within-prompt exchangeability null in which selection does nothing, which already gives
 $-0.36 \pm 0.34$ and $-0.34 \pm 0.35$ over $20{,}000$ draws, at $P = 0.09$ and $0.17$. Seven cells
 cannot resolve this and we do not claim they do. The consistent reading is that the ceiling is a
@@ -118,9 +122,9 @@ four points, and descriptive.
 
 \emph{Overoptimisation.} As $n$ grows the argmax is optimised harder against the scorer's own
 errors, which for reward models is known to turn the gain over rather than saturate it
-\citep{gao2023scaling}. Our extraction and judged arms reach $n=256$ at the audited anchor; whether
+\citep{gao2023scaling}. Our extraction arms reach $n=256$ and our judged arms $n=512$ at the audited anchor; whether
 judged utility keeps rising was measured against intervals fixed in advance partitioning the line
-into a growing, a saturating and an overoptimising reading, and to $n=256$ no judged ladder turns
+into a growing, a saturating and an overoptimising reading, and to $n=512$ no judged ladder turns
 over. Where the answer is scored by a task metric instead, the third reading is not hypothetical:
 the pointwise reward turns over on TriviaQA and, at four anchors, on CoTaEval's news questions (both
 in Appendix~\ref{app:selection}). Nothing in
@@ -144,6 +148,23 @@ reassuring: the $0.0000$ of Section~\ref{sec:experiments} is $n$ times a base ra
 % The two-judge calibration and the two-pipeline gate were compressed on 2026-09-19 for the page
 % budget. Both are CONCESSIONS, so neither is dropped: every number a pre-registration committed
 % the paper to carrying is below, and only the walkthrough is gone.
+\paragraph{The metered decoder as its authors run it, and what we did not reproduce.}
+\citet{he2026anchored} pair base risky models --- \texttt{Llama-3.1-70B}, \texttt{Qwen2.5-72B},
+\texttt{Llama-4-Scout} --- with openly licensed anchors, decode books at temperature $0.7$ with a
+repetition penalty of $1.1$, fuse mismatched vocabularies at the byte level through AnchoredByte
+\citep{hayase2026bytesampler}, and score utility by Prometheus-2 fluency on book continuations
+\citep{kim2024prometheus2} and FActScore precision on biographies \citep{min2023factscore}. We ran
+their token-level pair, TinyComma with the $70$B base (Table~\ref{tab:served}), but at temperature
+$1.0$ with no penalty, and the released logs' $8$B-Instruct, served as those logs serve it, without
+its chat template; we ran AnchoredByte, their package unmodified, only at their recommended pair, Comma-7B with the
+$70$B base (Appendix~\ref{app:anchoredbyte}), so the other licensed anchors have no metered
+counterpart; and we report their two metrics beside the judge only with open models in place of
+\texttt{gpt-4.1-mini} (Appendix~\ref{app:hemetrics}). None of these changes a certificate or a
+leakage number, which do not depend on the utility metric or the serving template; each can change a
+judged one, and the chat-template arm shows by how much. No human rated anything, and no lawyer
+assessed any output: a certificate bounds a probability under the anchor, and whether a served text
+infringes is a legal question this paper does not answer.
+
 \paragraph{Two judges, one workload.}
 Utility is scored by instruction-tuned models on the benchmark's own prompt classes rather than
 deployment traffic. Two judges at $600$ comparisons per arm agree on the sign everywhere and on

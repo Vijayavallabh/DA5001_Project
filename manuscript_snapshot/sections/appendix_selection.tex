@@ -16,11 +16,13 @@ passages and seeds, the memoriser alone at $0.3925$ mean and $0.8154$ maximum. \
 memoriser ours}: \texttt{Llama-3.1-70B} memorised \emph{Harry Potter} in pre-training and unaided
 recovers $0.2475$ at a $100$-token prefix, reproducing two passages \emph{in full}. \textbf{(b)} The premise broken on purpose --- twelve contaminated anchors
 fine-tuned on these passages, attacker selecting at $n=64$: the bound permits multiplying the
-anchor's own rate by $64$ and the realised factor is $1.0$ to $7.0$.}
+anchor's own rate by $64$ and the realised factor is $1.0$ to $7.0$ (filled) and, on a second,
+independent draw, $1.0$ to $3.0$ (hollow).}
 \label{fig:safety}
 \end{figure}
 
 
+\subsection{Protocol and the scorer}\label{app:sel-protocol}
 \paragraph{The judged workload, described.}\label{app:promptset}
 The headline pass judges $500$ prompts in three classes (Table~\ref{tab:promptset}), counted off the
 ids that pass judged rather than off the prompt files, which hold $850$; none is drawn from the
@@ -37,9 +39,12 @@ named person, to $0.5067$ on story premises.
 
 \begin{table}[ht]
 \centering\footnotesize
-\caption{The $500$ judged prompts, by class (\texttt{results/\allowbreak prompt\_\allowbreak set\_\allowbreak profile.csv}): general-knowledge questions
-written for this project, biography requests of the form \emph{Tell me a bio of X.} over FActScore's
-entities \citep{min2023factscore}, and story premises posted to Reddit's r/WritingPrompts. Lengths
+\caption{The $500$ judged prompts, by class (\texttt{results/\allowbreak prompt\_\allowbreak set\_\allowbreak profile.csv}), with the harness's name for each class in
+brackets: general-knowledge questions written for this project (\texttt{neutral}), biography
+requests of the form \emph{Tell me a bio of X.} over FActScore's entities \citep{min2023factscore}
+(\texttt{factual}), and story premises posted to Reddit's r/WritingPrompts \citep{fan2018writingprompts}
+(\texttt{creative}). The prompt files hold $850$, $500$ of them \texttt{factual}; the headline pass
+judges $150$ of those. Lengths
 are words, median with quartiles in brackets (to the nearest word), and the prompt's range; the prompt length excludes the
 fixed header, and \emph{header} counts the prompts served with it. \emph{Anchor wins} is the anchor's
 own $n=1$ completion against the unconstrained opponent, order-averaged: one minus it is that
@@ -79,6 +84,19 @@ of both statistics, can blur these figures toward $0.5$ but favours neither
 (\texttt{analysis/\allowbreak currency\_\allowbreak auc.py},
 \texttt{results/\allowbreak currency\_\allowbreak auc.csv}).
 
+\paragraph{The scorer prefers an empty completion.}\label{app:empties}
+Once the recording defect is repaired, $13.9\%$ of the headline pool's $32{,}000$ draws are empty ---
+the anchor ends its turn at the first token --- and the committed reward scores them \emph{above} the
+rest, median $-18.75$ against $-26.12$. Best-of-$n$ therefore serves an empty text on $12.8\%$ of
+prompts at $n=1$, $21.8\%$ at $n=8$ and $8.2\%$ at $n=64$. The judge does not score an empty text as
+a loss: the committed opponent, served without its chat template, is itself often degenerate
+(Table~\ref{tab:served}), and the prompts served empty are judged at $0.4531$, $0.4771$ and $0.4939$
+against $0.4536$, $0.5211$ and $0.5605$ for the rest. So at $n \ge 8$ the preference costs selection
+level rather than flattering it; it is a property of this scorer, not of the certificate, which holds
+for any score (\texttt{analysis/\allowbreak empty\_\allowbreak preference.py},
+\texttt{results/\allowbreak empty\_\allowbreak preference.csv}).
+
+\subsection{The head-to-head, and whether it survives}\label{app:sel-h2h}
 \paragraph{The largest $n$, and whether the gain stops.}
 Comma-7B was swept to $n=64$ on the same $500$ prompts, reward, judges and opponent. The gain rises
 monotonically within the pass --- $+0.041$, $+0.060$, $+0.072$, $+0.103$, $+0.127$, $+0.173$ at
@@ -89,21 +107,29 @@ nats, with no sign of the reward overoptimisation that turns such curves over an
 grid. Extending the audited anchor to $n=128$, the paired $g(128) - g(64)$ is $+0.0140$
 $[-0.0180, +0.0460]$, and under order averaging $+0.0140$ $[-0.0015, +0.0295]$: the same point
 estimate, a $2.06\times$ tighter interval, both containing zero, so that anchor is flat between $64$
-and $128$. Comma-7B, the strongest anchor, has now been taken to $128$ as
+and $128$. Comma-7B, the strongest anchor, was taken to $128$ as
 well, on a pool whose first $64$ ranks are bit-identical to the committed one in all $32{,}000$
 rewards: its paired $g(128) - g(64)$ is $+0.0040$ $[-0.0270, +0.0350]$ under judge~B and $+0.0110$
 $[-0.0190, +0.0410]$ under judge~C, flat between $64$ and $128$ too, and the two
 anchors agree. \textbf{A flat step is not a ceiling.} Taken to $n=256$ on our $850$ prompts and on
-AlpacaEval's $805$, each pool again bit-identical to its committed $n=64$ ranks, the audited anchor
+AlpacaEval's $805$ \citep{li2023alpacaeval}, each pool again bit-identical to its committed $n=64$ ranks, the audited anchor
 is flat from $64$ to $128$ on both, $-0.0094$ $[-0.0353, +0.0147]$ and $-0.0019$ $[-0.0273, +0.0217]$,
 and rises from $128$ to $256$ on both, $+0.0306$ $[+0.0047, +0.0547]$ and $+0.0280$
 $[+0.0025, +0.0553]$ --- on our own prompts against a prediction, fixed in advance, that it would
 have stopped. Each rise sits about one half-width from zero, the marginal regime in which a paired
 difference fails to replicate below, and measured from $64$ the two doublings together contain zero
 on both workloads, $+0.0212$ $[-0.0088, +0.0512]$ and $+0.0261$ $[-0.0056, +0.0565]$, and under order
-averaging $+0.0099$ $[-0.0050, +0.0248]$ (both checks post hoc). So we claim neither a ceiling nor a
-slope: $n=64$ is not where either ladder demonstrably ends, and past it each doubling costs twice the
-draws and $\log 2 = 0.693$ more nats and has bought at most about $+0.03$.
+averaging $+0.0099$ $[-0.0050, +0.0248]$ (both checks post hoc). \textbf{One more doubling, with
+bands fixed in advance, does not settle it.} Taken to $n=512$ on both workloads, the first $256$ ranks
+of each pool bit-identical to the committed ones in every reward, the last doubling is flat on both,
+$g(512)-g(256)$ is $+0.0056$ $[-0.0193, +0.0311]$ on AlpacaEval and $+0.0071$ $[-0.0165, +0.0300]$ on
+ours, and measured from $64$ the three doublings together still contain zero, $+0.0311$
+$[-0.0025, +0.0634]$ and $+0.0312$ $[-0.0018, +0.0635]$ --- where we had predicted a marginal climb.
+Under order averaging the two AlpacaEval differences exclude zero, $+0.0186$ $[+0.0065, +0.0301]$ and
+$+0.0286$ $[+0.0115, +0.0438]$, but at $1.58$ and $1.77$ half-widths, the margin at which a paired
+difference has failed to replicate here. So we claim neither a ceiling nor a slope: $n=64$ is not
+where either ladder demonstrably ends, and past it three doublings cost eight times the draws and
+$\log 8 = 2.08$ more nats and have bought about $+0.03$.
 
 \paragraph{Judged single-order levels are grid-dependent.}
 An arm's level moves when other arms join the sweep, because each item's presentation order is drawn
@@ -119,7 +145,12 @@ majority vote, with no scorer to overoptimise against.
 Read as one order against the order-averaged construction, selection at $n=64$ moves $+0.110$ to
 $+0.1045$ $[+0.082, +0.128]$ and the metered decoder at $k=10$ moves $+0.097$ to $+0.0400$
 $[+0.014, +0.0655]$, so the paired difference moves $+0.013$ to $\mathbf{+0.0645}$
-$[+0.030, +0.0995]$. We specified in advance the opposite prediction --- both arms deflating together, the
+$[+0.030, +0.0995]$. Every committed pass judged text that still carried the tail of its prompt
+(Appendix~\ref{app:judgemethod}); re-judged on the repaired text, as registered, selection gains
+$+0.1015$ $[+0.0765, +0.1260]$, the meter $+0.0510$ $[+0.025, +0.076]$, and the difference is
+$\mathbf{+0.0505}$ $[+0.0155, +0.0860]$, which is the figure the main text quotes. The
+replications below are quoted as measured on the committed text, each a paired difference inside its
+own pass. We specified in advance the opposite prediction --- both arms deflating together, the
 difference vanishing under the cross-pass floor --- and it was wrong. The correction is
 \emph{asymmetric}, moving selection by a factor of $0.95$ and the metered decoder by $0.41$, so the
 difference grows five-fold instead of shrinking; the likely mechanism, offered rather than claimed, is
@@ -133,11 +164,92 @@ the $+0.142$ and $+0.072$ measured under arm-specific prompts. What survives is 
 $+0.0645$, visible only once position is removed; Figure~\ref{fig:breadth}'s sweep is single-order
 throughout and says so, so the two must not be read off one another.
 
+\paragraph{The head-to-head by serving configuration.}\label{app:served}
+Table~\ref{tab:served} comes from two registered arms, each banded before any judge call
+(\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak served\_\allowbreak opponent.md},
+\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak he\_\allowbreak config.md}), and one
+descriptive re-judge that puts every budget in one pass
+(\texttt{results/\allowbreak frontier\_\allowbreak levels\_\allowbreak note.md}); all three judge the same
+selection texts, whose per-prompt levels agree across them on $500$ of $500$ prompts. Served through
+its chat template the $8$B was generated afresh at $k=10$ on disjoint seeds; its own second draw
+reads $0.504$ against the first, so the instrument separates nothing it should not, and it beats its
+templateless text by $+0.184$ $[+0.155, +0.213]$. We predicted selection would lose to that meter and
+it did; we predicted the committed meter would be unresolved against the stronger opponent and
+selection instead wins, $+0.058$ $[+0.0325, +0.0845]$. At the authors' $70$B pair we predicted the
+meter would win at $k=20$ and at the rate-matched $k=1$, and both predictions were wrong: at
+temperature $1.0$ with no penalty the base model, continuing \texttt{Complete the prefix:}, is judged
+no better than the anchor, and at $k=20$ the meter serves its text byte for byte on $500$ of $500$
+prompts. At $k=0.5$, the one budget whose certificate says anything about a $50$-token window, the
+meter is inseparable from its anchor at both pairs, as predicted. \textbf{Two post-hoc checks, both
+labelled so}: the meter writes about twice selection's words ($151$ against $75$ at the median), and a
+length-controlled regression in the manner of \citet{dubois2024length} leaves the difference at
+$+0.0605$ $[+0.0236, +0.0971]$, with no length preference the regression can resolve; and on the
+$414$ prompts whose two anchor controls are both non-empty it is $+0.0441$ $[+0.0024, +0.0864]$
+(\texttt{results/\allowbreak h2h\_\allowbreak length\_\allowbreak control\_\allowbreak note.md}).
+The eight rows were not registered as one family, so the table is also read with a Bonferroni
+correction over them: at $99.375\%$ every row still excludes zero in the same direction,
+the narrowest being the chat-template $k=1$ row at $[+0.0015, +0.0820]$
+(\texttt{results/\allowbreak served\_\allowbreak multiplicity.csv}, post hoc).
+
+\paragraph{Table~\ref{tab:served} under the authors' own utility metrics.}\label{app:hemetrics}
+\citet{he2026anchored} score utility with Prometheus-2 fluency and FActScore precision, not a
+pairwise judge, so we scored the same repaired texts with both (\texttt{results/\allowbreak
+he\_\allowbreak metrics\_\allowbreak note.md}, descriptive): their fluency rubric verbatim under the
+open \texttt{prometheus-7b-v2.0} \citep{kim2024prometheus2}, where they use \texttt{gpt-4.1-mini},
+and FActScore \citep{min2023factscore} on the $150$ biographies with \texttt{Qwen2.5-14B-Instruct}
+extracting and verifying against each entity's Wikipedia text. On fluency (1--5, non-empty
+responses) selection at $n=64$ scores $2.56$ against the meter's $1.88$ at $k=10$, a paired
+$+0.70$ $[+0.53, +0.85]$, and beats the meter at every budget of both text-continuation pairs
+($+1.15$ $[+1.00, +1.30]$ over the $70$B pair at $k=0.5$); it loses to the instruct model served
+through its chat template, $-0.81$ $[-0.99, -0.64]$ --- the judge's pattern. FActScore reads the
+other way, and should: every fact selection serves is one the anchor drew, so its precision is its
+anchor's ($0.042$ against $0.048$, paired $-0.008$ $[-0.041, +0.022]$) and below every metered arm
+($-0.182$ $[-0.222, -0.145]$ against the meter at $k=10$), while it abstains on $20$ of $150$
+biographies where a single draw abstains on $80$. So the head-to-head is a statement about fluency
+and helpfulness, not about factual recall, which the anchor bounds.
+
+\paragraph{The authors' byte-level decoder, at their recommended pair.}\label{app:anchoredbyte}
+\citet{he2026anchored} meter every licensed anchor but TinyComma with AnchoredByte, which fuses a
+Comma tokenizer with a Llama-3 one through ByteSampler \citep{hayase2026bytesampler}, and recommend
+Comma-7B with the $70$B base at $k=0.5$ per byte. We ran their package unmodified
+(\texttt{anchoreddecode} at commit \texttt{a12ecd9}) on the headline's $500$ prompts in
+Table~\ref{tab:served}'s configuration --- temperature $1.0$, no penalty, no chat template, prefix debt
+on, $B_{\max} = 800$ bytes so that $K = 800k$ --- with one placement change that 80\,GB cards force
+and that touches no arithmetic, and judged it exactly as that table's cells, selection here
+being Comma-7B's best-of-$64$ (Table~\ref{tab:anchoredbyte}; bands in \texttt{results/\allowbreak
+onset\_\allowbreak prediction\_\allowbreak anchoredbyte.md}). Every trajectory's spend stays within $K$. Selection wins at every budget, by $+0.124$ to $+0.139$, as predicted, including the one whose certificate says anything
+about a $50$-token window ($K = 80$ nats against that window's $139.7$ under Comma-7B), where the
+meter binds on $18.4\%$ of byte steps and is judged indistinguishable from Comma-7B alone. The $70$B
+base, unconstrained, is judged no better than Comma-7B alone. Under the authors' own metrics the
+picture is the token-level one: selection is the more fluent at every budget, and at $k=0.5$ the
+meter's FActScore precision is $0.323$ against selection's $0.0995$ --- the $70$B's facts pass through
+a certificate that is vacuous for any window ($K/S_w = 2.86$) --- while at $k=0.1$ it is $0.0843$,
+inseparable from selection's (the paragraph above; \texttt{results/\allowbreak
+he\_\allowbreak metrics.csv}).
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{AnchoredByte at the authors' recommended pair, Comma-7B with the $70$B base, against
+selection at Comma-7B ($n=64$, level $0.6245$; Comma-7B alone $0.4660$; the $70$B alone $0.4550$).
+Order-averaged judge-B levels against Table~\ref{tab:served}'s opponent; $k$ per byte, $K = 800k$;
+$S_w = 139.7$ nats under Comma-7B; \emph{binds}: share of byte steps with the risky weight below one;
+last column paired over prompts, $95\%$ interval.}\label{tab:anchoredbyte}
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$k$ & $K$ & $K/S_w$ & binds & meter & selection $-$ meter \\
+\midrule
+$0.1$ & $80$ & $0.57$ & $18.4\%$ & $0.4860$ & $+0.1385$ $[+0.1155, +0.1620]$ \\
+$0.5$ & $400$ & $2.86$ & $2.8\%$ & $0.5005$ & $+0.1240$ $[+0.1010, +0.1470]$ \\
+$2$ & $1600$ & $11.45$ & $0.6\%$ & $0.4900$ & $+0.1345$ $[+0.1105, +0.1590]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Where the reversal stops: a workload we did not choose.}\label{app:workload}
 The headline is a claim about a regime, so we looked for its edge on a benchmark we do not control.
 On AlpacaEval-805 the reversal \emph{fails}: selection gains $+0.0835$ $[+0.0665, +0.1016]$ and the
 metered decoder $+0.1174$ $[+0.0991, +0.1354]$, a paired difference of $-0.0339$ $[-0.0534,
--0.0137]$ over $805$ prompts. The meter wins.
+-0.0137]$ over $805$ prompts, and $-0.0329$ $[-0.0528, -0.0127]$ on the repaired text. The meter wins.
 
 It took two passes, and what the first one exposed is about \emph{our own} headline rather than
 about AlpacaEval. Run at the paper's own $k=10$ the budget is barely active on either workload:
@@ -179,7 +291,7 @@ report it as an observation rather than a claim, having registered neither --- a
 rather than leaving a reader to notice it two paragraphs down, that the decomposition below
 \emph{refutes} that account. The direction is consistent with a story whose magnitude is not.
 
-\textbf{A third workload, and it is underpowered by construction.} MT-Bench is $80$ prompts, so
+\textbf{A third workload, and it is underpowered by construction.} MT-Bench \citep{zheng2023judging} is $80$ prompts, so
 its interval half-width at a binding budget is $0.053$ against AlpacaEval's $0.020$, and the paired
 difference there reads $-0.0250$ $[-0.0781, +0.0281]$: \textsc{unresolved}, which the registration
 named in advance as a possible consequence of that size and which we report as a failure to resolve
@@ -192,8 +304,12 @@ choose: at $k=10$ the budget is active on $0.033\%$ of MT-Bench's steps and $95.
 completions are byte-identical to the opponent. \textbf{And the decomposition holds a third time}: over the three
 binding-budget passes $g_{\mathrm{sel}}$ spans $0.056$ ($+0.1218$, $+0.0835$, $+0.0656$) and
 $g_{\mathrm{met}}$ spans $0.092$ ($+0.0253$, $+0.1174$, $+0.0906$), and it is the meter that
-crosses --- below selection's gain on our corpus and above it on both external ones. Selection
-gains on all three. The meter is what the workload changes.
+crosses --- below selection's gain on our corpus and above it on both external ones. On the text as
+recorded selection gains on all three and the meter is what the workload changes. \textbf{On the
+repaired text that decomposition does not survive} (Appendix~\ref{app:judgemethod}): selection's
+gains span $0.095$ ($+0.1321$, $+0.0801$, $+0.0375$, the last covering zero) and the meter's $0.085$
+($+0.0282$, $+0.1130$, $+0.0688$), so both arms move with the workload, the meter still crosses, and
+the support-ceiling account below is neither refuted nor supported by it.
 
 \textbf{A fourth workload names the axis, and we cannot claim the mechanism it suggests.} Three
 candidates are now refuted --- anchor competence, a support ceiling, the prompt template --- and
@@ -205,7 +321,8 @@ uses, read $+0.0990$ $[+0.0795, +0.1185]$ at a rate-matched binding budget ($k=0
 $6.95\%$ of steps, $3.6\%$ of completions shared with the opponent) and $+0.0950$ $[+0.0780,
 +0.1120]$ at $k=10$. \textbf{A public completion workload falls with ours at both budgets}, and the
 metered decoder does no better than its own control there, $-0.0185$ $[-0.0380, +0.0005]$ and
-$-0.0145$ $[-0.0315, +0.0030]$, against $+0.1174$ on AlpacaEval and $+0.0253$ on ours.
+$-0.0145$ $[-0.0315, +0.0030]$ (on the repaired text worse than it, $-0.0275$ $[-0.0470, -0.0080]$ at the
+binding budget), against $+0.1174$ on AlpacaEval and $+0.0253$ on ours.
 
 \textbf{We pre-registered that a win here would be confounded and would be reported so, and it is.}
 These anchors are trained on public-domain and openly licensed text, so this corpus is plausibly
@@ -225,12 +342,15 @@ story is a support ceiling --- selection serves only what the anchor draws, so o
 cannot do, more draws cannot help. Decomposed, the effect is not selection's: moving from our
 workload to AlpacaEval, selection's gain falls by $0.038$ while the \emph{meter's} rises by
 $0.092$, so nearly three quarters of the swing is the budgeted decoder gaining more, not selection
-gaining less. Nor does the ladder show a ceiling: taken to $n=256$ on AlpacaEval it is flat and then
-rises, as it does on our own prompts (above), while its deficit against the binding meter reads
+gaining less. Nor does the ladder show a ceiling: taken to $n=512$ on AlpacaEval it is flat, then rises,
+then is flat again, as on our own prompts (above), while its deficit against the binding meter reads
 $-0.0357$ $[-0.0553, -0.0165]$ at $n=128$ and $-0.0239$ $[-0.0429, -0.0050]$ at $256$ against
 $-0.0339$ at $64$ --- narrower by less than the half we predicted, still clear of zero, so the
 reversal fails off-support at $256$ as at $64$, at a certificate of $\log 256 = 5.55$ nats against
-the meter's realised $145.1$. Nor does anchor competence predict the sign. Splitting our own corpus into its three
+the meter's realised $145.1$. One doubling on, the deficit is $-0.0053$ $[-0.0248, +0.0143]$ at
+$512$, which the band fixed in advance reads as \textsc{unresolved}: no longer clear of zero, against
+our prediction that it would still trail, and not caught either --- at $\log 512 = 6.24$ nats,
+$23.3\times$ below the meter's realised spend. Nor does anchor competence predict the sign. Splitting our own corpus into its three
 classes --- one pass, one protocol, one judge --- spans $0.137$ of the anchor's own win rate
 against the opponent, twice the $0.065$ that separates the two workloads, and the sign does not
 move at all: $+0.1050$, $+0.0837$ and $+0.0990$, not even monotone in competence. A dose-response
@@ -250,7 +370,7 @@ empirical scoping and not a mechanism for it. The certificate is untouched
 where the boundary sits is not something one benchmark can say.
 
 \textbf{A fifth workload tests that axis where it makes a prediction, and half-answers it.}
-CoTaEval's NewsQA split is reading comprehension --- neither prefix completion nor
+CoTaEval's NewsQA split \citep{trischler2017newsqa} is reading comprehension --- neither prefix completion nor
 instruction-following --- so on the task-type account it should fall with AlpacaEval. That
 prediction, and the fact that this arm cannot separate the account from ``our corpus versus
 everyone else'' because both predict the same sign here, were recorded before its judge ran. It
@@ -259,9 +379,7 @@ $7.76\%$ of steps, $1.2\%$ of completions shared with the opponent) and $-0.0375
 -0.0145]$ at $k=10$: unresolved at the first, with AlpacaEval at the second. The axis is therefore
 \emph{not falsified} --- that needed a reading with ours, which is the costly outcome the
 prediction was written to expose --- and it is not cleanly confirmed either, because reading
-comprehension lands between the two clusters rather than on either. The decomposition is once more
-the meter's: selection gains $+0.0235$ $[+0.0010, +0.0470]$ whatever the budget, while the meter
-gains $+0.0165$ $[-0.0030, +0.0355]$ at the binding budget and $+0.0610$ $[+0.0420, +0.0800]$ at
+comprehension lands between the two clusters rather than on either. The decomposition was once more the meter's on the text as recorded: selection gains $+0.0235$ $[+0.0010, +0.0470]$ whatever the budget (on the repaired text $+0.0070$ $[-0.0165, +0.0300]$, covering zero), while the meter gains $+0.0165$ $[-0.0030, +0.0355]$ at the binding budget and $+0.0610$ $[+0.0420, +0.0800]$ at
 $k=10$. And this is the least degenerate vacuous cell we have measured --- activity $0.231\%$
 against $0.008\%$--$0.043\%$ on the six others, and $76.6\%$ of served completions byte-identical
 to the unconstrained opponent against $95.0\%$--$99.6\%$ on the five where that comparison is
@@ -325,14 +443,18 @@ sampled arm. Judge~A is excluded on principle: it supplies the reward that selec
 
 \begin{table}[ht]
 \centering\footnotesize
-\caption{The head-to-head repeated. A disjoint seed and two further judges against the registered pass, read on the paired difference $D_3$ within each pass.}\label{tab:h2hrepeat}
+\caption{The head-to-head repeated. A disjoint seed and two further judges against the registered pass, read on the paired difference $D_3$ within each pass; the panel adds \texttt{gemma-2-27b} \citep{gemma2024gemma2}. \emph{repaired text}: the seed-$42$ pass re-judged with the prompt-tail echo removed (Appendix~\ref{app:judgemethod}); \emph{seeds $82$}: every sampled arm re-drawn, judged against a re-drawn opponent (\emph{all new}) or the committed one (\emph{old opp.}).}\label{tab:h2hrepeat}
 \begin{tabular}{@{}llrrr@{}}
 \toprule
 draw & judge & selection $D_1$ & metered $D_2$ & \textbf{difference $D_3$} \\
 \midrule
 seed $42$ (original) & B & $+0.1045$ & $+0.0400$ & $\mathbf{+0.0645}$ $[+0.0300,+0.0995]$ \\
+repaired text & B & $+0.1015$ & $+0.0510$ & $\mathbf{+0.0505}$ $[+0.0155,+0.0860]$ \\
 seed $42$            & C & $+0.1360$ & $+0.0740$ & $+0.0620$ $[+0.0165,+0.1075]$ \\
 seed $52$ (fresh)    & B & $+0.1035$ & $+0.0400$ & $+0.0635$ $[+0.0290,+0.0975]$ \\
+seed $52$, repaired & B & $+0.1010$ & $+0.0510$ & $+0.0500$ $[+0.0155,+0.0840]$ \\
+seeds $82$ (all new) & B & $+0.1225$ & $+0.0730$ & $+0.0495$ $[+0.0175,+0.0800]$ \\
+seeds $82$ (old opp.) & B & $+0.1065$ & $+0.0615$ & $+0.0450$ $[+0.0110,+0.0790]$ \\
 seed $52$ (fresh)    & C & $+0.1740$ & $+0.0740$ & $+0.1000$ $[+0.0520,+0.1465]$ \\
 \midrule
 \multicolumn{5}{@{}l}{\emph{same text, instrument only: the judge panel}}\\
@@ -347,7 +469,7 @@ seed $42$            & G, \texttt{gemma-2-27b} & $+0.1975$ & $+0.1185$ & $+0.079
 \noindent All three new estimates are positive with intervals excluding zero, which was the condition
 for the headline to stand, and on a fully independent draw at the same judge the difference reads
 $+0.0635$ against the original $+0.0645$ --- a judged quantity reproducing to the third decimal across
-disjoint trajectory seeds. Three things are reported against us rather than folded in: the
+disjoint trajectory seeds, and on the repaired text the two draws read $+0.0505$ and $+0.0500$. A third draw re-generates \emph{every} sampled arm on seeds $82,83,84$, the opponent included, and reads $+0.0495$ $[+0.0175, +0.0800]$, as registered (\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak headline\_\allowbreak replication.md}); excluding empty candidates from the argmax raises it to $+0.0695$ $[+0.0385, +0.0995]$ (Appendix~\ref{app:empties}). Three things are reported against us rather than folded in: the
 seed-$52$/judge-C estimate, $+0.1000$, falls just outside the original interval on the
 \emph{favourable} side, so it is quoted separately and never as the headline; we predicted judge~C
 would be a harsh test, since it is the fixed opponent's own checkpoint, and it did the opposite, so
@@ -376,9 +498,9 @@ same sign as every other judge's.
 
 
 \textbf{On the community-standard benchmark the scorer does worse than bind: it reverses the
-mechanism.} The reviewers asked for CoTaEval \citep{wei2024cotaeval} rather than our own corpora
-alone, so we ran its news half --- a domain no corpus in this paper uses --- as $500$ in-domain
-article-and-question items scored by SQuAD token-F1, CoTaEval's own utility metric, at seven
+mechanism.} To test on a community benchmark rather than our own corpora alone, we ran the news half
+of CoTaEval \citep{wei2024cotaeval} --- a domain no corpus in this paper uses --- as $500$ in-domain
+article-and-question items scored by SQuAD token-F1 \citep{rajpurkar2016squad}, CoTaEval's own utility metric, at seven
 anchors in three families with bands fixed in advance. \textbf{Four anchors cannot read a news
 article at all} ($n=1$ F1 of $0.003$ to $0.088$ at both Pleias and both KL3M models, against a
 registered floor of $0.10$), so no band was computed for them; that is the capability constraint
@@ -397,9 +519,7 @@ and a deployer choosing $n$ by a pointwise reward of this size on this workload 
 at every $n$ than serving the anchor once. Two things it does not touch, stated so the scope is not read wider
 than the measurement: the certificate is a claim about the served law and does not depend on the
 served text being good, and the GSM8K majority-vote result ($0.320 \to 0.546$) is a different task
-under a different rule. \textsc{Not run:} CoTaEval's infringement half, because
-\texttt{selection\_\allowbreak extraction.py} splits at a fixed token count where CoTaEval's prefix
-boundary is per item, and a corpus that is not the registered one is worse than none.
+under a different rule.
 
 \textbf{A larger scorer moves it, and the sign of that too was registered before the run.} The
 result above forces one question a deployer asks immediately --- is this the mechanism or the $7$B
@@ -417,7 +537,7 @@ rather than implied: every selection arm in this paper scores with the $7$B rewa
 this benchmark the sign of the $n$-effect is a property of that choice as well as of the task. No
 $14$B level is set beside a $7$B one and no third scorer was run, both excluded in advance.
 
-\textbf{A third rung settles it, and it goes against the reading we had just written.} Two points
+\textbf{A third rung settles it, against the two-rung reading.} Two points
 cannot tell a threshold from an accident, so the ladder was completed at
 \texttt{Qwen2.5-72B-Instruct}: the headline anchor, the two that had flipped at $14$B, and
 TriviaQA, all bands registered first. \textbf{Nothing turns over anywhere.} At $72$B the headline
@@ -446,15 +566,32 @@ deploy, so at the paper's own operating point the loss is real and reproduces on
 What a deployer gains is a stated requirement, and a requirement is a cost --- a favourable one
 only in that the scorer is $9.3\%$ of selection's wall-clock and the draws $90.7\%$, though
 \emph{no latency arm was run above $7$B and no cost number here is measured}. \textbf{And it does not
-transfer to the judged workload, which is now measured rather than disclaimed}: the same two
+transfer to the judged workload, which is measured rather than disclaimed}: the same two
 scorers, run over the judged grid in one six-scorer pass, lift it by nothing
 (Appendix~\ref{app:saturation}). Scorer size binds where the task has a checkable answer and not
 where the target is a judged preference on ordinary prompts, which a $1.5$B model already
 approximates to $87\%$ of the $7.6$B gain --- a statement about the \emph{task}, not the mechanism.
 The certificate is untouched either way: it is $\log n$ for any score of any size.
 
-\textbf{Giving the \emph{metered} decoder the same reward model, which is the one evaluation
-objection we had answered only in pieces.} A report put it directly: the metered decoder fuses
+\textbf{CoTaEval's infringement half cannot tell a defence from none at this pair, and an adversarial
+scorer beats the risky model on it.} We ran it through the decoding path of every arm on record, each
+item with the benchmark's own prefix ($500$ of its $1{,}000$ items, the released pair, bands fixed in
+advance), and scored every arm against the item's reference with this paper's copying metrics and
+CoTaEval's event, ROUGE-L~$\ge 0.5$. \emph{No arm reaches the event on any item, the unconstrained
+risky model included} ($0/500$ each, Wilson upper bound $0.0076$). On mean ROUGE-L the risky model
+sits closer to the reference than the anchor ($0.1589$ $[0.1554, 0.1624]$ against $0.1451$ $[0.1421,
+0.1481]$); selection at $n=64$ is no closer than the anchor alone ($-0.0012$ $[-0.0052, +0.0027]$)
+and further than the risky model ($-0.0150$ $[-0.0195, -0.0107]$; over non-empty draws alone
+$-0.0148$ $[-0.0191, -0.0104]$, the reward having served an empty draft on one item), and the meter
+at $k=10$ is the risky model ($+0.0004$ $[-0.0002, +0.0010]$). We predicted that even an adversarial
+scorer would stay below the risky model, and it does not: the draw closest to the reference among
+the first $64$ is closer than the risky model's one draw by $+0.0370$ $[+0.0336, +0.0404]$.
+Proposition~\ref{prop:selection} bounds amplification relative to the \emph{anchor}, not the risky
+model, and a maximum over $64$ draws of a score this noisy beats one draw of either --- yet it too
+reaches the event on no item
+(\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak cotaeval\_\allowbreak infringement.md}).
+
+\textbf{Giving the \emph{metered} decoder the same reward model.} The metered decoder fuses
 per-token probabilities while selection ranks whole sequences with an external reward model, so
 selection's gain may be the scorer rather than the budget's placement. We gave the meter the
 scorer. On the same $500$ TriviaQA questions and the one meterable pair, the metered decoder drew
@@ -510,8 +647,8 @@ $+0.0540$ $[+0.0320, +0.0765]$, the meter $+0.0605$ $[+0.0385, +0.0820]$. \textb
 between them does not survive}: $-0.0065$ $[-0.0385, +0.0255]$, a point estimate $0.20$ interval
 half-widths from zero, against $+0.0645$ $[+0.0300, +0.0995]$ on the registered pass. The reading
 fixed in advance for an interval containing zero was \textsc{unresolved}, and the consequence fixed
-with it was to report the judged comparison as holding \emph{against one fixed opponent} --- which
-is what the abstract now says.
+with it was to report the judged comparison as holding \emph{against one fixed opponent}, which is
+how the abstract states it.
 
 \textbf{That swap was not a perturbation, and three more opponents put it on a measured axis.}
 Define an opponent's \emph{strength} as its order-averaged win rate against the anchor control
@@ -558,11 +695,11 @@ judge~B confirms up to $0.7035$. It is more conservative at every rung, and the 
 strength-dependent ($-0.017$, $-0.058$, $-0.021$, $-0.004$) rather than the uniform one we had
 predicted from its being the metered arm's own checkpoint.
 
-\textbf{We first read this on the three new rungs alone and concluded the decay was one judge's;
-that was wrong, and the way it was wrong is worth the sentence.} All three lie past judge~C's own
-crossing, and a monotone series sampled entirely past its crossing has no ordering left to show ---
-it gave $-0.500$ at $p=1.0$. Adding the rung the other instrument was likely to still be confirming
-on inverted the conclusion. So what the two judges agree on is that the difference is present
+\textbf{Read on the three new rungs alone, the decay looks like one judge's, which was our first
+reading, and that was wrong.} All three
+lie past judge~C's own crossing, and a monotone series sampled entirely past its crossing has no
+ordering left to show --- it gives $-0.500$ at $p=1.0$ --- while adding the rung the other
+instrument still confirms on restores it. So what the two judges agree on is that the difference is present
 against the committed opponent and absent against stronger ones; what they disagree on is where the
 boundary sits. A third judge on the rung where they differ does not settle it:
 \texttt{Mixtral-8x7B} reads $+0.0355$ $[-0.0105, +0.0810]$ there, agreeing with judge~B in sign and
@@ -616,9 +753,10 @@ not later be presented as open --- before judges F and G existed.
 % The scorer-scale study (the 0.5B/7B compute-matched grid and the four-scorer ladder) was cut from
 % the manuscript on 2026-09-19 for the page budget. Both arms are unchanged and their CSVs are in
 % results/; every concession they committed the paper to carrying is kept below.
+\subsection{The certificate in use}\label{app:sel-certificate}
 \paragraph{The joint certificate over many queries, proved.}\label{app:compose}
-Section~\ref{sec:selection} asserts that the certificate composes by addition; one report asks for
-the statement over $m$ queries. Let a user issue queries $x_1,\dots,x_m$, each answered by a
+Section~\ref{sec:compose} asserts that the certificate composes by addition; here is the
+statement over $m$ queries. Let a user issue queries $x_1,\dots,x_m$, each answered by a
 selection rule over $n$ draws, and let each $x_j$ be chosen \emph{adaptively} from everything served
 so far. Write $q_j(\cdot \mid \mathcal{H}_{j-1})$ for the served law at round $j$ given the history
 and $p_{s,j}$ for the anchor's. Proposition~\ref{prop:selection} applies at each round conditionally
@@ -643,25 +781,77 @@ response, so $m$ responses are certified at $mkT$, which grows in the length of 
 the $\log n$ figure grows only in their number. That is the same asymmetry as the paper's main
 claim, one level up.
 
-\paragraph{How loose is $\log n$? It is not loose --- it is an equality.}\label{app:realisedkl}
-Three reports ask for the \emph{realised} divergence of the served law rather than the bound, one of
-them for ``the expected max-divergence ratio $q(y)/p_s(y)$ as a function of score dispersion, i.e.\
-how loose is $\log n$ in practice''. The premise is that we are quoting a loose bound. We are not.
-For best-of-$n$ over a score with no ties the served law is $q(y) = n\,p_s(y)\,F(f(y))^{n-1}$, with
-$F$ the score CDF under $p_s$, so $\log\!\big(q(y)/p_s(y)\big) \to \log n$ as $F \to 1$: the
-pathwise figure is attained, not approached. And since $F(f(y^*))$ under $q$ is the maximum of $n$
-uniforms --- a $\mathrm{Beta}(n,1)$, with $\mathbb{E}[\log F] = -1/n$ --- integrating gives
-$D_{\mathrm{KL}}(q \,\|\, p_s) = \log n - (n-1)/n$ \emph{exactly}, not ``at most''.
+\paragraph{A per-work certificate a rights-holder can audit.}\label{app:perwork}
+Proposition~\ref{prop:selection} turns the certificate into two numbers the protected party can
+compute without the deployment: $n$, which the deployer declares, and $\Pr_{p_s}[E_x]$, which the
+public anchor determines. For the exact event --- the continuation $x_{>c}$ of a work served for its
+own prefix $x_{\le c}$ --- the second is a closed form, $e^{-S(x_{>c} \mid x_{\le c})}$, and after $m$
+adaptive queries the bound is $m\,n\,e^{-S}$: at the $50$-token window our extraction is scored on,
+$S_w = 159.8$ nats, it is below $10^{-60}$ at $n=64$ even after $m=10^4$ queries. A near-verbatim
+event has no closed form, so the rights-holder samples: $N$ anchor draws on the work's prefixes with
+no event bound $\Pr_{p_s}[E_x] \le 3/N$ at $95\%$, hence $\Pr_q[E_x] \le 3n/N$. Certifying one work at
+$1\%$ with $n=64$ takes $19{,}200$ draws of the anchor; our $n=256$ pools --- $256$ draws on each of
+$100$ passages, none reaching ROUGE-L $0.3$ (Table~\ref{tab:extraction}) --- certify the average passage
+at $3 \times 64/25{,}600 = 0.75\%$. Both computations need only the anchor's weights, which is what
+makes the certificate auditable by the party it protects. The same audit applies to a pathwise-metered
+decoder with $e^{K}$ in place of $n$, where at the published $k = 0.5$ the multiplier is
+$e^{100} \approx 2.7 \times 10^{43}$, and no sample bounds an event below its reciprocal.
 
-Both quoted figures are therefore equalities, and the single thing that turns them back into upper
-bounds is \emph{atoms} in the score distribution: when $t$ candidates share the top score the served
-law spreads over them and both divergences fall. ``How loose is $\log n$'' thus reduces to one
-measurement --- the rate at which the argmax is tied --- and on the headline arm's $32{,}000$
+\paragraph{The channel the certificate prices, measured.}\label{app:channel}
+One response carries at most $\log_2 n$ bits about anything, because $q \le n\,p_s$ for any score,
+so a scorer colluding with a receiver can use selection as a channel and the certificate prices
+exactly that. We measured it rather than leave it a bound. The scorer and the receiver share a key;
+the scorer serves a draw whose keyed hash falls in the cell that encodes the next $b$ bits of a
+message, a draw in a reserved erasure cell if none does, and the receiver reads the bits off the
+served text alone. Every response is an unmodified anchor draw. Over the committed pools, with
+$(b, \epsilon)$ chosen from the i.i.d.\ formulas and never from the data, it realises $1.32$, $2.22$
+and $3.97$ bits per response at $n = 8, 16, 64$ against $\log_2 n = 3, 4, 6$: two-thirds of the bound
+at $n=64$, short of the i.i.d.\ $4.23$ because $12.6\%$ of the draws are duplicates, which hash alike.
+A protected $50$-token window compressed with a public code is $1{,}423$ bits, so it takes $357$
+responses at $n=64$ and $237$ even at capacity; and the $400$-nat per-user odometer stops the channel
+at $\lfloor 400/\ln n \rfloor = 96$ responses and $400/\ln 2 = 577$ bits whatever $n$ is --- less than
+one compressed window. Only a code built on the anchor itself fits under it: the window's surprisal,
+$159.8$ nats, is $231$ bits. The per-response certificate is a real capacity, a simple scheme reaches
+most of it, and what binds a patient user is the composition over queries, $m\log n$.
+
+\paragraph{One certificate, spent on the draw, on the token, or split.}\label{app:hybrid}
+Proposition~\ref{prop:selection} holds for a pool drawn from any law $q_B$ with $q_B \le e^{B}p_s$
+pathwise, so best-of-$n$ over drafts from the pathwise-metered decoder at budget $B$ is certified at
+$\log n + B$, and one certificate $C$ can be split between the draw and the token. At the headline's
+$C = \log 64$ we registered three splits against pure selection --- best-of-$8$ over drafts at
+$B = \log 8$, best-of-$2$ at $B = \log 32$, and the pathwise meter alone at $B = \log 64$, prefix debt
+off since $B$ is below the debt a prompt starts with --- and judged them against the committed opponent
+in one order-averaged pass. The level rises monotonically with the share of $C$ spent on the draw,
+$0.4400$, $0.4610$, $0.4995$ and $0.5550$, and every split loses to pure selection: $-0.1150$ $[-0.1380,
+-0.0915]$ for the meter alone, $-0.0940$ $[-0.1170, -0.0715]$ and $-0.0555$ $[-0.0780, -0.0330]$ for
+the two hybrids. The meter given the whole certificate is judged no better than a single anchor draw
+($0.4400$ against $0.4535$), and at fixed $n=8$ the tilt is worth $-0.0120$ $[-0.0300, +0.0060]$. At a
+budget of a few nats, a certificate buys more as draws than as tokens. The drafts are the first pool
+recorded without the defect of Appendix~\ref{app:judgemethod}, on which the scorer serves more empty
+completions ($39\%$ against $22\%$ at $n=8$); at fixed $n$ that does not separate the arms.
+
+\paragraph{How loose is $\log n$? Nearly tight for long outputs, and strict where draws repeat.}\label{app:realisedkl}
+If no two candidates can share a score the served law is $q(y) = n\,p_s(y)\,F(f(y))^{n-1}$, with $F$
+the score CDF under $p_s$, so $\log\!\big(q(y)/p_s(y)\big)$ approaches $\log n$ as $F \to 1$; and since
+$F(f(y^*))$ under $q$ is then the maximum of $n$ uniforms --- a $\mathrm{Beta}(n,1)$, with
+$\mathbb{E}[\log F] = -1/n$ --- the KL is $\log n - (n-1)/n$. Neither figure is \emph{attained} by a
+discrete $p_s$, because a string can be drawn twice: the top-scoring $y^\star$ with
+$p = p_s(y^\star)$ is served with probability $1-(1-p)^n < np$, so both are upper bounds, approached
+only as $p \to 0$. For $200$-token completions $p$ is astronomically small and a repeated draw
+essentially never occurs; what moves the realised figures there is a tie in the \emph{score}, which
+spreads the served law over the tied set and lowers both divergences. Measured on the
+headline arm's $32{,}000$
 cached rewards (\texttt{analysis/\allowbreak selection\_\allowbreak realised\_\allowbreak kl.py},
-\texttt{results/\allowbreak selection\_\allowbreak realised\_\allowbreak kl.csv}) that rate is
+\texttt{results/\allowbreak selection\_\allowbreak realised\_\allowbreak kl.csv}), that rate is
 $5.0\%$ at $n=2$, peaks at $13.8\%$ at $n=8$, and falls to $7.0\%$ at $n=64$, with a mean tied-set
-size of $1.31$ where it occurs. The figures the paper quotes are exact on $86$--$95\%$ of prompts
-and conservative on the rest. There is no slack to report, which is why we report none.
+size of $1.31$ where it occurs, so the quoted figures are within a vanishing margin of the realised
+ones on $86$--$95\%$ of prompts and conservative on the rest. Where draws \emph{do} repeat --- short
+answers under majority vote, a rule that reads only the answer class, so that its served law can be
+computed rather than bounded --- the realised pathwise divergence at $n=64$ is $0.92$ nats at the
+median question on GSM8K and $1.02$ on TriviaQA, and at most $1.97$ and $2.43$ over $500$
+questions, against a certificate of $4.16$; its KL is $0.73$ and $0.68$ at the median against a
+bound of $3.17$ (post hoc, a plug-in over the $64$ cached draws per question;
+\texttt{results/\allowbreak majority\_\allowbreak realised\_\allowbreak divergence\_\allowbreak note.md}).
 
 A consequence worth stating: the certificate does not depend on the scorer being good, or even on
 its being the same scorer twice. Proposition~\ref{prop:selection} bounds $q(y) \le n\,p_s(y)$ for
@@ -672,6 +862,7 @@ host, and $8.6\%$ across two hosts
 --- cannot loosen it by a single nat. The guarantee is numerically robust exactly where the
 realisation is not.
 
+\subsection{What selection costs}\label{app:sel-cost}
 \paragraph{The cost frontier, and the scorer that is too small to rescue it.}\label{app:frontier}
 Selection's price \emph{in FLOPs} is set by the reward model, not the anchor: at $n$ it runs
 $n(P_s+P_f)(L_p+T)$ forward-pass FLOPs against the metered decoder's $(P_s+P_r)(L_p+T)$, with
@@ -685,11 +876,10 @@ reaches the meter}: its best cell, $n=16$ at $3.68\times$, gains $+0.0395\,[+0.0
 indistinguishable from the meter and five ten-thousandths below it, where the rule asked for above
 --- and \textbf{at matched compute, $n=4$ at $0.92\times$, it loses outright,
 $-0.0395\,[-0.0720,-0.0065]$}. Shrinking the scorer from $7.6$B to $0.494$B costs $-0.0855$ of the
-gain at $n=64$. We predicted three of these four wrong and in the paper's favour, and a fourth
-reading as well: we first read the $0.5$B curve as turning over, since it peaks at $n=16$ and ends
-lower, and drew from it that $\log n$ is not a free knob. \textbf{That reading did not survive} ---
-the registered terminal drop $g(64)-g(16)$ measured $-0.0160\,[-0.0340,+0.0010]$, which reads
-\textsc{flat}, so the warning is withdrawn. What the sample shows as description is a difference in
+gain at $n=64$. We predicted three of these four wrong and in the paper's favour. The $0.5$B curve peaks at $n=16$
+and ends lower, which reads as though $\log n$ is not a free knob; \textbf{that reading did not
+survive} its registered test, the terminal drop $g(64)-g(16)$, which measured
+$-0.0160\,[-0.0340,+0.0010]$ and reads \textsc{flat}. What the sample shows as description is a difference in
 shape: Spearman between gain and $\log n$ is $0.5429$ for the $0.5$B scorer and exactly $1.0$ ---
 strictly monotone at all six grid points --- for each of $1.5$B, $3$B and $7.6$B.
 
@@ -820,10 +1010,10 @@ metered $k=10$                          & $23.7$, $27.6$   & $25.64$  & $0.0031$
 \end{table}
 
 \noindent Two readings, one favourable and one not. The measured ratio is $35.4\times$, not
-$61.3\times$, so as a \emph{ratio of totals} the FLOP model is $1.73\times$ pessimistic. We first
-explained that gap by batching --- that $64$ short completions generated in one batch do not cost
-$64$ sequential ones --- and a second measurement below falsifies it: they do, and the gap is the
-one-time model load sitting in the denominator. And \textbf{the reward pass is $9.3\%$ of
+$61.3\times$, so as a \emph{ratio of totals} the FLOP model is $1.73\times$ pessimistic. The natural
+explanation is batching --- that $64$ short completions generated in one batch do not cost $64$
+sequential ones --- and the timing below falsifies it: they do, and the gap is the one-time model
+load sitting in the denominator. And \textbf{the reward pass is $9.3\%$ of
 selection's wall-clock while the draws are $90.7\%$} --- the opposite of what the parameter counts imply,
 for a mechanical reason: scoring $64$ candidates is one batched forward pass, compute-bound and parallel,
 while drawing them is $64 \times 204$ sequential decode steps. \emph{With a free scorer selection would
@@ -867,9 +1057,8 @@ selection $n=64$, $7.6$B scorer & $458.02$ & $67.24\times$ & $26.93\times$ \\
 6.99n$ seconds at $R^2 = 0.99990$, because the harness realises $n$ as $n$ separate seed groups and
 batches across \emph{prompts} inside each one (\texttt{dap/e1.py}), so there is no amortisation
 across the candidate dimension at all. Whether a server that batched the $n$ candidates together
-could recover it is untested here --- and untested by the $35.4\times$ too, which is the sentence
-we withdrew. \textbf{One draw from the anchor costs what one metered decode costs}, $6.99$s against
-$6.97$s. We first read that as neither path being weight-bound at that width. It is not: our
+could recover it is untested here, and the $35.4\times$ does not test it either. \textbf{One draw from the anchor costs what one metered decode costs}, $6.99$s against
+$6.97$s, and not because neither path is weight-bound at that width: our
 decoder forwards \emph{both} models at every step whatever $k$ is, and the $k=0$ branch consumes
 the risky logits only to build a zero budget, so \textbf{the draw path runs the $8.03$B model and
 discards it}. The two agree because they are doing the same work. That is the right design for an
@@ -927,9 +1116,61 @@ a decoded, judged, leakage or budget number: nothing generated depends on how fa
 Bands in \texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak anchor\_\allowbreak only\_\allowbreak cost.md}, and it got its own prediction wrong too --- we expected the discarded
 model to be $60$--$80\%$ of the path and it is $34\%$.
 
+\paragraph{One request with its draws batched: the clock at both pairs, and the joint frontier.}\label{app:batched}
+Every price above charges $n$ as $n$ decodes. A server that batches a request's candidates runs one
+decode loop of width $nW$ over a shared prompt, and selection never runs the risky model, which the
+meter runs at every step --- a $70$B at the authors' pair. So we timed one
+\texttt{generate(num\_\allowbreak return\_\allowbreak sequences=$n$)} call and one reward pass against the meter at $k=10$,
+every completion exactly $200$ tokens, three repeats per cell, each selection cell on the card and
+beside the meter it is compared with (Table~\ref{tab:batched}; bands in \texttt{results/\allowbreak
+onset\_\allowbreak prediction\_\allowbreak batched\_\allowbreak latency.md}). At one request per
+call selection at $n=64$ serves in $0.220\times$ the $70$B meter's time --- $0.268\times$ the $70$B
+model alone's --- and in $1.28\times$ a single draw's; at the $8$B pair it is $0.514\times$ the meter,
+on the registered band's lower edge and inside the cells' spread, so that band is not read. At eight
+requests per call, where batching has less idle bandwidth to use, every ratio rises, to $0.696\times$
+the $70$B meter and $1.69\times$ the $8$B one: the $21.8\times$ above stays the throughput price, and
+this is the latency. Set beside the order-averaged levels of Figure~\ref{fig:selection}b and the
+certificate, the non-dominated set at both widths is selection at $n \in \{1, 8, 64\}$ and the anchor
+alone: every metered cell at both pairs is beaten on all three axes, at one request per call by
+$n=64$ with a level margin of $+0.0655$ $[+0.0410, +0.0920]$ over the $8$B meter at $k=10$ and
+$+0.1040$ $[+0.0810, +0.1275]$ over the $70$B at $k=20$, and at eight by $n=8$, whose margin excludes
+zero only for $k \le 3$ (\texttt{results/\allowbreak pareto\_\allowbreak frontier.csv}, descriptive). At the authors' recommended pair, where the meter is their byte-level decoder with the $70$B, a request takes $68.69$ s against $4.19$ s for selection at Comma-7B with $n=64$, $0.061\times$ (\texttt{results/\allowbreak batched\_\allowbreak latency\_\allowbreak ab\_\allowbreak note.md}).
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{One request, per-request seconds at one and at eight requests per call, $200$ new tokens
+per completion, H100s; selection is one batched \texttt{generate} and one reward pass, the meter runs
+at $k=10$ with both models every step (AnchoredByte at $k=0.5$ per byte).}\label{tab:batched}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+served by & $W=1$ & $W=8$ \\
+\midrule
+selection, $n=1$ / $8$ / $64$ & $2.41$ / $2.49$ / $3.09$ & $0.336$ / $0.412$ / $1.46$ \\
+meter, $8$B pair & $6.00$ & $0.866$ \\
+meter, $70$B pair & $14.84$ & $2.09$ \\
+$8$B alone / $70$B alone & $3.19$ / $12.19$ & $0.462$ / $1.74$ \\
+AnchoredByte, Comma-7B $+$ $70$B & $68.69$ & $10.91$ \\
+selection at Comma-7B, $n=1$ / $8$ / $64$ & $3.09$ / $3.12$ / $4.19$ & $0.423$ / $0.524$ / --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 % The vetting table and its discussion were cut on 2026-09-19 for the page budget. The arm is
 % unchanged; what is kept is the measurement the Ethics Statement and Section 4 both point at,
 % including the prefix-length caveat, which is the part a deployer can get wrong.
+\paragraph{Stopping early saves draws and buys nothing the matched $n$ does not.}\label{app:adaptive}
+Proposition~\ref{prop:selection} needs only that one of the draws is served, so a rule that draws one
+at a time and stops at the first reward above a threshold $\tau$, capped at $n_{\max}$, is certified at
+$\log n_{\max}$ however early it stops, and its price is its mean number of draws. With $\tau$ a
+quantile of the first draw's reward and $n_{\max}=64$, $q=0.75$ stops after $6.8$ draws on average
+and loses to fixed $n=64$ by $-0.0515$ $[-0.0720, -0.0310]$, but against fixed $n=7$, the same expected
+draws, it reads $+0.0040$ $[-0.0125, +0.0205]$; $q=0.90$ uses $17.4$ draws, $27\%$ of the budget,
+straddles zero against both $n=64$ ($-0.0155$ $[-0.0340, +0.0020]$) and $n=17$. Judged in one
+order-averaged pass against the committed opponent; on the reward alone the same holds, except at
+about two draws, where the threshold beats fixed $n=2$. A deployer who wants fewer draws should
+lower $n$, not add a threshold.
+
+\subsection{The premise, and leakage}\label{app:sel-premise}
 \paragraph{Vetting the anchor: the premise is measurable, and we measured it.}\label{app:vetting}
 Proposition~\ref{prop:selection} bounds $\Pr_q[E]$ by $n\Pr_{p_s}[E]$, so everything rests on the
 anchor's own $\Pr_{p_s}[E]$ being small --- and open-licensed corpora carry only partial provenance
@@ -937,8 +1178,8 @@ guarantees. A deployer need not take it on faith. $\Pr_{p_s}[E]$ is the one quan
 construction measurable with no attack, no risky model and no access to the mechanism: draw from the
 candidate anchor on the protected passages' own prefixes and score near-verbatim recall. Run at one
 protocol --- a hundred raw tokens on the same fifty passages, every model in the anchor slot, seeds
-verified byte-identical to the control's, fixed in advance --- \textbf{all five anchors used here
-read exactly $0.000$}, while \texttt{OLMo-2-7B} leaks on $2$ of $50$ passages and
+verified byte-identical to the control's, fixed in advance --- \textbf{all six anchors used here
+read exactly $0.000$} (TinyComma in the anchor slot of the $70$B's own run), while \texttt{OLMo-2-7B} leaks on $2$ of $50$ passages and
 \texttt{OLMo-2-13B} on $6$, reproducing up to $0.566$ of one, and \texttt{Llama-3.1-70B}, which
 memorised the work in pre-training, leaks on $0.500$. Neither OLMo-2 is admissible as an anchor, and
 that is what makes Section~\ref{sec:experiments}'s exclusion of the open-\emph{data} families a
@@ -948,23 +1189,71 @@ on three points and confounds scale with corpus, so we report it as a pattern ra
 
 \textbf{The prefix length is part of the test.} Screened instead at a $20$-token seed with the
 \texttt{Complete the prefix:} header attached --- about fourteen tokens of the work once the header
-is paid for --- the five anchors read zero and twelve models fine-tuned on these very passages leak
+is paid for --- the licensed anchors read zero and twelve models fine-tuned on these very passages leak
 on most of them, but at that protocol the $70$B \emph{also} reads $0.0000$: a base model that
 memorised a work in pre-training needs a long genuine prefix to re-enter it, so at fourteen tokens
-this screen cannot tell a clean anchor from a model that holds the book. An earlier version of this
-appendix reported the two protocols as one table and claimed a separation across them; that claim
-was a comparison between protocols and it has been withdrawn. The test is also sound but not
+this screen cannot tell a clean anchor from a model that holds the book, and a separation read
+across the two protocols would be a comparison between protocols. The test is also sound but not
 complete: near-verbatim recall at a given prefix length is a lower bound on contamination, so
 \emph{passing} is evidence and not proof while \emph{failing} is a demonstration, and like a
 blocklist it speaks only about the works handed to it. What a deployer takes away is that the
 premise is a measurement rather than an assumption, that it costs $n$ forward passes and no attack,
-and that the prefix length must be quoted beside the number. \textbf{Which prefix, then.} The
-certificate holds prompt by prompt, $\Pr_q[E \mid x] \le n \Pr_{p_s}[E \mid x]$, and the user
-chooses $x$, so the prefix is not a parameter of the test but part of the attack surface: the check
-is sound for a deployment only at the longest genuine prefix that deployment accepts from a user.
-We used a hundred tokens because it is where the one model known to hold the work reproduces it;
-between the fourteen and the hundred we measured nothing, so the check's power as a function of
-prefix length is a curve we have two points of, not a schedule we can recommend below the maximum.
+and that the prefix length must be quoted beside the number.
+
+\textbf{Which prefix, then: measured rather than argued.} The certificate holds prompt by prompt,
+$\Pr_q[E \mid x] \le n \Pr_{p_s}[E \mid x]$, and the user chooses $x$, so the prefix is not a
+parameter of the test but part of the attack surface. We re-ran the screen with the prefix length as
+the only change, from $20$ to $200$ raw tokens, bands fixed in advance (Table~\ref{tab:vetladder};
+\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak vetting\_\allowbreak ladder.md}).
+A hundred tokens was the one protocol with demonstrated power when we chose it, and the ladder prices
+the choice: the $70$B is nearly invisible at $20$ and $35$ tokens ($1$ and $2$ of $50$ passages), is
+seen from $50$ ($11$), and leaks on $31$ at $150$, where the screen at a hundred finds $25$.
+\textbf{The screen is not monotone in the prefix}, against our registered prediction:
+\texttt{OLMo-2-13B} leaks on $6$ passages at $100$ and at $150$ and on $3$ at $200$, a fall of three
+--- exactly the threshold fixed in advance --- at the one rung where only $57$--$94$ tokens of each
+passage remain to be reproduced, a confound declared before any rung ran. It still reproduces one
+passage in full there, so the screen did not go blind; fewer passages crossed its line. No single
+length dominates, so the recommendation is a schedule, not a length: \emph{screen at every prefix
+length up to the longest genuine prefix the deployment accepts}. \textbf{The anchors' pass survives
+a longer adversarial prefix}: all six read $0$ of $50$ at $150$ and at $200$ tokens, twice the prefix
+the screen used. Their rungs \emph{below} a hundred were left out of
+that design, on the premise that a shorter prefix gives less to lock onto; once the screen proved not
+monotone that premise was itself unmeasured, so we ran them too, bands fixed in advance: all six read
+$0$ of $50$ at $20$, $35$, $50$ and $75$ tokens as well, and so pass at every rung from $20$ to $200$. A
+pass at every rung is still evidence, not proof. Twenty-six of the new rungs ran on a second machine
+when this one had no card free, declared before each ran; the memoriser's own seeded draw, re-run there as a host check, reaches recall $0.01$ on $82$ of
+$100$ passages against $78$ here ($z = 0.71$).
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{\textbf{The screen at seven prefix lengths.} Passages of $50$ on which a model leaks (recall
+$> 0$: the maximum over $64$ draws for a model in the anchor slot, the single draw for the $70$B,
+which fits only in the risky slot), with the prefix length the only change; the $100$-token column is
+the screen on record. A dash is a rung not run. The licensed anchors' rungs below $100$ tokens were
+run separately, bands fixed in advance, once the screen proved not monotone; they and the two rungs
+marked $^\dagger$ ran on a second machine, declared before each ran (host check in the text). At $200$ tokens only $57$--$94$ tokens of each passage remain to be
+reproduced.}
+\label{tab:vetladder}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llccccccc@{}}
+\toprule
+ & & \multicolumn{7}{c}{prefix, raw tokens} \\
+\cmidrule(l){3-9}
+model & training data & $20$ & $35$ & $50$ & $75$ & $100$ & $150$ & $200$ \\
+\midrule
+Llama-3.1-70B & memorised in pre-training & $1$ & $2$ & $11$ & $20$ & $25$ & $31$ & $30$ \\
+OLMo-2-13B & open data & $0$ & --- & $1$ & --- & $6$ & $6$ & $3$ \\
+OLMo-2-7B & open data & $0$ & --- & $1$ & --- & $2$ & $1$ & $2$ \\
+\midrule
+TinyComma-1.8B & openly licensed & $0$ & $0$ & $0$ & $0$ & $0$ & $0^\dagger$ & $0$ \\
+Comma-7B & openly licensed & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+Comma-1T & openly licensed & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+KL3M-1.7B & openly licensed & $0$ & $0$ & $0$ & $0$ & $0$ & $0^\dagger$ & $0$ \\
+Pleias-1.2B & openly licensed & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+Pleias-3B & openly licensed & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{What the two charges buy a user under an odometer.}
 Under a per-user cap of $400$ nats --- half the anchor's median surprisal of a protected passage ---
@@ -990,10 +1279,15 @@ Proposition~\ref{prop:selection} multiplies. The $n=256$ column is a later arm w
 fixed in advance, run on the same passages and seeds at \texttt{-{}-batch-size 32}; its grid is
 $1, 8, 64, 256$, so $n=128$ is measured by neither. The certificate permits $256\times$
 amplification of the anchor's own rate there; the anchor's own rate is $0$, and $256 \times 0 = 0$
---- which is why the number to check is the anchor's, not the served model's. \textbf{Reading the
+--- which is why the number to check is the anchor's, not the served model's. A zero on $100$
+passages bounds the per-passage rate below $3.0\%$ at $95\%$ (one-sided) for these passages, seeds and
+prompts; it is an observation about them, not a probability for unseen works, paraphrases or
+adaptive queries, which only the certificate covers. \textbf{Reading the
 rows.} Near-verbatim recall and longest common substring are \emph{means over the $100$ passages},
 which is why the substring row is not an integer; it counts words and its floor is the one or two
-common words any two English texts share. The paraphrase row is a \emph{count} of passages reaching
+common words any two English texts share. It is the only row the selector can move --- no draw in either
+pool has near-verbatim recall above zero or reaches ROUGE-L $0.5$, whichever one is served --- so it is
+given for the corrected selector, re-run on the identical pools (Appendix~\ref{app:contaminated}). The paraphrase row is a \emph{count} of passages reaching
 ROUGE-L $\ge 0.5$, and it was scored only on the grid its arm ran --- $n \in \{1, 8, 64, 256\}$ ---
 so a dash there means \emph{not measured}, never zero.}
 \label{tab:extraction}
@@ -1004,18 +1298,27 @@ so a dash there means \emph{not measured}, never zero.}
 $n$ & $1$ & $4$ & $8$ & $16$ & $32$ & $64$ & $256$ & risky alone \\
 \midrule
 near-verbatim recall     & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.0000$ & $0.3925$ \\
-longest substring, words & $1.59$ & $1.83$ & $1.93$ & $1.91$ & $1.87$ & $1.85$ & $1.72$ & --- \\
+longest substring, words & $1.59$ & $1.76$ & $1.73$ & $1.66$ & $1.58$ & $1.56$ & $1.56$ & --- \\
 ROUGE-L $\ge 0.5$ of $100$ & $0$ & --- & $0$ & --- & --- & $0$ & $0$ & $47$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\paragraph{The zero does not depend on where the line is drawn.}\label{app:rougethreshold}
+The non-literal event is ROUGE-L $\ge 0.5$, fixed in advance. Recounted beside it, never in its
+place, at every threshold from $0.3$ to $0.7$, the \emph{maximum over all $256$ draws} of each clean
+pool reaches none of the $100$ passages, and neither does any served or oracle pick in the four
+clean-anchor files, while the memoriser alone reaches $71$, $55$, $47$, $43$ and $39$ of them at $0.3$,
+$0.4$, $0.5$, $0.6$ and $0.7$. The contrast is the anchor's, not the threshold's.
+
+\subsection{Breadth: anchors, tasks without a judge, languages}\label{app:sel-breadth}
 \paragraph{Does the climb to the headline $n$ hold away from the two anchors measured there?}
 The breadth arm is quantified at $n=8$ and the headline at $n=64$, and until now only TinyComma and
 Comma-7B had an $n=64$ curve at all --- so nothing distinguished \emph{the mechanism climbs} from
 \emph{the two anchors taken there climb}. The three anchors that stop at $n=8$ \emph{and} pass the
 admission criterion were extended to $n=64$ on the same $500$ prompts, reward, judges and seeds, with
-bands fixed in advance; Comma-1T is excluded because the gate fails it at $16.6\%$ empty. Read on the
+bands fixed in advance; Comma-1T is excluded because the gate fails it ($31.6\%$ empty on the true
+generations). Read on the
 paired $g(64)-g(8)$ under judge~B \emph{within} each new pass (Table~\ref{tab:climb}):
 
 \begin{table}[ht]
@@ -1075,6 +1378,23 @@ decimals is better read as a fortunate draw, and $0.013$ is the honest scale of 
 support. We do not pool the two draws: pooling was not specified in advance, the arms judge disjoint
 candidate sets, and averaging a reading with its own failed replication is the post-hoc rescue the
 protocol excluded.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.80\textwidth]{figures/judge_free.pdf}
+\caption{\textbf{No judge --- and where the anchor cannot do the task, no $n$ rescues it.}
+\textbf{(a, b)} Exact match against $n$, $95\%$ bands; Comma-7B draws, \texttt{Qwen2.5-7B-Instruct}
+scores; dotted, the risky model alone. GSM8K ($8$-shot, $500$): majority vote lifts
+$0.320 \to 0.546$ for $3.47$ certified nats, $3.4\times$ the pointwise reward $[2.20, 8.91]$.
+TriviaQA: it lifts $4.2\times$ less, and this $7$B reward \emph{falls} with $n$ (Spearman $-0.607$),
+excluding zero on the wrong side at $n=16$; $14$B does not (App.~\ref{app:selection}). \textbf{(c)}
+Both mechanisms at \texttt{TinyComma-1.8B}, TriviaQA, $T_{\max}=24$; $x$ is selection's KL
+\emph{bound} against the meter's \emph{measured} spend. \textbf{The meter wins, $0.618$ against
+$0.190$, and how it wins is the thesis}: it is the anchor's own $0.112$ at $k=0.5$ and $k=1$, and
+reaches $0.618$ only at $k=20$, where it \emph{is} the risky model, certified at $480$ nats for a
+$24$-token answer.}
+\label{fig:judgefree}
+\end{figure}
 
 \paragraph{The judge-free axis: protocol and the full grids.}\label{app:judgefree}
 
@@ -1223,8 +1543,8 @@ the mechanism is measurably useful. No leakage or protected-text $s(x)$ number c
 arm: TriviaQA answers are not protected text, and every cap here is $k\,T_{\max}$ at
 $T_{\max}=24$.
 
-\textbf{Intervals on the two lift ratios, and one ratio that may not be quoted.} Two reports ask
-for uncertainty on a ratio of two estimates. The two the paper quotes are different \emph{kinds} of
+\textbf{Intervals on the two lift ratios, and one ratio that may not be quoted.} The two ratios
+the paper quotes are different \emph{kinds} of
 quantity and are treated accordingly
 (\texttt{analysis/\allowbreak lift\_\allowbreak ratio\_\allowbreak interval.py}). Within GSM8K,
 majority vote and the pointwise reward select from the \emph{same} draws on the \emph{same} $500$
@@ -1323,6 +1643,7 @@ What this does \emph{not} establish is that selection serves good French. The an
 these languages is unmeasured, and that is the open question this arm leaves in place of the one it
 answers.
 
+\subsection{When the premise fails}\label{app:sel-contaminated}
 \paragraph{What the certificate delivers when its premise fails.}\label{app:contaminated}
 Every leakage result above has a clean anchor, and Proposition~\ref{prop:selection} bounds an
 \emph{event}: $\Pr_q[E] \le n \Pr_{p_s}[E]$. With $\Pr_{p_s}[E] = 0$ that inequality is satisfied by
@@ -1332,10 +1653,10 @@ over \textbf{twelve deliberately memorised anchors} --- LoRA copies fine-tuned o
 passages, spanning GPT-NeoX, Llama, Mixtral, Phi and Qwen at $170$M to $7$B --- on the same $100$
 passages and seeds, all twelve reproducing the memorising model's own control at $0.3925$ mean
 recall, which is twelve independent checks that only the anchor changed.
-\textbf{A defect of ours, and every number here is after its repair}: until 2026-09-23 the adversarial
-selector read a left-padded batch as if it were right-padded, so it ranked partly on padding; the
-arm was re-run with the corrected selector to $n=256$, and no number from the defective run is quoted
-beside these. Table~\ref{tab:contam} and Figure~\ref{fig:safety}(b) give the result for
+\textbf{The selector indexes each padded candidate from its first real token}: a version that read
+the left-padded batch as right-padded ranked partly on padding, and no number from the defective run
+is quoted; the
+arm was re-run with the corrected selector to $n=256$. Table~\ref{tab:contam} and Figure~\ref{fig:safety}(b) give the result for
 $E = \{\text{near-verbatim recall} \ge 0.8\}$, most of the passage reproduced.
 
 \begin{table}[t]
@@ -1343,18 +1664,19 @@ $E = \{\text{near-verbatim recall} \ge 0.8\}$, most of the passage reproduced.
 \caption{Contaminated anchors, corrected selector. The rate of $E=\{\text{near-verbatim recall}\ge 0.8\}$
 served at each $n$ over the same $100$ passages; $\hat p$, the anchor's own per-draw rate of $E$ over
 its whole pool of $25{,}600$ draws; the fraction of passages whose $256$ draws hold any draw in $E$;
-and the realised factor $A(n)$ against the one-draw rate, defined where that rate is non-zero. The
-certificate permits $n$.}\label{tab:contam}
+and the realised factor $A(n)$ against the one-draw rate, defined where that rate is non-zero, on this
+draw and, after the slash, on a second, independent draw under a disjoint seed with nothing else
+changed. The certificate permits $n$.}\label{tab:contam}
 \begin{tabular}{lrrrrrrrr}
 \toprule
 anchor & $n=1$ & $8$ & $64$ & $256$ & $\hat p$ & pool holds $E$ & $A(64)$ & $A(256)$ \\
 \midrule
-Qwen2.5-7B & $0.10$ & $0.15$ & $0.15$ & $0.15$ & $0.1031$ & $0.17$ & $1.5$ & $1.5$ \\
-Llama-3.2-3B & $0.05$ & $0.11$ & $0.13$ & $0.15$ & $0.0469$ & $0.16$ & $2.6$ & $3.0$ \\
-Pleias-1.2B & $0.04$ & $0.05$ & $0.05$ & $0.05$ & $0.0447$ & $0.05$ & $1.25$ & $1.25$ \\
-Pleias-350M & $0.02$ & $0.05$ & $0.05$ & $0.05$ & $0.0417$ & $0.05$ & $2.5$ & $2.5$ \\
-Llama-3.2-1B & $0.01$ & $0.04$ & $0.07$ & $0.10$ & $0.0179$ & $0.12$ & $7.0$ & $10.0$ \\
-Phi-3.5-mini & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.0068$ & $0.02$ & $1.0$ & $2.0$ \\
+Qwen2.5-7B & $0.10$ & $0.15$ & $0.15$ & $0.15$ & $0.1031$ & $0.17$ & $1.5$\,/\,$1.36$ & $1.5$\,/\,$1.36$ \\
+Llama-3.2-3B & $0.05$ & $0.11$ & $0.13$ & $0.15$ & $0.0469$ & $0.16$ & $2.6$\,/\,$1.83$ & $3.0$\,/\,$1.83$ \\
+Pleias-1.2B & $0.04$ & $0.05$ & $0.05$ & $0.05$ & $0.0447$ & $0.05$ & $1.25$\,/\,$1.0$ & $1.25$\,/\,$1.0$ \\
+Pleias-350M & $0.02$ & $0.05$ & $0.05$ & $0.05$ & $0.0417$ & $0.05$ & $2.5$\,/\,$1.0$ & $2.5$\,/\,$1.0$ \\
+Llama-3.2-1B & $0.01$ & $0.04$ & $0.07$ & $0.10$ & $0.0179$ & $0.12$ & $7.0$\,/\,$3.0$ & $10.0$\,/\,$4.0$ \\
+Phi-3.5-mini & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.0068$ & $0.02$ & $1.0$\,/\,--- & $2.0$\,/\,--- \\
 KL3M-1.7B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
 KL3M-170M & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
 KL3M-3.7B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- \\
@@ -1369,31 +1691,76 @@ OpenCALM-3B & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.0000$ & $0.00$ & --- & --- 
 $n \times 0 = 0$ is met at every $n$ and cannot be tested. At the six that do, an adversary maximising
 the memorising model's own likelihood over $64$ draws raises the anchor's one-draw rate by $1.0$ to
 $7.0\times$, at most $7.0/64$ of the amplification the certificate allows, and by $1.25$ to $10.0\times$
-at $n=256$. The largest factor divides by one passage in a hundred: against the per-draw rate over the
-whole pool the same served rates are $1.12$ to $3.91\times$ at $n=64$ and $1.12$ to $5.59\times$ at
-$256$. \textbf{Where an anchor leaks at all, the bound is vacuous by $n=256$} --- $256\hat p$
-runs from $1.73$ to $26.40$ --- and what caps the realised rate is not $n$ but what the pool holds:
+at $n=256$. \textbf{A second, independent draw reads less, and the reason is the denominator.}
+Re-drawn under a disjoint seed with nothing else changed, bands fixed in advance, the same factors are
+$1.0$ to $3.0\times$ at $n=64$ and $1.0$ to $4.0\times$ at $256$, over the five anchors whose one-draw
+rate is non-zero there: Llama-3.2-1B's one-draw base moved from one passage to three while its per-draw
+rate over the pool moved from $0.0179$ to $0.0182$. Against that per-draw rate the served rates are
+$1.12$ to $3.91\times$ at $n=64$ and $1.12$ to $5.59\times$ at $256$ on the first draw, and $1.12$ to
+$4.95\times$ and $1.12$ to $6.61\times$ on the second. \textbf{Where an anchor leaks at all, the bound
+is vacuous by $n=256$} --- $256\hat p$ runs from $1.73$ to $26.40$, and from $1.85$ to $26.13$ on the
+second draw --- and what caps the realised rate is not $n$ but what the pool holds:
 the served rate at $256$ tracks the fraction of passages with any leaking draw, because the corrected
 selector finds one whenever it exists. Selection is a multiplier on what the anchor already leaks,
 not a floor under it, and the actionable consequence is that the anchor is the thing to vet.
 
 Two limits. The factors are counts over $100$ passages --- $A(64) = 7.0$ is seven passages over
-one, and one more at $n=1$ would have read $3.5$ --- so the magnitude is what to quote, not the
-boundary; the band we registered, $A(64) \le 4$ at every anchor, is crossed by that one anchor. And
-the served rate does not measurably grow from $64$ to $256$: the most any anchor gains is three
-passages against none lost ($p = 0.25$).
+one, and one more at $n=1$ would have read $3.5$; on the second draw the base was three and the
+factor $3.0$ --- so the magnitude is what to quote, not the boundary; the band we registered,
+$A(64) \le 4$ at every anchor, is crossed by that one anchor on the first draw and by none on the
+second: whether the realised factor stays inside it is \emph{draw-dependent}, and we give both readings
+rather than either. Both draws agree that the same six anchors never enter $E$, that the bound is
+vacuous wherever one does, and that the served rate does not measurably grow from $64$ to $256$: the
+most any anchor gains is three passages against none lost ($p = 0.25$), on each draw.
 
 \subsection{The judge, in full}\label{app:judgemethod}
+\paragraph{Protocol.} Every judged number compares one arm's served text with the fixed opponent's
+on the same prompt. The judge receives a single user turn, in its own chat template:
+\begin{quote}\footnotesize\ttfamily
+You are grading two candidate responses to the same instruction.\\
+Instruction: \{prompt\}\quad Response A: \{a\}\quad Response B: \{b\}\\
+Which response is the better answer to the instruction? Judge helpfulness, coherence and factual
+accuracy. Ignore length and formatting. If they are of equal quality, answer Tie. Reply with
+exactly one word: A, B, or Tie.
+\end{quote}
+Each field is truncated to $1{,}200$ characters; the prompt is the corpus prompt with the harness's
+\texttt{Complete the prefix:} header removed; decoding is greedy with at most four new tokens, and
+the verdict is the first letter of the reply, anything else a tie. A win scores $1$, a tie
+$\tfrac12$, a loss $0$, and an order-averaged score shows the item in both orders and averages the
+two (\texttt{analysis/\allowbreak utility.py}, \texttt{analysis/\allowbreak order\_\allowbreak averaged\_\allowbreak h2h.py}).
+
+\paragraph{A recording defect in the judged text, and its repair.} The harness recorded each
+generation by slicing a left-padded batch row at that row's own prompt length rather than at the
+padded length, so a row with $p$ pad tokens carried the last $p$ tokens of its prompt into the
+recorded generation. On the headline prompts the opponent's and the anchor's texts carry such an
+echo on $73.6\%$ of prompts (mean $10.7$ characters), the $k=10$ meter's on $32.6\%$, and all $64$
+candidates of a prompt share one. Nothing served was affected --- the decoder never saw the record ---
+but the judge and the reward model read it, and an empty draw with an echo looked non-empty. The
+slicing is fixed, and every recorded generation is recovered exactly as the decoded row minus its
+prompt, on $100\%$ of records read. The head-to-heads of the main text and Table~\ref{tab:served} are
+on the repaired text; single-order sweeps judged within one run say where they are shown.
+\textbf{Every older order-averaged reading was re-judged on the repaired text} with nothing else
+changed --- the five-judge panel, the opponent ladder under judges~B and~C, and six workload passes,
+twenty paired differences in all --- and \textbf{all twenty keep their sign class}; the panel still
+reads four positive judges of five, Mixtral the exception at $-0.0015$ $[-0.0455, +0.0420]$, and
+AlpacaEval's difference moves from $-0.0339$ to $-0.0329$ $[-0.0528, -0.0127]$. Of the forty
+single-arm gains beneath them, three change class: selection's on MT-Bench ($+0.0375$ $[-0.0125,
++0.0875]$) and on CoTaEval-QA ($+0.0070$ $[-0.0165, +0.0300]$) now cover zero, and the meter's on
+the public books falls below it ($-0.0275$ $[-0.0470, -0.0080]$). Appendix~\ref{app:workload}
+quotes the numbers on record, and says where these change what it concludes.
+
 \paragraph{Position dominates, and the correction is asymmetric.}
-Figure~\ref{fig:selection}(b) is in \emph{levels} for one reason: Theorem~\ref{thm:nfl} bounds a mean
-utility and a gain has no frontier to sit under. Levels are unreliable only \emph{between} passes, and
-every number the paper claims is an order-averaged gain. Re-judging in \emph{both} orders --- $2{,}000$
+Figure~\ref{fig:selection}(b) and Table~\ref{tab:served} are in \emph{levels}, which compare within
+one order-averaged pass against one opponent: a greedy judge shown both orders is a function of the
+two texts alone, so an arm's level does not depend on which other arms are judged, and the risky
+model's own second draw reads $0.504$ against its first. Levels are unreliable between passes and
+under single-order judging, which is what follows. Re-judging in \emph{both} orders --- $2{,}000$
 calls on one arm and $4{,}000$ on the head-to-head, bands fixed in advance --- shows position bias
 \citep{zheng2023judging} dominating it: the same two texts win $261$ of $500$ shown second and $24$ shown
 first (about a third of items tie either way, which is why the counts do not partition $500$), only
 $29.2\%$ of items get a mutually consistent verdict, and the first slot wins $12.7\%$ of \emph{decided}
-comparisons. An absolute judged level is therefore largely a statement about slot order, which is why
-nothing above is quoted as one. The correction is \emph{not} symmetric between the two mechanisms, and we
+comparisons. A single-order level is therefore largely a statement about slot order, which is why none is
+quoted as one. The correction is \emph{not} symmetric between the two mechanisms, and we
 specified in advance the wrong prediction about it: order-averaging the judge-A arm leaves $+0.0405$
 $[+0.019, +0.063]$ against the $+0.081$ on record, but it moves selection's head-to-head gain by a factor
 of $0.95$ and the metered decoder's by $0.41$, so their difference grows rather than shrinks. The likely
@@ -1402,7 +1769,7 @@ judge little to read but slot order. \textbf{A judged gain also has a floor}: a 
 $n$-grid moves one by $0.04$ to $0.07$ ($+0.111$ and $+0.072$ at Comma-7B), so a lone estimate of that
 size is not evidence. The head-to-head difference escapes it by being paired within one pass --- at
 disjoint seeds it reads $+0.0635$ against $+0.0645$, under judge~C $+0.0620$ and $+0.1000$, all three
-excluding zero (Appendix~\ref{app:h2hrepeat}). Read as a ratio instead, the two gains of the headline pass are
+excluding zero (Appendix~\ref{app:h2hrepeat}). Read as a ratio instead, the two gains of the committed pass are
 $2.61\times$ $[1.48, 7.45]$ --- a paired bootstrap over prompts, undefined on $0.12\%$ of resamples,
 with Fieller's interval $[1.48, 7.62]$ beside it --- which excludes one but spans a factor of five,
 because its denominator's interval comes within $0.014$ of zero. That is why the claim is carried

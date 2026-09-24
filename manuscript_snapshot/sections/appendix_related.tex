@@ -5,9 +5,8 @@
 
 \section{Related work in full}\label{app:related}
 
-One report asks for the defences side by side. Table~\ref{tab:related} sorts them by what their
-guarantee is about, which is the axis this paper's argument runs on; the paragraphs below give each
-one's detail and our measurements.
+Table~\ref{tab:related} sorts the defences by what their guarantee is about, which is the axis this
+paper's argument runs on; the paragraphs below give each one's detail and our measurements.
 
 \begin{table}[ht]
 \centering\footnotesize
@@ -50,12 +49,23 @@ actually has --- for every order of the same per-step charge, from KL to max-div
 certificate becomes vacuous at the same budget, so a stronger charge buys precision below the
 threshold and never moves it. Neither result subsumes the other; together they leave a deployer with
 one lever that moves the threshold, a smaller budget, which Theorem~\ref{thm:nfl} prices and
-Section~\ref{sec:orders} measures. \citet{cohen2026barriers} is the closer structural parallel, and
-not the one we first read it as: its non-composition is \emph{autoregressive} rather than across
+Section~\ref{sec:orders} measures. \citet{cohen2026barriers} is the closer structural parallel: its non-composition is \emph{autoregressive} rather than across
 queries, so imposing counterfactual credit attribution on the next-token predictor does not make the
 sequence-level model satisfy it. Ours is the same shape for a different quantity --- a per-step charge
 honoured at every step still leaves the sequence-level event $\{\text{output}=x\}$ unprotected once
 the budget reaches $S(x)$ --- priced in nats for a single query rather than stated as a barrier.
+
+\paragraph{Consensus sampling, the closest neighbour.}\label{app:kalai}
+\citet{kalai2026consensus} aggregate $k$ generative models, of which an unknown subset is assumed
+safe, and serve a sample only where enough of them assign it comparable probability, abstaining
+otherwise; the served risk is then competitive with that of the safe subset. The instinct is ours ---
+certify the output relative to models that did not misbehave, not by metering each token --- and the
+premises are opposite. They need several models and no knowledge of which are safe, and they pay by
+abstaining, which is how their guarantee can hold without naming a safe model; we need one
+\emph{named} safe model, never abstain, and pay in draws. Their certificate is relative to the safe
+subset as ours is relative to the anchor, so both inherit whatever that model holds, and ours is
+checkable in advance by the vetting of Appendix~\ref{app:vetting}. Neither result implies the other,
+and a deployer with a vetted anchor and several risky models could run both.
 
 \paragraph{Inference-time defences that spend no divergence budget at all.}
 Two recent methods sit in this paper's slot --- decode-time, no retraining --- and reach it without
@@ -71,8 +81,8 @@ about the \emph{catalogue supplied} --- a sequence that is memorised, or an $n$-
 --- and not about the served law relative to a safe model. TokenSwap's exponential decay is the
 closest any of them comes to a certificate, and it is a statement about a named memorised string
 rather than a bound on $q(y)/p_s(y)$ for every $y$; it says nothing about an unlisted work, a
-paraphrase, or an adversary who supplies the prefix. \textbf{We have now measured TokenSwap, and
-it beats this paper's mechanism on both axes we can compare.} We reimplemented it from Algorithm~1
+paraphrase, or an adversary who supplies the prefix. \textbf{Measured, TokenSwap beats this paper's
+mechanism on both axes we can compare.} We reimplemented it from Algorithm~1
 with their published $110$-word $G$, on the same $100$ protected passages and the same $850$
 ordinary prompts as our blocklist arm. It suppresses \emph{completely} --- near-verbatim recall
 $0.0000$, ROUGE-L $\ge 0.5$ on $0$ of $100$ and $\ge 0.3$ on $0$, against $45$ and $69$ for the
@@ -110,8 +120,11 @@ abstention \citep{zhang2025bloomscrub}; SILO isolates legal risk in a nonparamet
 across two model families; the level that benchmark omits is the certified one, which is exactly where
 a low measured leakage and a vacuous certificate can coexist. The closest empirical precedent for
 Section~\ref{sec:frontier}'s accounting is VA3 \citep{li2024va3}, which amplifies a probabilistic
-copyright guarantee for text-to-image models through repeated interaction; what composes there is a
-per-sample probability accumulating over retries, where a budget adds by construction. That a KL bound
+copyright guarantee for text-to-image models through repeated interaction. It is the attacker's side
+of Proposition~\ref{prop:selection}: choosing among $m$ samples raises a per-sample probability $p$ to
+$1-(1-p)^m \le mp$, the factor our selection rule pays as $\log n$ and our composition bound charges
+per query (Section~\ref{sec:compose}); what composes there is a per-sample probability accumulating
+over retries, where a budget adds by construction. That a KL bound
 does not imply a worst-case event bound is itself classical
 \citep{sason2016fdivergence,vanerven2014renyi}, and the differential-privacy literature has developed
 the conversions and their costs; our contribution is not the inequality but which budgets survive the
@@ -175,7 +188,7 @@ They are complements, not competitors: nothing stops a deployer running both, an
 runs only one should know which of the two questions it has answered.
 
 \paragraph{CP-Fuse, measured on leakage and deliberately not on utility.}\label{app:cpfuse}
-Three reports ask for CP-$\Delta$/CP-$k$ fusion head to head. We rebuilt it from
+We rebuilt CP-$\Delta$/CP-$k$ fusion from
 \citet{abad2025cpfuse}'s description --- not their code --- as two LoRA copies of the risky model,
 each fine-tuned on one of two disjoint halves of the protected passages and fused at every step by
 the balancing rule, and ran this paper's extraction protocol on $60$ passages. Each shard model
@@ -204,13 +217,14 @@ Self-consistency \citep{wang2023selfconsistency} samples $n$ reasoning paths and
 answer; a mode is a score, and the proposition assumes nothing whatever about the score, so
 self-consistency satisfies $q(y) \le n\,p_s(y)$ and carries a pathwise certificate of exactly
 $\log n$ against the model it samples from. That matters for three reasons. It is, as far as we can
-tell, the most widely deployed inference-time decoding method in the field, so the property is already
-running in production rather than proposed for adoption. It needs no reward model, which is where the
+tell, the most widely deployed inference-time decoding method in the field --- but as deployed it
+samples web-trained models, relative to which $\log n$ certifies nothing about copyright, so the
+property becomes a guarantee only once the model sampled is a safe one. It needs no reward model, which is where the
 serving cost of the judged instance sits, and on a task with a checkable answer it beats every reward
 cell we priced (Appendix~\ref{app:scorerfree}). And it is the sharpest form of our novelty claim: the
 literature on best-of-$n$ prices $\log n$ as a \emph{cost} --- the budget spent before reward
 overoptimisation \citep{gao2023scaling,beirami2025bestofn}, or the one an attacker spends to jailbreak
 \citep{hughes2024bestofn} --- and the same inequality read in the other direction is a copyright
-guarantee that the method's users already have and nobody has claimed. What we add is the reading, the
+guarantee that a user running the method over a safe model already has and nobody has claimed. What we add is the reading, the
 comparison against a metered decoder on one divergence axis, and the measurement; the mechanism is
 theirs.
