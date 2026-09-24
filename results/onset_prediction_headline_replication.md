@@ -86,6 +86,17 @@ DOES NOT REPLICATE: the headline difference is reported with both draws, the sec
 sentence that rests on it is scoped to what both support; the two draws are **never pooled**
 (caution (ap)). REVERSES: the same, and the abstract's head-to-head sentence is rewritten.
 
+*Added 2026-09-24 14:50 IST, before the new pool was complete or scored:* **two secondary readings.**
+The hybrid arm (feat-189, generated on the fixed harness) showed the committed reward rating an
+**empty** completion above a typical anchor completion --- median log-odds `-12.1` against `-26.8`
+over its `4,000` drafts --- so best-of-`n` serves an empty draft whenever one exists. Every pool on
+record masked this, because its empty draws carried the prompt's tail (caution (bc)); this
+replication's pool is the first on record recorded correctly, so its primary readings can move for a
+reason that has nothing to do with the headline. **R1b** and **R2b** repeat R1 and R2 with empty
+candidates excluded from the argmax (`analysis/nonempty_rewards.py`: reward `-1e9` where
+`n_words == 0`, so an empty draw is served only if all `64` are empty), same bands, **reported beside
+the primaries and never in their place**; the primaries stay as registered.
+
 ## Excluded in advance
 
 - Pooling the two draws; choosing R1 or R2 after reading either.
