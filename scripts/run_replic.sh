@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.." || exit 1
 . scripts/gpu_env.sh
 set -a; . ./.env; set +a
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache
-M=~/v/logs; R=output/replic
+M=${REPLIC_MARKS:-$HOME/v/logs}; R=output/replic
 mkdir -p output/logs $R $M
 S="--seeds 52 53 54 --max-new-tokens 200 --cap-val 0 --cap-test 0 --cap-attack-train 0 --trust-remote-code"
 ALL="--cap-neutral 200 --cap-creative 150 --cap-factual 150"
@@ -37,6 +37,7 @@ case $Q in
     job met_k10  $H1 --k-values 10  --trajectories-per-prompt 1 $ALL --batch-size 48 $S --output-dir $R/conc_k10
     job anchor_k0 $H1 --k-values 0.0 --trajectories-per-prompt 1 $ALL --batch-size 48 $S --output-dir $R/anchor_k0
     job opp      $H1 --k-values -1  --trajectories-per-prompt 1 $ALL --batch-size 48 $S --output-dir $R/opp
+    [ -n "${REPLIC_GEN_ONLY:-}" ] && exit 0   # generation moved to another host; judges run where the reward is
     waitfor reward && job judge_R2 $H2H --baseline-dir $R/opp --tag replic_opp ;;
   b)
     job pool_creative $H1 --k-values 0.0 --trajectories-per-prompt 64 --cap-neutral 0 --cap-creative 150 --cap-factual 0 --batch-size 64 $S --output-dir $R/pool_creative

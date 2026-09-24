@@ -67,7 +67,7 @@ def load_candidates(run_dir, k="0", deecho=False):
             m, a = r["metadata"], r["aggregate"]
             out.setdefault(m["prompt_id"], []).append(
                 (m["seed"], cls, served_prompt(a),
-                 served_generation(a, r["prefix_analysis"]["prefix_text"]) if deecho
+                 served_generation(a, r.get("prefix_analysis", {}).get("prefix_text", "")) if deecho
                  else a.get("generation") or ""))
     return {p: sorted(v) for p, v in out.items()}
 
@@ -84,7 +84,7 @@ def load_baseline(run_dir, deecho=False, rank=0):
         for line in open(path):
             r = json.loads(line)
             m, a = r["metadata"], r["aggregate"]
-            gen = (served_generation(a, r["prefix_analysis"]["prefix_text"]) if deecho
+            gen = (served_generation(a, r.get("prefix_analysis", {}).get("prefix_text", "")) if deecho
                    else a.get("generation") or "")
             out.setdefault(m["prompt_id"], []).append((m["seed"], gen))
     return {p: sorted(v)[rank][1] for p, v in out.items() if len(v) > rank}
