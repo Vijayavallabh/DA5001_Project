@@ -702,11 +702,12 @@ def selection_forest_rows():
         return float(r[g]), float(r[f"{g}_lo95"]), float(r[f"{g}_hi95"])
 
     JB = "Phi-3.5-mini-instruct"
-    # The entry gate as re-measured on de-echoed text (results/selection_breadth_deecho_note.md):
-    # an empty draw that carried the prompt's tail looked non-empty, so the committed CSV passed
-    # Comma-7B at 3.0% where its text is empty on 18.4%. Judged gains are identical in both files.
-    breadth = {r["anchor"]: r for r in rows_of("selection_breadth_deecho.csv") if JB in r["judge"]}
-    scal64 = next(r for r in rows_of("selection_scaling.csv")
+    # Every judged row on recovered text (results/forest_deecho_note.md): the entry gate re-measured
+    # on the true generations (an empty draw that carried the prompt's tail looked non-empty, so the
+    # committed CSV passed Comma-7B at 3.0% where its text is empty on 18.4%), and the gains
+    # re-judged with the judge reading the repaired text, same picks, same judges, same seed.
+    breadth = {r["anchor"]: r for r in rows_of("selection_breadth_rejudged.csv") if JB in r["judge"]}
+    scal64 = next(r for r in rows_of("selection_scaling_deecho.csv")
                   if JB in r["judge"] and int(float(r["n"])) == 64)
 
     def dom(name, tag=""):
@@ -737,9 +738,9 @@ def selection_forest_rows():
     add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64), gate=e64 < 0.05)
 
     groups.append((len(items), "other workloads, judge B, $n = 8$"))
-    add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca.csv"), math.log(8))
-    add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b.csv"), math.log(8))
-    add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench.csv"), math.log(8))
+    add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca_deecho.csv"), math.log(8))
+    add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b_deecho.csv"), math.log(8))
+    add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench_deecho.csv"), math.log(8))
 
     groups.append((len(items), "exact match, no judge, Comma-7B"))
     V, T = "selection_verifiable_comma7b.csv", "selection_verifiable_tqa_comma7b.csv"

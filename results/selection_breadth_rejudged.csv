@@ -1,0 +1,13 @@
+anchor,model,judge,n,u_n1,u_n,gain,gain_lo95,gain_hi95,mean_tokens_n1,empty_frac_n1,n_prompts,entry_gate,gain_nonempty,gain_nonempty_lo95,gain_nonempty_hi95,n_nonempty
+TinyComma-1.8B (audited),jacquelinehe/tinycomma-1.8b-llama3-tokenizer,Meta-Llama-3.1-8B-Instruct,8,0.424,0.52,0.096,0.05,0.141,199.4,0.146,500,FAIL,0.1066,0.0574,0.1557,427
+TinyComma-1.8B (audited),jacquelinehe/tinycomma-1.8b-llama3-tokenizer,Phi-3.5-mini-instruct,8,0.423,0.496,0.073,0.03,0.12,199.4,0.146,500,FAIL,0.0785,0.0281,0.1276,427
+Pleias-1.2B,PleIAs/Pleias-1.2b-Preview,Meta-Llama-3.1-8B-Instruct,8,0.317,0.414,0.097,0.052,0.143,203.3,0.0,500,PASS,0.097,0.052,0.143,500
+Pleias-1.2B,PleIAs/Pleias-1.2b-Preview,Phi-3.5-mini-instruct,8,0.399,0.436,0.037,-0.006,0.077,203.3,0.0,500,PASS,0.037,-0.003,0.077,500
+KL3M-1.7B,alea-institute/kl3m-003-1.7b,Meta-Llama-3.1-8B-Instruct,8,0.223,0.259,0.036,-0.002,0.073,206.9,0.002,500,PASS,0.0361,-0.002,0.0741,499
+KL3M-1.7B,alea-institute/kl3m-003-1.7b,Phi-3.5-mini-instruct,8,0.289,0.319,0.03,-0.003,0.063,206.9,0.002,500,PASS,0.0301,-0.005,0.0661,499
+Comma-7B,common-pile/comma-v0.1-2t,Meta-Llama-3.1-8B-Instruct,8,0.477,0.618,0.141,0.095,0.187,203.6,0.184,500,FAIL,0.185,0.1348,0.2353,408
+Comma-7B,common-pile/comma-v0.1-2t,Phi-3.5-mini-instruct,8,0.445,0.571,0.126,0.087,0.164,203.6,0.184,500,FAIL,0.114,0.0735,0.1556,408
+Comma-7B (1T tokens),common-pile/comma-v0.1-1t,Meta-Llama-3.1-8B-Instruct,8,0.476,0.592,0.116,0.073,0.157,202.0,0.316,500,FAIL,0.1769,0.1213,0.2295,342
+Comma-7B (1T tokens),common-pile/comma-v0.1-1t,Phi-3.5-mini-instruct,8,0.473,0.509,0.036,0.001,0.074,202.0,0.316,500,FAIL,0.0322,-0.0175,0.0833,342
+Pleias-3B,PleIAs/Pleias-3b-Preview,Meta-Llama-3.1-8B-Instruct,8,0.296,0.404,0.108,0.07,0.15,201.8,0.0,500,PASS,0.108,0.068,0.152,500
+Pleias-3B,PleIAs/Pleias-3b-Preview,Phi-3.5-mini-instruct,8,0.401,0.455,0.054,0.013,0.094,201.8,0.0,500,PASS,0.054,0.014,0.096,500
