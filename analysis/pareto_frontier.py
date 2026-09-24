@@ -67,6 +67,10 @@ def build(res):
     lv = {a: sum(v.values()) / len(v) for a, v in u.items()}
     lat = {}
     for r in rows(os.path.join(res, "batched_latency.csv")):
+        # each part timed its own selection cell on its own card; the frontier takes selection and
+        # the 8B pair from the single-card part and only the 70B cells from the 70B part
+        if r.get("part", "single") == "70b" and r["arm"] == "SEL":
+            continue
         pair = "70b" if "70B" in r["risky"] else "8b" if r["risky"] != "-" else ""
         lat[(r["arm"], pair, int(r["W"]), int(r["n"]))] = (float(r["per_request_s"]),
                                                           float(r["gen_s"]) / int(r["W"]))
@@ -99,6 +103,7 @@ def build(res):
             (m, lo, hi), b = max(ms, key=lambda x: (x[0][0], x[0][1]))   # largest margin
             r.update(best_dominator=b, level_margin=round(m, 4), margin_lo95=round(lo, 4),
                      margin_hi95=round(hi, 4))
+    for r in out:   # format only after every comparison is made
         r["lat"] = round(r["lat"], 4)
         r["cert"] = round(r["cert"], 4) if math.isfinite(r["cert"]) else "inf"
     return out

@@ -47,3 +47,19 @@ dominates every `k`; its level margin excludes zero at `k <= 3` and touches it a
 - Interpolating latency for `n` not timed (`2, 4, 16, 32`).
 
 ## Scoring log
+
+### Read 2026-09-24 15:55 IST, with the 70B cells --- selection (and the anchor alone) is the whole frontier at both widths
+
+`analysis/pareto_frontier.py --out results` -> `results/pareto_frontier.csv`, selection and the 8B pair
+from feat-190's single-card part, the 70B cells from its 70B part (each part timed its own selection
+cell on its own card; the two read `3.09` and `3.27` s at `n=64`, `W=1`).
+
+At `W = 1` and at `W = 8` the non-dominated set is selection at `n in {1, 8, 64}` and the anchor alone.
+Every metered configuration at both pairs is dominated. At `W = 1` selection at `n = 64` dominates all
+nine meter cells with a level margin whose interval excludes zero (`+0.0655 [+0.041, +0.092]` against
+the 8B meter at `k = 10`, `+0.104 [+0.081, +0.1275]` against the 70B meter at `k = 20`), and it serves a
+request in `3.09` s against `6.00` (8B meter) and `14.84` (70B meter). At `W = 8` the 70B meter is still
+dominated by `n = 64` (`1.46` s against `2.09`); the 8B meter is dominated only by `n = 8`, whose level
+margin excludes zero at `k <= 3` and touches it at `k >= 5`, as the dry run read. Both risky models alone
+are dominated on point estimates; the 8B model is the committed opponent itself, so its dominance
+carries no interval and is not claimed.
