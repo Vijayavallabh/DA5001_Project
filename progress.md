@@ -1,5 +1,54 @@
 # Session Progress Log
 
+## 2026-09-24 (afternoon) --- the skipped review points, run on both hosts (user: "finish all the tasks that you skipped with utilizing all the gpus in this host and the other host")
+
+Every point the evening round skipped was run or, where it is human-only, stated as not done. Each arm
+has its bands or its descriptive note committed before its first reading.
+
+- **feat-187 AnchoredByte** (`results/onset_prediction_anchoredbyte.md`): the authors' own byte-level
+  decoder (`anchoreddecode` at `a12ecd9`, unmodified) at their recommended pair, Comma-7B + Llama-3.1-70B
+  base, `k in {0.1, 0.5, 2}` on host B GPUs 0--2 and 3,5,6; judged on host B GPU 7. `k=0.5`:
+  `D3 +0.1240 [+0.1010, +0.1470]`; `k=0.1`: `+0.1385 [+0.1155, +0.1620]` (both CONFIRMED); `k=2`
+  generating at the time of writing.
+- **feat-188 replication** (`results/onset_prediction_headline_replication.md`): every sampled arm
+  re-drawn on seeds `82 83 84`; **P1, P2, P3 REPLICATE** (`R2 D3 +0.0495 [+0.0175, +0.0800]`), G0/G1
+  pass; R0 (the seed-52 pool on repaired text) `+0.0500`. Queue re-dealt across local GPUs 2 and 4 and
+  host B GPUs 3--6.
+- **feat-189 hybrid** (scored earlier today): at a fixed `log 64`, the level rises monotonically with
+  the share spent on the draw.
+- **feat-190 batched latency**: **T1 CONFIRMED** --- selection at `n=64`, batched, serves a request in
+  `0.220x` the 70B meter's time; T3 CONFIRMED; T2 within noise of its edge (`0.514`).
+- **feat-191 He et al.'s metrics** (`results/he_metrics_note.md`): Prometheus fluency (their rubric,
+  open backbone) orders the arms as the judge does; FActScore precision of selection equals its
+  anchor's and is below every metered arm, as expected. AnchoredByte arms added under `_ab*` tags.
+- **feat-192 covert channel**, **ROUGE threshold**, **adaptive n**, **per-work certificate**,
+  **no-separation remark**, **de-echo re-judge of every older pass**: scored earlier today.
+- **Forest re-judge** (`results/forest_deecho_note.md`): 17 of 20 rows keep their class; KL3M-1.7B
+  loses its interval, Comma-1T gains one; "four of six anchors" now spans **two** families
+  (abstract, intro and Section 4 changed).
+- **Pareto frontier** (`results/pareto_frontier_note.md`): selection `n in {1,8,64}` and the anchor
+  alone are the whole non-dominated set over (certificate, level, latency) at both widths.
+- **Empty-completion preference** (`analysis/empty_preference.py`): the committed reward scores an
+  empty draw above a typical one; best-of-`n` serves empty on `12.8/21.8/8.2%` at `n=1/8/64`.
+- **feat-193 CoTaEval infringement**: pool split across local GPUs 0 and 4 by trajectory index.
+- Guide to the appendices is a numbered captioned table; `test_reference_targets.py` now models
+  subsections and table rows; `he_metrics.py` bootstraps per quantity (an added arm cannot move a
+  quoted interval) and carries its contrasts by default.
+
+Incidents: the AnchoredByte `k=0.5` judge pass OOM'd beside FActScore on host B GPU 7 and was re-run on
+the same card after FActScore released it (same silicon for G2); a `pkill -f` whose pattern was in its
+own command line killed the invoking shell (caution (c), again) --- nothing was lost but a test run.
+
+```bash
+.venv/bin/python analysis/forest_rejudge_score.py --out results && .venv/bin/python analysis/selection_breadth.py --rejudged --out results
+.venv/bin/python analysis/replic_score.py --out results            # host B: needs both pools
+.venv/bin/python analysis/batched_latency.py --report --logs output/logs/batched_latency_hostb_all.log --out results
+.venv/bin/python analysis/pareto_frontier.py --out results
+.venv/bin/python analysis/empty_preference.py --out results
+.venv/bin/python analysis/he_metrics.py --report --out results
+.venv/bin/python analysis/anchoredbyte_score.py --out results
+```
+
 ## 2026-09-24 (evening) --- fifth review round: the head-to-head is now reported by serving configuration, and the paper is rescoped around what it measured
 
 Four referee reports (the user marked the fourth most important). The one that changed the paper:
