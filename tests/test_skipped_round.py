@@ -154,3 +154,17 @@ def test_the_adaptive_paragraph_quotes_its_contrasts():
         assert f"${v:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in p, k
     a = {(r["n_max"], r["q"]): r for r in rows("adaptive_n.csv")}
     assert f"${float(a[('64', '0.75')]['mean_draws']):.1f}$" in p and f"${float(a[('64', '0.9')]['mean_draws']):.1f}$" in p
+
+
+def test_the_hybrid_paragraph_quotes_its_pass():
+    p = para("app:hybrid", "appendix_selection.tex")
+    c = {r["contrast"]: r for r in rows("levels_hybrid_contrasts.csv")}
+    for k in c:
+        v, lo, hi = (float(c[k][x]) for x in ("value", "lo95", "hi95"))
+        assert f"${v:+.4f}$ $[{lo:+.4f}," in p, k
+    lv = {r["arm"]: float(r["level"]) for r in rows("levels_hybrid.csv")}
+    seq = [lv[a] for a in ("pw1", "hyb2", "hyb8", "sel64")]
+    assert seq == sorted(seq), "the paragraph says the level rises monotonically with n"
+    assert f"${seq[0]:.4f}$, ${seq[1]:.4f}$, ${seq[2]:.4f}$ and ${seq[3]:.4f}$" in p
+    assert lv["pw1"] < lv["sel1"] and f"${lv['sel1']:.4f}$" in p
+    assert "BELOW ZERO" == next(r["reading"] for r in rows("levels_hybrid_contrasts.csv") if r["contrast"].startswith("H1"))
