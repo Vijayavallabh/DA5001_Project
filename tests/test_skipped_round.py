@@ -226,3 +226,47 @@ def test_the_he_metrics_paragraph_quotes_its_csv():
     assert lo < 0 < hi, "selection now moves precision off its anchor; the paragraph says it does not"
     n = {a: int(h[(F, a)]["n"]) for a in ("sel64", "sel1")}
     assert f"abstains on ${150 - n['sel64']}$ of $150$" in p and f"abstains on ${150 - n['sel1']}$" in p
+
+
+def test_the_replication_rows_are_the_scored_ones():
+    d = {r["quantity"]: r for r in rows("headline_replication.csv")}
+    t = body("appendix_selection.tex")
+    for run, label in (("R2", "seeds $82$ (all new)"), ("R1", "seeds $82$ (old opp.)")):
+        h2h = {r["quantity"][:2]: r for r in rows(f"order_averaged_h2h_{'replic_opp' if run == 'R2' else 'replic'}.csv")}
+        v = {q: float(h2h[q]["value"]) for q in ("D1", "D2", "D3")}
+        lo, hi = float(h2h["D3"]["lo95"]), float(h2h["D3"]["hi95"])
+        row = f"{label} & B & ${v['D1']:+.4f}$ & ${v['D2']:+.4f}$ & ${v['D3']:+.4f}$ $[{lo:+.4f},{hi:+.4f}]$"
+        assert row in t, row
+        assert d[f"{run} D3 difference of gains, paired"]["reading"] == "REPLICATES"
+    g = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_replic_opp_nonempty.csv")}["D3"]
+    assert f"raises it to ${float(g['value']):+.4f}$ $[{float(g['lo95']):+.4f}, {float(g['hi95']):+.4f}]$" in t
+    assert all(r["reading"] == "PASS" for r in rows("headline_replication.csv") if r["gate"] in ("G0", "G1"))
+
+
+def test_the_batched_latency_paragraph_and_table_quote_their_csvs():
+    p = para("app:batched", "appendix_selection.tex")
+    t = body("appendix_selection.tex")
+    c = {(r["part"], r["arm"], r["risky"].split("/")[-1], r["W"], r["n"]): float(r["per_request_s"])
+         for r in rows("batched_latency.csv")}
+    s = lambda arm, W, n, risky="-": c[("single", arm, risky, W, n)]
+    R8, R70 = "Meta-Llama-3.1-8B-Instruct", "Meta-Llama-3.1-70B"
+    row = (f"selection, $n=1$ / $8$ / $64$ & ${s('SEL','1','1'):.2f}$ / ${s('SEL','1','8'):.2f}$ / "
+           f"${s('SEL','1','64'):.2f}$ & ${s('SEL','8','1'):.3f}$ / ${s('SEL','8','8'):.3f}$ / ${s('SEL','8','64'):.2f}$")
+    assert row in t, row
+    assert f"meter, $8$B pair & ${s('MET','1','1',R8):.2f}$ & ${s('MET','8','1',R8):.3f}$" in t
+    m70 = lambda W, arm="MET": c[("70b", arm, R70, W, "1")]
+    assert f"meter, $70$B pair & ${m70('1'):.2f}$ & ${m70('8'):.2f}$" in t
+    b = {(r["band"], r["W"], r["denominator"].split()[1]): r for r in rows("batched_latency_bands.csv")}
+    q = lambda k: float(b[k]["ratio"])
+    assert f"${q(('T1', '1', 'Meta-Llama-3.1-70B')):.3f}\\times$ the $70$B meter" in p
+    assert b[("T1", "1", "Meta-Llama-3.1-70B")]["reading"] == "CONFIRMED"
+    assert f"${q(('T2', '1', 'Meta-Llama-3.1-8B-Instruct')):.3f}\\times$ the meter" in p
+    assert b[("T2", "1", "Meta-Llama-3.1-8B-Instruct")]["reading"] == "WITHIN NOISE" and "not read" in p
+    assert f"${q(('T3', '1', '-')):.2f}\\times$ a single draw" in p
+    f = {(r["W"], r["arm"]): r for r in rows("pareto_frontier.csv")}
+    assert {r["arm"] for r in rows("pareto_frontier.csv") if r["pareto"] == "YES"} == {"sel_n1", "sel_n8", "sel_n64", "anchor"}
+    for arm in ("met_k10", "met70_k20"):
+        r = f[("1", arm)]
+        assert r["best_dominator"] == "sel_n64"
+        v, lo, hi = (float(r[k]) for k in ("level_margin", "margin_lo95", "margin_hi95"))
+        assert f"${v:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in p, arm
