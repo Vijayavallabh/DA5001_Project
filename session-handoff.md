@@ -16,6 +16,10 @@ answering its pipeline question, both read off committed trajectories:
 Part A re-judges the committed pass de-echoed; Part B judges against the chat-served opponent with
 one new arm, `output/feat184/chat_k10`. Local GPUs 1, 2, 4.
 
+**feat-185** (`results/onset_prediction_he_config.md`): judge-only head-to-head at the authors' own
+pair, TinyComma + Llama-3.1-70B base (`output/phase5/imit_llama70b`, k=20/1/0.5), queued on GPU 4
+behind feat-184's B3 by `scripts/run_feat185.sh` (sentinel wait with a deadline, mock-tested).
+
 ## Current objective
 
 **Revision of `iclr_2027.tex` against four referee reports** (one AC/PC LLM report, three full
