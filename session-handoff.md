@@ -27,8 +27,9 @@ There is **no page slack** for feat-195's block (about 8 lines): take it from fl
 `tests/RETIRED_2026-09-24_v11.md`; 43 mutations all fire; new `tests/test_v11_review_round6.py`.
 Full sharded suite: 180 files, all passing after the two `test_cost_grid` re-points.
 
-**Deferred, not started:** feat-198 (re-score the committed pool with a scorer from another family);
-the Qwen-family concern is answered in the text by the four non-Qwen judges (three of four exclude zero).
+**Also running on host B, GPU 7:** feat-198 (`results/onset_prediction_scorer_family.md`), the
+headline pool re-scored by `gemma-2-27b-it` and judged as the headline was (judge B only);
+`GPU=7 bash scripts/run_feat198.sh`, sentinels `output/logs/feat198_{score,judge}.{done,fail}`.
 
 ## Current state, 2026-09-24 night --- v10 restructure done; nothing in flight
 
