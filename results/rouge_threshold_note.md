@@ -38,3 +38,21 @@ non-zero there would come from the pool maximum only); the memoriser falls monot
 `71` at `0.3` through `47` at `0.5`.
 
 ## Scoring log
+
+### Scored 2026-09-24 14:25 IST --- the contrast does not depend on where the line is drawn
+
+`.venv/bin/python analysis/rouge_threshold.py --out results` -> `results/rouge_threshold.csv`
+(1,510 rows).
+
+- **Clean anchors: `0` of `100` at every `theta` from `0.3` to `0.7`**, in all four clean files
+  (`grid64`, `n256`, `paraphrase`, `multilingual`), for the pool maximum (selector-free), for every
+  served pick and for every oracle pick (17 columns). The one-sided 95% bound on the per-passage rate
+  is `2.95%` at every threshold. The expected reading allowed a non-zero pool maximum at `0.3`; there
+  is none.
+- **The memoriser alone** falls monotonically with `theta` in every file: `71`--`93` at `0.3`,
+  `47`--`83` at `0.5` (the `47` is the paper's figure, `grid64`), `39`--`56` at `0.7`.
+- **Contaminated anchors** (24 files) are the informative case: the pool maximum clears `0.5` on
+  `84`--`100` passages and `0.3` on `98`--`100`; above `0.5` it ranges `0`--`100`, which is the anchor
+  and not the threshold.
+
+The registered `0.5` verdicts are unchanged; this table sits beside them.
