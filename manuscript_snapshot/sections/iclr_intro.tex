@@ -48,8 +48,7 @@ Theorem~\ref{thm:nfl}'s frontier, a lower bound no decoder here attains.}
 \end{figure}
 
 Against anchored decoding at the authors' own anchor, the one budget whose certificate says anything
-about a $50$-token window, $k=0.5$, leaves the meter judged indistinguishable from its safe model, which
-best-of-$64$ ($\log 64 = 4.16$ nats) improves on; at larger budgets the meter is the risky model, and
+about a $50$-token window, $k=0.5$, leaves the meter at temperature $1.0$ judged indistinguishable from its safe model, which best-of-$64$ ($\log 64 = 4.16$ nats) improves on, and at the authors' $0.7$ tied with it; at larger budgets the meter is the risky model, and
 best-of-$64$ is judged better than that model continuing text at temperature $1.0$, with its Qwen scorer though not with a gemma one, and worse than it at the authors' $0.7$ or served as a chat assistant or following instructions (Table~\ref{tab:served}, Figure~\ref{fig:h2h}). With an adversarial scorer selection's
 near-verbatim recall is $0.0000$ at every $n \le 64$ and at $n=256$, a bound \emph{relative} to a vetted anchor; with no
 judge, majority vote over a safe model lifts GSM8K exact match from $0.320$ to $0.546$ for $3.47$ nats
