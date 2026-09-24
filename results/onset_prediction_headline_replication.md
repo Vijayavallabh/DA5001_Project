@@ -18,7 +18,7 @@ reading may not replicate**, and we register it anyway.
 
 ## What runs (host B, GPUs 3 and 4; `scripts/run_replic.sh`)
 
-`h1.py` with **`--seeds 52 53 54`** in place of the default `42 43 44` --- `build_trajectory_seeds`
+`h1.py` with **`--seeds 82 83 84`** in place of the default `42 43 44` --- `build_trajectory_seeds`
 hashes the tuple, so every seed differs from every seed on record --- and every other flag the committed
 arm used:
 
@@ -46,6 +46,19 @@ judge B, seed `7717`, both presentation orders, `n=64`, `k=10`:
 - **R1** against the **committed** opponent (`output/sweep_plain`): isolates the arms' own sampling.
   Tag `replic`.
 - **R2** against the **re-drawn** opponent (`output/replic/opp`): the full replication. Tag `replic_opp`.
+
+*Corrected 2026-09-24 14:40 IST, before any reading:* this registration first named `--seeds 52 53
+54`. That tuple is **not** new: `output/phase5/sel_anchor64_seed52` already re-draws the headline pool
+on it (Appendix table `tab:h2hrepeat`, `D3 = +0.0635` on echo-carrying text, meter not re-drawn), and
+feat-184's chat arm used it too, so the claim above that every seed is new was false. About `35`
+minutes of pool generation on that tuple were stopped and moved aside
+(`output/replic_seed52_aborted_2026-09-24`, never read). `82 83 84` appears nowhere in the repository.
+The existing seed-52 re-draw is added as a descriptive arm:
+
+- **R0** the seed-52 pool on record, re-judged on recovered text against the committed meter, anchor
+  and opponent (`--sel-dir output/phase5/sel_anchor64_seed52 --rewards
+  results/selection_rewards64_seed52.csv`, tag `seed52_deecho`), so the replication already in the
+  paper is read under the same text repair as the headline.
 
 ## Gates
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # feat-188 (results/onset_prediction_headline_replication.md): every sampled arm of the headline
-# re-drawn on --seeds 52 53 54, host B. Two queues, one card each (caution (x)):
+# re-drawn on --seeds 82 83 84, host B. Two queues, one card each (caution (x)):
 #   a  pool neutral, then metered k=10, anchor k=0, opponent k=-1; then judge R2 once rewards exist
 #   b  pool creative, pool factual; then merge, rewards, judge R1
 # Waits are ORs over .done/.fail with a deadline (caution (c), ninth incident).
@@ -13,7 +13,7 @@ set -a; . ./.env; set +a
 export CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache
 M=${REPLIC_MARKS:-$HOME/v/logs}; R=output/replic
 mkdir -p output/logs $R $M
-S="--seeds 52 53 54 --max-new-tokens 200 --cap-val 0 --cap-test 0 --cap-attack-train 0 --trust-remote-code"
+S="--seeds 82 83 84 --max-new-tokens 200 --cap-val 0 --cap-test 0 --cap-attack-train 0 --trust-remote-code"
 ALL="--cap-neutral 200 --cap-creative 150 --cap-factual 150"
 job() {  # job <name> <cmd...>
   local n=$1; shift; rm -f $M/replic_$n.done $M/replic_$n.fail
