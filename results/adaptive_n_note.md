@@ -62,3 +62,25 @@ distribution, `q in {0.50, 0.75, 0.90, 0.95, 0.99}`, fixed before reading any se
 
 Picks for the judged pass written to `results/adaptive_picks_*.csv` (the two registered rules and
 their matched fixed-`n` arms, `n = 7` and `n = 17`).
+
+### Judged pass, 2026-09-24 14:55 IST --- stopping early buys nothing the matched fixed `n` does not
+
+`analysis/levels_pass.py --tag adaptive` on host B GPU 7 (judge B, the committed opponent, both
+orders, de-echoed), contrasts by `--score adaptive` -> `results/levels_adaptive{,_per_prompt,_contrasts}.csv`.
+
+| contrast | paired difference | reading |
+|---|---|---|
+| `q=0.75` (6.8 draws) minus fixed `n=64` (equal certificate) | `-0.0515 [-0.0720, -0.0310]` | below zero |
+| `q=0.75` minus fixed `n=7` (equal expected draws) | `+0.0040 [-0.0125, +0.0205]` | straddles |
+| `q=0.90` (17.4 draws) minus fixed `n=64` | `-0.0155 [-0.0340, +0.0020]` | straddles |
+| `q=0.90` minus fixed `n=17` | `+0.0140 [-0.0030, +0.0315]` | straddles |
+
+The judge agrees with the reward-only table: an adaptive rule is certified at `log n_max` and priced
+at its mean draws, and at matched draws it is indistinguishable from the fixed argmax. The one saving
+it offers is `q=0.90`, which uses `27%` of the draws for a difference from `n=64` its interval cannot
+separate from zero. Empty-served fractions on recovered text: `8.2%` at fixed `64`, `23.0%`--`24.8%`
+at `~7` draws --- the reward, scored on echo-carrying text (feat-184), favours an empty draw's prompt
+tail, and more draws dilute it.
+
+Run on host B's H100s: selection's per-prompt levels match feat-186's A100 pass on `472` of `500`
+prompts, caution (as)'s cross-host bf16 floor; every reading above is within this one pass.

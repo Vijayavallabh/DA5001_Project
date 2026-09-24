@@ -1,0 +1,6 @@
+arm,spec,level,lo95,hi95,empty_frac,n
+sel64,sel:output/xfer/sel_anchor64:results/selection_rewards64.csv:64,0.559,0.538,0.5805,0.082,500
+ada64_q75,pick:output/xfer/sel_anchor64:results/adaptive_picks_ada64_q75.csv,0.5075,0.4865,0.5285,0.248,500
+fix7,pick:output/xfer/sel_anchor64:results/adaptive_picks_fix7_for_q75.csv,0.5035,0.482,0.5255,0.23,500
+ada64_q90,pick:output/xfer/sel_anchor64:results/adaptive_picks_ada64_q90.csv,0.5435,0.5225,0.565,0.138,500
+fix17,pick:output/xfer/sel_anchor64:results/adaptive_picks_fix17_for_q90.csv,0.5295,0.5075,0.551,0.178,500
