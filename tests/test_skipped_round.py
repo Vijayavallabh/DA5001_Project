@@ -113,3 +113,11 @@ def test_the_decomposition_on_repaired_text_is_rebuilt_from_its_csvs():
     assert f"${ss:.3f}$" in p and f"${sm:.3f}$" in p, (ss, sm, p[:200])
     for v in sel + met:
         assert f"${v:+.4f}$" in p, v
+
+
+def test_the_main_text_quotes_alpacaeval_on_the_repaired_text_like_its_headline():
+    g, lo, hi = _gains("mixpowk_judgeB_deecho")["D3"]
+    assert hi < 0
+    t = body("experiments.tex")
+    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in t, "the main text's AlpacaEval band is not the repaired one"
+    assert "$-0.0339$" not in t, "the echo-carrying AlpacaEval number is back in the main text"
