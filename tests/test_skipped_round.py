@@ -363,3 +363,18 @@ def test_the_headline_sentence_carries_its_fresh_seed_replication():
     assert band in t, band
     i = t.index(band)
     assert "$+0.0505$ $[+0.0155, +0.0860]$" in t[max(0, i - 200):i], "the replication left the headline sentence"
+
+
+def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
+    """'batched it serves a request at the authors' 70B pairs in at most X the meter's time': X must
+    bound BOTH the token-level pair (feat-190 T1) and the byte-level pair (the ab note), and the
+    unbatched 21.8x must stay beside it."""
+    from tests.manuscript import tex
+    b = [r for r in rows("batched_latency_bands.csv") if r["W"] == "1" and (
+        r["band"] == "T1" or (r["band"] == "AB" and r["numerator"].startswith("SEL n=64")))]
+    assert len(b) == 2, b
+    worst = max(float(r["ratio"]) for r in b)
+    a = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    a = a[a.index("begin{abstract}"):a.index("end{abstract}")]
+    assert f"in at most ${worst:.2f}\\times$ the meter's time" in a and "$21.8\\times$" in a
+    assert round(worst, 2) >= worst - 0.005
