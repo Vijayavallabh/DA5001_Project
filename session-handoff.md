@@ -1,25 +1,23 @@
 # Session handoff --- 2026-09-24
 
-## In flight, 2026-09-24 15:10 IST --- the skipped-points round (user: finish every skipped task on both hosts)
+## In flight, 2026-09-24 16:05 IST --- the skipped-points round (user: finish every skipped task on both hosts)
 
-Unscored pre-registrations, each with its own scoring log still to write:
+Scored since 15:10: feat-188 (replication, all REPLICATE), feat-190 (batched latency, T1 CONFIRMED),
+the forest re-judge, the Pareto frontier, FActScore. Still unscored, each with its own log to write:
 
-- `results/onset_prediction_anchoredbyte.md` (feat-187): He et al.'s AnchoredByte at Comma-7B +
-  Llama-3.1-70B, `k in {0.1, 0.5, 2}`. Host B: `scripts/run_anchoredbyte.sh` on GPUs 0,1,2 (`0.5` then
-  `2`) and 3,5,6 (`0.1`); judge queue `scripts/run_anchoredbyte_judge.sh 7` waits on
-  `~/v/logs/ab70_k<k>.done`; score with `analysis/anchoredbyte_score.py`.
-- `results/onset_prediction_batched_latency.md` (feat-190): single-card cells done
-  (`output/logs/batched_latency_hostb.log`); the 70B cells run from `scripts/run_hostb_chain.sh` on
-  host B GPUs 3,5,6 after AnchoredByte `k=0.1`; then `analysis/batched_latency.py --report`.
-- `results/onset_prediction_headline_replication.md` (feat-188): seeds `82 83 84`. Local
-  `scripts/run_replic_local_split.sh 2 <pool pid>` (met, anchor, opponent, R0, then rsync to host B and
-  touch its markers); host B `run_replic.sh b 4` (pools, reward, R1) and `run_replic_post.sh 4`
-  (R1b, R2, R2b).
-- `results/onset_prediction_cotaeval_infringement.md` (feat-193): local GPU 0,
-  `scripts/run_cotaeval_inf.sh`; score with `analysis/cotaeval_infringement.py`.
+- `results/onset_prediction_anchoredbyte.md` (feat-187): `k=0.1` and `k=0.5` judged (both CONFIRMED on
+  the script's rule); `k=2` judging on host B GPU 7 (`scripts/run_anchoredbyte_judge.sh`), then
+  `analysis/anchoredbyte_score.py` on host B (it needs the trajectories) and pull
+  `results/anchoredbyte.csv`. The appendix paragraph `app:anchoredbyte` and its table already carry
+  `k=0.1`/`0.5`; add the `k=2` row, and the abstract clause the registration fixes if all three read
+  CONFIRMED.
+- `results/onset_prediction_cotaeval_infringement.md` (feat-193): the 64-draw pool split by trajectory
+  index over local GPUs 0 and 4 (`scripts/run_cotaeval_inf_split.sh`), then reward and
+  `analysis/cotaeval_infringement.py` in the same launcher.
 
-Notes in flight (descriptive, no bands): `results/he_metrics_note.md` (FActScore stage, host B GPU 7)
-and `results/forest_deecho_note.md` (local GPU 1, `scripts/run_forest_rejudge.sh`).
+Also running: `scripts/run_he_ab.sh 2` (Prometheus + FActScore on AnchoredByte `k=2` once its
+trajectories exist on host B). The main text is at exactly 9 pages with **zero** slack: every further
+body edit must be length-neutral (caution (n), (i)).
 
 ## Current state, 2026-09-24 evening --- fifth review round done, nothing in flight
 
