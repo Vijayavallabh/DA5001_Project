@@ -183,3 +183,33 @@ def test_the_prefix_extension_arm_is_reported_as_registered():
             assert _rounds(cells[1], float(r["certificate_nats"])), (arm, cells)
             assert cells[2] == r["passages_certificate_vacuous"], (arm, cells)
             assert _rounds(cells[6], float(r["true_token_in_pool"])), (arm, cells)
+
+
+# ------------------------------------------------------------------ feat-198, a scorer from another family
+
+def test_the_scorer_family_arm_is_reported_as_registered():
+    """feat-198 (results/onset_prediction_scorer_family.md) read UNRESOLVED: the headline depends on the
+    scorer. Registered: Section 4's paragraph reports the arm and its heading adds the scorer to what
+    the difference does not survive, whatever it reads; the qualifier then travels to every sentence
+    that states the continuing-text win. The heading rule is conditioned on the CSV, not on a phrase."""
+    h = {r["quantity"][:2]: r for r in _rows("order_averaged_h2h_scorer_gemma27b.csv")}
+    d1, d3 = h["D1"], h["D3"]
+    for r in (d1, d3):
+        assert carries_band(float(r["value"]), float(r["lo95"]), float(r["hi95"]), "experiments.tex"), r
+    confirmed = float(d3["lo95"]) > 0
+    exp = body("experiments.tex")
+    head = exp[exp.index(r"\textbf{At $k=10$ the difference survives"):][:320]
+    assert ("a scorer from another family" in head) == (not confirmed), (confirmed, head)
+    sf = {(r["scorer"], r["quantity"]): r["value"] for r in _rows("scorer_family.csv")}
+    assert int(sf[("both", "prompts whose served draw changes")]) >= 50, "G1: the arm cannot distinguish scorers"
+    g_w, q_w = sf[("gemma-2-27b-it", "median words served")], sf[("Qwen2.5-7B-Instruct", "median words served")]
+    g_e, q_e = sf[("gemma-2-27b-it", "empty served texts")], sf[("Qwen2.5-7B-Instruct", "empty served texts")]
+    assert f"(median ${g_w}$ words against ${q_w}$)" in exp and f"(${g_e}$ against ${q_e}$)" in exp
+    if not confirmed:
+        abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+        abstract = abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
+        assert "though not with a scorer from another family" in abstract
+        assert "with its Qwen scorer though not with a gemma one" in body("iclr_intro.tex")
+        close = body("iclr_closing.tex")
+        assert "or with a scorer from another family" in close and "which scorer selects" in close
+        assert "the headline depends on the scorer" in exp

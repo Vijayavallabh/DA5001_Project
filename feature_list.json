@@ -1457,6 +1457,15 @@
       ],
       "status": "in-progress",
       "evidence": "Guard reconciliation: 35 failures after the rewrite; 13 fixed by restoring registered sentences/concessions, 22 re-pointed (tests/RETIRED_2026-09-24_v11.md), 43 mutations all fire; new tests/test_v11_review_round6.py (5 tests, 11 mutations fire). Build: tectonic exit 0, 0 overfull, 0 ??, body 9/9 (page 10 opens on ETHICS)."
+    },
+    {
+      "id": "feat-198",
+      "name": "The headline pool re-scored by a scorer from another family (gemma-2-27b-it)",
+      "description": "Sixth review round: selection's reward is Qwen2.5-7B and the largest judged reading is Qwen2.5-14B's, the scorer's family. Re-score the committed 32,000-draw pool with gemma-2-27b-it and judge as the headline was, judge B only (results/onset_prediction_scorer_family.md, registered before any reward).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "GPU=7 bash scripts/run_feat198.sh on host B (score 18 min, judge 2 min, both exit 0). G0 PASS (32,000 finite rewards, 64 ranks x 500 prompts); G1 PASS (served draw changes on 406/500). S1 WRONG: D3 +0.015 [-0.0185, +0.0485] UNRESOLVED; S2 fails: D1 +0.066 [+0.042, +0.0905] (headline +0.1015); D2 +0.051. .venv/bin/python analysis/scorer_family.py --out results -> results/scorer_family.csv: gemma serves median 34 words vs 75 and 71 empties vs 41. Manuscript: Section 4's heading adds the scorer, the arm is reported beside the Qwen-judge caveat, and the qualifier is carried to the abstract, introduction, Limitations and conclusion; tests/test_v11_review_round6.py::test_the_scorer_family_arm_is_reported_as_registered (4 mutations fire)."
     }
   ]
 }

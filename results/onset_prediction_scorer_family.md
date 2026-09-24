@@ -53,3 +53,28 @@ does, and the heading of that paragraph adds the scorer to what the difference d
 - Any other scorer, `n`, template or judge chosen after a reward is read; reading judge G on this arm.
 
 ## Scoring log
+
+### Scored 2026-09-25 00:07 IST --- S1 WRONG (UNRESOLVED), S2 fails: the headline depends on the scorer
+
+Both jobs exited `0` on host B, GPU 7 (`output/logs/feat198_{score,judge}.done`; scoring `32,000`
+candidates with `gemma-2-27b-it` took `18` minutes, 23:45 to 00:03 IST, the judge pass `2`). Read from
+`results/order_averaged_h2h_scorer_gemma27b.csv` and the two reward caches.
+
+**Gates.** G0 PASS: `32,000` finite rewards, all `64` ranks for each of the `500` prompts; the judge pass
+covers `500` prompts. G1 PASS: the new scorer serves a different draw from the committed Qwen pick on
+`406` of `500` prompts (`81.2%`), so the arm distinguishes the scorers.
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| S1, `D3` (selection minus meter, gains) | `+0.015 [-0.0185, +0.0485]`, UNRESOLVED | CONFIRMED | **wrong** |
+| S2, `D1` (selection's gain) | `+0.066 [+0.042, +0.0905]` | within `0.03` of `+0.1015` | fails (`0.0355` below) |
+| `D2` (the meter's gain, same texts as the headline) | `+0.051 [+0.0255, +0.0765]` | --- | the headline's `+0.0510` |
+
+**Descriptive, no band.** The gemma scorer serves shorter drafts (median `34` words against the Qwen
+scorer's `75`) and more empty ones (`71` against `41`). The reward model, not only the judge, carries
+part of the headline gap; which property of the scorer matters is not identified by this arm.
+
+**Manuscript, as registered.** Section 4's robustness paragraph reports the arm beside the Qwen-family
+judge caveat, and its heading adds the scorer to what the difference does not survive. Beyond the
+registration, the same qualifier is carried to every sentence that states the continuing-text win: the
+abstract, the introduction's head-to-head sentence, Limitations and the conclusion.
