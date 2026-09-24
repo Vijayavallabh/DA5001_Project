@@ -24,7 +24,7 @@ wl() {  # wl <job> <corpus> <datadir> <cell> <k> <tag>
     --baseline-dir "output/$2/baseline" --rewards "results/$2_rewards.csv" --data-dir "$3" --k "$5" --tag "$6"
 }
 mkdir -p output/logs
-case "${1:?q56|q7}" in
+case "${1:?q56|q7|q5b}" in
   q56)
     export CUDA_VISIBLE_DEVICES=5,6
     run qwen72b --judge Qwen/Qwen2.5-72B-Instruct --device-map auto $HEAD --baseline-dir output/sweep_plain --tag _qwen72b_deecho
@@ -53,6 +53,12 @@ case "${1:?q56|q7}" in
     done
     run qwen14b --judge Qwen/Qwen2.5-14B-Instruct --device-map auto $HEAD --baseline-dir output/sweep_plain --tag _qwen14b_deecho
     run gemma27b --judge google/gemma-2-27b-it --device-map auto $HEAD --baseline-dir output/sweep_plain --tag _gemma27b_deecho ;;
+  q5b)   # the four ladder rungs whose first run died on load_baseline's KeyError (fixed 2026-09-24)
+    export CUDA_VISIBLE_DEVICES=${DR_GPU:-5}
+    for o in qwen05b qwen15b qwen3b; do
+      run opp_${o}_B --judge $PB $HEAD --baseline-dir output/opponent_$o --tag _opp_${o}_deecho
+    done
+    run opp2_B --judge $PB $HEAD --baseline-dir output/opponent_qwen14b --tag _opp2_deecho ;;
 esac
 echo "[dr:$1] queue finished $(date '+%F %T')"
 touch ~/v/logs/dr_queue_$1.finished
