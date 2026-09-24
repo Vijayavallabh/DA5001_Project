@@ -114,3 +114,42 @@ Table 1 shows under the pairwise judge. The expected reading held. Two cautions:
 open `prometheus-7b-v2.0` where He et al. used `gpt-4.1-mini`, and the absolute levels sit well below
 their books numbers (our prompts are ordinary, and TinyComma is a weak writer), so only differences
 between arms are read.
+
+### FActScore scored 2026-09-24 15:40 IST --- selection buys no factual precision the anchor lacks, as expected
+
+`scripts/run_he_metrics.sh factscore 7` on host B (`Qwen2.5-14B-Instruct`, `2,536` responses,
+`17,214` atomic facts verified), `analysis/he_metrics.py --report` -> `results/he_metrics.csv`.
+Precision is over responses with at least one extracted fact (FActScore's abstention rule); `n` is
+how many of the `150` biographies that is.
+
+| arm | precision | `n` | facts per response |
+|---|---|---|---|
+| `sel64` | `0.042 [0.027, 0.060]` | `130` | `8.83` |
+| `sel1` | `0.048 [0.022, 0.080]` | `70` | `2.96` |
+| `anchor` | `0.048 [0.020, 0.085]` | `74` | `3.30` |
+| `met_k0.5` | `0.128 [0.095, 0.162]` | `96` | `6.25` |
+| `met_k1` | `0.237 [0.194, 0.281]` | `110` | `8.09` |
+| `met_k10` | `0.231 [0.192, 0.268]` | `124` | `10.03` |
+| `risky8b` | `0.292 [0.246, 0.340]` | `122` | `9.97` |
+| `anchor70` | `0.031 [0.010, 0.057]` | `72` | `3.37` |
+| `met70_k0.5` | `0.117 [0.078, 0.161]` | `76` | `4.62` |
+| `met70_k1` | `0.191 [0.140, 0.248]` | `72` | `4.41` |
+| `met70_k20` | `0.309 [0.255, 0.366]` | `84` | `5.94` |
+| `risky70b` | `0.302 [0.247, 0.357]` | `85` | `6.00` |
+| `chat_k1` / `chat_k10` / `chat_risky` | `0.293` / `0.401` / `0.424` | `104` / `95` / `89` | |
+| `csel64` | `0.0995 [0.072, 0.130]` | `144` | `11.19` |
+| `csel1` | `0.091 [0.060, 0.125]` | `78` | `4.63` |
+
+Paired over biographies both arms answered: `sel64 - sel1` `-0.008 [-0.043, +0.021]`, `sel64 - anchor`
+`-0.028 [-0.072, +0.007]`, `csel64 - csel1` `+0.024 [-0.011, +0.061]` --- best-of-`n` does not move
+precision off its anchor's --- while `sel64 - met_k0.5` is `-0.066 [-0.100, -0.034]`, `sel64 - met_k10`
+`-0.182 [-0.222, -0.144]`, `sel64 - met70_k0.5` `-0.076 [-0.112, -0.042]` and `sel64 - risky70b`
+`-0.239 [-0.298, -0.183]`. **The expected reading held on both metrics**: selection is more fluent than
+the meter under He et al.'s rubric and less factual under their precision, because every fact it
+serves is one the `1.8`B anchor drew, and the meter serves the risky model's tokens wherever its
+budget allows. What best-of-`n` does change is how much it says: `8.83` extracted facts per biography
+against `2.96` for one draw, and it abstains on `20` biographies against `80`.
+
+A report run with no `--contrast` flag wrote a `he_metrics.csv` without the paired rows the Prometheus
+scoring above reads (it happened once, at 15:37, and was committed); `he_metrics.py` now carries the
+note's contrast list as its default.

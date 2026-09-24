@@ -233,6 +233,13 @@ def boot(v, rng, B=10000):
     return ms[int(0.025 * B)], ms[int(0.975 * B) - 1]
 
 
+# The paired differences results/he_metrics_note.md reads. A report run without --contrast used to
+# write no contrast rows at all, silently, over a CSV that had them.
+CONTRASTS = ("sel64-met_k10", "sel64-met_k0.5", "sel64-met_k1", "sel64-risky8b", "sel64-anchor",
+             "sel64-sel1", "sel64-met70_k0.5", "sel64-met70_k1", "sel64-met70_k20", "sel64-risky70b",
+             "sel64-chat_k10", "csel64-csel1", "csel64-ab_k0.1", "csel64-ab_k0.5", "csel64-ab_k2")
+
+
 def report(a):
     rng = random.Random(1914)
     rows = []
@@ -252,7 +259,7 @@ def report(a):
             lo, hi = boot(v, rng, 4000)
             rows.append(dict(metric=metric, arm=arm, contrast="", value=round(sum(v) / len(v), 4),
                              lo95=round(lo, 4), hi95=round(hi, 4), n=len(v)))
-        for c in (a.contrast or []):
+        for c in (a.contrast or CONTRASTS):
             x, y = c.split("-", 1)
             if x in per and y in per:
                 common = sorted(set(per[x]) & set(per[y]))
