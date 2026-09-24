@@ -353,3 +353,13 @@ def test_the_byte_level_timing_is_the_measured_one():
     assert ("ab", "SEL", "8", "64") not in c, "the out-of-memory cell was measured after all; fill the dash"
     p = para("app:batched", "appendix_selection.tex")
     assert f"${ab1:.2f}$ s against ${s64:.2f}$ s" in p and f"${s64 / ab1:.3f}\\times$" in p
+
+
+def test_the_headline_sentence_carries_its_fresh_seed_replication():
+    """feat-188 fixed: REPLICATES -> the headline sentence gains the disjoint-seed draw (R2)."""
+    d = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_replic_opp.csv")}["D3"]
+    t = " ".join(body("experiments.tex").split())
+    band = f"${float(d['value']):+.4f}$ $[{float(d['lo95']):+.4f}, {float(d['hi95']):+.4f}]$"
+    assert band in t, band
+    i = t.index(band)
+    assert "$+0.0505$ $[+0.0155, +0.0860]$" in t[max(0, i - 200):i], "the replication left the headline sentence"
