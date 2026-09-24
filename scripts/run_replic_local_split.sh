@@ -34,7 +34,7 @@ F=$R/pool_neutral/trajectories_k0_neutral.jsonl
 if [ "$(wc -l < $F)" -eq 12800 ] && ! kill -0 "$POOL" 2>/dev/null; then touch $M/replic_pool_neutral.done
 else touch $M/replic_pool_neutral.fail; exit 1; fi
 for n in met_k10 anchor_k0 opp; do [ -e $M/replic_$n.done ] || exit 1; done
-rsync -a $R/pool_neutral $R/conc_k10 $R/anchor_k0 $R/opp PrakashDGX_H2:v/DA5001_Project/$R/ \
+rsync -a $R/pool_neutral $R/conc_k10 $R/anchor_k0 $R/opp ${HOSTB:?set HOSTB to the second host}:v/DA5001_Project/$R/ \
   > output/logs/replic_sync.log 2>&1 || exit 1
-ssh PrakashDGX_H2 'touch ~/v/logs/replic_pool_neutral.done ~/v/logs/replic_opp.done' \
+ssh ${HOSTB:?set HOSTB to the second host} 'touch ~/v/logs/replic_pool_neutral.done ~/v/logs/replic_opp.done' \
   >> output/logs/replic_sync.log 2>&1 && touch $M/replic_synced.done
