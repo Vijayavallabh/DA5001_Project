@@ -22,6 +22,29 @@ def body(*names):
                                   encoding="utf-8").read().split()) for n in names)
 
 
+def caption_of(label):
+    """Whitespace-normalised caption of the float carrying \\label{<label>}, in whichever live
+    section file holds it. A float that moves between the body and an appendix keeps its guard
+    (caution (al)): the guard follows the label, not the file it used to be in."""
+    import re
+    # only the files the manuscript actually \\inputs (recursively): sections/ also holds retired
+    # SaTML sections that are never compiled, and a label there is not a label in the paper.
+    live, todo = [], ["iclr_2027.tex"]
+    while todo:
+        f = todo.pop()
+        live.append(f)
+        src = re.sub(r"(?<!\\)%.*", "", open(tex(f), encoding="utf-8").read())  # not commented-out ones
+        todo += [m + ".tex" for m in re.findall(r"\\input\{([^}]*)\}", src)]
+    hits = []
+    for f in live:
+        t = " ".join(open(tex(f), encoding="utf-8").read().split())
+        i = t.find("\\label{%s}" % label)
+        if i >= 0:
+            hits.append(t[t.rindex("\\caption{", 0, i): i])
+    assert len(hits) == 1, f"\\label{{{label}}} is in {len(hits)} live section files"
+    return hits[0]
+
+
 def _forest():
     """The rows Figure~\\ref{fig:breadth} plots, from figures/make_figures_v4.py."""
     import sys

@@ -99,15 +99,14 @@ def test_the_second_horn_is_stated_as_a_shape_and_selection_actually_satisfies_i
     for name, txt in (("iclr_intro.tex", intro), ("frontier.tex", front)):
         assert "shape" in txt, f"{name} no longer calls the second horn a shape"
 
-    # the arm the sentence leans on: selection at n=64 gains what the paper says it gains
-    gain = None
-    for r in _rows("order_averaged_h2h.csv"):
-        for k in r:
-            if k.lower() in ("arm", "mechanism") and "selection" in r[k].lower():
-                for g in ("gain", "u_gain", "mean"):
-                    if g in r:
-                        gain = float(r[g])
-    assert "+0.1045" in front, "frontier.tex no longer quotes the gain the sparse horn is read on"
+    # the arm the sentence leans on. Until 2026-09-24 this was the committed pass's gain, +0.1045,
+    # a hardcoded literal on echo-carrying text (caution (bc)). The sentence now reads selection's
+    # order-averaged LEVEL against the risky model's own draw on repaired text (feat-186), and says
+    # it is above parity -- so check that claim against its CSV rather than a typed number.
+    lv = {r["arm"]: r for r in _rows("frontier_levels.csv")}["sel_n64"]
+    assert float(lv["lo95"]) > 0.5, (lv, "selection's level no longer clears parity; the sentence is false")
+    assert f"at ${float(lv['level']):.3f}$" in front, \
+        "frontier.tex no longer quotes the level the sparse horn is read on"
     # Prop 3 applied at selection's own budget must be a real constraint (fewer steps than T)
     assert kl64 / 1.0 < 204, "log-n budget no longer implies O(1) high-divergence steps at T=204"
 
@@ -178,7 +177,9 @@ def test_proposition_four_bounds_over_slack_steps_and_carries_the_rate_function_
     assumed Lambda*_s(u_max) is constant in T, which fails for a utility only an exponentially
     rare sequence attains."""
     txt = _flat("frontier.tex")
-    i = txt.index(r"\begin{proposition}[A per-token meter pays")
+    # located by its LABEL: the title was reworded on 2026-09-24 ("Where its bucket is slack, a
+    # meter pays the imitation cost") and a guard keyed on a title retires on the first reword.
+    i = txt.rindex(r"\begin{proposition}", 0, txt.index(r"\label{prop:imitation}"))
     stmt = txt[i: txt.index(r"\end{proposition}", i)]
     assert r"\mathcal{S}" in stmt, "Proposition 4 no longer restricts its bound to the slack steps"
     assert r"\sum_{t \in \mathcal{S}}" in stmt, \
@@ -240,9 +241,10 @@ def test_the_caption_of_the_head_to_head_panel_rounds_from_that_csv():
     """Every number panel (c)'s caption prints must be in the CSV, and the caption must say the
     x axis mixes a BOUND with a MEASUREMENT (caution (am)): selection's kl_nats is a closed form,
     the meter's realised_nats is a measured mean."""
-    txt = _flat("experiments.tex")
-    i = txt.index(r"\label{fig:judgefree}")
-    cap = txt[txt.rindex(r"\caption{", 0, i): i]
+    # The panel moved to Appendix H on 2026-09-24 (page budget); the caption is read wherever the
+    # label now lives, so the move cannot retire this guard (caution (al)).
+    from tests.manuscript import caption_of
+    cap = caption_of("fig:judgefree")
     for v in ("$0.618$", "$0.190$", "$0.112$", "$480$"):
         assert v in cap, f"the caption dropped {v}"
     assert r"\emph{bound}" in cap and r"\emph{measured}" in cap, \

@@ -110,15 +110,25 @@ def test_the_scoring_log_and_the_appendix_round_from_the_csv():
         in apx, (r["arm"], "selection's own cell is no longer quoted")
 
 
-def test_section6_carries_the_third_pair_and_calls_it_two_further_pairs():
+def test_the_third_pair_is_reported_as_one_of_two_non_safe_pairs():
+    """Re-derived 2026-09-24, for the reason test_frontier_pair.py gives: Llama-3.2-3B-Instruct is
+    not a safe model, so its numbers belong beside that caveat and not in Section 4's copyright
+    comparison. The appendix must still call them two further pairs and quote both mechanisms."""
     from tests.manuscript import tex
-    body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
-    assert "two further pairs" in body, "Section 6 still says one further pair"
+    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
+    assert "Two further pairs" in apx, "the appendix no longer says there are two further pairs"
+    i = apx.index("\\label{app:frontier3}")
+    passage = apx[i:i + 1600]
     a = by_judge(SCORER)
     sel, best = a["selection, n=8"], max(
         (v for k, v in a.items() if k.startswith("metered")), key=lambda r: float(r["gain"]))
-    assert f"${float(sel['gain']):+.3f}$" in body, sel["gain"]
-    assert f"${float(best['gain']):+.3f}$ for ${float(best['spend_nats']):.1f}$" in body, best
+    assert f"${float(sel['gain']):+.3f}$" in passage, sel["gain"]
+    assert f"${float(best['spend_nats']):.1f}$" in passage, best
+    body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    j = body.find("Llama-3.2-3B")
+    if j >= 0:
+        assert "not" in body[max(0, j - 250):j + 250] and "safe" in body[max(0, j - 250):j + 250], \
+            "Section 4 quotes the non-safe third pair without saying it is not a safe model"
 
 
 def test_no_certificate_claim_is_made_at_this_pair():

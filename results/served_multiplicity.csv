@@ -1,0 +1,9 @@
+row,value,lo95,hi95,lo_bonf,hi_bonf,level,excludes_zero_95,excludes_zero_bonf,n
+released k=0.5,0.1195,0.0955,0.1435,0.087,0.153,0.99375,True,True,500
+released k=1,0.0995,0.0745,0.1245,0.065,0.135,0.99375,True,True,500
+released k=10,0.0655,0.0395,0.0915,0.03,0.102,0.99375,True,True,500
+70B base k=0.5,0.1265,0.1035,0.15,0.094,0.159,0.99375,True,True,500
+70B base k=1,0.1225,0.099,0.146,0.0895,0.1555,0.99375,True,True,500
+70B base k=20,0.104,0.0805,0.1275,0.071,0.1375,0.99375,True,True,500
+chat template k=1,0.041,0.0125,0.07,0.0015,0.082,0.99375,True,True,500
+chat template k=10,-0.138,-0.1675,-0.1085,-0.179,-0.097,0.99375,True,True,500

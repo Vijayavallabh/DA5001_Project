@@ -25,7 +25,9 @@ def test_the_top_of_the_utility_scale_is_priced_from_the_same_law_as_the_rest():
     number in the same paragraph comes from v5 (600 pairs, 27.3%), where the same quantity is 1.30
     and 132x. AGENTS.md caution (d) is about exactly that 180-against-600 difference."""
     rows = {r["k"]: r for r in csv.DictReader(open("results/utility_price.csv"))}
-    body = open(tex("sections/orders.tex"), encoding="utf-8").read()
+    # 2026-09-24: the sentence moved from Section 4.4 to Proposition 4's discussion in frontier.tex,
+    # beside the proviso it illustrates; both files are read so a later move is still followed.
+    body = "".join(open(tex(f"sections/{f}.tex"), encoding="utf-8").read() for f in ("orders", "frontier"))
     lam = float(rows["3.0"]["lambda_star_u_max"])           # a property of the safe law, same on every row
     assert len({r["lambda_star_u_max"] for r in rows.values()}) == 1
     m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats\s*(?:,)?\s*and the decoder\s*\n?"

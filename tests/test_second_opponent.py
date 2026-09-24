@@ -129,7 +129,14 @@ def test_the_intros_gain_ratio_is_qualified_by_the_opponent_because_it_is_a_gain
     _, lo, hi = d("D3")
     t = body("iclr_intro.tex")
     i = t.find(r"win by $2.6\times$")
-    assert i > 0, "the intro no longer states the gain ratio; re-derive this guard"
+    if i < 0:
+        # Re-derived 2026-09-24: the intro dropped the ratio (measured on echo-carrying text, and a
+        # ratio whose denominator's interval nears zero) and now states the paired difference. What
+        # this guard protects -- an unqualified head-to-head -- is then the difference, and it must
+        # carry the serving/opponent qualifier that Table 1 and the ladder measured.
+        assert "depends on\nhow the risky model is served".replace("\n", " ") in " ".join(t.split()), \
+            "the intro states the head-to-head without its serving-configuration qualifier"
+        return
     clause = t[i:i + 120]
     if lo <= 0 <= hi:
         assert "opponent" in clause, (
@@ -152,7 +159,9 @@ def test_the_certificate_comparison_is_not_watered_down_by_the_opponent_result()
     # deliberate hedge inserted at the second went undetected. Caution (an), same shape as the
     # -0.0065 collision above.
     hits = [m.start() for m in _re.finditer(_re.escape("$171.3$"), t)]
-    assert len(hits) >= 2, f"expected several mentions of the measured spend, found {len(hits)}"
+    # >= 1 since 2026-09-24: the rescoped intro quotes the measured spend once, in the head-to-head
+    # sentence, and the check below still runs on every occurrence there is.
+    assert len(hits) >= 1, f"expected the measured spend in the intro, found {len(hits)}"
     for i in hits:
         assert "opponent" not in t[max(0, i - 160):i], (
             "the measured-nats comparison has been hedged by opponent language near "

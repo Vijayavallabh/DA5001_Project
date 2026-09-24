@@ -63,7 +63,10 @@ def test_the_judge_free_figure_starts_both_rules_at_the_anchors_own_draw():
 
     mv = dict((n, a) for n, a, _, _ in data["GSM8K"][0]["majority vote"])
     best_n = max(mv, key=lambda n: mv[n])
-    cap = _exp()
+    # The figure moved to Appendix H on 2026-09-24 for the page budget; read ITS caption wherever
+    # it lives rather than Section 4's prose.
+    from tests.manuscript import caption_of
+    cap = caption_of("fig:judgefree")
     assert f"${mv[1]:.3f} \\to {mv[best_n]:.3f}$" in cap, (mv[1], mv[best_n])
 
     # and the TriviaQA panel's claim: the proxy reward falls where majority vote does not

@@ -1,5 +1,76 @@
 # Session Progress Log
 
+## 2026-09-24 (evening) --- fifth review round: the head-to-head is now reported by serving configuration, and the paper is rescoped around what it measured
+
+Four referee reports (the user marked the fourth most important). The one that changed the paper:
+report 4 asked whether the risky model was served at full strength, and it was not ---
+`Llama-3.1-8B-Instruct` ran **without its chat template** in every judged arm behind the headline, and
+the judged text carried the **prompt's tail** (caution (bc), fixed in `dap/e1.py`/`dap/e2/evaluator.py`,
+old text recovered by `dap.shared.served_generation`). Three arms answered it, each banded before any
+judge call:
+
+- **feat-184** (`results/onset_prediction_served_opponent.md`): A1 REPRODUCES on de-echoed text and
+  `+0.0505 [+0.0155, +0.0860]` **replaces** `+0.0645` wherever the paper quotes the headline
+  difference; **B1 FAILS** --- against the risky model served through its chat template the `k=10`
+  meter (which *is* that model at `99.84%` of steps) wins by `0.138`; B2 HOLDS (`+0.058`); the serving
+  handicap is `+0.184`.
+- **feat-185** (`results/onset_prediction_he_config.md`): at the authors' own pair (TinyComma +
+  Llama-3.1-70B base, `T=1.0`) selection wins at every budget; the 70B base is judged no better than
+  the anchor at this temperature.
+- **feat-186** (`results/frontier_levels_note.md`, descriptive): every arm Figure 1(b) plots, judged in
+  both orders against one opponent on repaired text, so the panel's levels are comparable within it.
+
+**What the paper now says.** The head-to-head is **Table 1, by serving configuration and budget**:
+when the risky model continues text (released configuration and the authors' 70B pair) selection at
+`n=64` beats the meter at every budget (`+0.0655` to `+0.1265`); served through its chat template the
+`k=10` meter wins by `0.138`. Every cell the meter wins is certified at `K/S_w >= 1.25`, i.e. at
+nothing, and wherever `K/S_w < 1` the meter is indistinguishable from its own anchor. All eight rows
+survive a post-hoc Bonferroni correction (`analysis/served_multiplicity.py` ->
+`results/served_multiplicity.csv`; narrowest chat `k=1`, `[+0.0015, +0.0820]`). "Selection against its
+own anchor" (Figure 2) and "selection against the meter" (Table 1) are now kept apart in every
+sentence of the abstract and introduction. Proposition 3 is a **sparsity bound**, retitled, and the
+text says it is not a bound on every causal policy. Also: post-processing and adaptive-`n` extensions
+of Proposition 1; self-consistency scoped to safe models; composition (`m log n`, union bound, a covert
+channel of at most `log2 n` bits per response); the KL-amplification claim replaced by the binary-KL
+inversion; Theorem 1's `O(1)` reading carries its proviso; onset quoted as `0.8--1.35`; cost basis
+stated (`61.3x` is forward passes, `21.8x` deployable draws only, we did not time the 70B); He et al.'s
+Global and infinity-Renyi ablations credited; BoNBoN/Yang, private selection, VA3, Kalai et al.,
+Elkin-Koren and the earlier-audit delta added; 21 dataset/model citations added; the judging template,
+Table 10 and Proposition 5's units fixed; revision-history and reviewer-response prose removed from the
+appendix; a `3.0%` one-sided bound stated for the zero on `100` passages (main text and Table 20's
+caption); the short-work limitation (`log 64` reaches `S(x)` on `35.4%` of TriviaQA answers, the
+meter's smallest budget on `89.6%`) moved into the Conclusion; the union-bound factor quoted as
+`6,400` at `n=64`, `m=100`. **The two Llama-3.2 pairs stay out of the main text**: report 2 showed a
+reader takes them as copyright evidence and neither anchor is a safe model, so their guards now pin
+the numbers to the appendix passage that says so, and fail if Section 4 quotes them without it.
+
+**Guards.** The rewrite broke 43 guards. Each was sorted into *restore* (a still-true concession or
+claim the rewrite had dropped: the compute-matched loss in the Conclusion, "the price is the drawing",
+`at n=64` on the GSM8K ratio, the TriviaQA parity pointer, CoTaEval in Scope, the two further pairs,
+the cross-judge `+0.081`, judge C's `+0.123`, the n-grid floor, the workload scope, `1.30`/`132x`, the
+defective-run and batching-falsification sentences, the opponent-ladder correction), *follow* (content
+that moved: the judge-free caption now in Appendix H, via the new `tests/manuscript.py:caption_of`,
+which reads only files the manuscript `\input`s), or *re-derive* (content the data changed: the
+reversal guard reads the de-echoed CSV per A1; the empty-rate ladder reads the de-echoed gate, `14.6%`
+not `6.8%`; the sparse-horn guard checks selection's level `0.555` against `lo95 > 0.5` instead of a
+typed `+0.1045`; the cost-column guard checks bound vs measurement on Figure 1(b)'s data since the
+single-order meter row left the forest; the D5 verdict vocabulary in `tests/test_h2h_verdicts.py`
+said `CHALLENGER WINS`, a label no script writes, where the script and feat-185's registration say
+`INCUMBENT LOSES` --- latent until today's arms produced the first D5 rows below zero). Body exactly
+9 of 9 pages, page 10 opens on the Ethics Statement; tectonic exit 0, 0 overfull, 0 `??`, bold faces 3;
+`analysis/audit_numbers.py` finds 3,825 literals and the one expected miss (`64256`).
+
+**Skipped, deliberately:** AnchoredByte (engineering before the deadline; stated as a limitation),
+He et al.'s Prometheus/FActScore metrics, a human study, a multi-query covert-channel attack (bounded,
+not attacked; stated), timing at the 70B pair, re-judging every older pass de-echoed, an adaptive-`n`
+experiment, and the Spotlight-level asks (hybrid decoder, class-level separation, legal validation).
+
+```bash
+.venv/bin/python analysis/served_opponent.py --out results         # Table 1 rows, feat-184/185 bands
+.venv/bin/python analysis/frontier_levels.py --merge a,b,c --out results
+.venv/bin/python analysis/served_multiplicity.py --out results     # Bonferroni reading of Table 1
+```
+
 ## 2026-09-24 (morning) --- feat-182 SCORED: B1 does not replicate, so the factor is quoted per draw everywhere; feat-183 SCORED: the licensed anchors pass at every rung from 20 to 200
 
 **feat-182** (Part A re-drawn under a disjoint seed, on host B by declared deviation, anchors `76/76`

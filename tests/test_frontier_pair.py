@@ -127,15 +127,29 @@ def test_the_appendix_table_rounds_from_the_csv():
         in apx, (r["arm"], "selection's own cell is no longer quoted")
 
 
-def test_section6_carries_the_second_pair_reversal():
+def test_the_second_pair_is_reported_only_beside_its_not_a_safe_model_caveat():
+    """Re-derived 2026-09-24. This guard used to REQUIRE Section 4 to quote the pair, and a referee
+    showed why that was wrong: Llama-3.2-1B is not a safe model, so a main-text reader takes
+    "+0.076 for 1.204 nats" as further evidence for the COPYRIGHT claim when it is a
+    vocabulary-matched ablation of the meter. The numbers stay -- in the appendix, in the same
+    passage that says neither anchor is safe -- and Section 4 may quote them only with that caveat.
+    """
     from tests.manuscript import tex
-    body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
     a = by_judge(SCORER)
     sel = a["selection, n=8"]
     best = max((v for k, v in a.items() if k.startswith("metered")), key=lambda r: float(r["gain"]))
-    assert f"${float(sel['gain']):+.3f}$ for ${float(sel['spend_nats']):.3f}$ nats" in body
-    assert f"${float(best['gain']):+.3f}$ for ${float(best['spend_nats']):.1f}$" in body
-    assert "the reversal repeats" in body
+    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
+    i = apx.index("Two further pairs test whether the reversal is the mechanism's or the pair's")
+    passage = apx[i:i + 1800]
+    assert "neither anchor is a \\emph{safe} model" in passage, "the caveat left the pair's own passage"
+    assert f"${float(sel['gain']):+.3f}$ $[" in passage, "selection's cell left the appendix passage"
+    assert f"${float(best['spend_nats']):.1f}$" in passage, "the meter's best arm left the appendix passage"
+    body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
+    for needle in ("Llama-3.2-1B", f"${float(sel['gain']):+.3f}$ for ${float(sel['spend_nats']):.3f}$ nats"):
+        j = body.find(needle)
+        if j >= 0:
+            assert "not" in body[max(0, j - 250):j + 250] and "safe" in body[max(0, j - 250):j + 250], \
+                "Section 4 quotes the non-safe pair without saying it is not a safe model"
 
 
 def test_the_shared_vocabulary_constraint_is_stated_where_it_bites():

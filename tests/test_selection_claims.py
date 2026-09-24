@@ -140,8 +140,16 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     import csv as _csv
     import re as _re
     from tests.manuscript import tex as _tex
+    # feat-184 A1 (results/onset_prediction_served_opponent.md) registered that the de-echoed
+    # figure REPLACES the committed one wherever the paper quotes the headline difference, since it
+    # moved by more than 0.005 (+0.0645 -> +0.0505). The committed CSV stays as the record; the
+    # sentence is checked against the one it now quotes.
     rows = {r["quantity"]: r for r in
-            _csv.DictReader(open("results/order_averaged_h2h.csv"))}
+            _csv.DictReader(open("results/order_averaged_h2h_deecho.csv"))}
+    old = {r["quantity"]: r for r in _csv.DictReader(open("results/order_averaged_h2h.csv"))}
+    assert abs(float(old["D3 difference of gains, paired"]["value"])
+               - float(rows["D3 difference of gains, paired"]["value"])) >= 0.005, \
+        "the two passes now agree to 0.005; A1's rule says the committed figure is quoted again"
     sel = rows["D1 selection gain, order-averaged"]
     met = rows["D2 metered gain, order-averaged"]
     dif = rows["D3 difference of gains, paired"]
@@ -407,8 +415,11 @@ def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
         if "$n=" in label:                                         # where the row names n, it agrees
             assert int(label.split("$n=")[1].split("$")[0]) == n, (label, n)
     spent = [r for r in rows if not r[3]]
-    assert len(spent) == 1 and "metered" in spent[0][0], spent
-    assert abs(spent[0][2] - 171.28) < 5e-3, spent[0]
+    # 2026-09-24 (feat-186): the single-order meter row left the forest, which is now selection
+    # against its own anchor only. The meter's MEASURED spend is plotted in Figure 1(b) beside
+    # selection's BOUND, from frontier_levels.csv, which records which kind each x is -- so the
+    # bound/measurement split is checked there (below) rather than silently retiring here.
+    assert not spent, (spent, "a spent (non-certificate) row is back in the forest; re-derive this")
 
     txt = _body("experiments.tex", "selection.tex", "iclr_intro.tex")
     for bad in ("budget of $171.3$", "budget, nats", "$171.3$-nat budget"):
@@ -436,6 +447,14 @@ def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
     for r in rows:
         n = int(float(r["n"]))
         assert abs(float(r["kl_nats"]) - kl_best_of_n(n)) < 5e-5, (n, r["kl_nats"])
+    fl = list(_csv.DictReader(open("results/frontier_levels.csv")))
+    kinds = {r["arm"]: (r["x_kind"], float(r["x_nats"])) for r in fl}
+    for arm, (kind, x) in kinds.items():
+        if arm.startswith("sel_n"):
+            assert kind == "kl_bound" and abs(x - kl_best_of_n(int(arm[5:]))) < 5e-4, (arm, kind, x)
+        elif arm.startswith("met_k"):
+            assert kind.startswith("mean_spend"), (arm, kind, "the meter's x is not a measurement")
+    assert abs(kinds["met_k10"][1] - 171.28) < 5e-3, kinds["met_k10"]
 
 
 def _live_sections():

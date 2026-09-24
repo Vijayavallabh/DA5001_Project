@@ -270,15 +270,23 @@ def test_the_audited_anchors_empty_rate_is_quoted_with_its_own_threshold():
     import csv as _csv
     import os as _os
     from tests.manuscript import body
+    # Re-derived 2026-09-24 from the DE-ECHOED gate (results/selection_breadth_deecho.csv). The
+    # 6.8% this guard used to pin was measured on text carrying the prompt's tail (caution (bc)),
+    # which made empty draws look non-empty; on the true generations the audited anchor is empty on
+    # 14.6%, and three anchors fail the gate, not one. The concession grew; the guard follows it.
     rows = list(_csv.DictReader(open(_os.path.join(
-        ROOT, "results", "selection_breadth.csv"), encoding="utf-8")))
-    empties = sorted({round(float(r[c]) * 100, 1) for r in rows
-                      for c in r if c.startswith("empty") and r[c] not in ("", None)})
+        ROOT, "results", "selection_breadth_deecho.csv"), encoding="utf-8")))
+    rate = {}
+    for r in rows:
+        rate.setdefault(r["anchor"], round(float(r["empty_frac_n1"]) * 100, 1))
     txt = body("appendix_limitations.tex")
-    # `$6.8\%$` appears twice -- once as the anchor's own rate, once in the ladder -- so a bare
-    # membership test passed the mutation that deleted the first (caution (an)).
-    assert "emits one on $6.8\\%$ of the $500$ prompts" in txt, (
+    audited = rate["TinyComma-1.8B (audited)"]
+    assert audited > 5.0, (audited, "the audited anchor now passes its gate; revisit the paragraph")
+    i = txt.find(f"empty on ${audited}\\%$ of the $500$ prompts")
+    assert i >= 0, (
         "the audited anchor's empty rate was deleted; it is the one that exceeds the 5% threshold "
-        f"its own registration set (rates on record: {empties})")
-    for lit in ("$0.0\\%$", "$0.2\\%$", "$3.0\\%$"):
-        assert lit in txt, f"the empty-fraction ladder lost {lit}, so 6.8% has nothing to sit in"
+        f"its own registration set (rates on record: {sorted(set(rate.values()))})")
+    assert "the $5\\%$" in txt[i:i + 400], "the rate is quoted without the threshold it fails"
+    for v in sorted(set(rate.values())):
+        assert f"${v}\\%$" in txt, f"the empty-fraction ladder lost {v}%, so the audited rate has nothing to sit in"
+    assert "emits one on $6.8\\%$" not in txt, "the echo-inflated rate is back"

@@ -1,24 +1,32 @@
-# Session handoff --- 2026-09-23
+# Session handoff --- 2026-09-24
 
-## IN FLIGHT 2026-09-24: feat-184, the head-to-head against a properly served risky model
+## Current state, 2026-09-24 evening --- fifth review round done, nothing in flight
 
-`results/onset_prediction_served_opponent.md`, committed before any run. Written while revising against
-the fifth set of four referee reports (the user marked report 4 most important). Two defects found
-answering its pipeline question, both read off committed trajectories:
+The manuscript was revised against four referee reports (the user marked report 4 most important):
+body **exactly 9 of 9** with page 10 opening on the Ethics Statement, tectonic exit `0`, `0` overfull,
+`0` `??`, bold faces `3`, `53` pages in all; `analysis/audit_numbers.py` finds `3,825` literals and the
+one expected miss (`64256`). Pre-rewrite sections are kept in `output/review_audit/pre_main_2026-09-24/`.
+**No GPU job is running.** feat-184 (`results/onset_prediction_served_opponent.md`), feat-185
+(`results/onset_prediction_he_config.md`) and feat-186 (`results/frontier_levels_note.md`) are scored and
+committed; `progress.md` (2026-09-24 evening) lists every change, every guard that moved and why, and
+the review points deliberately skipped.
 
-1. `Llama-3.1-8B-Instruct` was served **without its chat template** (temperature `1.0`, no penalty) in
-   every judged arm behind the headline; `output/sweep_chat` has it served properly.
-2. **caution (bc)**: `dap/e1.py` sliced left-padded rows at their own token count, so `generation`
-   starts with up to `p` prompt tokens. Fixed in `dap/e1.py` and `dap/e2/evaluator.py`
-   (`tests/test_left_pad_slicing.py`); old text is recovered by `dap.shared.served_generation`
-   (`--deecho` on `analysis/order_averaged_h2h.py`, opt-in so committed CSVs reproduce).
+What the next session must know:
 
-Part A re-judges the committed pass de-echoed; Part B judges against the chat-served opponent with
-one new arm, `output/feat184/chat_k10`. Local GPUs 1, 2, 4.
+- **Table 1 (`tab:served`) is the head-to-head**, by serving configuration and budget; its rows are
+  `results/served_opponent.csv` (`T1`) and `results/frontier_levels.csv`, and
+  `results/served_multiplicity.csv` is the post-hoc Bonferroni reading. The committed `+0.0645` is
+  replaced everywhere by the de-echoed `+0.0505`, as feat-184 A1 registered.
+- **The Llama-3.2 pairs must not return to the main text** unless the sentence says neither anchor is
+  a safe model (`tests/test_frontier_pair.py`, `tests/test_frontier_third.py`).
+- **Guards on captions go through `tests/manuscript.py:caption_of(label)`**, which follows `\input`
+  from `iclr_2027.tex`; the judge-free figure now lives in Appendix H.
+- Before touching the abstract, Table 1's paragraph or the Conclusion's compute sentence, run
+  `tests/test_ac_review.py tests/test_concessions_are_guarded.py tests/test_review_r234.py
+  tests/test_selection_claims.py tests/test_second_opponent.py`.
 
-**feat-185** (`results/onset_prediction_he_config.md`): judge-only head-to-head at the authors' own
-pair, TinyComma + Llama-3.1-70B base (`output/phase5/imit_llama70b`, k=20/1/0.5), queued on GPU 4
-behind feat-184's B3 by `scripts/run_feat185.sh` (sentinel wait with a deadline, mock-tested).
+Recommended next step: one read of the compiled PDF end to end for flow --- the rewrite touched every
+body section --- then the human-only submission steps (paper deadline Sep 25 AoE).
 
 ## Current objective
 

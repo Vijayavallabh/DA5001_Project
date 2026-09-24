@@ -93,8 +93,13 @@ def test_the_abstract_price_is_the_measured_wall_clock_and_not_the_flop_proxy():
     proxy = float(lat["ratio, analytical (serving_cost.py)"][2])
     assert abs(measured - proxy) > 1.0, "the two ratios have converged; this guard is moot"
     a = " ".join(_abstract().split())
-    assert f"${measured:.1f}\\times$" in a, \
-        f"the abstract must quote the MEASURED wall-clock ratio ${measured:.1f}x"
+    # Either measured ratio: the harness's end-to-end 35.4x, or the deployable 64 * C/D (21.8x,
+    # results/anchor_only_cost.csv) that caution (ay) showed is the per-request price. Never the
+    # FLOP proxy, which is the directional error this guard exists for.
+    ao = {int(r["width"]): r for r in _csv.DictReader(open("results/anchor_only_cost.csv"))}
+    deploy = 64 * float(ao[200]["C_over_D"])
+    assert f"${measured:.1f}\\times$" in a or f"${deploy:.1f}\\times$" in a, \
+        f"the abstract must quote a MEASURED wall-clock ratio (${measured:.1f}x or ${deploy:.1f}x)"
     # the proxy may appear only if it is labelled as forward passes, never as a price
     tok = f"${proxy:.1f}\\times$"
     if tok in a:

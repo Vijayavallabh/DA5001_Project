@@ -19,7 +19,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (quantity prefix) -> (label when lo > 0, when hi < 0, when it straddles)
 SCHEMES = {
     "D3": ("REVERSAL CONFIRMED", "REVERSAL REFUTED", "REVERSAL UNRESOLVED"),
-    "D5": ("INCUMBENT WINS", "CHALLENGER WINS", "TIE"),
+    # D5's below-zero label is the one analysis/order_averaged_h2h.py writes and feat-185's
+    # registration committed (C2: "INCUMBENT WINS / INCUMBENT LOSES / TIE"). This scheme first said
+    # "CHALLENGER WINS", a label no script ever wrote; it went unnoticed until 2026-09-24, when
+    # feat-184/185 produced the first D5 rows whose interval lies below zero.
+    "D5": ("INCUMBENT WINS", "INCUMBENT LOSES", "TIE"),
 }
 
 

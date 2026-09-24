@@ -64,7 +64,9 @@ def test_the_likelihood_is_called_worse_than_length_only_if_the_interval_says_so
         t = body(name)
         for m in re.finditer(r"(worse|no better) than (?:the answer's )?length", t):
             assert m.group(1) == ("worse" if resolved else "no better"), (name, m.group(0))
-    assert re.search(r"no better than the answer's length", body("iclr_intro.tex"))
+    # 2026-09-24: the claim left the introduction (a referee: ranking anchor draws by p_r is not
+    # tilting generation toward it) and is made, scoped, in Section 4.4; pin it where it is made.
+    assert re.search(r"no better than the answer's length", body("orders.tex"))
 
 
 def test_the_failed_scorer_and_the_auc_point_to_a_paragraph_that_holds_them():
@@ -93,9 +95,12 @@ def test_the_gain_ratio_is_quoted_with_its_interval_and_only_while_it_excludes_o
     r = _csv("h2h_ratio_interval.csv")[0]
     ratio, lo, hi = float(r["ratio"]), float(r["ratio_lo95"]), float(r["ratio_hi95"])
     intro = body("iclr_intro.tex")
-    assert f"${ratio:.1f}\\times$ $[{lo:.1f}, {hi:.1f}]$" in intro, "intro ratio or interval stale"
-    if r["excludes_one"] != "yes":
-        assert "win by" not in intro, "the ratio's interval includes one; 'win by' overstates it"
+    # 2026-09-24: the introduction now carries the paired DIFFERENCE and no ratio -- the ratio was
+    # measured on text carrying the prompt's tail (caution (bc)), and its denominator's interval
+    # comes within 0.014 of zero. If a ratio ever returns to the intro it must bring its interval.
+    if f"${ratio:.1f}\\times$" in intro:
+        assert f"${ratio:.1f}\\times$ $[{lo:.1f}, {hi:.1f}]$" in intro, "intro ratio without interval"
+    assert "win by" not in intro or r["excludes_one"] == "yes", "'win by' overstates the ratio"
     app = body("appendix_selection.tex")
     assert f"${ratio:.2f}\\times$ $[{lo:.2f}, {hi:.2f}]$" in app
     assert f"$[{float(r['fieller_lo95']):.2f}, {float(r['fieller_hi95']):.2f}]$" in app
@@ -206,8 +211,11 @@ def test_the_main_text_says_where_the_kl_bound_is_attained():
     closed form is attained for a tie-free score and measures the tie rate. The main text now says
     so beside the head-to-head, and must keep pointing at the paragraph that shows it."""
     exp = body("experiments.tex")
-    i = exp.index("attained for a tie-free score")
-    assert r"\ref{app:realisedkl}" in exp[i: i + 80]
+    # 2026-09-24: "attained for a tie-free score" became "attained only for a tie-free score and
+    # unrepeated strings" -- a referee showed a discrete p_s never attains either figure exactly
+    # (q(y*) = 1-(1-p)^n < np). The guard now pins the stricter wording.
+    i = exp.index("attained only for a tie-free score")
+    assert r"\ref{app:realisedkl}" in exp[i: i + 90]
     app = body("appendix_selection.tex")
     j = app.index(r"\label{app:realisedkl}")
     assert r"\mathrm{Beta}(n,1)" in app[j: app.index(r"\paragraph", j)]
@@ -216,11 +224,13 @@ def test_the_main_text_says_where_the_kl_bound_is_attained():
 def test_the_open_markers_are_explained_by_the_gate_that_failed_them():
     """Two reports asked why the open markers of Figure 2 missed admission. The caption now says,
     and says it from the CSV: every anchor whose entry gate failed, at its own empty fraction."""
-    fails = {r["anchor"]: float(r["empty_frac_n1"]) for r in _csv("selection_breadth.csv")
+    # Since 2026-09-24 the gate is read on the TRUE generations (caution (bc)): an empty draw that
+    # carried the prompt's tail looked non-empty, and Comma-7B moved from PASS to FAIL.
+    fails = {r["anchor"]: float(r["empty_frac_n1"]) for r in _csv("selection_breadth_deecho.csv")
              if r["entry_gate"] == "FAIL"}
-    assert len(fails) == 2, fails
+    assert len(fails) == 3, fails
     exp = body("experiments.tex")
-    i = exp.index(r"\caption{\textbf{Every arm selection anchoring")
+    i = exp.index(r"\caption{\textbf{Selection against its own anchor.}")
     cap = exp[i: exp.index(r"\label{fig:breadth}", i)]
     for frac in fails.values():
         assert f"${100 * frac:.1f}\\%$" in cap, frac

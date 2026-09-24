@@ -77,7 +77,9 @@ def test_the_paper_reports_the_tokenswap_measurement_and_that_it_loses():
     w = t[i:i + 4400]  # the paragraph grew when the measurement replaced the concession
 
     # It must say the measurement happened, and that our mechanism is the expensive one.
-    assert "have now measured TokenSwap" in w, "the paper no longer says the arm was run"
+    # "have now measured" was revision-history wording (a referee asked the appendix to stop
+    # narrating its own edits); the sentence that says the arm was run is now the method statement.
+    assert "We reimplemented it from Algorithm" in w, "the paper no longer says the arm was run"
     assert "most expensive of the three" in w, \
         "the concession that our mechanism costs the most was trimmed"
 
