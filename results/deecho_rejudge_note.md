@@ -95,3 +95,32 @@ that read it are reported NOT SCORED rather than as surviving or not.
   reward's own echo handicap (feat-184's scoring log) is left in place and stated.
 
 ## Scoring log
+
+### Scored 2026-09-24 14:45 IST --- every registered reading survives the text repair; three secondary gains change sign class
+
+`.venv/bin/python analysis/deecho_rejudge.py --out results` -> `results/deecho_rejudge.csv` (60 rows);
+G0 from `results/deecho_rejudge_coverage.csv`. Launchers `scripts/run_deecho_rejudge.sh` (queues
+`q56`, `q7`, and `q5b` for the four ladder rungs whose first run died on `load_baseline`'s `KeyError`
+over records with no `prefix_analysis`, fixed the same hour in `analysis/selection_decoding.py`).
+
+**G0 PASS** on all `21` directories: `full_text` decomposes as prompt plus generation on `100%` of
+records; the echo was present on `43.6%` (the metered sweep) to `88.4%` of them.
+
+**The registered readings: 20 of 20 survive.** Every `D3` keeps its sign class, and the panel count
+is **`r = 4` of `5`**, as registered: D `+0.0550 [+0.0075, +0.1025]`, E (Mixtral)
+`-0.0015 [-0.0455, +0.0420]` (still the one covering zero), F `+0.1210 [+0.0770, +0.1645]`,
+G `+0.0545 [+0.0015, +0.1075]`, B `+0.0505 [+0.0155, +0.0860]` (feat-184). The ladder keeps its shape
+under both judges (confirmed at the committed 8B and at Qwen-0.5B, unresolved from 1.5B up), AlpacaEval
+stays negative at `-0.0329 [-0.0528, -0.0127]` (on record `-0.0339`), and the two book corpora and ours
+stay positive.
+
+**Three of the forty secondary gains (`D1`, `D2`) change sign class**, which the note said would be
+reported and not scored:
+
+- MT-Bench, selection's gain `+0.0656 [+0.0219, +0.1125]` -> `+0.0375 [-0.0125, +0.0875]`;
+- CoTaEval-QA, selection's gain `+0.0235 [+0.0010, +0.0470]` -> `+0.0070 [-0.0165, +0.0300]`;
+- Gutenberg, the meter's gain `-0.0185 [-0.0380, +0.0005]` -> `-0.0275 [-0.0470, -0.0080]`.
+
+The appendix's workload paragraph quotes the first two as positive gains ("selection gains on all
+three"; "selection gains `+0.0235` whatever the budget"), so both sentences are rewritten from the
+recovered text; the difference readings they sit beside are unchanged.

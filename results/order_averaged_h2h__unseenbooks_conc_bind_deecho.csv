@@ -1,0 +1,8 @@
+quantity,arm,value,lo95,hi95,n,single_order,reading
+"D1 selection gain, order-averaged",sel_n64,0.049,0.033,0.065,500,0.039,SURVIVES
+"D2 metered gain, order-averaged",metered_k1,-0.0425,-0.0615,-0.0235,500,-0.028,SURVIVES
+"D3 difference of gains, paired",sel_n64 - metered_k1,0.0915,0.0715,0.111,500,0.067,REVERSAL CONFIRMED
+order consistency,sel_n64,0.364,,,500,,UNUSABLE
+order consistency,sel_n1,0.412,,,500,,UNUSABLE
+order consistency,metered_k1,0.482,,,500,,UNUSABLE
+order consistency,anchor_k0,0.412,,,500,,UNUSABLE
