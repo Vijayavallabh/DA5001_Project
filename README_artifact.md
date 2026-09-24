@@ -1279,6 +1279,8 @@ bash scripts/run_he_ab.sh 0 0.5 0.1 2
 .venv/bin/python analysis/he_metrics.py --report --out results
 # CoTaEval's infringement split (feat-193)
 bash scripts/run_cotaeval_inf.sh 0            # or run_cotaeval_inf_split.sh over two cards
+bash scripts/run_cotaeval_reward_shards.sh 0 1 2 4   # the reward in prompt shards; same values as one pass
+.venv/bin/python analysis/cotaeval_infringement.py --out results
 # descriptive arms: the covert channel, the ROUGE threshold, adaptive n, the older passes and the
 # forest re-judged on recovered text, the empty-completion preference, the joint frontier
 .venv/bin/python analysis/covert_channel.py --out results

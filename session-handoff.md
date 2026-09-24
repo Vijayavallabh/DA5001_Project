@@ -1,23 +1,25 @@
 # Session handoff --- 2026-09-24
 
-## In flight, 2026-09-24 16:05 IST --- the skipped-points round (user: finish every skipped task on both hosts)
+## Current state, 2026-09-24 17:20 IST --- every skipped review point is done; nothing in flight
 
-Scored since 15:10: feat-188 (replication, all REPLICATE), feat-190 (batched latency, T1 CONFIRMED),
-the forest re-judge, the Pareto frontier, FActScore. Still unscored, each with its own log to write:
+The round the user asked for ("finish all the tasks that you skipped with utilizing all the gpus in
+this host and the other host") is complete: feat-187 to feat-193 are `done`, each scored against bands
+or a descriptive note committed before its first reading, and the human-only items (a human study,
+legal validation) are stated in the paper as not done. The last to land was feat-193, CoTaEval's
+infringement half: no arm, the risky model included, reaches ROUGE-L `>= 0.5` on any of `500` items,
+and I3 was wrong (the pool's best-of-`64` oracle beats the risky model on mean ROUGE-L); the registered
+"uninformative" wording is NOT used because its rule did not fire. `progress.md` (2026-09-24 afternoon)
+has every result and producing command.
 
-- `results/onset_prediction_anchoredbyte.md` (feat-187): `k=0.1` and `k=0.5` judged (both CONFIRMED on
-  the script's rule); `k=2` judging on host B GPU 7 (`scripts/run_anchoredbyte_judge.sh`), then
-  `analysis/anchoredbyte_score.py` on host B (it needs the trajectories) and pull
-  `results/anchoredbyte.csv`. The appendix paragraph `app:anchoredbyte` and its table already carry
-  `k=0.1`/`0.5`; add the `k=2` row, and the abstract clause the registration fixes if all three read
-  CONFIRMED.
-- `results/onset_prediction_cotaeval_infringement.md` (feat-193): the 64-draw pool split by trajectory
-  index over local GPUs 0 and 4 (`scripts/run_cotaeval_inf_split.sh`), then reward and
-  `analysis/cotaeval_infringement.py` in the same launcher.
+**No GPU job is running on either host** (both read idle at 17:15). Manuscript: tectonic exit `0`,
+`0` overfull, `0` `??`, bold faces `3`, `57` pages; body **exactly 9 of 9** with page 10 opening on the
+Ethics Statement and **zero** slack --- any body edit must be length-neutral, and the cheapest lines
+are paragraphs ending in a runt (find them with `pdftotext -layout` and a length filter).
+`analysis/audit_numbers.py`: `4,205` literals, one expected miss (`64256`).
 
-Also running: `scripts/run_he_ab.sh 2` (Prometheus + FActScore on AnchoredByte `k=2` once its
-trajectories exist on host B). The main text is at exactly 9 pages with **zero** slack: every further
-body edit must be length-neutral (caution (n), (i)).
+**Deadline (user, 2026-09-24): submission 26 Sept 2026, 17:29 IST.** Recommended next step: one read
+of the compiled PDF end to end, then the human-only submission steps (feat-016, never started by an
+agent).
 
 ## Current state, 2026-09-24 evening --- fifth review round done, nothing in flight
 

@@ -15,5 +15,5 @@ P2,"R1 D3 difference of gains, paired","+0.0450 [+0.0110, +0.0790]",REPLICATES
 ,"R1b D3 difference of gains, paired","+0.0620 [+0.0275, +0.0960]",REPLICATES
 ,"R2b D1 selection gain, order-averaged","+0.1425 [+0.1200, +0.1655]",REPLICATES
 ,"R2b D3 difference of gains, paired","+0.0695 [+0.0385, +0.0995]",REPLICATES
-,"R0 D1 selection gain, order-averaged","+0.1010 [+0.0765, +0.1245]",REPLICATES
-,"R0 D3 difference of gains, paired","+0.0500 [+0.0155, +0.0840]",REPLICATES
+,"R0 D1 selection gain, order-averaged","+0.1010 [+0.0765, +0.1245]",descriptive (REPLICATES)
+,"R0 D3 difference of gains, paired","+0.0500 [+0.0155, +0.0840]",descriptive (REPLICATES)

@@ -17,7 +17,7 @@ for K in $KS; do
   until ssh ${HOSTB:?set HOSTB to the second host} "test -e ~/v/logs/ab70_k$K.done -o -e ~/v/logs/ab70_k$K.fail" < /dev/null; do
     [ "$(date +%s)" -ge "$dl" ] && exit 2; sleep 60; done
   ssh ${HOSTB:?set HOSTB to the second host} "test -e ~/v/logs/ab70_k$K.done" < /dev/null || { touch $M/he$t.fail; continue; }
-  rsync -a "${HOSTB:?set HOSTB to the second host}:v/DA5001_Project/$D/trajectories_k${K}_*.jsonl" $D/ < /dev/null || { touch $M/he$t.fail; continue; }
+  rsync -a "${HOSTB:?set HOSTB to the second host}:v/$(basename "$PWD")/$D/trajectories_k${K}_*.jsonl" $D/ < /dev/null || { touch $M/he$t.fail; continue; }
   { $HE --do-dump --dump output/he_metrics/arms$t.jsonl --arm "ab_k$K=traj:$D:$K" &&
     $HE --prometheus --dump output/he_metrics/arms$t.jsonl --tag "$t" --out results &&
     $HE --factscore --dump output/he_metrics/arms$t.jsonl --tag "$t" --out results; } \

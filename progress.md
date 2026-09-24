@@ -32,7 +32,19 @@ has its bands or its descriptive note committed before its first reading.
   alone are the whole non-dominated set over (certificate, level, latency) at both widths.
 - **Empty-completion preference** (`analysis/empty_preference.py`): the committed reward scores an
   empty draw above a typical one; best-of-`n` serves empty on `12.8/21.8/8.2%` at `n=1/8/64`.
-- **feat-193 CoTaEval infringement**: pool split across local GPUs 0 and 4 by trajectory index.
+- **feat-193 CoTaEval infringement** (`results/onset_prediction_cotaeval_infringement.md`, scored
+  17:07): `500` items, each with the benchmark's own prefix. **No arm, the unconstrained risky model
+  included, reaches ROUGE-L `>= 0.5` on any item** (`0/500` at all 14 arms, Wilson upper `0.0076`), so
+  the event half separates nothing at this pair; but the registered "uninformative" rule does NOT
+  fire, because the risky model's mean ROUGE-L (`0.1589 [0.1554, 0.1624]`) sits above the anchor's
+  interval (`0.1451 [0.1421, 0.1481]`). I1/I1b (selection below risky), I2 (selection = anchor), I4
+  (`k=10` meter = risky) and I5 as predicted; **I3 WRONG**: the pool's best-of-`64` oracle is
+  `+0.0370 [+0.0336, +0.0404]` closer than the risky model --- Proposition 1 bounds amplification
+  relative to the anchor, not the risky model. The appendix's `Not run` sentence is replaced by the
+  result and the Limitations clause names both halves (paid for by a length-neutral trim in the
+  Setup paragraph); `tests/test_skipped_round.py::test_the_cotaeval_infringement_paragraph_reads_its_csv`
+  fails under all 8 mutations tried. The reward pass ran as four prompt shards on local GPUs; the
+  merged cache equals their union row for row.
 - Guide to the appendices is a numbered captioned table; `test_reference_targets.py` now models
   subsections and table rows; `he_metrics.py` bootstraps per quantity (an added arm cannot move a
   quoted interval) and carries its contrasts by default.
@@ -49,6 +61,7 @@ own command line killed the invoking shell (caution (c), again) --- nothing was 
 .venv/bin/python analysis/empty_preference.py --out results
 .venv/bin/python analysis/he_metrics.py --report --out results
 .venv/bin/python analysis/anchoredbyte_score.py --out results
+.venv/bin/python analysis/cotaeval_infringement.py --out results   # after scripts/run_cotaeval_reward_shards.sh
 ```
 
 ## 2026-09-24 (evening) --- fifth review round: the head-to-head is now reported by serving configuration, and the paper is rescoped around what it measured

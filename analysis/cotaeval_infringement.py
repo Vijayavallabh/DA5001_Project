@@ -36,12 +36,18 @@ def boot(v, rng, B=4000):
     return ms[int(0.025 * B)], ms[int(0.975 * B) - 1]
 
 
+def _one(job):
+    from dap.stats import copying_metrics
+    return copying_metrics(*job)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", default=D)
     ap.add_argument("--rewards", default="results/selection_rewards64_cotaeval_inf.csv")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--out", default="results")
+    ap.add_argument("--workers", type=int, default=24)
     a = ap.parse_args()
 
     from analysis.order_averaged_h2h import lowest_seed
@@ -70,12 +76,21 @@ def main():
     missing = {nm: len(set(pids) - set(v)) for nm, v in arms.items()}
     assert not any(missing.values()), f"arms missing items: {missing}"
 
-    per = {nm: {p: copying_metrics(v[p], ref[p]) for p in pids} for nm, v in arms.items()}
+    # The metrics are pure functions of (text, reference), so they are computed once each, in
+    # parallel, and the rest of the script is unchanged: same values, same bootstrap stream.
+    from multiprocessing import Pool
+    jobs = [(v[p], ref[p]) for v in arms.values() for p in pids]
+    jobs += [(cands[p][i][3], ref[p]) for p in pids for i in range(64)]
+    with Pool(a.workers) as pool:
+        out = pool.map(_one, jobs, chunksize=32)
+    k = 0
+    per = {}
+    for nm in arms:
+        per[nm] = dict(zip(pids, out[k:k + len(pids)]))
+        k += len(pids)
+    drawn = {p: out[k + 64 * j: k + 64 * (j + 1)] for j, p in enumerate(pids)}
     for n in (1, 8, 64):   # the oracle: best of the first n draws, per metric, against the reference
-        per[f"oracle{n}"] = {}
-        for p in pids:
-            ms = [copying_metrics(cands[p][i][3], ref[p]) for i in range(n)]
-            per[f"oracle{n}"][p] = {m: max(x[m] for x in ms) for m in METRICS}
+        per[f"oracle{n}"] = {p: {m: max(x[m] for x in drawn[p][:n]) for m in METRICS} for p in pids}
 
     rng = random.Random(193)
     rows = []

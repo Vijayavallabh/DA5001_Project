@@ -379,3 +379,48 @@ def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
     a = a[a.index("begin{abstract}"):a.index("end{abstract}")]
     assert f"two $70$B pairs takes ${t1:.2f}\\times$ and ${ab:.2f}\\times$ the meter's time" in a
     assert "$21.8\\times$" in a
+
+
+def test_the_cotaeval_infringement_paragraph_reads_its_csv():
+    """feat-193: 'Not run' became the scored split. Every claim in the paragraph, the two that argue
+    against us included (the risky model IS closer than the anchor, so the registered 'uninformative'
+    wording may not be used; the adversarial oracle beats the risky model, so I3 failed), is re-read
+    from results/cotaeval_infringement.csv, and the Limitations clause must name both halves."""
+    r = {x["arm"]: x for x in rows("cotaeval_infringement.csv")}
+    t = body("appendix_selection.tex")
+    assert "Not run:} CoTaEval's infringement half" not in t
+    i = t.index("\\textbf{CoTaEval's infringement half")
+    p = t[i:t.index("infringement.md})", i)]
+    n = int(r["risky"]["n"])
+    assert n == 500 and "($500$ of its $1{,}000$ items" in p
+    arms = [x for x in r.values() if " - " not in x["arm"]]
+    assert len(arms) == 14 and all(x["event_count"] == "0" for x in arms), \
+        "an arm reached ROUGE-L >= 0.5; 'no arm reaches the event on any item' is false"
+    assert f"($0/{n}$ each, Wilson upper bound ${float(r['risky']['event_hi']):.4f}$)" in p
+
+    def lvl(a):
+        return f"${float(r[a]['rouge_l']):.4f}$ $[{float(r[a]['rouge_l_lo']):.4f}, {float(r[a]['rouge_l_hi']):.4f}]$"
+
+    def dif(a):
+        return f"${float(r[a]['rouge_l']):+.4f}$ $[{float(r[a]['rouge_l_lo']):+.4f}, {float(r[a]['rouge_l_hi']):+.4f}]$"
+
+    ri, an = r["risky"], r["anchor"]
+    assert f"({lvl('risky')} against {lvl('anchor')})" in p
+    assert float(ri["rouge_l_lo"]) > float(an["rouge_l_hi"]), "the risky model is no longer closer than the anchor"
+    fires = ri["event_count"] == "0" and float(an["rouge_l_lo"]) <= float(ri["rouge_l"]) <= float(an["rouge_l_hi"])
+    assert fires == ("uninformative" in p), "the registered wording must appear exactly when its rule fires"
+    for arm, sign, words in (("sel64 - anchor", 0, "no closer than the anchor alone"),
+                             ("sel64 - risky", -1, "further than the risky model"),
+                             ("sel64_ne - risky", -1, "over non-empty draws alone"),
+                             ("met_k10 - risky", 0, "the meter at $k=10$ is the risky model"),
+                             ("oracle64 - risky", 1, "closer than the risky model's one draw")):
+        lo, hi = float(r[arm]["rouge_l_lo"]), float(r[arm]["rouge_l_hi"])
+        assert (1 if lo > 0 else -1 if hi < 0 else 0) == sign, (arm, "the reading no longer matches its words")
+        j = p.index(dif(arm))
+        assert words in p[max(0, j - 120):j + 40], (arm, words)
+    assert "We predicted that even an adversarial scorer would stay below the risky model, and it does not" in p
+    assert round(float(r["sel64"]["empty_served"]) * n) == 1 and "an empty draft on one item" in p
+    close = body("iclr_closing.tex")
+    s = close[close.index("F1 on CoTaEval"):]
+    s = s[:s.index("}).") + 3]
+    assert "infringement event not even the risky model reaches" in s, "the Conclusion names only one half"
