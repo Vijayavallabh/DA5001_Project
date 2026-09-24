@@ -1,5 +1,52 @@
 # Session Progress Log
 
+## 2026-09-24 (late night) --- v11: the sixth review round (four reports, the fourth marked must-address; user: "select only the feedback you genuinely believe will meaningfully improve the draft ... work autonomously")
+
+**What the reviews changed, and the measurement behind each change.**
+
+- **Proposition 2 is now exact and attained at every order.** `b_alpha(K) = max{a : d_alpha(a || e^{-S}) <= K}`,
+  which equals `1` iff `K >= S`. Data processing gives one direction and a two-point reweighting attains
+  it. The window threshold `k = s(x) w / T_max` (a quarter of `s(x)` for `50` tokens) replaces "never by
+  T", and the proof is in Appendix A.
+- **Proposition 4 is restated** as `D_KL >= E_q[I_T]`, with `I_T` the imitation KL over slack steps.
+  With `gamma = 0.857` and `log(1/pi) = 1.30` the ratio is at least `132`.
+- **Table 1 (`tab:certificate`)** prints the query horizon `ceil(S/K) - 1` (`38` at `n=64`, `76` at `n=8`)
+  and the draws that certify a near-verbatim event at `1%` (`3n/0.01`), in place of the `400`-nat
+  response counts. That cap is itself above a `50`-token window's `159.8` nats, and its counts live
+  in Appendix A. Producer: `analysis/certificate_table.py`.
+- **The windowed meter the dichotomy does not cover** (`sec:uncovered`): the realised `50`-token
+  window log-ratio has median `40.3` nats and p99 `92.5`, and a trajectory's largest window exceeds
+  `125.3` on `1%`. Producer: `analysis/window_logratio.py` -> `results/window_logratio.csv`; note
+  `results/window_logratio_note.md`.
+- **Empty answers.** Scored as losses, the headline difference falls to `+0.0155 [-0.0245, +0.0555]`.
+  A rule that never serves an empty draw (still `log n`) keeps `+0.056 [+0.0195, +0.093]`; the CPU judge
+  control reproduced `37/41`. Producers: `analysis/empty_as_loss.py`, `analysis/nonempty_rule.py`; note
+  `results/empty_answers_note.md`.
+- **Table 2's "active" column** is now strict blends on exactly the judged trajectories
+  (`analysis/served_activity.py`; note `results/served_activity_note.md`).
+- **Related work** is repositioned: CP-k pays once per output; CP-Fuse is Abad et al.; private
+  next-token prediction; blockwise best-of-K.
+- **feat-196 SCORED:** the chat meter overtakes selection from `k=3` (`K/S_w = 3.75`).
+- **feat-199 SCORED:** the colluding prefix-extension attack reconstructs no window, although the
+  certificate is vacuous for `88/100`, so the certificate is loose for that attack, which is no
+  evidence of safety. The query-cap rule is stated in Section 2 and in the Ethics Statement.
+
+**Page budget.** Three floats moved to the appendix so the body stays exactly 9 of 9: `tab:cost` and
+`fig:breadth` to Appendix D/F, `tab:repairs` to Appendix H, and `fig:safety` (leakage) to Appendix E.
+Their prose and every guarded number stayed in the main text. Figures 1-3 are at `0.90`, `0.82` and
+`0.86` of the text width, with shrinks `0.737`, `0.773` and `0.838`.
+
+**Guards.** 35 failed after the rewrite. 13 were fixed by restoring text a registration or a
+concession required: TIGHT ZERO, `rho = +0.543`, "up to 7.6B --- but not at 14B", "against their
+byte-level decoder", the batched clock in the abstract and conclusion, `n=256`, "no better than the
+answer's length", "under 1.4% at k=3", the meter's own `k=10` gain, "the gains over each arm's own
+control" and "Served from the anchor alone". 22 were re-pointed (`tests/RETIRED_2026-09-24_v11.md`), and
+43 mutations all fire. New guards are in `tests/test_v11_review_round6.py`: 5 tests, 11 mutations.
+`analysis/audit_numbers.py`: `3,630` literals, the two expected misses.
+
+**Running at 23:50 IST on host B:** feat-195 (temperature `0.7`) and feat-198 (the gemma-2-27b
+scorer). See `session-handoff.md`.
+
 ## 2026-09-24 (night) --- v10: the paper reframed around its contribution (user: "Reframe the paper around its novel contribution, not our experiment log ... figure/table-driven ... cut text without hesitation")
 
 The manuscript was restructured from the introduction outwards. No measured number changed; every
