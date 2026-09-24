@@ -724,7 +724,7 @@ def selection_forest_rows():
     def add(label, r, cost, certified=True, gate=True, g="gain"):
         items.append((label, band(r, g), cost, certified, gate))
 
-    groups.append((len(items), "six anchors, 500 in-house prompts, judge B"))
+    groups.append((len(items), "six anchors, 500 prompts, judge B"))
     for a in ("Pleias-1.2B", "KL3M-1.7B", "Pleias-3B", "Comma-7B (1T tokens)",
               "TinyComma-1.8B (audited)", "Comma-7B"):
         r = breadth[a]
@@ -741,7 +741,7 @@ def selection_forest_rows():
     add("AlpacaEval-805, Comma-7B", dom("selection_scaling_alpaca_comma7b.csv"), math.log(8))
     add("MT-Bench-80, TinyComma-1.8B", dom("selection_scaling_mtbench.csv"), math.log(8))
 
-    groups.append((len(items), "exact match, no judge at all, Comma-7B, 500 problems"))
+    groups.append((len(items), "exact match, no judge, Comma-7B"))
     V, T = "selection_verifiable_comma7b.csv", "selection_verifiable_tqa_comma7b.csv"
     add("GSM8K, majority vote, $n=32$", verif(V, "majority", 32), math.log(32))
     add("GSM8K, pointwise reward, $n=64$", verif(V, "pointwise", 64), math.log(64))
