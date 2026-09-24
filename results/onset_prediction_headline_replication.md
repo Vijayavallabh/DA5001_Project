@@ -103,3 +103,33 @@ the primaries and never in their place**; the primaries stay as registered.
 - Any change of judge, opponent rank, seed, `n`, `k` or reward template after a judge call.
 
 ## Scoring log
+
+### Scored 2026-09-24 16:00 IST --- P1, P2, P3 REPLICATE; G0 and G1 pass
+
+Generation: the neutral pool and the three single-draw arms locally (GPUs 4 and 2, after the queue
+was re-dealt across two cards; same commands), the creative and factual pools on host B; the reward
+cache and every judge pass on host B (R1 on GPU 4, R1b, R2, R2b in parallel on GPUs 3, 5, 6, the
+registered commands unchanged); R0 locally. `analysis/replic_score.py --out results` ->
+`results/headline_replication.csv`.
+
+**G0 PASS**: every new arm covers the `500` prompts, the pool has `64` draws on each, and no prompt of
+any arm shares a seed with the arm it replicates. **G1 PASS**: the new pool's `n=1` empty fraction
+against the committed pool's (both on the true generations) is `34/200` vs `47/200` on the neutral
+class (`z = -1.62`), `21/150` vs `17/150` on the creative (`z = 0.69`), `0/150` vs `0/150` on the
+factual, and `55/500` vs `64/500` in total (`z = -0.88`), all inside `|z| < 2.58`.
+
+| run | opponent | `D1` selection | `D2` meter | `D3` | band | reading |
+|---|---|---|---|---|---|---|
+| **R2** | re-drawn | `+0.1225 [+0.0990, +0.1460]` | `+0.0730` | `+0.0495 [+0.0175, +0.0800]` | P1 | **REPLICATES** |
+| **R1** | committed | `+0.1065 [+0.0855, +0.1280]` | `+0.0615` | `+0.0450 [+0.0110, +0.0790]` | P2 | **REPLICATES** |
+| R1b | committed, non-empty argmax | `+0.1235 [+0.1020, +0.1455]` | | `+0.0620 [+0.0275, +0.0960]` | | REPLICATES |
+| R2b | re-drawn, non-empty argmax | `+0.1425 [+0.1200, +0.1655]` | | `+0.0695 [+0.0385, +0.0995]` | | REPLICATES |
+| R0 | committed; seed-52 pool, repaired text | `+0.1010 [+0.0765, +0.1245]` | `+0.0510` | `+0.0500 [+0.0155, +0.0840]` | | descriptive |
+
+`D1` REPLICATES in R1 and R2 (P3). Every prediction was right. Against the committed `+0.0505
+[+0.0155, +0.0860]`, three independent draws now read `+0.0495`, `+0.0450` and `+0.0500` --- the first
+with every sampled arm re-drawn, opponent included --- and none is pooled with another (caution (ap)).
+Excluding empty candidates from the argmax raises the difference (`+0.0620`, `+0.0695`): the committed
+reward's preference for empty text (`results/empty_preference.csv`) costs selection level here rather
+than flattering it. **What the manuscript does, as fixed above:** the headline sentence gains "and a
+draw on disjoint seeds gives `+0.0495 [+0.0175, +0.0800]`", and the repeat table gains the rows.
