@@ -14,8 +14,8 @@ a metered counterpart, because a Comma tokenizer cannot be token-fused with a Ll
 ## What runs
 
 **Generation, host B, GPUs 0--2.** The authors' own implementation, unmodified: package
-`anchoreddecode` from `github.com/jacqueline-he/anchored-decoding` (cloned into `ext/`, installed
-editable), `BytewiseAnchoredDecodingFactory`, called through `analysis/anchoredbyte_decode.py`, which
+`anchoreddecode` from `github.com/jacqueline-he/anchored-decoding` at commit `a12ecd9` (2026-05-06;
+cloned into `ext/`, gitignored, installed editable on host B, whose copy of `src/` hashes identically), `BytewiseAnchoredDecodingFactory`, called through `analysis/anchoredbyte_decode.py`, which
 chooses only the prompts, the serving configuration and the output layout. Safe `common-pile/
 comma-v0.1-2t`, risky `unsloth/Meta-Llama-3.1-70B` (the base checkpoint every 70B arm on record uses),
 bf16. The headline's `500` prompts (`output/sweep_plain`'s `k=-1` prompt ids), prompt text from

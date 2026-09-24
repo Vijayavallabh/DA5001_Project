@@ -26,3 +26,4 @@ data/bench/
 
 # uv package cache, project-local so a sibling project cannot mutate ours (2026-09-22)
 .uv_cache/
+ext/
