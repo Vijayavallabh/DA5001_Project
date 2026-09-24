@@ -63,7 +63,7 @@ def main():
     for n in (1, 8, 64):
         arms[f"sel{n}"] = {p: cands[p][max(range(n), key=lambda i: rewards[p][i])][3]
                            for p in pids if p in rewards}
-        # secondary (registered 14:52): the argmax over NON-EMPTY draws, since the reward prefers empties
+        # secondary (registered 14:47): the argmax over NON-EMPTY draws, since the reward prefers empties
         arms[f"sel{n}_ne"] = {p: cands[p][max(range(n), key=lambda i: (bool(cands[p][i][3].strip()),
                                                                         rewards[p][i]))][3]
                               for p in pids if p in rewards}

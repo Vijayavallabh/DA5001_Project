@@ -86,7 +86,7 @@ DOES NOT REPLICATE: the headline difference is reported with both draws, the sec
 sentence that rests on it is scoped to what both support; the two draws are **never pooled**
 (caution (ap)). REVERSES: the same, and the abstract's head-to-head sentence is rewritten.
 
-*Added 2026-09-24 14:50 IST, before the new pool was complete or scored:* **two secondary readings.**
+*Added 2026-09-24 14:46 IST, before the new pool was complete or scored:* **two secondary readings.**
 The hybrid arm (feat-189, generated on the fixed harness) showed the committed reward rating an
 **empty** completion above a typical anchor completion --- median log-odds `-12.1` against `-26.8`
 over its `4,000` drafts --- so best-of-`n` serves an empty draft whenever one exists. Every pool on
