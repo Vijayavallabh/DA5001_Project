@@ -38,7 +38,8 @@ def test_every_unscored_log_is_accounted_for_in_the_handoff():
     unscored = []
     for p in glob.glob(os.path.join(ROOT, "results", "onset_prediction_*.md")):
         t = open(p, encoding="utf-8").read()
-        if "## Scoring, " not in t and "## Scoring log" in t:
+        # a scored log carries "## Scoring, <date>" or, under "## Scoring log", "### Scored <date>"
+        if "## Scoring, " not in t and "\n### Scored" not in t and "## Scoring log" in t:
             unscored.append(os.path.basename(p))
     missing = [f for f in unscored if f not in handoff]
     assert not missing, f"unscored and unaccounted for: {missing}"

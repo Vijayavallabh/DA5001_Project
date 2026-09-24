@@ -57,19 +57,33 @@ def _doc_lines():
 def _resolve():
     """label -> the label whose NUMBER it will render as.
 
-    A paragraph label renders as its enclosing section's number; everything else renders as itself.
+    A paragraph label renders as its enclosing SUBsection's number when it has one (the appendix
+    grew subsections on 2026-09-24, and a resolver that knew only sections read every paragraph of
+    Appendix I as "I" -- a false duplicate beside its own subsection, and a missed one beside a
+    sibling paragraph), else its section's; everything else renders as itself. An unlabelled
+    subsection still steps the counter, so it gets a key of its own.
     """
     target = {}
-    section = None
+    section = sub = None
+    nsub = 0
     for line in _doc_lines():
         m = re.search(r"\\section\*?\{[^}]*\}\\label\{([^}]*)\}", line)
         if m:
-            section = m.group(1)
+            section, sub = m.group(1), None
             target[section] = section
+            continue
+        m = re.search(r"\\subsection\*?\{.*\}\\label\{([^}]*)\}", line)
+        if m:
+            sub = m.group(1)
+            target[sub] = sub
+            continue
+        if re.search(r"\\subsection\*?\{", line):
+            nsub += 1
+            sub = f"{section}#sub{nsub}"
             continue
         m = re.search(r"\\paragraph\{[^}]*\}\\label\{([^}]*)\}", line)
         if m:
-            target[m.group(1)] = section          # None only before the first \section
+            target[m.group(1)] = sub or section   # None only before the first \section
     return target
 
 
@@ -131,7 +145,9 @@ def test_no_sentence_names_the_same_number_twice():
         # \ref as a duplicate of the caption's. Float ends are sentence boundaries too
         # (exposed 2026-09-19 when the block between a caption and a heading was cut).
         body = re.sub(r"\\end\{(figure|table)\}", ". ", body)
-        for sentence in re.split(r"(?<=[.!?])\s+|(?<=\.\})\s+", body):
+        # A table row is its own statement too: the appendix guide lists one subsection per row,
+        # and without this every row ran into the next as a single "sentence".
+        for sentence in re.split(r"(?<=[.!?])\s+|(?<=\.\})\s+|\\\\", body):
             refs = re.findall(r"\\ref\{([^}]*)\}", sentence)
             if len(refs) < 2:
                 continue
