@@ -373,8 +373,9 @@ def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
     b = [r for r in rows("batched_latency_bands.csv") if r["W"] == "1" and (
         r["band"] == "T1" or (r["band"] == "AB" and r["numerator"].startswith("SEL n=64")))]
     assert len(b) == 2, b
-    worst = max(float(r["ratio"]) for r in b)
+    t1 = next(float(r["ratio"]) for r in b if r["band"] == "T1")
+    ab = next(float(r["ratio"]) for r in b if r["band"] == "AB")
     a = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     a = a[a.index("begin{abstract}"):a.index("end{abstract}")]
-    assert f"in at most ${worst:.2f}\\times$ the meter's time" in a and "$21.8\\times$" in a
-    assert round(worst, 2) >= worst - 0.005
+    assert f"two $70$B pairs in ${t1:.2f}\\times$ and ${ab:.2f}\\times$ the meter's time" in a
+    assert "$21.8\\times$" in a
