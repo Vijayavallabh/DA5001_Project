@@ -43,7 +43,7 @@ Host B, 12:41--12:52 CEST, GPUs 0, 1, 2 (meter) and 0 (selection, right after); 
 |---|---|---|
 | AnchoredByte, Comma-7B + 70B, `k = 0.5` | `68.69` (`800`) | `10.91` (`713`) |
 | selection at Comma-7B, `n = 1` | `3.09` (`812`) | `0.423` (`825`) |
-| selection at Comma-7B, `n = 8` | `3.12` (`822`) | `0.525` (`789`) |
+| selection at Comma-7B, `n = 8` | `3.12` (`822`) | `0.524` (`789`) |
 | selection at Comma-7B, `n = 64` | `4.19` (`794`) | not measured: out of memory |
 
 `SEL(64) / METAB = 0.061` at one request per call (`0.061` per served byte too; the byte-level meter
@@ -52,3 +52,6 @@ The expectation held. Two things read against the cell: the `n = 64` selection c
 spread (its first repeat took `4.19` s of generation against `3.36` and `3.34`), which is far from
 mattering at a ratio of `0.06`; and at eight requests per call `n = 64` did not fit one 80 GB card beside
 the reward model (`512` Comma-7B sequences), so that cell is reported as not measured, as fixed above.
+
+(`0.524` in the table above was first written `0.525`, a second rounding of the CSV's `0.5245`;
+corrected at 16:32 the same minute, caution (j).)
