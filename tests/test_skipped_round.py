@@ -299,3 +299,16 @@ def test_the_anchoredbyte_table_and_the_abstract_follow_the_scored_bands():
     abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     # registered consequence: every band CONFIRMED -> the abstract names their byte-level decoder
     assert "byte-level decoder included" in abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
+
+
+def test_the_main_text_quotes_the_batched_clock_at_both_pairs():
+    """feat-190 fixed that Section 3 and the Conclusion quote the batched per-request ratio beside the
+    unbatched 21.8x, at both pairs in Section 3."""
+    b = {(r["band"], r["W"]): float(r["ratio"]) for r in rows("batched_latency_bands.csv")
+         if r["band"] in ("T1", "T2")}
+    sel = body("selection.tex")
+    assert f"${b[('T1', '1')]:.2f}\\times$ the meter's time at the authors' $70$B pair" in sel
+    assert f"${b[('T2', '1')]:.2f}\\times$ at the $8$B one" in sel and "$21.8\\times$" in sel
+    close = body("iclr_closing.tex")
+    assert f"${b[('T1', '1')]:.2f}\\times$ its time per request at the $70$B pair" in close
+    assert "$21.8\\times$" in close
