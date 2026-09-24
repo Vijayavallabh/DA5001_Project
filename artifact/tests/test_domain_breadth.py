@@ -150,17 +150,17 @@ def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():
 
 def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
     """The refutation of the ceiling explanation rests on two numbers per judge; both are pinned."""
-    body = _manuscript("experiments.tex")
     n = {x["judge"]: x for x in rows(NULL)}
     c = n["Meta-Llama-3.1-8B-Instruct"]
     b = n["Phi-3.5-mini-instruct"]
     assert abs(float(c["observed_rho"]) + 0.79) < 5e-3 and abs(float(b["observed_rho"]) + 0.70) < 5e-3
     assert abs(float(c["p_vs_null"]) - 0.09) < 5e-3 and abs(float(b["p_vs_null"]) - 0.17) < 5e-3
-    # Section 6 carries the reading in one clause and points at the appendix; the four numbers
-    # themselves moved there on 2026-09-13 to pay for the judge-free arm, and this follows them
-    # rather than letting them go unpinned.
-    assert "inseparable from a no-effect null" in body
-    apx = _manuscript("appendix_limitations.tex")
+    # Section 6 carried the reading in one clause and pointed at the appendix; the four numbers
+    # themselves moved there on 2026-09-13 to pay for the judge-free arm, and in v10 (2026-09-24)
+    # the clause followed them. This follows both rather than letting them go unpinned, and is
+    # scoped to the support-ceiling paragraph rather than the whole file.
+    apx = _support_ceiling()
+    assert "not separable from a null in which selection does nothing" in apx
     assert "$-0.79$" in apx and "$-0.70$" in apx, "the correlations left Section 6 unpinned"
     assert f"$-{-float(c['null_mean']):.2f} \\pm {float(c['null_sd']):.2f}$" in apx, c
     # scoped to the sentence: a bare "$0.09$" was satisfied by MT-Bench's half-width (caution (an))
@@ -168,30 +168,45 @@ def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
 
 
 
-def _states_the_across_not_within_distinction(body):
-    """The claim, not its spelling: the ceiling binds ACROSS anchors and not WITHIN one.
+def _support_ceiling():
+    """Appendix I's support-ceiling paragraph, whitespace-normalised. v10 (2026-09-24) dropped the
+    main-text clause that separated the two axes; the distinction and its numbers live here only."""
+    import re
+    from tests.manuscript import tex
+    raw = open(tex("sections/appendix_limitations.tex"), encoding="utf-8").read()
+    paras = [p for p in re.split(r"\n\s*\n", raw) if "\\emph{The support ceiling.}" in p]
+    assert len(paras) == 1, f"{len(paras)} support-ceiling paragraphs in Appendix I"
+    return " ".join(paras[0].split())
 
-    Two phrasings of this have been in the manuscript ("binds at the anchor and not within one",
-    "binds across anchors, not within one"). A guard on either alone retires itself on the next
-    reword (caution (ar)), so this asks whether the sentence makes the distinction.
+
+def _states_the_across_not_within_distinction(body):
+    """The claim, not its spelling: the ceiling is CONFIRMED across anchors and NOT separable from
+    a no-effect null WITHIN one.
+
+    Three phrasings of this have been in the manuscript ("binds at the anchor and not within one",
+    "binds across anchors, not within one", and v10's two sentences "Across anchors it is
+    confirmed ... Within one anchor ... not separable from a null"). A guard on one alone retires
+    itself on the next reword (caution (ar)), so this asks whether the text assigns each axis its
+    reading.
     """
-    i = body.find("ceiling binds")
-    if i < 0:
+    low = body.lower()
+    a, w = low.find("across anchors"), low.find("within one anchor")
+    if a < 0 or w < 0:
         return False
-    window = body[i:i + 160].lower()
-    return "within one" in window and ("across anchors" in window or "at the anchor" in window)
+    return "confirmed" in low[a:a + 40] and "not separable from a null" in low[w:w + 400]
 
 def test_section6_separates_the_two_axes_the_ceiling_was_tested_on():
     """Superseded 2026-09-12 evening. The earlier version of this test guarded the sentence 'the
     pre-registered test of it fails', which was true of the DOMAIN axis and became misleading once
     feat-096 tested the ANCHOR axis and the ceiling was confirmed there. What must not drift is the
-    distinction: the ceiling binds at the anchor, and the domain split remains uninformative."""
-    body = _manuscript("experiments.tex")
-    assert _states_the_across_not_within_distinction(body), body[:200]
-    assert "inseparable from a no-effect null" in body
-    low = body.lower()
-    assert "inseparable from a no-effect null" in low, "the domain null must stay beside it"
-    assert "the pre-registered test of it fails" not in low, "that sentence is now wrong"
+    distinction: the ceiling binds at the anchor, and the domain split remains uninformative.
+    v10 (2026-09-24): the distinction now lives only in Appendix I's support-ceiling paragraph."""
+    apx = _support_ceiling()
+    assert _states_the_across_not_within_distinction(apx), apx[:200]
+    assert "not separable from a null in which selection does nothing" in apx, \
+        "the domain null must stay beside it"
+    for txt in (apx.lower(), _manuscript("experiments.tex").lower()):
+        assert "the pre-registered test of it fails" not in txt, "that sentence is now wrong"
 
 
 def test_the_domain_split_stays_uninformative_whatever_the_anchor_axis_says():
@@ -248,10 +263,9 @@ def test_a2_reads_no_prompt_set_effect_and_the_log_says_so():
 
 
 def test_section6_and_the_appendix_name_the_axis_each_result_speaks_to():
-    body = _manuscript("experiments.tex")
-    apx = " ".join(open(
-        __import__("tests.manuscript", fromlist=["tex"]).tex("sections/appendix_limitations.tex"),
-        encoding="utf-8").read().split())
-    assert _states_the_across_not_within_distinction(body), body[:200]
+    # v10 (2026-09-24): the main-text clause is gone; Appendix I names both axes and their readings
+    # ("not measurable" there is now "not separable from a null", the same reading).
+    apx = _support_ceiling()
+    assert _states_the_across_not_within_distinction(apx), apx[:200]
     assert "Across anchors" in apx and "Within one anchor" in apx
-    assert "not measurable" in apx
+    assert "not separable from a null" in apx

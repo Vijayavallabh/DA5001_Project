@@ -50,14 +50,23 @@ def test_the_positive_control_clears_the_registered_gate():
 def test_the_adversary_reproduces_whole_passages_and_the_paper_says_two():
     full = [r for r in per() if float(r["risky_alone_recall"]) == 1.0]
     assert len(full) == 2, [r["prompt_id"] for r in full]
+    w = {1: "one", 2: "two", 3: "three", 4: "four"}[len(full)]
+    # v10 (2026-09-24): Section 4.4 states the count in Figure 5's caption ("... at $0.2475$ unaided,
+    # reproducing two passages in full") and Appendix E in its natural-memoriser paragraph.
     body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
-    assert "reproduces two \\emph{in full}" in body, "Section 6 no longer states the count"
+    assert f"reproducing {w} passages in full" in body, "Section 4 no longer states the count"
+    apx = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    assert f"reproduces \\textbf{{{w} in full}}" in apx, "Appendix E no longer states the count"
     # the Ethics Statement quotes the same run and said "one passage" until 2026-09-23: a guard on
-    # one section is not a guard on the claim (caution (af))
+    # one section is not a guard on the claim (caution (af)). v10's Ethics Statement no longer
+    # states this count at all (it quotes the 70B's vetting ladder instead), so what is pinned there
+    # is that it never states a different one.
     eth = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     eth = eth[eth.index(r"\section*{Ethics Statement}"):]
     eth = eth[:eth.index(r"\section*", 10)]
-    assert "reproduces two passages in full" in eth and "one passage in full" not in eth
+    assert "one passage in full" not in eth
+    assert "in full" not in eth or f"{w} passages in full" in eth, \
+        "the Ethics Statement states a count of passages reproduced in full that is not the CSV's"
 
 
 def test_selection_recovers_nothing_at_every_n():

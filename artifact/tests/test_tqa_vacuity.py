@@ -88,7 +88,8 @@ def test_the_ordering_claim_matches_the_numbers_and_not_just_the_wording():
     # both appeared, so rewriting "is vacuous less often than" to "is about the same as" left it
     # passing on a sentence that no longer made the claim -- caution (ai), the claim about a set of
     # numbers being the thing nothing checks.
-    assert re.search(r"\\emph\{worst\}[^.]{0,120}vacuous less often[^.]{0,80}\\emph\{best\}", t), (
+    # v10 (2026-09-24) dropped the \emph around "worst" and "best"; the comparison is what is pinned.
+    assert re.search(r"(?:\\emph\{)?worst\}?[^.]{0,120}vacuous less often[^.]{0,80}(?:\\emph\{)?best\b", t), (
         "the ordering sentence no longer says selection's worst budget is vacuous LESS OFTEN "
         "than the meter's best, but its numbers are still here")
 

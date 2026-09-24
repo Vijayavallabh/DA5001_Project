@@ -46,7 +46,9 @@ def test_the_appendix_states_the_workload_where_the_reversal_fails():
     # mechanism, asserted in the one line a reader meets first and that no band guard can see.
     assert "outside the anchor's support" not in txt, \
         "the workload paragraph's heading asserts the mechanism its own decomposition refutes"
-    DENIAL = ("refut", "not selection's", "cannot identify", "measurably wrong", "magnitude is not")
+    # v10 denies it as `neither does a support ceiling` (app:workload)
+    DENIAL = ("refut", "not selection's", "cannot identify", "measurably wrong", "magnitude is not",
+              "neither does a support ceiling")
     hits = [k for k in range(len(txt)) if txt.startswith("support ceiling", k)]
     assert hits, "the candidate mechanism of the loss is no longer named"
     for k in hits:
@@ -60,9 +62,10 @@ def test_the_body_scopes_the_claim_and_points_at_the_evidence():
     mechanism the appendix's own decomposition refutes --- a guard enforcing a wrong claim, and the
     reason the body still asserted it for days after the appendix retracted it (caution (af): a
     withdrawn claim has to be chased through every section that made it). The body must scope the
-    result to the WORKLOAD, which is what is measured, and must not name a cause."""
+    result to the WORKLOAD, which is what is measured, and must not name a cause. v10 (Section 4.2)
+    words the scope `scoped by the opponent and the task` and `a property of prefix completion`."""
     txt = M.body("experiments.tex")
-    assert "not across opponents or workloads" in txt, \
+    assert "survives fresh draws, judges and controls, and is scoped by the opponent and the task" in txt, \
         "the body's replication claim dropped the workload scope"
     # "moving off prefix completion" is a claim about SIX workloads, so it is checked against all
     # six: every completion workload must hold the difference clear of zero at its binding budget,
@@ -76,9 +79,14 @@ def test_the_body_scopes_the_claim_and_points_at_the_evidence():
     assert comp and all(float(r["d3_lo95"]) > 0 for r in comp), \
         [(r["workload"], r["d3_lo95"]) for r in comp]
     assert not any(float(r["d3_lo95"]) > 0 for r in rest), \
-        "a non-completion workload now holds the difference; 'moving off prefix completion' is stale"
-    assert "as does moving off prefix completion" in txt, \
-        "the body no longer says what breaks it"
+        "a non-completion workload now holds the difference; 'a property of prefix completion' is stale"
+    assert "And it is a property of prefix completion: it holds on our prompts, on public-domain books " \
+           "and on BookMIA's unseen half" in txt, "the body no longer says what breaks it"
+    # and the sentence's verdicts on the other three are the CSV's
+    by = {r["workload"]: r for r in rest}
+    assert all(float(by[w]["d3_lo95"]) < 0 < float(by[w]["d3_hi95"]) for w in ("CoTaEval-QA", "MT-Bench"))
+    assert float(by["AlpacaEval"]["d3_hi95"]) < 0
+    assert "is unresolved on CoTaEval's news questions and MT-Bench, and reverses on AlpacaEval" in txt
     assert "anchor's support" not in txt, \
         "the body attributes the split to support again; the appendix's decomposition refutes it"
 
@@ -529,18 +537,21 @@ def test_the_completion_workload_is_reported_with_its_confound_in_the_same_sente
             f"{k} no longer reads WITH OURS; the scoping sentence must be revisited"
         assert carries_band(g, lo, hi, sec), f"{k}'s band left the appendix"
 
-    i = txt.find("A fourth workload names the axis")
+    # v10 reports the books, and the confound, in the one workload paragraph (app:workload)
+    i = txt.find("\\label{app:workload}")
     assert i > 0, "the completion-workload paragraph was cut"
-    claim = txt[i:i + 2400]
-    assert "confounded" in claim and "cannot\nseparate".replace("\n", " ") in " ".join(claim.split()), \
+    claim = txt[i:txt.index("\\paragraph{", i)]
+    assert "a win there would be confounded" in claim and \
+        "inside the anchor's training distribution as well as completion-shaped" in claim, \
         "the training-data confound left the paragraph that reports the win"
     assert "not a mechanism" in claim, \
         "the paragraph no longer says this is a scoping rather than a mechanism"
-    # SCOPED (caution (an)): `public-domain` also names the corpus two sentences earlier, so a bare
-    # membership test passed the mutation that removed the REASON the confound exists.
+    # SCOPED (caution (an)): the reason must sit with the confound it explains. v10 gives the reason
+    # first, so look either side of `confounded`.
     j = claim.find("confounded")
     assert j > 0
-    assert "trained on public-domain" in claim[j:j + 400], \
+    assert "public-domain books are plausibly inside the anchor's training distribution" in \
+        claim[max(0, j - 400):j + 400], \
         "the reason for the confound -- that these anchors are trained on this kind of text -- was cut"
 
 
@@ -685,15 +696,16 @@ def test_the_sixth_workload_carries_its_bands_its_gate_and_its_limits():
         assert band(g, lo, hi) in txt, f"{key} band {band(g, lo, hi)} is not printed"
     sel = _d("unseenbooks_conc_bind", "D1")
     assert band(sel[0], sel[1], sel[2]) in txt, "selection's own gain on the unseen books is gone"
-    assert "\\textbf{with ours at both\nbudgets}".replace("\n", " ") in txt
+    assert "with ours at both budgets" in txt  # v9 set it bold; the claim, not the typeface, is guarded
     # G3, and that it is ONE-SIDED -- the concession that keeps 'as far as it can be removed' true
     g3 = [r for r in csv.DictReader(open(os.path.join(ROOT, "results", "g3_unseenbooks.csv"),
                                          encoding="utf-8")) if r["n"] == "1"][0]
-    assert float(g3["nv_recall_mean"]) == 0.0 and int(g3["n_passages"]) == 500
-    assert "near-verbatim recall $0.0000$ on all $500$" in txt
+    assert float(g3["nv_recall_mean"]) == 0.0 == float(g3["nv_recall_max"]) and int(g3["n_passages"]) == 500
+    # v10 wording of v9's `near-verbatim recall $0.0000$ on all $500$`
+    assert f"on whose ${int(g3['n_passages'])}$ prefixes the anchor reproduces nothing" in txt
     assert "one-sided" in txt and "excludes leakage without proving unfamiliarity" in txt, \
         "the gate's limit was cut: a 0.000 here cannot distinguish unseen from unreproduced"
-    assert "membership label whose reliability is contested" in txt
+    assert "as far as a contested membership label can" in txt  # v9: `a membership label whose reliability is contested`
     # the vacuity, a sixth time, from the degeneracy CSV
     d = _deg("unseenbooks", "vacuous")
     assert f"${float(d['activity']) * 100:.3f}\\%$ of steps" in txt

@@ -25,6 +25,17 @@ def bib():
     return open(os.path.join(DIR, "references.bib"), encoding="utf-8").read()
 
 
+def _tokenswap_paragraph(t):
+    """The TokenSwap paragraph of Appendix J, heading to next \\paragraph. v9 opened it inside a
+    paragraph as `\\textbf{TokenSwap}`; v10 (2026-09-24) gives it its own heading, "TokenSwap,
+    measured: cheaper than selection and just as suppressive". Scoped to the paragraph, not the table
+    row that names TokenSwap first and not a fixed window (caution (an))."""
+    i = t.find(r"\paragraph{TokenSwap")
+    assert i >= 0, "the TokenSwap paragraph is gone from Appendix J"
+    j = t.find(r"\paragraph{", i + 1)
+    return t[i: j if j > 0 else len(t)]
+
+
 def test_both_named_baselines_are_cited_in_a_live_section():
     t = body(SEC)
     for key in ("prashant2025tokenswap", "fu2026duplicate"):
@@ -72,14 +83,13 @@ def test_the_paper_reports_the_tokenswap_measurement_and_that_it_loses():
     t = body(SEC)
     # The paragraph, not the first mention: since 2026-09-23 Appendix J opens with a table that
     # names TokenSwap first, and a window from there never reached the concession (caution (an)).
-    i = t.find(r"\textbf{TokenSwap}") + len(r"\textbf{")
-    assert i > len(r"\textbf{")
-    w = t[i:i + 4400]  # the paragraph grew when the measurement replaced the concession
+    w = _tokenswap_paragraph(t)
 
     # It must say the measurement happened, and that our mechanism is the expensive one.
     # "have now measured" was revision-history wording (a referee asked the appendix to stop
     # narrating its own edits); the sentence that says the arm was run is now the method statement.
-    assert "We reimplemented it from Algorithm" in w, "the paper no longer says the arm was run"
+    # v10 wording: "We reimplemented TokenSwap from its Algorithm~1".
+    assert "We reimplemented TokenSwap from its Algorithm" in w, "the paper no longer says the arm was run"
     assert "most expensive of the three" in w, \
         "the concession that our mechanism costs the most was trimmed"
 
@@ -105,8 +115,12 @@ def test_the_paper_reports_the_tokenswap_measurement_and_that_it_loses():
     assert f"${float(kl['nv_recall_mean']):.4f}$" in w, "the KL3M leak was trimmed"
     assert f"${kl['rouge_ge_0p5_count']} of $100$" in w or \
         f"${kl['rouge_ge_0p5_count']}$ of $100$" in w, "the KL3M passage count was trimmed"
-    assert "is not the axis" in w, "the paper no longer says |G| fails to predict the failure"
-    assert "vetting requirement" in w, \
+    # v10 wording (2026-09-24): "the suppression is fragile in a way $|G|$ does not reveal"; and the
+    # vetting that had been named as the blocker is recorded as its result, "All four candidate
+    # auxiliaries read $0.0000$ on the protected passages alone".
+    assert "fragile in a way $|G|$ does not reveal" in w, \
+        "the paper no longer says |G| fails to predict the failure"
+    assert "All four candidate auxiliaries read $0.0000$ on the protected passages alone" in w, \
         "the paper no longer records that its own stated blocker was discharged"
 
 
@@ -131,10 +145,12 @@ def test_neither_is_claimed_to_be_in_this_papers_class():
     """The whole point of the paragraph is the level: these bound a named catalogue, not the served
     law. An edit that blurred that would make the paper's own axis look arbitrary."""
     t = body(SEC)
-    i = t.find(r"\textbf{TokenSwap}") + len(r"\textbf{")   # the paragraph, not the table's row
-    assert i > len(r"\textbf{")
-    w = t[i:i + 2200]
-    m = re.search(r"neither is in this paper's class|not in this paper's class", w)
+    w = _tokenswap_paragraph(t)   # the paragraph, not the table's row
+    # v9: "neither is in this paper's class ... the guarantee is about the catalogue supplied ... and
+    # not about the served law"; v10 (2026-09-24): "Both guarantee something about a catalogue
+    # supplied, not about the served law relative to a safe model."
+    m = re.search(r"neither is in this paper's class|not in this paper's class"
+                  r"|guarantee something about a catalogue supplied, not about", w)
     assert m, "the paragraph no longer says these are outside the certified class"
     # the distinction must be IN that sentence: the paragraph's later "a bound on the served law"
     # satisfied a paragraph-wide check with the distinction deleted (caution (an), 2026-09-23)

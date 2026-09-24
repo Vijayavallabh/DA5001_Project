@@ -63,7 +63,11 @@ def test_the_ordering_survives_at_the_measured_anchor():
 
 def test_the_appendix_discloses_the_mismatch_and_both_figures():
     txt = body("appendix_selection.tex")
-    assert "not the same system" in txt, "the anchor mismatch disclosure was trimmed"
+    # v10 (2026-09-24) words the mismatch "The cost column prices the audited $1.8$B anchor while the
+    # accuracies are Comma-7B's" (v9: "... are not the same system"); either spelling is the disclosure.
+    assert ("not the same system" in txt or
+            "The cost column prices the audited $1.8$B anchor while the accuracies are Comma-7B's" in txt), \
+        "the anchor mismatch disclosure was trimmed"
     # match the text as written: 62.23 sits inside the same math group as 61.29, so it has no
     # "$" of its own -- the delimiter trap that hid a defect from an earlier guard this session.
     assert "$14.90\\times$" in txt, "the corrected majority-vote cost was trimmed"

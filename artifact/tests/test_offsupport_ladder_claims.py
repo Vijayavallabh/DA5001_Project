@@ -32,7 +32,9 @@ def _para(start):
     return txt[txt.rfind("\\paragraph{", 0, i + 1):j if j > 0 else None]
 
 
-LADDER = "\\paragraph{The largest $n$, and whether the gain stops.}"
+# v10 (2026-09-24) retitled the paragraph ("How far $n$ pays.") and moved its bands into a table;
+# it is located by the reference to that table, so a retitle cannot retire the guards.
+LADDER = "Table~\\ref{tab:ladder}"
 
 
 def test_every_ladder_band_the_appendix_quotes_rounds_from_the_csv():
@@ -63,7 +65,7 @@ def test_no_slope_is_claimed_where_the_two_doublings_contain_zero():
                                       ("A", "g(256)-g(64) order-averaged"))]
     para = _para(LADDER)
     if all(lo < 0 < hi for _, _, lo, hi in totals):
-        assert "we claim neither a ceiling nor a slope" in para, "a slope crept back in"
+        assert "we claim neither a ceiling nor a slope" in para.lower(), "a slope crept back in"
         assert "post hoc" in para, "the two-doubling checks are no longer labelled post hoc"
     for a in ("A", "B"):
         _, g, lo, hi = _row(a, "g(256)-g(128)")

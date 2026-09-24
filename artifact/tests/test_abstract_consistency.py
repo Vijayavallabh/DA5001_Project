@@ -9,10 +9,14 @@ from tests.manuscript import tex
 
 # appendix_seed was retired on 2026-09-19 (page budget): the seed and anchor-warp interventions
 # left the manuscript, so the file is no longer part of the body this guard scans.
-SECTIONS = ("iclr_intro", "frontier", "onset", "orders", "selection", "experiments",
-            "related_work_v4", "iclr_closing", "appendix_proofs", "appendix_opening",
-            "appendix_onset", "appendix_robustness", "appendix_limitations",
-            "appendix_related", "appendix_selection", "appendix_second_anchor")
+# v10 (2026-09-24): onset, orders, appendix_opening, appendix_robustness and appendix_second_anchor
+# were retired too (kept as *_v9_2026-09-24.tex, never compiled); their content now lives in
+# frontier, appendix_onset and appendix_proofs. These are the section files the manuscript \inputs.
+# fig_overview is left out on purpose: it is TikZ, and a coordinate such as 0.22 is a number that
+# would satisfy an abstract literal by coincidence.
+SECTIONS = ("iclr_intro", "selection", "frontier", "experiments", "related_work_v4",
+            "iclr_closing", "appendix_proofs", "appendix_selection", "appendix_onset",
+            "appendix_limitations", "appendix_related")
 # Numbers that are structural rather than measured: page/section counts, an exponent, a budget the
 # body writes as k = 10 rather than $10$.
 ALLOWED = {"1", "2", "10"}
@@ -41,15 +45,27 @@ def test_the_abstract_the_intro_and_the_onset_section_agree_on_the_pair_count():
     import csv
     n = len([r for r in csv.DictReader(open("results/onset_table.csv"))
              if not r["pair"].startswith("ALL")])
-    word = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n]
+    words = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+             "eleven", "twelve"]
+    word = words[n]
+    # v10 (2026-09-24): onset.tex was retired and the onset prose moved into frontier.tex (Section 3
+    # and Figure horns); the abstract and the introduction now give the pair count alone ("over
+    # nine pairs", "across nine pairs"), and the anchor count beside it survives in Figure horns'
+    # caption. So every spelled pair count in the three places must be the CSV's, and the one
+    # sentence that pairs it with the anchor count must agree with it too.
     places = {"abstract": _abstract(),
               "intro": open(tex("sections/iclr_intro.tex"), encoding="utf-8").read(),
-              "onset": open(tex("sections/onset.tex"), encoding="utf-8").read()}
+              "onset (frontier.tex)": open(tex("sections/frontier.tex"), encoding="utf-8").read()}
+    counted = rf"\b({'|'.join(words[1:])}) (?:model |\(anchor, memoriser\) )?pairs\b"
     for where, body in places.items():
-        found = re.findall(r"(\w+) (?:model )?pairs with \1 distinct anchors",
-                           body.replace("\n", " "))
-        assert found, f"{where} does not state the pair count beside the anchor count"
+        found = re.findall(counted, " ".join(body.split()), flags=re.I)
+        assert found, f"{where} does not state the pair count"
         assert all(f.lower() == word for f in found), (where, found, word)
+    fr = " ".join(places["onset (frontier.tex)"].split())
+    found = re.findall(r"(\w+) (?:model |\(anchor, memoriser\) )?pairs with (\w+) distinct anchors",
+                       fr)
+    assert found, "frontier.tex does not state the pair count beside the anchor count"
+    assert all(p.lower() == a.lower() == word for p, a in found), (found, word)
 
 
 def test_every_results_file_the_paper_names_exists():
@@ -64,9 +80,17 @@ def test_every_results_file_the_paper_names_exists():
     # cannot strand the line before it (2026-09-17; 158 underfull hboxes -> 13). They are
     # zero-width and print nothing, but they are inside the path as far as a regex is concerned.
     body = body.replace("\\allowbreak ", "").replace("\\allowbreak", "")
-    named = {n.replace("\\_", "_") for n in re.findall(r"results/([A-Za-z0-9_\\]+)", body)}
-    missing = sorted(n for n in named if n and not
-                     (os.path.exists(f"results/{n}.csv") or os.path.exists(f"results/{n}.md")))
+    missing = []
+    # a trailing `*` names a family (v10: `results/onset_prediction_*.md`, every registration), and
+    # a family is only honest if at least one file on disk belongs to it
+    for n, star, ext in set(re.findall(r"results/([A-Za-z0-9_\\]+)(\*?)((?:\.[a-z]+)?)", body)):
+        n = n.replace("\\_", "_")
+        if star:
+            if not glob.glob(f"results/{n}*{ext}"):
+                missing.append(f"{n}*{ext}")
+        elif n and not (os.path.exists(f"results/{n}.csv") or os.path.exists(f"results/{n}.md")):
+            missing.append(n)
+    missing = sorted(set(missing))
     assert not missing, f"named in the paper, absent from results/: {missing}"
 
 
@@ -149,13 +173,19 @@ def test_the_judge_free_lift_rounds_from_the_csv_and_the_section_still_makes_the
             if r["arm"].startswith("majority")]
     mv = {int(r["n"]): r for r in rows}
     best = max(mv.values(), key=lambda r: float(r["acc"]))
+    import math as _math
     a = " ".join(_abstract().split())
     assert "no judge" in a, "the abstract dropped the judge-free claim while the arm still stands"
-    assert f"${best['n']}$ draws" in a, (best["n"], "the abstract's draw count is not the best arm")
     assert f"${float(mv[1]['acc']):.3f}" in a and f"{float(best['acc']):.3f}$" in a, \
         (mv[1]["acc"], best["acc"], "the GSM8K lift does not round from the CSV")
-    assert "no judge" in _body("experiments.tex"), \
-        "Section 4 dropped the judge-free claim the abstract makes"
+    exp = _body("experiments.tex")
+    assert "no judge" in exp, "Section 4 dropped the judge-free claim the abstract makes"
+    # v10 (2026-09-24): the abstract dropped the draw count ("$32$ draws"); Section 4 states the lift
+    # with its n and its certificate, so the best-arm check is made there, every number from the CSV
+    n = int(best["n"])
+    assert (f"from ${float(mv[1]['acc']):.3f}$ to ${float(best['acc']):.3f}$ at $n={n}$ "
+            f"(${_math.log(n):.2f}$ nats)") in exp, \
+        (n, "Section 4's judge-free lift is not quoted at the best arm's n and log n")
 
 
 from tests.manuscript import ROOT  # noqa: E402
@@ -188,8 +218,11 @@ def test_the_abstract_says_self_consistency_is_an_instance_because_the_csv_shows
         n, k = int(r["n"]), float(r["budget_nats"])
         assert abs(k - _math.log(n)) < 5e-4, \
             f"self-consistency at n={n} no longer carries exactly log n ({k}); it is not an instance"
+    import re as _re
     txt = _abstract_text()
-    assert "Self-consistency is an instance" in txt, \
+    # v9 "Self-consistency is an instance when it samples a safe model"; v10 "self-consistency over
+    # a safe model is an instance" -- the claim with its qualifier moved in front of the verb
+    assert _re.search(r"[Ss]elf-consistency(?: [^.;$]{0,40})? is an instance", txt), \
         "the abstract dropped the positioning claim its own judge-free arm measures"
 
 

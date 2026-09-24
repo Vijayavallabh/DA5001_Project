@@ -37,7 +37,9 @@ def test_the_scaling_table_matches_anchor_scaling_summary():
     pr = {r["corpus"]: r for r in csv.DictReader(open("results/anchor_scaling_paired.csv"))}
     rows = {"Common Corpus": "commoncorpus", "KL3M": "kl3m", "Common Pile": "commonpile"}
     seen = 0
-    for c in _cells(tex("sections/appendix_robustness.tex"), rows):
+    # appendix_robustness.tex was retired in v10 (2026-09-24); the table (tab:marginspan) is now in
+    # Appendix G, appendix_onset.tex.
+    for c in _cells(tex("sections/appendix_onset.tex"), rows):
         p = pr[rows[c[0]]]
         a, b = sm[p["small"]], sm[p["large"]]
         assert _num(c[2]) == rnd(100 * (float(b["c_use"]) / float(a["c_use"]) - 1), 1), (c[0], "c_use")
@@ -80,8 +82,16 @@ def test_section_5_quotes_table_3s_own_binding_rates():
     read like a transposed row. The prose now quotes the cells, and this pins it to the CSV they
     come from."""
     price = {r["arm"]: r for r in csv.DictReader(open("results/renyi_price.csv"))}
-    body = open(tex("sections/orders.tex"), encoding="utf-8").read().replace("\n", " ")
-    sent = next(s for s in body.split(". ") if "the constraint binds at" in s)
+    # v10 (2026-09-24) retired orders.tex. Repair 1 is now the "sharper charge" row of Section 3's
+    # Table tab:repairs ("binds on $99.6\\%$ of steps vs $0.4\\%$"), which points at Appendix H,
+    # and Appendix H's "A sharper charge" paragraph quotes the alpha=8 cell of tab:orders in prose.
+    body = " ".join(open(tex("sections/frontier.tex"), encoding="utf-8").read().split())
+    sent = next(s for s in body.split("\\\\") if "sharper charge" in s)
     for arm, key in (("renyi_8", "active_pct"), ("renyi_1_0", "active_pct")):
         want = rnd(float(price[arm][key]), 1)
         assert f"${want}\\%$" in sent, (arm, want, sent)
+    apx = " ".join(open(tex("sections/appendix_onset.tex"), encoding="utf-8").read().split())
+    para = apx[apx.index("\\paragraph{A sharper charge"):]
+    para = para[:para.index("\\begin{table}")]
+    want = rnd(float(price["renyi_8"]["active_pct"]), 1)
+    assert f"touches ${want}\\%$ of ordinary steps" in para, (want, para[:300])

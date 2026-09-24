@@ -129,16 +129,20 @@ def test_the_incumbent_concession_is_in_the_body_and_is_the_TRUE_one():
     assert sel_leak <= blk_leak, (
         f"selection now leaks MORE than the blocklist ({sel_leak} vs {blk_leak}); the appendix "
         "sentence saying it does not must be revisited")
-    # the claim the paper MUST make, in the body
+    # the claim the paper MUST make, in the body. v9: "We measure one as a decoder, and on ordinary
+    # text it costs nothing"; v10 (2026-09-24): "Measured as decoders on listed works ..., a
+    # blocklist costs no utility". Same concession, reworded.
     rw = body("related_work_v4.tex")
-    i = rw.find("We measure one")
+    i = rw.find("Measured as decoders")
     assert i >= 0, "Related Work no longer says the incumbent was measured"
-    assert "costs nothing" in rw[i:i + 200], rw[i:i + 200]
-    # and the appendix must carry the precise form, not the harsher one
+    assert "a blocklist costs no utility" in rw[i:i + 200], rw[i:i + 200]
+    # and the appendix must carry the precise form, not the harsher one: no utility cost on a listed
+    # work AND no stronger suppression, with the blocklist's own recall quoted from the CSV
     apx = body("appendix_related.tex")
     assert "wins neither the utility comparison nor the leakage one" not in apx, \
         "the appendix is back to the overcorrected claim, which is false on leakage"
-    assert "no utility at all" in apx, apx[:200]
+    assert "the blocklist costs no utility" in apx, apx[:200]
+    assert f"does not suppress more (${blk_leak:.4f}$ against its own" in apx, blk_leak
 
 
 def test_the_judgefree_compute_claim_matches_its_whole_grid():

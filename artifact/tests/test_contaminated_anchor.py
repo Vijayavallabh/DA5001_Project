@@ -135,17 +135,28 @@ def test_the_appendix_quotes_the_amplification_range_and_its_caveats():
     assert f"${lo:.1f}$ to ${hi:.1f}\\times$" in apx, (lo, hi)
     # the limits and the defect disclosure must stay with the numbers they qualify -- scoped to this
     # section, because "A defect of ours" also opens an unrelated paragraph of the same appendix and
-    # satisfied the first version of this check after the disclosure was deleted (caution (an))
-    sec = apx[apx.index("\\label{app:contaminated}"):]
-    sec = sec[:sec.index("\\subsection{")]
-    for phrase in ("Six anchors never enter", "seven passages over one", "the band we registered",
-                   "ranked partly on padding", "no number from the defective run is quoted"):
+    # satisfied the first version of this check after the disclosure was deleted (caution (an)).
+    # v10 (2026-09-24) made it one \paragraph (it was a \subsection), so the scope now ends at the
+    # next \paragraph -- tighter than before, and the table tab:contam is still inside it.
+    i = apx.index("\\label{app:contaminated}")
+    sec = apx[i: apx.index("\\paragraph{", i)]
+    assert f"${lo:.1f}$ to ${hi:.1f}\\times$" in sec, (lo, hi, "the range left its own paragraph")
+    # v10 rewordings, substance unchanged: the count-denominator caveat now reads as the reason the
+    # second draw is smaller (it was "A(64) = 7.0 is seven passages over one"), and the defect
+    # disclosure says "no number from it is quoted" (it was "... from the defective run ...").
+    for phrase in ("Six anchors never enter", "the one-draw denominator is a count over $100$ passages",
+                   "The band we registered", "ranked partly on padding", "no number from it is quoted"):
         assert phrase in sec, phrase
     assert "about $6\\%$ of the allowed amplification" not in apx, "the withdrawn fraction is back"
-    # and the Ethics Statement must carry the measurement, not the old assertion
-    eth = " ".join(open(_tex("iclr_2027.tex"), encoding="utf-8").read().split())
-    assert "worthless if the safe model is itself contaminated" not in eth
-    assert "multiplier on the anchor's own leakage" in eth
+    # and the Ethics Statement must carry the measurement, not the old assertion. v10 dropped the
+    # sentence "The mechanism is a multiplier on the anchor's own leakage, not a floor under it" and
+    # put the measured range itself beside "the anchor's own leakage", so the guard now checks the
+    # range (from the CSV) inside the Ethics Statement rather than the old phrase.
+    whole = " ".join(open(_tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    assert "worthless if the safe model is itself contaminated" not in whole
+    eth = whole[whole.index("Ethics Statement"): whole.index("Reproducibility Statement")]
+    assert f"the anchor's own leakage by ${lo:.1f}$ to ${hi:.1f}\\times$" in eth, (lo, hi)
+    assert "multiplies whatever the anchor already has" in eth
     assert "vet the anchor" in eth
 
 

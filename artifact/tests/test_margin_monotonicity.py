@@ -12,6 +12,7 @@ within family the series must be monotone, pooled it must not be, and the main t
 qualifier.
 """
 import csv
+import re
 import os
 import sys
 
@@ -56,18 +57,40 @@ def test_pooled_over_ten_models_it_is_NOT_monotone_which_is_why_the_scope_matter
 
 
 def test_the_main_text_carries_the_family_scope():
-    txt = body("frontier.tex")
-    i = txt.find("rises monotonically with capability")
-    assert i != -1, "the margin trend sentence is gone from Section 4"
-    assert "rises monotonically with capability in every family" in txt, \
-        "the main text dropped 'in every family' -- pooled, the series is not monotone"
+    """v10 (2026-09-24) took the margin trend out of the main text; it lives in Appendix G with both
+    scopes (next test). Pooled across families the series is NOT monotone (test above), so if any
+    body sentence brings the trend back it must carry the within-family scope in the same breath.
+    Retired placement, kept property: see tests/RETIRED_2026-09-24.md."""
+    txt = body("iclr_intro.tex", "selection.tex", "frontier.tex", "experiments.tex",
+               "related_work_v4.tex", "iclr_closing.tex")
+    for m in re.finditer(r"(?:margin[^.]{0,80})?rises (?:monotonically )?with capability", txt):
+        window = txt[m.start(): m.end() + 60]
+        assert "every family" in window, \
+            f"an unscoped margin trend is back in the main text: {window!r}"
 
 
 def test_the_appendix_caption_still_says_the_same_thing():
-    txt = " ".join(open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read().split())
-    assert "rises monotonically with capability in every family" in txt, \
-        "the appendix caption lost the scope the main text is checked against"
-    assert "$p = 3.1\\times10^{-5}$ per family" in txt, "the per-family sign test was trimmed"
+    """v10 (2026-09-24) removed Figure fig:frontier, whose caption carried this claim, and retired
+    appendix_robustness.tex. The claim now lives in Appendix G's 'A better anchor widens the margin'
+    paragraph (appendix_onset.tex), which states the scope both ways -- "rises with capability within
+    every family" and "Pooled across families it is not monotone" -- and the per-family sign test is
+    one row per family of Table tab:marginspan. The sign test's p is derived from the CSV."""
+    txt = " ".join(open(tex("sections/appendix_onset.tex"), encoding="utf-8").read().split())
+    i = txt.index("\\label{app:scaling}")
+    para = txt[i: txt.index("\\end{table}", i)]
+    assert "rises with capability within every family" in para, \
+        "the appendix lost the scope the main text is checked against"
+    assert "Pooled across families it is not monotone" in para, \
+        "the appendix no longer says the pooled series is not monotone"
+    rows = list(csv.DictReader(open(os.path.join(ROOT, "results", "anchor_scaling_paired.csv"),
+                                    encoding="utf-8")))
+    assert len(rows) == 3, "one paired row per family"
+    cells = []
+    for r in rows:
+        mant, exp = f"{float(r['sign_test_p']):.1e}".split("e")
+        cells.append(f"${r['novels_margin_up']}/{r['n_novels']}$, $p = {mant}\\times10^{{{int(exp)}}}$")
+    for c in set(cells):
+        assert para.count(c) == cells.count(c), (c, para.count(c), "the per-family sign test was trimmed")
 
 
 def test_the_sign_test_is_per_family_and_all_sixteen_novels():

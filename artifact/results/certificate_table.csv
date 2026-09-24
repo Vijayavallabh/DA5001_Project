@@ -1,0 +1,6 @@
+mechanism,param,order,certificate_nats,K_over_Sw,window_bound,window_bound_log10,measured_spend_nats,responses_at_certificate,responses_at_spend
+metered,k=0.5,KL,100.0,0.625665,0.629788,-0.2008,78.48,4,5
+metered,k=3,KL,600.0,3.753989,1.0,0.0,165.0,0,2
+metered,k=10,KL,2000.0,12.513295,1.0,0.0,171.28,0,2
+selection,n=8,pathwise,2.0794,0.01301,3.0888935682768564e-69,-68.5102,,192,
+selection,n=64,pathwise,4.1589,0.026021,2.471114854621486e-68,-67.6071,,96,

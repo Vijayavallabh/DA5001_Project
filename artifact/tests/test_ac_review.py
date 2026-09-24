@@ -81,11 +81,14 @@ def test_the_scope_is_delimited_early_and_in_related_work():
     assert first.lower().startswith("certified"), (
         "the abstract's first sentence again describes every inference-time defence: " + first)
     intro = " ".join(live["iclr_intro"].split())
-    assert "Certified decoders offer something cheaper" in intro, \
+    # v10 (2026-09-24): "Certified decoders offer something cheaper: ..." became "Certified decoders
+    # need no retraining. They serve a law q ..." -- the same scoping to CERTIFIED decoders.
+    assert "Certified decoders need no retraining" in intro, \
         "the introduction's opening no longer scopes the mechanisms it describes"
     rw = " ".join(live["related_work_v4"].split())
-    i = rw.find(r"\textbf{Scope.}")
-    assert i != -1, "Section 2's Scope paragraph is gone"
+    # v10: the Scope paragraph is now headed by what it scopes out.
+    i = rw.find(r"\textbf{Defences without a divergence certificate.}")
+    assert i != -1, "Section 5's scope paragraph (defences without a divergence certificate) is gone"
     scope = rw[i:i + 900]
     for key in ("ippolito2023preventing", "wei2024cotaeval", "divergence certificate"):
         assert key in scope, f"the Scope paragraph no longer names {key}"

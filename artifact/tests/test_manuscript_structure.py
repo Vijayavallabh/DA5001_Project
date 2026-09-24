@@ -140,8 +140,12 @@ def test_every_repo_path_the_manuscript_cites_exists():
     # The manuscript no longer cites repo paths: they were internal bookkeeping and were
     # removed on 2026-09-19. There is nothing to require a minimum of; what still matters
     # is that any path it DOES cite resolves, which the assertion below checks.
+    # v10 (2026-09-24) cites a FAMILY of files, results/onset_prediction_*.md, for the
+    # registrations. A pattern resolves when it matches at least one file; a literal path must exist.
+    import glob
     missing = {p: sorted(w) for p, w in cited.items()
-               if not os.path.exists(os.path.join(repo, p))}
+               if not (glob.glob(os.path.join(repo, p)) if "*" in p
+                       else os.path.exists(os.path.join(repo, p)))}
     assert not missing, f"cited but absent from the repo: {missing}"
 
 
@@ -177,19 +181,21 @@ def test_no_ladder_sentence_cites_the_appendix_that_has_no_ladder_in_it():
     the wording, which is the safe direction.
     """
     import re as _re
+    # v10 (2026-09-24): app:scaling and app:collapse are PARAGRAPH labels inside Appendix G, so a
+    # label's target is the text from the label to the next \paragraph or \section, not a section.
     body_of = {}
     for rel in _build_graph():
-        txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
-        for m in _re.finditer(r"\\section\{[^}]*\}\s*\\label\{([^}]+)\}", txt):
-            end = txt.find("\\section{", m.end())
-            body_of[m.group(1)] = " ".join(txt[m.end():end if end > 0 else len(txt)].split())
+        txt = " ".join(open(os.path.join(DIR, rel), encoding="utf-8").read().split())
+        for m in _re.finditer(r"\\label\{(app:scaling|app:collapse)\}", txt):
+            ends = [e for e in (txt.find("\\paragraph{", m.end()), txt.find("\\section{", m.end())) if e > 0]
+            body_of[m.group(1)] = txt[m.end(): min(ends) if ends else len(txt)]
     assert "app:scaling" in body_of and "app:collapse" in body_of, sorted(body_of)
 
-    # the premise: the scaling appendix reports no ladder, the collapse one does
-    assert "ladder" not in body_of["app:scaling"], \
+    # the premise: the scaling target reports no ladder, the collapse one does (its endpoints)
+    assert "$0.8756$" not in body_of["app:scaling"] and "ladder" not in body_of["app:scaling"], \
         "a ladder moved into app:scaling; re-check every citation before relaxing this"
-    assert "$0.8756$" in body_of["app:collapse"] and "ladder" in body_of["app:collapse"], \
-        "the ladders are no longer reported in app:collapse; the citations need re-pointing"
+    assert "$0.8756$" in body_of["app:collapse"] and "$1.3477$" in body_of["app:collapse"], \
+        "the ladders are no longer reported at app:collapse; the citations need re-pointing"
 
     # and no sentence sends a reader there for one
     bad = []

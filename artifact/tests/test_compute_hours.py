@@ -72,7 +72,10 @@ def test_committed_summary_matches_the_manuscript_upper_bound():
     tex = pathlib.Path(_tex("iclr_2027.tex"))
     if not tex.exists():
         return
-    body = tex.read_text(encoding="utf-8")
+    # Whitespace-normalised (caution (ar)): the v10 rewrap of 2026-09-24 put "at most" at the end of
+    # one source line and "$366$ GPU-hours" at the start of the next, and a literal space in the
+    # pattern then failed on the wrap alone while the sentence was unchanged.
+    body = " ".join(tex.read_text(encoding="utf-8").split())
     # "approximately" became "at most" on 2026-09-16: the scan bills a gated queue shell for the
     # hours it spent polling, so ~8 of the total is a sleeping shell holding no card. The figure is
     # a genuine upper bound and the statement now says so; both wordings are accepted here.

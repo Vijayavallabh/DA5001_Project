@@ -87,10 +87,21 @@ def test_the_correction_is_disclosed_rather_than_folded_in():
     assert "0.326" in t, "the wrong criterion's control reading must stay on the record"
 
 
+def _bookmia_paragraph():
+    """The app:bookmia paragraph and its table, whitespace-normalised. It lived in
+    appendix_robustness.tex through v9; the v10 restructure (2026-09-24) folded that file into
+    appendix_onset.tex (Appendix G). Scoped to the paragraph so another occurrence of a number
+    elsewhere in the appendix cannot satisfy the guard (caution (an))."""
+    from tests.manuscript import body
+    txt = body("appendix_onset.tex")
+    assert txt.count(r"\label{app:bookmia}") == 1, "the BookMIA vacuity paragraph is gone"
+    i = txt.index(r"\label{app:bookmia}")
+    return txt[txt.rindex(r"\paragraph{", 0, i): txt.index(r"\paragraph{", i)]  # heading included
+
+
 def test_the_manuscript_quotes_the_bookmia_table_from_the_csv():
     """Caution (j): a paper number rounds from the CSV, once, and the check is mechanical."""
-    from tests.manuscript import tex
-    apx = open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read().replace("\n", " ")
+    apx = _bookmia_paragraph()
     for r in rows():
         n = f"{int(r['n_passages']):,}".replace(",", "{,}")
         assert f"${n}$" in apx, (r["arm"], n)
@@ -100,18 +111,24 @@ def test_the_manuscript_quotes_the_bookmia_table_from_the_csv():
 
 
 def test_section4_quotes_the_scaled_vacuity_fraction():
-    """The main text carries one number from this arm and it must be the seen half's, rounded once,
-    beside the corpus size it was measured on."""
-    from tests.manuscript import tex
-    body = (open(tex("sections/orders.tex"), encoding="utf-8").read()
-            + open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read()
-            ).replace("\n", " ")   # tab:repairs moved to the appendix 2026-09-19
+    """The prose carries the seen half's vacuity reading, rounded once from the CSV, beside the corpus
+    size it was measured on.
+
+    Through v9 this was the clause "vacuous for ... $98.7\\%$ of $9{,}870$ across a hundred books" in
+    the repairs summary of appendix_proofs.tex; v10 (2026-09-24) cut that summary and states the same
+    reading in Appendix G's BookMIA paragraph as a shortfall count, "$65$ of $4{,}935$ seen passages".
+    The count is derived from the CSV, so it moves if `frac_vacuous` moves by a single passage, and it
+    pairs the seen half's fraction with the seen half's own denominator (4,935) -- v9's clause set it
+    beside the whole corpus (9,870), one fraction with two denominators (caution (ai))."""
+    para = _bookmia_paragraph()
     seen = arm("BookMIA seen")
-    pct = 100 * float(seen["frac_vacuous"])
-    assert f"${pct:.1f}\\%$" in body, (pct, "not in section 4")
-    total = sum(int(r["n_passages"]) for r in rows() if "BookMIA" in r["arm"])
-    assert f"${total // 1000}{{,}}{total % 1000:03d}$" in body, total
-    assert "hundred books" in body
+    n = int(seen["n_passages"])
+    short = round(n * (1 - float(seen["frac_vacuous"])))
+    cnt = f"${n:,}$".replace(",", "{,}")
+    assert f"${short}$ of {cnt} seen passages" in para, (short, n, "the shortfall is not quoted")
+    assert "hundred books" in para
+    total = sum(int(r["n_books"]) for r in rows() if "BookMIA" in r["arm"])
+    assert total == 100, total
 
 
 def test_the_shortfall_is_the_count_the_log_states():

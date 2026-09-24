@@ -64,6 +64,12 @@ def _short_licensed_all_zero():
     return all(have.get((t, L)) == 0 for t in lic for L in v.SHORT)
 
 
+def _all_rungs_claim(six):
+    """v10 (2026-09-24) states the licensed anchors' pass once, over the whole ladder, where v9 gave
+    it in two halves ("at $150$ and at $200$", then "at $20$, $35$, $50$ and $75$ as well")."""
+    return f"The {six} anchors read $0$ of $50$ at all {WORD[len(RUNGS)]} lengths"
+
+
 def test_every_cell_of_the_table_is_the_csv():
     rows, cells = _rows(), _cells()
     have = {(r["model"], int(r["prefix_tokens"])): r for r in rows}
@@ -92,13 +98,16 @@ def test_the_recommendation_is_the_one_v1_licenses():
         c = sorted((int(r["prefix_tokens"]), int(r["leaking"])) for r in rows if r["model"] == t)
         falls += [(t, a, b) for (a, ka), (b, kb) in zip(c, c[1:]) if ka - kb >= v.DROP]
     eth, vet = _ethics(), _vetting()
+    six = WORD[len({r["model"] for r in rows if r["role"] == "openly licensed"})]
     if falls:                                           # NON-MONOTONE: a schedule, not a length
-        assert r"\emph{every} prefix length" in eth, "the Ethics Statement must recommend a schedule"
+        # emphasis is typography: v10 reads "it must run at every prefix length the deployment accepts"
+        assert re.search(r"(?:\\emph\{every\}|every) prefix length", eth), \
+            "the Ethics Statement must recommend a schedule"
         assert "attack surface: run the check at the longest genuine prefix" not in eth, \
             "the single-length rule V1 refuted is back"
         assert "not monotone" in vet
         if _short_licensed_all_zero():             # feat-183 S1 PASS HOLDS BELOW 100
-            assert "pass at every rung from $20$ to $200$" in vet and r"\emph{unmeasured}" not in vet
+            assert _all_rungs_claim(six) in vet and r"\emph{unmeasured}" not in vet
         else:
             assert r"\emph{unmeasured}" in vet, "the licensed anchors' short rungs must be named as unmeasured"
     else:
@@ -108,23 +117,28 @@ def test_the_recommendation_is_the_one_v1_licenses():
 def test_the_licensed_pass_is_claimed_only_as_far_as_it_was_measured():
     rows = _rows()
     lic = sorted({r["model"] for r in rows if r["role"] == "openly licensed"})
-    past = [r for r in rows if r["role"] == "openly licensed" and int(r["prefix_tokens"]) > 100]
-    leaks = [r["model"] for r in past if int(r["leaking"]) > 0]
+    lic_rows = [r for r in rows if r["role"] == "openly licensed"]
+    past = [r for r in lic_rows if int(r["prefix_tokens"]) > 100]
+    leaks = [(r["model"], r["prefix_tokens"]) for r in lic_rows if int(r["leaking"]) > 0]
     six = WORD[len(lic)]
-    claim = f"all {six} read $0$ of $50$ at $150$ and at $200$ tokens"
+    # v10 (2026-09-24) claims the pass over the whole ladder in one sentence in App. E and one in
+    # Section 4 (the Ethics Statement no longer restates it), so a leak at ANY rung must retire both
+    claim = _all_rungs_claim(six)
+    main = (f"all {six} anchors read $0$ on a vetting screen at every prefix length from "
+            f"${RUNGS[0]}$ to ${RUNGS[-1]}$ tokens")
     if leaks:
         assert claim not in _vetting(), f"PASS BREAKS at {leaks}, and the appendix says it holds"
+        assert main not in body("experiments.tex"), f"PASS BREAKS at {leaks}, and Section 4 says it holds"
     else:
-        assert {int(r["prefix_tokens"]) for r in past} == {150, 200} and claim in _vetting()
-        if _short_licensed_all_zero():
-            assert f"The {six} anchors used here read $0$ at every rung from $20$ to $200$" in _ethics()
-            assert "all six read $0$ of $50$ at $20$, $35$, $50$ and $75$ tokens as well" in _vetting()
-        else:
-            assert f"The {six} anchors used here still read $0$ at $150$ and $200$" in _ethics()
-    # the count the paper gives is the count screened: TinyComma sits in the 70B control's anchor slot
-    assert f"each of the {six} openly licensed anchors" in _ethics()
-    assert f"all {six} anchors used here" in _vetting()
-    assert f"at all {six} licensed anchors" in body("experiments.tex")
+        assert {int(r["prefix_tokens"]) for r in past} == {150, 200}
+        for t in lic:   # "all seven lengths" is only true of an anchor measured at all seven
+            assert {int(r["prefix_tokens"]) for r in lic_rows if r["model"] == t} == set(RUNGS), t
+        assert claim in _vetting(), "the appendix no longer states the licensed anchors' pass"
+        assert main in body("experiments.tex"), "Section 4 no longer states the licensed anchors' pass"
+    # the count the paper gives is the count screened: TinyComma sits in the 70B control's anchor
+    # slot. v10 gives it in the appendix sentence above and in Section 4, not in the Ethics Statement.
+    assert f"The {six} anchors read" in _vetting()
+    assert f"all {six} anchors read $0$" in body("experiments.tex")
     live = _ethics() + body("appendix_selection.tex", "experiments.tex", "selection.tex",
                             "iclr_intro.tex")
     for stale in ("five openly licensed", "all five anchors", "five licensed"):
@@ -135,26 +149,33 @@ def test_every_ladder_number_in_the_prose_is_the_csv():
     k = {(r["model"], int(r["prefix_tokens"])): int(r["leaking"]) for r in _rows()}
     b = lambda L: k[("llama70b", L)]  # noqa: E731
     vet, eth = _vetting(), _ethics()
-    assert f"(${b(20)}$ and ${b(35)}$ of $50$ passages)" in vet
-    assert f"is seen from $50$ (${b(50)}$)" in vet and b(50) >= v.SEES > b(35)
-    assert f"leaks on ${b(150)}$ at $150$, where the screen at a hundred finds ${b(100)}$" in vet
+    # v10 (2026-09-24): the 70B's per-rung counts left the prose for Table vetladder (every cell
+    # checked above); the prose keeps the READING of them, and a claim about numbers is checked
+    # against the numbers (caution (ai)): below the SEES threshold at 20 and 35, at or above it at 50
+    assert "nearly invisible at $20$ and $35$ tokens and seen from $50$" in vet
+    assert b(20) < v.SEES and b(35) < v.SEES <= b(50), (b(20), b(35), b(50), v.SEES)
+    # the screen on record (100 tokens) as a fraction, and the 150-token count in the Ethics Statement
+    assert re.search(r"(?:\\texttt\{)?Llama-3\.1-70B\}? leaks on " + re.escape(f"${b(100) / 50:.3f}$"),
+                     vet), (b(100), "the 100-token screen's 70B fraction is not the CSV's")
     o = lambda L: k[("olmo2_13b", L)]  # noqa: E731
-    assert o(100) == o(150), "the prose says 'at 100 and at 150' with one count"
-    assert (f"\\texttt{{OLMo-2-13B}} leaks on ${o(100)}$ passages at $100$ and at $150$ and on "
+    assert o(100) == o(150), "the prose says 'at 100 and 150' with one count"
+    assert (f"\\texttt{{OLMo-2-13B}} leaks on ${o(100)}$ passages at $100$ and $150$ tokens and on "
             f"${o(200)}$ at $200$") in vet
+    assert f"leaks on ${b(150)}$ of $50$ passages at $150$" in eth
+    # left as it was: v10 cut this sentence (see the 2026-09-24 reconciliation report)
     with open(os.path.join(ROOT, "results", "vetladder_L200_olmo2_13b_per_passage.csv"),
               encoding="utf-8") as fh:
         full = sum(float(r["anchor_max_recall"]) >= 1.0 for r in csv.DictReader(fh))
     assert f"It still reproduces {WORD[full]} passage in full there" in vet
-    assert (f"leaks on ${b(20)}$ passage of $50$ at twenty raw tokens, ${b(50)}$ at fifty and "
-            f"${b(150)}$ at $150$") in eth
 
 
 def test_the_host_check_is_quoted_as_the_scorer_reads_it():
     word, d = v.host_check(os.path.join(ROOT, "results"))
     assert word == "PASS", (word, d)
-    assert (f"reaches recall $0.01$ on ${d['host_b']}$ of ${d['n']}$ passages against "
-            f"${d['local']}$ here ($z = {d['z']:.2f}$)") in _vetting()
+    # punctuation-agnostic: v9 "... here ($z = 0.71$)", v10 (in the table caption) "... here, $z = 0.71$"
+    assert re.search(re.escape(f"reaches recall $0.01$ on ${d['host_b']}$ of ${d['n']}$ passages "
+                               f"against ${d['local']}$ here") + r"(?:,| \() ?"
+                     + re.escape(f"$z = {d['z']:.2f}$"), _vetting()), d
     nb = sum(r["source"] == "this arm, host B" for r in _rows())
     tens = {2: "Twenty", 3: "Thirty"}
     spelled = {2: "Two"}.get(nb) or f"{tens[nb // 10]}-{WORD[nb % 10]}"

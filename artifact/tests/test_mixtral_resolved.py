@@ -46,7 +46,13 @@ def test_the_appendix_carries_the_numbers_and_why_two_arms_were_needed():
     txt = M.body("appendix_selection.tex")
     g, lo, hi = _d3("armc_mixtral")
     assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in txt, "Mixtral's band left the appendix"
-    assert "$+0.0090$ $[-0.0355, +0.0530]$" in txt, "the reading on record left the appendix"
+    # The reading on record (seed 42, 500 prompts) is now a row of Table tab:h2hrepeat, which prints
+    # its interval without a space after the comma (v10, 2026-09-24); derived from its own CSV and
+    # matched spacing-tolerantly.
+    import re
+    g0, lo0, hi0 = _d3("mixtral")
+    assert re.search(re.escape(f"${g0:+.4f}$ $[{lo0:+.4f},") + r" ?" + re.escape(f"{hi0:+.4f}]$"),
+                     txt), ("the reading on record left the appendix", g0, lo0, hi0)
     assert "a half-width of $0.0443$" in txt, \
         "the interval that the extra prompts tightened was trimmed -- it is what separates a "
     assert "AlpacaEval, where the reversal does not hold" in txt, \

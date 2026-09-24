@@ -291,7 +291,12 @@ def test_the_judgefree_headtohead_agrees_with_the_appendix():
     # the arm that WINS is quoted with its interval, because the concession is about that arm
     assert f"${float(best['acc']):.3f}$ $[{float(best['acc_lo95']):.3f}, " \
            f"{float(best['acc_hi95']):.3f}]$" in apx, (best["arm"], "the winning arm lost its interval")
-    assert f"${float(best['acc']) - float(top['acc']):.3f}$" in apx, "the losing margin is not stated"
+    # v9 stated the gap ("wins the level by $0.428$"); v10 (2026-09-24) states it as the two levels,
+    # "The meter wins, $0.618$ against $0.190$" (Figure fig:judgefree's caption). Either form states
+    # the size of the loss, and both are rebuilt from the CSV.
+    assert (f"${float(best['acc']) - float(top['acc']):.3f}$" in apx or
+            f"${float(best['acc']):.3f}$ against ${float(top['acc']):.3f}$" in apx), \
+        "the losing margin is not stated"
     assert "$480$" in apx or "$480.0$" in apx, "the winning arm's certificate is not quoted"
     assert "$44.8473$" in apx, "the winning arm's realised spend is not quoted"
 

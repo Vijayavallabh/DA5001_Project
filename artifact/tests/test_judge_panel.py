@@ -59,29 +59,62 @@ def test_the_panel_is_five_judges_and_four_of_them_resolve_the_difference():
     assert all(p[3] > 0 for p in panel), panel
 
 
+# The panel the v10 manuscript quotes (2026-09-24). Caution (bc): every judged number recorded before
+# 2026-09-24 was judged on echo-carrying text, and the paper now reports the head-to-head on the
+# RECOVERED text, re-judged by six judges -- B and the five that re-score the headline's texts, C
+# (the opponent's own checkpoint) included (Figure fig:h2h). The recorded-text five-judge panel above
+# is still what Table tab:h2hrepeat prints, and the guards above still pin it.
+REPAIRED = {
+    "": ("B", "Phi-3.5-mini-instruct"),
+    "__opp_committed_judgeC": ("C", "Meta-Llama-3.1-8B-Instruct"),
+    "__qwen72b": ("D", "Qwen2.5-72B-Instruct"),
+    "__mixtral": ("E", "Mixtral-8x7B"),
+    "__qwen14b": ("F", "Qwen2.5-14B-Instruct"),
+    "__gemma27b": ("G", "gemma-2-27b-it"),
+}
+
+
+def _panel_repaired():
+    """(letter, model, d3, lo, hi) on the recovered text, one row per judge of the v10 panel."""
+    out = []
+    for tag, (letter, model) in REPAIRED.items():
+        p = f"results/order_averaged_h2h{tag}_deecho.csv"
+        if not os.path.exists(p):
+            raise AssertionError(f"{p} missing; this guard must not pass by never running")
+        d3 = [r for r in csv.DictReader(open(p, encoding="utf-8")) if r["quantity"].startswith("D3")]
+        assert len(d3) == 1, p
+        r = d3[0]
+        out.append((letter, model, float(r["value"]), float(r["lo95"]), float(r["hi95"])))
+    return out
+
+
 def test_the_paper_quotes_the_measured_fraction_and_not_an_unqualified_claim():
-    """H3's r>=4 branch: 'The claim does not return to an unqualified judged better.'"""
-    panel = _panel()
-    r = sum(1 for p in panel if _resolves(p))
-    words = {4: "four", 5: "five", 3: "three", 2: "two"}
+    """H3's r>=4 branch: 'The claim does not return to an unqualified judged better.'
+
+    v10 (2026-09-24) quotes the fraction on the recovered text over a six-judge panel ("under five of
+    six judges" in the abstract, "five of six judges exclude zero, and the sixth, Mixtral-8x7B,
+    straddles it at $-0.0015$" in Section 4.2), where v9 quoted four of five on the recorded text. The
+    fraction is derived here from the six committed *_deecho CSVs, so it cannot drift from them."""
+    panel = _panel_repaired()
+    r = sum(1 for p in panel if p[2] > 0 and p[3] > 0)
+    words = {3: "three", 4: "four", 5: "five", 6: "six", 7: "seven"}
     claim = f"{words[r]} of {words[len(panel)]} judges"
     for f in ("iclr_2027", "experiments"):
         txt = section_text(f)
         if f == "iclr_2027":
             assert claim in txt, f"the abstract must carry the measured fraction '{claim}'"
         else:
-            # GUARD THE PROPERTY, NOT THE SPELLING (caution (an)). This demanded the exact string
-            # `four of five`, and the section now says `Five judges, ...` and `replicates under
-            # four judges ... the one clean frontier judge` -- the same measured fraction, reported
-            # more precisely, and the guard failed on the wording. It failed LOUDLY, which is the
-            # right direction, but the fix is to ask whether the section states both counts.
+            # GUARD THE PROPERTY, NOT THE SPELLING (caution (an)): the section must state the
+            # fraction, name every judge that does not resolve it with its own reading, and make no
+            # 'judged better' claim without the fraction beside it.
             low = txt.lower()
-            assert f"{words[r]} judges" in low, \
-                f"Section 4.3 must say how many judges resolve it ({words[r]})"
-            assert f"{words[len(panel)]} judges" in low, \
-                f"Section 4.3 must say how large the panel is ({words[len(panel)]})"
-            assert "judged better" not in low or "of five" in low or "four judges" in low, \
-                "Section 4.3 makes an unqualified 'judged better' claim"
+            assert claim in low, f"Section 4.2 must state the measured fraction ({claim})"
+            for letter, model, d3, lo, hi in panel:
+                if not (d3 > 0 and lo > 0):
+                    assert model.lower() in low and f"${d3:+.4f}$" in txt, \
+                        (letter, model, d3, "the judge that does not resolve it is not named")
+            assert "judged better" not in low or claim in low, \
+                "Section 4.2 makes an unqualified 'judged better' claim"
 
 
 def test_family_does_not_explain_the_exception_and_the_paper_says_so():

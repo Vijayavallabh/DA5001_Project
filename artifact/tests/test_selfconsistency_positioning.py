@@ -27,7 +27,8 @@ def test_the_appendix_makes_the_argument_and_concedes_the_mechanism_is_not_ours(
     txt = body("appendix_related.tex")
     assert KEY in txt, "the appendix lost the self-consistency paragraph"
     assert "a mode is a score" in txt, "the reason it is an instance was trimmed"
-    assert "the mechanism is theirs" in txt, \
+    # v10 (2026-09-24) made it its own sentence, "The mechanism is theirs." -- capital T only.
+    assert "the mechanism is theirs" in txt.lower(), \
         "the concession that we add the reading and not the mechanism was trimmed"
     assert "$\\log n$" in txt
 

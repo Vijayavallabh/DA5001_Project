@@ -54,7 +54,9 @@ def test_the_impossibility_claim_is_about_a_rate_and_not_about_every_budget():
     match selection, the word governed must be `rate`, never `budget` or `meter`.
     """
     bad = []
-    for name in ("iclr_intro.tex", "frontier.tex", "selection.tex", "orders.tex",
+    # v10 (2026-09-24): orders.tex was retired (kept as orders_v9_2026-09-24.tex, not compiled); the
+    # repairs it argued now live in frontier.tex (Table repairs) and appendix_onset.tex (App. H).
+    for name in ("iclr_intro.tex", "frontier.tex", "selection.tex", "appendix_onset.tex",
                  "iclr_closing.tex"):
         txt = _flat(name)
         for m in re.finditer(r"per-token (?:\\emph\{)?(\w+)", txt):
@@ -70,7 +72,7 @@ def test_the_impossibility_claim_is_about_a_rate_and_not_about_every_budget():
     # Section 3.4 still read "Why a per-token budget is vacuous or trivial" after the body had
     # been rescoped -- a leftover only a reader of the rendered page would have caught, because
     # a heading contains no "cannot match" for the clause rule above to fire on.
-    for name in ("iclr_intro.tex", "frontier.tex", "selection.tex", "orders.tex",
+    for name in ("iclr_intro.tex", "frontier.tex", "selection.tex", "appendix_onset.tex",
                  "experiments.tex", "iclr_closing.tex"):
         for h in re.findall(r"\\(?:sub)*section\{([^}]*)\}", _flat(name)):
             if "per-token" in h and "rate" not in h:
@@ -94,19 +96,28 @@ def test_the_second_horn_is_stated_as_a_shape_and_selection_actually_satisfies_i
     assert abs(kl64 - 3.1745) < 5e-4, kl64
 
     intro, front = _flat("iclr_intro.tex"), _flat("frontier.tex")
-    assert "sparse" in intro and "Vacuous, or sparse" in intro, \
-        "the introduction no longer names the second horn as sparsity"
-    for name, txt in (("iclr_intro.tex", intro), ("frontier.tex", front)):
-        assert "shape" in txt, f"{name} no longer calls the second horn a shape"
+    # Section 3 states the horn at selection's own budget (v10: "at $3.175$ nats, fewer than four of
+    # its $204$ steps carry a whole nat"), so the budget it quotes is the closed form, not a typed one.
+    assert "shape" in front, "frontier.tex no longer calls the second horn a shape"
+    assert f"${kl64:.3f}$" in front, "frontier.tex no longer applies the horn at selection's own KL"
 
     # the arm the sentence leans on. Until 2026-09-24 this was the committed pass's gain, +0.1045,
-    # a hardcoded literal on echo-carrying text (caution (bc)). The sentence now reads selection's
-    # order-averaged LEVEL against the risky model's own draw on repaired text (feat-186), and says
-    # it is above parity -- so check that claim against its CSV rather than a typed number.
+    # a hardcoded literal on echo-carrying text (caution (bc)). The claim is selection's
+    # order-averaged LEVEL against the risky model's own draw on repaired text (feat-186), above
+    # parity -- so check that claim against its CSV rather than a typed number. v10 (2026-09-24)
+    # moved the level out of frontier.tex into Table~\ref{tab:served}'s block header in Section 4
+    # ("anchor alone $0.439$, selection $0.555$", with $0.5$ as parity in the caption).
     lv = {r["arm"]: r for r in _rows("frontier_levels.csv")}["sel_n64"]
     assert float(lv["lo95"]) > 0.5, (lv, "selection's level no longer clears parity; the sentence is false")
-    assert f"at ${float(lv['level']):.3f}$" in front, \
-        "frontier.tex no longer quotes the level the sparse horn is read on"
+    assert f"selection ${float(lv['level']):.3f}$" in _flat("experiments.tex"), \
+        "Table served no longer prints the level the sparse horn is read on"
+
+    # and the introduction must name the second horn as sparsity and call it a shape, not an
+    # impossibility result -- the caveat that keeps "cannot be repaired" from reading as a bound on
+    # every causal policy.
+    assert "sparse" in intro and "Vacuous, or sparse" in intro, \
+        "the introduction no longer names the second horn as sparsity"
+    assert "shape" in intro, "iclr_intro.tex no longer calls the second horn a shape"
     # Prop 3 applied at selection's own budget must be a real constraint (fewer steps than T)
     assert kl64 / 1.0 < 204, "log-n budget no longer implies O(1) high-divergence steps at T=204"
 
@@ -188,8 +199,12 @@ def test_proposition_four_bounds_over_slack_steps_and_carries_the_rate_function_
         "Proposition 4 dropped the condition that slack steps carry divergence bounded away from 0"
     assert "not vanishing in $T$" in stmt or "O(1)$" in stmt, \
         "Proposition 4 dropped the rate-function proviso its Omega(T) conclusion needs"
-    after = txt[txt.index(r"\end{proposition}", i):][:600]
-    assert "1.30" in after, \
+    # v10 (2026-09-24): the sentence saying the measured utility satisfies the proviso moved from
+    # after the statement in Section 3 to the end of the proposition's proof in Appendix A.
+    proofs = _flat("appendix_proofs.tex")
+    j = proofs.index(r"\paragraph{Proposition~\ref{prop:imitation}.}")
+    proof = proofs[j: proofs.index(r"\qed", j)]
+    assert "proviso" in proof and "$1.30$" in proof, \
         "the paper no longer says the utility it measures actually satisfies the proviso"
 
 
@@ -201,7 +216,8 @@ def test_proposition_five_equality_condition_is_not_a_constant_rate():
     # refuted clause was absent OR the word "decreasing" appeared anywhere in the file -- and the
     # correction paragraph supplied "decreasing", so the PROPOSITION kept saying "equality iff
     # constant rate" for three days with this test green. The AC's report named that sentence.
-    blk = re.search(r"\\begin\{proposition\}\[[^\]]*\]\\label\{prop:outrun\}(.*?)"
+    # the title is optional: v10 (2026-09-24) states the proposition untitled
+    blk = re.search(r"\\begin\{proposition\}(?:\[[^\]]*\])?\\label\{prop:outrun\}(.*?)"
                     r"\\end\{proposition\}", txt)
     assert blk, "Proposition prop:outrun's statement block is gone"
     stmt = blk.group(1)
@@ -338,7 +354,13 @@ def test_the_zero_reproduction_claim_carries_its_anchor_caveat_where_it_is_first
     assert "anchor" in w, "the abstract's caveat does not name what the bound is relative to"
 
     intro = _flat("iclr_intro.tex")
-    j = intro.index("zero near-verbatim recall")
+    # v10 (2026-09-24) states the zero in the abstract's words, "reproduces no protected passage",
+    # so the claim is located by that phrase rather than by v9's "zero near-verbatim recall".
+    # v10 restores group D's wording for the n=256 point ("near-verbatim recall is $0.0000$ at every
+    # $n \le 64$ and at $n=256$"); the claim is located by whichever phrasing the intro uses.
+    js = [k for k in (intro.find("no protected passage"), intro.find("near-verbatim recall is $0.0000$")) if k >= 0]
+    assert js, "the introduction no longer states the zero-reproduction result"
+    j = min(js)
     w = intro[j: j + 300]
     assert "relative" in w and ("vetted" in w or "vetting" in w), \
-        "the contributions list states zero recall without the caveat the abstract now carries"
+        "the introduction states zero reproduction without the caveat the abstract carries"

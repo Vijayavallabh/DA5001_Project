@@ -14,7 +14,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from tests.manuscript import body  # noqa: E402
+from tests.manuscript import body, caption_of, tex  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,13 +34,36 @@ def test_twelve_distinct_contaminated_anchors():
     assert len({r["anchor"] for r in _rows()}) == 12, sorted({r["anchor"] for r in _rows()})
 
 
+def _ethics():
+    main = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    main = main[main.index(r"\section*{Ethics Statement}"):]
+    return main[:main.index(r"\section*{", 1)]
+
+
+def _leakage_section():
+    """Section 4.4's prose, without the fig:safety float (its caption is a site of its own)."""
+    exp = body("experiments.tex")
+    sec = exp[exp.index("\\label{sec:leakage}"):exp.index("\\subsection{", exp.index("\\label{sec:leakage}"))]
+    a, b = sec.index("\\begin{figure}"), sec.index("\\end{figure}")
+    return sec[:a] + sec[b:]
+
+
+def _contaminated_paragraph():
+    apx = body("appendix_selection.tex")
+    sec = apx[apx.index("\\label{app:contaminated}"):]
+    return sec[:sec.index("\\paragraph{")]
+
+
 def test_the_quoted_endpoints_are_the_actual_min_and_max():
+    """v10 (2026-09-24): the introduction and Section 2 no longer quote the range; it lives in
+    Section 4.4, the Ethics Statement and Appendix E, and each must quote the CSV's own min and max
+    as a range."""
     vals = [float(r["amplification_vs_n1"]) for r in _measured_at_64()]
     assert vals, "no measured amplification at n=64"
     lo, hi = min(vals), max(vals)
-    for f in ("iclr_intro.tex", "selection.tex", "experiments.tex"):
-        txt = body(f)
-        assert f"${lo:.1f}$" in txt and f"${hi:.1f}$" in txt, (f, lo, hi)
+    for f, txt in (("Section 4.4", _leakage_section()), ("Ethics Statement", _ethics()),
+                   ("app:contaminated", _contaminated_paragraph())):
+        assert _quotes(txt, lo, hi), (f, lo, hi)
 
 
 def test_every_measured_amplification_is_under_the_certificate():
@@ -62,32 +85,47 @@ def _quotes(txt, lo, hi):
 
 
 def test_the_intro_quotes_the_range_and_the_anchor_count():
-    txt = body("iclr_intro.tex")
-    assert "twelve deliberately contaminated anchors" in txt, "the anchor count was trimmed"
+    """v10 (2026-09-24): the introduction no longer carries this sentence. Its count and both draws'
+    ranges now sit together in the Ethics Statement, and in Section 4.4 (count in the fig:safety
+    caption, both ranges in the prose); both sites are checked, the count rebuilt from the CSV."""
+    count = {12: "twelve"}[len({r["anchor"] for r in _rows()})]
+    eth = _ethics()
+    assert f"{count} deliberately contaminated anchors" in eth, "the anchor count was trimmed"
+    assert f"{count} anchors fine-tuned on the passages" in caption_of("fig:safety").lower(), \
+        "Section 4.4 no longer states how many contaminated anchors there are"
     for f in ("selector_n256.csv", "selector_redraw.csv"):
-        assert _quotes(txt, *_range(f)), (f, "the intro no longer quotes this draw's range")
+        assert _quotes(eth, *_range(f)), (f, "the Ethics Statement no longer quotes this draw's range")
+        assert _quotes(_leakage_section(), *_range(f)), (f, "Section 4.4 no longer quotes this draw's range")
 
 
 def test_every_site_quotes_the_factor_per_draw_both_draws():
     """feat-182 (results/onset_prediction_selector_redraw.md): 'the amplification quoted at n = 64 and
     n = 256 is given per draw, both draws, never averaged into one rate', and a verdict that does not
     replicate is stated as draw-dependent. Every site that quotes the first draw must quote the second."""
-    import tests.manuscript as ms
-    eth = " ".join(open(ms.tex("iclr_2027.tex"), encoding="utf-8").read().split())
-    eth = eth[eth.index(r"\section*{Ethics Statement}"):]
-    apx = body("appendix_selection.tex")
-    cap = apx[apx.index("\\caption{"):apx.index("\\label{fig:safety}")]
-    sec = apx[apx.index("\\label{app:contaminated}"):]
-    sites = {"intro": body("iclr_intro.tex"), "selection": body("selection.tex"),
-             "experiments": body("experiments.tex"), "ethics": eth, "fig:safety caption": cap,
-             "app:contaminated": sec[:sec.index("\\subsection{")]}
+    # v10 (2026-09-24): the sites are Section 4.4's prose, the fig:safety caption (which moved into
+    # Section 4.4), the Ethics Statement and Appendix E's contaminated-anchor paragraph; the intro
+    # and Section 2 no longer quote the factor. The rule itself is checked on EVERY live file too:
+    # any file that quotes the first draw must quote the second beside it.
+    sites = {"Section 4.4": _leakage_section(), "ethics": _ethics(),
+             "fig:safety caption": caption_of("fig:safety"),
+             "app:contaminated": _contaminated_paragraph()}
     one, two = _range("selector_n256.csv"), _range("selector_redraw.csv")
     for name, txt in sites.items():
         assert _quotes(txt, *one), (name, "first draw not quoted")
         assert _quotes(txt, *two), (name, "the second draw must be quoted beside the first")
+    import re
+    main = open(tex("iclr_2027.tex"), encoding="utf-8").read()
+    swept = {"abstract": " ".join(main.split(r"\begin{abstract}")[1].split(r"\end{abstract}")[0].split())}
+    swept.update({n: body(n + ".tex") for n in re.findall(r"^\\input\{sections/([^}]+)\}", main, re.M)})
+    assert len(swept) > 10, sorted(swept)
+    for name, txt in swept.items():
+        if _quotes(txt, *one):
+            assert _quotes(txt, *two), (name, "quotes the first draw without the second")
     rep = {r["part_a_band"]: r["reading"] for r in
            csv.DictReader(open(os.path.join(ROOT, "results", "selector_redraw_replication.csv"),
                                encoding="utf-8"))}
     if rep["B1"] == "DOES NOT REPLICATE":
-        assert "\\emph{draw-dependent}" in sites["app:contaminated"]
-        assert "crossed by that one anchor on the first draw and by none on the second" in sites["app:contaminated"]
+        # v10 words the draw-dependent verdict without the label: the band is crossed on one draw
+        # and not the other, "so we give both readings".
+        assert "crossed by one anchor on the first draw and by none on the second" in sites["app:contaminated"]
+        assert "we give both readings" in sites["app:contaminated"]

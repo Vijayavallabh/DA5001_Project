@@ -11,7 +11,13 @@ CSV = "results/onset_table.csv"
 from tests.manuscript import tex
 
 TEX = tex("sections/appendix_onset.tex")
-PROSE = tex("sections/onset.tex")
+# v10 (2026-09-24): onset.tex was retired (onset_v9_2026-09-24.tex, not compiled); the main-text
+# onset prose and Figure horns (the nine pairs, the 0.88-1.17 range) live in frontier.tex, Section 3.
+PROSE = tex("sections/frontier.tex")
+# the section files the manuscript \inputs, for the scans that must cover every live page
+LIVE = ("iclr_intro", "selection", "frontier", "experiments", "related_work_v4", "iclr_closing",
+        "appendix_proofs", "appendix_selection", "appendix_onset", "appendix_limitations",
+        "appendix_related")
 LABEL = {"KL3M 1.7B $+$ mem.\\ KL3M 1.7B": "KL3M-1.7B + mem. KL3M-1.7B",
          "Comma 7B $+$ mem.\\ Comma 7B": "Comma-7B + mem. Comma-7B",
          "KL3M 520M $+$ mem.\\ KL3M 520M": "KL3M-520M + mem. KL3M-520M",
@@ -66,7 +72,7 @@ def test_every_cell_of_the_section_4_table_comes_from_the_csv():
 
 
 def test_the_prose_range_and_count_match_the_table():
-    body = open(PROSE, encoding="utf-8").read()
+    body = " ".join(open(PROSE, encoding="utf-8").read().split())   # caution (ar): not the wrap
     src = [r for r in csv.DictReader(open(CSV)) if not r["pair"].startswith("ALL")]
     ratios = [float(r["ratio"]) for r in src]
     word = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][len(src)]
@@ -104,18 +110,24 @@ def test_the_strength_range_the_appendices_quote_rounds_from_the_csv():
     assert len(v) == 9, f"expected nine measured strengths, got {len(v)}"
     lo, hi = min(v), max(v)
     factor = f"{hi / lo:.1f}"
-    rob = " ".join(open(tex("sections/appendix_robustness.tex"), encoding="utf-8").read().split())
+    # v10 (2026-09-24): appendix_robustness was retired into appendix_onset, which states the factor
+    # beside the table ("the memorisers span a factor of $5.1$ in their own recall") and prints the
+    # two endpoints in the table's mem. column rather than in the sentence
+    ons = " ".join(open(TEX, encoding="utf-8").read().split())
     lim = " ".join(open(tex("sections/appendix_limitations.tex"), encoding="utf-8").read().split())
-    assert f"${lo:.3f}$ to ${hi:.3f}$, a factor of ${factor}$" in rob, \
-        f"appendix_robustness must say {lo:.3f} to {hi:.3f}, a factor of {factor}"
+    assert f"span a factor of ${factor}$" in ons, \
+        f"appendix_onset must say the memorisers span a factor of {factor}"
+    cells = {c[4].strip("$ \\") for c in _rows()}          # the mem. column, one cell per pair
+    assert f"{lo:.3f}" in cells and f"{hi:.3f}" in cells, \
+        f"the table's mem. column must hold both ends of the range, {lo:.3f} and {hi:.3f}"
     assert f"a factor of ${factor}$ in sampled $k=-1$" in lim, \
         f"appendix_limitations must say a factor of {factor}"
 
 
 def test_no_quoted_strength_comes_from_a_different_corpus():
-    """The specific wrong number, pinned so it cannot come back."""
-    for name in ("sections/appendix_robustness.tex", "sections/appendix_limitations.tex",
-                 "sections/appendix_onset.tex"):
+    """The specific wrong number, pinned so it cannot come back. Every live section since v10
+    (2026-09-24), which retired appendix_robustness into appendix_onset."""
+    for name in (f"sections/{s}.tex" for s in LIVE):
         body = open(tex(name), encoding="utf-8").read()
         assert "0.2696" not in body, (
             f"{name} quotes 0.2696, which is fineg_phi35 on Gutenberg, not a CopyBench pair")
@@ -152,8 +164,10 @@ def test_the_convergence_count_the_caption_states_matches_the_csv():
     no = len(rows) - yes
     words = {1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven"}
     body = " ".join(open(TEX, encoding="utf-8").read().split())
-    assert f"{words[no]} of the nine did" in body, \
-        f"{no} of nine did not converge; the caption must say {words[no]}"
+    # case-free: v10 (2026-09-24) says it mid-sentence beside the table, "and five of the nine did
+    # not converge"
+    assert re.search(rf"\b{words[no]} of the nine did\b", body, flags=re.I), \
+        f"{no} of nine did not converge; the text beside the table must say {words[no]}"
 
 
 def test_the_summary_row_reports_the_same_convergence_count():

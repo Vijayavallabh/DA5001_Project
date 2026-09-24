@@ -46,14 +46,19 @@ def test_all_three_repeats_confirm_or_the_headline_is_not_allowed_to_stand():
     as written only if all three new estimates are positive with intervals excluding zero. Assert
     the data still says that, so a later re-run cannot silently leave the claim behind."""
     body = " ".join(open(APP, encoding="utf-8").read().split())
+    # v10 (2026-09-24) states the outcome in Section 4 rather than as an appendix sentence about the
+    # registered condition: "The difference survives fresh draws, judges and controls". That is the
+    # headline being allowed to stand, so it is what the data must license.
+    main = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
     ok = True
     for _, path in H2H[1:]:
         d3 = _q(path)["D3 difference of gains, paired"]
         ok &= float(d3["value"]) > 0 and float(d3["lo95"]) > 0
     if not ok:
         assert "stand as written" not in body and "All three new estimates are positive" not in body
+        assert "survives fresh draws" not in main, "Section 4 claims a replication the data refuses"
     else:
-        assert "All three new estimates are positive" in body
+        assert "The difference survives fresh draws" in main
 
 
 def test_the_latency_table_rounds_from_serving_latency_csv():
@@ -93,14 +98,18 @@ def test_the_flop_cost_claim_is_never_asserted_without_naming_its_currency():
     backwards about where the price goes. Every surviving statement that the scorer is the price
     must therefore say it is about FLOPs, or a reader takes away the opposite of what was
     measured."""
-    body = " ".join(open(APP, encoding="utf-8").read().split())
-    for claim in ("price of putting a reward model in the loop",
-                  "is set by the reward model"):
+    # v10 (2026-09-24) dropped both appendix claims this list used to hold ("price of putting a
+    # reward model in the loop", "is set by the reward model"); the one surviving statement that the
+    # scorer is the price is Section 4.5's, whose currency the paper now names "forward passes"
+    # (Table tab:cost: "forward passes, parameters x tokens", the same FLOP proxy).
+    files = {"most of it the reward model's prefill": "sections/experiments.tex"}
+    for claim, f in files.items():
+        body = " ".join(open(tex(f), encoding="utf-8").read().split())
         i = body.find(claim)
         assert i > 0, f"{claim!r} is gone; drop it from this test"
         # A tight window on purpose: the currency has to be named in the clause that makes the
         # claim. A generous one passes vacuously off the "forward-pass FLOPs" two sentences later,
         # which is what a reader skimming the claim itself would never see.
         near = body[max(0, i - 70): i + 70]
-        assert "FLOP" in near, \
+        assert "FLOP" in near or "forward pass" in near, \
             f"{claim!r} is asserted without naming FLOPs as its currency: {near!r}"
