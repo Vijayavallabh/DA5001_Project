@@ -139,7 +139,12 @@ def test_the_scored_arm_agrees_with_the_manuscript():
     r64 = pw[64]
     assert carries_band(float(r64["gain"]), float(r64["gain_lo95"]), float(r64["gain_hi95"]),
                         "experiments.tex"), r64
-    assert "selection_breadth_forest" in body, "the figure carrying these bands is not included"
+    # v11 (2026-09-24): Figure fig:breadth moved to Appendix D (appendix_selection.tex) for the sixth
+    # round's additions; Section 4 still points at it. The guard follows the figure, and asserts the pointer.
+    from tests.manuscript import body as _b
+    assert "selection_breadth_forest" in _b("experiments.tex", "appendix_selection.tex"), \
+        "the figure carrying these bands is not included"
+    assert "\\ref{fig:breadth}" in body, "Section 4 no longer points at the breadth figure"
     # and the paper must not present majority vote as the registered scorer
     assert "pointwise" in body or "reward" in body
 

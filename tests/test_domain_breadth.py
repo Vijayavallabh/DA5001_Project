@@ -132,7 +132,12 @@ def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
     assert carries_band(g, lo, hi, "experiments.tex"), ("judge B", g, lo, hi)
     g, lo, hi = want[("alpaca", "Meta-Llama-3.1-8B-Instruct")]
     assert carries_band(g, lo, hi, "appendix_limitations.tex"), ("judge C", g, lo, hi)
-    assert "selection_breadth_forest" in body, "the figure carrying the judge-B band is not included"
+    # v11 (2026-09-24): Figure fig:breadth moved to Appendix D (appendix_selection.tex) for the sixth
+    # round's additions; Section 4 still points at it. The guard follows the figure, and asserts the pointer.
+    from tests.manuscript import body as _b
+    assert "selection_breadth_forest" in _b("experiments.tex", "appendix_selection.tex"), \
+        "the figure carrying the judge-B band is not included"
+    assert "\\ref{fig:breadth}" in body, "Section 4 no longer points at the breadth figure"
 
 
 def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():
@@ -144,7 +149,9 @@ def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():
     for r in rows(os.path.join(ROOT, "results", "selection_scaling_mtbench_deecho.csv")):
         if int(r["n"]) == 8:
             hw[r["judge"].split("/")[-1]] = (float(r["gain_hi95"]) - float(r["gain_lo95"])) / 2
-    assert f"half-width of ${hw['Phi-3.5-mini-instruct']:.2f}$" in _manuscript("experiments.tex"), hw
+    # v11: the judge-B half-width is printed in Figure fig:breadth's caption, which moved to Appendix D.
+    from tests.manuscript import caption_of
+    assert f"half-width of ${hw['Phi-3.5-mini-instruct']:.2f}$" in caption_of("fig:breadth"), hw
     assert f"half-width of ${max(hw.values()):.2f}$" in _manuscript("appendix_limitations.tex"), hw
 
 

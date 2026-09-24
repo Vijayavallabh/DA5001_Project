@@ -70,3 +70,38 @@ which the meter's interval lies above selection's and its `K/S_w`, whatever it i
 - Nothing else changes.
 
 ## Scoring log
+
+### Scored 2026-09-24 23:35 IST --- P1 CONFIRMED, P2 TIE, P3 REFUTED / INCUMBENT WINS: the crossover is at `k=3`
+
+All jobs exited `0` on host B (`output/logs/feat195_{G1ref,chat,J5,J6}.done`, launcher
+`scripts/run_feat195.sh chat` with `GPU_CHAT=7`): the reference judged in `2` minutes, the three budgets
+generated in `7`, each judge pass took under `3`. Scored from the per-prompt judge files by
+`.venv/bin/python analysis/served_opponent.py --out results` (rows `G1-196`, `X-host` and the
+`chat template, host B` rows of `results/served_opponent.csv`) and
+`.venv/bin/python analysis/served_activity.py --out results`.
+
+**Gates.** G0 PASS: `500` prompts in every new arm, every class at every budget `all_within_budget =
+True` with `0` invariant violations (`output/feat196/chat_grid/h1_summary.csv`). G1 (restated before
+launch) PASS: selection's per-prompt levels in J5 and J6 equal the host-B reference on `500/500` prompts.
+
+**Cross-host measurement, no band.** The same judge on the same text agrees with feat-184's committed
+local pass on `471/500` prompts for selection, `477` for its `n=1` control, `479` for the `k=1` meter and
+`486` for the anchor; selection's level reads `0.367` on host B against `0.363` locally. G1 as first
+written would therefore have failed on host arithmetic alone, which is why it was re-pointed before the
+run.
+
+| budget | `K/S_w` | active (forced) | reading | registered |
+|---|---|---|---|---|
+| `k=0.5` (J5 metered) | `0.63` | `62.5%` (`8.4%`) | `D3 = +0.1065 [+0.074, +0.1395]`, CONFIRMED | P1 CONFIRMED, **right** |
+| `k=2` (J5 extra) | `2.50` | `2.5%` (`2.3%`) | `D5 = +0.030 [-0.009, +0.068]`, TIE | P2 TIE, **right** |
+| `k=3` (J6 metered) | `3.75` | `1.1%` (`1.5%`) | `D3 = -0.051 [-0.0885, -0.0135]`, REFUTED | P3 meter ahead, **right** |
+| `k=5` (J6 extra) | `6.26` | `0.23%` (`1.2%`) | `D5 = +0.073 [+0.034, +0.111]`, INCUMBENT WINS | P3 meter ahead, **right** |
+
+On levels (selection minus meter, paired within each pass): `+0.1195 [+0.0925, +0.1465]` at `k=0.5`,
+`-0.0170 [-0.046, +0.0125]` at `k=2`, `-0.0380 [-0.068, -0.008]` at `k=3`, `-0.0600 [-0.091, -0.029]` at
+`k=5`. **The smallest budget at which the meter's interval lies above selection's is `k=3`, with
+`K/S_w = 3.75`**: its certificate excludes nothing about a `50`-token window, as P4 recorded in advance.
+
+**Manuscript, as registered.** Table 2's chat block reports all six budgets (`0.5`, `1`, `2`, `3`, `5`,
+`10`); the four new rows are marked as judged on host B, with that host's selection and anchor levels in
+the block header. Section 4 states that the meter overtakes selection from `k=3`, where `K/S_w = 3.75`.

@@ -141,7 +141,12 @@ def test_section6_quotes_the_four_anchor_gains_from_the_breadth_csv():
     # interval reaches zero -- the plot must show whatever the CSV says
     assert excl >= 1, excl
     # the claim "two of three exclude zero" is now made by the plot, so assert the plot makes it
-    assert "selection_breadth_forest" in body, "the figure carrying these bands is not included"
+    # v11 (2026-09-24): Figure fig:breadth moved to Appendix D (appendix_selection.tex) for the sixth
+    # round's additions; Section 4 still points at it. The guard follows the figure, and asserts the pointer.
+    from tests.manuscript import body as _b
+    assert "selection_breadth_forest" in _b("experiments.tex", "appendix_selection.tex"), \
+        "the figure carrying these bands is not included"
+    assert "\\ref{fig:breadth}" in body, "Section 4 no longer points at the breadth figure"
     plotted = {lbl.split(",")[0]: (lo_, hi_) for lbl, (_g, lo_, hi_), *_ in
                __import__("tests.manuscript", fromlist=["_forest"])._forest() if lo_ is not None}
     for r in new:

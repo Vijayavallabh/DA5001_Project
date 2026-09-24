@@ -50,7 +50,10 @@ def test_the_selection_budget_arithmetic_is_exact():
     from tests.manuscript import body as _body
     kl8 = math.log(8) - 7 / 8
     assert f"${kl8:.3f}$" == "$1.204$"
-    body = open(SEL, encoding="utf-8").read() + open(EXP, encoding="utf-8").read()
+    # v11: the KL value is quoted where the odometer is priced, Appendix A (the main text keeps the
+    # formula in Proposition 1's proof and prints the pathwise K in Table 1).
+    body = (open(SEL, encoding="utf-8").read() + open(EXP, encoding="utf-8").read()
+            + _body("appendix_proofs.tex"))
     assert "$1.204$" in body or "$1.20$" in body
     rows = re.findall(r"selection, \$n=(\d+)\$ & pathwise & \$([\d.]+)\$", _body("selection.tex"))
     assert ("8", f"{math.log(8):.2f}") in rows, rows
@@ -72,18 +75,25 @@ def test_the_composition_count_divides_out():
     # a 200-token response at the audited k=3 is certified at 600 nats, so the odometer admits none
     assert int(400 / (3 * 200)) == 0
     assert int(400 / spend["3.0"]) == 2, 400 / spend["3.0"]
-    # v10 counts RESPONSES ("$192$ responses at $n=8$") where v9 counted queries; same arithmetic.
-    body = " ".join(open(SEL, encoding="utf-8").read().split())
-    body1 = body
+    # v11 (2026-09-24, sixth review round): the 400-nat cap is above a 50-token window's surprisal,
+    # so for the window the main text prices, a count under it is itself vacuous. Section 2 now
+    # quotes the query horizon at the pathwise charge (tests/test_v10_restructure.py) and the
+    # 400-nat counts live in Appendix A, where the same two rules hold: the pathwise count is the
+    # one stated, the KL count is reported beside it as what the sharper bound "would give", and
+    # neither Section 2 nor the appendix quotes the KL count as THE composition count.
+    from tests.manuscript import body as _b
+    app = " ".join(_b("appendix_proofs.tex").split())
+    sec2 = " ".join(open(SEL, encoding="utf-8").read().split())
     pw, kl = int(400 / _m.log(8)), int(400 / kl8)
-    assert f"${pw}$ responses at $n=8$" in body1, body1[body1.find("composes"):][:260]
-    assert re.search(rf"\$1\.204\$ nats (?:would give|gives) \${kl}\$", body1), \
+    assert f"admits ${pw}$ responses at $n=8$ at the pathwise charge" in app, app[:300]
+    assert re.search(rf"\$1\.204\$ nats (?:would give|gives) \${kl}\$", app), \
         "the KL count must be reported beside the pathwise one"
-    assert f"we quote the pathwise ${pw}$" in body1, "the pathwise count must be the one quoted"
-    for unit in ("queries", "responses"):
-        assert f"${kl}$ {unit}" not in body1, "the KL count is being quoted as THE composition count"
-    m = re.search(r"spends a measured \$([\d.]+)\$ nats", body)
+    for text in (app, sec2):
+        for unit in ("queries", "responses"):
+            assert f"${kl}$ {unit}" not in text, "the KL count is being quoted as THE composition count"
+    m = re.search(r"charged its measured \$([\d.]+)\$ nats admits \$(\d+)\$", app)
     assert m and float(m.group(1)) == spend["3.0"], (m.group(1) if m else None, spend["3.0"])
+    assert int(m.group(2)) == int(400 / spend["3.0"])
 
 
 def test_the_cross_judge_gain_and_its_interval_come_from_the_csv():
@@ -183,14 +193,18 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     # $3.175$-nat bound and the meter ..." where v9 read "for $3.175$ nats and the metered decoder".
     body = " ".join("".join(open(_tex(f"sections/{f}.tex"), encoding="utf-8").read()
                             for f in ("iclr_intro", "selection", "experiments")).split())
-    m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for "
-                   r"(?:its |a bound of )?\$3\.175\$(?:-nat bound| nats) and the meter(?:ed decoder)? "
-                   r"\$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$", body)
-    assert m, "the order-averaged head-to-head sentence has moved"
-    for got, want in zip(m.groups(), (sel["value"], sel["lo95"], sel["hi95"],
-                                      met["value"], met["lo95"], met["hi95"])):
-        assert abs(float(got) - float(want)) < 5e-4, (m.groups(), sel, met)
-    m2 = _re.search(r"difference of \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$", body)
+    # v11: the two gains are quoted where each is read, selection's beside the k=0.5 meter (the one
+    # budget that certifies a window) and the meter's at k=10, then their paired difference.
+    m = _re.search(r"improves on that anchor by \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ "
+                   r"for a bound of \$3\.175\$ nats", body)
+    mm = _re.search(r"the meter gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ at \$k=10\$",
+                    body)
+    assert m and mm, "the order-averaged head-to-head sentence has moved"
+    for got, want in zip(m.groups() + mm.groups(), (sel["value"], sel["lo95"], sel["hi95"],
+                                                    met["value"], met["lo95"], met["hi95"])):
+        assert abs(float(got) - float(want)) < 5e-4, (m.groups(), mm.groups(), sel, met)
+    m2 = _re.search(r"(?:difference of|differ by) \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
+                    body)
     assert m2, "the paired difference has moved"
     for got, want in zip(m2.groups(), (dif["value"], dif["lo95"], dif["hi95"])):
         assert abs(float(got) - float(want)) < 5e-4, (m2.groups(), dif)

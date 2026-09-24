@@ -293,8 +293,11 @@ def test_the_open_markers_are_explained_by_the_gate_that_failed_them():
     fails = {r["anchor"]: float(r["empty_frac_n1"]) for r in _csv("selection_breadth_deecho.csv")
              if r["entry_gate"] == "FAIL"}
     assert len(fails) == 3, fails
-    exp = body("experiments.tex")
-    i = exp.index(r"\caption{\textbf{Selection against its own anchor.}")
+    # v11 (2026-09-24): Figure 4 moved to Appendix D (appendix_selection.tex) to make room for the
+    # sixth round's additions; the caption travels with it, so find it wherever it is.
+    key = r"\caption{\textbf{Selection against its own anchor.}"
+    exp = next(t for t in (body("experiments.tex"), body("appendix_selection.tex")) if key in t)
+    i = exp.index(key)
     cap = exp[i: exp.index(r"\label{fig:breadth}", i)]
     for frac in fails.values():
         assert f"${100 * frac:.1f}\\%$" in cap, frac

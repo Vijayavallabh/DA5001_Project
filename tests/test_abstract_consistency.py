@@ -59,7 +59,11 @@ def test_the_abstract_the_intro_and_the_onset_section_agree_on_the_pair_count():
     counted = rf"\b({'|'.join(words[1:])}) (?:model |\(anchor, memoriser\) )?pairs\b"
     for where, body in places.items():
         found = re.findall(counted, " ".join(body.split()), flags=re.I)
-        assert found, f"{where} does not state the pair count"
+        # v11 (2026-09-24): the abstract no longer quotes the measured onset band or its pair count
+        # (it states the vacuity theorem and the window exposure instead); a count it DOES state must
+        # still be the CSV's. The introduction (Figure 1's caption) and Section 3 must state it.
+        if where != "abstract":
+            assert found, f"{where} does not state the pair count"
         assert all(f.lower() == word for f in found), (where, found, word)
     fr = " ".join(places["onset (frontier.tex)"].split())
     found = re.findall(r"(\w+) (?:model |\(anchor, memoriser\) )?pairs with (\w+) distinct anchors",
@@ -221,9 +225,16 @@ def test_the_abstract_says_self_consistency_is_an_instance_because_the_csv_shows
     import re as _re
     txt = _abstract_text()
     # v9 "Self-consistency is an instance when it samples a safe model"; v10 "self-consistency over
-    # a safe model is an instance" -- the claim with its qualifier moved in front of the verb
-    assert _re.search(r"[Ss]elf-consistency(?: [^.;$]{0,40})? is an instance", txt), \
-        "the abstract dropped the positioning claim its own judge-free arm measures"
+    # a safe model is an instance" -- the claim with its qualifier moved in front of the verb.
+    # v11 (2026-09-24): the abstract names majority vote as one of the rules the certificate covers
+    # ("whether a reward model, a vote or an adversary picks it") and reports its lift; the
+    # attribution to self-consistency, which needs a citation, is made in the introduction, which is
+    # now the place the claim is MADE. Both halves are pinned.
+    assert "vote" in txt and "majority vote" in txt, "the abstract dropped majority vote as a rule"
+    from tests.manuscript import body as _b
+    m = _re.search(r"[Ss]elf-consistency(?: [^.;$]{0,60})? is an instance", _b("iclr_intro.tex"))
+    assert m and not _re.search(r"\b(?:not|never|no longer)\b", m.group(0)), \
+        "the introduction dropped (or negated) the positioning claim its own judge-free arm measures"
 
 
 def test_the_abstract_keeps_the_vetting_requirement_because_contamination_amplifies():

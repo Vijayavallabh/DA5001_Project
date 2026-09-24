@@ -7,3 +7,7 @@ block,k,run_dir,prompts,decode_steps,active_share,forced_share
 70B base,20.0,output/phase5/imit_llama70b,500,84691,0.0,1.2e-05
 "8B-Instruct, chat template",1.0,output/sweep_chat,500,63622,0.167709,0.046148
 "8B-Instruct, chat template",10.0,output/feat184/chat_k10,500,71382,0.001569,0.003054
+"8B-Instruct, chat template",0.5,output/sweep_chat,500,67047,0.624979,0.083688
+"8B-Instruct, chat template",2.0,output/feat196/chat_grid,500,62654,0.02517,0.022712
+"8B-Instruct, chat template",3.0,output/feat196/chat_grid,500,62725,0.010729,0.014715
+"8B-Instruct, chat template",5.0,output/feat196/chat_grid,500,62891,0.00229,0.012355

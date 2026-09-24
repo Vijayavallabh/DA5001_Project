@@ -160,10 +160,12 @@ def test_the_intros_gain_ratio_is_qualified_by_the_opponent_because_it_is_a_gain
         # risky model is served": better "whenever the risky model continues text", while "the meter
         # wins only where the judge rewards instruction following". Both halves must stay together.
         flat = " ".join(t.split())
-        j = flat.find("judged better at every budget")
+        # v11 (2026-09-24): "best-of-$64$ is judged better than that model continuing text and worse
+        # than it served as a chat assistant or following instructions". Both halves together.
+        j = flat.find("judged better than that model continuing text")
         assert j >= 0, "the intro no longer states the head-to-head"
-        w = flat[j: j + 700]
-        assert "continues text" in w and "instruction following" in w, \
+        w = flat[j: j + 300]
+        assert "chat assistant" in w and "following instructions" in w, \
             "the intro states the head-to-head without its serving-configuration qualifier"
         return
     clause = t[i:i + 120]

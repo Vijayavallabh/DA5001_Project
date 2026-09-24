@@ -34,6 +34,11 @@ ROWS = [  # (block, k, directory, filename token) -- Table 3's token-level rows
     ("70B base", 20.0, "output/phase5/imit_llama70b", "20"),
     ("8B-Instruct, chat template", 1.0, "output/sweep_chat", "1"),
     ("8B-Instruct, chat template", 10.0, "output/feat184/chat_k10", "10"),
+    # feat-196: the chat block's remaining budgets (k=0.5 is the committed sweep's own arm)
+    ("8B-Instruct, chat template", 0.5, "output/sweep_chat", "0.5"),
+    ("8B-Instruct, chat template", 2.0, "output/feat196/chat_grid", "2"),
+    ("8B-Instruct, chat template", 3.0, "output/feat196/chat_grid", "3"),
+    ("8B-Instruct, chat template", 5.0, "output/feat196/chat_grid", "5"),
 ]
 
 
