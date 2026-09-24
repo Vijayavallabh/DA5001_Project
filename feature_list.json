@@ -208,7 +208,7 @@
       ],
       "status": "done",
       "description": "a_patch/factory.py: constraint='kl'|'pathwise'. Pathwise: at step t choose the largest theta with m_t(theta) = theta*max_v l_t(v) - log Z_t(theta) <= k_t^pw, k_t^pw = max(0, (t+1)k - delta_init - R_{t-1}) with R the realised cumulative log-ratio of the sampled tokens; same bracketed Newton/bisection as the KL solve (m is nondecreasing in theta, m(0)=0). Tests in tests/test_pathwise.py: (i) R_T <= max(0, k*T_max - delta_init) + 1e-3 on every trajectory of a CPU/GPU smoke run; (ii) monotonicity of m; (iii) KL spend <= max-ratio at every step. Runs with the 8B memoriser (HF_HUB_OFFLINE=1): regime sweep on the six prompt classes at k in {0.5,1,3,5,10,20} (activity, identity, risky-model NLL of the output as utility proxy) and the composition attack at the same k, plus a retry variant (best-of-n per window, n<=32, oracle check) to measure attempts-to-extract against exp(S_i - k L_i) (plan v2 Proposition 2). If feat-018 ran, repeat single-query and oracle windows with the 70B on the 58 candidates. Outputs results/pathwise_sweep.csv, results/pathwise_composition.csv, results/extraction_cost.csv, all with k=-1 and k=0 rows. About 6 (8B) + 4 (70B) GPU-hours.",
-      "evidence": "Implementation done 2026-09-06: a_patch/pathwise.py (solve_theta_pathwise, max_log_ratio), constraint='kl'|'pathwise' in a_patch/factory.py with realised-ratio banking, per-step r_t/m_t/var_ratio logging, --constraint in h1.py and analysis/composition_attack.py; tests/test_pathwise.py (4 tests incl. the saved-log invariant) pass. Smoke: CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 --cap-* 2 --output-dir output/phase2/pathwise_smoke --constraint pathwise -> 24 trajectories, 4,402 steps, 0 violations (R_T <= max(0,B)+1e-3, r_t <= k_t+1e-3, a_t <= m_t+1e-3); steps forced 295 / active 755 / free 3,352 (KL decoder on the same prompts: active 4.5%). Runs in progress: pathwise composition (output/phase2/comp8b_pathwise), pathwise regime sweep (output/phase2/pathwise_sweep), retries (output/phase2/retries_*). [2026-09-06 03:25] comp8b_pathwise complete: recheck_violations.py --constraint pathwise -> 23844 budgeted queries, 0 violations of R <= max(0,B)+1e-3 (largest overshoot 0.000000 at k=1); results/composition_8b_pathwise.csv: oracle L=50 recall 0.0625/0.1935/0.3933/0.7304 at k=3/5/10/20 (KL: 0.0965/0.2301/0.4103/0.7865), single 0.4462 vs 0.4759 at k=20, unconstrained at k=50. Utility price pending pathwise_sweep. [04:45] 70B hp1_B_pathwise (\u03c4=0.7, rp=1.1, 50 HP1 passages): 1,250 budgeted queries, 0 violations of R<=B; recall single/oracle 0.019/0.020 (k=3), 0.053/0.065 (k=5), 0.094/0.219 (k=10), 0.314/0.553 (k=20; sampled alone 0.314/0.605). [15:30] done: results/pathwise_price.csv (k=1 active 14.6% vs KL 5.0%, identical-to-risky 0% vs 4.1%; k=3 1.9%, k=5 1.1%, k=10 0.5%, k=20 0.01% active; R/K<=1 on 16,200 trajectories); results/extraction_cost_{pathwise,kl}.csv (success per attempt 0.0038/0.0379/0.153 at k=5/10/20 vs KL 0.0092/0.044/0.178; bound vacuous at k>=5). sec:pathwise complete. Refinements pending: kl_sweep_hi (same-sweep KL at k=3..20), retries_pathwise_lo (k=2,3)."
+      "evidence": "Implementation done 2026-09-06: a_patch/pathwise.py (solve_theta_pathwise, max_log_ratio), constraint='kl'|'pathwise' in a_patch/factory.py with realised-ratio banking, per-step r_t/m_t/var_ratio logging, --constraint in h1.py and analysis/composition_attack.py; tests/test_pathwise.py (4 tests incl. the saved-log invariant) pass. Smoke: CUDA_VISIBLE_DEVICES=1 HF_HUB_OFFLINE=1 .venv/bin/python h1.py --k-values 1.0 --trajectories-per-prompt 2 --cap-* 2 --output-dir output/phase2/pathwise_smoke --constraint pathwise -> 24 trajectories, 4,402 steps, 0 violations (R_T <= max(0,B)+1e-3, r_t <= k_t+1e-3, a_t <= m_t+1e-3); steps forced 295 / active 755 / free 3,352 (KL decoder on the same prompts: active 4.5%). Runs in progress: pathwise composition (output/phase2/comp8b_pathwise), pathwise regime sweep (output/phase2/pathwise_sweep), retries (output/phase2/retries_*). [2026-09-06 03:25] comp8b_pathwise complete: recheck_violations.py --constraint pathwise -> 23844 budgeted queries, 0 violations of R <= max(0,B)+1e-3 (largest overshoot 0.000000 at k=1); results/composition_8b_pathwise.csv: oracle L=50 recall 0.0625/0.1935/0.3933/0.7304 at k=3/5/10/20 (KL: 0.0965/0.2301/0.4103/0.7865), single 0.4462 vs 0.4759 at k=20, unconstrained at k=50. Utility price pending pathwise_sweep. [04:45] 70B hp1_B_pathwise (τ=0.7, rp=1.1, 50 HP1 passages): 1,250 budgeted queries, 0 violations of R<=B; recall single/oracle 0.019/0.020 (k=3), 0.053/0.065 (k=5), 0.094/0.219 (k=10), 0.314/0.553 (k=20; sampled alone 0.314/0.605). [15:30] done: results/pathwise_price.csv (k=1 active 14.6% vs KL 5.0%, identical-to-risky 0% vs 4.1%; k=3 1.9%, k=5 1.1%, k=10 0.5%, k=20 0.01% active; R/K<=1 on 16,200 trajectories); results/extraction_cost_{pathwise,kl}.csv (success per attempt 0.0038/0.0379/0.153 at k=5/10/20 vs KL 0.0092/0.044/0.178; bound vacuous at k>=5). sec:pathwise complete. Refinements pending: kl_sweep_hi (same-sweep KL at k=3..20), retries_pathwise_lo (k=2,3)."
     },
     {
       "id": "feat-020",
@@ -230,7 +230,7 @@
       ],
       "status": "done",
       "description": "(a) analysis/composition_attack.py: log every query's spend Z_j, budget B_j and text; re-run the 8B composition at k in {5,10,20} (oracle and chained, L in {20,50}); simulate a per-user filter that stops serving once sum_j Z_j > B_user for B_user in {100,200,400,800,1600,3200} nats and report recall vs B_user against the anchor surprisal S(x) of each passage; reuse the 70B logs of feat-018 if present. (b) a_patch: bank_cap parameter (allowance k_t = min(k_t, k + cap)); burst audit from existing logs (largest 20-token-window spend vs k, no GPU) and recall/burst under caps {0, 5k, 20k}. Outputs results/odometer.csv, results/bank_cap.csv, results/burst_audit.csv. About 3 GPU-hours.",
-      "evidence": "[2026-09-06 02:35] bank cap implemented (a_patch/bank.py, factory kwarg bank_cap, --bank-cap). tests/test_bank_cap.py: 3 passed (full suite 30 passed). CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 .venv/bin/python analysis/check_bank_cap.py --k 10 --cap 10 -> {steps: 120, max_k_t: 10.0, cap: 10.0, max_spend_minus_allowance: 4.8e-07, worst_10_step_window_spend: 34.0, window_bound: 110.0, spend_per_seq: [212.1, 211.8, 216.1]} 'bank cap enforced'. Odometer replay on the partial comp8b_kl log (k=3 oracle L=50): B_user=400 cuts 98% of attacks, recall 0.0965 -> 0.058; B_user=800 cuts none (output/phase2/odometer_check). Pending: bank-cap runs (scripts/run_bank_cap.sh, GPU 0 after the chain), odometer on k=5/10/20 logs, burst audit already in results/burst_audit.csv. [03:05] comp8b_kl complete (30 runs, 0 violations); odometer: results/odometer.csv \u2014 oracle L=50 spend 586/670/739/860 nats at k=3/5/10/20 (anchor surprisal median 849); B_user=400 cuts 100% of users, recall 0.30 at k=20 (chained 0.26); B_user=800 cuts 77%, recall 0.71; 1600 cuts none. sec:odometer written (Table tab:odometer). Bank-cap runs pending. [04:12] bank-cap runs: results/bank_cap.csv \u2014 k=10: cap=k 0.116/0.386/0.066, cap=5k 0.173/0.413/0.088, none 0.201/0.410/0.112 (single/oracle/chained); k=20: cap=k 0.461/0.798/0.469 vs none 0.476/0.786/0.504; recheck_violations.py on the three capped runs: 3,804 queries, 0 violations. Burst audit: results/burst_audit.csv (earlier). sec:odometer complete (Tables tab:odometer, tab:bankcap)."
+      "evidence": "[2026-09-06 02:35] bank cap implemented (a_patch/bank.py, factory kwarg bank_cap, --bank-cap). tests/test_bank_cap.py: 3 passed (full suite 30 passed). CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=4 HF_HUB_OFFLINE=1 .venv/bin/python analysis/check_bank_cap.py --k 10 --cap 10 -> {steps: 120, max_k_t: 10.0, cap: 10.0, max_spend_minus_allowance: 4.8e-07, worst_10_step_window_spend: 34.0, window_bound: 110.0, spend_per_seq: [212.1, 211.8, 216.1]} 'bank cap enforced'. Odometer replay on the partial comp8b_kl log (k=3 oracle L=50): B_user=400 cuts 98% of attacks, recall 0.0965 -> 0.058; B_user=800 cuts none (output/phase2/odometer_check). Pending: bank-cap runs (scripts/run_bank_cap.sh, GPU 0 after the chain), odometer on k=5/10/20 logs, burst audit already in results/burst_audit.csv. [03:05] comp8b_kl complete (30 runs, 0 violations); odometer: results/odometer.csv — oracle L=50 spend 586/670/739/860 nats at k=3/5/10/20 (anchor surprisal median 849); B_user=400 cuts 100% of users, recall 0.30 at k=20 (chained 0.26); B_user=800 cuts 77%, recall 0.71; 1600 cuts none. sec:odometer written (Table tab:odometer). Bank-cap runs pending. [04:12] bank-cap runs: results/bank_cap.csv — k=10: cap=k 0.116/0.386/0.066, cap=5k 0.173/0.413/0.088, none 0.201/0.410/0.112 (single/oracle/chained); k=20: cap=k 0.461/0.798/0.469 vs none 0.476/0.786/0.504; recheck_violations.py on the three capped runs: 3,804 queries, 0 violations. Burst audit: results/burst_audit.csv (earlier). sec:odometer complete (Tables tab:odometer, tab:bankcap)."
     },
     {
       "id": "feat-022",
@@ -275,7 +275,7 @@
       ],
       "status": "done",
       "description": "Add --no-prefix-debt (delta_init = 0) to h1.py and analysis/composition_attack.py; single-query recall at k in {1,3,5} with and without prefix debt for the 8B memoriser (100 composition passages) and, if feat-018 ran, the 70B on the 58 candidates; tests whether the copying reduction at moderate k comes from the anchor writing the opening tokens rather than from the KL constraint during generation. Output results/prefix_debt_ablation.csv with k=-1 and k=0 rows. About 1 GPU-hour.",
-      "evidence": " [04:45] 70B hp1_B_nodebt (prefix debt off, \u03c4=0.7, rp=1.1): k=1 0/0 (util 1.00), k=3 0.038/0.162, k=5 0.222/0.481, k=10 0.314/0.596 (= unconstrained); with-debt comparison waits for the hp1_B rerun; 8B prefix_ablation still queued on GPU 4. [15:30] done: results/prefix_debt_ablation.csv \u2014 8B debt on->off: k=3 single 0.012->0.079, oracle 0.097->0.348; k=5 0.092->0.403, 0.230->0.720; k=10 0.201->0.476, 0.410->0.801; 70B (setting B): k=3 0.018->0.038, 0.015->0.162; k=5 0.069->0.222, 0.106->0.481; k=10 0.131->0.314, 0.244->0.596. prefix_ablation: 2,736 queries, 0 violations. sections/prefixdebt.tex written."
+      "evidence": " [04:45] 70B hp1_B_nodebt (prefix debt off, τ=0.7, rp=1.1): k=1 0/0 (util 1.00), k=3 0.038/0.162, k=5 0.222/0.481, k=10 0.314/0.596 (= unconstrained); with-debt comparison waits for the hp1_B rerun; 8B prefix_ablation still queued on GPU 4. [15:30] done: results/prefix_debt_ablation.csv — 8B debt on->off: k=3 single 0.012->0.079, oracle 0.097->0.348; k=5 0.092->0.403, 0.230->0.720; k=10 0.201->0.476, 0.410->0.801; 70B (setting B): k=3 0.018->0.038, 0.015->0.162; k=5 0.069->0.222, 0.106->0.481; k=10 0.131->0.314, 0.244->0.596. prefix_ablation: 2,736 queries, 0 violations. sections/prefixdebt.tex written."
     },
     {
       "id": "feat-026",
@@ -1343,6 +1343,69 @@
       "dependencies": [
         "feat-133"
       ],
+      "status": "done",
+      "evidence": "results/onset_prediction_comma7b_n128.md, scoring log 2026-09-22 02:42: reproduction gate PASS (32,000 of 32,000 rewards bit-identical), reading SATURATED BY 64. Closed in feature_list.json on 2026-09-24; the file had not been updated past this entry."
+    },
+    {
+      "id": "feat-187",
+      "name": "AnchoredByte at the authors' recommended pair (Comma-7B + Llama-3.1-70B base)",
+      "description": "He et al.'s own byte-level decoder (anchoreddecode a12ecd9, unmodified) at k in {0.1, 0.5, 2} per byte on the headline's 500 prompts, judged order-averaged against the committed opponent; selection at Comma-7B n=64.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "results/onset_prediction_anchoredbyte.md scored 2026-09-24 16:15: G0 G1 G2 PASS; D3 +0.1385 [+0.1155,+0.1620] (k=0.1), +0.1240 [+0.1010,+0.1470] (k=0.5), +0.1345 [+0.1105,+0.1590] (k=2): B1 B2 B3 CONFIRMED. analysis/anchoredbyte_score.py -> results/anchoredbyte.csv"
+    },
+    {
+      "id": "feat-188",
+      "name": "The headline re-drawn on disjoint seeds (82 83 84), every sampled arm",
+      "description": "Pool, meter, anchor and opponent re-drawn; R1 (committed opponent), R2 (re-drawn), R1b/R2b (non-empty argmax), R0 (seed-52 pool on repaired text).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "results/onset_prediction_headline_replication.md scored 2026-09-24 16:00: G0 G1 PASS; P1 R2 D3 +0.0495 [+0.0175,+0.0800], P2 R1 +0.0450 [+0.0110,+0.0790], P3: all REPLICATE. analysis/replic_score.py -> results/headline_replication.csv"
+    },
+    {
+      "id": "feat-189",
+      "name": "One pathwise certificate split between the draw and the token (hybrid)",
+      "description": "C = log 64 split as best-of-n over pathwise-metered drafts at B = C - log n.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "results/onset_prediction_hybrid.md scored 2026-09-24 14:50: H1-H3 BELOW ZERO, H4 STRADDLES, as predicted; levels 0.4400 < 0.4610 < 0.4995 < 0.5550. results/levels_hybrid*.csv"
+    },
+    {
+      "id": "feat-190",
+      "name": "One request with its draws batched: selection vs the meter at both pairs",
+      "description": "Per-request seconds at W in {1,8}, selection as one generate(num_return_sequences=n) + one reward pass, meter at k=10, 8B and 70B pairs, host B.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "results/onset_prediction_batched_latency.md scored 2026-09-24 15:50: T1 CONFIRMED (SEL64/MET70B = 0.220), T3 CONFIRMED (1.28), T2 WITHIN NOISE (0.514). analysis/batched_latency.py --report -> results/batched_latency{,_bands}.csv"
+    },
+    {
+      "id": "feat-191",
+      "name": "He et al.'s utility metrics: Prometheus-2 fluency and FActScore",
+      "description": "Their fluency rubric verbatim under prometheus-7b-v2.0; FActScore with Qwen2.5-14B-Instruct over Wikipedia; every Table 1 arm and the AnchoredByte arms.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "results/he_metrics_note.md: Prometheus sel64-met_k10 +0.70 [+0.53,+0.85]; FActScore sel64-sel1 -0.008 [-0.041,+0.022], sel64-met_k10 -0.182 [-0.222,-0.145]. analysis/he_metrics.py --report -> results/he_metrics.csv"
+    },
+    {
+      "id": "feat-192",
+      "name": "The covert channel the certificate prices, measured",
+      "description": "A keyed-hash colluding scorer over the committed pools; bits per response against log2 n; the odometer's cap.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "results/covert_channel_note.md: 1.32 / 2.22 / 3.97 bits per response at n = 8/16/64; 577 bits under the 400-nat odometer. analysis/covert_channel.py -> results/covert_channel*.csv"
+    },
+    {
+      "id": "feat-193",
+      "name": "CoTaEval's infringement split with per-item prefixes",
+      "description": "500 items; risky, anchor, meter k in {0.5,1,10}, reward selection n in {1,8,64} and the non-empty argmax, the pool oracle; ROUGE-L >= 0.5 event.",
+      "priority": "high",
+      "dependencies": [],
       "status": "in-progress",
       "evidence": ""
     }
