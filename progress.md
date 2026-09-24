@@ -7,9 +7,11 @@ has its bands or its descriptive note committed before its first reading.
 
 - **feat-187 AnchoredByte** (`results/onset_prediction_anchoredbyte.md`): the authors' own byte-level
   decoder (`anchoreddecode` at `a12ecd9`, unmodified) at their recommended pair, Comma-7B + Llama-3.1-70B
-  base, `k in {0.1, 0.5, 2}` on host B GPUs 0--2 and 3,5,6; judged on host B GPU 7. `k=0.5`:
-  `D3 +0.1240 [+0.1010, +0.1470]`; `k=0.1`: `+0.1385 [+0.1155, +0.1620]` (both CONFIRMED); `k=2`
-  generating at the time of writing.
+  base, `k in {0.1, 0.5, 2}` on host B GPUs 0--2 and 3,5,6; judged on host B GPU 7. **B1, B2, B3
+  CONFIRMED**: `D3 +0.1385`, `+0.1240`, `+0.1345` at `k = 0.1, 0.5, 2`; G0--G2 pass. The abstract's
+  "the authors' own 70B pair included" gains their recommended byte-level decoder, as registered.
+  Timed at the same pair (`results/batched_latency_ab_note.md`): selection at Comma-7B, `n=64`, serves
+  a request in `4.19` s against AnchoredByte's `68.69` s (`0.061x`).
 - **feat-188 replication** (`results/onset_prediction_headline_replication.md`): every sampled arm
   re-drawn on seeds `82 83 84`; **P1, P2, P3 REPLICATE** (`R2 D3 +0.0495 [+0.0175, +0.0800]`), G0/G1
   pass; R0 (the seed-52 pool on repaired text) `+0.0500`. Queue re-dealt across local GPUs 2 and 4 and
