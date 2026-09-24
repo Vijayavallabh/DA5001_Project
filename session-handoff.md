@@ -11,7 +11,11 @@ before the text is revised. Registered and committed before any token was decode
   beside the existing `0.5, 1, 10`; `scripts/run_feat195.sh gpu4` then `judge_chat`.
 
 Host B's eight cards are held by the user's own vLLM servers (Qwen3-235B, two copies, GPUs 0-3 and
-4-7); nothing of ours runs there. Local GPUs 1, 2 and 4 only; GPU 0 is the user's qubit job.
+4-7); nothing of ours runs there. At 21:52-21:58 the user's own vLLM servers also took local GPUs 0+4 and 1+2, so the feat-195/196
+launch failed at load (OOM, nothing left running; logs in `output/logs/feat195_failed_launch_2209/`);
+they relaunch unchanged when cards free up.
+- `results/onset_prediction_prefix_extension.md` (feat-199): the multi-query attack the composition
+  certificate prices; `analysis/prefix_extension.py`, CPU float32.
 
 ## Current state, 2026-09-24 night --- v10 restructure done; nothing in flight
 
