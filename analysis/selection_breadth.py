@@ -64,7 +64,7 @@ def spearman(xs, ys):
     return num / den if den else float("nan")
 
 
-def nonempty_gain(per_prompt_csv, gen_dir, judge, n, rng):
+def nonempty_gain(per_prompt_csv, gen_dir, judge, n, rng, deecho=False):
     """The same gain recomputed after dropping the prompts whose n=1 completion is EMPTY.
 
     A base anchor sometimes emits nothing, and best-of-n will never choose an empty candidate, so
@@ -74,7 +74,7 @@ def nonempty_gain(per_prompt_csv, gen_dir, judge, n, rng):
     from analysis.selection_decoding import boot_mean, load_candidates
     if not (os.path.exists(per_prompt_csv) and os.path.isdir(gen_dir)):
         return None
-    empty = {p: not v[0][3].strip() for p, v in load_candidates(gen_dir).items()}
+    empty = {p: not v[0][3].strip() for p, v in load_candidates(gen_dir, deecho=deecho).items()}
     d = [float(r[f"u_n{n}"]) - float(r["u_n1"])
          for r in csv.DictReader(open(per_prompt_csv, encoding="utf-8"))
          if r["judge"] == judge and not empty.get(r["prompt_id"], True)]
@@ -84,7 +84,7 @@ def nonempty_gain(per_prompt_csv, gen_dir, judge, n, rng):
     return round(sum(d) / len(d), 4), round(lo, 4), round(hi, 4), len(d)
 
 
-def gate(gen_dir):
+def gate(gen_dir, deecho=False):
     """(mean generated tokens, empty fraction, n prompts) on the n=1 arm -- rank 0, the same
     candidate the scoring pass called n=1. Tokens come from the trajectory's own
     `generation_length_tokens`, so the gate is in the anchor's tokenizer and not in words."""
@@ -93,7 +93,7 @@ def gate(gen_dir):
     from analysis.selection_decoding import load_candidates
     if not os.path.isdir(gen_dir):
         return float("nan"), float("nan"), 0
-    cand = load_candidates(gen_dir)
+    cand = load_candidates(gen_dir, deecho=deecho)
     r0 = [v[0][3] for v in cand.values()]
     if not r0:
         return float("nan"), float("nan"), 0
@@ -111,6 +111,11 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--n", type=int, default=8)
     ap.add_argument("--seed", type=int, default=99)
+    # --deecho re-measures the entry gate and the empty filter on the TRUE generations (caution
+    # (bc)): an empty draw that carried the prompt's tail looked non-empty, so the committed gate
+    # read 6.8%/3.0%/16.6% where the text is empty on 14.6%/18.4%/31.6%. The judged u values are
+    # unchanged (they are read from the committed per-prompt files); only emptiness moves.
+    ap.add_argument("--deecho", action="store_true")
     a = ap.parse_args()
     import random
     rng = random.Random(a.seed)
@@ -129,7 +134,7 @@ def main():
             if 1 not in arm or a.n not in arm:
                 continue
             one, many = arm[1], arm[a.n]
-            tokens, empty, npr = gates.setdefault(label, gate(gen_dir))
+            tokens, empty, npr = gates.setdefault(label, gate(gen_dir, a.deecho))
             ok = tokens >= GATE_TOKENS and empty < GATE_EMPTY
             gain = float(many["u"]) - float(one["u"])
             lo = float(many.get("gain_lo95") or "nan")
@@ -141,14 +146,15 @@ def main():
                              empty_frac_n1=round(empty, 4), n_prompts=npr,
                              entry_gate="PASS" if ok else "FAIL"))
             ne = nonempty_gain(os.path.join(a.out, f"selection_scaling_per_prompt{tag}.csv"),
-                               gen_dir, j, a.n, rng)
+                               gen_dir, j, a.n, rng, a.deecho)
             rows[-1].update(zip(("gain_nonempty", "gain_nonempty_lo95", "gain_nonempty_hi95",
                                  "n_nonempty"), ne if ne else ("", "", "", "")))
     if not rows:
         print("  [breadth] nothing to aggregate yet")
         return 1
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "selection_breadth.csv"), "w", newline="") as fh:
+    name = "selection_breadth_deecho.csv" if a.deecho else "selection_breadth.csv"
+    with open(os.path.join(a.out, name), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
     for r in rows:

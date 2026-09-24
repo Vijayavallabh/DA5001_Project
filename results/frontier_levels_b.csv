@@ -1,0 +1,6 @@
+arm,level,lo95,hi95,n,x_kind,x_nats,note
+sel_n32,0.5535,0.5325,0.5745,500,kl_bound,2.497,
+sel_n64,0.555,0.5335,0.576,500,kl_bound,3.1745,
+anchor_k0,0.4385,0.4175,0.4595,500,anchor,0.0,
+met_k0.5,0.4355,0.414,0.457,500,mean_spend_judged,72.0333,78.9726 over all 1500
+met_k1,0.4555,0.4335,0.478,500,mean_spend_judged,122.7208,134.5658 over all 1500

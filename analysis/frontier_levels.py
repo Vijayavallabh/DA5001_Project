@@ -42,14 +42,58 @@ def spend(k, pids_seeds=None):
     return sum(xs) / len(xs), len(xs)
 
 
+def merge(out, tags, seed):
+    """One table from the per-card files: every arm's level, its gain over the anchor-alone arm and
+    selection n=64 minus it, all paired over the same 500 prompts (they share one opponent)."""
+    U, pids = {}, None
+    for t in tags:
+        rows = list(csv.DictReader(open(os.path.join(out, f"frontier_levels_per_prompt_{t}.csv"))))
+        pids = pids or [r["prompt_id"] for r in rows]
+        assert [r["prompt_id"] for r in rows] == pids
+        for r in rows:
+            for c, v in r.items():
+                if c != "prompt_id":
+                    U[(c[2:], r["prompt_id"])] = float(v)
+    x = {}
+    for t in tags:
+        for r in csv.DictReader(open(os.path.join(out, f"frontier_levels_{t}.csv"))):
+            x[r["arm"]] = r
+    arms = sorted({a for a, _ in U}, key=lambda a: (a[0] != "a", a[:3], float(a.split("k")[-1].split("n")[-1])))
+    rng = random.Random(seed)
+    rows = []
+    for arm in arms:
+        lv = [U[(arm, p)] for p in pids]
+        g = [U[(arm, p)] - U[("anchor_k0", p)] for p in pids]
+        d = [U[("sel_n64", p)] - U[(arm, p)] for p in pids]
+        glo, ghi = paired_boot(g, rng)
+        dlo, dhi = paired_boot(d, rng)
+        xs = x[arm]
+        spend_all = float(xs["note"].split()[0]) if xs["note"] else float(xs["x_nats"])
+        rows.append(dict(arm=arm, level=round(sum(lv) / len(lv), 4), lo95=xs["lo95"], hi95=xs["hi95"],
+                         x_kind="mean_spend_all" if arm.startswith("met") else xs["x_kind"],
+                         x_nats=round(spend_all, 4),
+                         gain_vs_anchor=round(sum(g) / len(g), 4), gain_lo95=round(glo, 4),
+                         gain_hi95=round(ghi, 4), sel64_minus=round(sum(d) / len(d), 4),
+                         sel64_minus_lo95=round(dlo, 4), sel64_minus_hi95=round(dhi, 4), n=len(pids)))
+    with open(os.path.join(out, "frontier_levels.csv"), "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    for r in rows:
+        print(r)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--arms", required=True)
-    ap.add_argument("--tag", required=True)
+    ap.add_argument("--merge", default="", help="comma list of tags to merge into frontier_levels.csv")
+    ap.add_argument("--arms", default="")
+    ap.add_argument("--tag", default="")
     ap.add_argument("--judge", default="microsoft/Phi-3.5-mini-instruct")
     ap.add_argument("--out", default="results")
     ap.add_argument("--seed", type=int, default=186)
     a = ap.parse_args()
+    if a.merge:
+        return merge(a.out, a.merge.split(","), a.seed)
     arms = a.arms.split(",")
     rng = random.Random(a.seed)
 

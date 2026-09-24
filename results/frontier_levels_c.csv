@@ -1,0 +1,5 @@
+arm,level,lo95,hi95,n,x_kind,x_nats,note
+met_k3,0.4745,0.4505,0.498,500,mean_spend_judged,160.4953,165.0031 over all 1500
+met_k5,0.4875,0.4645,0.511,500,mean_spend_judged,167.4476,169.8508 over all 1500
+met_k10,0.4895,0.467,0.512,500,mean_spend_judged,169.5532,171.2790 over all 1500
+met_k20,0.4895,0.466,0.5125,500,mean_spend_judged,169.5708,171.3002 over all 1500
