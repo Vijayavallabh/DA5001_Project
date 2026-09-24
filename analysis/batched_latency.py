@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ANCHOR = "jacquelinehe/tinycomma-1.8b-llama3-tokenizer"
 REWARD = "Qwen/Qwen2.5-7B-Instruct"
 LINE = re.compile(r"\[blat\] arm=(\w+) risky=(\S+) W=(\d+) n=(\d+) rep=(\d+) gen_s=([\d.]+) "
-                  r"reward_s=([\d.]+) served=(\d+)x(\d+)")
+                  r"reward_s=([\d.]+) served=(\d+)x(\d+)(?: bytes=(\d+))?")
 
 
 def prompts(n_needed):
@@ -55,7 +55,35 @@ def run(a):
     ns = [int(x) for x in a.ns.split(",")] if a.arm == "sel" else [1]
     texts = prompts(max(widths) * (a.reps + 1))
     t0 = time.time()
-    if a.arm == "met":
+    if a.arm == "metab":
+        # He et al.'s AnchoredByte, loaded exactly as analysis/anchoredbyte_decode.py loads it (the
+        # sampler needs the safe model and the risky embedding/head on one card). It stops at EOS,
+        # so every cell also records the bytes it served and a comparison is read per served byte.
+        from transformers import AutoConfig
+        from anchoreddecode import BytewiseAnchoredDecodingFactory
+        ngpu = torch.cuda.device_count()
+        safe = AutoModelForCausalLM.from_pretrained(a.anchor, dtype=torch.bfloat16,
+                                                    device_map={"": 0}).eval()
+        nl = AutoConfig.from_pretrained(a.risky).num_hidden_layers
+        rest = list(range(1, ngpu)) or [0]
+        per = -(-nl // len(rest))
+        dm = {"model.embed_tokens": 0, "model.norm": 0, "model.rotary_emb": 0, "lm_head": 0}
+        dm.update({f"model.layers.{i}": rest[i // per] for i in range(nl)})
+        risky = AutoModelForCausalLM.from_pretrained(a.risky, dtype=torch.bfloat16, device_map=dm).eval()
+        fac = BytewiseAnchoredDecodingFactory.from_pretrained(
+            safe_model=safe, risky_model=risky, safe_model_path=a.anchor,
+            risky_model_path=a.risky_tokenizer or a.risky, k_radius=a.k)
+        for tcs in (fac.tcs_safe, fac.tcs_risky):
+            if tcs.tokenizer.pad_token is None:
+                tcs.tokenizer.pad_token = tcs.tokenizer.eos_token
+            tcs.tokenizer.padding_side = "left"
+
+        def gen(batch, n):
+            out = fac.generate(text=batch, max_new_tokens=a.T, do_sample=True, temperature=1.0,
+                               repetition_penalty=1.0, seed=a.seed, log_kl_stats=True)
+            gen.bytes = sum(len(t[len(p):].encode("utf-8")) for t, p in zip(out.text, batch))
+            return len(batch), a.T
+    elif a.arm == "met":
         from a_patch.factory import AnchoredDecodingFactory
         mm = ({int(k): v for k, v in (x.split("=") for x in a.max_memory.split(","))}
               if a.max_memory else None)
@@ -94,6 +122,7 @@ def run(a):
                                  max_new_tokens=a.T, min_new_tokens=a.T, pad_token_id=tok.pad_token_id)
             gens = tok.batch_decode(out[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
             gen.last = [(p, g) for p, g in zip([b for b in batch for _ in range(n)], gens)]
+            gen.bytes = sum(len(g.encode("utf-8")) for g in gens) / n
             return out.shape[0], out.shape[1] - enc["input_ids"].shape[1]
     sync()
     print(f"[blat] LOAD arm={a.arm} seconds={time.time() - t0:.3f}", flush=True)
@@ -118,7 +147,7 @@ def run(a):
                     rs = time.time() - t2
                 assert rows == W * n and T == a.T, (rows, W * n, T, a.T)
                 print(f"[blat] arm={a.arm.upper()} risky={risky_tag} W={W} n={n} rep={rep} "
-                      f"gen_s={t2 - t1:.3f} reward_s={rs:.3f} served={rows}x{T}", flush=True)
+                      f"gen_s={t2 - t1:.3f} reward_s={rs:.3f} served={rows}x{T} bytes={getattr(gen, 'bytes', 0):.0f}", flush=True)
 
 
 def report(logs, out):
@@ -134,12 +163,13 @@ def report(logs, out):
             if m:
                 arm, risky, W, n = m.group(1), m.group(2), int(m.group(3)), int(m.group(4))
                 cells.setdefault((part, arm, risky, W, n), []).append(
-                    (float(m.group(6)), float(m.group(7))))
+                    (float(m.group(6)), float(m.group(7)), float(m.group(10) or 0) / W))
     rows = []
     for (part, arm, risky, W, n), v in sorted(cells.items()):
         g, r = st.mean(x[0] for x in v), st.mean(x[1] for x in v)
         rows.append(dict(part=part, arm=arm, risky=risky, W=W, n=n, reps=len(v), gen_s=round(g, 4),
                          reward_s=round(r, 4), per_request_s=round((g + r) / W, 4),
+                         bytes_per_request=round(st.mean(x[2] for x in v), 1),
                          spread=round((max(x[0] + x[1] for x in v) - min(x[0] + x[1] for x in v))
                                       / (g + r), 4)))
     by = {(r["part"], r["arm"], r["risky"], r["W"], r["n"]): r for r in rows}
@@ -187,6 +217,21 @@ def report(logs, out):
               None, 8.0, "below 8" if d else None)
         ratio("ref", W, ("70b", "SEL", "-", W, 64), ("70b", "RISKY", R70, W, 1), None, None, None)
         ratio("ref", W, ("single", "SEL", "-", W, 64), ("single", "RISKY", R8, W, 1), None, None, None)
+    for W in (1, 8):
+        for n in (1, 8, 64):
+            num, den = ("ab", "SEL", "-", W, n), next((k for k in by if k[0] == "ab" and k[1] == "METAB"
+                                                       and k[3] == W), None)
+            if num in by and den:
+                a_, b_ = by[num], by[den]
+                q = a_["per_request_s"] / b_["per_request_s"]
+                qb = ((a_["per_request_s"] / a_["bytes_per_request"]) /
+                      (b_["per_request_s"] / b_["bytes_per_request"])
+                      if a_["bytes_per_request"] and b_["bytes_per_request"] else float("nan"))
+                bands.append(dict(band="AB", W=W, numerator=f"SEL n={n} (ab)",
+                                  denominator=f"METAB {b_['risky'].split('/')[-1]} (ab)",
+                                  ratio=round(q, 4), cell_spreads=round(a_["spread"] + b_["spread"], 4),
+                                  predicted="descriptive; per served byte " + f"{qb:.4f}",
+                                  reading="descriptive"))
     bpath = os.path.join(out, "batched_latency_bands.csv")
     with open(bpath, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(bands[0]), lineterminator="\n")
@@ -199,7 +244,7 @@ def report(logs, out):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--arm", choices=("sel", "met", "risky"))
+    ap.add_argument("--arm", choices=("sel", "met", "metab", "risky"))
     ap.add_argument("--anchor", default=ANCHOR)
     ap.add_argument("--risky", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     ap.add_argument("--risky-tokenizer", default="")
