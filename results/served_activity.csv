@@ -1,0 +1,9 @@
+block,k,run_dir,prompts,decode_steps,active_share,forced_share
+"8B-Instruct, continuing text",0.5,output/sweep_plain,500,83894,0.49137,0.033757
+"8B-Instruct, continuing text",1.0,output/sweep_plain,500,86862,0.066001,0.015461
+"8B-Instruct, continuing text",10.0,output/phase2/conc_all,500,99953,8e-05,0.0
+70B base,0.5,output/phase5/imit_llama70b,500,62457,0.26511,0.045535
+70B base,1.0,output/phase5/imit_llama70b,500,63014,0.063002,0.021948
+70B base,20.0,output/phase5/imit_llama70b,500,84691,0.0,1.2e-05
+"8B-Instruct, chat template",1.0,output/sweep_chat,500,63622,0.167709,0.046148
+"8B-Instruct, chat template",10.0,output/feat184/chat_k10,500,71382,0.001569,0.003054

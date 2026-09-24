@@ -10,6 +10,17 @@ S_w is the audited anchor's median surprisal of a 50-token window (results/windo
 Responses under a per-user cap of 400 nats are floor(400 / charge), charged at the certificate and,
 for the meter, at its measured spend.
 
+Two columns added 2026-09-24 (sixth review round), which the main text now prints instead of the
+400-nat cap (a cap above S_w is itself vacuous for the window it is quoted against):
+  queries_before_vacuous  the largest m with m K < S_w: adaptive queries whose composed certificate
+                          (Appendix A: m log n for selection, m K for a KL meter) still says
+                          something about the window;
+  draws_to_certify_nv_1pct  anchor draws a rights-holder needs to certify a NEAR-VERBATIM event, which
+                          has no closed form and is bounded by sampling (N clean draws give p_s(E) <=
+                          3/N at 95%), at 1% per response: 3n/0.01 for selection's pathwise n p_s(E).
+                          A KL certificate K bounds the event only as the binary-KL inversion, which
+                          stays above 1% unless p_s(E) < exp(-(K+log 2)/0.01): no finite sample, "".
+
 Usage: .venv/bin/python analysis/certificate_table.py --out results
 """
 import argparse
@@ -51,7 +62,8 @@ def main():
                          K_over_Sw=round(K / S, 6), window_bound=round(b, 6),
                          window_bound_log10=round(math.log10(b), 4), measured_spend_nats=spend[k],
                          responses_at_certificate=math.floor(CAP / K),
-                         responses_at_spend=math.floor(CAP / spend[k])))
+                         responses_at_spend=math.floor(CAP / spend[k]),
+                         queries_before_vacuous=math.ceil(S / K) - 1, draws_to_certify_nv_1pct=""))
     for n in (8, 64):
         K = math.log(n)
         lb = min(0.0, (K - S) / math.log(10))
@@ -59,7 +71,8 @@ def main():
                          certificate_nats=round(K, 4), K_over_Sw=round(K / S, 6),
                          window_bound=10 ** lb, window_bound_log10=round(lb, 4),
                          measured_spend_nats="", responses_at_certificate=math.floor(CAP / K),
-                         responses_at_spend=""))
+                         responses_at_spend="", queries_before_vacuous=math.ceil(S / K) - 1,
+                         draws_to_certify_nv_1pct=math.ceil(3 * n / 0.01)))
     path = os.path.join(a.out, "certificate_table.csv")
     with open(path, "w", newline="", encoding="utf-8") as fh:
         wr = csv.DictWriter(fh, fieldnames=list(rows[0]), lineterminator="\n")

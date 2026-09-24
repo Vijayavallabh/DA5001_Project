@@ -1,0 +1,10 @@
+rule,quantity,value,lo95,hi95,n
+control,"committed picks re-judged on CPU, level reproduced",37,,,41
+as judged,D1 non-empty selection gain,0.1015,0.0775,0.125,500
+as judged,D2 metered gain,0.051,0.025,0.076,500
+as judged,D3 difference,0.0505,0.0155,0.086,500
+as judged,"served levels, selection minus meter",0.0655,0.039,0.0915,500
+empty is a loss,D1 non-empty selection gain,0.1595,0.1325,0.186,500
+empty is a loss,D2 metered gain,0.1035,0.0745,0.132,500
+empty is a loss,D3 difference,0.056,0.0195,0.093,500
+empty is a loss,"served levels, selection minus meter",0.0655,0.039,0.0915,500
