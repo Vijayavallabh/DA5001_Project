@@ -168,3 +168,34 @@ def test_the_hybrid_paragraph_quotes_its_pass():
     assert f"${seq[0]:.4f}$, ${seq[1]:.4f}$, ${seq[2]:.4f}$ and ${seq[3]:.4f}$" in p
     assert lv["pw1"] < lv["sel1"] and f"${lv['sel1']:.4f}$" in p
     assert "BELOW ZERO" == next(r["reading"] for r in rows("levels_hybrid_contrasts.csv") if r["contrast"].startswith("H1"))
+
+
+def test_the_empty_preference_paragraph_quotes_its_csv():
+    p = para("app:empties", "appendix_selection.tex")
+    e = {(r["quantity"], r["n"]): r for r in rows("empty_preference.csv")}
+    assert f"${100 * float(e[('draws empty', '64')]['value']):.1f}\\%$" in p
+    med_e, med_n = (float(e[(q, "64")]["value"]) for q in ("median reward, empty draws",
+                                                           "median reward, non-empty draws"))
+    assert med_e > med_n and f"${med_e:.2f}$ against ${med_n:.2f}$" in p
+    served = [100 * float(e[("served empty", n)]["value"]) for n in ("1", "8", "64")]
+    assert f"${served[0]:.1f}\\%$ of\nprompts".replace("\n", " ") in p or f"${served[0]:.1f}\\%$" in p
+    for v in served[1:]:
+        assert f"${v:.1f}\\%$" in p
+    le = [float(e[("judged level, served empty", n)]["value"]) for n in ("1", "8", "64")]
+    ln = [float(e[("judged level, served non-empty", n)]["value"]) for n in ("1", "8", "64")]
+    assert f"${le[0]:.4f}$, ${le[1]:.4f}$ and ${le[2]:.4f}$" in p
+    assert f"${ln[0]:.4f}$, ${ln[1]:.4f}$ and ${ln[2]:.4f}$" in p
+    # "costs selection level at n >= 8": the served-empty prompts sit below the rest there
+    assert all(a < b for a, b in zip(le[1:], ln[1:]))
+
+
+def test_the_seed52_draw_on_repaired_text_is_the_row_the_table_prints():
+    d = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_seed52_deecho.csv")}
+    v = {q: float(d[q]["value"]) for q in ("D1", "D2", "D3")}
+    lo, hi = float(d["D3"]["lo95"]), float(d["D3"]["hi95"])
+    t = body("appendix_selection.tex")
+    row = (f"seed $52$, repaired & B & ${v['D1']:+.4f}$ & ${v['D2']:+.4f}$ & ${v['D3']:+.4f}$ "
+           f"$[{lo:+.4f},{hi:+.4f}]$")
+    assert row in t, row
+    head = {r["quantity"][:2]: float(r["value"]) for r in rows("order_averaged_h2h_deecho.csv")}
+    assert f"read ${head['D3']:+.4f}$ and ${v['D3']:+.4f}$" in t
