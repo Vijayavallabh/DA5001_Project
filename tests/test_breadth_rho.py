@@ -32,7 +32,7 @@ def _spearman(a, b):
 
 
 def _rows():
-    return list(csv.DictReader(open(os.path.join(ROOT, "results", "selection_breadth.csv"),
+    return list(csv.DictReader(open(os.path.join(ROOT, "results", "selection_breadth_rejudged.csv"),
                                     encoding="utf-8")))
 
 

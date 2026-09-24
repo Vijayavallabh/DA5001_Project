@@ -108,7 +108,7 @@ def test_the_n_sweep_arms_round_from_selection_scaling_csv():
     mechanically against the CSV wherever the paper prints them (caution (j))."""
     import csv as _csv
     from tests.manuscript import carries_band, body as _body
-    rows = list(_csv.DictReader(open("results/selection_scaling.csv")))
+    rows = list(_csv.DictReader(open("results/selection_scaling_deecho.csv")))   # repaired text
     want = [("Phi-3.5-mini-instruct", 8), ("Phi-3.5-mini-instruct", 64),
             ("Meta-Llama-3.1-8B-Instruct", 64)]
     for judge, n in want:

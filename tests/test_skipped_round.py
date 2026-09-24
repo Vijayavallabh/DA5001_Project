@@ -199,3 +199,30 @@ def test_the_seed52_draw_on_repaired_text_is_the_row_the_table_prints():
     assert row in t, row
     head = {r["quantity"][:2]: float(r["value"]) for r in rows("order_averaged_h2h_deecho.csv")}
     assert f"read ${head['D3']:+.4f}$ and ${v['D3']:+.4f}$" in t
+
+
+def test_the_workload_paragraph_carries_alpacaeval_on_the_repaired_text_too():
+    g, lo, hi = _gains("mixpowk_judgeB_deecho")["D3"]
+    p = para("app:workload", "appendix_selection.tex")
+    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$ on the repaired text" in p
+
+
+def test_the_he_metrics_paragraph_quotes_its_csv():
+    p = para("app:hemetrics", "appendix_selection.tex")
+    h = {(r["metric"], r["arm"] or r["contrast"]): r for r in rows("he_metrics.csv")}
+    lvl = lambda m, a: float(h[(m, a)]["value"])
+    band = lambda m, c: tuple(float(h[(m, c)][k]) for k in ("value", "lo95", "hi95"))
+    F, P = "factscore_precision", "prometheus_fluency_nonempty"
+    assert f"${lvl(P, 'sel64'):.2f}$ against the meter's ${lvl(P, 'met_k10'):.2f}$" in p
+    for c in ("sel64-met_k10", "sel64-met70_k0.5", "sel64-chat_k10"):
+        v, lo, hi = band(P, c)
+        assert f"${v:+.2f}$ $[{lo:+.2f}, {hi:+.2f}]$" in p, c
+    assert band(P, "sel64-chat_k10")[2] < 0 < band(P, "sel64-met_k10")[1]
+    assert f"${lvl(F, 'sel64'):.3f}$ against ${lvl(F, 'sel1'):.3f}$" in p
+    for c in ("sel64-sel1", "sel64-met_k10"):
+        v, lo, hi = band(F, c)
+        assert f"${v:+.3f}$ $[{lo:+.3f}, {hi:+.3f}]$" in p, c
+    lo, hi = band(F, "sel64-sel1")[1:]
+    assert lo < 0 < hi, "selection now moves precision off its anchor; the paragraph says it does not"
+    n = {a: int(h[(F, a)]["n"]) for a in ("sel64", "sel1")}
+    assert f"abstains on ${150 - n['sel64']}$ of $150$" in p and f"abstains on ${150 - n['sel1']}$" in p

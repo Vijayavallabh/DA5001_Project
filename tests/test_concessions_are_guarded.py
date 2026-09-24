@@ -89,7 +89,7 @@ def test_mt_bench_is_reported_as_resolving_nothing():
     A pre-registered arm that decides nothing is the easiest thing in the paper to quietly drop,
     and dropping it would leave AlpacaEval looking like the whole of the benchmark evidence.
     """
-    rows = [r for r in _rows("selection_scaling_mtbench.csv") if int(float(r["n"])) == 8]
+    rows = [r for r in _rows("selection_scaling_mtbench_deecho.csv") if int(float(r["n"])) == 8]
     assert len(rows) == 2, rows
     hw = []
     for r in rows:

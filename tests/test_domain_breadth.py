@@ -119,7 +119,7 @@ def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
     body = _manuscript("experiments.tex")
     want = {}
     for bench in ("alpaca", "mtbench"):
-        for r in rows(os.path.join(ROOT, "results", f"selection_scaling_{bench}.csv")):
+        for r in rows(os.path.join(ROOT, "results", f"selection_scaling_{bench}_deecho.csv")):
             if int(r["n"]) == 8:
                 want[(bench, r["judge"])] = (float(r["gain"]), float(r["gain_lo95"]),
                                              float(r["gain_hi95"]))
@@ -138,12 +138,14 @@ def test_section6_quotes_the_benchmark_gains_from_their_own_csvs():
 def test_section6_quotes_the_mtbench_half_width_it_can_actually_support():
     """The paragraph says MT-Bench 'at a half-width of 0.09 could not' resolve anything. That is a
     claim about the widest CI the benchmark produces at n=8, and it has to be true of both judges."""
-    hw = []
-    for r in rows(os.path.join(ROOT, "results", "selection_scaling_mtbench.csv")):
+    # Repaired text since 2026-09-24: the figure (judge B) and the caption quote judge B's
+    # half-width, the limitations the wider of the two judges'.
+    hw = {}
+    for r in rows(os.path.join(ROOT, "results", "selection_scaling_mtbench_deecho.csv")):
         if int(r["n"]) == 8:
-            hw.append((float(r["gain_hi95"]) - float(r["gain_lo95"])) / 2)
-    assert min(hw) >= 0.085, hw          # 0.09 must not overstate how tight the arm is
-    assert "half-width of $0.09$" in _manuscript("experiments.tex")
+            hw[r["judge"].split("/")[-1]] = (float(r["gain_hi95"]) - float(r["gain_lo95"])) / 2
+    assert f"half-width of ${hw['Phi-3.5-mini-instruct']:.2f}$" in _manuscript("experiments.tex"), hw
+    assert f"half-width of ${max(hw.values()):.2f}$" in _manuscript("appendix_limitations.tex"), hw
 
 
 def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
@@ -161,7 +163,8 @@ def test_section6_quotes_the_correlation_and_its_null_from_the_csvs():
     apx = _manuscript("appendix_limitations.tex")
     assert "$-0.79$" in apx and "$-0.70$" in apx, "the correlations left Section 6 unpinned"
     assert f"$-{-float(c['null_mean']):.2f} \\pm {float(c['null_sd']):.2f}$" in apx, c
-    assert "$0.09$" in apx and "$0.17$" in apx
+    # scoped to the sentence: a bare "$0.09$" was satisfied by MT-Bench's half-width (caution (an))
+    assert f"$P = {float(c['p_vs_null']):.2f}$ and ${float(b['p_vs_null']):.2f}$" in apx
 
 
 
