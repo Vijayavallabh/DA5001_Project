@@ -59,14 +59,15 @@ def true_prompts(data_dir):
     return out
 
 
-def lowest_seed(arm):
+def lowest_seed(arm, rank=0):
     """(prompt_id, seed) -> (cls, prompt, gen) collapsed to prompt_id -> (prompt, gen) at the
-    lowest seed, which is the convention load_baseline uses for the opponent."""
-    out = {}
+    lowest seed, which is the convention load_baseline uses for the opponent. `rank` picks the
+    rank-th lowest instead, so a second independent draw of the same arm can be judged."""
+    by = {}
     for (pid, seed), (_, prompt, gen) in arm.items():
-        if pid not in out or seed < out[pid][0]:
-            out[pid] = (seed, prompt, gen)
-    return {p: (v[1], v[2]) for p, v in out.items()}
+        by.setdefault(pid, []).append((seed, prompt, gen))
+    return {p: (v[rank][1], v[rank][2]) for p, v in ((p, sorted(v)) for p, v in by.items())
+            if len(v) > rank}
 
 
 def u_of(verdict, arm_is_first):
@@ -118,6 +119,14 @@ def main():
                          "results/order_averaged_h2h.csv, which holds the paper's headline -- pass "
                          "a tag for every exploratory arm so that file is never overwritten "
                          "(feat-123 had to restore it from a copy; feat-125/126/128 use tags).")
+    ap.add_argument("--deecho", action="store_true",
+                    help="judge the generation with the prompt tail a left-padded row carried into "
+                         "it removed (caution (bc)). Off by default so every CSV on record reproduces.")
+    ap.add_argument("--opponent-rank", type=int, default=0,
+                    help="which seed of the --baseline-dir k=-1 arm is the opponent (0 = lowest)")
+    ap.add_argument("--extra-rank", type=int, default=0,
+                    help="which seed of the --extra-dir arm is judged (0 = lowest); 1 judges a second, "
+                         "independent draw of the same arm, e.g. the opponent's own model")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
@@ -126,18 +135,18 @@ def main():
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     # ---- assemble the four arms against one fixed opponent -----------------------------------
-    opp = load_baseline(a.baseline_dir)
-    cands = load_candidates(a.sel_dir)
+    opp = load_baseline(a.baseline_dir, deecho=a.deecho, rank=a.opponent_rank)
+    cands = load_candidates(a.sel_dir, deecho=a.deecho)
     rewards = load_rewards(a.rewards)
-    metered = lowest_seed(load_arm(a.metered_dir, a.k, a.metered_constraint))
-    anchor = lowest_seed(load_arm(a.anchor_dir, 0.0, "kl"))
+    metered = lowest_seed(load_arm(a.metered_dir, a.k, a.metered_constraint, deecho=a.deecho))
+    anchor = lowest_seed(load_arm(a.anchor_dir, 0.0, "kl", deecho=a.deecho))
     prompts = true_prompts(a.data_dir)
 
     pids = sorted(set(opp) & set(cands) & set(rewards) & set(metered) & set(anchor) & set(prompts))
     assert pids, "no prompt is present in all four arms and the opponent"
     extra = {}
     if a.extra_dir:
-        extra = lowest_seed(load_arm(a.extra_dir, a.extra_token, "kl"))
+        extra = lowest_seed(load_arm(a.extra_dir, a.extra_token, "kl", deecho=a.deecho), rank=a.extra_rank)
         assert extra, f"no arm with token {a.extra_token!r} in {a.extra_dir}"
         before = len(pids)
         pids = sorted(set(pids) & set(extra))

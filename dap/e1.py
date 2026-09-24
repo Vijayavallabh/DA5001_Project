@@ -183,8 +183,13 @@ class H1AuditRunner:
 
         batch_texts = [job["prompt"].prompt_text for job in batch_jobs]
         enc = self.tokenizer(batch_texts, return_tensors="pt", padding=True)
-        prompt_lens = enc.attention_mask.sum(dim=1).tolist()
+        prompt_lens = enc.attention_mask.sum(dim=1).tolist()  # each row's own prompt length, for the record
+        # The batch is LEFT-padded, so every row's generation starts at the PADDED prompt length.
+        # Until 2026-09-24 this sliced at the row's own token count, which prepended the row's last
+        # `pad` prompt tokens to its generation text (caution (bc)).
+        gen_start = int(enc.input_ids.shape[1])
         seqs = output.sequences.detach().cpu()
+        assert seqs.shape[1] >= gen_start, (seqs.shape, gen_start)
 
         for i, job in enumerate(batch_jobs):
             prompt = job["prompt"]
@@ -192,7 +197,7 @@ class H1AuditRunner:
             trajectory_id = job["trajectory_id"]
             prompt_len = int(prompt_lens[i])
             full_ids = seqs[i].tolist()
-            gen_ids = full_ids[prompt_len:]
+            gen_ids = full_ids[gen_start:]
             gen_text = self.tokenizer.decode(gen_ids, skip_special_tokens=True)
             full_text = self.tokenizer.decode(full_ids, skip_special_tokens=True)
 

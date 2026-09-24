@@ -1,5 +1,21 @@
 # Session handoff --- 2026-09-23
 
+## IN FLIGHT 2026-09-24: feat-184, the head-to-head against a properly served risky model
+
+`results/onset_prediction_served_opponent.md`, committed before any run. Written while revising against
+the fifth set of four referee reports (the user marked report 4 most important). Two defects found
+answering its pipeline question, both read off committed trajectories:
+
+1. `Llama-3.1-8B-Instruct` was served **without its chat template** (temperature `1.0`, no penalty) in
+   every judged arm behind the headline; `output/sweep_chat` has it served properly.
+2. **caution (bc)**: `dap/e1.py` sliced left-padded rows at their own token count, so `generation`
+   starts with up to `p` prompt tokens. Fixed in `dap/e1.py` and `dap/e2/evaluator.py`
+   (`tests/test_left_pad_slicing.py`); old text is recovered by `dap.shared.served_generation`
+   (`--deecho` on `analysis/order_averaged_h2h.py`, opt-in so committed CSVs reproduce).
+
+Part A re-judges the committed pass de-echoed; Part B judges against the chat-served opponent with
+one new arm, `output/feat184/chat_k10`. Local GPUs 1, 2, 4.
+
 ## Current objective
 
 **Revision of `iclr_2027.tex` against four referee reports** (one AC/PC LLM report, three full

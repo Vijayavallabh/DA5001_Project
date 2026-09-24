@@ -29,6 +29,29 @@ def wrap_chat(text: str, tokenizer) -> str:
     return LLAMA3_CHAT.format(content=text)
 
 
+_SPECIAL = None
+
+
+def served_generation(aggregate: Dict[str, Any], prefix_text: str) -> str:
+    """The generated text alone, for trajectories written before 2026-09-24.
+
+    Those runs sliced a LEFT-padded row at its own token count, so `generation` starts with the
+    row's last `pad` prompt tokens (caution (bc)). `full_text` is the whole row decoded with special
+    tokens skipped, i.e. prompt + generation, so removing the prompt -- with its special tokens
+    stripped the same way -- recovers the generation exactly. Falls back to `generation` when the
+    record does not decompose that way."""
+    global _SPECIAL
+    if _SPECIAL is None:
+        import re
+        _SPECIAL = re.compile(r"<\|[^|>]*\|>")
+    gen = aggregate.get("generation") or ""
+    full = aggregate.get("full_text") or ""
+    prompt = _SPECIAL.sub("", prefix_text or "")
+    if prompt and full.startswith(prompt) and gen.endswith(full[len(prompt):]):
+        return full[len(prompt):]
+    return gen
+
+
 def true_gen_len(gen_ids: List[int], eos_ids) -> int:
     """Generated tokens up to and including the first EOS; batched outputs are padded with EOS/pad to the batch length."""
     eos = set(eos_ids) if isinstance(eos_ids, (list, tuple, set)) else {eos_ids}

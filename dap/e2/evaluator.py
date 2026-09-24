@@ -186,7 +186,7 @@ class AnchoredEvaluator:
                         per_step = stats.get("per_step") or []
 
                         enc = self.tokenizer(grouped_texts, return_tensors="pt", padding=True)
-                        prompt_lens = enc.attention_mask.sum(dim=1).tolist()
+                        gen_start = int(enc.input_ids.shape[1])  # left-padded: see dap/e1.py, caution (bc)
                         seqs = output.sequences.detach().cpu()
 
                         for j, spec in enumerate(grouped_specs):
@@ -198,7 +198,7 @@ class AnchoredEvaluator:
                                 if prefix_arr is not None and j < len(prefix_arr):
                                     prefix_debt_val = float(prefix_arr[j])
 
-                            gen_ids = seqs[j].tolist()[int(prompt_lens[j]):]
+                            gen_ids = seqs[j].tolist()[gen_start:]
                             eos_ids = self.gen_cfg.eos_token_id
                             gen_len = true_gen_len(gen_ids, [self.tokenizer.pad_token_id, *([eos_ids] if isinstance(eos_ids, int) else eos_ids)])
                             if prefix_debt_val is None:
