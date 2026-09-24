@@ -16,6 +16,8 @@ has every result and producing command.
 Ethics Statement and **zero** slack --- any body edit must be length-neutral, and the cheapest lines
 are paragraphs ending in a runt (find them with `pdftotext -layout` and a length filter).
 `analysis/audit_numbers.py`: `4,205` literals, one expected miss (`64256`).
+The artifact was rebuilt at 17:50 (`8034124`): `2,086` files, anonymity scan clean, zip `41.8` MB; rebuild with
+`ARTIFACT_MAX_MB=250 bash scripts/build_artifact.sh artifact` (the committed results alone exceed the 80 MB default).
 
 **Deadline (user, 2026-09-24): submission 26 Sept 2026, 17:29 IST.** Recommended next step: one read
 of the compiled PDF end to end, then the human-only submission steps (feat-016, never started by an
