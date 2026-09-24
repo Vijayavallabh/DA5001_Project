@@ -75,7 +75,8 @@ def bits_of(raw):
 
 
 def raw_of(bits):
-    n = int(bits[:HDR], 2)
+    """An undetected error in the header can claim more bytes than arrived; decode what arrived."""
+    n = min(int(bits[:HDR], 2), (len(bits) - HDR) // 8)
     return bytes(int(bits[HDR + 8 * i: HDR + 8 * i + 8], 2) for i in range(n))
 
 
