@@ -57,9 +57,11 @@ def test_no_cross_arm_ratio_reaches_the_manuscript():
 def test_appendix_j_discloses_the_residual_and_both_candidate_causes():
     body = " ".join(open(tex("sections/appendix_limitations.tex"), encoding="utf-8").read().split())
     a, b = controls()
-    assert f"${a:.4f}$ and ${b:.4f}$" in body, (a, b)
+    # v10 (2026-09-24) prints the pair as "$0.4921$ against $0.4428$" and opens the next sentence
+    # with "No joint table is built"; the connector and the capital are the only changes.
+    assert f"${a:.4f}$ against ${b:.4f}$" in body, (a, b)
     assert f"residual of ${abs(a - b):.4f}$" in body, abs(a - b)
-    assert "no joint table is built" in body
+    assert "no joint table is built" in body.lower()
     assert "changing the token budget changes the draw" in body, "cause 1 is not disclosed"
     assert "flat $300$" in body, "cause 2 is not disclosed"
 

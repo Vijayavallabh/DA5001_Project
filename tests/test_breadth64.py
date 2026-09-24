@@ -62,17 +62,29 @@ def test_the_appendix_states_the_claim_over_exactly_the_anchors_that_carry_it():
     """NARROWED 2026-09-18 by feat-131. The one anchor that climbed did not survive a fresh draw,
     so the committed consequence of DOES NOT REPLICATE applies: the climb to n=64 is established at
     TinyComma and Comma-7B and nowhere else. This test previously asserted the three-anchor
-    wording; it now asserts the two-anchor one, and that the three-anchor claim is gone."""
+    wording; it now asserts the two-anchor one, and that the three-anchor claim is gone.
+
+    v10 (2026-09-24) states the same verdicts without their registry names: PARTIAL is "One of three
+    climbs", DOES NOT REPLICATE is "it did not survive a fresh draw", and the two anchors are named
+    in the paragraph that says no other climbs reproducibly. The count is rebuilt from the CSV."""
     txt = body("appendix_selection.tex")
     assert "three --- TinyComma, Comma-7B and KL3M-1.7B" not in txt, \
         "the three-anchor claim is back, and feat-131 refuted its third anchor"
     assert "no anchor outside the two already on record\nclimbs reproducibly" in txt.replace(" ", " ") \
         or "no anchor outside the two already on record climbs reproducibly" in txt, \
         "the committed consequence of DOES NOT REPLICATE was softened"
-    assert "established at \\textbf{TinyComma and Comma-7B}" in txt, \
+    i = txt.find("no anchor outside the two already on record climbs reproducibly")
+    para = txt[txt.rfind("\\paragraph{", 0, i):txt.find("\\paragraph{", i)]
+    assert "Only TinyComma and Comma-7B" in para, \
         "the claim must name exactly the two anchors that carry it"
-    assert "\\textsc{partial}" in txt, "the committed reading was dropped"
-    assert "\\textsc{does not replicate}" in txt, "the replication verdict was dropped"
+    assert "Both of those were re-drawn the same way and held" in para, \
+        "the two anchors the claim keeps are no longer shown to survive a fresh draw"
+    words = {1: "One", 2: "Two", 3: "Three"}
+    rows = _scored()
+    climbing = sum(float(r["lo95"]) > 0 for r in rows.values())
+    assert f"{words[climbing]} of {words[len(rows)].lower()} climbs" in para, \
+        "the committed PARTIAL reading was dropped"
+    assert "did not survive a fresh draw" in para, "the DOES NOT REPLICATE verdict was dropped"
     assert "reduced warrant" in txt, "the warrant concession was trimmed"
     assert "inapplicable" in txt, "the reproduction defect was trimmed"
     assert "$\\mathbf{+0.0650}$ $[+0.0270, +0.1030]$" in txt, "the one climbing band was trimmed"
@@ -88,9 +100,11 @@ def test_the_paired_read_never_quotes_the_committed_breadth_table():
     complaint in another dress: it retires itself the first time the paragraph grows.
     """
     txt = body("appendix_selection.tex")
-    i = txt.find("Does the climb to the headline")
-    assert i != -1, "the paragraph this guard is about is gone"
-    j = txt.find("\\paragraph", i + 1)
+    # v10: the paragraph is the one that cites the n=64 climb table (heading-independent).
+    r = txt.find("\\ref{tab:climb}")
+    assert r != -1, "the paragraph this guard is about is gone"
+    i = txt.rfind("\\paragraph", 0, r)
+    j = txt.find("\\paragraph", r)
     seg = txt[i: j if j != -1 else len(txt)]
     assert "none of these numbers is set" in seg, \
         "the appendix must say these numbers are not compared with the committed breadth table"
@@ -145,7 +159,9 @@ def test_the_two_retained_anchors_are_read_on_the_same_paired_statistic():
         # `Comma-7B &` row) landed earlier in the file and was read instead (caution (an)).
         i = txt.index("\\label{tab:climb}")
         climb = txt[i: txt.index("\\end{tabular}", i)]
-        row = next((l for l in climb.split("\\\\") if l.strip().startswith(label + " &")), None)
+        # v10 dropped the \multicolumn sub-heading, so a \midrule now opens the row itself
+        row = next((l.replace("\\midrule", "") for l in climb.split("\\\\")
+                    if l.replace("\\midrule", "").strip().startswith(label + " &")), None)
         assert row, (label, "the row is gone from the table")
         # BY COLUMN. The first version of this asked whether each value appeared anywhere in the
         # row, which is membership, not placement -- and its own mutation test proved it: swapping

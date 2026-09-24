@@ -200,7 +200,7 @@ def test_the_abstract_claims_the_anchor_count_the_csv_supports():
     could see: all four quoted anchors exclude zero by construction, and the two that do not are
     the two the sentence never mentions. Stating M is both shorter and honest, so the guard pins
     it: writing the numerator alone, or either count wrong, fails here."""
-    from tests.manuscript import tex
+    from tests.manuscript import body, tex
     abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read().replace("\n", " ")
     fams = {"TinyComma-1.8B (audited)": "Comma", "Comma-7B": "Comma",
             "Comma-7B (1T tokens)": "Comma", "Pleias-1.2B": "Pleias",
@@ -212,7 +212,14 @@ def test_the_abstract_claims_the_anchor_count_the_csv_supports():
     n, total = len(gaining), len(fams)
     nf = len({fams[a] for a in gaining})
     claim = f"{words[n]} of {words[total]} anchors in {words[nf]} families"
-    assert claim in abstract, (claim, sorted(gaining), sorted(fams))
+    # v10 (2026-09-24) took the breadth claim out of the abstract and the introduction; it is now
+    # stated once, in Section 4.3 (experiments.tex). The guard follows it there, and still refuses a
+    # wrong count ANYWHERE the main text or abstract states one.
+    main = " ".join(abstract.split()) + " " + body("iclr_intro.tex", "selection.tex",
+                                                   "experiments.tex", "iclr_closing.tex")
+    assert claim in body("experiments.tex"), (claim, sorted(gaining), sorted(fams))
+    for m in re.finditer(r"\w+ of \w+ anchors in \w+ families", main):
+        assert m.group(0) == claim, (m.group(0), claim, "a breadth count the CSV does not support")
 
 
 def test_the_abstract_scopes_the_repetition_claim_to_the_n_it_was_measured_at():
@@ -231,10 +238,19 @@ def test_the_abstract_scopes_the_repetition_claim_to_the_n_it_was_measured_at():
     """
     from tests.manuscript import tex
     import os
-    for f in ("iclr_2027.tex", os.path.join("sections", "iclr_intro.tex")):
+    # v10 (2026-09-24) states the breadth claim only in Section 4.3 (experiments.tex); the abstract and
+    # the introduction no longer carry it. So every occurrence in the abstract, introduction and
+    # Section 4 is checked, and at least one must exist -- a scope guard over zero sentences passes by
+    # never running (caution (aj)).
+    seen = 0
+    for f in ("iclr_2027.tex", os.path.join("sections", "iclr_intro.tex"),
+              os.path.join("sections", "experiments.tex")):
         body = open(tex(f), encoding="utf-8").read().replace("\n", " ")
-        i = re.search(r"\w+ of six anchors in \w+ families", body).start()
-        sentence = body[max(0, body.rfind(".", 0, i) + 1): body.index(".", i) + 1]
-        assert "$n=8$" in sentence, \
-            (f"{f}: the breadth claim lost its n=8 scoping and now reads as an n=64 result",
-             " ".join(sentence.split()))
+        for m in re.finditer(r"\w+ of six anchors in \w+ families", body):
+            i = m.start()
+            sentence = body[max(0, body.rfind(".", 0, i) + 1): body.index(".", i) + 1]
+            assert "$n=8$" in sentence, \
+                (f"{f}: the breadth claim lost its n=8 scoping and now reads as an n=64 result",
+                 " ".join(sentence.split()))
+            seen += 1
+    assert seen, "no breadth claim found in the abstract, introduction or Section 4"

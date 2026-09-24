@@ -42,13 +42,27 @@ def _cost():
 def test_the_best_cell_comparison_is_the_one_the_paragraph_prints():
     acc, (rew, maj) = _acc(), _cost()
     body = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
-    para = body.split("Every scorer-free cell beats every reward cell")[1][:700]
+    # v10 (2026-09-24) cut the sentence that walked the frame ("Majority vote at $n=8$ costs
+    # $1.44\\times$ and reaches $0.466$; the best reward cell costs $61.29\\times$ ...") and leaves it to
+    # Table tab:scorerfree, which the paragraph introduces. So the scope is the paragraph from the
+    # claim through that table, and the frame is checked ROW BY ROW in the table (the n=8 vote cell
+    # prints in bold, so the cell is matched with or without \\mathbf).
+    i = body.index("Every scorer-free cell beats every reward cell")
+    para = body[i: body.index("\\end{table}", i)]
+    rows = [r.strip() for r in para.split("\\\\")]
+
+    def row(lead):
+        hit = [r for r in rows if lead in r]
+        assert len(hit) == 1, (lead, hit)
+        return hit[0]
 
     # the frame: majority at n=8, and the reward's best cell, which is n=64
     best_n = max((n for (a, n) in acc if a == REW), key=lambda n: acc[(REW, n)][0])
     assert best_n == 64, best_n
-    assert f"${maj(8):.2f}\\times$" in para and f"${acc[(MAJ, 8)][0]:.3f}$" in para
-    assert f"${rew(best_n):.2f}\\times$" in para and f"${acc[(REW, best_n)][0]:.3f}$" in para
+    r8 = row("majority vote & $8$ &")
+    assert f"{maj(8):.2f}\\times" in r8 and f"${acc[(MAJ, 8)][0]:.3f}$" in r8, r8
+    rb = row(f"reward $7.6$B & ${best_n}$ &")
+    assert f"${rew(best_n):.2f}\\times$" in rb and f"${acc[(REW, best_n)][0]:.3f}$" in rb, rb
 
     # the claim: majority at n=32 against that best cell
     gain_ratio = acc[(MAJ, 32)][1] / acc[(REW, best_n)][1]

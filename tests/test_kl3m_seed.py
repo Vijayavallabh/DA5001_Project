@@ -71,11 +71,15 @@ def test_the_precedent_still_holds_at_the_anchor_it_was_taken_from():
 
 
 def test_the_appendix_reports_the_failed_replication_and_the_caveat():
+    """v10 (2026-09-24) compressed the paragraph; wording changed, numbers kept. The caveat now reads
+    "A paired difference is stable where the effect is large against its own interval: at $1.71$ ...
+    half-widths the three re-draws moved by $0.061$ ...", the marginal case shown by its own number
+    rather than said, and the refusal to pool is "We do not pool a reading with its own failed
+    replication"."""
     txt = body("appendix_selection.tex")
     assert "did not survive a fresh draw" in txt, "the failed replication was trimmed"
     assert "$+0.0040$ $[-0.0330, +0.0400]$" in txt, "the replication band was trimmed"
-    assert "stable where the effect is large relative to its own interval and not\nwhere it is marginal" in txt \
-        or "stable where the effect is large relative to its own interval and not where it is marginal" in txt, \
+    assert "stable where the effect is large against its own interval" in txt, \
         "the caveat on the precedent was trimmed"
-    assert "We do not pool the two draws" in txt, \
+    assert "We do not pool a reading with its own failed replication" in txt, \
         "the refusal to pool -- a post-hoc rescue the pre-registration excluded -- was trimmed"

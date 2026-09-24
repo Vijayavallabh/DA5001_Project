@@ -14,7 +14,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from tests.manuscript import body  # noqa: E402
+from tests.manuscript import body, caption_of  # noqa: E402
 
 
 def _csv(name):
@@ -26,14 +26,32 @@ def test_the_window_event_is_vacuous_ABOVE_its_threshold_not_below():
     The table beside the second sentence says the opposite: K = k * T_max reaches the window's
     surprisal at k = 0.799, so the certificate is empty at every k from there UP. Checked as a
     property: wherever a k is named beside that window's vacuity, it is the CSV's threshold and the
-    inequality points up."""
-    k = float(next(r for r in _csv("window_vacuity.csv") if r["event"] == "50-token window")
-              ["k_at_vacuity"])
-    txt = body("frontier.tex", "appendix_proofs.tex").replace("$", "")
+    inequality points up.
+
+    v10 states it at two sites in other forms: the main text in K/S_w units (Table 2's caption:
+    K/S_w excludes nothing at or above 1) and Appendix A as a list of evaluation budgets at which
+    "the certificate is vacuous for every event in the table". A list claim about every event is
+    checked against every event's threshold (caution (ai)), not only the window's."""
+    vw = {r["event"]: r for r in _csv("window_vacuity.csv")}
+    thr = {e: float(r["k_at_vacuity"]) for e, r in vw.items()}
+    k, S = thr["50-token window"], float(vw["50-token window"]["S_median_nats"])
+    txt = body("selection.tex", "frontier.tex", "experiments.tex", "appendix_proofs.tex").replace("$", "")
     assert not re.search(r"vacuous below k\s*=", txt), "the inverted direction is back"
+    row = re.search(r"50-token window & ([\d.]+) & ([\d.]+) &", txt)
+    assert row and abs(float(row.group(2)) - k) < 5e-4, (row and row.groups(), k)
     hits = re.findall(r"vacuous at (?:every )?k \\ge ([\d.]+)", txt)
-    assert len(hits) >= 2, hits
     assert all(abs(float(h) - k) < 0.05 for h in hits), (hits, k)
+    lists = re.findall(r"k = ((?:[\d.]+, )+[\d.]+), the certificate is vacuous for every event in "
+                       r"the table", txt)
+    assert hits or lists, "Appendix A no longer states the direction of the window's vacuity"
+    for ks in lists:
+        low = min(float(x) for x in ks.split(", "))
+        above = sorted(e for e, t in thr.items() if t > low)
+        assert not above, (f"'vacuous for every event in the table' at k = {low}, but the table's "
+                           f"own thresholds for {above} are above it", thr)
+    cap = caption_of("tab:served").replace("$", "")
+    assert f"S_w = {S:.1f} nats" in cap and "excludes nothing at or above 1" in cap, \
+        "the main text no longer says which way the window's certificate goes vacuous"
 
 
 def _auc():
@@ -60,13 +78,15 @@ def test_the_likelihood_is_called_worse_than_length_only_if_the_interval_says_so
     better'. Conditioned on the interval, so the word may change only if the data do."""
     d = _auc()["difference"]
     resolved = float(d["lo95"]) > 0
-    for name in ("iclr_intro.tex", "orders.tex", "experiments.tex"):
+    for name in ("iclr_intro.tex", "selection.tex", "frontier.tex", "experiments.tex",
+                 "appendix_selection.tex"):
         t = body(name)
         for m in re.finditer(r"(worse|no better) than (?:the answer's )?length", t):
             assert m.group(1) == ("worse" if resolved else "no better"), (name, m.group(0))
     # 2026-09-24: the claim left the introduction (a referee: ranking anchor draws by p_r is not
-    # tilting generation toward it) and is made, scoped, in Section 4.4; pin it where it is made.
-    assert re.search(r"no better than the answer's length", body("orders.tex"))
+    # tilting generation toward it). v10 makes it, scoped, in Section 3's closing paragraph
+    # (frontier.tex, orders.tex being retired); pin it where it is made.
+    assert re.search(r"(worse|no better) than the answer's length", body("frontier.tex"))
 
 
 def test_the_failed_scorer_and_the_auc_point_to_a_paragraph_that_holds_them():
@@ -82,10 +102,13 @@ def test_the_failed_scorer_and_the_auc_point_to_a_paragraph_that_holds_them():
     for v in (f"{fail:+.3f}".replace("+", "-" if fail < 0 else "+"), f"{oracle:+.3f}",
               f"{float(_auc()['logp_per_token']['auc']):.3f}", f"{float(_auc()['n_tokens']['auc']):.3f}"):
         assert v in para.replace("$", ""), v
-    assert r"(Appendix~\ref{app:currency})" in body("orders.tex")
-    exp = body("experiments.tex")
-    j = exp.index("+0.488")
-    assert r"\ref{app:currency}" in exp[j: j + 120], "the oracle's pointer no longer reaches it"
+    # v10: the AUC's main-text pointer moved from orders.tex (retired) to Section 3's close
+    assert r"(Appendix~\ref{app:currency})" in body("frontier.tex")
+    main = body("iclr_intro.tex", "selection.tex", "frontier.tex", "experiments.tex",
+                "iclr_closing.tex")
+    j = main.find("+0.488")
+    assert j >= 0, "the main text no longer quotes the failed first scorer's circular oracle"
+    assert r"\ref{app:currency}" in main[j: j + 120], "the oracle's pointer no longer reaches it"
 
 
 def test_the_gain_ratio_is_quoted_with_its_interval_and_only_while_it_excludes_one():
@@ -101,10 +124,16 @@ def test_the_gain_ratio_is_quoted_with_its_interval_and_only_while_it_excludes_o
     if f"${ratio:.1f}\\times$" in intro:
         assert f"${ratio:.1f}\\times$ $[{lo:.1f}, {hi:.1f}]$" in intro, "intro ratio without interval"
     assert "win by" not in intro or r["excludes_one"] == "yes", "'win by' overstates the ratio"
-    app = body("appendix_selection.tex")
-    assert f"${ratio:.2f}\\times$ $[{lo:.2f}, {hi:.2f}]$" in app
-    assert f"$[{float(r['fieller_lo95']):.2f}, {float(r['fieller_hi95']):.2f}]$" in app
-    assert f"${100 * float(r['undefined_frac']):.2f}\\%$" in app
+    # v10 (2026-09-24) quotes no gain ratio at all, so the appendix's interval, Fieller check and
+    # undefined fraction went with it (tests/RETIRED_2026-09-24.md). If the ratio returns anywhere it
+    # must bring all three.
+    app = body("appendix_selection.tex", "experiments.tex", "iclr_closing.tex")
+    # the conditional keys on the ratio's own two-decimal form: "$2.6\times$" also occurs in the
+    # appendix as an unrelated cost factor (majority vote at Comma-7B), which is not this ratio
+    if f"${ratio:.2f}\\times$" in app:
+        assert f"${ratio:.2f}\\times$ $[{lo:.2f}, {hi:.2f}]$" in app
+        assert f"$[{float(r['fieller_lo95']):.2f}, {float(r['fieller_hi95']):.2f}]$" in app
+        assert f"${100 * float(r['undefined_frac']):.2f}\\%$" in app
 
 
 def test_the_cpfuse_audit_appendix_j_claims_is_printed_and_rounds_from_both_builds():
@@ -125,7 +154,11 @@ def test_the_cpfuse_audit_appendix_j_claims_is_printed_and_rounds_from_both_buil
             old[("a", "single", "0")], old[("b", "single", "1")], old[("cpfuse", "single", "0")]]
     for v in want:
         assert f"{v:.4f}" in para, v
-    assert r"\ref{app:cpfuse}" in app[: i], "the one-line 'we audit' claim no longer points at it"
+    # v10 dropped the one-line "second mechanism we audit" pointer; the related-work table's
+    # CP-Fuse row is the pointer now ("leakage (below)"), and the paragraph must follow it.
+    t = app.index(r"\label{tab:related}")
+    row = next(r for r in app[t: app.index(r"\end{tabular}", t)].split("\\\\") if "CP-Fuse" in r)
+    assert "(below)" in row and t < i, "nothing before the audit points at it any more"
 
 
 def test_the_prompt_screen_can_fire_and_the_appendix_reports_what_it_found():
@@ -142,7 +175,10 @@ def test_the_prompt_screen_can_fire_and_the_appendix_reports_what_it_found():
     rows = _csv("prompt_set_profile.csv")
     hits = sum(int(r["shares_8gram_with_protected"]) + int(r["names_a_protected_title"]) for r in rows)
     app = body("appendix_selection.tex")
-    claims_none = "none shares a word $8$-gram with any of its passages" in app
+    # v10: "none shares a word $8$-gram with any protected passage or names any of its sixteen
+    # works" -- both halves of the screen the CSV counts (8-grams and titles) must be claimed.
+    claims_none = (bool(re.search(r"none shares a word \$8\$-gram with any", app))
+                   and "names any of its" in app)
     assert claims_none == (hits == 0), (hits, claims_none)
 
 
@@ -152,10 +188,14 @@ def test_the_vetting_check_names_the_prefix_a_deployer_should_use():
     the longest genuine prefix the deployment accepts. Both places a deployer reads must say it."""
     import tests.manuscript as ms
     ethics = " ".join(open(ms.tex("iclr_2027.tex"), encoding="utf-8").read().split())
-    assert "longest genuine prefix the deployment accepts" in ethics
+    # v10's Ethics says "run at every prefix length the deployment accepts"; the appendix keeps
+    # "up to the longest genuine prefix the deployment accepts".
+    assert re.search(r"(?:every prefix length|longest genuine prefix) the deployment accepts", ethics)
     vet = body("appendix_selection.tex")
     i = vet.index(r"\label{app:vetting}")
-    assert "attack surface" in vet[i: vet.index(r"\paragraph", i)]
+    para = vet[i: vet.index(r"\paragraph", i)]
+    assert "longest genuine prefix the deployment accepts" in para
+    assert "attack surface" in para, "the appendix no longer says why the prefix is attack surface"
 
 
 def test_the_draw_count_symbol_is_not_reused_for_a_prompt_count():
@@ -184,26 +224,43 @@ def test_the_abstract_carries_the_two_caveats_its_data_still_require():
                    key=lambda r: float(r["acc"]))
     risky = rows[("metered decoder", "k=-1")]
     if float(best_sel["acc_hi95"]) < float(risky["acc_lo95"]):
-        assert re.search(r"cannot do the task, no \$n\$ rescues it", a), \
+        # v10: "no $n$ rescues an anchor that cannot do the task" (v9: "cannot do the task, no $n$
+        # rescues it"); both halves of the concession must be there, in either order.
+        assert "no $n$ rescues" in a and "cannot do the task" in a, \
             "the capability-gap concession left the abstract while TriviaQA still shows the gap"
 
 
 def test_the_below_threshold_paragraph_rounds_from_the_window_csv():
     """Appendix A's new paragraph prices the KL order's linear looseness on the 50-token window at
-    k = 0.5 (K = 100 at T_max = 200). Every number is recomputed here."""
+    k = 0.5 (K = 100 at T_max = 200). Every number is recomputed here.
+
+    v10 prints the EXACT binary-KL inversion, $0.630$ (Table 1's window bound, from
+    results/certificate_table.csv), where v9 printed the approximation "about $0.63$"; the paragraph's
+    own bracket K/S <= bound <= (K + log 2)/S is checked, and the printed value rounds from the CSV."""
     import math
     S = float(next(r for r in _csv("window_vacuity.csv") if r["event"] == "50-token window")
               ["S_median_nats"])
     K = 0.5 * 200
     lo, hi = K / S, (K + math.log(2)) / S
     assert f"{lo:.2f}" == f"{hi:.2f}", "the two ends of the KL bound no longer round alike"
+    exact = float(next(r for r in _csv("certificate_table.csv") if r["param"] == "k=0.5")
+                  ["window_bound"])
+    assert lo <= exact <= hi, (lo, exact, hi)
     app = body("appendix_proofs.tex")
     i = app.index(r"\label{app:belowthreshold}")
     para = app[i: app.index(r"\paragraph", i)]
-    assert f"about ${lo:.2f}$" in para
+    m = re.search(r"permits (?:that|the) window with probability (?:about )?\$([\d.]+)\$ under the "
+                  r"KL charge", para)
+    assert m and f"{exact:.{len(m.group(1).split('.')[1])}f}" == m.group(1), (m and m.group(1), exact)
     assert f"$e^{{{round(K - S)}}}$" in para
     assert f"${0.01 * S:.1f}$ at" in para
-    assert r"\ref{app:belowthreshold}" in body("selection.tex"), "section 3.2 lost its pointer"
+    # v10's Section 2 points at the proofs appendix as a whole, which holds this paragraph
+    sel = body("selection.tex")
+    j = sel.find("half the time")
+    assert j > 0, "Section 2 no longer states the below-threshold consequence"
+    w = sel[max(0, j - 600): j]
+    assert r"\ref{app:belowthreshold}" in w or r"\ref{app:proofs}" in w, "section 2 lost its pointer"
+    assert app.index(r"\label{app:proofs}") < i
 
 
 def test_the_main_text_says_where_the_kl_bound_is_attained():
@@ -214,11 +271,18 @@ def test_the_main_text_says_where_the_kl_bound_is_attained():
     # 2026-09-24: "attained for a tie-free score" became "attained only for a tie-free score and
     # unrepeated strings" -- a referee showed a discrete p_s never attains either figure exactly
     # (q(y*) = 1-(1-p)^n < np). The guard now pins the stricter wording.
-    i = exp.index("attained only for a tie-free score")
+    i = exp.find("attained only for a tie-free score")
+    assert i >= 0, "the main text no longer says where selection's KL bound is attained"
     assert r"\ref{app:realisedkl}" in exp[i: i + 90]
     app = body("appendix_selection.tex")
     j = app.index(r"\label{app:realisedkl}")
-    assert r"\mathrm{Beta}(n,1)" in app[j: app.index(r"\paragraph", j)]
+    para = app[j: app.index(r"\paragraph", j)]
+    # v10 states the tie-free served law directly, q(y) = n p_s(y) F(f(y))^{n-1}, where v9 also
+    # derived its KL through the Beta(n,1) quantile; and the tie rates it measures round from the CSV
+    assert r"F(f(y))^{n-1}" in para or r"\mathrm{Beta}(n,1)" in para
+    tied = {int(r["n"]): float(r["frac_prompts_top_tied"]) for r in _csv("selection_realised_kl.csv")}
+    for n in (2, 8, 64):
+        assert f"${100 * tied[n]:.1f}\\%$" in para, (n, tied[n])
 
 
 def test_the_open_markers_are_explained_by_the_gate_that_failed_them():
@@ -242,8 +306,10 @@ def test_the_headline_pass_frontier_distances_round_from_their_csv():
     Both headline-pass ratios are recomputed by analysis/frontier_distance_h2h.py."""
     r = {x["arm"]: float(x["over_frontier"]) for x in _csv("frontier_distance_h2h.csv")}
     sel, met = r["selection, n=64"], r["metered decoder, k=10"]
-    app = body("appendix_proofs.tex")
-    assert f"selection at $n=64$ is ${sel:.0f}\\times$ the frontier" in app
+    # v10 moved the paragraph to Appendix H (appendix_onset.tex) and reads "sits" for "is"
+    app = body("appendix_onset.tex")
+    m = re.search(r"selection at \$n=64\$ (?:is|sits) \$(\d+)\\times\$ the frontier", app)
+    assert m and m.group(1) == f"{sel:.0f}", (m and m.group(1), sel)
     assert f"${met:,.0f}\\times$".replace(",", "{,}") in app
     assert sel < met / 100, "selection is no longer two orders of magnitude nearer the frontier"
 

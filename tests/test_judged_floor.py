@@ -57,8 +57,26 @@ def test_the_range_quoted_covers_both_measurements():
 
 
 def test_the_manuscript_no_longer_calls_it_an_identical_configuration():
-    txt = body("experiments.tex")
+    """v10 (2026-09-24) moved the judged-floor sentence out of Section 4 into Appendix B's judge
+    paragraph ("A judged gain re-run on a different $n$-grid moves by $0.04$ to $0.07$"). The
+    withdrawn wording is now refused in EVERY live file, and the corrected range is rebuilt from the
+    same four CSV cells test_the_range_quoted_covers_both_measurements reads."""
+    import re
+    from tests.manuscript import tex
+    main = open(tex("iclr_2027.tex"), encoding="utf-8").read()
+    live = [n + ".tex" for n in re.findall(r"\\input\{sections/([a-z_0-9]+)\}", main)]
+    assert "experiments.tex" in live and "appendix_selection.tex" in live, live
+    txt = body(*live) + " " + " ".join(main.split())
     assert "identical configuration re-run" not in txt, \
         "the two arms behind this number used different n-grids and fresh generations"
-    assert "a re-run at a different $n$-grid moves one by $0.04$ to $0.07$" in txt, \
-        "the corrected judged-floor wording was lost"
+    _, v8 = _grid_and_gain("selection_scaling_comma7b.csv")
+    _, v64 = _grid_and_gain("selection_scaling_comma7b64.csv")
+    a = next(float(r["gain"]) for r in csv.DictReader(
+        open(os.path.join(ROOT, "results", "selection_scaling.csv"), encoding="utf-8"))
+        if JUDGE_B in r["judge"] and int(float(r["n"])) == 64)
+    b = next(float(r["gain"]) for r in csv.DictReader(
+        open(os.path.join(ROOT, "results", "selection_scaling_n128.csv"), encoding="utf-8"))
+        if JUDGE_B in r["judge"] and int(float(r["n"])) == 64)
+    lo, hi = abs(v8 - v64), abs(a - b)
+    assert f"re-run on a different $n$-grid moves by ${lo:.2f}$ to ${hi:.2f}$" in \
+        body("appendix_selection.tex"), ("the corrected judged-floor wording was lost", lo, hi)

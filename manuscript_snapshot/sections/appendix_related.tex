@@ -1,19 +1,17 @@
-% Plan v4/v5 / related work. Compressed 2026-09-08 and again 2026-09-19 for the ICLR page budget.
-% Every venue is the one in the arXiv primary record; four entries carry no venue there and are
-% cited as preprints. Positioning against segal2026provably and cohen2026barriers is in the
-% introduction as well as here -- mentioned only in passing, it would read as concealment.
+% v10 (2026-09-24): compressed; every measurement and concession of v9 kept. v9 is in
+% DA5001_Project/output/review_audit/pre_v10_2026-09-24/sections/appendix_related.tex. Positioning
+% against segal2026provably and cohen2026barriers stays explicit here: in passing only, it would read
+% as concealment.
 
 \section{Related work in full}\label{app:related}
+Table~\ref{tab:related} sorts the defences by what their guarantee is about.
 
-Table~\ref{tab:related} sorts the defences by what their guarantee is about, which is the axis this
-paper's argument runs on; the paragraphs below give each one's detail and our measurements.
 
 \begin{table}[ht]
 \centering\footnotesize
-\caption{Copyright defences at or near inference time, by what the guarantee is about. The first
-three rows bound the served text's law against a model, and CPR does so for images; the others
-guarantee something about a named string, an $n$-gram list, an index, a datastore or a takedown
-list.}
+\caption{Copyright defences at or near inference time, by what the guarantee is about. The first three
+rows bound the served text's law against a model (CPR does so for images); the others guarantee something
+about a named string, an $n$-gram list, an index, a datastore or a takedown list.}
 \label{tab:related}
 \begin{tabular}{@{}p{0.27\linewidth}p{0.45\linewidth}p{0.22\linewidth}@{}}
 \toprule
@@ -33,198 +31,96 @@ CPR \citep{golatkar2024cpr} & near-access-freeness through retrieval, for diffus
 \end{table}
 
 \paragraph{Access-free guarantees and their discontents.}
-Near-access-freeness \citep{vyas2023provable} asks that a served model stay within a divergence of a
-safe model that never saw the protected work, and CP-$\Delta$ and CP-$k$ instantiate it by combining
-models trained on disjoint shards \citep{vyas2023provable,abad2025cpfuse}. Three recent results bear
-directly on ours. \citet{cohen2025blameless} shows that per-query access-freeness does not compose
-across queries; \citet{cohen2026barriers} proves barriers for counterfactual credit attribution, a
-sibling relaxation of differential privacy; and closest of all, \citet{segal2026provably} report that
-CP-style guarantees can be numerically uninformative in realistic fine-tuning settings and demonstrate
-extraction against NAF-protected models. We are downstream of that observation, not upstream of it,
-and the two results are compatible. Their diagnosis is that memorisation puts sharp probability spikes
-on a few tokens, so a divergence over \emph{raw} probabilities reads as large even where the models
-agree on what to emit, and their repair charges relative probabilities instead: a change in
-\emph{what} is metered. Proposition~\ref{prop:threshold} closes a different lever, the one a deployer
-actually has --- for every order of the same per-step charge, from KL to max-divergence, the
-certificate becomes vacuous at the same budget, so a stronger charge buys precision below the
-threshold and never moves it. Neither result subsumes the other; together they leave a deployer with
-one lever that moves the threshold, a smaller budget, which Theorem~\ref{thm:nfl} prices and
-Section~\ref{sec:orders} measures. \citet{cohen2026barriers} is the closer structural parallel: its non-composition is \emph{autoregressive} rather than across
-queries, so imposing counterfactual credit attribution on the next-token predictor does not make the
-sequence-level model satisfy it. Ours is the same shape for a different quantity --- a per-step charge
-honoured at every step still leaves the sequence-level event $\{\text{output}=x\}$ unprotected once
-the budget reaches $S(x)$ --- priced in nats for a single query rather than stated as a barrier.
+\citet{cohen2025blameless} show that per-query access-freeness does not compose across queries, and
+\citet{cohen2026barriers} prove barriers for counterfactual credit attribution whose non-composition is
+autoregressive: imposing it on the next-token predictor does not make the sequence-level model satisfy it.
+Ours is the same shape for a different quantity, priced in nats: a per-step charge honoured at every step
+leaves the event $\{\text{output}=x\}$ unprotected once the budget reaches $S(x)$. \citet{segal2026provably}
+report that CP-style guarantees can be numerically uninformative in realistic fine-tuning and demonstrate
+extraction against NAF-protected models; their diagnosis is that memorisation puts sharp spikes on a few
+tokens, and their repair charges relative rather than raw probabilities, a change in \emph{what} is
+metered. Proposition~\ref{prop:threshold} closes a different lever: for every order of the same per-step
+charge the certificate becomes vacuous at the same budget, so a stronger charge buys precision below the
+threshold and never moves it. Neither result subsumes the other. That a KL bound does not imply a
+worst-case event bound is classical \citep{sason2016fdivergence,vanerven2014renyi}; what we add is which
+budgets survive the requirement that the certificate be informative about a specific work and the
+mechanism remain usable.
 
 \paragraph{Consensus sampling, the closest neighbour.}\label{app:kalai}
-\citet{kalai2026consensus} aggregate $k$ generative models, of which an unknown subset is assumed
-safe, and serve a sample only where enough of them assign it comparable probability, abstaining
-otherwise; the served risk is then competitive with that of the safe subset. The instinct is ours ---
-certify the output relative to models that did not misbehave, not by metering each token --- and the
-premises are opposite. They need several models and no knowledge of which are safe, and they pay by
-abstaining, which is how their guarantee can hold without naming a safe model; we need one
-\emph{named} safe model, never abstain, and pay in draws. Their certificate is relative to the safe
-subset as ours is relative to the anchor, so both inherit whatever that model holds, and ours is
-checkable in advance by the vetting of Appendix~\ref{app:vetting}. Neither result implies the other,
-and a deployer with a vetted anchor and several risky models could run both.
+\citet{kalai2026consensus} aggregate $k$ generative models, an unknown subset of them safe, and serve a
+sample only where enough of them assign it comparable probability, abstaining otherwise. The instinct is
+ours, certifying the output relative to models that did not misbehave, and the premises are opposite: they
+need several models and no knowledge of which are safe and pay by abstaining; we need one named safe model,
+never abstain, and pay in draws. Both certificates inherit what their safe models hold, and ours is
+checkable in advance by vetting (Appendix~\ref{app:vetting}). A deployer with a vetted anchor and several
+risky models could run both.
 
-\paragraph{Inference-time defences that spend no divergence budget at all.}
-Two recent methods sit in this paper's slot --- decode-time, no retraining --- and reach it without
-a cumulative budget, which makes them the sharpest comparison available and worth stating plainly.
-\textbf{TokenSwap} \citep{prashant2025tokenswap} substitutes the probabilities of high-frequency
-grammatical tokens from a small auxiliary model, reporting a $10$--$800\times$ reduction in verbatim
-generation and proving that the probability of emitting a memorised sequence decays exponentially in
-its length. \textbf{TRBS} \citep{fu2026duplicate} reorders beam candidates against an FM-index of the
-protected corpus, with a spike-entropy rule protecting structurally necessary tokens, and is
-evaluated on multilingual \emph{code}. Both are stronger than a blocklist on the axis they target,
-and neither is in this paper's class, for the same reason the blocklist is not: the guarantee is
-about the \emph{catalogue supplied} --- a sequence that is memorised, or an $n$-gram that is indexed
---- and not about the served law relative to a safe model. TokenSwap's exponential decay is the
-closest any of them comes to a certificate, and it is a statement about a named memorised string
-rather than a bound on $q(y)/p_s(y)$ for every $y$; it says nothing about an unlisted work, a
-paraphrase, or an adversary who supplies the prefix. \textbf{Measured, TokenSwap beats this paper's
-mechanism on both axes we can compare.} We reimplemented it from Algorithm~1
-with their published $110$-word $G$, on the same $100$ protected passages and the same $850$
-ordinary prompts as our blocklist arm. It suppresses \emph{completely} --- near-verbatim recall
-$0.0000$, ROUGE-L $\ge 0.5$ on $0$ of $100$ and $\ge 0.3$ on $0$, against $45$ and $69$ for the
-unconstrained memoriser --- which is stronger than the blocklist, whose non-literal leakage the
-same pass puts at $5$ of $100$. Judged against its own rule-off control it costs $-0.1040$
-$[-0.1255, -0.0820]$, where the blocklist costs exactly $0.0000$ and selection at $n=64$ costs
-$-0.1655$ $[-0.2000, -0.1320]$; run side by side, TokenSwap is ahead of selection by $+0.0615$
-$[+0.0285, +0.0950]$. \textbf{The mechanism this paper is about is the most expensive of the three
-and the only one that publishes a bound on the served law.} That is the comparison, and it is not
-flattering.
+\paragraph{TokenSwap, measured: cheaper than selection and just as suppressive.}
+TokenSwap \citep{prashant2025tokenswap} substitutes the probabilities of high-frequency grammatical tokens
+from a small auxiliary model and proves that a memorised sequence's probability decays exponentially in its
+length; TRBS \citep{fu2026duplicate} reranks beams against an index of a code corpus. Both guarantee
+something about a catalogue supplied, not about the served law relative to a safe model. We reimplemented
+TokenSwap from its Algorithm~1 with the published $110$-word $G$ on our $100$ protected passages and $850$
+ordinary prompts. It suppresses completely (recall $0.0000$, ROUGE-L $\ge 0.5$ on $0$ of $100$ and $\ge 0.3$
+on $0$, against $45$ and $69$ for the memoriser) and, judged against its own rule-off control, costs
+$-0.1040$ $[-0.1255, -0.0820]$, where selection at $n=64$ costs $-0.1655$ $[-0.2000, -0.1320]$: TokenSwap is
+ahead of selection by $+0.0615$ $[+0.0285, +0.0950]$. \textbf{The mechanism this paper is about is the most
+expensive of the three and the only one that publishes a bound on the served law.} The margin depends on
+the auxiliary: at \texttt{DistilGPT-2}, the $82$M model its authors use, the two tie ($-0.0325$
+$[-0.0645, +0.0005]$). And the suppression is fragile in a way $|G|$ does not reveal: with
+\texttt{KL3M-170m} as the auxiliary recall returns to $0.2113$, with $23$ of $100$ passages over ROUGE-L
+$0.5$, because that tokenizer keeps $171$ of $431$ $G$ token ids but $1.0\%$ of the probability mass, so the
+swap fires on $1.8\%$ of steps instead of $25$--$29\%$. All four candidate auxiliaries read $0.0000$ on the
+protected passages alone.
 
-Two qualifications, both measured rather than argued. The margin is auxiliary-dependent: at
-\texttt{DistilGPT-2}, the $82$M model \emph{their} paper uses, TokenSwap and selection tie
-($-0.0325$ $[-0.0645, +0.0005]$), and the $+0.0615$ above is at a $1.8$B auxiliary $22\times$
-larger. And the suppression is fragile in a way $G$ does not reveal: with
-\texttt{KL3M-170m} as the auxiliary, recall returns to $0.2113$ with $23$ of $100$ passages over
-ROUGE-L $0.5$, because that tokenizer keeps $171$ of $431$ $G$ token ids but only $1.0\%$ of the
-probability mass, so the swap fires on $1.8\%$ of steps instead of $25$--$29\%$. Holding the
-auxiliary fixed and shrinking $G$ by hand shows $|G|$ is not the axis: at $|G|=174$ the rule still
-suppresses at $0.0044$, and interpolating that ladder predicts \texttt{KL3M} from its firing rate
-to $0.017$ and from $|G|$ to $0.006$ --- wrong by $0.206$. A deployer who checks $G$'s size will
-not see this. The vetting requirement we said would have to come first is also discharged: all four
-candidate auxiliaries, \texttt{DistilGPT-2} included, read $0.0000$ on the protected passages
-alone. TRBS remains unmeasured --- it is a code method and porting it to prose would be our
-construction rather than theirs.
+\paragraph{The blocklist, measured.}\label{app:blocklist}
+Refusing any continuation that completes an $n$-gram of a listed work \citep{ippolito2023preventing} is the
+incumbent a deployer would otherwise run. \textbf{It refuted the argument we built it to support}: collateral
+on ordinary text does not grow with the catalogue. At $n=10$ the fraction of ordinary tokens blocked is
+$0.000\%$ at $758$ passages, $0.140\%$ at $4{,}935$ and $0.140\%$ again at $9{,}870$, where the index has
+doubled to $2.24$M $n$-grams ($0.000\%$, $0.147\%$, $0.147\%$ at $n=8$). Run as an exact rejection-sampling
+decoder against the memoriser on its own training split, it binds on $1.035\%$ of steps and takes recall
+from $0.4192$ to $0.0201$; on ordinary prompts it fires on $0$ of $850$, so its judged utility is the
+unconstrained model's exactly ($+0.272$ $[+0.247, +0.2965]$ with and without it). We predicted it would leak
+the non-literal event and it did not: $0$ of $100$ passages reach ROUGE-L $\ge 0.5$ under the rule, against
+$52$ without it. On a \emph{listed} work the blocklist costs no utility, which selection cannot approach,
+and it does not suppress more ($0.0201$ against its own $0.4192$; selection $0.0000$ against $0.3925$). The
+difference is in kind: the blocklist must enumerate the works and is silent on one nobody listed, and it
+publishes no number about the served law, so nothing about it composes across queries, where $\log n$ adds
+exactly. Selection costs $21.8\times$ a metered decode in a server that runs only the anchor
+(Appendix~\ref{app:anchoronly}); a blocklist costs a hash lookup. A deployer can run both.
 
-\paragraph{Other inference-time defences, and the level none of them certifies.}
-CP-Fuse combines models trained on disjoint shards under a balancing property \citep{abad2025cpfuse}
-and is the second mechanism we audit (Appendix~\ref{app:cpfuse}); BloomScrub certifies takedowns by Bloom-filter screening with
-abstention \citep{zhang2025bloomscrub}; SILO isolates legal risk in a nonparametric datastore
-\citep{min2024silo}; others refuse \citep{liu2024shield} or randomise the decoder
-\citep{chen2024randomization}, and for diffusion models retrieval carries a NAF guarantee
+\paragraph{CP-Fuse, measured on leakage.}\label{app:cpfuse}
+We rebuilt CP-$\Delta$/CP-$k$ fusion from \citet{abad2025cpfuse}'s description as two LoRA copies of the
+risky model, each fine-tuned on one of two disjoint halves of the protected passages and fused by the
+balancing rule. Each shard reproduces its own half (recall $0.6905$ and $0.6965$) and not the other's
+($0.0000$); the fusion reproduces neither, $0.0000$ from a single query and $0.0209$ and $0.0199$ under
+oracle-prefix windows (\texttt{results/\allowbreak cpfuse\_\allowbreak audit\_\allowbreak rebuild.csv}). A
+$50/50$ mixture without the balancing already holds single queries to $0.0295$ and $0.0000$, so most of the
+suppression is the disjoint split. An earlier build with its own fine-tunes has the same shape,
+$0.7538$ and $0.7988$ on the own shard against $0.0000$ fused
+(\texttt{results/\allowbreak cpfuse\_\allowbreak audit.csv}). The utility half was fixed in advance and withdrawn before it ran: on
+ordinary prompts CP-Fuse is the risky model with a device attached, and judged against that model a win is
+arithmetic, not evidence. Its guarantee holds per query given a split only the trainer can attest, and
+per-query access-freeness does not compose \citep{cohen2025blameless}.
+
+\paragraph{Other defences.}
+BloomScrub certifies takedowns by Bloom-filter screening with abstention \citep{zhang2025bloomscrub}; SILO
+isolates legal risk in a nonparametric datastore \citep{min2024silo}; others refuse \citep{liu2024shield} or
+randomise the decoder \citep{chen2024randomization}; for diffusion models retrieval carries a NAF guarantee
 \citep{golatkar2024cpr} in response to replication in image models \citep{somepalli2023diffusion}.
-\citet{alshehyari2026copyshield} benchmark output-, behavioural- and representation-level defences
-across two model families; the level that benchmark omits is the certified one, which is exactly where
-a low measured leakage and a vacuous certificate can coexist. The closest empirical precedent for
-Section~\ref{sec:frontier}'s accounting is VA3 \citep{li2024va3}, which amplifies a probabilistic
-copyright guarantee for text-to-image models through repeated interaction. It is the attacker's side
-of Proposition~\ref{prop:selection}: choosing among $m$ samples raises a per-sample probability $p$ to
-$1-(1-p)^m \le mp$, the factor our selection rule pays as $\log n$ and our composition bound charges
-per query (Section~\ref{sec:compose}); what composes there is a per-sample probability accumulating
-over retries, where a budget adds by construction. That a KL bound
-does not imply a worst-case event bound is itself classical
-\citep{sason2016fdivergence,vanerven2014renyi}, and the differential-privacy literature has developed
-the conversions and their costs; our contribution is not the inequality but which budgets survive the
-requirement that the certificate be informative about a specific work \emph{and} the mechanism remain
-usable. The accounting machinery we borrow is the R\'enyi filter of \citet{feldman2020renyifilter} and
-fully adaptive composition \citep{whitehouse2023fully,rogers2016odometers}; the token bucket and its
-running maximum are standard objects in queueing and network calculus
-\citep{loynes1962stability,cruz1991calculus,leboudec2001network}, which is where our second boundary
-comes from.
+\citet{alshehyari2026copyshield} benchmark output-, behavioural- and representation-level defences; the level
+their benchmark omits is the certified one, where a low measured leakage and a vacuous certificate can
+coexist. VA3 \citep{li2024va3} amplifies a probabilistic copyright guarantee for text-to-image models through
+repeated interaction: choosing among $m$ samples raises a per-sample probability $p$ to $1-(1-p)^m \le mp$,
+the attacker's side of Proposition~\ref{prop:selection}.
 
-\paragraph{The incumbent that publishes no number, measured.}\label{app:blocklist}
-The alternative a deployer would otherwise run is not another budget, it is a blocklist: refuse any
-continuation matching an $n$-gram of a listed work \citep{ippolito2023preventing}, the rule CoTaEval
-\citep{wei2024cotaeval} benchmarks alongside unlearning and system-prompt defences. It is outside
-this paper's class because it certifies nothing about the served law, but declining to compare
-against it because of that would be convenient rather than honest, so we measured it.
-\texttt{analysis/\allowbreak blocklist.py} applies the rule to generations already on disk, at
-$n \in \{6, 8, 10\}$ and at three catalogue sizes: the sixteen novels of the main workload
-($758$ passages), the fifty BookMIA books marked seen ($4{,}935$), and all one hundred ($9{,}870$).
-
-\textbf{It refuted the argument it was built to support.} We expected collateral damage to ordinary
-text to grow with the catalogue, so that a blocklist covering a realistic one would begin refusing
-ordinary continuations --- the standard objection to the method, and a convenient one for us. It is
-wrong. At $n=10$ the fraction of ordinary tokens blocked runs $0.000\%$ at $758$ passages to
-$0.140\%$ at $4{,}935$ and then stops: $0.140\%$ again at $9{,}870$, where the index has doubled to
-$2.24$M $n$-grams. At $n=8$ it is $0.000\%$, $0.147\%$, $0.147\%$, the same flattening. A
-blocklist's collateral is \emph{bounded}, and the claim that it scales with the catalogue is
-withdrawn.
-
-\textbf{Run as a decoder, it is stronger still, and a second prediction of ours failed.}
-Applying the rule to finished text measures what it would have rewritten; the incumbent
-\emph{changes what is served}, so \texttt{analysis/\allowbreak blocklist\_\allowbreak decode.py}
-implements it as exact rejection sampling --- draw, test the last $n$ words, mask and redraw ---
-which is the same distribution restricted to the allowed set, with the mask off as the control.
-Against the LoRA memoriser on its own training split ($100$ passages, $10$-grams), the rule bound
-$1.035\%$ of decode steps and took near-verbatim recall from $0.4192$ to $0.0201$ and \texttt{lcs\_word}
-from $73.89$ to $7.86$. On ordinary prompts it fired on \textbf{$0$ of $850$} and the served text
-was byte-identical to the control on all $850$, so its judged utility is the unconstrained model's
-exactly: $+0.272$ $[+0.247, +0.2965]$ with the rule and $+0.272$ with it off. \textbf{Zero cost,
-near-total suppression.} We registered a prediction that it would leak the \emph{non-literal} event
---- one substitution in ten completes no listed $n$-gram while the text stays a near copy, and
-\texttt{tests/\allowbreak test\_\allowbreak blocklist\_\allowbreak decode.py} constructs exactly
-that string --- and it is refuted: $0$ of $100$ passages reach ROUGE-L $\ge 0.5$ under the rule,
-against $52$ without it. A non-adaptive memoriser does not find the path, so we claim the threat
-and not a measurement of it.
-
-This is a stronger incumbent than we implied by not measuring it. The honest summary is narrower
-than ``it wins'', and we state it precisely because the tempting overcorrection is also false: on a
-\emph{listed} work the blocklist costs \textbf{no utility at all}, which selection cannot approach,
-and it does \textbf{not} suppress more --- under the same $20$-token seed protocol on the same
-corpus, selection reads $0.0000$ near-verbatim recall at every $n \le 64$ against its own $k=-1$ of
-$0.3925$, and the blocklist $0.0201$ against its own $0.4192$. What is left is a difference in kind, stated narrowly. The blocklist requires the deployer to
-\emph{enumerate} the works; selection requires a safe model trained without them, and neither
-premise dominates. The blocklist is silent on a work nobody listed, which is the case the
-certificate covers. And it publishes no number about how far the served law has moved, so nothing
-about it composes across queries, where $\log n$ adds exactly (Appendix~\ref{app:compose}).
-Against that, selection costs $35.4\times$ the wall-clock as a ratio of totals, $67.2\times$ per
-served request in our harness and $21.8\times$ in a server that runs only the anchor
-(Appendix~\ref{app:anchoronly}), where a blocklist costs a hash lookup.
-They are complements, not competitors: nothing stops a deployer running both, and a deployer who
-runs only one should know which of the two questions it has answered.
-
-\paragraph{CP-Fuse, measured on leakage and deliberately not on utility.}\label{app:cpfuse}
-We rebuilt CP-$\Delta$/CP-$k$ fusion from
-\citet{abad2025cpfuse}'s description --- not their code --- as two LoRA copies of the risky model,
-each fine-tuned on one of two disjoint halves of the protected passages and fused at every step by
-the balancing rule, and ran this paper's extraction protocol on $60$ passages. Each shard model
-reproduces its own half, near-verbatim recall $0.6905$ and $0.6965$, and not the other's,
-$0.0000$; the fusion reproduces neither, $0.0000$ on both halves from a single query and $0.0209$
-and $0.0199$ under the oracle-prefix windows that lift anchored decoding
-(\texttt{results/\allowbreak cpfuse\_\allowbreak audit\_\allowbreak rebuild.csv}). A plain $50/50$
-mixture with the balancing switched off already holds single queries to $0.0295$ and $0.0000$, so
-most of the suppression is the disjoint split and the balancing supplies the rest. An earlier build
-with its own fine-tunes has the same shape, $0.7538$ and $0.7988$ on the own shard against $0.0000$
-fused (\texttt{results/\allowbreak cpfuse\_\allowbreak audit.csv}).
-
-The utility half was fixed in advance and withdrawn before it ran, and we record why rather than
-drop it. On ordinary prompts CP-Fuse is the risky model with a safety device attached, and so is the
-blocklist decoder above, whose judged utility is the unconstrained model's exactly: every arm here
-is judged against that model, so a judged win for a second such device is arithmetic, not evidence.
-What separates the mechanisms is the guarantee. CP-Fuse's holds per query, given a split that only
-the trainer can attest, and per-query access-freeness does not compose \citep{cohen2025blameless};
-selection needs one named safe model and its max-divergence adds exactly across queries
-(Appendix~\ref{app:compose}). Neither is a statement about which serves better text, and no CP-Fuse
-number is converted into nats.
-
-\paragraph{Self-consistency, and why it is the instance that matters.}
-The cheapest instance of Proposition~\ref{prop:selection} is one nobody proposed for this purpose.
-Self-consistency \citep{wang2023selfconsistency} samples $n$ reasoning paths and serves the majority
-answer; a mode is a score, and the proposition assumes nothing whatever about the score, so
-self-consistency satisfies $q(y) \le n\,p_s(y)$ and carries a pathwise certificate of exactly
-$\log n$ against the model it samples from. That matters for three reasons. It is, as far as we can
-tell, the most widely deployed inference-time decoding method in the field --- but as deployed it
-samples web-trained models, relative to which $\log n$ certifies nothing about copyright, so the
-property becomes a guarantee only once the model sampled is a safe one. It needs no reward model, which is where the
-serving cost of the judged instance sits, and on a task with a checkable answer it beats every reward
-cell we priced (Appendix~\ref{app:scorerfree}). And it is the sharpest form of our novelty claim: the
-literature on best-of-$n$ prices $\log n$ as a \emph{cost} --- the budget spent before reward
-overoptimisation \citep{gao2023scaling,beirami2025bestofn}, or the one an attacker spends to jailbreak
-\citep{hughes2024bestofn} --- and the same inequality read in the other direction is a copyright
-guarantee that a user running the method over a safe model already has and nobody has claimed. What we add is the reading, the
-comparison against a metered decoder on one divergence axis, and the measurement; the mechanism is
-theirs.
+\paragraph{Self-consistency.}
+Self-consistency \citep{wang2023selfconsistency} serves the majority answer over $n$ sampled paths; a mode
+is a score, so it satisfies $q(y) \le n\,p_s(y)$ and carries a pathwise certificate of exactly $\log n$
+against the model it samples. As deployed it samples web-trained models, relative to which $\log n$
+certifies nothing about copyright; over a safe model the same inequality is a copyright guarantee its users
+already have. The best-of-$n$ literature prices $\log n$ as a \emph{cost}, the budget spent before reward
+overoptimisation \citep{gao2023scaling,beirami2025bestofn} or the one an attacker spends to jailbreak
+\citep{hughes2024bestofn}; we read it as a guarantee, compare it with a metered decoder on one divergence
+axis, and measure it. The mechanism is theirs.

@@ -12,13 +12,28 @@ and a reader would have met 4.2% and 4.3% for one quantity."""
 import csv
 import re
 
-from tests.manuscript import tex
+from tests.manuscript import caption_of, tex
 
 ROWS = {r["k"]: r for r in csv.DictReader(open("results/utility_price.csv"))}
 IMIT = {(r["prompt_class"], r["k"]): r
         for r in csv.DictReader(open("results/imitation_cost.csv"))}
 TEX = tex("sections/frontier.tex")
-APX = tex("sections/appendix_proofs.tex")
+# v10 (2026-09-24): the measurements of Proposition~\ref{prop:imitation} moved from the proofs
+# appendix to Appendix G (appendix_onset.tex); the proofs appendix keeps the restatements.
+APX = tex("sections/appendix_onset.tex")
+PRF = tex("sections/appendix_proofs.tex")
+
+
+def _norm(path):
+    return " ".join(open(path, encoding="utf-8").read().split())
+
+
+def _imitation_rows():
+    """Cells of Table~\\ref{tab:imitation}, one list per budget, $ stripped."""
+    t = _norm(APX)
+    i = t.index(r"\label{tab:imitation}")
+    body = t[t.index(r"\midrule", i) + len(r"\midrule"): t.index(r"\bottomrule", i)]
+    return [[c.strip().strip("$") for c in r.split("&")] for r in body.split("\\\\") if r.strip()]
 
 
 def test_the_spend_saturates_while_the_cap_keeps_doubling():
@@ -34,13 +49,15 @@ def test_the_spend_saturates_while_the_cap_keeps_doubling():
 
 
 def test_the_manuscript_quotes_the_saturated_spend_and_the_unused_allowance():
-    body = open(TEX, encoding="utf-8").read().replace("\n", " ")
+    # v10: "... and spends $171.3$ nats, $4.3\%$ of the $4000$ it certifies at $k=20$" (v9: "stalls
+    # at $171.30$ nats, $4.3\%$ of the allowance"); the cap is now printed too, so it is checked.
+    body = _norm(TEX)
     sat = float(ROWS["20.0"]["mean_spend_nats"])
     frac = 100 * sat / float(ROWS["20.0"]["budget_K"])
-    m = re.search(r"stalls at \$([\d.]+)\$ nats", body)
+    m = re.search(r"spends \$([\d.]+)\$ nats, \$([\d.]+)\\%\$ of the \$(\d+)\$ it certifies", body)
     assert m and float(m.group(1)) == round(sat, 2), (m.group(1) if m else None, sat)
-    m = re.search(r"\$([\d.]+)\\%\$ of the allowance", body)
-    assert m and abs(float(m.group(1)) - frac) < 0.05, (m.group(1) if m else None, frac)
+    assert abs(float(m.group(2)) - frac) < 0.05, (m.group(2), frac)
+    assert float(m.group(3)) == float(ROWS["20.0"]["budget_K"]), (m.group(3), ROWS["20.0"]["budget_K"])
 
 
 def test_the_two_csvs_describe_the_same_arm():
@@ -55,8 +72,9 @@ def test_the_two_csvs_describe_the_same_arm():
 
 def test_the_binding_fraction_the_proposition_leans_on_is_measured():
     """beta is measured, not assumed, and the body quotes it at the two ends and at k=3."""
-    body = open(TEX, encoding="utf-8").read().replace("\n", " ")
-    m = re.search(r"\$\\beta\$ falls from \$([\d.]+)\$ at \$k=([\d.]+)\$ to \$([\d.]+)\$ at\s*"
+    # v10 names beta in words: "the share of steps at which it binds falls from ..."
+    body = _norm(TEX)
+    m = re.search(r"(?:\$\\beta\$|binds) falls from \$([\d.]+)\$ at \$k=([\d.]+)\$ to \$([\d.]+)\$ at\s*"
                   r"\$k=(\d+)\$ and \$([\d.]+)\$ at \$k=(\d+)\$", body)
     assert m, "the beta sentence has moved"
     lo_b, lo_k, mid_b, mid_k, hi_b, hi_k = m.groups()
@@ -67,8 +85,9 @@ def test_the_binding_fraction_the_proposition_leans_on_is_measured():
 
 
 def test_the_saturated_imitation_rate_in_the_body_comes_from_the_per_step_scan():
-    body = open(TEX, encoding="utf-8").read().replace("\n", " ")
-    m = re.search(r"saturates at \$([\d.]+)\$ nats per token", body)
+    # v10: "past the imitation rate of $0.857$ nats per token" (v9: "saturates at $0.857$ ...")
+    body = _norm(TEX)
+    m = re.search(r"(?:saturates at|imitation rate of) \$([\d.]+)\$ nats per token", body)
     rate = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
     assert m and abs(float(m.group(1)) - rate) < 5e-4, (m.group(1) if m else None, rate)
     # saturation means the last two budgets agree while the cap doubles
@@ -113,45 +132,54 @@ def test_the_protected_passages_are_charged_a_higher_rate_than_ordinary_prompts(
     o = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
     p = float(IMIT[("protected", "20")]["imitation_rate_nats_per_token"])
     assert p > o, (o, p)
-    apx = open(APX, encoding="utf-8").read().replace("\n", " ")
-    m = re.search(r"same rate is higher, \$([\d.]+)\$ nats per token", apx)
+    apx = _norm(APX)
+    # v10: "On the $3{,}300$ protected-passage trajectories the rate is higher, $0.911$ ..."
+    m = re.search(r"(?:same )?rate is higher, \$([\d.]+)\$ nats per token", apx)
     assert m and abs(float(m.group(1)) - p) < 5e-4, (m.group(1) if m else None, p)
 
 
 def test_the_running_spend_is_linear_in_the_step_index_at_every_budget():
+    """v10 moved the linearity claim out of Section 3's prose and into Table~\\ref{tab:imitation}'s
+    last column (caution (al): a number that moves into a table takes its guard with it). So the
+    table must carry EVERY ordinary budget, each with the median R^2 the CSV holds."""
     for (cls, k), r in IMIT.items():
         assert float(r["median_cum_spend_vs_step_r2"]) > 0.9, (cls, k, r)
-    body = open(TEX, encoding="utf-8").read().replace("\n", " ")
-    m = re.search(r"linear in the step index at every budget \(median \$R\^2 \\ge ([\d.]+)\$\)", body)
-    assert m, "the linearity claim has moved"
-    # the sentence is about the ordinary-prompt arms it quotes beta and the rate from; the
-    # protected arms are weaker at the smallest budget (0.93) and are reported separately.
-    worst = min(float(r["median_cum_spend_vs_step_r2"])
-                for (cls, _), r in IMIT.items() if cls == "ordinary")
-    assert round(worst, 2) >= float(m.group(1)), (worst, m.group(1))
+    ordinary = {k: r for (cls, k), r in IMIT.items() if cls == "ordinary"}
+    rows = _imitation_rows()
+    assert sorted(float(r[0]) for r in rows) == sorted(float(k) for k in ordinary), \
+        "the table no longer reports every budget the claim is about"
+    for r in rows:
+        want = float(next(v for k, v in ordinary.items() if float(k) == float(r[0]))
+                     ["median_cum_spend_vs_step_r2"])
+        assert r[-1] == f"{want:.4f}", (r, want)
+    assert "step index" in caption_of("tab:imitation"), "the caption no longer says what R^2 regresses"
 
 
 def test_the_sparsity_proposition_is_stated_and_its_one_number_is_measured():
     """Proposition 5 narrows what the paper used to call open: a causal policy on a budget that
     does not grow with the work MUST be the anchor almost everywhere. Its only empirical claim is
     the contrast -- the deployed rule serves p_r unchanged at 99.95% of steps at k=20."""
-    apx = open(APX, encoding="utf-8").read()
+    apx = open(PRF, encoding="utf-8").read()
     # The label belongs to the main-text statement and MUST NOT also be set here: it was declared
     # in both places until 2026-09-14, so every \ref{prop:sparse} in the paper resolved to this
     # restatement's number rather than the proposition it names. The appendix restates and proves
     # it without a counter, so what is checked here is the restatement and the bound.
     assert r"\label{prop:sparse}" in open(tex("sections/frontier.tex"), encoding="utf-8").read(), \
         "the proposition is no longer stated in the body"
-    assert r"\label{prop:sparse}" not in apx, "the duplicate label is back"
+    for f in (PRF, APX):
+        assert r"\label{prop:sparse}" not in open(f, encoding="utf-8").read(), "the duplicate label is back"
     assert r"Proposition~\ref{prop:sparse}, restated" in apx, "the appendix no longer restates it"
     assert r"\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon" in apx, "the bound has changed"
     beta = float(IMIT[("ordinary", "20")]["beta_binding_frac"])
     # Once post-EOS padding stops being counted as steps forced to the anchor, beta at k=20 is
-    # 0.0000 and the appendix says so as a beta rather than as a percentage.
+    # 0.0000 and the appendix says so as a beta rather than as a percentage. v10 moved the contrast
+    # to Appendix G: the sentence, and beta in Table~\ref{tab:imitation}'s k=20 row.
     assert beta == 0.0, beta
-    apx1 = apx.replace("\n", " ")
-    assert "unchanged at every step it takes ($\\beta = 0.0000$)" in apx1, \
-        "the sparsity contrast no longer quotes beta at k=20"
+    apx1 = _norm(APX)
+    assert "At $k=20$ the decoder serves $p_{r,t}$ unchanged at every step" in apx1, \
+        "the sparsity contrast left the appendix"
+    r20 = next(r for r in _imitation_rows() if r[0] == "20")
+    assert r20[2] == f"{beta:.4f}", ("the table no longer quotes beta at k=20", r20)
 
 
 def test_the_limitations_no_longer_call_the_shape_question_open():
@@ -174,14 +202,20 @@ def test_the_appendix_prose_carries_the_imitation_rate_and_both_shapes():
     tests/test_figure_shrink.py checks those; what this guards is that neither shape left the paper
     with the picture.
     """
-    apx = open(APX, encoding="utf-8").read().replace("\n", " ")
+    apx = _norm(APX)
     sat = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
     m = re.search(r"(?:imitation rate|realised rate stops at) \$([\d.]+)\$ nats per token", apx)
     assert m and abs(float(m.group(1)) - sat) < 5e-4, (m.group(1) if m else None, sat)
-    # the second shape: the spend is spread, not concentrated, which is the trivial horn's evidence
-    assert "busiest" in apx and "of the sequence" in apx, \
-        "the concentration shape left the paper with the figure"
-    assert "nowhere near the left axis" in apx, \
+    # the second shape: the spend is spread, not concentrated, which is the trivial horn's evidence.
+    # v10 says "spread, not concentrated" where v9 said "nowhere near the left axis"; its two
+    # numbers are now checked against the CSV's k=20 row as well as present.
+    r20 = IMIT[("ordinary", "20")]
+    top = 100 * float(r20["top1pct_of_steps_share_of_spend"])
+    f90 = 100 * float(r20["frac_of_steps_for_90pct_of_spend"])
+    assert f"busiest $1\\%$ of steps carry ${top:.1f}\\%$" in apx, \
+        ("the concentration shape left the paper with the figure", top)
+    assert f"covering $90\\%$ takes ${f90:.0f}\\%$ of the sequence" in apx, f90
+    assert "spread, not concentrated" in apx or "nowhere near the left axis" in apx, \
         "the prose no longer says the deployed rule misses the shape Prop 3 requires"
 
 def test_the_lorenz_curves_end_at_one_and_lie_above_the_diagonal():
@@ -286,11 +320,15 @@ def test_the_linearity_claim_is_scoped_by_the_trajectory_count_it_quotes():
             by[r["prompt_class"]].append(
                 (float(r["median_cum_spend_vs_step_r2"]), int(r["n_trajectories"])))
 
-    txt = body("frontier.tex")
-    assert "median $R^2 \\ge 0.97$" in txt, "the linearity qualifier was trimmed"
+    # v10: the claim is Table~\ref{tab:imitation}'s R^2 column, scoped by its caption's count
+    # ("$16{,}500$ logged trajectories"); the prose qualifier "median R^2 >= 0.97" became the
+    # printed values, so the bar is checked on what the table prints.
+    txt = caption_of("tab:imitation")
+    printed = [float(r[-1]) for r in _imitation_rows()]
+    assert printed and min(printed) >= 0.97, ("the linearity column no longer clears 0.97", printed)
     quoted = {c: sum(n for _r, n in v) for c, v in by.items()}
     assert f"${quoted['ordinary']:,}".replace(",", "{,}") + "$ logged trajectories" in txt, \
-        ("the prose no longer quotes the ordinary class's trajectory count, which is what scopes "
+        ("the caption no longer quotes the ordinary class's trajectory count, which is what scopes "
          "'at every budget'", quoted)
     assert min(r for r, _n in by["ordinary"]) >= 0.97, by["ordinary"]
     # and the scope is load-bearing: the other class does NOT clear the bar

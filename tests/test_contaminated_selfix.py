@@ -145,5 +145,13 @@ def test_the_extraction_tables_substring_row_is_the_corrected_selectors():
                                         encoding="utf-8")))
         assert max(float(r["anchor_max_recall"]) for r in rows) == 0.0, f
         assert max(float(r["anchor_max_rouge"]) for r in rows) < 0.5, f
-    cap = apx[apx.rfind("\\caption{", 0, apx.index("\\label{tab:extraction}")):apx.index("\\label{tab:extraction}")]
-    assert "It is the only row the selector can move" in " ".join(cap.split())
+    # v10 (2026-09-24): the caption's "It is the only row the selector can move" became the sentence
+    # that licenses it, in the paragraph introducing the table -- no draw in either pool reaches
+    # recall above zero or ROUGE-L 0.5, "whichever one is served" (the pools' maxima are checked
+    # above) -- and the defective selector is disclosed once, where the contaminated arm needs it.
+    flat = " ".join(apx.split())
+    para = flat[flat.index("\\paragraph{An adversarial selector.}"):flat.index("\\label{tab:extraction}")]
+    assert ("No draw in any pool reaches near-verbatim recall above zero or ROUGE-L $0.5$, "
+            "whichever one is served") in para, "the reason the other rows cannot move is gone"
+    assert "right-padded ranked partly on padding, and no number from it is quoted" in flat, \
+        "the defective selector is no longer disclosed"

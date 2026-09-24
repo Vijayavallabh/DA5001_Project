@@ -419,7 +419,7 @@ def selection_frontier():
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, TOP)
     axL.set_xlabel("length of the work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
-    axL.set_title("(a) $kT$ grows with the work; $\\log n$ does not",
+    axL.set_title("(c) $kT$ grows with the work; $\\log n$ does not",
                   fontsize=7.6 * F, loc="left")
 
     # Panel (b) is ONE pass family (feat-186, results/frontier_levels.csv): every arm judged by
@@ -491,7 +491,7 @@ def selection_frontier():
     # longer run into each other at \textwidth (a referee saw them collide).
     ax.set_xlabel("nats from the anchor (bound / spent)")
     ax.set_ylabel("level vs. the risky model")
-    ax.set_title("(b) what a nat buys, one judge, one opponent", fontsize=7.6 * F, loc="left")
+    ax.set_title("(d) what a nat buys, one judge, one opponent", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
     # at readable type sizes the long three-line legend was as wide as the axes and sat on the
     # n=64 point whichever corner it was pinned to. The swept variable is on the curve labels.
@@ -1064,7 +1064,11 @@ def judge_free():
     axes[0].set_ylabel("exact match")
     axes[0].set_title("(a) GSM8K", fontsize=7.6)
     axes[1].set_title("(b) TriviaQA", fontsize=7.6)
-    axes[0].legend(loc="lower right", fontsize=6.2, frameon=False)
+    # caution (ad): at "lower right" both curves ran through the legend text (seen on the rendered
+    # page, 2026-09-24). Upper left, under the risky model's rule, is empty at every n <= 8.
+    axes[0].legend(loc="upper left", bbox_to_anchor=(0.0, 0.84), fontsize=6.2, frameon=True,
+                   framealpha=1.0, facecolor="white", edgecolor="none", handletextpad=0.4,
+                   borderpad=0.15, labelspacing=0.2)
 
     # (c) the two mechanisms on one objective axis, one shared anchor, no judge anywhere.
     sel, met, base = judge_free_metered_rows()
@@ -1082,12 +1086,14 @@ def judge_free():
                 xy=(k20[0], k20[1]), xytext=(0.26, 0.58), textcoords="axes fraction",
                 fontsize=6.4, color="0.15", ha="left", va="top",
                 arrowprops=dict(arrowstyle="-", lw=0.6, color="0.45"))
-    cx.annotate("anchor alone", xy=(0.02, base["anchor"]), xycoords=("axes fraction", "data"),
-                fontsize=6.2, color="0.35", va="bottom",
-                bbox=dict(fc="white", ec="none", pad=0.6))
+    # lower right, under the rule: at the left the label's box hid the k=0.5 arm, which spends
+    # 0.0109 nats and sits on the anchor's line (seen on the rendered page, 2026-09-24)
+    cx.annotate("anchor alone", xy=(0.98, base["anchor"]), xycoords=("axes fraction", "data"),
+                xytext=(0, -1.5), textcoords="offset points",
+                fontsize=6.2, color="0.35", ha="right", va="top")
     cx.set_xscale("log")
     cx.set_xlabel("nats from the anchor (bound / spent)")
-    cx.set_ylim(base["anchor"] - 0.05, top + 0.30)
+    cx.set_ylim(base["anchor"] - 0.085, top + 0.30)
     cx.grid(alpha=0.22, lw=0.5)
     cx.set_title("(c) both mechanisms, one anchor", fontsize=7.6)
     # caution (ad): a legend pinned inside a small axes collides with the data. Here the risky
@@ -1096,6 +1102,162 @@ def judge_free():
     cx.legend(loc="upper left", fontsize=6.4, frameon=True, framealpha=1.0, facecolor="white",
               edgecolor="none", handletextpad=0.4, borderpad=0.15, labelspacing=0.2)
     _save(fig, "judge_free")
+
+
+# --------------------------------------------------------------------------------------------
+# v10 (2026-09-24): the restructure around the contribution. Two main-text figures, each with its
+# rows split from its drawing so a test reads what is plotted (caution (al)).
+
+
+def meter_horns_rows():
+    """(pairs, (lo, hi), imit): per onset pair (name, s(x), [(k/s(x), recall)]); the range of the
+    nine onset ratios in results/onset_table.csv; and per budget the metered decoder's
+    (k, realised rate, imitation rate, spend, K) on ordinary traffic (results/imitation_cost.csv)."""
+    import statistics as _st
+    from analysis.onset import curve, load_pairs
+    pairs = []
+    for name, comp, per in load_pairs(str(RESULTS / "onset_pairs.tsv")):
+        if not (REPO / comp).exists():
+            raise FileNotFoundError(REPO / comp)
+        sx = _st.median(float(r["s_mean"]) for r in csv.DictReader(open(REPO / per)))
+        c = curve(str(REPO / comp), "single", 0)
+        pairs.append((name, sx, [(k / sx, c[k]) for k in sorted(c)]))
+    ratios = [float(r["ratio"]) for r in csv.DictReader(open(RESULTS / "onset_table.csv"))
+              if not r["pair"].startswith("ALL")]
+    imit = [(float(r["k"]), float(r["realised_rate_nats_per_token"]),
+             float(r["imitation_rate_nats_per_token"]), float(r["spend_nats"]), float(r["budget_K"]))
+            for r in csv.DictReader(open(RESULTS / "imitation_cost.csv"))
+            if r["prompt_class"] == "ordinary"]
+    assert len(pairs) == len(ratios) == 9 and imit, (len(pairs), len(ratios))
+    return pairs, (min(ratios), max(ratios)), sorted(imit)
+
+
+def meter_horns():
+    """Figure 2: both horns of Proposition 3, measured on the deployed meter. (a) Extraction begins
+    where Proposition 2 says the certificate stops saying anything. (b) Where the budget is large
+    enough to buy anything, the meter spends the imitation rate and the rest of the cap is unused."""
+    pairs, (r_lo, r_hi), imit = meter_horns_rows()
+    fig, (ax, bx) = plt.subplots(1, 2, figsize=(5.98, 1.92))
+    fig.subplots_adjust(left=0.085, right=0.99, bottom=0.215, top=0.885, wspace=0.27)
+    ax.axvspan(r_lo, r_hi, color="#c1443c", alpha=0.12, lw=0, zorder=0)
+    for name, sx, pts in pairs:
+        ax.plot([x for x, _ in pts], [y for _, y in pts], "-", color="#2f4f6f", lw=1.0,
+                alpha=0.75, marker="o", ms=2.2, zorder=2)
+    ax.axvline(1.0, color="0.2", lw=1.0, ls="--", zorder=3)
+    ax.annotate(f"nine onsets:\n{r_lo:.2f} to {r_hi:.2f}", xy=(r_hi, 0.205), xytext=(1.24, 0.215),
+                fontsize=6.6, color="#8c3230", va="top")
+    ax.annotate("$k = s(x)$: certificate\nvacuous for $x$", xy=(1.0, 0.16), xytext=(0.43, 0.215),
+                fontsize=6.6, color="0.15", va="top")
+    ax.set_xlim(0.4, 2.45)
+    ax.set_ylim(-0.005, 0.26)
+    ax.set_xlabel("budget in units of the work's surprisal rate, $k/s(x)$", fontsize=7.4)
+    ax.set_ylabel("near-verbatim recall", fontsize=7.4)
+    ax.set_title("(a) leakage begins at $k \\approx s(x)$, nine pairs", fontsize=7.6, loc="left")
+
+    ks = [k for k, *_ in imit]
+    bx.plot(ks, ks, color="0.55", lw=1.1, ls="--", label="cap $k$ (certified)")
+    bx.plot(ks, [r for _, r, *_ in imit], "o-", color="#c1443c", lw=1.5, ms=3.2,
+            label="spend per token (measured)")
+    sat = imit[-1][2]
+    bx.axhline(sat, color="#2f6f9f", lw=1.0, ls=":")
+    bx.annotate(f"imitation rate {sat:.3f}", xy=(0.105, sat), xytext=(0.105, sat * 1.4),
+                fontsize=6.6, color="#2f6f9f")
+    kk, _, _, spend, K = imit[-1]
+    bx.annotate(f"$k={kk:g}$: spends {spend:.1f}\nof {K:.0f} nats", xy=(kk, sat),
+                xytext=(2.2, 0.075), fontsize=6.6, color="0.15",
+                arrowprops=dict(arrowstyle="-", lw=0.6, color="0.45"))
+    bx.set_xscale("log"); bx.set_yscale("log")
+    bx.set_ylim(0.03, 30)
+    bx.set_xlabel("budget $k$, nats per token", fontsize=7.4)
+    bx.set_ylabel("nats per token", fontsize=7.4)
+    bx.set_title("(b) the meter spends its imitation rate, not its cap", fontsize=7.6, loc="left")
+    bx.legend(frameon=True, framealpha=1.0, edgecolor="none", loc="upper left", fontsize=6.6)
+    for a_ in (ax, bx):
+        a_.tick_params(labelsize=7)
+        a_.grid(alpha=0.22, lw=0.5)
+    _save(fig, "meter_horns")
+
+
+def h2h_forest_rows():
+    """Rows of the head-to-head robustness figure, every one on the repaired text (caution (bc)):
+    (group, label, (D3, lo95, hi95)), D3 = selection's order-averaged gain at n = 64 minus the
+    meter's at k = 10 unless the label names another budget, paired over prompts, read from
+    results/*.csv only."""
+    def d3(name):
+        r = next(x for x in csv.DictReader(open(RESULTS / name)) if x["quantity"].startswith("D3"))
+        return float(r["value"]), float(r["lo95"]), float(r["hi95"])
+    rj = {(r["pass"], r["judge"].split()[0]): (float(r["value_deecho"]), float(r["lo"]), float(r["hi"]))
+          for r in csv.DictReader(open(RESULTS / "deecho_rejudge.csv")) if r["quantity"].startswith("D3")}
+    lc = {r["quantity"]: (float(r["value"]), float(r["lo95"]), float(r["hi95"]))
+          for r in csv.DictReader(open(RESULTS / "h2h_length_control.csv")) if r["lo95"]}
+    G1, G2, G3 = "fresh draws, judge B", "same texts, other judges", "post-hoc controls, judge B"
+    G4, G5 = "stronger fixed opponents, judge B", "other workloads, binding budget, judge B"
+    rows = [("headline", "headline: judge B, 500 prompts", d3("order_averaged_h2h_deecho.csv")),
+            (G1, "selection re-drawn, seeds 52-54", d3("order_averaged_h2h_seed52_deecho.csv")),
+            (G1, "every arm re-drawn, seeds 82-84", d3("order_averaged_h2h_replic_opp.csv")),
+            (G1, "same, committed opponent", d3("order_averaged_h2h_replic.csv")),
+            (G2, "C: Llama-3.1-8B (the opponent)", rj[("ladder opp Llama-3.1-8B", "C")]),
+            (G2, "D: Qwen2.5-72B", rj[("panel k=10", "D")]),
+            (G2, "E: Mixtral-8x7B", rj[("panel k=10", "E")]),
+            (G2, "F: Qwen2.5-14B", rj[("panel k=10", "F")]),
+            (G2, "G: gemma-2-27b", rj[("panel k=10", "G")]),
+            (G3, "length-controlled", lc["D3, length-controlled"]),
+            (G3, "both anchor controls non-empty (414)",
+             lc["D3 on prompts whose two anchor controls are non-empty"]),
+            (G4, "Qwen2.5-0.5B-Instruct", rj[("ladder opp Qwen2.5-0.5B", "B")]),
+            (G4, "Qwen2.5-1.5B-Instruct", rj[("ladder opp Qwen2.5-1.5B", "B")]),
+            (G4, "Qwen2.5-3B-Instruct", rj[("ladder opp Qwen2.5-3B", "B")]),
+            (G4, "Qwen2.5-14B-Instruct", rj[("ladder opp Qwen2.5-14B", "B")]),
+            (G5, "ours, 850 prompts, $k=0.9$", rj[("workload ours (Arm C) k=0.9", "B")]),
+            (G5, "public-domain books, $k=0.9$", rj[("workload Gutenberg k=0.9", "B")]),
+            (G5, "BookMIA unseen books, $k=1$", rj[("workload unseen books k=1.0", "B")]),
+            (G5, "CoTaEval NewsQA, $k=1.4$", rj[("workload CoTaEval-QA k=1.4", "B")]),
+            (G5, "MT-Bench-80, $k=1$", rj[("workload MT-Bench k=1.0", "B")]),
+            (G5, "AlpacaEval-805, $k=1$", rj[("workload AlpacaEval k=1", "B")])]
+    return rows
+
+
+def h2h_forest():
+    """Figure 3: the head-to-head difference under every perturbation run, one row each."""
+    rows = h2h_forest_rows()
+    slots, y, prev = [], 0.0, None
+    for i, (g, *_rest) in enumerate(rows):
+        if g != prev and g != "headline":
+            y -= 1.0
+            slots.append(("head", y, g))
+            y -= 0.12
+        prev = g
+        y -= 1.0
+        slots.append(("row", y, i))
+    fig, ax = plt.subplots(figsize=(5.98, 3.05))
+    fig.subplots_adjust(left=0.33, right=0.77, bottom=0.085, top=0.995)
+    gut = ax.get_yaxis_transform()
+    for kind, yy, payload in slots:
+        if kind == "head":
+            ax.axhline(yy + 0.6, color="#cccccc", lw=0.6, zorder=0)
+            ax.text(-0.02, yy, payload, ha="right", va="center", fontsize=6.6, style="italic",
+                    color="#555555", transform=gut)
+            continue
+        g, label, (v, lo, hi) = rows[payload]
+        col = "#1f4e79" if lo > 0 else ("#b02318" if hi < 0 else "#7a7a7a")
+        ax.plot([lo, hi], [yy, yy], color=col, lw=1.3, solid_capstyle="butt", zorder=2)
+        ax.plot([v], [yy], marker="D" if g == "headline" else "o", ms=4.2, color=col, zorder=3)
+        ax.text(-0.02, yy, label, ha="right", va="center", fontsize=6.9, transform=gut,
+                weight="bold" if g == "headline" else "normal")
+        ax.text(1.02, yy, f"{v:+.4f} [{lo:+.4f}, {hi:+.4f}]".replace("-", "\u2212"), ha="left", va="center",
+                fontsize=6.4, transform=gut, color=col)
+    ax.axvline(0, color="black", lw=0.8, ls=(0, (4, 3)), zorder=1)
+    ax.set_ylim(y - 0.7, 0.3)
+    ax.set_xlim(-0.09, 0.17)
+    ax.set_yticks([])
+    ax.set_xlabel("selection ($n=64$) minus the metered decoder: difference of gains, 95% CI",
+                  fontsize=7.2)
+    ax.tick_params(axis="x", labelsize=6.9)
+    for side in ("left", "right", "top"):
+        ax.spines[side].set_visible(False)
+    ax.grid(axis="x", alpha=0.18, lw=0.5)
+    ax.set_axisbelow(True)
+    _save(fig, "h2h_forest")
 
 
 def main():
@@ -1109,7 +1271,7 @@ def main():
     figures = (frontier_scaling, opening_effect, order_invariance, onset_collapse, seed_effect,
                context_intervention, selection_frontier, selection_breadth_forest,
                units_law, order_no_collapse, imitation_cost,
-               safety_envelope, judge_free)
+               safety_envelope, judge_free, meter_horns, h2h_forest)
     for fn in figures:
         try:
             fn()

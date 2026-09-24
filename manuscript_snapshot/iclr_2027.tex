@@ -1,19 +1,15 @@
-% ICLR 2027 submission -- plan v4, branch iclr-2027. Started 2026-09-07.
-% NOT a reformat of satml_2027.tex: that paper audits one mechanism, this one states a frontier
-% theorem for the class of bucket-metered decoders and carries the audit as a validation section.
+% ICLR 2027 submission, branch iclr-2027.
+% v10 (2026-09-24): rebuilt around the contribution and made figure- and table-driven at the user's
+% request ("lead with the breakthrough ... cut text without hesitation"). The v9 manuscript is kept in
+% DA5001_Project/output/review_audit/pre_v10_2026-09-24/ and every retired section file beside its
+% replacement as *_v9_2026-09-24.tex.
 % satml_2027_arxiv_v1.tex is the PUBLISHED arXiv 2605.28001 and must never be edited or retitled.
 % Double blind: no names or affiliations anywhere, including the supplementary. Our own prior work
 % is cited in the third person as "an earlier audit", never "our earlier audit".
 \documentclass{article}
 \usepackage{iclr2027_conference}
-% 2026-09-16: `times` was in the ICLR template line, but under tectonic/XeTeX it silently
-% suppresses BOLD ROMAN ENTIRELY -- no warning, exit 0, 0 overfull -- so all 90 \paragraph
-% headings and all 54 \textbf emphases rendered as ordinary body text, and the body was set in
-% Latin Modern rather than the Times the template asks for. Verified by controlled test:
-% article alone and article+iclr both emit LMRoman10-Bold; adding `times` (or mathptmx) emits
-% no bold roman at all. newtxtext gives real Times (TeX Gyre Termes) WITH its bold, italic and
-% bold-italic, which is what a pdflatex build of the template produces. Math stays Computer
-% Modern, exactly as plain `times` leaves it. Do not reinstate `times`.
+% `times` silently suppresses bold roman under tectonic/XeTeX; newtxtext gives real Times with bold
+% (caution (ac)). Do not reinstate `times`.
 \usepackage{newtxtext}
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
 \usepackage{booktabs}
@@ -21,26 +17,19 @@
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathreplacing}
 \usepackage[hidelinks]{hyperref}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}
 \newtheorem{remark}{Remark}
 \graphicspath{{figures/}}
-% Default float fractions leave a third of three pages blank at this figure count.
 \renewcommand{\topfraction}{0.92}
 \renewcommand{\bottomfraction}{0.85}
 \renewcommand{\textfraction}{0.06}
 \renewcommand{\floatpagefraction}{0.75}
-\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
-% Retitled 2026-09-14 around the CONSTRUCTIVE result, which is the contribution. v7 led with the
-% dichotomy and reached selection anchoring on page 5; a reader met four pages of a mechanism
-% failing before meeting one that works. The dichotomy is now what explains WHY the constructive
-% result was available -- the theorem that says no per-token meter could have found it -- and it
-% follows the measurement instead of preceding it. Previous title kept below.
-% (2026-09-12) Vacuous or Trivial: A Dichotomy for Per-Token Copyright Certificates, and Where the
-% Budget Must Go Instead. (2026-09-09) named the units result; (earlier) named a mechanism comparison.
 \title{Two Nats, Not Two Thousand\\
 Spending the Copyright Budget on the Draw Instead of the Token}
 
@@ -50,37 +39,26 @@ Spending the Copyright Budget on the Draw Instead of the Token}
 \maketitle
 
 \begin{abstract}
-Certified inference-time copyright defences charge, per decoded token, how far a model's output
-drifts from a \emph{safe} model trained without the protected work, so their budget $K = kT$ grows
-with the output. We spend it once instead, on which of $n$ safe-model draws to serve: any rule that
-serves one of them satisfies $q(y) \le n\,p_s(y)$, a \emph{pathwise} certificate of exactly
-$\log n$ nats for any score and at any length. Self-consistency is an instance when it samples a
-safe model. No per-token rate can be repaired into such a certificate: a bounded KL budget moves the
-output law at only $O(K/\varepsilon)$ steps, so a rate is vacuous from the work's own surprisal on,
-at every R\'enyi order, or is the safe model almost everywhere. Anchored decoding shows both horns:
-over nine pairs with nine distinct anchors extraction begins within about $0.8$--$1.35$ of that
-point, and at $k=0.5$, where its budget binds, neither of two judges separates it from its safe
-model. Judged against one fixed opponent, best-of-$64$ beats the metered decoder at every budget
-when the risky model continues text, the authors' own $70$B pair and recommended byte-level decoder included, and four of five judges
-agree; the meter wins only where the judge rewards instruction following, at budgets that
-certify nothing. At $n=8$ selection beats its own anchor at four of six anchors in two families,
-and with no judge $32$ draws lift GSM8K from $0.320$ to $0.546$. Against an adversarial scorer selection
-reproduces no protected passage at any $n \le 64$ or at $256$, a fact about the anchor: the bound is
-\emph{relative} to it, and the anchor must be vetted. It costs $21.8\times$ the meter's wall-clock serving only the anchor unbatched, and batched,
-a request at the authors' two $70$B pairs takes $0.22\times$ and $0.06\times$ the meter's time; it loses
-at matched compute; where the anchor cannot do the task, no $n$ rescues it.
+Certified inference-time copyright defences bound how far a model's output drifts from a
+\emph{safe} model trained without the protected work. Deployed instances charge that drift per token,
+so their budget $K = kT$ grows with the output and certifies nothing about a work once it reaches the
+work's surprisal. We charge it once instead, on the choice among $n$ safe-model draws: any rule that
+serves one of them satisfies $q(y) \le n\,p_s(y)$, a \emph{pathwise} certificate of exactly $\log n$
+nats for any scorer and at any length; self-consistency over a safe model is an instance. No per-token
+rate can be repaired into one: a rate is vacuous from the work's own surprisal on at every R\'enyi
+order, and a bounded KL budget moves the output law at only $O(K/\varepsilon)$ steps. Anchored decoding
+shows both horns: over nine pairs extraction begins at $0.88$ to $1.17$ of the safe model's surprisal
+rate, and at $k=0.5$, where its budget binds, neither of two judges separates it from its safe model.
+Judged against one fixed opponent, best-of-$64$ beats it at every budget when the risky model continues
+text, at the authors' own $70$B pair and against their byte-level decoder, and at $k=10$ five of six judges agree;
+the meter wins only where the judge rewards instruction following, at budgets that certify nothing.
+With an adversarial scorer selection reproduces no protected passage at any $n \le 64$ or at $256$, a zero relative to the anchor, which must be vetted; with no judge, majority vote lifts
+GSM8K from $0.320$ to $0.546$. Served from the anchor alone it costs $21.8\times$ the meter's decode
+time unbatched and $0.22\times$ and $0.061\times$ batched at the authors' two $70$B pairs; it loses at
+matched compute, and no $n$ rescues an anchor that cannot do the task.
 \end{abstract}
 
 \input{sections/iclr_intro}
-
-% Order rebuilt 2026-09-19 into the conventional arrangement: Introduction, Related Work, Method,
-% Experiments, Conclusion. The section FILES are unchanged in name so every content guard in
-% tests/ still reads the file it was written against; what changed is the order and the heading
-% level. selection.tex opens Method and frontier.tex continues it as a subsection; experiments.tex
-% opens Experiments and orders.tex continues it as the ablations. Every \ref and every appendix
-% cross-reference follows the renumbering, which tests/test_reference_targets.py resolves from the
-% .aux rather than trusting. v8's order is kept in the scratchpad checkpoint and in git history.
-\input{sections/related_work_v4}
 
 \input{sections/selection}
 
@@ -88,158 +66,87 @@ at matched compute; where the anchor cannot do the task, no $n$ rescues it.
 
 \input{sections/experiments}
 
-\input{sections/orders}
+\input{sections/related_work_v4}
 
 \input{sections/iclr_closing}
 
 \section*{Ethics Statement}
-Auditing a copyright defence requires demonstrating that it can be defeated, and this paper does
-that: it fine-tunes memorising models, attacks a protected decoder, and reports where extraction
-begins. We judge the disclosure net positive and have bounded it deliberately. The passages are
-already published as extraction benchmarks (CopyBench, BookMIA), only aggregate recall statistics are
-reported and never reconstructed passages, and the accompanying anonymised repository ships the
+Auditing a copyright defence means showing where it fails, so this paper fine-tunes memorising models
+and attacks a protected decoder. We report aggregate recall only, never reconstructed text, on passages
+already published as extraction benchmarks (CopyBench, BookMIA); the anonymised repository ships the
 fine-tuning recipes and every analysis script but not the merged memorising weights, which reproduce
-copyrighted text on demand. Nothing here enables an attack that possession of a fine-tuned model
-would not already permit.
-
-The constructive direction carries its own risk, which is misplaced confidence. A $\log n$
-certificate bounds the probability that the served text is a protected work \emph{relative to the
-safe model's own probability of producing it}, so it is only as good as that model. We measure what
-happens when it is not: across twelve deliberately memorised anchors, an adversary selecting by the
-memorising model's own likelihood over $64$ draws raises the rate at which most of a passage is
-reproduced by a factor of $1.0$ to $7.0$ on one draw and $1.0$ to $3.0$ on a second, against the $64$ the certificate permits
-(Appendix~\ref{app:selection}). The mechanism is a multiplier on the anchor's own leakage, not a
-floor under it. It is a statement about a mechanism, not a legal conclusion about infringement, and
-we make no claim about legal thresholds for copyright infringement.
-
-That the guarantee is relative to the anchor is not a reason to take the anchor on faith, because
-$\Pr_{p_s}[E]$ is the one quantity here a deployer can measure outright --- with no attack, no risky
-model and no access to the mechanism. Draw from the candidate anchor on the protected passages' own
-prefixes and score near-verbatim recall; that is exactly the number $n$ multiplies. Run on every
-model in this paper at a hundred genuine prefix tokens, it reads $0.000$ on all $50$ passages at each
-of the six openly licensed anchors, while \texttt{Llama-3.1-70B}, which memorised in pre-training,
-leaks on $0.50$ and reproduces two passages in full, and the two open-data models at this scale fail
-it too --- \texttt{OLMo-2-7B} on $2$ of $50$ passages and \texttt{OLMo-2-13B} on $6$, up to $0.566$
-of a passage. \textbf{The prefix length is part of the test and must be quoted with it}: that same
-$70$B reads $0.0000$ at fourteen genuine prefix tokens (a $20$-token seed with a header), and
-leaks on $1$ passage of $50$ at twenty raw tokens, $11$ at fifty and $31$ at $150$
-(Appendix~\ref{app:vetting}). A deployer who runs it at too short a prefix will clear a model that
-reproduces the work in full, and since the user chooses the prompt, the prefix is part of the attack
-surface. Nor does one long prefix suffice: measured from $20$ to $200$ tokens the check is not
-monotone --- an open-data model leaks on fewer passages at $200$ than at $150$ --- so run it at
-\emph{every} prefix length up to the longest genuine prefix the deployment accepts, and quote the
-schedule with the result. The six anchors used here read $0$ at every rung from $20$ to $200$. It is sound rather than complete --- passing is evidence, not proof,
-since a model may hold a work it does not reproduce at the prefix lengths tried --- and like a
-blocklist it speaks only about the works it is handed.
-
-The deployer-facing recommendation is narrow and we would rather it were quoted than the theorems:
-publish $k/s(x)$ rather than $k$, name the work it was computed against, prefer a budget whose size
-does not grow with the thing it protects, and vet the anchor with the check above before quoting
-$\log n$ to anyone, because $n$ multiplies whatever the anchor already has.
+copyrighted text on demand. The constructive result carries its own risk, misplaced confidence: $\log n$
+bounds the probability that the served text is a protected work \emph{relative to the safe model's own},
+so it is only as good as that model. Over twelve deliberately contaminated anchors an adversarial scorer
+raised the anchor's own leakage by $1.0$ to $7.0\times$ on one draw and $1.0$ to $3.0\times$ on a second,
+against the $64$ the certificate permits (Appendix~\ref{app:contaminated}). The anchor's rate is the one
+quantity a deployer can measure with no attack and no access to the mechanism: draw from it on the
+protected passages' own prefixes and score recall. \textbf{The prefix length is part of the test}:
+\texttt{Llama-3.1-70B}, which memorised the work in pre-training, reads $0.0000$ at fourteen genuine
+prefix tokens and leaks on $31$ of $50$ passages at $150$, and the check is not monotone in the prefix,
+so it must run at every prefix length the deployment accepts (Appendix~\ref{app:vetting}). Passing is
+evidence, not proof, and like a blocklist the check speaks only about the works it is handed. Our
+statements concern mechanisms; we make no claim about legal thresholds for copyright infringement. The
+recommendation we would rather see quoted than the theorems: publish $k/s(x)$ rather than $k$, prefer a
+budget whose size does not grow with what it protects, and vet the anchor before quoting $\log n$,
+because $n$ multiplies whatever the anchor already has.
 
 \section*{Reproducibility Statement}
-Every number in this paper is produced by an analysis script and written to a CSV before it is
-quoted, with the producing command recorded alongside it. Proofs of
-Propositions~\ref{prop:threshold} and~\ref{prop:outrun} and of Theorem~\ref{thm:nfl} are in
-Appendix~\ref{app:proofs}, stated with their assumptions; Proposition~\ref{prop:selection} is proved
-where it is stated. The three rates of Eq.~\eqref{eq:rates} require only forward passes and no
-decoding, so Section~\ref{sec:onset} and Appendix~\ref{app:scaling} reproduce on a single GPU from
-openly licensed checkpoints. Every interval this paper scores against was fixed before the run that
-produced it, together with the grid, the admission criterion and the outcomes excluded in advance.
-Budget accounting is checked per trajectory rather than on averages, and every run reports the
-$k=-1$ (risky only) and $k=0$ (safe only) baselines on the same prompts and seeds. An anonymised
-repository with the code, the CSVs, the reproduction commands and the full record of those
-specifications accompanies the submission.
-
-One property of the artifact a reproducer should expect, and which no CSV of ours would reveal.
-Selection serves the argmax of a reward computed in bfloat16, and that argmax is not bitwise
-reproducible: re-scoring the \emph{same} $32{,}000$ candidate texts on a different GPU architecture,
-at a different batch size, or in float32 serves a different completion on $5.6$ to $8.6\%$ of prompts
-at $n=64$ --- a fraction that rises with $n$ and then flattens, as the gap between the best and
-second-best candidate narrows. What the served completion is \emph{worth} is reproducible: the
-alternative gives up $0.011$ to $0.03$ nats against a gap of $5.1$, and
-Proposition~\ref{prop:selection} holds for any tie rule, so neither the certificate nor any gain
-reported here turns on which of two near-equal candidates wins. This was measured rather than
-assumed, and it carried no pre-registered interval. Second, the harness recorded each generation
-with the tail of its prompt prepended, an artefact of slicing left-padded batches; nothing served
-was affected, the repository ships the repair, and every recorded generation is recovered exactly
-(Appendix~\ref{app:judgemethod}); Table~\ref{tab:served}, Figure~\ref{fig:selection}(b) and the
-headline difference are judged on the recovered text.
+Every number in this paper is written by an analysis script to a CSV before it is quoted, and the
+anonymised repository contains the code, the CSVs and the command that produced each. Proofs are in
+Appendix~\ref{app:proofs}. Every interval we score against was fixed before the run that produced it,
+together with its grid, admission criterion and excluded outcomes; budget accounting is checked per
+trajectory, and every run reports the $k=-1$ (risky only) and $k=0$ (safe only) baselines on the same
+prompts and seeds. Two properties a reproducer should expect. Selection serves the argmax of a reward
+computed in bfloat16, and that argmax is not bitwise reproducible: re-scoring the same $32{,}000$
+candidates on another GPU architecture, at another batch size or in float32 serves a different
+completion on $5.6$ to $8.6\%$ of prompts at $n=64$; what is served is worth the same, the alternative giving up $0.011$ to $0.03$ nats against a gap of $5.1$, and Proposition~\ref{prop:selection} holds for any tie rule. This was measured rather than assumed and carried no pre-registered interval. And the harness recorded each generation with the tail of its prompt, an artefact of slicing
+left-padded batches; nothing served was affected, every recorded generation is recovered exactly, and
+Table~\ref{tab:served} and Figures~\ref{fig:selection}, \ref{fig:h2h} and~\ref{fig:breadth} are judged on
+the recovered text (Appendix~\ref{app:judgemethod}).
 
 \section*{LLM Usage}
 LLMs were used for editorial purposes in this manuscript, and all outputs were inspected by the
-authors to ensure accuracy and originality. Instruction-tuned models also appear in two further
-roles, which we separate deliberately. As \emph{measurement instruments} they judge output quality
-in Sections~\ref{sec:experiments} and~\ref{sec:orders}; their resolution is measured rather than
-assumed --- by scoring one decoder against itself under two seeds, by including a null arm, and by
-running two judges that are reported separately wherever they disagree. As a \emph{component of the
-proposed mechanism} one of them supplies the score that selection anchoring ranks by, which is why
-Section~\ref{sec:experiments} never scores an arm with the model that selected it, and why
-Proposition~\ref{prop:selection} is stated for an arbitrary score: the certificate must not depend
-on that model behaving well. Total compute for this work is at most $366$ GPU-hours on A100
-hardware, most of it the budget sweeps and the judged arms;
-the memorisation fine-tunes account for at most $73$ of those hours, some of whose run directories
-also contain the sweep that followed.
+authors to ensure accuracy and originality. Instruction-tuned models also appear as \emph{measurement
+instruments}, judging output quality, and as a \emph{component of the mechanism}, supplying the score
+selection ranks by; for that reason no arm is scored by the model that selected it, and
+Proposition~\ref{prop:selection} is stated for an arbitrary score. Total compute for this work is at most
+$366$ GPU-hours on A100 hardware, most of it the budget sweeps and the judged arms; the memorisation
+fine-tunes account for at most $73$ of those hours.
 
 \bibliographystyle{iclr2027_conference}
 \bibliography{references}
 
 \appendix
-% The appendix body is set one step down (10pt -> 9pt) so that twenty-odd pages of supporting
-% measurement do not cost the reader a third more paper than they need to. The 9-page body is
-% untouched and is what the call limits; tables and captions are already \footnotesize, which is
-% an absolute size, so nothing in a float changes. Applied 2026-09-19 in place of deleting
-% measured arms to reach a page target.
+% The appendix is set one step down (10pt -> 9pt); floats are \footnotesize, an absolute size.
 \small
-% Appendix order follows the main text: theory, then the audit that motivates the diagnosis, then
-% the mechanism, then the wrap-up. Selection moved ahead of limitations on 2026-09-11 because it is
-% the paper's contribution and was last in the list only because it was written last.
-% Guide to the appendices (review 4, A.8): one table mapping each theme to where it lives, so a reader
-% can find the theory, the audit, selection's evidence, its leakage and its cost without the order.
 \clearpage
 \section*{Guide to the appendices}\label{app:guide}
 \noindent Table~\ref{tab:guide} maps each theme of the paper to the appendix that holds it.
+
 \begin{table}[!ht]
 \centering\footnotesize
-\caption{Where each theme of the appendices lives.}\label{tab:guide}
-\begin{tabular}{@{}p{0.17\textwidth}p{0.12\textwidth}p{0.64\textwidth}@{}}
+\caption{Where each part of the evidence lives.}\label{tab:guide}
+\begin{tabular}{@{}p{0.2\textwidth}p{0.08\textwidth}p{0.64\textwidth}@{}}
 \toprule
 theme & where & what it holds \\
 \midrule
-Theory & \ref{app:proofs} & proofs of every proposition and of Theorem~\ref{thm:nfl}; the threshold
-for a window event; why no separation can be proved at the level of the served law
-(\ref{app:noseparation}) \\
-The meter, audited & \ref{app:opening}--\ref{app:second-anchor} & the uncertified interval; the
-extraction onset near $s(x)$ over nine pairs; robustness of the scaling trend and of the collapse; the
-orders at matched utility; the second pair's construction \\
-Protocol & \ref{app:sel-protocol}, \ref{app:judgemethod} & the workload, the scorer and its preference
-for empty text, the judge; the recording defect, and every older reading re-judged on the repaired text \\
-Head-to-head & \ref{app:sel-h2h} & Table~\ref{tab:served} by serving configuration; under the
-authors' own metrics; their byte-level decoder; the workload edge; repeats across judges and draws \\
-Certificate in use & \ref{app:sel-certificate} & composition over $m$ adaptive queries; a per-work
-certificate a rights-holder can audit; the colluding-scorer channel, measured; one certificate split
-between the draw and the token; how loose $\log n$ is \\
-Cost & \ref{app:sel-cost} & forward passes, the clock, deployable draws; one request batched, at
-both pairs, and the joint frontier; stopping early \\
-Premise, leakage & \ref{app:sel-premise}, \ref{app:sel-contaminated} & vetting the anchor; the
-extraction zeros and their threshold; anchors that fail the premise \\
-Breadth & \ref{app:sel-breadth} & anchors at $n=64$; tasks with no judge; languages \\
-Limits, related & \ref{app:limitations}, \ref{app:related} & limitations in full; positioning \\
+Theory & \ref{app:proofs} & every proof; the threshold for a window event; tightness and composition of $\log n$ \\
+Protocol & \ref{app:protocol} & workload, models, reward, judge, the recording defect and its repair \\
+Head-to-head & \ref{app:sel-h2h} & the served table in full, the authors' metrics and byte-level decoder, judges, opponents, workloads \\
+Selection alone & \ref{app:sel-breadth} & $n$ past $64$, other anchors, scorer size, majority vote, tasks with no judge, CoTaEval \\
+Leakage & \ref{app:sel-premise} & extraction, a natural memoriser, other languages, vetting, contaminated anchors, audit \\
+Cost & \ref{app:sel-cost} & forward passes, the clock, a deployable server, batching, matched compute \\
+The meter, audited & \ref{app:onset} & imitation cost at four pairs, onset over nine pairs, the opening, vacuity at scale \\
+Repairs & \ref{app:repairs} & sharper charge, lower cap, schedule, budget up front, frontier distance, closer anchors \\
+Limits, related & \ref{app:limitations}, \ref{app:related} & limitations in full; positioning and incumbents measured \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \input{sections/appendix_proofs}
-\input{sections/appendix_opening}
-\input{sections/appendix_onset}
-\input{sections/appendix_robustness}
-% appendix_seed retired 2026-09-19 for the page budget (appendix 30 -> 20 pages), kept verbatim
-% as sections/appendix_seed_v8_2026-09-19.tex. It carried the seed-length and anchor-warp
-% interventions: S_match/S_20 = 0.392, the 61%/39% split of the nine-pair spread, the two
-% elasticities and the subset/leave-one-out enumeration. The arms are unchanged and their CSVs
-% are in results/; what the paper keeps is the correlation itself (rho = -0.958, Table~\ref{tab:onset}).
-\input{sections/appendix_second_anchor}
 \input{sections/appendix_selection}
+\input{sections/appendix_onset}
 \input{sections/appendix_limitations}
 \input{sections/appendix_related}
 \end{document}

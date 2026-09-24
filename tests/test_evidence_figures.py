@@ -36,7 +36,11 @@ def test_the_safety_figure_plots_zero_at_every_n_and_a_non_zero_reference():
     cap = _exp()
     assert f"${max(bases):.4f}$ mean" in cap, max(bases)
     assert f"all {len(arms)} arms" not in cap or True   # the count lives in the figure label
-    assert "at all six anchors" in cap
+    # v9 said "... on every passage and at all six anchors"; v10 (2026-09-24) says it in two places,
+    # the Figure 5 caption ("Nine arms (six anchors, ...) read $0.0000$ ...") and the leakage prose.
+    assert "(six anchors," in cap, "the caption no longer says the zero covers all six anchors"
+    assert "is $0.0000$ at every anchor, at every $n$ to $64$ and at $n=256$" in cap, \
+        "the leakage prose no longer states the zero at every anchor and every n"
 
 
 def test_the_contamination_panel_stays_below_the_bound_it_is_drawn_against():

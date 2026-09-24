@@ -23,6 +23,23 @@ def by_arm():
     return {r["arm"]: r for r in rows()}
 
 
+def _cotaeval_section():
+    """The CoTaEval paragraph of Appendix D together with the scorer-ladder table it reports into.
+
+    v10 (2026-09-24) merged the v9 paragraphs ("On the community-standard benchmark ...", "A larger
+    scorer moves it ...", "A third rung settles it ...") into one paragraph and moved every band into
+    Table tab:scorerladder, which follows it. Located by the table's label, so a retitle cannot
+    retire the guards: from the \\paragraph that precedes the float to the float's end."""
+    t = body(SEC)
+    k = t.index("\\label{tab:scorerladder}")
+    return t[t.rfind("\\paragraph{", 0, k):t.index("\\end{table}", k)]
+
+
+def _at_csv_precision(x):
+    """A CSV cell printed at the precision the CSV holds it (caution (j): round once, from it)."""
+    return f"{float(x):+.{len(x.split('.')[1])}f}"
+
+
 def test_every_arm_passed_every_gate():
     """G0 in particular: majority vote identical at all seven cells is what licenses comparing
     these passes at all, because it proves the text is byte-identical (caution (ap))."""
@@ -68,35 +85,30 @@ def test_the_refuted_prediction_survives_a_page_trim():
 
 def test_the_rescope_is_in_the_paper_and_is_not_a_withdrawal():
     """Both halves, in one place each. Removing either alone is the failure mode."""
-    t = body(SEC)
-    i = t.find("A third rung settles it")
-    assert i > 0, "the 72B paragraph is gone from the appendix"
-    para = t[i:i + 3000]
+    para = _cotaeval_section()
+    assert "72B" in para.replace("$", ""), "the 72B rung is gone from the appendix"
     a = by_arm()
     # the rescope
-    assert "Nothing turns over anywhere" in para
+    assert "nothing turns over anywhere" in para.lower()
     for k in ("cta72", "cta72_comma1t", "cta72_tc18b", "tqa14", "tqa72"):
-        v = f"{float(a[k]['gain']):+.4f}"
-        assert v in para, f"{k}'s gain {v} is not printed in the 72B paragraph"
+        v = _at_csv_precision(a[k]["gain"])
+        assert f"${v}$" in para, f"{k}'s gain {v} is not printed with the 72B rung"
     # ... and that it is NOT a withdrawal
-    assert "rescoped and not withdrawn" in para, (
+    assert "rescoped, not withdrawn" in para, (
         "the paragraph no longer says the 7B concession stands")
     # every printed interval end too, not only the point estimate: perturbing an interval end was
-    # invisible to the first version of this guard.
+    # invisible to the first version of this guard. Checked as the printed PAIR, "[lo, hi]".
     for k in ("cta72", "cta72_comma1t", "cta72_tc18b", "tqa14", "tqa72"):
-        for key in ("lo95", "hi95"):
-            v = f"{float(a[k][key]):+.4f}"
-            assert v in para, f"{k}'s {key} {v} is not printed in the 72B paragraph"
+        lo, hi = _at_csv_precision(a[k]["lo95"]), _at_csv_precision(a[k]["hi95"])
+        assert f"$[{lo}, {hi}]$" in para, f"{k}'s interval [{lo}, {hi}] is not printed with the 72B rung"
 
 
 def test_the_7b_concession_is_still_stated_where_it_was_made():
     """The rescope must not swallow the concession. SCOPED to the CoTaEval paragraph, because
     `43\%` now occurs twice in this file and the first version of this guard was satisfied by the
     other occurrence -- caution (an), inside a guard written about caution (an)."""
-    t = body(SEC)
-    i = t.find("On the community-standard benchmark the scorer does worse than bind")
-    assert i > 0, "the CoTaEval paragraph is gone"
-    para = t[i:i + 2200]
+    para = _cotaeval_section()
+    assert "CoTaEval" in para and "token-F1" in para, "the CoTaEval paragraph is gone"
     assert "43\\%" in para, (
         "the 7B CoTaEval loss is no longer stated in the paragraph that reports it")
     assert "-0.1836" in para and "-0.2334" in para, (
@@ -106,9 +118,10 @@ def test_the_7b_concession_is_still_stated_where_it_was_made():
 def test_no_cost_number_above_7b_is_claimed():
     """The honest limit: a bigger scorer is a requirement, and requirements cost. No latency arm
     was run above 7B, so the paper must not imply one was."""
+    import re
     t = body(SEC) + body("appendix_limitations.tex")
-    assert "no latency arm was run above" in t.lower() or \
-           "no latency arm was run above $7$b" in t.lower(), \
+    # v10 (2026-09-24): "no latency arm was run above 7B" reads "no latency arm ran above 7B"
+    assert re.search(r"no latency arm (was run|ran) above \$7\$b", t.lower()), \
         "the paper no longer says the larger scorer's cost is unmeasured"
 
 

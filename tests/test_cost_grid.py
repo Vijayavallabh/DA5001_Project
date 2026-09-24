@@ -153,10 +153,12 @@ def test_the_proxy_ratio_is_the_one_the_manuscript_actually_prints():
     If Section 5 ever reprints its compute-matched cost, this fails and says to re-derive the
     factor rather than letting B2 compare against a ratio nobody prints any more."""
     from tests.manuscript import body
-    txt = body("selection.tex")
+    # v10 (2026-09-24): the compute-matched cost left selection.tex; Section 4 prints the deployable
+    # cell and Appendix D's scorer-size paragraph the forward-pass one ("$n=4$ at $0.92\times$").
+    txt = body("selection.tex", "experiments.tex", "appendix_selection.tex")
     from analysis.cost_grid import PROXY_N4
     assert f"the forward-pass count had put it at $n=4$" in txt and f"${PROXY_N4}" not in txt \
-        or f"${PROXY_N4}\\times$" in txt, (
+        or f"$n=4$ at ${PROXY_N4}\\times$" in txt, (
         "selection.tex no longer prints the ratio cost_grid.py measures against. It fired once "
         "already, when feat-162 rewrote the sentence, which is what it is for -- re-derive the "
         "factor B2 reports rather than relaxing this.")
@@ -259,8 +261,11 @@ def test_the_abstract_s_convention_factor_is_the_measured_one():
                       _os.pardir, "sub", "satml"))
     abstract = " ".join(open(_os.path.join(tex, "iclr_2027.tex"), encoding="utf-8").read().split())
     abstract = abstract.split(r"\begin{abstract}")[1].split(r"\end{abstract}")[0]
+    # the qualifier may precede the number: v10 (2026-09-24) reads "Served from the anchor alone it
+    # costs $21.8\times$", v9 "$21.8\times$ ... serving only the anchor"
     hits = [m for m in _re.finditer(_re.escape(f"${price}\\times$"), abstract)
-            if "only the anchor" in abstract[m.start(): m.end() + 60]]
+            if _re.search(r"only the anchor|anchor alone",
+                          abstract[max(0, m.start() - 60): m.end() + 60])]
     assert hits, "the abstract dropped the deployable price, which is the number a deployer reads"
 
 
@@ -283,13 +288,24 @@ def test_the_compute_matched_concession_survives_with_both_prices():
     edit deletes those first. It must keep its measured loss AND now carry both prices of the cell
     it is measured at, so neither the number nor its correction can go missing alone."""
     from tests.manuscript import body
-    txt = body("selection.tex")
-    assert "$-0.0395$ $[-0.0720, -0.0065]$" in txt, "the compute-matched loss was dropped"
-    assert r"where the forward-pass count had put it at $n=4$ and $-0.0395$" in txt, (
-        "the superseded cell and its loss no longer travel with the measured one")
-    assert r"the matched cell is $n=2$ at $0.68\times$" in txt, (
-        "the deployable matched cell was dropped")
-    assert r"$-0.0330$ $[-0.0625, -0.0025]$" in txt, "its paired difference was dropped"
+    # v10 (2026-09-24): Section 4 (experiments.tex) carries the concession at the deployable price;
+    # the forward-pass cell and its loss moved to Appendix D, and Appendix F sets both prices (and
+    # the harness clock's) side by side. Each half is checked where it now lives.
+    main = body("experiments.tex")
+    # the band is printed twice in Section 4, in the prose and in Table cost, so each copy is checked
+    # in its own sentence or row: a bare membership test let a sign flip in one hide behind the other
+    assert (r"the matched cell is $n=2$ at $0.68\times$, gaining $-0.0330$ $[-0.0625, -0.0025]$ "
+            r"against the meter") in main, "the deployable matched cell and its loss left the prose"
+    assert (r"$n=2$ at $0.68\times$, judged gain against the meter & $-0.0330$ $[-0.0625, -0.0025]$"
+            ) in main, "the deployable matched cell and its loss left Table cost"
+    apx = body("appendix_selection.tex")
+    assert r"$n=4$ at $0.92\times$, it loses outright, $-0.0395\,[-0.0720,-0.0065]$" in apx, (
+        "the compute-matched loss at the forward-pass cell was dropped")
+    assert (r"the compute-matched cell is $n=2$ at $0.68\times$, where the paired judged difference "
+            r"is $-0.0330\,[-0.0625,-0.0025]$") in apx, "the deployable cell left the appendix"
+    assert (r"survives all three prices (the forward-pass count's $n=4$, the harness clock's $n=1$, "
+            r"the deployable $n=2$)") in apx, (
+        "the superseded cell no longer travels with the measured one")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -445,10 +461,13 @@ def test_the_deployable_price_the_paper_prints_rounds_from_its_csv():
     Appendix I now print."""
     from tests.manuscript import body
     r = _ao()[200]
-    txt = body("selection.tex", "appendix_selection.tex", "appendix_related.tex",
+    # v10 (2026-09-24): the cost prose moved from selection.tex to experiments.tex (Section 4.5)
+    txt = body("selection.tex", "experiments.tex", "appendix_selection.tex", "appendix_related.tex",
                "iclr_closing.tex")
     assert f"{float(r['C_over_A']):.2f}" == "0.35"
-    assert "a draw costs $0.35$ of that" in txt, "the deployable draw factor is not printed"
+    # v9 "a draw costs $0.35$ of that"; v10 "a deployment pays $C/A = 0.35$ of every harness ..."
+    assert f"pays $C/A = {float(r['C_over_A']):.2f}$" in txt, \
+        "the deployable draw factor is not printed"
     # the TABLE row, not just "the number appears somewhere": caution (an), and the mutation that
     # found it -- 4.463 occurs twice in the appendix, so retyping the table cell left the prose
     # copy satisfying a bare membership test.
@@ -458,9 +477,11 @@ def test_the_deployable_price_the_paper_prints_rounds_from_its_csv():
     assert f"$\\mathbf{{{float(r['C_plain_anchor_alone_s']):.3f}}}$s & "
     assert (f"$\\mathbf{{{float(r['C_plain_anchor_alone_s']):.3f}}}$s & "
             f"${float(r['D_metered_s']):.3f}$s") in txt, "the C/D cells of the table moved"
-    assert txt.count(f"{float(r['C_plain_anchor_alone_s']):.3f}") == 2, (
-        "the anchor-alone cost is printed in the table and in the prose beneath it; if that "
-        "changes, re-scope this guard rather than relaxing it")
+    # re-scoped 2026-09-24: v10 cut the prose copy ("the anchor's is $4.463$s"), so the anchor-alone
+    # cost is printed once, in the table; a second copy appearing would need this re-scoped again
+    assert txt.count(f"{float(r['C_plain_anchor_alone_s']):.3f}") == 1, (
+        "the anchor-alone cost is printed in the table only; if that changes, re-scope this guard "
+        "rather than relaxing it")
     # 64 * C/D, the price a server that runs only the anchor pays at the headline n
     assert f"{64 * float(r['C_over_D']):.1f}" == "21.8"
     assert r"$21.8\times$" in txt, "the deployable price at n=64 is not printed"
@@ -471,11 +492,22 @@ def test_the_harness_forwards_both_models_and_the_paper_says_so():
     wrong, and a withdrawal that deletes it leaves a reader of the earlier version uncorrected. The
     appendix must carry the real mechanism, which is a property of a_patch/factory.py that anyone
     can check."""
+    import re
     from tests.manuscript import body
     txt = body("appendix_selection.tex")
     assert "forwards \\emph{both} models at every step" in txt, (
         "the appendix no longer states why the two paths measured equal")
-    assert "discards it" in txt and "the same work" in txt
+    # v10 (2026-09-24): "discards it ... they are doing the same work" became "discarded it", with
+    # the equality the mechanism explains printed from the fit: one draw costs what one metered
+    # decode costs, b against b_met, read off results/cost_grid_bands.csv rather than retyped
+    assert re.search(r"discard(?:s|ed) it", txt), "the discarded risky forward is not stated"
+    fit = next(r for r in csv.DictReader(open(os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results",
+        "cost_grid_bands.csv"), encoding="utf-8")) if r["band"].startswith("G-fit"))
+    b = re.search(r"\bb=([\d.]+)s", fit["value"]).group(1)
+    b_met = re.search(r"\bb_met=([\d.]+)s", fit["value"]).group(1)
+    assert f"one metered decode costs (${b}$s against ${b_met}$s)" in txt, (
+        "the appendix no longer says the two paths do the same work, at the fitted per-draw costs")
     assert "wrong thing to time" in txt, "the design's correctness for an audit is not stated"
     src = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                             "a_patch", "factory.py"), encoding="utf-8").read()

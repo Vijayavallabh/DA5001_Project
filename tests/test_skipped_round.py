@@ -10,10 +10,21 @@ import re
 
 import pytest
 
-from tests.manuscript import body
+from tests.manuscript import body, caption_of
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, "results")
+
+
+def h2h_figure_rows():
+    """The bands Figure fig:h2h prints beside each row (figures/make_figures_v4.py). v10 moved several
+    of this file's prose bands into that figure, so a guard must be able to see them there (caution (al))."""
+    import sys
+    fig = os.path.join(ROOT, "figures")
+    if fig not in sys.path:
+        sys.path.insert(0, fig)
+    from make_figures_v4 import h2h_forest_rows  # noqa: E402
+    return h2h_forest_rows()
 
 
 def para(label, *files):
@@ -90,12 +101,25 @@ def test_every_older_reading_survives_the_repair_as_the_appendix_says():
     moved = sorted((x["pass"], x["quantity"][:2]) for x in r if x["survives"] == "NO")
     assert moved == [("workload CoTaEval-QA k=1.4", "D1"), ("workload Gutenberg k=0.9", "D2"),
                      ("workload MT-Bench k=1.0", "D1")], moved
+    # v10 split v9's one paragraph three ways: the sign-class result stays in the repair paragraph, the
+    # panel is summarised in Section 4 over six judges (the five-judge panel plus judge C on the
+    # committed opponent), and AlpacaEval's repaired band sits in the workload paragraph.
     t = body("appendix_selection.tex")
-    i = t.index("Every older order-averaged reading was re-judged")
-    p = t[i:i + 1100]
-    assert "all twenty keep their sign class" in p and "four positive judges of five" in p
-    for tag, q in (("mixtral_deecho", "D3"), ("mixpowk_judgeB_deecho", "D3"), ("mtb_conc_bind_deecho", "D1"),
-                   ("cotaeval_qa_conc_bind_deecho", "D1"), ("gutenberg_conc_bind_deecho", "D2")):
+    i = t.index("\\paragraph{A recording defect, and its repair.}")
+    p = t[i:t.index("\\paragraph{", i + 1)]
+    assert "all twenty older order-averaged differences keep their sign class" in p
+    c = [x for x in d3 if x["pass"] == "ladder opp Llama-3.1-8B" and x["judge"].startswith("C ")]
+    six = panel + c
+    assert len(c) == 1 and sum(x["reading_deecho"] == "POSITIVE" for x in six) == 5 and len(six) == 6
+    sec4 = body("experiments.tex")
+    g, lo, hi = _gains("mixtral_deecho")["D3"]
+    assert lo < 0 < hi and f"five of six judges exclude zero, and the sixth, \\texttt{{Mixtral-8x7B}}, " \
+        f"straddles it at ${g:+.4f}$" in sec4, g
+    g, lo, hi = _gains("mixpowk_judgeB_deecho")["D3"]
+    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in para("app:workload", "appendix_selection.tex"), g
+    # the three single-arm gains that change class on the repaired text, in the repair paragraph
+    for tag, q in (("mtb_conc_bind_deecho", "D1"), ("cotaeval_qa_conc_bind_deecho", "D1"),
+                   ("gutenberg_conc_bind_deecho", "D2")):
         g, lo, hi = _gains(tag)[q]
         assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in p or f"${g:+.4f}$" in p, (tag, q, g)
 
@@ -118,13 +142,22 @@ def test_the_decomposition_on_repaired_text_is_rebuilt_from_its_csvs():
 def test_the_main_text_quotes_alpacaeval_on_the_repaired_text_like_its_headline():
     g, lo, hi = _gains("mixpowk_judgeB_deecho")["D3"]
     assert hi < 0
+    # v10's Section 4 quotes the reversal as the meter's margin and sends the reader to app:workload,
+    # which prints the band; both must be the repaired reading.
     t = body("experiments.tex")
-    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in t, "the main text's AlpacaEval band is not the repaired one"
-    assert "$-0.0339$" not in t, "the echo-carrying AlpacaEval number is back in the main text"
+    assert f"reverses on AlpacaEval, where the meter wins by ${-g:.4f}$ (Appendix~\\ref{{app:workload}})" in t, \
+        "the main text's AlpacaEval number is not the repaired one"
+    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in para("app:workload", "appendix_selection.tex"), \
+        "the band the main text points at is not the repaired one"
+    assert "0.0339" not in t, "the echo-carrying AlpacaEval number is back in the main text"
 
 
 def test_the_threshold_paragraph_quotes_the_recount():
-    p = para("app:rougethreshold", "appendix_selection.tex")
+    # v10 sets \label{app:rougethreshold} at the END of the paragraph it names (`An adversarial
+    # selector.`), so read back from the label to that paragraph's heading.
+    t = body("appendix_selection.tex")
+    i = t.index("\\label{app:rougethreshold}")
+    p = t[t.rindex("\\paragraph{", 0, i):i]
     mem = {x["theta"]: x["count"] for x in rows("rouge_threshold.csv")
            if x["file"] == "selfix_clean_grid64_per_passage.csv" and x["source"] == "memoriser alone"}
     assert f"${mem['0.3']}$, ${mem['0.4']}$, ${mem['0.5']}$, ${mem['0.6']}$ and ${mem['0.7']}$" in p
@@ -197,14 +230,20 @@ def test_the_seed52_draw_on_repaired_text_is_the_row_the_table_prints():
     row = (f"seed $52$, repaired & B & ${v['D1']:+.4f}$ & ${v['D2']:+.4f}$ & ${v['D3']:+.4f}$ "
            f"$[{lo:+.4f},{hi:+.4f}]$")
     assert row in t, row
-    head = {r["quantity"][:2]: float(r["value"]) for r in rows("order_averaged_h2h_deecho.csv")}
-    assert f"read ${head['D3']:+.4f}$ and ${v['D3']:+.4f}$" in t
+    # v9's prose `the two draws read X and Y` became the table's `repaired text` row beside this one
+    h = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_deecho.csv")}
+    hv = {q: float(h[q]["value"]) for q in ("D1", "D2", "D3")}
+    head = (f"repaired text & B & ${hv['D1']:+.4f}$ & ${hv['D2']:+.4f}$ & $\\mathbf{{{hv['D3']:+.4f}}}$ "
+            f"$[{float(h['D3']['lo95']):+.4f},{float(h['D3']['hi95']):+.4f}]$")
+    assert head in t, head
 
 
 def test_the_workload_paragraph_carries_alpacaeval_on_the_repaired_text_too():
     g, lo, hi = _gains("mixpowk_judgeB_deecho")["D3"]
     p = para("app:workload", "appendix_selection.tex")
-    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$ on the repaired text" in p
+    # v10 labels the paragraph's differences as recovered-text readings once, before quoting them
+    i = p.find("binding-budget differences on the recovered text")
+    assert 0 <= i < p.find(f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$"), (g, lo, hi)
 
 
 def test_the_he_metrics_paragraph_quotes_its_csv():
@@ -239,7 +278,10 @@ def test_the_replication_rows_are_the_scored_ones():
         assert row in t, row
         assert d[f"{run} D3 difference of gains, paired"]["reading"] == "REPLICATES"
     g = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_replic_opp_nonempty.csv")}["D3"]
-    assert f"raises it to ${float(g['value']):+.4f}$ $[{float(g['lo95']):+.4f}, {float(g['hi95']):+.4f}]$" in t
+    r2 = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_replic_opp.csv")}["D3"]
+    # v10 (app:empties) names the base it raises from, the R2 draw above
+    assert (f"raises the fresh-seed headline difference from ${float(r2['value']):+.4f}$ to "
+            f"${float(g['value']):+.4f}$ $[{float(g['lo95']):+.4f}, {float(g['hi95']):+.4f}]$") in t
     assert all(r["reading"] == "PASS" for r in rows("headline_replication.csv") if r["gate"] in ("G0", "G1"))
 
 
@@ -260,7 +302,7 @@ def test_the_batched_latency_paragraph_and_table_quote_their_csvs():
     q = lambda k: float(b[k]["ratio"])
     assert f"${q(('T1', '1', 'Meta-Llama-3.1-70B')):.3f}\\times$ the $70$B meter" in p
     assert b[("T1", "1", "Meta-Llama-3.1-70B")]["reading"] == "CONFIRMED"
-    assert f"${q(('T2', '1', 'Meta-Llama-3.1-8B-Instruct')):.3f}\\times$ the meter" in p
+    assert f"${q(('T2', '1', 'Meta-Llama-3.1-8B-Instruct')):.3f}\\times$ the $8$B meter's" in p
     assert b[("T2", "1", "Meta-Llama-3.1-8B-Instruct")]["reading"] == "WITHIN NOISE" and "not read" in p
     assert f"${q(('T3', '1', '-')):.2f}\\times$ a single draw" in p
     f = {(r["W"], r["arm"]): r for r in rows("pareto_frontier.csv")}
@@ -274,10 +316,15 @@ def test_the_batched_latency_paragraph_and_table_quote_their_csvs():
 
 def test_the_human_and_legal_validation_is_conceded_as_not_done():
     """Two referees asked for human labels and a legal reading; neither was done, and the paper must
-    say so rather than let the absence pass unmentioned (caution (ag): concessions go first in a trim)."""
+    say so rather than let the absence pass unmentioned (caution (ag): concessions go first in a trim).
+    v10 keeps both in Appendix I's one sentence and the reason, that infringement is a legal question the
+    paper does not answer, in the Ethics Statement."""
+    from tests.manuscript import tex
     t = body("appendix_limitations.tex")
-    assert "No human rated anything" in t
-    assert "no lawyer assessed any output" in t and "legal question this paper does not answer" in t
+    assert "No human rated anything and no lawyer assessed any output" in t
+    src = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    eth = src[src.index("\\section*{Ethics Statement}"):src.index("\\section*{Reproducibility Statement}")]
+    assert "we make no claim about legal thresholds for copyright infringement" in eth
 
 
 def test_the_anchoredbyte_table_and_the_abstract_follow_the_scored_bands():
@@ -285,28 +332,34 @@ def test_the_anchoredbyte_table_and_the_abstract_follow_the_scored_bands():
     from tests.manuscript import tex
     ab = {r["k"]: r for r in rows("anchoredbyte.csv")}
     assert set(ab) == {"0.1", "0.5", "2"} and all(r[g] == "PASS" for r in ab.values() for g in ("G0", "G1", "G2"))
-    t = body("appendix_selection.tex")
+    # v10 folded the AnchoredByte table into Section 4's Table tab:served (columns k, binds, K/S_w,
+    # meter, selection - meter); K is no longer a column, and app:anchoredbyte states K = 800k instead.
+    e = body("experiments.tex")
+    t = e[e.index("\\label{tab:served}"):e.index("\\end{tabular}", e.index("\\label{tab:served}"))]
+    assert "so that $K = 800k$ nats" in para("app:anchoredbyte", "appendix_selection.tex")
     for k, r in ab.items():
         h2h = {x["quantity"][:2]: x for x in rows(f"order_averaged_h2h_ab70_k{k}.csv")}
         lo, hi = float(h2h["D3"]["lo95"]), float(h2h["D3"]["hi95"])
         pp = list(_csv.DictReader(open(os.path.join(RES, f"order_averaged_h2h_per_prompt_ab70_k{k}.csv"))))
         lvl = sum(float(x[f"u_metered_k{k}"]) for x in pp) / len(pp)
-        cells = (f"${float(k):g}$ & ${float(r['K']):.0f}$ & ${float(r['K_over_Sw']):.2f}$ & "
-                 f"${100 * float(r['binding_share']):.1f}\\%$ & ${lvl:.4f}$ & "
-                 f"${float(h2h['D3']['value']):+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$")
+        assert abs(float(r["K"]) - 800 * float(k)) < 1e-9, (k, r["K"])
+        cells = (f"& ${float(k):g}$ & ${100 * float(r['binding_share']):.1f}\\%$ & ${float(r['K_over_Sw']):.2f}$ & "
+                 f"${lvl:.4f}$ & ${float(h2h['D3']['value']):+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$")
         assert cells in t, cells
         assert r["D3_reading"] == "REVERSAL CONFIRMED" and lo > 0
     abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     # registered consequence: every band CONFIRMED -> the abstract names their byte-level decoder
-    assert "byte-level decoder included" in abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
+    assert "against their byte-level decoder" in abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
 
 
 def test_the_main_text_quotes_the_batched_clock_at_both_pairs():
-    """feat-190 fixed that Section 3 and the Conclusion quote the batched per-request ratio beside the
-    unbatched 21.8x, at both pairs in Section 3."""
+    """feat-190 fixed that the main text's cost prose and the Conclusion quote the batched per-request
+    ratio beside the unbatched 21.8x, at both pairs in the cost prose. v10 moved that prose from Section 2
+    (selection.tex) to Section 4's cost subsection (sec:cost); the Conclusion is iclr_closing.tex."""
     b = {(r["band"], r["W"]): float(r["ratio"]) for r in rows("batched_latency_bands.csv")
          if r["band"] in ("T1", "T2")}
-    sel = body("selection.tex")
+    e = body("experiments.tex")
+    sel = e[e.index("\\label{sec:cost}"):]
     assert f"${b[('T1', '1')]:.2f}\\times$ the meter's time at the authors' $70$B pair" in sel
     assert f"${b[('T2', '1')]:.2f}\\times$ at the $8$B one" in sel and "$21.8\\times$" in sel
     close = body("iclr_closing.tex")
@@ -320,11 +373,16 @@ def test_the_degeneracy_filter_check_quotes_the_rejudged_breadth():
     t = " ".join(body("appendix_limitations.tex").split())
     assert (f"${float(aud['gain_nonempty']):+.3f}$ $[{float(aud['gain_nonempty_lo95']):+.3f}, "
             f"{float(aud['gain_nonempty_hi95']):+.3f}]$ against ${float(aud['gain']):+.3f}$ on all $500$") in t
-    moveB = max(abs(float(x["gain"]) - float(x["gain_nonempty"])) for x in r if "Phi" in x["judge"])
-    assert f"moves by at most ${moveB:.3f}$ at every anchor" in t
+    phi = [x for x in r if "Phi" in x["judge"]]
+    moveB = max(abs(float(x["gain"]) - float(x["gain_nonempty"])) for x in phi)
+    # v10 states the bound in Figure fig:breadth's caption (a judge-B figure) about its open markers,
+    # the anchors that fail the empty-draft gate; the bound over them is the bound over every anchor.
+    assert moveB == max(abs(float(x["gain"]) - float(x["gain_nonempty"])) for x in phi
+                        if x["entry_gate"] == "FAIL")
+    assert f"on non-empty prompts their gains move by at most ${moveB:.3f}$" in caption_of("fig:breadth")
     lost = [x for x in r if float(x["gain_lo95"]) > 0 and float(x["gain_nonempty_lo95"]) <= 0]
     assert [(x["anchor"], "Phi" in x["judge"]) for x in lost] == [("Comma-7B (1T tokens)", True)]
-    assert "still does but one --- Comma-1T's under judge~B" in t
+    assert "every interval that excluded zero still does but one, Comma-1T's under judge~B" in t
     assert all(float(x["gain_nonempty"]) > float(x["gain"]) for x in r
                if x["anchor"].startswith("Comma-7B") and "Llama" in x["judge"])
 
@@ -356,13 +414,24 @@ def test_the_byte_level_timing_is_the_measured_one():
 
 
 def test_the_headline_sentence_carries_its_fresh_seed_replication():
-    """feat-188 fixed: REPLICATES -> the headline sentence gains the disjoint-seed draw (R2)."""
-    d = {r["quantity"][:2]: r for r in rows("order_averaged_h2h_replic_opp.csv")}["D3"]
+    """feat-188 fixed: REPLICATES -> the main text carries the disjoint-seed draw (R2). v10's Section 4
+    states the headline band, then how far every re-draw moves it (selection re-drawn; every sampled arm
+    re-drawn, R2; the same against the committed opponent, R1), and Figure fig:h2h prints each band."""
+    def d3(name):
+        d = {r["quantity"][:2]: r for r in rows(name)}["D3"]
+        return float(d["value"]), float(d["lo95"]), float(d["hi95"])
+    head = d3("order_averaged_h2h_deecho.csv")
+    draws = {f: d3(f) for f in ("order_averaged_h2h_seed52_deecho.csv", "order_averaged_h2h_replic_opp.csv",
+                                "order_averaged_h2h_replic.csv")}
+    assert all(lo > 0 for _, lo, _ in draws.values()), "a re-draw no longer excludes zero"
     t = " ".join(body("experiments.tex").split())
-    band = f"${float(d['value']):+.4f}$ $[{float(d['lo95']):+.4f}, {float(d['hi95']):+.4f}]$"
-    assert band in t, band
-    i = t.index(band)
-    assert "$+0.0505$ $[+0.0155, +0.0860]$" in t[max(0, i - 200):i], "the replication left the headline sentence"
+    assert f"${head[0]:+.4f}$ $[{head[1]:+.4f}, {head[2]:+.4f}]$" in t, "the headline band left Section 4"
+    move = max(abs(head[0] - g) for g, _, _ in draws.values())
+    assert f"Re-drawing selection, then every sampled arm, moves it by at most ${move:.4f}$" in t, move
+    fig = {label: band for _g, label, band in h2h_figure_rows()}
+    r2 = fig["every arm re-drawn, seeds 82-84"]
+    assert all(abs(a - b) < 1e-9 for a, b in zip(r2, draws["order_averaged_h2h_replic_opp.csv"])), \
+        "the replication left Figure fig:h2h"
 
 
 def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
@@ -377,8 +446,12 @@ def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
     ab = next(float(r["ratio"]) for r in b if r["band"] == "AB")
     a = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     a = a[a.index("begin{abstract}"):a.index("end{abstract}")]
-    assert f"two $70$B pairs takes ${t1:.2f}\\times$ and ${ab:.2f}\\times$ the meter's time" in a
-    assert "$21.8\\times$" in a
+    # v10 wording: `it costs 21.8x the meter's decode time unbatched and X and Y batched at the
+    # authors' two 70B pairs`
+    # the byte-level ratio is printed at the body's precision ($0.061\times$, Table 4), so every number
+    # in the abstract is literally in the body (test_abstract_consistency)
+    assert f"${t1:.2f}\\times$ and ${ab:.3f}\\times$ batched at the authors' two $70$B pairs" in a
+    assert "$21.8\\times$ the meter's decode time unbatched" in a
 
 
 def test_the_cotaeval_infringement_paragraph_reads_its_csv():
@@ -389,7 +462,8 @@ def test_the_cotaeval_infringement_paragraph_reads_its_csv():
     r = {x["arm"]: x for x in rows("cotaeval_infringement.csv")}
     t = body("appendix_selection.tex")
     assert "Not run:} CoTaEval's infringement half" not in t
-    i = t.index("\\textbf{CoTaEval's infringement half")
+    # v10 made the bold lead-in a \paragraph heading; locate it by its words
+    i = t.index("CoTaEval's infringement half cannot tell a defence from none")
     p = t[i:t.index("infringement.md})", i)]
     n = int(r["risky"]["n"])
     assert n == 500 and "($500$ of its $1{,}000$ items" in p

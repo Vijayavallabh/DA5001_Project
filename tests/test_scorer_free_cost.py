@@ -24,6 +24,14 @@ def _tex(name):
     return " ".join(open(tex(name), encoding="utf-8").read().split())
 
 
+def _scorerfree_paragraph():
+    """Appendix D's scorer-free paragraph (label app:scorerfree) with its table, up to the next
+    \\paragraph: the limits must travel with the numbers in THIS paragraph, not anywhere in the file."""
+    apx = _tex("sections/appendix_selection.tex")
+    i = apx.index("\\label{app:scorerfree}")
+    return apx[i:apx.index("\\paragraph{", i)]
+
+
 def test_the_post_hoc_join_is_labelled_as_one_and_cannot_inflate_the_count():
     """Same rule feat-115 followed: a re-analysis with no committed band is not an
     onset_prediction_*.md and must keep saying so in its first lines."""
@@ -65,26 +73,35 @@ def test_the_three_limits_travel_with_the_numbers():
     """Post hoc, needs a canonical answer, and the ratio is the cost model's denominator rather
     than a measured head-to-head. All three in the note, in the CSV, and in the appendix."""
     note = open(NOTE, encoding="utf-8").read()
-    apx = _tex("sections/appendix_selection.tex")
     for phrase in ("canonical answer", "No metered decoder was run on GSM8K"):
         assert phrase in note, phrase
     assert all("post hoc" in r["limits"] for r in _rows(CSV))
+    # v10 (2026-09-24): "no metered decoder was run on GSM8K" reads "no metered decoder ran on
+    # GSM8K"; the three limits are now checked in the scorer-free paragraph itself.
+    import re
+    apx = _scorerfree_paragraph()
     assert "post hoc" in apx and "canonical answer" in apx
-    assert "no metered decoder was run on gsm8k" in apx.lower()
+    assert re.search(r"no metered decoder (was run|ran) on gsm8k", apx.lower())
 
 
 def test_the_appendix_does_not_claim_to_beat_the_unconstrained_model():
     """Majority vote reaches 0.546 against the risky model's 0.786 greedy. The comparison is among
     mechanisms that carry a certificate, and the appendix has to say so."""
-    apx = _tex("sections/appendix_selection.tex")
-    assert "$0.786$" in apx and "not a claim to have beaten" in apx
+    # v10 (2026-09-24): "... not a claim to have beaten the model one exists to bound" is now "The
+    # vote does not reach the risky model, which scores 0.786 greedy against its 0.546" -- the same
+    # concession, checked in its own sentence with both accuracies read from the CSVs.
     ref = {r["arm"]: r["acc"] for r in _rows("results/selection_verifiable_comma7b.csv")}
     greedy = [v for k, v in ref.items() if "greedy" in k][0]
-    assert f"${float(greedy):.3f}$" in apx, greedy
+    best = max(float(r["gsm8k_acc"]) for r in _rows(CSV) if r["rule"] == "majority vote")
+    sent = [x for x in _scorerfree_paragraph().split(". ") if "does not reach the risky model" in x]
+    assert len(sent) == 1, "the appendix no longer says the vote does not reach the risky model"
+    assert f"${float(greedy):.3f}$" in sent[0] and f"${best:.3f}$" in sent[0], (greedy, best, sent[0])
 
 
 def test_the_body_points_at_the_appendix_range():
-    body = _tex("sections/selection.tex")
+    # v10 (2026-09-24): the body's cost paragraph moved from Section 2 (selection.tex) to
+    # Section 4.5 (experiments.tex).
+    body = _tex("sections/experiments.tex")
     assert "$5.75\\times$" in body and "app:scorerfree" in open(
-        __import__("tests.manuscript", fromlist=["tex"]).tex("sections/selection.tex"),
+        __import__("tests.manuscript", fromlist=["tex"]).tex("sections/experiments.tex"),
         encoding="utf-8").read()

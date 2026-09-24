@@ -1,5 +1,39 @@
 # Session handoff --- 2026-09-24
 
+## Current state, 2026-09-24 night --- v10 restructure done; nothing in flight
+
+The user asked (2026-09-24 evening) for the paper to be reframed around its contribution: lead with the
+result, carry the evidence in figures and tables with self-contained captions, cut prose, and push
+mechanical detail to the appendix. Done as v10 (feat-194). The paper went from `57` to `37` pages: body
+exactly 9 of 9 (page 10 opens on the Ethics Statement), appendix `42 -> 23`. No measured number
+changed. `progress.md` (2026-09-24 night) has every change, every guard that moved and every defect
+found by reading the rendered pages.
+
+**No GPU job is running on either host.** Manuscript: tectonic exit `0`, `0` overfull, `0` `??`,
+bold faces `4`, `37` pages; `analysis/audit_numbers.py`: `3,417` literals, the two expected misses
+(`64256`, `0.99990`). Tests: `1164` passed, `0` failed (`output/v10/shards_2035`).
+
+What the next session must know:
+
+- **The numbering changed.** Table 1 is `tab:certificate` (what one response's certificate says,
+  `results/certificate_table.csv`), Table 2 `tab:repairs`, Table 3 `tab:served` (the head-to-head by
+  serving configuration), Table 4 the cost. Figure 1 is the overview (`sections/fig_overview.tex`),
+  Figure 2 `fig:horns`, Figure 3 `fig:h2h`, Figure 4 breadth, Figure 5 leakage, Figure 6 the
+  judge-free axis (Appendix D). The sections below this one use v8/v9 numbers.
+- **The live inputs** are exactly the twelve files
+  `tests/test_v10_restructure.py::test_the_live_manuscript_inputs_exactly_the_v10_sections` lists; the
+  five retired sections are `*_v9_2026-09-24.tex`, and the v9 sources and PDF are in
+  `output/review_audit/pre_v10_2026-09-24/`.
+- **Page 9 has zero slack.** Every body edit must be length-neutral (cautions (i) and (n)); the last
+  line of the Conclusion is the one that spills.
+- **Four guards now check something different**, each with its reason in `tests/RETIRED_2026-09-24.md`.
+  None of them is a concession.
+- **Caution (be)**: a number set beside a `\cite` is checked against that paper's text. The intro's
+  "about a quarter of prompts" (Cooper et al.) was not what Cooper et al. report.
+
+Recommended next step: one read of the compiled PDF end to end for flow, then the human-only
+submission steps (feat-016, never started by an agent). Deadline 26 Sept 2026, 17:29 IST.
+
 ## Current state, 2026-09-24 17:20 IST --- every skipped review point is done; nothing in flight
 
 The round the user asked for ("finish all the tasks that you skipped with utilizing all the gpus in

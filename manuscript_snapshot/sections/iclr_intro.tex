@@ -1,93 +1,67 @@
-% v9 (2026-09-24): rescoped after the fifth review round. Every judged sentence now says which of
-% two comparisons it is -- selection against its OWN anchor, or selection against the METERED
-% decoder -- and the second is stated by serving configuration (Table~\ref{tab:served}), because
-% feat-184/185 showed its sign depends on it. Proposition~\ref{prop:sparse} is called what it is, a
-% sparsity bound. v8 kept as output/review_audit/pre_main_2026-09-24/iclr_intro.tex.
+% v10 (2026-09-24): leads with the contribution; Figure 1 is the overview (mechanism schematic and the
+% two measured consequences). v9 kept in output/review_audit/pre_v10_2026-09-24/sections/.
 
 \section{Introduction}\label{sec:intro}
 
-Language models reproduce passages of their training data, and for copyrighted data that is a legal
-exposure rather than a benchmark curiosity: a $70$B open-weights model returns $50$-token windows of
-a popular novel on roughly a quarter of prompts drawn from it \citep{cooper2025extracting}, and
-retraining it away is impractical against a stream of takedowns. Certified decoders offer something
-cheaper: bound, at decode time, how far the output may drift from a \emph{safe} model that
-never saw the work. The drift is charged in nats, banked in a token bucket, and published as a
-single $k$ --- anchored decoding \citep{he2026anchored} instantiating
-$k$-near-access-freeness \citep{vyas2023provable} --- and the appeal is that $k$ looks like
-$\varepsilon$ in differential privacy: a dial a deployer sets and a number a rights-holder reads.
+Language models memorise their training data: \texttt{Llama-3.1-70B} reproduces \emph{Harry Potter and the Sorcerer's Stone} almost verbatim
+from its first few words \citep{cooper2025extracting}, and
+retraining that away is impractical against a stream of takedowns. Certified decoders need no
+retraining. They serve a law $q$ that stays within a divergence budget $K$ of a \emph{safe} model $p_s$
+trained without the protected work, $k$-near-access-freeness \citep{vyas2023provable}, so a small $K$
+bounds how much likelier the served text is to be the work than the safe model's own output. The
+deployed instance, anchored decoding \citep{he2026anchored}, charges the divergence per token from a
+bucket of rate $k$, certifies a $T$-token response at $K = kT$, and publishes $k$ as a deployer would
+publish the $\varepsilon$ of differential privacy.
 
-\textbf{This paper moves the budget from the token to the draw.} Draw $n$ completions from the safe
-model, score them by anything at all, and serve the best. The sampler never departs from the safe
-model; what departs is the \emph{choice} among its draws, and that is all
-Proposition~\ref{prop:selection} charges. The served law satisfies $q(y) \le n\,p_s(y)$, a
-\emph{pathwise} certificate of exactly $\log n$ nats that bounds every event rather than an
-average, sits at the strongest R\'enyi order in the family the deployed meters charge in, and does
-not grow with the work where $K = kT$ does. Nothing in it mentions a reward, so self-consistency
-\citep{wang2023selfconsistency} run over a safe model is an instance. Run over a web-trained model, as
-usual, the bound is relative to a model that saw the work and says nothing about copyright.
+A budget charged per token grows with the output, and a certificate about a work $x$ says nothing once
+$K$ reaches the safe model's surprisal of it, $S(x) = -\log p_s(x)$, at every R\'enyi order
+(Proposition~\ref{prop:threshold}). Both grow in proportion to length, so vacuity is decided by $k$
+against the surprisal rate $s(x)$ and never by $T$ (Figure~\ref{fig:selection}c). At the authors' book
+setting, $k=3$ over $200$ tokens, the certificate is vacuous for all $758$ protected passages we test.
+
+\textbf{We spend the budget once, on the draw.} Draw $n$ completions from the safe model, score them
+with anything, and serve one (Figure~\ref{fig:selection}b). The served law satisfies
+$q(y) \le n\,p_s(y)$ for every $y$ (Proposition~\ref{prop:selection}): a pathwise certificate of
+$\log n$ nats that holds for any scorer, an adversarial one included, and does not depend on the length
+of the output. At $n=8$ it is $2.08$ nats where a meter at $k=10$ publishes $2000$. Self-consistency
+\citep{wang2023selfconsistency} run over a safe model is an instance.
 
 \begin{figure}[t]
 \centering
+\input{sections/fig_overview}\\[3pt]
 \includegraphics[width=\textwidth]{selection_frontier.pdf}
-\caption{\textbf{A copyright budget charged per token grows with the work; charged on the draw it
-does not.} \textbf{(a)} A metered decoder publishes $K = kT$ (red) and a work is worth
-$S(x) = s(x)T$ (grey band, nine pairs): both are rays, so vacuity --- $K \ge S(x)$, shaded --- is
-decided by $k/s(x)$ and never by length. Selection charges $\log n$ once (blue). \textbf{(b)} One judge pass: every point is an
-order-averaged level against the same opponent, the risky model's own draw ($0.5$ = parity), and
-levels compare within this panel only; $x$ is the meter's \emph{measured} spend and selection's
-\emph{bound}. The meter climbs to parity and stops, being the risky model at $k \ge 5$;
-selection passes it at $n=8$. Dotted: Theorem~\ref{thm:nfl}'s
-frontier.}
+\caption{\textbf{Where the budget is spent decides what it certifies.} \textbf{(a)} A meter tilts each
+token from the safe model $p_s$ toward the risky model $p_r$, charging a bucket. \textbf{(b)} Selection
+draws $n$ outputs from $p_s$ and serves one; only the choice is charged. \textbf{(c)} The meter's
+$K = kT$ (red) and the work's price $S(x) = s(x)T$ (grey, nine pairs) are both rays in the work's length,
+so vacuity ($K \ge S(x)$, shaded) is decided by $k/s(x)$; selection's $\log n$ (blue) is flat.
+\textbf{(d)} One judge pass: order-averaged level against the risky model's own draw ($0.5$ is parity);
+$x$ is the meter's measured spend and selection's KL bound, arms at $0$ nats drawn at $10^{-3}$. The
+meter reaches parity only as the risky model ($k \ge 5$); selection passes it at $n=8$. Dotted:
+Theorem~\ref{thm:nfl}'s frontier.}
 \label{fig:selection}
 \end{figure}
 
-\textbf{We keep two comparisons apart.} Against its \emph{own} safe model, best-of-$64$ is judged
-better on our workload and on AlpacaEval for a bound of $3.175$ nats, at $n=8$ it beats its own
-anchor at four of six anchors in two families, and it lifts exact match with no judge. Against
-the \emph{metered decoder} (Figure~\ref{fig:selection}b, Table~\ref{tab:served}) the sign depends on
-how the risky model is served: where it continues text, as in an earlier audit's released logs and
-at the authors' own $70$B pair, selection is judged better at every budget we ran, by $+0.0655$
-$[+0.040, +0.092]$ against the meter's measured $171.3$ nats; where the judge rewards instruction
-following, the meter wins, only at budgets that certify nothing about a $50$-token window.
-
-The certificate holds against an \emph{adversarial} scorer, which is what makes it a security
-statement: a malicious score can raise the safe model's probability of any event by at most $n$ per
-response and $m\log n$ nats over $m$ responses. What it can leak is the anchor's own leakage, amplified: zero near-verbatim recall at every
-clean anchor, at $n \le 64$ and at $n=256$, even for an attacker scoring by the memorising model's
-own likelihood --- a bound \emph{relative} to a vetted anchor (Ethics Statement), so the zero verifies
-the anchor and not the mechanism --- and over twelve deliberately contaminated anchors $1.0$ to $7.0$ of the $64$ permitted on one draw and $1.0$ to
-$3.0$ on a second.
-
-\paragraph{Vacuous, or sparse --- and what that does not rule out.} A rate's budget
-$K = kT$ grows with the work by construction; the question is whether a meter could be repaired to
-spend less where it matters. For any causal policy the sequence divergence is \emph{exactly} the
-sum of its per-step divergences, so one held to $K$ departs from the safe model by more than
-$\varepsilon$ at no more than $K/\varepsilon$ steps in expectation (Proposition~\ref{prop:sparse}).
-This is a sparsity bound on the \emph{shape} of a spend, not an impossibility result: a per-token allowance either grows with the
-work, so $K/S(x) \to k/s(x)$ never improves, or stays bounded and is spent at $O(1)$ steps. It forbids
-\emph{spreading} a bounded budget, as a rate does, not \emph{concentrating} one, as selection does,
-and whether a causal policy can concentrate as well is open. The deployed class takes the vacuous
-horn, paying wherever its bucket is slack the full cost of \emph{imitating} the risky model
-(Proposition~\ref{prop:imitation}). Of the four escapes left --- a sharper charge,
-a lower cap, a better schedule, and a budget granted up front, the first and last of which
-\citet{he2026anchored} ablate as their $\infty$-R\'enyi and Global variants --- three land on a horn
-and the fourth falls short of selection (Section~\ref{sec:orders}).
+Against anchored decoding at the authors' own anchor, best-of-$64$ ($\log 64 = 4.16$ nats) is judged
+better at every budget whenever the risky model continues text: in an earlier audit's released
+configuration, at the authors' $70$B pair, and against their byte-level decoder
+(Table~\ref{tab:served}). The difference survives fresh draws and five of six judges
+(Figure~\ref{fig:h2h}); the meter wins only where the judge rewards instruction following, at budgets
+whose certificate exceeds a $50$-token window's surprisal. With an adversarial scorer, selection's near-verbatim recall is $0.0000$ at every $n \le 64$ and at $n=256$, a bound \emph{relative} to a vetted anchor; with no judge, majority vote over a safe model lifts
+GSM8K exact match from $0.320$ to $0.546$ for $3.47$ nats (Figures~\ref{fig:breadth}
+and~\ref{fig:safety}).
 
 \paragraph{Contributions.}
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt,parsep=0pt]
-\item \textbf{A certificate that does not grow with the work}: pathwise $\log n$ for any selection
-rule, score and safe model (Proposition~\ref{prop:selection}), against a vacuity threshold that no
-R\'enyi order moves (Proposition~\ref{prop:threshold}), and a sparsity bound
-(Proposition~\ref{prop:sparse}) explaining why a rate cannot be repaired into one --- not a bound on
-every causal policy.
-\item \textbf{An audit of anchored decoding at its authors' own anchor and $70$B pair}: extraction
-begins within about $0.8$--$1.35$ of $s(x)$ across nine pairs with nine distinct anchors, and
-wherever the budget constrains a $50$-token window the decoder is judged indistinguishable from its
-safe model.
-\item \textbf{A comparison scoped to what it measured} (Table~\ref{tab:served}): better than the
-meter when the risky model continues text, worse where the judge rewards instruction following,
-leakage bounded by the anchor's own, at $61.3\times$ the meter's forward passes and $21.8\times$ its
-wall-clock, and a loss at matched compute.
+\item \textbf{A certificate that does not grow with the output}: pathwise $\log n$ for any selection
+rule, score and safe model (Proposition~\ref{prop:selection}), composing to exactly $m\log n$ over $m$
+adaptive queries, set against a vacuity threshold $K = S(x)$ that no R\'enyi order moves
+(Proposition~\ref{prop:threshold}; Section~\ref{sec:method}).
+\item \textbf{Vacuous, or sparse: why a per-token rate cannot be repaired into one}: a budget that grows with the work is vacuous from $k = s(x)$ on, and a bounded one moves the output law at $O(K/\varepsilon)$ steps (Proposition~\ref{prop:sparse}), a bound on the \emph{shape} of a spend and not on every causal policy. The deployed meter shows both horns: extraction begins at $0.88$ to
+$1.17$ of $s(x)$ across nine pairs, and past the risky model's imitation rate its spend stops growing
+with its cap (Section~\ref{sec:frontier}).
+\item \textbf{A head-to-head scoped to what it measured}: better than the meter where the risky model
+continues text, worse where the judge rewards instruction following, leakage bounded by the anchor's
+own, at $21.8\times$ the meter's decode time unbatched and a loss at matched compute
+(Section~\ref{sec:experiments}).
 \end{itemize}
-None of this contradicts the mechanisms' theorems --- no per-trajectory violation occurs in
-$100{,}000$ budgeted trajectories; the gap is between what they bound and what $k$ is taken to mean.

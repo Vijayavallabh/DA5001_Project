@@ -1,223 +1,98 @@
-% Plan v5 / item F: the full limitations discussion, summarised in Section~\ref{sec:limitations}.
+% v10 (2026-09-24): every concession of v9's appendix_limitations kept, the walkthroughs cut. v9 is in
+% DA5001_Project/output/review_audit/pre_v10_2026-09-24/sections/appendix_limitations.tex.
 \section{Limitations in full}\label{app:limitations}
 
 \paragraph{One protected corpus.}
-Every extraction measurement runs on sixteen English genre novels, from CopyBench and BookMIA. The
-robustness cells in Appendix~\ref{app:scaling} are nine re-analyses of those same works, so
-$p = 3.1\times10^{-5}$ is the smallest value sixteen paired items can produce: read it as ``the
-trend holds for every novel we have'', not as independent replication. Non-literal reproduction,
-other languages and other genres are untested.
+Every extraction measurement runs on sixteen English genre novels from CopyBench and BookMIA, plus the
+four French and German works of the multilingual arm. The margin's sign test, $p = 3.1\times10^{-5}$, is
+the smallest value sixteen paired items can produce: it says the trend holds for every novel we have, not
+that it was independently replicated. Non-literal reproduction and other genres are untested. On two
+further corpora the level of the onset survives, every onset within about $1.3\times$ of $s(x)$, and the
+ordering of pairs does not (Appendix~\ref{app:collapse}), so an onset ratio is reportable to its order of
+magnitude and no more finely. Varying only a memoriser's fine-tuning length moves one pair's ratio from
+$0.8756$ to $1.3477$, $1.64\times$ the nine-pair spread; re-seeding moves it by $0.033$, $0.066$ and $0.080$
+where the fine-tune converged and by $0.260$ over three seeds and $0.347$ over four where it did not; and
+neither intervention that would make convergence a cause could be built (a loss floor of $0.0222$ against
+a $0.02$ stop-loss; a memoriser that reproduces nothing after a $17\%$ change in learning rate). The
+nine-pair table's memorisers are matched on none of training length (a factor of $5.1$ in sampled $k=-1$
+recall), batch size, accumulation, stopping rule or convergence. The seed-word gradient $\rho = -0.958$ keeps
+its sign in every re-draw under the largest re-seed noise measured and $p<0.05$ in $92.3\%$ of them, at a
+median of $-0.849$: a rank ordering, not a coefficient.
 
-Two results were re-run on two disjoint corpora with everything but the protected work held fixed
-(Appendix~\ref{app:collapse}). No order cell changed sign and the pair ranking survived; the onset did
-not fare as well --- on the third corpus the ordering \emph{inverts} and the fine-tokenizer pair's
-interval stops excluding $1$. What survives all three is the level, every onset landing within about
-$1.3\times$ of $s(x)$; what does not is which pairs sit above the vacuity threshold. Two of the three
-pairs vary across corpora by less than a third of their own within-corpus width and the third by two
-and a half times it, so an onset ratio is reportable to its order of magnitude and no more finely.
+\paragraph{More passages do not narrow the onset interval.}
+The bootstrap interval on onset\,/\,$s(x)$ has a mean width of $0.285$ across the pairs at $100$ passages
+each; on one pair under one metric it is $0.219$ at $n=100$ and $0.215$ at $n=458$, where independent
+sampling noise predicts $0.102$. The variance is between works, not windows, so several registered bands
+about $0.1$ wide land undecided even where the shift is large and in the predicted direction. More distinct
+works would fix it; more windows will not.
 
-A further arm bounds how much of a ratio belongs to its pair at all. Holding pair, corpus, anchor
-and grid fixed and varying only the memoriser's fine-tuning length moves the ratio from $0.8756$ to
-$1.3477$ --- $1.64\times$ the whole spread of the nine-pair table, enough to flip the sign of the
-property the tokenizer split turns on. Four ladders then fix the epoch count and vary only the seed:
-on the three with a strong memoriser the ratio moves by $0.033$, $0.066$ and $0.080$; on the fourth,
-which barely clears our admission criterion of $0.10$ and whose stop-loss never fires, by $0.260$
-over three seeds and $0.347$ over four. The ratio reproduces where the fine-tune converged and not
-where it did not. That association is not shown to be causal, and not for want of trying: the first
-pair's loss floors at $0.0222$ against a $0.02$ threshold, and the second goes from converging to
-reproducing nothing across a $17\%$ change in learning rate. What moves the ratio is memoriser
-strength, which the table holds fixed neither in training length --- its memorisers span a factor of
-$5.1$ in sampled $k=-1$ --- nor in batch size, accumulation and stopping rule, nor in whether the
-fine-tune converged at all, which five of the nine did not. We therefore report the table as
-evidence that extraction begins near $s(x)$, which it supports, and not as evidence about which
-pairs begin above it, which it does not. The seed-word gradient $\rho = -0.958$ is likewise a
-correlation over nine differently-trained memorisers: re-drawing the ratios under the largest
-re-seed noise we measured keeps its sign in every draw and $p<0.05$ in $92.3\%$ of them, but puts
-its median at $-0.849$, so it is a rank ordering that survives and not a coefficient to two decimals
-(Appendix~\ref{app:onset}).
-
-\paragraph{More passages do not narrow the onset interval, and that is why several arms are undecided.}
-The bootstrap interval on onset\,/\,$s(x)$ has a mean width of $0.285$ across the pairs at $100$
-passages each, and quadrupling the passages does not shrink it: on one pair under one metric the
-width is $0.219$ at $n=100$ and $0.215$ at $n=458$, where independent sampling noise would predict
-$0.102$. The variance is between \emph{works}, not between passages drawn from them, so it is
-bounded below by the sixteen novels. The interventions in Section~\ref{sec:onset} therefore specify
-bands about $0.1$ wide, narrower than this method can deliver, and several arms land undecided even
-where the measured shift is large and in the predicted direction. What would fix that is more
-distinct works, not more windows.
-
-\paragraph{The onset ratio runs over a range, and we can name one cause but not the other.}
-$s(x)$ spans $1.87\times$ across the nine pairs in tokenizer-free units, short of the dynamic range
-a data collapse normally rests on, and at the crossing budgets only one to four works in a hundred
-leak. In units of each pair's own $s(x)$, the five pairs at about four characters per token overlap
-freely around $0.90$; both KL3M pairs, at about two, exclude $1$; and the eighth pair's interval is
-the widest of all and excludes nothing, while its own control, the ninth, is the narrowest. The
-\emph{ordering} is what nine pairs establish, not the level of any one of them.
-
-The KL3M pairs differ from the rest in three ways at once --- the tokenizer, targets twice as long in
-tokens, and for one of them the weakest memoriser --- so pair six was built to remove one. It shares
-the tokenizer and target length with pair five and memorises thoroughly ($s_r/s_s = 0.09$ against
-$0.35$), and its ratio is nevertheless $1.053$: memorisation strength is not what puts a pair beyond
-the vacuity point, though it modulates the ratio within a family, in the direction opposite to
-Eq.~\eqref{eq:req}. That leaves the tokenizer confounded with everything the tokenizer determines, and
-for a fixed corpus those are not separate variables --- a finer tokenizer changes the adversary's seed
-($7.5$ words on the KL3M pairs against $13.9$--$15.0$), the decode steps before the passage is reached
-($445$ against $197$--$230$) and the target length together, and all three order the nine pairs the way
-the ratio is ordered. We can name the cause that is not memorisation strength; we cannot separate the
-three the tokenizer moves at once.
+\paragraph{The onset's range has one cause we can name and one we cannot.}
+$s(x)$ spans $1.87\times$ across the nine pairs, short of the range a data collapse normally rests on. Both
+KL3M pairs exclude $1$ and differ from the rest in tokenizer, target length in tokens and, for one, memoriser
+strength; a pair built to remove the last memorises thoroughly ($s_r/s_s = 0.09$ against $0.35$) and still
+reads $1.053$. The tokenizer remains confounded with what it moves at once: the adversary's seed ($7.5$
+words against $13.9$--$15.0$), the decode steps before the passage ($445$ against $197$--$230$) and the
+target length.
 
 \paragraph{Theorem~\ref{thm:nfl} is a converse.}
-It lower-bounds the budget any policy needs, including the optimal one. Our decoder is causal and
-meters with a token bucket, and we do not bound the gap between the two. That gap is large and
-measurable --- a factor of $5$ to $32$ between the divergence on the risky model's own rollout and
-the divergence paid on a budgeted one --- and closing it is the clearest open problem this paper
-leaves.
+It lower-bounds the budget any policy needs; we do not bound the gap between that optimum and a causal
+token-bucket decoder, which is a factor of $5$ to $32$ between the divergence on the risky model's own
+rollout and the divergence paid on a budgeted one.
 
 \paragraph{What selection anchoring cannot do.}
-Six limits, of which the first is not a defect but the guarantee seen from the other side.
+\emph{The support ceiling.} $q(y) \le n\,p_s(y)$ is also a quality ceiling: no $n$ produces text outside the
+anchor's support. At $n=8$ on the judged workload it does not bind: the oracle among the same eight
+candidates reaches $u = 0.807$ where the deployed scorers reach $0.52$. Across anchors it is confirmed on
+AlpacaEval: the audited anchor gains $+0.074$ $[+0.042, +0.108]$ and $+0.020$ $[-0.011, +0.052]$ under two
+judges, Comma-7B $+0.075$ $[+0.044, +0.106]$ and $+0.152$ $[+0.119, +0.185]$; MT-Bench's $80$ prompts
+resolve nothing at a paired half-width of $0.10$. Within one anchor, across AlpacaEval's five sources and
+two MT-Bench families, the correlations of $-0.79$ and $-0.70$ between gain and control level are not
+separable from a null in which selection does nothing ($-0.36 \pm 0.34$ and $-0.34 \pm 0.35$, $P = 0.09$
+and $0.17$).
 
-\emph{The support ceiling.} $q(y) \le n\,p_s(y)$ says a served string must be one the safe model
-would have drawn, so the certificate and the quality ceiling are the same inequality: no $n$
-produces text outside $p_s$'s support, and a deployer whose safe model cannot perform the task at
-all gains nothing. That is the exact price of a bound that survives an adversarially chosen scorer,
-and the structural difference from a metered decoder, which can serve text the anchor would never
-produce and pays for it in a currency indexed to the protected work. At the scale we measure it does
-not bind: the oracle arm reaches $u = 0.807$ among the same eight candidates where the deployed
-scorers reach $0.52$, so the binding constraint at $n=8$ is the scorer, not the anchor.
+\emph{Empty drafts.} The audited anchor's first draw is empty on $14.6\%$ of prompts in its $n=8$ arm and
+$12.8\%$ in its $n=64$ arm, against $0.0\%$ at both Pleias anchors, $0.2\%$ at KL3M-1.7B, $18.4\%$ at
+Comma-7B and $31.6\%$ at Comma-7B-1T, all three Comma anchors above the $5\%$ the admission criterion
+allows, recorded rather than exempted. On the $427$ prompts whose $n=1$ draw is non-empty the audited
+anchor's $n=8$ gain is $+0.079$ $[+0.028, +0.128]$ against $+0.073$ on all $500$, and every interval that
+excluded zero still does but one, Comma-1T's under judge~B, whose lower end was $+0.001$.
 
-\emph{Part of any gain could be a degeneracy filter, and is not.} The text the admission check
-first read carried the tail of its prompt, so an empty draw looked non-empty. On the true
-generations the audited anchor's first draw is empty on $14.6\%$ of the $500$ prompts in its $n=8$
-arm and $12.8\%$ in its $n=64$ arm, against $0.0\%$ at both Pleias anchors, $0.2\%$ at KL3M-1.7B,
-$18.4\%$ at Comma-7B and $31.6\%$ at Comma-7B-1T --- all three Comma-family anchors above the $5\%$
-the admission criterion allows, recorded rather than exempted. Nor does best-of-$n$ always avoid one: the reward,
-which scored the echo-carrying text, served an empty completion at $n=64$ on $41$ prompts that had a
-non-empty candidate. On the $427$ prompts whose $n=1$ completion is non-empty the audited anchor's $n=8$ gain, judged on
-the repaired text, is $+0.079$ $[+0.028, +0.128]$ against $+0.073$ on all $500$; under judge~B the gain
-moves by at most $0.012$ at every anchor, under judge~C it \emph{rises} at both Comma-7B anchors, and
-every interval that excluded zero still does but one --- Comma-1T's under judge~B, whose lower end was
-$+0.001$ --- and the
-headline difference restricted to prompts whose two anchor controls are both non-empty is
-$+0.0441$ $[+0.0024, +0.0864]$ (\texttt{results/\allowbreak forest\_\allowbreak deecho\_\allowbreak note.md}).
+\emph{Overoptimisation.} To $n=512$ no judged ladder turns over, against registered bands that allowed it
+to; under a task metric the $7$B reward turns over on TriviaQA and CoTaEval (Table~\ref{tab:scorerladder}),
+and nothing in Proposition~\ref{prop:selection} prevents it on a judged workload at larger $n$.
 
-\emph{The ceiling binds at the anchor, and we could not measure it within one.} On AlpacaEval's $805$ instructions, judged on the repaired text, the audited anchor gains $+0.074$
-$[+0.042, +0.108]$ under one judge and $+0.020$ $[-0.011, +0.052]$ under the other, and MT-Bench's
-$80$ prompts resolve nothing in either direction at a paired half-width of $0.10$. Two tests of the ceiling followed, on two axes, and they
-do not agree.
+\emph{The scorer is a second model and a stated requirement.} It cannot break the certificate but can
+degrade utility arbitrarily, so served utility and the certificate must be monitored separately. Every
+reward turn-over here is measured at \texttt{Qwen2.5-7B-Instruct} and none survives a larger scorer, so on
+knowledge-intensive tasks selection under a pointwise reward carries a scorer-size requirement, and a
+deployer who ignores it can be worse off at every $n$ than serving the anchor once. On the judged workload
+the two larger scorers lift nothing ($-0.0285$ and $-0.0085$ against the $7.6$B rung), and no latency arm
+ran above $7$B.
 
-\emph{Across anchors} it is confirmed: Comma-7B on the same $805$ prompts, the same unconstrained
-opponent and the same judges gains $+0.075$ $[+0.044, +0.106]$ and $+0.152$ $[+0.119, +0.185]$, monotone in $\log n$ in both --- at least double the audited anchor's, with judge~B's interval taken
-off zero, against a band fixed in advance asking for an excess of $0.03$. At the capable anchor the
-standard benchmark is not harder than our own prompts: on judge~C its gain slightly exceeds the in-house $+0.141$, so the prompt-set reading does not fire either.
+\emph{The bound is relative to $p_s$.} A safe model that has seen the work carries its contamination
+through, multiplied by $n$ (Table~\ref{tab:contam}); the $0.0000$ of Section~\ref{sec:experiments} is $n$
+times a base rate that is zero because the anchor never saw these novels.
 
-\emph{Within one anchor} it is not measurable. Across AlpacaEval's five constituent sources and two
-MT-Bench families, fixed before the split was computed, the gain does not track the anchor's control
-level in either judge, and the $-0.79$ and $-0.70$ it does show (on the recorded text) are not separable from a
-within-prompt exchangeability null in which selection does nothing, which already gives
-$-0.36 \pm 0.34$ and $-0.34 \pm 0.35$ over $20{,}000$ draws, at $P = 0.09$ and $0.17$. Seven cells
-cannot resolve this and we do not claim they do. The consistent reading is that the ceiling is a
-property of the anchor's overall capability rather than of the domain it is asked about, which is
-the direction of Spearman $+1.000$ between anchor-alone level and gain over the four anchors ---
-four points, and descriptive.
-
-\emph{Overoptimisation.} As $n$ grows the argmax is optimised harder against the scorer's own
-errors, which for reward models is known to turn the gain over rather than saturate it
-\citep{gao2023scaling}. Our extraction arms reach $n=256$ and our judged arms $n=512$ at the audited anchor; whether
-judged utility keeps rising was measured against intervals fixed in advance partitioning the line
-into a growing, a saturating and an overoptimising reading, and to $n=512$ no judged ladder turns
-over. Where the answer is scored by a task metric instead, the third reading is not hypothetical:
-the pointwise reward turns over on TriviaQA and, at four anchors, on CoTaEval's news questions (both
-in Appendix~\ref{app:selection}). Nothing in
-Proposition~\ref{prop:selection} prevents it on a judged workload at larger $n$.
-
-\emph{The scorer is a second model.} It cannot break the certificate --- that is the content of the
-proposition --- but it can degrade utility arbitrarily, and a compromised or badly calibrated scorer
-turns the mechanism into an expensive way to serve the worst of $n$ anchor samples. The failure is
-visible in exactly the place a deployer would look, the served utility, and not in the certificate,
-which is why the two must be monitored separately. The compute is $n$ draws and $n$ scoring passes
-against the two forward passes per token a metered decoder makes; neither dominates in general, and
-at the sizes used here the two are within a small factor.
-
-\emph{The bound is relative to $p_s$.} $\Pr_q[E] \le n \Pr_{p_s}[E]$ is about the safe model's own
-probability of emitting the work, so a safe model that has itself seen the work carries its
-contamination straight through, multiplied by $n$. This is inherited from near-access-freeness and
-is not specific to selection, but it is worth restating where the numbers are small enough to look
-reassuring: the $0.0000$ of Section~\ref{sec:experiments} is $n$ times a base rate that is zero
-\emph{because the anchor never saw these novels}, and it would not be zero for an anchor that had.
-
-% The two-judge calibration and the two-pipeline gate were compressed on 2026-09-19 for the page
-% budget. Both are CONCESSIONS, so neither is dropped: every number a pre-registration committed
-% the paper to carrying is below, and only the walkthrough is gone.
-\paragraph{The metered decoder as its authors run it, and what we did not reproduce.}
-\citet{he2026anchored} pair base risky models --- \texttt{Llama-3.1-70B}, \texttt{Qwen2.5-72B},
-\texttt{Llama-4-Scout} --- with openly licensed anchors, decode books at temperature $0.7$ with a
-repetition penalty of $1.1$, fuse mismatched vocabularies at the byte level through AnchoredByte
-\citep{hayase2026bytesampler}, and score utility by Prometheus-2 fluency on book continuations
-\citep{kim2024prometheus2} and FActScore precision on biographies \citep{min2023factscore}. We ran
-their token-level pair, TinyComma with the $70$B base (Table~\ref{tab:served}), but at temperature
-$1.0$ with no penalty, and the released logs' $8$B-Instruct, served as those logs serve it, without
-its chat template; we ran AnchoredByte, their package unmodified, only at their recommended pair, Comma-7B with the
-$70$B base (Appendix~\ref{app:anchoredbyte}), so the other licensed anchors have no metered
-counterpart; and we report their two metrics beside the judge only with open models in place of
-\texttt{gpt-4.1-mini} (Appendix~\ref{app:hemetrics}). None of these changes a certificate or a
-leakage number, which do not depend on the utility metric or the serving template; each can change a
-judged one, and the chat-template arm shows by how much. No human rated anything, and no lawyer
-assessed any output: a certificate bounds a probability under the anchor, and whether a served text
-infringes is a legal question this paper does not answer.
+\paragraph{The metered decoder as its authors run it.}
+\citet{he2026anchored} pair base risky models (\texttt{Llama-3.1-70B}, \texttt{Qwen2.5-72B},
+\texttt{Llama-4-Scout}) with openly licensed anchors, decode books at temperature $0.7$ with a repetition
+penalty of $1.1$, fuse mismatched vocabularies through AnchoredByte, and score utility by Prometheus-2
+fluency and FActScore precision. We ran their token-level pair at temperature $1.0$ with no penalty, the
+released logs' $8$B-Instruct without its chat template (and, separately, with it), AnchoredByte only at
+their recommended pair, and their two metrics with open models in place of \texttt{gpt-4.1-mini}. None of
+this changes a certificate or a leakage number; each can change a judged one. No human rated anything and no
+lawyer assessed any output.
 
 \paragraph{Two judges, one workload.}
-Utility is scored by instruction-tuned models on the benchmark's own prompt classes rather than
-deployment traffic. Two judges at $600$ comparisons per arm agree on the sign everywhere and on
-neither endpoint's magnitude: at $k=1$ one reads $-3.66\sigma$ against the anchor and the other
-$+0.11\sigma$, at $k=10$ $-6.97\sigma$ against $-3.29\sigma$. The null arm calibrates that gap rather
-than leaving it to argument --- served the \emph{unconstrained} risky model, the first judge separates
-it at $-6.09\sigma$ and the second at $-2.49\sigma$, so the second is the coarser instrument --- and
-that calibration is itself noisy, the same $500$ comparisons judged in an earlier run giving
-$-5.47\sigma$ and $-1.49\sigma$, so about a $\sigma$ of run-to-run drift is the floor beneath which no
-separation reported here should be read. What survives both is the pair of endpoints: neither judge
-separates the decoder from the anchor at $k=0.5$, and both do at $k\ge10$. Table~\ref{tab:orders} is
-at matched budget with $n=150$ judged pairs; Appendix~\ref{app:matched} repeats it at matched
-\emph{utility} without a judge on twelve pairs in seven families, where the ranking is non-monotone
-in $\alpha$, reverses on nine of them, and is predicted by nothing measured.
+Two judges at $600$ comparisons per arm agree on the sign everywhere and on neither endpoint's magnitude:
+at $k=1$ one reads $-3.66\sigma$ against the anchor and the other $+0.11\sigma$, at $k=10$ $-6.97\sigma$
+against $-3.29\sigma$. Served the unconstrained risky model, the first separates it at $-6.09\sigma$ and the
+second at $-2.49\sigma$, and an earlier run of the same $500$ comparisons gave $-5.47\sigma$ and
+$-1.49\sigma$, so about a $\sigma$ of run-to-run drift is the floor beneath which no separation here should
+be read.
 
-\paragraph{The two leakage measurements cannot be put on one axis, and we tried.}
-Section~\ref{sec:experiments} reports the metered decoder's extraction onset and selection
-anchoring's zero recall through two pipelines, and the released CSVs disagree about the one quantity
-they share: the same memorising model, $100$ passages, $20$-token seeds and temperature read $0.4921$
-and $0.3925$. A gate fixed in advance decided whether a joint table could honestly be built --- re-run
-both arms at one generation length and require their two memoriser-alone rows to agree within $0.02$.
-They do not. At a matched $300$ tokens the two read $0.4921$ and $0.4428$, a residual of $0.0493$, so
-\textbf{no joint table is built} and no ratio is quoted across the two files. Neither pipeline is
-wrong: generation length accounts for half the original discrepancy exactly as predicted, since at
-$200$ tokens against a full-length reference near-verbatim recall is capped near $0.77$ by
-construction, and the residual has two candidate causes the arm cannot separate ---
-\texttt{generate} consumes the sampler's randomness per step, so changing the token budget changes
-the draw as well as the length, and the metered arm decodes each passage's own target length while
-the selection arm decodes a flat $300$. So every leakage number here is read against a control from
-\emph{its own} pipeline, the two mechanisms' leakage is never divided one by the other, and the
-comparison this paper makes between them is about what they \emph{spend}, which is measured on one
-axis, and not what they leak, which is not.
-
-\paragraph{The scorer is a stated requirement, not a free parameter.}
-Every reward arm in this paper scores with \texttt{Qwen2.5-7B-Instruct}, and every reward
-turn-over it reports is measured there: TriviaQA (Spearman $-0.607$, the $n=16$ interval excluding
-zero on the wrong side) and CoTaEval news at four anchors (to $-0.1836$ at the headline anchor,
-$-0.2334$ on a disjoint re-draw). \textbf{None of them survives a larger scorer.} Re-scoring the
-same cached generations --- majority vote identical at all seven cells, so the text is
-byte-identical and only the instrument changes --- a $14$B reward removes the TriviaQA fall and a
-$72$B one reverses it, and at $72$B no CoTaEval anchor turns over while two climb
-(Appendix~\ref{app:selection}). So selection anchoring under a pointwise reward carries a
-\emph{scorer-size requirement} on knowledge-intensive tasks, and a deployer who ignores it can be
-worse off at every $n$ than serving the anchor once.
-
-We state it as a requirement rather than a repair for three reasons. The $7$B scorer is the
-operating point of every other number in this paper, including the $35.4\times$ serving
-measurement, so nothing measured there is revised. The requirement is task-specific and we
-measured which way: on the \emph{judged} workload the same two scorers lift the gain by nothing
-($-0.0285$ and $-0.0085$ against the $7.6$B rung, both marginal), so the headline $+0.1045$ is the
-best this mechanism does there and a deployer buys nothing by spending more on the reward model. And a larger scorer is a cost we did
-not price: the reward pass is $9.3\%$ of selection's wall-clock and the draws $90.7\%$, which makes
-the direction favourable, but no latency arm was run above $7$B and no number here should be read
-as one. What is untouched either way is the certificate, which is $\log n$ for any score of any
-size --- the property that makes Proposition~\ref{prop:selection} score-agnostic is exactly the
-property that makes this rescoping possible without revising a single guarantee.
+\paragraph{The two leakage measurements are not on one axis.}
+The meter's onset and selection's zero come from two pipelines whose memoriser-alone rows disagree ($0.4921$
+against $0.3925$; at a matched $300$ tokens $0.4921$ against $0.4428$, a residual of $0.0493$ against a
+registered gate of $0.02$). The residual has two causes the arm cannot separate: changing the token budget changes the draw as well as the length, and the meter decodes each passage's own target length where selection decodes a flat $300$. No joint table is built, every leakage number is read against a control from
+its own pipeline, and the comparison between the mechanisms is about what they spend, not what they leak.

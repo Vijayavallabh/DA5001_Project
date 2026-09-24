@@ -27,7 +27,10 @@ def test_the_top_of_the_utility_scale_is_priced_from_the_same_law_as_the_rest():
     rows = {r["k"]: r for r in csv.DictReader(open("results/utility_price.csv"))}
     # 2026-09-24: the sentence moved from Section 4.4 to Proposition 4's discussion in frontier.tex,
     # beside the proviso it illustrates; both files are read so a later move is still followed.
-    body = "".join(open(tex(f"sections/{f}.tex"), encoding="utf-8").read() for f in ("orders", "frontier"))
+    # v10 (same day) retired orders.tex and put Proposition 4's proviso, with the $1.30$ nats, in its
+    # proof in appendix_proofs.tex; frontier.tex (Section 3) and appendix_proofs.tex are read now.
+    body = "".join(open(tex(f"sections/{f}.tex"), encoding="utf-8").read()
+                   for f in ("frontier", "appendix_proofs"))
     lam = float(rows["3.0"]["lambda_star_u_max"])           # a property of the safe law, same on every row
     assert len({r["lambda_star_u_max"] for r in rows.values()}) == 1
     m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats\s*(?:,)?\s*and the decoder\s*\n?"
@@ -49,9 +52,11 @@ def test_the_two_judge_sigmas_in_the_introduction_come_from_the_v6_separation_cs
                 return float(r["z_loss_vs_anchor"])
         raise AssertionError((path, k))
     q, p = "results/judge_separation_v6.csv", "results/judge_separation_v6_judge2.csv"
-    body = (open(tex("sections/orders.tex"), encoding="utf-8").read()
-            + open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read()
-            ).replace("\n", " ")   # tab:repairs moved to the appendix 2026-09-19
+    # tab:repairs moved to the appendix 2026-09-19 and back into Section 3 (frontier.tex) in v10
+    # (2026-09-24), where its row prints the k=0.5 pair; the full sentence with both budgets is the
+    # "A lower cap." paragraph of Appendix H (appendix_onset.tex). orders.tex is retired.
+    body = " ".join((open(tex("sections/frontier.tex"), encoding="utf-8").read()
+                     + open(tex("sections/appendix_onset.tex"), encoding="utf-8").read()).split())
     for k, pair in ((0.5, (z(q, 0.5), z(p, 0.5))), (10.0, (z(q, 10.0), z(p, 10.0)))):
         a, b = pair
         assert f"(${a:+.2f}\\sigma$, ${b:+.2f}\\sigma$)".replace("+-", "-") in body \

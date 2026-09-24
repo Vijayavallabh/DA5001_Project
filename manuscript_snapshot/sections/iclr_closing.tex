@@ -1,32 +1,32 @@
-% v8 (2026-09-14): the conclusion lands the constructive result rather than the dichotomy, which is
-% the section order's job everywhere else too. The limitation is unchanged in substance and still
-% leads with the head-to-head we lose. Broader impact is in the (uncounted) Ethics Statement of
-% iclr_2027.tex; the full limitations are Appendix~\ref{app:limitations}.
-% v7 kept as iclr_closing_v7_2026-09-14.tex.
+% v10 (2026-09-24): limitations (every concession the pre-registrations committed the paper to carry)
+% and a two-sentence conclusion. Broader impact is in the uncounted Ethics Statement; the full
+% limitations are Appendix~\ref{app:limitations}.
 
-\section{Conclusion}\label{sec:limitations}
+\section{Limitations and conclusion}\label{sec:limitations}
 
-\paragraph{Limitations.}
+\textbf{The two mechanisms are not substitutes, and the scorer binds first.} A served string is one the
+safe model would have drawn, so an anchor that cannot do the task gains nothing: on TriviaQA with no judge
+the meter reaches $0.618$ against selection's $0.190$, but only at $k=20$, where it \emph{is} the risky
+model, certified at $480$ nats for a $24$-token answer. Below that the scorer binds: it gains $3.4\times$
+less than majority vote on GSM8K at $n=64$ and \emph{loses} F1 on CoTaEval, whose infringement event not
+even the risky model reaches (Appendix~\ref{app:selection}). A capability gap is the regime a deployer most
+wants covered, and \emph{neither} mechanism covers it. \textbf{The judged comparison measures the serving
+configuration as much as the mechanism}: it reverses under a chat template and on instruction following and vanishes against a stronger
+opponent (Table~\ref{tab:served}, Figure~\ref{fig:h2h}), every judge is a language model, no
+human rated anything, and we ran the meter at temperature $1.0$ without a penalty. \textbf{And it is paid
+for in compute}: $61.3\times$ the meter's forward passes and $21.8\times$ its wall-clock in draws alone
+(batched, $0.22\times$ its time per request at the $70$B pair), and held to the meter's own compute it
+\emph{loses}. The \emph{gain} is the scorer's capability: a $0.5$B scorer never reaches the meter, a
+$1.5$B one buys $87\%$ of the $7.6$B gain on the judged workload and nothing on GSM8K, and where that bar
+sits is open. The \emph{price} is the drawing, not the scorer's one batched pass
+(Appendix~\ref{app:saturation}). Nor does the certificate say much about short works: on TriviaQA answers
+$\log 64$ reaches $S(x)$ on $35.4\%$ of questions, against $89.6\%$ for the meter's smallest budget, so
+$n$ must be set against the shortest work protected. Extraction is sixteen English novels plus four in
+French and German; the covert channel of Section~\ref{sec:compose}, attacked, carries $3.97$ of its $6$
+bits a response; and how close a policy of the shape Proposition~\ref{prop:sparse} permits comes to
+Theorem~\ref{thm:nfl}'s frontier is open.
 
-\looseness=-2 \textbf{The two mechanisms are not substitutes, and the scorer binds first.} A served string is one the safe
-model would have drawn, so an anchor that cannot do the task gains nothing: on TriviaQA with no
-judge the meter reaches $0.618$ against selection's $0.190$ (Figure~\ref{fig:judgefree}c) --- but
-only at $k=20$, where it \emph{is} the risky model, certified at $480$ nats for a $24$-token
-answer. Below that the scorer binds: it gains $3.4\times$ less than majority vote on GSM8K at $n=64$
-and \emph{loses} F1 on CoTaEval, whose infringement event not even the risky model reaches (Appendix~\ref{app:selection}). A capability gap is the regime a
-deployer most wants covered and \emph{neither} mechanism covers it. \textbf{The judged comparison
-measures the serving configuration as much as the mechanism}: it flips under a chat template or
-instruction following (Table~\ref{tab:served}), every judge is a language model, and we ran the meter at temperature $1.0$ without a penalty.
-\textbf{And it is paid for in compute}: $61.3\times$ the meter's forward passes and $21.8\times$ its wall-clock in draws alone (batched, $0.22\times$ its time per request at the $70$B pair), and held
-to the meter's own compute it \emph{loses}. The \emph{gain} is
-the scorer's capability: a $0.5$B scorer never reaches the meter, a $1.5$B one buys $87\%$ of the
-$7.6$B gain on the judged workload and nothing on GSM8K, and where that bar sits is open. The
-\emph{price} is the drawing, not the scorer's one batched pass (Appendix~\ref{app:saturation}).
-Nor does the certificate say much about short works: on TriviaQA answers $\log 64$ reaches $S(x)$
-on $35.4\%$ of questions, against $89.6\%$ for the meter's smallest budget, so $n$ must be set
-against the shortest work protected (Appendix~\ref{app:selection}). Extraction is sixteen English
-novels plus four in French and German, the covert channel of Section~\ref{sec:compose}, attacked, carries $3.97$ of its $6$ bits a response, and how close a policy of the shape
-Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier is open.%
-\label{sec:conclusion}
-\ \textbf{In sum:} a copyright budget is not a rate. Charged per token it must grow with the work
-or else be spent almost nowhere; spent once, on the draw, it is $\log n$ at any length.
+\paragraph{Conclusion.}\label{sec:conclusion}
+A copyright budget charged per token must grow with the work or be spent almost nowhere. Charged once, on
+the choice among a safe model's draws, it is $\log n$ nats at any length and holds against an adversarial
+scorer, and wherever the metered decoder's certificate excludes anything, selection also serves better text.

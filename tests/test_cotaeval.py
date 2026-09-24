@@ -8,7 +8,7 @@ cost two body lines to seat.
 import csv
 import os
 
-from tests.manuscript import ROOT, body, tex
+from tests.manuscript import ROOT, body, caption_of, tex
 
 CSV = os.path.join(ROOT, "results", "cotaeval_scoring.csv")
 REGISTERED = "pointwise reward (Qwen2.5-7B)"
@@ -76,13 +76,19 @@ def test_the_four_unusable_anchors_are_not_counted_as_evidence():
         "the appendix no longer explains why four anchors were excluded")
 
 
+def _cota():
+    """The CoTaEval utility paragraph, table included, found by what it cites rather than by its
+    heading: v10 retitled it ("CoTaEval, and the scorer size a task needs") and folded the separate
+    scorer-scale paragraph into it, which retired every locator keyed on a v9 heading."""
+    paras = [p for p in body(SEC).split(r"\paragraph{") if "wei2024cotaeval" in p]
+    assert len(paras) == 1, f"expected one CoTaEval utility paragraph, found {len(paras)}"
+    return paras[0]
+
+
 def test_the_scope_limits_survive():
     """Two things the result does NOT touch, both stated so the scope is not read wider than the
     measurement. Removing either would let a reader take this as a refutation of the certificate."""
-    t = body(SEC)
-    i = t.find("community-standard benchmark the scorer does worse than bind")
-    assert i > 0, "the CoTaEval paragraph is gone"
-    w = t[i:i + 3000]
+    w = _cota()
     assert "does not depend on the served text being good" in w, (
         "the appendix no longer says the certificate is untouched by this result")
     assert "0.546" in w, "the appendix no longer says GSM8K majority vote is untouched"
@@ -106,12 +112,38 @@ def scored14():
 
 
 def _para14():
-    """The scorer-scale paragraph alone. Scoped because the words `turns over`, `marginal` and the
-    anchor names all occur elsewhere in this file (caution (an))."""
+    """The scorer-scale reading alone. Scoped because the words `turns over`, `marginal` and the
+    anchor names all occur elsewhere in this file (caution (an)). v10 folded it into the CoTaEval
+    paragraph, from the first "$14$B" to the start of the scorer-ladder table."""
+    p = _cota()
+    i = p.find("$14$B")
+    assert i > 0, "the scorer-scale reading is gone from the CoTaEval paragraph"
+    j = p.find(r"\begin{table}", i)
+    return p[i: j if j > 0 else i + 1400]
+
+
+# tab:scorerladder labels the four scored anchors by these names
+LADDER = {"Comma-7B (2T)": "Comma-7B", "Comma-7B (2T), seed 5254": "disjoint re-draw",
+          "Comma-7B (1T)": "Comma-7B (1T)", "TinyComma-1.8B": "TinyComma-1.8B"}
+
+
+def _ladder():
+    """CoTaEval block of Table~\\ref{tab:scorerladder}: label -> [value cells, interval cells], each
+    [label, n=1, 7B, 14B, 72B] with $ stripped."""
     t = body(SEC)
-    i = t.find("A larger scorer moves it")
-    assert i > 0, "the scorer-scale paragraph is gone from the appendix"
-    return t[i:i + 1400]
+    i = t.index(r"\label{tab:scorerladder}")
+    tab = t[t.index(r"\midrule", i) + len(r"\midrule"): t.index(r"\bottomrule", i)]
+    out, last = {}, None
+    for line in tab.split("TriviaQA")[0].split("\\\\"):
+        c = [x.strip().strip("$") for x in line.split("&")]
+        if len(c) < 5:
+            continue
+        if c[0]:
+            last = c[0].replace("\\quad", "").strip()
+            out[last] = [c]
+        elif last:
+            out[last].append(c)
+    return out
 
 
 def test_the_scorer_scale_reading_is_the_one_the_data_give():
@@ -132,9 +164,15 @@ def test_the_two_that_survive_are_the_headline_anchor_and_its_redraw():
         assert float(by[name]["gain"]) < 0 < -float(by[name]["hi95"]), (
             f"{name}: verdict says TURNS OVER but gain {by[name]['gain']} "
             f"/ hi95 {by[name]['hi95']} do not")
-    p = _para14()
-    for name in ("Comma-7B (2T)", "Comma-7B (1T)", "TinyComma-1.8B"):
-        assert name.replace("-", "-") in p or name.split(" ")[0] in p
+    # v10 names WHICH two survive in the scorer-ladder table rather than in the prose: each scored
+    # anchor's 14B gain and interval must be the CSV's, so the two intervals clear of zero are
+    # visibly the headline anchor's and its re-draw's.
+    lad = _ladder()
+    for anchor, label in LADDER.items():
+        r = by[anchor]
+        (vals, ivs) = lad[label][:2]
+        assert vals[3] == f"{float(r['gain']):+.4f}", (anchor, vals[3], r["gain"])
+        assert ivs[3] == f"[{float(r['lo95']):+.4f}, {float(r['hi95']):+.4f}]", (anchor, ivs[3])
 
 
 def test_the_rescue_is_not_a_climb():
@@ -159,10 +197,15 @@ def test_the_instrument_check_claim_is_true_of_the_csv():
     not involve the scorer, so anything else would mean the pipeline changed."""
     ref = {"cta14_comma7b": "cta_news", "cta14_comma1t": "cta_comma1t",
            "cta14_tc18b": "cta_tc18b", "cta14_s5254": "cta_s5254"}
+    lad = _ladder()
     for r in scored14():
         src = f"results/selection_verifiable_{ref[r['tag']]}.csv"
         rs = list(csv.DictReader(open(os.path.join(ROOT, src), encoding="utf-8")))
         base = [x for x in rs if x["arm"] == REGISTERED and int(x["n"]) == 1][0]
         assert round(float(base["acc"]), 4) == round(float(r["f1_n1"]), 4), (
             f"{r['anchor']}: n=1 moved {base['acc']} -> {r['f1_n1']}")
-    assert "four decimals" in _para14()
+        # v10 states the check structurally: the scorer ladder prints ONE n=1 F1 per anchor, to
+        # four decimals, shared by every scorer column -- which is true only because it is.
+        assert lad[LADDER[r["anchor"]]][0][1] == f"{float(r['f1_n1']):.4f}", (r["anchor"], r["f1_n1"])
+    assert "four decimals" in _para14() or "same cached draws" in caption_of("tab:scorerladder"), \
+        "neither the prose nor the scorer-ladder caption says the n=1 column is shared"

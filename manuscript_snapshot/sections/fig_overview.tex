@@ -1,0 +1,49 @@
+% v10 (2026-09-24): the mechanism panels of Figure 1, drawn in TikZ so the text is the body font.
+% Two lanes: where each mechanism spends its budget. The measured panels are selection_frontier.pdf.
+\begin{tikzpicture}[x=1cm, y=1cm, font=\sffamily\scriptsize,
+  tok/.style={draw=black!55, fill=white, minimum width=0.62cm, minimum height=0.42cm, inner sep=0pt,
+              rounded corners=1pt},
+  mdl/.style={circle, draw=black!55, minimum size=0.6cm, inner sep=0pt},
+  arr/.style={-{Stealth[length=1.5mm]}, black!55, line width=0.5pt}]
+% ---------------- (a) budget per token ----------------
+\node[anchor=west, font=\sffamily\footnotesize, inner sep=0pt] at (0,2.62)
+  {\textcolor{red!55!black}{\bfseries (a) budget spent per token}\enspace\textcolor{black!55}{metered decoding}};
+\node[mdl, fill=blue!12] (ps) at (0.35,1.80) {$p_s$};
+\node[mdl, fill=red!12] (pr) at (0.35,0.72) {$p_r$};
+\node[draw=black!55, rounded corners=1pt, fill=black!4, inner sep=2pt] (mix) at (1.42,1.26) {$p_{\theta_t}$};
+\draw[arr] (ps) -- (mix); \draw[arr] (pr) -- (mix);
+\foreach \i/\lab in {1/$y_1$,2/$y_2$,3/$y_3$,4/$y_4$} {
+  \node[tok] (t\i) at ({1.62+\i*0.72},1.26) {\lab};
+}
+\node at ({1.62+5*0.72},1.26) {$\cdots$};
+\node[tok] (tT) at ({1.62+6*0.72},1.26) {$y_T$};
+\draw[arr] (mix) -- (t1);
+\foreach \i/\h in {1/0.30,2/0.50,3/0.22,4/0.44,6/0.36} {
+  \fill[red!55!black, opacity=0.75] ({1.62+\i*0.72-0.13},1.53) rectangle ++(0.26,\h);
+}
+\node[text=red!55!black] at (1.15,2.16) {charge $\le$ bucket};
+\draw[decorate, decoration={brace, mirror, amplitude=3pt}, black!55] (2.02,0.98) -- (6.24,0.98);
+\node[anchor=north] at (3.95,0.86) {certificate $K = kT$ nats: grows with the output};
+\node[anchor=north, text=red!55!black] at (3.95,0.50) {vacuous for a work $x$ once $k \ge s(x)$, at any length};
+% ---------------- (b) budget on the draw ----------------
+\begin{scope}[xshift=7.45cm]
+\node[anchor=west, font=\sffamily\footnotesize, inner sep=0pt] at (0,2.62)
+  {\textcolor{blue!55!black}{\bfseries (b) budget spent once, on the draw}\enspace\textcolor{black!55}{ours}};
+\node[mdl, fill=blue!12] (qs) at (0.35,1.26) {$p_s$};
+\foreach \j/\yy/\lab in {1/2.02/$y^{(1)}$,2/1.60/$y^{(2)}$,3/0.72/$y^{(n)}$} {
+  \node[draw=black!55, fill=blue!8, rounded corners=1pt, minimum width=1.8cm, minimum height=0.30cm,
+        inner sep=0pt] (d\j) at (2.05,\yy) {\lab};
+  \draw[arr] (qs) -- (d\j.west);
+}
+\node at (2.05,1.20) {$\vdots$};
+\node[draw=black!55, rounded corners=1pt, fill=black!4, align=center, inner sep=2pt] (f) at (4.15,1.37)
+  {any score $f$\\[-1pt]{\tiny reward, vote, adversary}};
+\foreach \j in {1,2,3} { \draw[arr] (d\j.east) -- (f.west); }
+\node[draw=blue!55!black, rounded corners=1pt, fill=blue!12, align=center, inner sep=2pt] (o) at (5.95,1.37)
+  {serve\\[-1pt]one draw};
+\draw[arr] (f) -- (o);
+\draw[decorate, decoration={brace, mirror, amplitude=3pt}, black!55] (1.10,0.49) -- (4.85,0.49);
+\node[anchor=north] at (2.97,0.37) {certificate $q(y) \le n\,p_s(y)$: $\log n$ nats, for any $f$};
+\node[anchor=north, text=blue!55!black] at (2.97,0.01) {$n=8$: $2.08$ nats at any length};
+\end{scope}
+\end{tikzpicture}

@@ -88,36 +88,63 @@ def test_the_rate_differs_between_pairs_because_the_pairs_differ():
     assert max(r3.values()) - min(r3.values()) > 0.05, r3
 
 
+# The row of tab:imitation-pairs each CSV feeds (v10 moved the table to Appendix G, appendix_onset).
+ROW = {"_audited": "TinyComma-1.8B, 8B-Inst.", "_llama70b": "TinyComma-1.8B, 70B base",
+       "_llama321b": "Llama-3.2-1B, 8B-Inst.", "_llama323bi": "Llama-3.2-3B-Inst., 8B-Inst."}
+
+
+def _pairs_table():
+    """label -> cells of tab:imitation-pairs, whitespace-normalised."""
+    from tests.manuscript import body
+    apx = body("appendix_onset.tex")
+    i = apx.index("\\label{tab:imitation-pairs}")
+    tab = apx[apx.index("\\midrule", i) + len("\\midrule"):apx.index("\\bottomrule", i)]
+    rows = [[c.strip() for c in r.split("&")] for r in tab.split("\\\\") if r.strip()]
+    return {r[0]: r[1:] for r in rows}
+
+
 def test_the_appendix_table_rounds_from_the_csvs():
-    """Caution (j): every cell of Appendix A's four-pair table comes from its own CSV, once."""
-    from tests.manuscript import tex
-    apx = open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().replace("\n", " ")
+    """Caution (j): every cell of the four-pair table comes from its own CSV, once -- and, since
+    v10 moved it from appendix_proofs to appendix_onset, in the row and column it belongs to."""
     a = arms()
     assert len(a) == 4, sorted(a)
+    assert set(a) == set(ROW), sorted(a)
+    tab = _pairs_table()
     for tag, ks in a.items():
+        cells = tab.get(ROW[tag])
+        assert cells, (tag, "its row is gone from tab:imitation-pairs")
         r3, r20 = ks["3"], ks["20"]
         i3 = float(r3["imitation_rate_nats_per_token"])
         i20 = float(r20["imitation_rate_nats_per_token"])
-        assert f"${i3:.4f}$" in apx, (tag, i3)
-        assert f"${i20:.4f}$" in apx, (tag, i20)
-        assert f"${i20 / i3:.3f}$" in apx, (tag, i20 / i3)
+        assert cells[0] == f"${i3:.4f}$", (tag, i3, cells)
+        assert cells[1] == f"${i20:.4f}$", (tag, i20, cells)
+        assert cells[2] == f"${i20 / i3:.3f}$", (tag, i20 / i3, cells)
         dev = abs(float(r3["realised_rate_nats_per_token"]) / i3 - 1)
-        assert f"${dev:.4f}$" in apx, (tag, dev)
-        assert f"{float(r20['spend_nats']):.1f}$" in apx, (tag, r20["spend_nats"])
+        assert cells[3] == f"${dev:.4f}$", (tag, dev, cells)
+        assert cells[4].replace("\\ ", "") == f"${float(r20['spend_nats']):.1f}$", (tag, r20["spend_nats"], cells)
 
 
 def test_section2_quotes_the_further_saturated_rates():
-    from tests.manuscript import tex
-    body = open(tex("sections/frontier.tex"), encoding="utf-8").read().replace("\n", " ")
-    # the quoted rate is the SATURATED one, r_imit(20), which is what "saturates at 0.857" means
-    # for the audited pair two sentences earlier
-    others = sorted(float(ks["20"]["imitation_rate_nats_per_token"])
-                    for t, ks in arms().items() if t != "_audited")
-    for v in others:
-        assert f"${v:.3f}$" in body, v
-    assert "three further pairs" in body
+    """v10 (2026-09-24): Section 3 quotes only the audited pair's saturated rate and the further
+    pairs moved to Appendix G, whose prose states the pair count and whose table carries each
+    further pair's saturated rate r_imit(20) in its own row."""
+    from tests.manuscript import body
+    main = body("frontier.tex")
+    # the quoted rate is the SATURATED one, r_imit(20), which is what "the imitation rate of 0.857"
+    # means for the audited pair
     aud = float(arms()["_audited"]["20"]["imitation_rate_nats_per_token"])
-    assert f"${aud:.3f}$" in body, aud
+    assert f"${aud:.3f}$" in main, aud
+    a = arms()
+    words = {3: "three", 4: "four", 5: "five"}
+    apx = body("appendix_onset.tex")
+    assert f"repeats the measurement at {words[len(a)]} pairs" in apx, \
+        "Appendix G no longer says how many pairs the shape was measured at"
+    tab = _pairs_table()
+    for t, ks in a.items():
+        if t == "_audited":
+            continue
+        v = float(ks["20"]["imitation_rate_nats_per_token"])
+        assert tab[ROW[t]][1] == f"${v:.4f}$", (t, v)
 
 
 def test_the_narrow_i5_pass_is_reported_as_narrow():
@@ -133,6 +160,10 @@ def test_the_narrow_i5_pass_is_reported_as_narrow():
     log = open(os.path.join(ROOT, "results",
                             "onset_prediction_imitation_breadth.md"), encoding="utf-8").read()
     assert "narrow" in log.lower()
-    apx_note = "passed narrowly"
-    from tests.manuscript import tex
-    assert apx_note in open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read()
+    # v10 moved the note from appendix_proofs to appendix_onset; it must also carry the margin
+    from tests.manuscript import body
+    apx = body("appendix_onset.tex")
+    i = apx.find("passed narrowly")
+    assert i != -1, "the narrow I5 pass is no longer reported as narrow"
+    margin = (mid / 2 - lo) / (mid / 2) * 100
+    assert f"by ${margin:.1f}\\%$ of its threshold" in apx[i:i + 80], (margin, apx[i:i + 80])

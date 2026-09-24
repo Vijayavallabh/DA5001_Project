@@ -34,9 +34,17 @@ def test_the_forest_still_carries_the_committed_n64_row():
 
 
 def test_the_saturation_is_reported_as_a_paired_within_pass_difference():
+    """v10 (2026-09-24) moved the read into Table tab:ladder, whose row spells it `$g(128)-g(64)$`
+    (no spaces) and whose caption says the rows are paired differences within one pass. Matched
+    whitespace-tolerantly (guard the quantity, not the spacing) and the 'paired ... one pass' claim
+    is now checked in the caption of the table that carries the row, not anywhere in the appendix."""
+    import re
+    from tests.manuscript import caption_of
     txt = body("appendix_selection.tex")
     assert "paired" in txt.lower(), "the appendix must say the read is paired"
-    assert "$g(128) - g(64)$" in txt, "the paired quantity must be named as such"
+    assert re.search(r"\$g\(128\)\s*-\s*g\(64\)\$", txt), "the paired quantity must be named as such"
+    cap = caption_of("tab:ladder").lower()
+    assert "paired" in cap and "one pass" in cap, cap
 
 
 def test_a_breadth64_anchor_may_not_be_drawn_beside_its_old_n8_row():

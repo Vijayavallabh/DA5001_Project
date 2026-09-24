@@ -32,12 +32,15 @@ def d(q):
 
 def window():
     """The opponent paragraph alone, so a number in it cannot be guarded by a coincidence
-    elsewhere in a long appendix."""
+    elsewhere in a long appendix. v10 (2026-09-24) folded v9's "Changing the opponent" paragraph
+    into "Stronger opponents", whose Table~\\ref{tab:opponentladder} carries this arm as its top
+    rung; the window is that paragraph through the end of its table."""
     t = body(SEC)
-    i = t.find("Changing the opponent")
+    i = t.find("\\paragraph{Stronger opponents.}")
     assert i > 0, "the opponent paragraph is gone from the appendix"
-    j = t.find("\\textbf{", i + 2000)
-    return t[i:j if j > i else len(t)]
+    j = t.find("\\end{table}", t.find("\\label{tab:opponentladder}", i))
+    assert j > i, "the opponent ladder table is gone from the paragraph"
+    return t[i:j]
 
 
 def abstract():
@@ -57,17 +60,36 @@ def test_the_difference_against_the_second_opponent_is_unresolved_and_the_paper_
     # `$-0.0395$ $[-0.0720, -0.0065]$` a few pages earlier, and that unrelated occurrence satisfied
     # the check. Caution (an), and the number it hid is the one this arm is about.
     t = window()
+    # scoped further, to this opponent's own row of the ladder table, which also carries the reading
+    # (the table prints family names without "-Instruct", which its caption states once)
+    t = t[t.index("Qwen2.5-14B}", t.index("\\label{tab:opponentladder}")):]
+    row = t[:t.index("\\\\")]
     for x in (v, lo, hi):
-        assert f"{x:+.4f}" in t, f"the opponent paragraph does not print {x:+.4f} from its CSV"
+        assert f"{x:+.4f}" in row, f"the opponent's row does not print {x:+.4f} from its CSV"
+    assert "unresolved" in row, "the row does not give the registered reading, UNRESOLVED"
 
 
 def test_both_arms_still_beat_their_controls_and_that_is_reported_too():
-    """Reporting only the failure would be as one-sided as reporting only the success."""
-    t = body(SEC)
+    """Reporting only the failure would be as one-sided as reporting only the success.
+
+    v10 (2026-09-24) no longer prints this opponent's two gains; it states the success once, for the
+    whole ladder ("Both mechanisms beat their own controls against every opponent"). A claim about
+    a set is checked against the set (caution (ai)): every rung's D1 and D2 must exclude zero."""
+    import sys
+    sys.path.insert(0, ROOT)
+    from analysis.opponent_strength import ARMS
     for q in ("D1", "D2"):
         v, lo, hi = d(q)
         assert lo > 0, f"{q} no longer excludes zero; the appendix sentence about it is now false"
-        assert f"${v:+.4f}$" in t, f"the appendix does not print {q}'s gain {v:+.4f}"
+    for opp, suffix, _, _ in ARMS:
+        f = os.path.join(ROOT, "results", f"order_averaged_h2h{suffix}.csv")
+        assert os.path.exists(f), f"{f} missing; this guard must not pass by never running"
+        for q in ("D1", "D2"):
+            r = [x for x in csv.DictReader(open(f, encoding="utf-8")) if x["quantity"].startswith(q)]
+            assert len(r) == 1 and float(r[0]["lo95"]) > 0, (
+                f"{opp}: {q} no longer excludes zero; 'against every opponent' is now false")
+    assert "beat their own controls against every opponent" in window(), (
+        "the opponent paragraph no longer reports that both arms beat their controls")
 
 
 def test_the_abstract_carries_the_opponent_qualifier_because_the_interval_contains_zero():
@@ -134,7 +156,14 @@ def test_the_intros_gain_ratio_is_qualified_by_the_opponent_because_it_is_a_gain
         # ratio whose denominator's interval nears zero) and now states the paired difference. What
         # this guard protects -- an unqualified head-to-head -- is then the difference, and it must
         # carry the serving/opponent qualifier that Table 1 and the ladder measured.
-        assert "depends on\nhow the risky model is served".replace("\n", " ") in " ".join(t.split()), \
+        # v10 (2026-09-24) states the condition and the reversal rather than "depends on how the
+        # risky model is served": better "whenever the risky model continues text", while "the meter
+        # wins only where the judge rewards instruction following". Both halves must stay together.
+        flat = " ".join(t.split())
+        j = flat.find("judged better at every budget")
+        assert j >= 0, "the intro no longer states the head-to-head"
+        w = flat[j: j + 700]
+        assert "continues text" in w and "instruction following" in w, \
             "the intro states the head-to-head without its serving-configuration qualifier"
         return
     clause = t[i:i + 120]
@@ -152,16 +181,18 @@ def test_the_certificate_comparison_is_not_watered_down_by_the_opponent_result()
     """The nats are a property of the served law. An over-correction that hedged them would be as
     wrong as the missing hedge on the ratio was."""
     import re as _re
-    t = body("iclr_intro.tex")
+    # v10 (2026-09-24): the introduction compares certificates ($2.08$ against $2000$); the
+    # bound-against-measured-spend comparison ($3.175$ against $171.3$ nats) moved to Section 4.2
+    t = body("experiments.tex")
     assert "$171.3$" in t and "$3.175$" in t, "the certificate comparison has gone"
-    # EVERY occurrence. The intro prints $171.3$ three times and the first is Figure 1's caption,
-    # so a guard on t.find() was inspecting a different sentence than the one it meant and a
-    # deliberate hedge inserted at the second went undetected. Caution (an), same shape as the
+    # EVERY occurrence. The v9 intro printed $171.3$ three times and the first was Figure 1's
+    # caption, so a guard on t.find() was inspecting a different sentence than the one it meant and
+    # a deliberate hedge inserted at the second went undetected. Caution (an), same shape as the
     # -0.0065 collision above.
     hits = [m.start() for m in _re.finditer(_re.escape("$171.3$"), t)]
-    # >= 1 since 2026-09-24: the rescoped intro quotes the measured spend once, in the head-to-head
-    # sentence, and the check below still runs on every occurrence there is.
-    assert len(hits) >= 1, f"expected the measured spend in the intro, found {len(hits)}"
+    # >= 1: Section 4.2 quotes the measured spend twice (the k=10 cell and the gains comparison), and
+    # the check below runs on every occurrence there is.
+    assert len(hits) >= 1, f"expected the measured spend in Section 4, found {len(hits)}"
     for i in hits:
         assert "opponent" not in t[max(0, i - 160):i], (
             "the measured-nats comparison has been hedged by opponent language near "

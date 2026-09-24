@@ -90,14 +90,25 @@ def test_the_refuted_clause_is_recorded_as_withdrawn():
         "both labels must stay in the log so the softer one is not a post-hoc choice")
 
 
+def _parity_paragraph(t):
+    """The parity paragraph with its table, up to the next paragraph. v9 headed it "Giving the
+    \\emph{metered} decoder the same reward model"; v10 (2026-09-24) heads it "The meter given
+    selection's reward". Scoped to the paragraph rather than a fixed 3,000 characters, so a number in
+    the next paragraph cannot satisfy it (caution (an))."""
+    for head in ("Giving the \\emph{metered} decoder the same reward model",
+                 "\\paragraph{The meter given selection's reward"):
+        i = t.find(head)
+        if i > 0:
+            j = t.find("\\paragraph{", i + len(head))
+            return t[i: j if j > 0 else len(t)]
+    raise AssertionError("the parity paragraph is gone from the appendix")
+
+
 def test_the_appendix_table_is_the_csv():
     """caution (j)/(al): every cell the paper prints must round from the CSV, once, and a number
     that moved into a table keeps a guard that can read it."""
     from tests.manuscript import body
-    t = body("appendix_selection.tex")
-    i = t.find("Giving the \\emph{metered} decoder the same reward model")
-    assert i > 0, "the parity paragraph is gone from the appendix"
-    para = t[i:i + 3000]
+    para = _parity_paragraph(body("appendix_selection.tex"))
     for arm, n in (("metered k=3", 16), ("metered k=20", 16), ("selection (reward)", 16)):
         r = cell(arm, n)
         for key, fmt in (("gain", "{:+.3f}"), ("gain_lo95", "{:+.3f}"), ("gain_hi95", "{:+.3f}")):
@@ -112,10 +123,11 @@ def test_the_concession_and_its_qualifier_are_both_in_the_paper():
     caution (ag) says a length edit takes the concession first, and caution (an) says a guard on a
     phrase must be scoped to the sentence it is about."""
     from tests.manuscript import body
-    t = body("appendix_selection.tex")
-    i = t.find("Giving the \\emph{metered} decoder the same reward model")
-    para = t[i:i + 3000]
-    assert "meter does win on level" in para, "the concession that the meter wins is gone"
+    para = _parity_paragraph(body("appendix_selection.tex"))
+    # v10 words the concession "the meter wins the level only at $k=20$"; either spelling is the
+    # concession. The qualifier and the two levels below are unchanged from v9.
+    assert "meter does win on level" in para or "meter wins the level" in para, \
+        "the concession that the meter wins is gone"
     assert "vacuous" in para, "the qualifier that its winning budget is vacuous is gone"
     met = [r for r in rows() if r["arm"].startswith("metered") and (r.get("acc") or "").strip()]
     sel = [r for r in rows() if r["arm"] == "selection (reward)" and (r.get("acc") or "").strip()]

@@ -88,14 +88,32 @@ def test_the_criterion_predicts_the_verdict_and_not_the_shift():
 
 
 def test_the_appendix_records_both_replications_and_the_refinement():
+    """v10 (2026-09-24) compressed this into the 'climb to n=64 at other anchors' paragraph of
+    appendix_selection.tex; the wording changed and every number stayed. The band and the three
+    ratio/distance pairs are now rebuilt from the per-prompt CSVs rather than typed, so the prose
+    cannot drift from the draws it reports (caution (j))."""
     txt = body("appendix_selection.tex")
-    assert "Both of the two were then re-drawn" in txt, "the replication of both anchors was trimmed"
-    assert "$+0.0880$ $[+0.0460, +0.1290]$" in txt, "Comma-7B's replication band was trimmed"
-    assert "predicts the verdict rather than the shift" in txt, \
+    assert "Both of those were re-drawn the same way and held" in txt, \
+        "the replication of both anchors was trimmed"
+    g, lo, hi, _ = _paired("_comma7bseed52b8")
+    assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in txt, "Comma-7B's replication band was trimmed"
+    assert "the ratio predicts whether a reading survives, not how far it moves" in txt, \
         "the out-of-sample refinement of the stability criterion was trimmed"
-    assert "$1.71 \\to 0.061$, $2.12 \\to 0.000$, $2.43 \\to 0.013$" in txt, \
-        "the three ratio/distance pairs that make the refinement checkable were trimmed"
-    assert "We do not pool the two draws" in txt, "the refusal to pool was trimmed"
+
+    def ratio_and_distance(orig_tag, rep_tag):
+        go, olo, ohi, _ = _paired(orig_tag)
+        gr, _rlo, _rhi, _ = _paired(rep_tag)
+        return go / ((ohi - olo) / 2), abs(gr - go)
+
+    (r1, d1), (r2, d2), (r3, d3) = (ratio_and_distance("_kl3m17b64", "_kl3m17bseed52"),
+                                    ratio_and_distance("", "_seed52"),
+                                    ratio_and_distance("_comma7b64", "_comma7bseed52b8"))
+    pairs = (f"at ${r1:.2f}$, ${r2:.2f}$ and ${r3:.2f}$ half-widths the three re-draws moved by "
+             f"${d1:.3f}$, ${d2:.3f}$ and ${d3:.3f}$")
+    assert pairs in txt, ("the three ratio/distance pairs that make the refinement checkable were "
+                          "trimmed", pairs)
+    assert "We do not pool a reading with its own failed replication" in txt, \
+        "the refusal to pool was trimmed"
 
 
 def test_the_merge_launchers_let_the_odometer_see_their_waiting():

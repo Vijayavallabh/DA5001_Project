@@ -132,7 +132,9 @@ def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
         top14 = max(g for g, sc, _ in c["reward_by"] if sc == "_qwen14b")
         assert top14 > max(c["majority"].values()) or task == "GSM8K", (task, top14)
 
-    txt = body("selection.tex")
+    # v10 (2026-09-24) moved v9 Section 2's cost paragraph, which carried this sentence, into
+    # Section 4.5 (experiments.tex); both files are read so the guard follows the paragraph.
+    txt = body("selection.tex", "experiments.tex")
     assert "four draws of it beat all $28$ reward cells" not in txt, \
         "the withdrawn dominance claim is back in the body; feat-158 registered its withdrawal"
     assert "up to $7.6$B --- but not at $14$B" in txt, \

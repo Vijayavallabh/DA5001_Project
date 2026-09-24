@@ -26,6 +26,18 @@ def by_judge(j):
     return {r["arm"]: r for r in rows() if r["judge"] == j}
 
 
+def passage():
+    """The two further pairs' paragraph. v10 (2026-09-24) moved it from appendix_proofs.tex to
+    appendix_onset.tex (App. H, "Two anchors closer to the risky model", label app:frontier3); it is
+    located by its label and cut at the next paragraph, so a phrase elsewhere in the file (that
+    file's scaling paragraph says "no shared vocabulary is needed") cannot satisfy a guard on it."""
+    from tests.manuscript import body
+    t = body("appendix_onset.tex")
+    i = t.index("\\label{app:frontier3}")
+    j = t.find("\\paragraph", i)
+    return t[i: j if j > i else len(t)]
+
+
 def test_both_judges_scored_every_arm():
     js = {r["judge"] for r in rows()}
     assert len(js) == 2 and SCORER in js, js
@@ -102,22 +114,22 @@ def test_the_appendix_table_rounds_from_the_csv():
     still prints is the reading -- which arms resolve, in which direction, and what they spent --
     so that is what is checked against the CSV here, cell by cell where a cell survives.
     """
-    from tests.manuscript import tex
-    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
+    apx = passage()
     metered = [r for r in rows() if r["arm"].startswith("metered") and r["judge"] == SCORER]
     sel = [r for r in rows() if r["arm"].startswith("selection, n=8") and r["judge"] == SCORER]
     assert len(metered) == 4 and len(sel) == 1, (len(metered), len(sel))
-    # every metered arm's realised spend is still quoted -- that is the paper's point about this
-    # pair, and it is what the prose reading rests on
-    for r in metered:
-        assert f"${float(r['spend_nats']):.1f}$" in apx, r["spend_nats"]
+    # the metered arms' realised spend is still quoted -- that is the paper's point about this
+    # pair, and it is what the prose reading rests on. v10 (2026-09-24) quotes it as a range over
+    # the four arms, "for $88.1$ to $123.4$ nats", so the cells that survive are its two ends.
+    spends = [float(r["spend_nats"]) for r in metered]
+    assert f"${min(spends):.1f}$ to ${max(spends):.1f}$ nats" in apx, spends
     # and the direction of every metered gain is still stated correctly
     gains = [float(r["gain"]) for r in metered]
     if all(g < 0 for g in gains):
         assert "resolves at no budget on either judge" in apx, gains
         assert f"${min(gains):+.3f}$" in apx and f"${max(gains):+.3f}$" in apx, gains
     else:
-        assert "genuinely useful here" in apx, gains
+        assert "the meter is useful" in apx, gains     # v9: "genuinely useful here"
         for r in metered:
             if float(r["gain"]) > 0 and r["arm"] != "metered, k=0.5":
                 assert f"${float(r['gain']):+.3f}$" in apx, r["arm"]
@@ -134,16 +146,23 @@ def test_the_second_pair_is_reported_only_beside_its_not_a_safe_model_caveat():
     vocabulary-matched ablation of the meter. The numbers stay -- in the appendix, in the same
     passage that says neither anchor is safe -- and Section 4 may quote them only with that caveat.
     """
+    import re
     from tests.manuscript import tex
     a = by_judge(SCORER)
     sel = a["selection, n=8"]
-    best = max((v for k, v in a.items() if k.startswith("metered")), key=lambda r: float(r["gain"]))
-    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
-    i = apx.index("Two further pairs test whether the reversal is the mechanism's or the pair's")
-    passage = apx[i:i + 1800]
-    assert "neither anchor is a \\emph{safe} model" in passage, "the caveat left the pair's own passage"
-    assert f"${float(sel['gain']):+.3f}$ $[" in passage, "selection's cell left the appendix passage"
-    assert f"${float(best['spend_nats']):.1f}$" in passage, "the meter's best arm left the appendix passage"
+    met = [v for k, v in a.items() if k.startswith("metered")]
+    best = max(met, key=lambda r: float(r["gain"]))
+    # v10 (2026-09-24): the passage lives in appendix_onset.tex and opens with the caveat, "Neither
+    # anchor here is a safe model"; emphasis and the "here" are spelling, the caveat is the claim
+    text = passage()
+    assert re.search(r"[Nn]either anchor (?:here )?is a (?:\\emph\{safe\}|safe) model", text), \
+        "the caveat left the pair's own passage"
+    assert f"${float(sel['gain']):+.3f}$ $[" in text, "selection's cell left the appendix passage"
+    # the meter's best arm: its gain is quoted, and its spend lies inside the quoted range
+    spends = [float(r["spend_nats"]) for r in met]
+    assert f"${float(best['gain']):+.3f}$" in text, "the meter's best arm left the appendix passage"
+    assert f"${min(spends):.1f}$ to ${max(spends):.1f}$ nats" in text, \
+        "the meter's spend left the appendix passage"
     body = " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())
     for needle in ("Llama-3.2-1B", f"${float(sel['gain']):+.3f}$ for ${float(sel['spend_nats']):.3f}$ nats"):
         j = body.find(needle)
@@ -153,10 +172,14 @@ def test_the_second_pair_is_reported_only_beside_its_not_a_safe_model_caveat():
 
 
 def test_the_shared_vocabulary_constraint_is_stated_where_it_bites():
-    """A reader must not conclude we simply did not bother repeating the comparison."""
+    """A reader must not conclude we simply did not bother repeating the comparison.
+
+    v10 (2026-09-24): the pairs' passage moved from appendix_proofs.tex to appendix_onset.tex and
+    is checked there, scoped to the passage itself (see passage())."""
     from tests.manuscript import tex
-    for f in ("sections/experiments.tex", "sections/appendix_proofs.tex"):
-        t = " ".join(open(tex(f), encoding="utf-8").read().split())
+    for f, t in (("sections/experiments.tex",
+                  " ".join(open(tex("sections/experiments.tex"), encoding="utf-8").read().split())),
+                 ("appendix_onset.tex, the further-pairs passage", passage())):
         assert "shared vocabulary" in t or "the risky model's tokenizer" in t, f
 
 
@@ -164,14 +187,21 @@ def test_the_two_nominally_identical_control_arms_are_reported_not_smoothed():
     """The pass judges the metered run's k=0 arm and the selection run's n=1 arm, which are the
     same thing generated twice. A reviewer reading the released CSV finds the discrepancy whether
     or not we mention it, so the appendix reports it as this paper's generation-run noise floor."""
-    from tests.manuscript import tex
     n1 = {r["judge"]: r for r in rows() if r["arm"] == "selection, n=1"}
     assert len(n1) == 2, "both judges must score the duplicated control"
-    for r in n1.values():
+    # v10 (2026-09-24) reports the duplicated arms of BOTH further pairs as one bound, "differ by at
+    # most $0.034$", and names it the cross-pass floor (v9: the "generation-run" floor, each gain
+    # printed). So the bound is rebuilt from both pairs' CSVs, and every interval must still hold 0.
+    both = list(n1.values())
+    third = os.path.join(ROOT, "results", "frontier_pair_llama323bi.csv")
+    assert os.path.exists(third), f"{third} missing; this guard must not pass by never running"
+    both += [r for r in csv.DictReader(open(third, encoding="utf-8")) if r["arm"] == "selection, n=1"]
+    assert len(both) == 4, "both judges must score the duplicated control at both pairs"
+    for r in both:
         lo, hi = float(r["gain_lo95"]), float(r["gain_hi95"])
         assert lo < 0 < hi, ("the two anchor-alone arms differ significantly; the appendix "
-                             "sentence saying neither interval excludes zero is now false")
-    body = " ".join(open(tex("sections/appendix_proofs.tex")).read().split())
-    assert "generation-run" in body, "the noise floor is measured but not reported"
-    for r in n1.values():
-        assert f"{float(r['gain']):+.3f}" in body, (r["judge"], r["gain"])
+                             "sentence reading this as a noise floor is now false")
+    text = passage()
+    assert "cross-pass floor" in text, "the noise floor is measured but not reported"
+    assert f"differ by at most ${max(abs(float(r['gain'])) for r in both):.3f}$" in text, \
+        [r["gain"] for r in both]

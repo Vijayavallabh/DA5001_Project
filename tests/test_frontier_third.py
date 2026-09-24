@@ -77,37 +77,59 @@ def test_the_duplicated_control_is_reported_not_smoothed():
         assert lo < 0 < hi, (r["judge"], "the two anchor-alone arms now differ significantly")
 
 
+def _closer_anchors_paragraph():
+    """The 'Two anchors closer to the risky model' paragraph (\\label{app:frontier3}), heading
+    included. Through v9 it sat in appendix_proofs.tex; the v10 restructure (2026-09-24) moved it to
+    Appendix H in appendix_onset.tex. Scoped to the paragraph so a number elsewhere in the appendix
+    cannot satisfy a guard meant for this pair (caution (an))."""
+    from tests.manuscript import body
+    txt = body("appendix_onset.tex")
+    assert txt.count(r"\label{app:frontier3}") == 1, "the closer-anchors paragraph is gone"
+    i = txt.index(r"\label{app:frontier3}")
+    end = txt.find(r"\paragraph{", i)
+    return txt[txt.rindex(r"\paragraph{", 0, i): end if end >= 0 else len(txt)]
+
+
 def test_the_scoring_log_and_the_appendix_round_from_the_csv():
     """Rescoped 2026-09-19. The twelve-cell table left the manuscript with the appendix reduction
     (appendix 30 -> 25 pages); the arm, its scoring log and its CSV are unchanged. What the paper
     still prints is the reading -- which arms resolve, in which direction, and what they spent --
     so that is what is checked against the CSV here, cell by cell where a cell survives.
+
+    Rescoped again for v10 (2026-09-24). The paragraph now prints the four realised spends as their
+    range ("spends $54.8$ to $60.6$ nats over a $40\\times$ range of caps") and the direction of the
+    eight metered gains as "all eight point estimates negative"; v9's per-arm spends ($59.3$, $60.3$)
+    and per-judge gain ranges ($-0.038$ to $-0.019$, $-0.030$ to $-0.009$) are no longer printed.
+    Both surviving statements are rebuilt from the CSV, and selection's cell is now checked under
+    BOTH judges, since the paragraph prints both.
     """
-    from tests.manuscript import tex
     log = " ".join(open(LOG, encoding="utf-8").read().split())
-    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
+    apx = _closer_anchors_paragraph()
     assert "REPLICATES" in log
     metered = [r for r in rows() if r["arm"].startswith("metered") and r["judge"] == SCORER]
     sel = [r for r in rows() if r["arm"].startswith("selection, n=8") and r["judge"] == SCORER]
     assert len(metered) == 4 and len(sel) == 1, (len(metered), len(sel))
-    # every metered arm's realised spend is still quoted -- that is the paper's point about this
-    # pair, and it is what the prose reading rests on
-    for r in metered:
-        assert f"${float(r['spend_nats']):.1f}$" in apx, r["spend_nats"]
-    # and the direction of every metered gain is still stated correctly
-    gains = [float(r["gain"]) for r in metered]
+    # the realised spends are still quoted, as the range over every metered arm -- that saturation
+    # is the paper's point about this pair, and it is what the prose reading rests on
+    spends = [float(r["spend_nats"]) for r in metered]
+    assert f"spends ${min(spends):.1f}$ to ${max(spends):.1f}$ nats" in apx, spends
+    # and the direction of every metered gain, on both judges, is still stated correctly
+    every = [r for r in rows() if r["arm"].startswith("metered")]
+    gains = [float(r["gain"]) for r in every]
+    assert len(gains) == 8, len(gains)
     if all(g < 0 for g in gains):
         assert "resolves at no budget on either judge" in apx, gains
-        assert f"${min(gains):+.3f}$" in apx and f"${max(gains):+.3f}$" in apx, gains
+        assert "all eight point estimates negative" in apx, gains
     else:
-        assert "genuinely useful here" in apx, gains
-        for r in metered:
-            if float(r["gain"]) > 0 and r["arm"] != "metered, k=0.5":
-                assert f"${float(r['gain']):+.3f}$" in apx, r["arm"]
-    # selection at n=8 beats them for 1.204 nats, quoted with its interval
-    r = sel[0]
-    assert f"${float(r['gain']):+.3f}$ $[{float(r['gain_lo95']):+.3f}, {float(r['gain_hi95']):+.3f}]$" \
-        in apx, (r["arm"], "selection's own cell is no longer quoted")
+        assert "resolves at no budget" not in apx and "all eight point estimates negative" not in apx, \
+            gains
+        for r in every:
+            if float(r["gain"]) > 0:
+                assert f"${float(r['gain']):+.3f}$" in apx, (r["judge"], r["arm"])
+    # selection at n=8 beats them for 1.204 nats, quoted with its interval, under both judges
+    for r in (x for x in rows() if x["arm"] == "selection, n=8"):
+        assert (f"${float(r['gain']):+.3f}$ $[{float(r['gain_lo95']):+.3f}, "
+                f"{float(r['gain_hi95']):+.3f}]$") in apx, (r["judge"], "selection's cell is gone")
 
 
 def test_the_third_pair_is_reported_as_one_of_two_non_safe_pairs():
@@ -115,10 +137,12 @@ def test_the_third_pair_is_reported_as_one_of_two_non_safe_pairs():
     not a safe model, so its numbers belong beside that caveat and not in Section 4's copyright
     comparison. The appendix must still call them two further pairs and quote both mechanisms."""
     from tests.manuscript import tex
-    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
-    assert "Two further pairs" in apx, "the appendix no longer says there are two further pairs"
-    i = apx.index("\\label{app:frontier3}")
-    passage = apx[i:i + 1600]
+    # v10 (2026-09-24): the paragraph is headed "Two anchors closer to the risky model" and opens on
+    # the caveat "Neither anchor here is a safe model"; v9 said "Two further pairs". Same claim.
+    passage = _closer_anchors_paragraph()
+    assert "Two anchors closer to the risky model" in passage, \
+        "the appendix no longer says there are two further pairs"
+    assert "Neither anchor here is a safe model" in passage, "the not-a-safe-model caveat is gone"
     a = by_judge(SCORER)
     sel, best = a["selection, n=8"], max(
         (v for k, v in a.items() if k.startswith("metered")), key=lambda r: float(r["gain"]))

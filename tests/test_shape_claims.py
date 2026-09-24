@@ -61,7 +61,12 @@ def test_the_scorer_scale_spearmans_are_what_the_appendix_says_they_are():
         assert all(y > x for x, y in zip(s, s[1:])), (b, s)     # "strictly monotone at all six"
     apx = body("appendix_selection.tex")
     assert "$0.5429$" in apx, "the 0.5B Spearman is no longer quoted"
-    assert "strictly monotone" in apx and "all six grid points" in apx
+    # v10 (2026-09-24) dropped the gloss "strictly monotone at all six grid points" and says
+    # "exactly 1.0 for each larger scorer" -- a Spearman of exactly 1 over six distinct points IS
+    # strict monotonicity, which the data check above verifies; the claim is read in its sentence.
+    sent = [x for x in apx.split(". ") if "$0.5429$" in x]
+    assert len(sent) == 1, sent
+    assert "exactly $1.0$ for each larger scorer" in sent[0], sent[0]
 
 
 def test_the_strongest_anchor_series_really_rises_monotonically():
@@ -139,9 +144,13 @@ def test_the_reallocation_range_brackets_what_the_table_holds():
     # the prose brackets, not point values: the range must sit inside what is claimed
     assert 3.0 <= min(low) and max(low) <= 13.0 + 0.5, (min(low), max(low))
     assert max(high) < 1.4, max(high)
-    txt = body("orders.tex", "appendix_proofs.tex")
-    assert "$3$ to $13\\%$ at $k \\le 1$" in txt, "the low-budget range claim has moved"
-    assert "under $1.4\\%$ at $k=3$" in txt, "the k=3 ceiling claim has moved"
+    # v10 (2026-09-24): the repairs table is in Section 3 (frontier.tex) and the schedule paragraph
+    # in Appendix H (appendix_onset.tex); the range now reads "3 to 13% more fidelity at k <= 1".
+    # Each site is checked on its own, not their concatenation.
+    for f in ("frontier.tex", "appendix_onset.tex"):
+        txt = body(f)
+        assert "$3$ to $13\\%$ more fidelity at $k \\le 1$" in txt, (f, "the low-budget range claim has moved")
+        assert "under $1.4\\%$ at $k=3$" in txt, (f, "the k=3 ceiling claim has moved")
 
 # RETIRED 2026-09-19, appendix reduction. The paragraph each of these read was removed
 # when the appendix was cut from 52 pages, so the sentence they pinned no longer exists.

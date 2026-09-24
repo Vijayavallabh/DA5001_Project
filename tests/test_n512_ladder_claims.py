@@ -32,7 +32,9 @@ def _para(start):
     return txt[txt.rfind("\\paragraph{", 0, i + 1):j if j > 0 else None]
 
 
-LADDER = "\\paragraph{The largest $n$, and whether the gain stops.}"
+# v10 (2026-09-24) retitled the paragraph ("How far $n$ pays.") and moved its bands into a table;
+# it is located by the reference to that table, so a retitle cannot retire the guards.
+LADDER = "Table~\\ref{tab:ladder}"
 
 
 def test_every_n512_band_the_appendix_quotes_rounds_from_the_csv():
@@ -49,7 +51,7 @@ def test_the_slope_sentence_follows_c3_and_the_order_averaged_pair_carries_its_m
     c3 = [_row(a, "C3", "g(512)-g(64)")["reading"] for a in ("A", "B")]
     para = _para(LADDER)
     if all(w == "NOT RESOLVED" for w in c3):
-        assert "we claim neither a ceiling nor a slope" in para
+        assert "we claim neither a ceiling nor a slope" in para.lower()
         assert "we had predicted a marginal climb" in para, "the wrong prediction was trimmed"
     else:
         assert "neither a ceiling nor a slope" not in para, f"C3 reads {c3}; the sentence is stale"
@@ -78,10 +80,15 @@ def test_the_off_support_sentence_uses_the_reading_c1_returned():
 
 
 def test_limitations_reaches_as_far_as_the_judged_ladders_did():
+    """v10 (2026-09-24) states the reach inside the reading ("To $n=512$ no judged ladder turns
+    over") instead of in a separate "our judged arms $n=512$" clause; the reach is read off the CSV."""
+    import re
     lim = body("appendix_limitations.tex")
-    c2 = [_row(a, "C2", "g(512)-g(256)")["reading"] for a in ("A", "B")]
-    assert "our judged arms $n=512$" in lim and "judged arms reach $n=256$" not in lim
+    low = lim.lower()
+    reach = max(int(m) for r in _rows() for m in re.findall(r"g\((\d+)\)", r["quantity"]))
+    c2 = [_row(a, "C2", f"g({reach})-g({reach // 2})")["reading"] for a in ("A", "B")]
+    assert f"to $n={reach}$" in low and "judged arms reach $n=256$" not in lim
     if "TURNS OVER" not in c2:
-        assert "to $n=512$ no judged ladder turns over" in lim
+        assert f"to $n={reach}$ no judged ladder turns over" in low
     else:
-        assert "no judged ladder turns over" not in lim, "a judged ladder turned over at 512"
+        assert "no judged ladder turns over" not in low, f"a judged ladder turned over at {reach}"

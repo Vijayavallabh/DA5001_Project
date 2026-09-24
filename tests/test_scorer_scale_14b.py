@@ -74,10 +74,17 @@ def test_all_three_readings_are_reported_as_marginal():
 def test_the_appendix_prints_the_csv():
     t = body(SEC)
     i = t.find("Two further rungs")
+    assert i > 0, "the two new rungs are gone from the saturation paragraph"
     para = t[i:i + 1400]
-    for tag in ("7b", "14b", "72b"):
-        v = f"{float(level(f'sel{tag}_n64')['gain']):+.4f}".replace("+", "")
-        assert v in para, f"sel{tag}_n64's gain {v} is not printed"
+    v = f"{float(level('sel7b_n64')['gain']):+.4f}".replace("+", "")
+    assert v in para, f"sel7b_n64's gain {v} is not printed"
+    # v10 (2026-09-24) prints each new rung as its registered paired difference against that pass's
+    # 7.6B rung, with its interval, in place of the two levels (0.0810, 0.1010); the difference is
+    # recomputed here with the scorer's own bootstrap, so the printed band cannot drift from it
+    for tag in ("sel14b", "sel72b"):
+        m, lo, hi = paired(tag, "sel7b")
+        band = f"${m:+.4f}\\,[{lo:+.4f},{hi:+.4f}]$"
+        assert band in para, f"{tag}'s paired difference {band} is not printed"
     cost = float(level("sel72b_n64")["cost_vs_metered"])
     assert f"{cost:.1f}" in para, f"the 72B cost {cost:.1f}x is not printed"
 
@@ -97,5 +104,10 @@ def test_limitations_no_longer_claims_it_is_unmeasured():
     t = " ".join(body("appendix_limitations.tex").split())
     assert "not known to improve" not in t, (
         "Limitations still says the judged workload is unmeasured; feat-161 measured it")
-    assert "buys nothing by spending more on the reward model" in t, (
+    # v9 "a deployer buys nothing by spending more on the reward model"; v10 (2026-09-24) "On the
+    # judged workload the two larger scorers lift nothing ($-0.0285$ and $-0.0085$ against the $7.6$B
+    # rung)". Same consequence, now with the two measured differences, recomputed here.
+    (m14, _, _), (m72, _, _) = paired("sel14b", "sel7b"), paired("sel72b", "sel7b")
+    assert (f"judged workload the two larger scorers lift nothing (${m14:+.4f}$ and ${m72:+.4f}$ "
+            f"against the $7.6$B rung") in t, (
         "the deployer-facing consequence of feat-161 was dropped from Limitations")

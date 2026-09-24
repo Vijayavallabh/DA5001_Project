@@ -44,12 +44,18 @@ def test_the_median_protected_target_is_quoted_from_the_odometer_csv():
 
 
 def test_the_selection_budget_arithmetic_is_exact():
-    """log n - (n-1)/n at n = 8, and log 8 for the pathwise budget. Both are quoted to 2 or 3 dp."""
+    """log n - (n-1)/n at n = 8, and log 8 for the pathwise budget. Both are quoted to 2 or 3 dp.
+    Since v10 the pathwise budget is Table 1's K column (`selection, $n=8$ & pathwise & $2.08$`)
+    rather than a `$\\log 8 = 2.08$` clause in the prose; every selection row there must be log n."""
+    from tests.manuscript import body as _body
     kl8 = math.log(8) - 7 / 8
     assert f"${kl8:.3f}$" == "$1.204$"
     body = open(SEL, encoding="utf-8").read() + open(EXP, encoding="utf-8").read()
     assert "$1.204$" in body or "$1.20$" in body
-    assert f"$\\log 8 = {math.log(8):.2f}$" in open(SEL, encoding="utf-8").read()
+    rows = re.findall(r"selection, \$n=(\d+)\$ & pathwise & \$([\d.]+)\$", _body("selection.tex"))
+    assert ("8", f"{math.log(8):.2f}") in rows, rows
+    for n, k in rows:
+        assert k == f"{math.log(int(n)):.{len(k.split('.')[1])}f}", (n, k)
 
 
 def test_the_composition_count_divides_out():
@@ -66,11 +72,16 @@ def test_the_composition_count_divides_out():
     # a 200-token response at the audited k=3 is certified at 600 nats, so the odometer admits none
     assert int(400 / (3 * 200)) == 0
     assert int(400 / spend["3.0"]) == 2, 400 / spend["3.0"]
-    body = open(SEL, encoding="utf-8").read().replace("\n", " ")
-    body1 = body.replace("\n", " ")
-    assert "that is $192$ queries" in body1, body1[body1.find("composes"):][:260]
-    assert "$1.204$ nats gives $332$" in body1, "the KL count must be reported beside the pathwise one"
-    assert "$332$ queries" not in body1, "the KL count is being quoted as THE composition count"
+    # v10 counts RESPONSES ("$192$ responses at $n=8$") where v9 counted queries; same arithmetic.
+    body = " ".join(open(SEL, encoding="utf-8").read().split())
+    body1 = body
+    pw, kl = int(400 / _m.log(8)), int(400 / kl8)
+    assert f"${pw}$ responses at $n=8$" in body1, body1[body1.find("composes"):][:260]
+    assert re.search(rf"\$1\.204\$ nats (?:would give|gives) \${kl}\$", body1), \
+        "the KL count must be reported beside the pathwise one"
+    assert f"we quote the pathwise ${pw}$" in body1, "the pathwise count must be the one quoted"
+    for unit in ("queries", "responses"):
+        assert f"${kl}$ {unit}" not in body1, "the KL count is being quoted as THE composition count"
     m = re.search(r"spends a measured \$([\d.]+)\$ nats", body)
     assert m and float(m.group(1)) == spend["3.0"], (m.group(1) if m else None, spend["3.0"])
 
@@ -81,9 +92,12 @@ def test_the_cross_judge_gain_and_its_interval_come_from_the_csv():
     lo = {r["gain_lo95"] for r in rows}
     hi = {r["gain_hi95"] for r in rows}
     assert len(g) == len(lo) == len(hi) == 1
-    body = "".join(open(f, encoding="utf-8").read() for f in (EXP, tex("sections/iclr_closing.tex")))
-    assert f"$+{float(g.pop()):.3f}$" in body
-    assert f"$[+{float(lo.pop()):.3f}, +{float(hi.pop()):.3f}]$" in body
+    # v10 moved the non-circular judge-A-selects / judge-B-scores reading into Appendix B's scorer
+    # paragraph (app:currency); the band must still be printed whole, point and interval together.
+    body = " ".join(" ".join(open(f, encoding="utf-8").read().split())
+                    for f in (EXP, tex("sections/iclr_closing.tex"), APP))
+    assert (f"$+{float(g.pop()):.3f}$ $[+{float(lo.pop()):.3f}, +{float(hi.pop()):.3f}]$"
+            in body)
 
 
 def test_extraction_is_zero_at_every_n_in_the_table():
@@ -109,8 +123,9 @@ def test_the_n_sweep_arms_round_from_selection_scaling_csv():
     import csv as _csv
     from tests.manuscript import carries_band, body as _body
     rows = list(_csv.DictReader(open("results/selection_scaling_deecho.csv")))   # repaired text
-    want = [("Phi-3.5-mini-instruct", 8), ("Phi-3.5-mini-instruct", 64),
-            ("Meta-Llama-3.1-8B-Instruct", 64)]
+    # v10 (2026-09-24) dropped judge C's n=64 corroboration (+0.117) from Section 4; judge C's
+    # agreement is now carried by Figure 3's head-to-head row. See tests/RETIRED_2026-09-24.md.
+    want = [("Phi-3.5-mini-instruct", 8), ("Phi-3.5-mini-instruct", 64)]
     for judge, n in want:
         r = next(x for x in rows if judge in x["judge"] and int(float(x["n"])) == n)
         assert carries_band(float(r["gain"]), float(r["gain_lo95"]), float(r["gain_hi95"]),
@@ -136,7 +151,8 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     head-to-head (results/order_averaged_h2h.csv), not the two single-order gains it used to quote:
     a reviewer pointed out that a comparison of two gains measured with a position-dominated judge
     had never itself been checked for position, and feat-113 checked it. The difference must be
-    positive with an interval excluding zero, and Section 3 must quote all three numbers."""
+    positive with an interval excluding zero, and the main text (Section 4.2 since v10) must quote
+    all three numbers with their intervals."""
     import csv as _csv
     import re as _re
     from tests.manuscript import tex as _tex
@@ -163,17 +179,21 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
     # guard pinned to experiments.tex alone reported the claim missing when it had only moved.
     # Same lesson as caution (af), in reverse: follow the claim across every section that can
     # carry it, and keep asserting it exists and matches the CSV.
+    # v10: orders.tex is retired; the sentence is in experiments.tex and reads "for its
+    # $3.175$-nat bound and the meter ..." where v9 read "for $3.175$ nats and the metered decoder".
     body = " ".join("".join(open(_tex(f"sections/{f}.tex"), encoding="utf-8").read()
-                            for f in ("iclr_intro", "selection", "experiments", "orders")).split())
-    m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for \$3.175\$ "
-                   r"nats and the metered decoder \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
-                   body)
+                            for f in ("iclr_intro", "selection", "experiments")).split())
+    m = _re.search(r"selection gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ for "
+                   r"(?:its |a bound of )?\$3\.175\$(?:-nat bound| nats) and the meter(?:ed decoder)? "
+                   r"\$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$", body)
     assert m, "the order-averaged head-to-head sentence has moved"
-    assert abs(float(m.group(1)) - float(sel["value"])) < 5e-4, (m.group(1), sel["value"])
-    assert abs(float(m.group(4)) - float(met["value"])) < 5e-4, (m.group(4), met["value"])
+    for got, want in zip(m.groups(), (sel["value"], sel["lo95"], sel["hi95"],
+                                      met["value"], met["lo95"], met["hi95"])):
+        assert abs(float(got) - float(want)) < 5e-4, (m.groups(), sel, met)
     m2 = _re.search(r"difference of \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$", body)
     assert m2, "the paired difference has moved"
-    assert abs(float(m2.group(1)) - float(dif["value"])) < 5e-4, (m2.group(1), dif["value"])
+    for got, want in zip(m2.groups(), (dif["value"], dif["lo95"], dif["hi95"])):
+        assert abs(float(got) - float(want)) < 5e-4, (m2.groups(), dif)
     # and the divergence ratio it is set against, which no judging pass can change
     dec = next(r for r in _csv.DictReader(open("results/selection_crossjudge.csv"))
                if "metered" in r["selector"])
@@ -218,7 +238,8 @@ def test_the_position_bias_numbers_in_section_6_come_from_the_per_prompt_file():
     m = _re.search(r"win \$(\d+)\$ of \$500\$ shown second and \$(\d+)\$ shown first", body)
     assert m and (int(m.group(1)), int(m.group(2))) == (second_wins, first_wins), \
         (m.groups() if m else None, second_wins, first_wins)
-    m = _re.search(r"only \$([\d.]+)\\%\$ of items get a mutually\s*consistent verdict", body)
+    # v10 dropped "mutually" ("only $29.2\%$ of items get a consistent verdict"); same quantity.
+    m = _re.search(r"only \$([\d.]+)\\%\$ of items get a (?:mutually\s*)?consistent verdict", body)
     assert m and abs(float(m.group(1)) - 100 * c1) < 0.05, (m.group(1) if m else None, c1)
     m = _re.search(r"first slot wins \$([\d.]+)\\%\$", body)
     assert m and abs(float(m.group(1)) - 100 * c2) < 0.05, (m.group(1) if m else None, c2)
@@ -274,11 +295,15 @@ def test_every_anchor_reports_zero_recall_at_every_n():
     import re as _re
     from analysis.selection_breadth import ANCHORS as _ANCHORS
     from tests.manuscript import tex as _tex
+    from tests.manuscript import caption_of
     words = {4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
     nums = {w: n for n, w in words.items()}
     body = " ".join(open(_tex("sections/experiments.tex"), encoding="utf-8").read().split())
-    m = _re.search(r"at all ([a-z]+) anchors", body)
-    assert m and m.group(1) in nums, "Section 6 no longer states the anchor count"
+    # v10 states the count in Figure 5's caption, "Nine arms (six anchors, a paraphrase event, ...)
+    # read $0.0000$ at every $n$", rather than as "at all six anchors" in the prose.
+    m = (_re.search(r"at all ([a-z]+) anchors", body)
+         or _re.search(r"\(([a-z]+) anchors, ", caption_of("fig:safety")))
+    assert m and m.group(1) in nums, "Section 4 no longer states the anchor count"
     stated = nums[m.group(1)]
     assert stated <= len(arms), (f"Section 6 claims {stated} anchors; only {len(arms)} leakage "
                                  f"arms are on disk")
@@ -294,13 +319,16 @@ def test_every_anchor_reports_zero_recall_at_every_n():
 
 
 def test_the_pathwise_form_of_prop_sparse_states_where_it_has_no_force():
-    """Appendix A sharpens Proposition 6 from an expectation to a per-trajectory count for the
-    deployed class. The first draft had the inequality backwards, so this pins the arithmetic:
-    with K = k T_max = 600 and T = 200, N_eps <= K/eps is below T only when eps > 3, i.e. it
-    constrains NOTHING below 3 nats in a single step."""
+    """Appendix A sharpens Proposition~\\ref{prop:sparse} from an expectation to a per-trajectory
+    count for the deployed class. The first draft had the inequality backwards, so this pins the
+    arithmetic: with K = k T_max = 600 and T = 200, N_eps <= K/eps is below T only when eps > 3,
+    i.e. it constrains NOTHING below 3 nats in a single step. (v10 heads the sharpening "Surely, for
+    the deployed class" where v9 said it "holds surely, not just in expectation".)"""
     from tests.manuscript import tex
     body = " ".join(open(tex("sections/appendix_proofs.tex")).read().split())
-    assert "holds surely, not just in expectation" in body, "the sharpening is gone"
+    assert "Surely, for the deployed class" in body, "the sharpening is gone"
+    assert "at most $K/\\varepsilon$ steps of any single served trajectory" in body, \
+        "the sharpening no longer states the per-trajectory count"
     k, t_max, T = 3.0, 200, 200
     eps_star = k * t_max / T          # 3.0: above this the count is below the trivial bound
     assert eps_star == 3.0
@@ -372,15 +400,32 @@ def test_the_n64_comma7b_arm_is_reported_with_its_failed_nested_check():
 
 def test_the_cross_pass_floor_has_both_measurements():
     """0.034 from the second-pair pass and 0.039 from the n=64 arm. If either moves, the appendix
-    sentence that says 'about 0.04' has to move with it."""
+    sentence that says 'about 0.04' has to move with it.
+
+    v10 moved the floor into Appendix H ('Two anchors closer to the risky model') and states it as
+    "differ by at most $0.034$ ... at Comma-7B ($0.039$)", so both numbers are now derived: the
+    maximum over the four should-be-identical arm pairs (two extra pairs x two judges), and the
+    Comma-7B n=8 gain's move between its breadth arm and its n=64 arm."""
     import csv as _csv
-    from tests.manuscript import tex
+    from tests.manuscript import body
     n1 = [r for r in _csv.DictReader(open("results/frontier_pair_llama321b.csv"))
           if r["arm"] == "selection, n=1" and "Phi-3.5" in r["judge"]][0]
     assert abs(abs(float(n1["gain"])) - 0.034) < 5e-4
-    apx = " ".join(open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().split())
-    assert "$0.039$" in apx and "$-0.034$" in apx
-    assert "cross-pass floor" in apx
+    twins = [abs(float(r["gain"])) for p in ("llama321b", "llama323bi")
+             for r in _csv.DictReader(open(f"results/frontier_pair_{p}.csv"))
+             if r["arm"] == "selection, n=1"]
+    assert len(twins) == 4, twins
+
+    def g8(path):
+        return float(next(r for r in _csv.DictReader(open(path))
+                          if "Phi-3.5" in r["judge"] and int(float(r["n"])) == 8)["gain"])
+    move = abs(g8("results/selection_scaling_comma7b.csv") - g8("results/selection_scaling_comma7b64.csv"))
+    apx = body("appendix_onset.tex")
+    i = apx.find("cross-pass floor")
+    assert i > 0, "the cross-pass floor left the appendix"
+    w = apx[max(0, i - 400):i]
+    assert f"at most ${max(twins):.3f}$" in w, (max(twins), w)
+    assert f"${move:.3f}$" in w, (move, w)
 
 
 def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
@@ -421,11 +466,14 @@ def test_the_cost_column_keeps_a_bound_and_a_measurement_apart():
     # bound/measurement split is checked there (below) rather than silently retiring here.
     assert not spent, (spent, "a spent (non-certificate) row is back in the forest; re-derive this")
 
+    from analysis.selection_decoding import kl_best_of_n as _kl
     txt = _body("experiments.tex", "selection.tex", "iclr_intro.tex")
     for bad in ("budget of $171.3$", "budget, nats", "$171.3$-nat budget"):
         assert bad not in txt, bad
-    # both bounds are stated, and neither is called a measurement
-    assert "$3.175$" in txt and "$4.159$" in txt, \
+    # both bounds are stated, and neither is called a measurement. v10's main text names the
+    # pathwise one as "$\log 64 = 4.16$" (two places) where v9 printed "$4.159$".
+    kl64, pw64 = _kl(64), _math.log(64)
+    assert f"${kl64:.3f}$" in txt and (f"${pw64:.3f}$" in txt or f"\\log 64 = {pw64:.2f}$" in txt), \
         "the pathwise certificate and the sharper KL bound must both be named"
     # EVERY live section, not the three the repair was about -- caution (af). The first version
     # scanned three files and missed a fourth instance in appendix_selection.tex ("for $3.17$

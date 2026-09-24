@@ -48,9 +48,26 @@ def test_the_compute_matched_loss_is_stated_with_its_sign_and_its_interval():
     g = {r["arm"]: float(r["gain"]) for r in _rows("compute_matched.csv")}
     assert abs((g["sel05b_n4"] - g["metered_k10"]) - val) < 5e-4, (g["sel05b_n4"], g["metered_k10"])
 
-    body = _tex("sections/selection.tex")
-    assert f"${val:+.4f}$" in body, f"Section 3 lost the matched-compute loss {val:+.4f}"
-    assert f"$[{lo:+.4f}, {hi:+.4f}]$" in body, f"Section 3 lost its interval [{lo:+.4f}, {hi:+.4f}]"
+    # v10: the forward-pass-matched cell (F4) is stated in Appendix B's scorer-size paragraph,
+    # "at matched compute, $n=4$ at $0.92\times$, it loses outright, $-0.0395\,[-0.0720,-0.0065]$",
+    # and the main text carries the loss at the DEPLOYABLE matched cell (anchor_only_cost_bands B3).
+    # Both are pinned, each with its sign, its interval and the verdict beside it.
+    def flat(t):
+        return t.replace("\\,", " ").replace("$", "").replace(", ", ",")
+    apx = flat(_tex("sections/appendix_selection.tex"))
+    i = apx.find(f"{val:+.4f} [{lo:+.4f},{hi:+.4f}]")
+    assert i >= 0, f"the appendix lost the matched-compute loss {val:+.4f} [{lo:+.4f}, {hi:+.4f}]"
+    assert "matched compute" in apx[max(0, i - 120):i] and "loses" in apx[max(0, i - 120):i], \
+        "the forward-pass-matched loss is quoted without saying it is a loss at matched compute"
+    b3 = next(r for r in _rows("anchor_only_cost_bands.csv") if r["band"].startswith("B3"))
+    g3, lo3, hi3 = map(float, re.search(r"gain vs meter ([-+\d.]+) \[([-+\d.]+), ([-+\d.]+)\]",
+                                        b3["reading"]).groups())
+    assert g3 < 0 and hi3 < 0, (b3["reading"], "B3 is no longer a loss; the paper's sentence must change")
+    exp = _tex("sections/experiments.tex")
+    band3 = f"${g3:+.4f}$ $[{lo3:+.4f}, {hi3:+.4f}]$"
+    sites = [m.start() for m in re.finditer(re.escape(band3), exp)]
+    assert any("loses" in exp[max(0, j - 200):j] for j in sites), \
+        f"the main text lost the deployable matched-compute loss {band3}"
     close = _tex("sections/iclr_closing.tex")
     i = close.find("held to the meter's own compute")
     assert i != -1, "the Conclusion no longer concedes the compute-matched comparison"
@@ -73,14 +90,22 @@ def test_the_overoptimisation_concession_is_stated_at_both_sites():
         (worst["n"], worst["gain_hi95"], "no arm excludes zero on the wrong side any more")
     assert float(worst["spearman_acc_logn"]) < 0, worst["spearman_acc_logn"]
 
+    from tests.manuscript import caption_of
     apx = _tex("sections/appendix_selection.tex")
     assert f"at $n={worst['n']}$" in apx, f"the appendix no longer names n={worst['n']}"
-    label = apx.index(r"\label{tab:judgefree}")
-    occ = [m.start() for m in re.finditer("wrong side", apx)]
-    assert any(abs(o - label) < 1500 for o in occ), \
+    # v10 put the judge-free FIGURE's caption within 1500 characters of the table's label, so a
+    # distance test can no longer tell the two captions from the prose. Read the table caption
+    # itself, and read the prose with both judge-free captions removed.
+    assert "wrong side" in caption_of("tab:judgefree"), \
         "the judge-free table caption lost the direction of the TriviaQA turnover"
-    assert any(abs(o - label) >= 1500 for o in occ), \
-        "the Appendix I prose lost the direction of the TriviaQA turnover"
+    prose = apx
+    for lab in ("tab:judgefree", "fig:judgefree"):
+        prose = prose.replace(caption_of(lab), "")
+    said = [s for s in re.split(r"(?<=[.;])\s", prose) if "TriviaQA" in s
+            and any(d in s for d in ("wrong side", "turn", "falls", "goes negative"))]
+    assert said, "the appendix prose lost the direction of the TriviaQA turnover"
+    assert f"{float(worst['spearman_acc_logn']):.3f}" in prose, \
+        "the appendix prose no longer prints the negative Spearman of the TriviaQA turnover"
 
 
 def test_mt_bench_is_reported_as_resolving_nothing():
@@ -100,10 +125,13 @@ def test_mt_bench_is_reported_as_resolving_nothing():
     assert n_prompts == {80}, n_prompts
 
     lim = _tex("sections/appendix_limitations.tex")
-    assert "resolve nothing in either direction" in lim, \
-        "Limitations no longer concedes that MT-Bench resolves nothing"
-    assert f"${max(hw):.2f}$" in lim, f"the conceded half-width is not the CSV's {max(hw):.2f}"
-    assert f"MT-Bench's ${min(n_prompts)}$ prompts" in lim, "the prompt count is not stated"
+    # v10: "MT-Bench's $80$ prompts resolve nothing at a paired half-width of $0.10$" (v9 added "in
+    # either direction"). Scoped to that sentence so another half-width elsewhere cannot satisfy it.
+    i = lim.find(f"MT-Bench's ${min(n_prompts)}$ prompts")
+    assert i >= 0, "the prompt count is not stated"
+    w = lim[i:i + 160]
+    assert "resolve nothing" in w, "Limitations no longer concedes that MT-Bench resolves nothing"
+    assert f"${max(hw):.2f}$" in w, f"the conceded half-width is not the CSV's {max(hw):.2f}"
 
 
 def test_the_single_corpus_scope_is_conceded_with_the_count_the_corpus_has():
@@ -169,8 +197,11 @@ def test_the_onset_interval_width_is_the_one_the_table_currently_holds():
     # The adjective is the claim, so it is asserted too. A phrase list is normally caution (an)'s
     # mistake, but here it fails in the SAFE direction: a reword breaks the test loudly instead of
     # retiring it silently, which is what "make withdrawal deliberate" asks for.
+    # v10 carries the adjective in the paragraph's own heading, "More passages do not narrow the
+    # onset interval.", just before the sentence; the window runs from that heading.
     i = lim.index(f"mean width of ${mean:.3f}$")
-    w = lim[i:i + 320]
+    h = lim.rfind(r"\paragraph{", 0, i)
+    w = lim[max(h, 0):i + 320]
     assert any(p in w for p in ("does not shrink", "do not shrink",
                                 "does not narrow", "do not narrow")), \
         "the sentence no longer says the interval fails to narrow; the data still says it does not"
@@ -200,22 +231,25 @@ def test_the_second_opponent_verdict_word_matches_its_own_interval():
         ROOT, "results", "order_averaged_h2h__opp2.csv"), encoding="utf-8"))
         if r["quantity"].startswith("D3")]
     assert len(rows) == 1
-    lo, hi = float(rows[0]["lo95"]), float(rows[0]["hi95"])
+    d, lo, hi = float(rows[0]["value"]), float(rows[0]["lo95"]), float(rows[0]["hi95"])
     txt = _app_sel()
-    # SCOPE IT (caution (an)): `does not survive` occurs twice in this file, once in the
-    # paragraph heading two sentences earlier, so a bare `in txt` passed the mutation that
-    # softened the claim itself. Anchor on the sentence that carries the band.
-    claim = "The difference between them does not survive}: "
+    # v10 carries this arm (the Qwen2.5-14B-Instruct opponent) as a row of the opponent-ladder
+    # table, whose last column is the registered reading. SCOPE IT (caution (an)): the verdict is
+    # read in the row that carries this arm's own band, so it cannot be satisfied by another row.
+    i = txt.index(r"\label{tab:opponentladder}")
+    band = f"${d:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$"
+    row = [r for r in txt[i: txt.index(r"\bottomrule", i)].split("\\\\") if band in r]
+    assert len(row) == 1, ("the second opponent's band left the opponent table", band)
+    reading = row[0].split("&")[-1].strip()
     if lo <= 0 <= hi:
-        assert claim in txt, (
+        assert reading == "unresolved", (
             f"the interval [{lo}, {hi}] contains zero, so the registered reading is UNRESOLVED; "
-            "the appendix must say the difference does not survive, not that it is smaller")
-        i = txt.find(claim)
-        assert f"{lo:+.4f}" in txt[i:i + 200], \
-            "the verdict and its own interval were separated"
+            f"the table must say so, not {reading!r}")
+    elif lo > 0:
+        assert reading == "confirmed", (reading, "the interval excludes zero above")
     else:
-        assert claim not in txt, \
-            "the interval no longer contains zero; the concession's wording must be revisited"
+        assert reading not in ("confirmed", "unresolved"), \
+            "the interval excludes zero below; the concession's wording must be revisited"
 
 
 def test_the_self_preference_disclosure_survives():
@@ -245,8 +279,21 @@ def test_the_workload_verdict_word_matches_its_own_interval():
     assert len(rows) == 1
     g, hi = float(rows[0]["value"]), float(rows[0]["hi95"])
     assert g < 0 and hi < 0, f"AlpacaEval no longer reverses ({g}, hi {hi}); revisit the wording"
-    assert "the reversal \\emph{fails}" in _app_sel(), \
+    # v10: "The reversal holds on prefix completion (...), is unresolved on ..., and fails on
+    # AlpacaEval, $-0.0329$ $[-0.0528, -0.0127]$" -- the repaired-text band, from the de-echoed
+    # re-judge of the same arm, must sit right after the verdict word.
+    de = [r for r in _csv.DictReader(open(_os.path.join(
+        ROOT, "results", "order_averaged_h2h__mixpowk_judgeB_deecho.csv"), encoding="utf-8"))
+        if r["quantity"].startswith("D3")]
+    assert len(de) == 1
+    g2, lo2, hi2 = (float(de[0][k]) for k in ("value", "lo95", "hi95"))
+    assert g2 < 0 and hi2 < 0, f"AlpacaEval no longer reverses on the repaired text ({g2}, {hi2})"
+    txt = _app_sel()
+    i = txt.find("fails on AlpacaEval")
+    assert i >= 0, \
         "the appendix softened the AlpacaEval verdict; its own interval excludes zero on that side"
+    assert f"${g2:+.4f}$ $[{lo2:+.4f}, {hi2:+.4f}]$" in txt[i:i + 80], \
+        "the verdict and its own interval were separated"
 
 
 def test_the_order_consistency_concession_keeps_below_chance():
@@ -282,7 +329,9 @@ def test_the_audited_anchors_empty_rate_is_quoted_with_its_own_threshold():
     txt = body("appendix_limitations.tex")
     audited = rate["TinyComma-1.8B (audited)"]
     assert audited > 5.0, (audited, "the audited anchor now passes its gate; revisit the paragraph")
-    i = txt.find(f"empty on ${audited}\\%$ of the $500$ prompts")
+    # v10: "The audited anchor's first draw is empty on $14.6\%$ of prompts in its $n=8$ arm"
+    # (v9: "... of the $500$ prompts")
+    i = txt.find(f"empty on ${audited}\\%$ of")
     assert i >= 0, (
         "the audited anchor's empty rate was deleted; it is the one that exceeds the 5% threshold "
         f"its own registration set (rates on record: {sorted(set(rate.values()))})")

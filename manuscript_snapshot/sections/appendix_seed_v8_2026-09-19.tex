@@ -1,0 +1,186 @@
+% feat-064. Numbers from results/seed_effect.csv (analysis/seed_effect.py) and the protocol
+% results/onset_prediction_seed.md, specified at bc74f4d, 9ea3bec and a63ec8f before each arm ran.
+\section{What the evaluation hands the adversary}\label{app:seed}
+
+\paragraph{Three quantities move together, and none of them is the tokenizer}
+Each benchmark item is a prompt prefix followed by its continuation, both from the same novel, and
+the attack seeds the adversary with \texttt{--seed-tokens 20}: a fixed number of \emph{tokens}. For one
+fixed piece of text a finer tokenizer therefore changes three things at once --- the words the seed
+buys, the decode steps before the continuation is reached, and the target's length in tokens --- and
+all three track the onset ratio without ordering the nine exactly: of the $34$ anchor pairs whose
+granularity differs at all, the ratio is discordant with it on $2$ and the step count on $3$, and
+two further pairs share a tokenizer outright, so granularity separates nothing between them:
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+pair & ch/token & seed chars & seed words & steps to it & onset\,/\,$s(x)$ \\
+\midrule
+TinyComma 1.8B  & $4.18$ & $83.5$ & $15.0$ & $197$ & $0.887$ \\
+Pleias 1.2B     & $4.06$ & $81.2$ & $14.6$ & $206$ & $0.878$ \\
+Comma 7B        & $3.93$ & $78.7$ & $14.1$ & $230$ & $0.892$ \\
+Phi-3.5 mini    & $3.88$ & $77.6$ & $13.9$ & $220$ & $0.926$ \\
+Pleias 350M     & $3.85$ & $77.1$ & $13.9$ & $207$ & $0.920$ \\
+open-calm 1B    & $2.66$ & $53.1$ & $\phantom{0}9.5$ & $314$ & $1.027$ \\
+open-calm 3B    & $2.66$ & $53.1$ & $\phantom{0}9.5$ & $314$ & $0.993$ \\
+KL3M 520M       & $2.17$ & $43.4$ & $\phantom{0}7.5$ & $445$ & $1.053$ \\
+KL3M 1.7B       & $2.17$ & $43.4$ & $\phantom{0}7.5$ & $445$ & $1.166$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Seed length and characters per token are measured over the first twenty tokens of the $100$ passages
+each run used --- the split the memorisers were fine-tuned on --- and not inferred from a corpus
+average, which is why the granularity figures here differ from the corpus-wide ones in
+Section~\ref{sec:onset} in either direction (Phi-3.5-mini, $3.88$ here against $3.78$ over all $608$
+texts; Comma-7B, $3.93$ against $3.62$). The ordering within the coarse family is not stable between
+the two, one more reason no ranking of these pairs can carry the claim on its own. Because a
+twenty-token seed is exactly twenty times the characters per token, no choice of pairs can separate
+these three quantities; only an intervention can.
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+run & seed tokens & seed words & $s(x)$ & onset & onset\,/\,$s(x)$ (95\% CI) & no-cross \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{the seed, at a fixed anchor}}\\
+Pleias 1.2B, as measured & $20$ & $14.6$ & $3.209$ & $2.780$ & $0.866$ $[0.72, 0.95]$ & $0.1\%$ \\
+\quad Arm B, KL3M's seed & $10$ & $\phantom{0}6.9$ & $3.259$ & $3.272$ & $1.004$ $[0.99, 1.23]$ & $0.9\%$ \\
+\addlinespace
+KL3M 520M, half the seed  & $10$ & $\phantom{0}4.0$ & $2.424$ & $2.820$ & $1.163$ $[1.13, 1.33]$ & $0.5\%$ \\
+KL3M 520M, as measured   & $20$ & $\phantom{0}7.5$ & $2.415$ & $2.492$ & $1.032$ $[1.01, 1.23]$ & $0.0\%$ \\
+\quad Arm A, the others' seed & $40$ & $14.8$ & $2.398$ & $2.253$ & $0.939$ $[0.88, 1.17]$ & $0.1\%$ \\
+\quad four times the seed & $80$ & $29.6$ & $2.387$ & $2.521$ & $1.056$ $[0.78, 1.16]$ & $0.0\%$ \\
+\addlinespace
+KL3M 1.7B, as measured   & $20$ & $\phantom{0}7.5$ & $2.211$ & $2.554$ & $1.155$ $[1.14, 1.47]$ & $0.0\%$ \\
+\quad Arm A2, the others' seed & $40$ & $14.8$ & $2.215$ & $2.169$ & $0.979$ $[0.96, 1.67]$ & $0.0\%$ \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{the anchor's rate, at a fixed seed}}\\
+KL3M 520M, $\tau = 1.0$  & $20$ & $\phantom{0}7.5$ & $2.415$ & $2.492$ & $1.032$ $[1.01, 1.23]$ & $0.0\%$ \\
+\quad $\tau = 0.7$       & $20$ & $\phantom{0}7.5$ & $2.689$ & $2.719$ & $1.011$ $[0.88, 1.06]$ & $0.0\%$ \\
+\quad $\tau = 0.4$       & $20$ & $\phantom{0}7.5$ & $4.034$ & $3.603$ & $0.893$ $[0.76, 0.95]$ & $0.0\%$ \\
+\addlinespace
+Pleias 1.2B, $\tau = 1.0$ & $20$ & $14.6$ & $3.209$ & $2.780$ & $0.866$ $[0.72, 0.95]$ & $0.1\%$ \\
+\quad $\tau = 0.7$        & $20$ & $14.6$ & $3.513$ & $2.734$ & $0.778$ $[0.72, 1.00]$ & $0.0\%$ \\
+\quad $\tau = 0.4$        & $20$ & $14.6$ & $5.200$ & $3.740$ & $0.719$ $[0.65, 0.85]$ & $0.0\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Whatever the warp does to the onset, it does not do it through the memoriser. Matching the two arms
+on memoriser strength --- dropping $62$ of $100$ passages from the KL3M pair to close a strength gap
+of $0.519$ against $0.904$ --- changes the elasticity in the third decimal, $+0.72$ both times, and
+$+0.61$ both times on Pleias-1.2B, although the onsets it is built from do move
+($2.492 \to 2.462$ and $3.603 \to 3.550$; Pleias $2.780 \to 2.748$ and $3.740 \to 3.694$). What
+matching costs is power: on $38$ and $86$ passages the upper ends reach $1.00$ and $1.03$, so
+sub-proportionality is a full-sample statement and is reported as one, while the part that refutes
+the null survives both. The $\tau = 0.7$ arms were run as a dose check and are uninformative by the
+rule fixed before either was scored --- they move $s(x)$ by $0.09$--$0.11$ log units against the
+$\tau = 0.4$ arms' $0.62$--$0.67$, so the elasticity divides by a lever six times too small, and
+$+0.81$ $[-0.53, +1.23]$ and $-0.18$ $[-1.07, +2.58]$ both contain $0$, $1$ and both $\tau = 0.4$
+estimates. They carry no weight in either direction. Figure~\ref{fig:units-law} plots every arm on
+one axis.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\textwidth]{units_law.pdf}
+\caption{The budget at which extraction begins, against the anchor's surprisal rate on the work it
+protects. Filled circles are the five pairs whose adversary is handed $13.9$--$15.0$ words and the
+line is fitted on them alone; open circles are the two pairs handed about half as many, which sit
+above the line and, for one of them, above the vacuity threshold itself. Squares joined to their
+own control are the temperature arms, where the anchor, memoriser, corpus, tokenizer and seed are
+all fixed and only the warp moves the horizontal axis --- the only points here that do.}
+\label{fig:units-law}
+\end{figure}
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+pair & \multicolumn{2}{c}{$20$-token seed} & \multicolumn{2}{c}{matched seed} & move & $k_{\mathrm{crit}}$ \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+ & words & ratio & words & ratio & & change \\
+\midrule
+KL3M 1.7B      & $\phantom{0}7.5$ & $1.155$ & $14.8$ & $0.979$ & $-0.176$ & $-7.1\%$ \\
+KL3M 520M      & $\phantom{0}7.5$ & $1.032$ & $14.8$ & $0.939$ & $-0.093$ & $-7.3\%$ \\
+open-calm 1B   & $\phantom{0}9.5$ & $1.001$ & $14.6$ & $0.959$ & $-0.042$ & $-11.3\%$ \\
+open-calm 3B   & $\phantom{0}9.5$ & $0.981$ & $14.6$ & $0.919$ & $-0.062$ & $-11.1\%$ \\
+\midrule
+Phi-3.5 mini   & $13.9$ & $0.926$ & $13.9$ & $0.926$ & --- & --- \\
+Pleias 350M    & $13.9$ & $0.893$ & $13.9$ & $0.893$ & --- & --- \\
+Comma 7B       & $14.1$ & $0.879$ & $14.1$ & $0.879$ & --- & --- \\
+Pleias 1.2B    & $14.6$ & $0.866$ & $14.6$ & $0.866$ & --- & --- \\
+TinyComma 1.8B & $15.0$ & $0.866$ & $15.0$ & $0.866$ & --- & --- \\
+\midrule
+spread         & & $0.289$ & & $0.113$ & $\times 0.392$ & \\
+coeff.\ of var.& & $9.6\%$ & & $4.2\%$ & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\emph{The move column and the spread row do not carry the same noise.} Each row's move is one
+memoriser measured at two seed lengths, so whatever draw its fine-tune landed on is common to both
+columns and cancels: these interventions are paired, and the re-seed dispersion quoted above does not
+apply to them. The spread and coefficient-of-variation rows are taken across nine different
+fine-tunes and do carry it, so the residual $0.113$ after matching is an upper bound on any real
+between-pair structure rather than a measurement of it. Figure~\ref{fig:context} draws the
+matched-context arm, with the pairs already inside the window as the band.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{context_intervention.pdf}
+\caption{Equalising what the evaluation hands the adversary. Each line is one pair at the
+benchmark's fixed $20$-token seed and at a matched $13.6$--$15.0$ words. The five pairs whose
+$20$-token seed is already in that window cannot move and are drawn as the band; they are the
+control. All four that can move do, all four move down, and all four land inside it or on its upper
+edge.}
+\label{fig:context}
+\end{figure}
+
+$S_{\mathrm{match}}/S_{20} = 0.392$, inside the band specified for ``the context is the dominant
+cause'' ($\le 0.5$), and the near-verbatim metric gives $0.399$ on the same arms. Both new arms
+land inside their specified $[0.85, 0.96]$, the 1B at its upper edge at $0.959$. Their admission criterions
+hold: at $30$ tokens the unconstrained 1B reproduces its target at $0.242$ against its own
+control's $0.181$ and the 3B at $0.915$ against $0.924$, so neither arm weakened its memoriser and
+the exclusion rule specified for such a case did not fire.
+
+Two things make this more than a restatement of the ranking. First, equalising a variable that
+merely \emph{correlates} with an outcome need not shrink the outcome's spread: if granularity acted
+on the onset through the vocabulary, the target's length, or the tokenizer's fit to English prose,
+lengthening the seed would leave the ratio where it was, because none of those changes. Second, the
+mechanism is the one the single-pair arms already showed --- $s(x)$ moves by $0.5$--$0.7\%$ under
+the longer seed while $k_{\mathrm{crit}}$ falls about $11\%$, so the seed is starting the target at
+a cheaper point on a profile it does not otherwise touch.
+
+What survives is $0.113$ of spread, with the two KL3M pairs still on top at $0.979$ and $0.939$.
+The claim scored here is a fraction and not a closure, and the protocol said so before the
+numbers existed: $61\%$ of the nine-pair spread is the benchmark's seed convention and $39\%$ is
+not.
+
+Split by how many words the adversary holds, the leave-one-out error of a law in $c\,s(x)$ is
+$0.070$ nats over the five pairs above ten words and $0.195$ over the four below, against $0.245$
+over all nine and $0.364$, $0.563$ and $0.388$ for a constant; the $s(x)$ spans are $1.49\times$,
+$1.53\times$ and $1.61\times$, and the ratios run $0.878$--$0.926$ and $0.993$--$1.166$.
+
+Two of the nine rows carry a measured re-seed dispersion, and it changes how the tighter family
+reads. Re-training Pleias-1.2B, one of its members, at three seeds gives a standard deviation of
+$0.0450$ in the ratio ($5.3\%$), where the family's dispersion \emph{across five different pairs} is
+$0.0212$ ($2.4\%$) --- less than half of what one of its own members produces by being trained again,
+and over more draws. The family's tightness is therefore not resolved against fine-tune noise, and
+the $0.070$ and the exact $p = 0.008$ computed from it treat nine point estimates as carrying no draw
+at all. We report them as computed and do not read that family as measurably tighter than the
+retraining of its own members.
+
+What survives is the separation, which is what the units claim rests on. The two family means differ
+by $0.159$ ($0.901$ against $1.060$); the $\le 10$-word family's dispersion of $0.0748$ ($7.1\%$) is
+four times the $0.0180$ ($1.7\%$) that re-training KL3M-520M, one of \emph{its} members, produces;
+and the all-nine spread of $0.2874$ sits well above either floor. The split between the families is
+larger than the noise; the internal tightness of one side of it is not, and the multiplicity check
+inherits that limitation. That check is an exact enumeration, since a five-of-nine subgroup is the
+shape a chance finding takes: of the $126$ subsets of size five exactly one --- this one --- has a
+coefficient of variation this small, $p = 0.008$, down from $p = 0.018$ over the $56$ subsets of
+eight and $p = 0.048$ over the $21$ of seven. It is still not a test of the grouping rule, which was
+read off these same measurements. What tests that are the interventions above, which move a single
+pair across the boundary in both directions with everything else fixed, and the eighth pair, whose
+ratio was predicted from the other seven before its anchor was fine-tuned.

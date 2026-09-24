@@ -1,32 +1,91 @@
-% v6 (2026-09-11): the nine-pair analysis and both audit tables, migrated out of the main text.
-\section{The onset in full: the context gradient and two refuted refinements}\label{app:onset}
+% v10 (2026-09-24): the metered decoder, audited. Merges v9's appendix_onset, appendix_opening,
+% appendix_robustness (scaling, collapse, BookMIA, matched utility), appendix_second_anchor and the
+% measurement half of appendix_proofs (both factors of Prop. 4, the repairs, the further pairs). v9 is
+% kept in DA5001_Project/output/review_audit/pre_v10_2026-09-24/sections/.
 
-Section~\ref{sec:orders} states the nine-pair result in a paragraph and the four-order
-comparison in two. This appendix is the evidence: both tables, the context gradient that
-explains the residual fifth, and the two refinements we derived, specified in advance and had to reject.
-One pair, Comma-7B against its own memorised copy, makes memorisation the only variable; its
-construction is Appendix~\ref{app:second-anchor}.
+\section{The metered decoder, audited}\label{app:onset}
+
+\paragraph{Both factors of Proposition~\ref{prop:imitation}.}
+Table~\ref{tab:imitation} measures them at the audited pair. Below the imitation rate the bucket binds
+almost everywhere and the decoder spends most of its allowance; above it the bucket goes slack, the
+realised rate stops at $0.857$ nats per token, and the certificate at $k=20$ is written against a quantity
+the decoder uses $4.3\%$ of. The crossover is the pair's mean $D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$. $\beta$ counts every step the
+bucket touches, including the prefix-debt opening where the anchor writes the token outright;
+strictly interior blends alone are $0.9\%$ of steps at $k=3$. On the
+$3{,}300$ protected-passage trajectories the rate is higher, $0.911$ nats per token: the meter charges most
+where the risky model is most distinct from the anchor, which is where memorisation lives. The spend is
+spread, not concentrated: the busiest $1\%$ of steps carry $5.8\%$ of it and covering $90\%$ takes $64\%$ of
+the sequence. At $k=20$ the decoder serves $p_{r,t}$ unchanged at every step, so $N_\varepsilon = \Theta(T)$
+for every $\varepsilon$ below the imitation rate, the vacuous horn in Proposition~\ref{prop:sparse}'s own
+currency. Table~\ref{tab:imitation-pairs} repeats the measurement at four pairs: the rate saturates (ratio
+against a band of $1.10$ fixed in advance), realised spend converges on it to within $0.14\%$, and at $k=20$
+the decoder serves $p_r$ unchanged at $\ge 99.95\%$ of steps. The level orders by how far the risky model
+has been \emph{tuned} from the anchor, not by its size: a $70$B base model reads $0.8330$ against the $8$B
+instruction-tuned model's $0.8278$ at $k=3$, where we had predicted it higher. The same-family prediction
+(instruct rate below half the base rate) passed narrowly, by $2.2\%$ of its threshold.
 
 \begin{table}[h]
 \centering\footnotesize
-\caption{Onset of extraction on nine pairs, as a fraction of the anchor's surprisal rate $s(x)$.
-Rates are nats per \emph{token}: $s(x)$ is the anchor's and $s_r$ the memoriser's, on the same
-tokens. $n$ is the number of protected passages; onset is the budget at
-which mean single-query recall first reaches $0.01$, interpolated inside its bracket. Every pair
-clears the admission criterion of $0.10$ (Appendix~\ref{app:limitations}) and $k=0$, the anchor
-alone, is $0.000$ at all nine. Two columns are reported because they are \emph{not} controlled.
-\emph{mem.}\ is the memoriser's own sampled recall at $k=-1$, with no anchor and no budget: these are
-nine separate fine-tunes spanning a factor of $5.1$ in it, the seed ladders of
-Appendix~\ref{app:collapse} show the onset ratio tracks it, and its ordering is not the ordering of
-the last column. \emph{ep.}\ is what the fine-tune ran against the cap it was given, so a run that
-stopped early reached its stop-loss and one that reached its cap did not converge. Five of the nine did
-not, and of the four seed ladders the only onset ratio that is \emph{not} reproducible under
-re-seeding is the one on a non-converged memoriser. $\dagger$ marks the two rows whose own sweep ran
-no $k=-1$ or $k=0$ arm, contrary to our own rule. They were measured afterwards in a dedicated
-baseline run per pair, at flags reproducing that sweep's protocol line character for character, and
-reproduced to three decimals the values previously read off an unrelated arm; the dagger stays
-because these two baselines come from a second invocation and not from the run that produced the
-onset beside them.}
+\caption{\textbf{Both factors of Proposition~\ref{prop:imitation}, $16{,}500$ logged trajectories at the
+audited pair.} $\beta$: fraction of steps at which the bucket binds; imitation rate: mean
+$D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$ over the slack steps; realised rate and spend: what the decoder
+actually incurs, a realisation throughout; $K = kT_{\max}$, $T_{\max} = 200$, the published cap. The last
+column regresses cumulative spend on the step index within a trajectory.}
+\label{tab:imitation}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{rrrrrrrr}
+\toprule
+$k$ & $K$ & $\beta$ & imitation rate & realised rate & spend & spend\,/\,$K$ & $R^2$ \\
+ & (nats) & (binding) & (nats/token) & (nats/token) & (nats) & & (cum.\ vs.\ $t$) \\
+\midrule
+$0.1$ & $20$ & $0.9540$ & $0.034$ & $0.051$ & $9.3$ & $46.5\%$ & $0.9794$ \\
+$0.15$ & $30$ & $0.9249$ & $0.063$ & $0.093$ & $16.9$ & $56.3\%$ & $0.9942$ \\
+$0.25$ & $50$ & $0.8507$ & $0.135$ & $0.180$ & $33.2$ & $66.4\%$ & $0.9987$ \\
+$0.5$ & $100$ & $0.5915$ & $0.359$ & $0.404$ & $78.5$ & $78.5\%$ & $0.9994$ \\
+$1$ & $200$ & $0.2057$ & $0.665$ & $0.676$ & $134.1$ & $67.1\%$ & $0.9940$ \\
+$3$ & $600$ & $0.0332$ & $0.828$ & $0.828$ & $165.0$ & $27.5\%$ & $0.9915$ \\
+$5$ & $1000$ & $0.0074$ & $0.848$ & $0.850$ & $169.9$ & $17.0\%$ & $0.9915$ \\
+$10$ & $2000$ & $0.0001$ & $0.857$ & $0.857$ & $171.3$ & $8.6\%$ & $0.9915$ \\
+$20$ & $4000$ & $0.0000$ & $0.857$ & $0.857$ & $171.3$ & $4.3\%$ & $0.9916$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{\textbf{Proposition~\ref{prop:imitation}'s shape at four pairs}, $500$ ordinary prompts, same grid
+and cap. $r_{\rm imit}(k)$ is the imitation rate at budget $k$; the ratio tests saturation against a band
+of $1.10$ fixed in advance. Only the last two anchors are not safe models, and no certificate, leakage or
+$s(x)$ number is taken from them.}
+\label{tab:imitation-pairs}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+anchor, risky model & $r_{\rm imit}(3)$ & $r_{\rm imit}(20)$ & ratio & $|r_{\rm real}/r_{\rm imit}-1|$ & spend, $k{=}20$ \\
+\midrule
+TinyComma-1.8B, 8B-Inst.  & $0.8278$ & $0.8570$ & $1.035$ & $0.0005$ & $171.3$ \\
+TinyComma-1.8B, 70B base  & $0.8330$ & $0.9085$ & $1.091$ & $0.0007$ & $148.9$ \\
+Llama-3.2-1B, 8B-Inst.    & $0.6157$ & $0.6174$ & $1.003$ & $0.0005$ & $123.4$ \\
+Llama-3.2-3B-Inst., 8B-Inst. & $0.3010$ & $0.3034$ & $1.008$ & $0.0013$ & $60.6$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Where extraction begins.}
+Table~\ref{tab:onset} gives the nine pairs Figure~\ref{fig:horns}(a) plots. Every pair clears the admission
+criterion (sampled $k=-1$ recall $\ge 0.10$), and $k=0$, the anchor alone, reads $0.000$ at all nine. Two
+columns are reported because they are not controlled: the memorisers span a factor of $5.1$ in their own
+recall, and five of the nine did not converge. Part of the residual tracks the words a $20$-token seed
+hands the adversary (Spearman $-0.958$), a caution for seeds fixed in tokens
+\citep{carlini2023quantifying}.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Onset of extraction on nine pairs, as a fraction of the anchor's surprisal rate $s(x)$ (nats per
+token; $s_r$ the memoriser's, on the same tokens). Onset is the budget at which mean single-query recall
+first reaches $0.01$, interpolated inside its bracket; $n$ protected passages. \emph{mem.}: the memoriser's
+own sampled recall at $k=-1$. \emph{ep.}: epochs run against the cap, so a run below its cap reached its
+stop-loss. $\dagger$: baselines measured in a second invocation reproducing the sweep's protocol line.}
 \label{tab:onset}
 \setlength{\tabcolsep}{2pt}
 \begin{tabular}{@{}lcccccccc@{}}
@@ -46,15 +105,148 @@ Pleias 350M $+$ mem.\ Pleias 350M   & $3.55$ & $0.326$ & $458$ & $0.875$ & $16/4
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
-\centering\small
-\setlength{\tabcolsep}{5pt}
-\caption{Four decoders at $k=3$: all four publish $K=3T$ and for all four the certificate is vacuous
-for $100\%$ of the 758 protected passages, so nothing distinguishes them to a rights-holder. Attack
-columns are mean near-verbatim recall over 100 passages from the memorising 8B model; price columns
-over 150 ordinary prompts.}
-\label{tab:orders}
+\emph{Two refined predictions, both refuted.} The rate a decoder must permit before it can pay for $x$
+at all,
+\begin{equation}
+r(x) \;=\; s_s(x) - s_r(x),
+\label{eq:req}
+\end{equation}
+predicts an onset ratio of $1 - s_r/s_s$ that must move with memorisation. Committed for the last five
+pairs before any was swept, it is refuted under all three registered rules: every miss low, held-out errors
+of $0.365$, $0.507$ and $0.296$ nats, and a directional claim that inverts. Eq.~\eqref{eq:req} is right
+about what a decoder must \emph{afford} (Table~\ref{tab:imitation}'s crossover) and wrong about where
+leakage \emph{begins}. The running maximum of Proposition~\ref{prop:outrun} fails in the complementary
+direction: warping the anchor's logits to $\tau = 0.4$ moves $s(x)$ by $67\%$ and $62\%$ on two pairs and
+the onset follows at an elasticity of $+0.72$ $[+0.41, +0.84]$ and $+0.61$ $[+0.40, +0.96]$, while
+$k_{\mathrm{crit}}$ misses by $21.9\%$ against a no-change null's $12.3\%$.
 
+\emph{The level is the claim, not the ordering.}\label{app:collapse} Holding one pair, its corpus, anchor
+and grid fixed and varying only the memoriser's fine-tuning length moves the onset ratio from $0.8756$ to
+$1.3477$; re-seeding at a fixed epoch count moves it by $0.033$ to $0.080$ where the fine-tune converged
+and by $0.2597$ where the memoriser is marginal. \textbf{The within-pair spread is $1.64\times$ the entire
+between-pair spread} of $0.8784$ to $1.1658$, and whether a pair's interval excludes $1$ flips inside that
+single pair, from $[0.68, 0.98]$ to $[1.01, 1.59]$. On two further corpora (Table~\ref{tab:gutenberg}) two
+of three pairs vary by $0.088$ and $0.066$, inside their own bootstrap widths of $0.227$ and $0.287$, and
+the third by $0.436$ against $0.171$; on the third corpus the ordering inverts, Pleias-1.2B reading $1.314$
+above the fine-tokenizer pair, whose interval no longer excludes $1$. Every onset in these arms lands
+between $0.80$ and $1.35$ of $s(x)$, which is what Proposition~\ref{prop:threshold} claims; which pairs
+begin above $1$ is confounded with training variables the table does not hold fixed.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Three pairs re-measured on two further protected corpora, anchor, architecture, settings, seed and
+grid held fixed. \emph{novels}: the pair's ratio on the sixteen CopyBench novels (Table~\ref{tab:onset});
+\emph{no-cross}: bootstrap resamples that never reach the onset on the grid.}\label{tab:gutenberg}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+pair & onset & onset\,/\,$s(x)$ (95\% CI) & no-cross & Eq.~\eqref{eq:req} & other corpus & novels \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{600 excerpts of 50 public-domain books}} \\
+KL3M-520M    & $2.608$ & $1.102$ $[1.07, 1.42]$ & $0.0\%$ & $2.218$ & --- & $1.053$ \\
+Pleias-1.2B  & $2.513$ & $0.895$ $[0.85, 1.17]$ & $0.0\%$ & $2.463$ & --- & $0.878$ \\
+Phi-3.5-mini & $2.704$ & $0.949$ $[0.79, 1.33]$ & $0.5\%$ & $2.813$ & --- & $0.926$ \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{600 passages over all 31 books of BookMIA's \texttt{attack\_train} split}} \\
+KL3M-520M    & $2.465$ & $1.014$ $[0.97, 1.13]$ & $0.0\%$ & $2.197$ & $1.102$ & $1.053$ \\
+Pleias-1.2B  & $4.006$ & $1.314$ $[1.01, 1.59]$ & $0.4\%$ & $2.614$ & $0.895$ & $0.878$ \\
+Phi-3.5-mini & $2.607$ & $0.992$ $[0.87, 1.37]$ & $0.0\%$ & $2.619$ & $0.949$ & $0.926$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The uncertified interval is the opening.}\label{app:opening}
+On the $758$ passages under four safe models, $k_{\mathrm{crit}}/s$ has a median of $4.25$ to $6.10$, but
+the running maximum in Eq.~\eqref{eq:rates} is attained at the \emph{first} token of the work in $87.7\%$
+to $90.5\%$ of cases, because the bucket must pay for the opening out of one step's allowance. An adversary
+who supplies one genuine prefix token removes it: the ratio falls to $1.32$--$1.48$ and stays there at $5$,
+$10$ and $20$ supplied tokens. Per token instead of per character the whole-work median is $3.88$--$5.98$
+and the ratios after a supplied prefix are unchanged ($1.35$--$1.41$). This is why oracle-prefix windows
+recover $0.0965$ of a passage at $k=3$ against $0.0116$ for a single query (Table~\ref{tab:orders}).
+
+\paragraph{Vacuity on a hundred books.}\label{app:bookmia}
+The vacuity verdict needs no memoriser, only forward passes of the anchor, so we re-measured it on BookMIA
+\citep{shi2024detecting} with the $758$ passages as a positive control (Table~\ref{tab:bookmia}). $65$ of
+$4{,}935$ seen passages are surprising enough that a $600$-nat budget does not cover them, which is the
+weaker reading registered rather than a replication; the unseen half and the control read $1.0000$. The
+halves are not exchangeable under an anchor that saw neither (medians $6.0\%$ apart against a specified
+$5\%$), so no arm treats them as a matched pair. A first pass scored vacuity as $k \ge s(x)$ per token and
+read $0.326$ on the control: that criterion agrees with $K \ge S(x)$ only when the cap and the work have
+the same length, and a deployment caps at $200$ tokens against a protected span near $60$.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Vacuity on BookMIA at the published $K = 600$. The seen and unseen halves are not a matched pair
+under an anchor that saw neither.}\label{tab:bookmia}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+corpus & passages & books & vacuous, $K = 600$ & median $S(x)$ & median $s(x)$/tok \\
+\midrule
+CopyBench (control) & $758$   & $16$ & $1.0000$ & $204.8$ & $3.197$ \\
+BookMIA, seen       & $4{,}935$ & $50$ & $0.9868$ & $182.6$ & $3.114$ \\
+BookMIA, unseen     & $4{,}935$ & $50$ & $1.0000$ & $192.1$ & $3.313$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{A pair where memorisation is the only variable.}\label{app:second-anchor}
+The earlier audit recorded a vocabulary mismatch ($64{,}000$ against $128{,}256$ tokens) as the reason no
+second anchor could be fused with the risky model. The obstacle was an implementation check that the
+embedding table have exactly $\mathrm{len}(\text{tokenizer})$ rows, which the Common Pile $7$B checkpoint
+fails by padding $64{,}000$ tokens to $64{,}256$ rows; masking the untrained rows out of the solve removes
+it. We fine-tune that $7$B model until it reproduces the protected passages ($0.915$ recall on its
+training split, $0.000$ held out) and fuse it against the unmodified model it came from, so anchor and
+risky model share every weight but those memorisation moved. Across $7$ budgets, both baselines, $5$
+strategies and $31{,}738$ budgeted queries there is no invariant violation. The anchor alone reproduces
+$0.0000$ under every strategy; at $k=20$ the decoder is the identity (single-query recall $0.7189$, equal
+to the unconstrained model's to four decimals); recall is $0.000$ at every budget up to $k=1$, $0.048$ at
+$k=3$ and $0.197$ at $k=5$, beginning near $s(x) = 2.39$ and far below $k_{\mathrm{crit}} = 11.32$.
+
+\paragraph{A better anchor widens the margin.}\label{app:scaling}
+Ten openly licensed safe models ($0.17$B to $7$B, three corpora) score the same $758$ passages and the same
+$300$ ordinary risky-model generations, in nats per character so no shared vocabulary is needed. Both the
+passages' rate $s(x)$ and the ordinary output's divergence $c_{\mathrm{use}}$ fall as the anchor improves,
+and $c_{\mathrm{use}}$ falls faster, so the margin $s(x)/c_{\mathrm{use}}$ rises with capability within
+every family, for all sixteen novels individually (Table~\ref{tab:marginspan}), and with training tokens at
+fixed size ($4.63$ to $5.02$ from the $1$T to the $2$T checkpoint of one $7$B model). Pooled across
+families it is not monotone in parameter count, because the families sit at different levels.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The margin $s(x)/c_{\mathrm{use}}$ across the widest capability span in each family, paired over the
+same sixteen novels.}\label{tab:marginspan}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+corpus & span & $\Delta c_{\mathrm{use}}$ & $\Delta s(x)$ & margin & sign test \\
+\midrule
+Common Corpus & $0.35 \to 3$B   & $-25.8\%$ & $-9.8\%$  & $3.45 \to 4.19$ & $16/16$, $p = 3.1\times10^{-5}$ \\
+KL3M          & $0.17 \to 3.7$B & $-31.3\%$ & $-16.0\%$ & $1.94 \to 2.37$ & $16/16$, $p = 3.1\times10^{-5}$ \\
+Common Pile   & $1.8 \to 7$B    & $-28.6\%$ & $-12.0\%$ & $4.07 \to 5.02$ & $16/16$, $p = 3.1\times10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The four repairs, in full}\label{app:repairs}
+
+\paragraph{A sharper charge.}
+Table~\ref{tab:orders} runs four R\'enyi orders at the authors' $k=3$. Every one publishes $K=3T$ and is
+vacuous for $100\%$ of the $758$ protected passages. Raising the order cuts oracle recall
+$0.0965 \to 0.0012$, an $80\times$ cut, by ceasing to serve the risky model: at $\alpha = 8$ the constraint
+touches $99.6\%$ of ordinary steps. At matched \emph{utility} rather than matched budget
+(Table~\ref{tab:orderlaw}, fidelity to $p_r$ on the geodesic as the utility axis, no judge) the higher order
+usually helps at $k=1$, by a factor of $1.0$ on one pair and $2.5\times10^{7}$ on another, and on four pairs
+$\alpha{=}8$ makes the protected tokens \emph{more} likely, by up to $1.3\times10^{6}$ on the mechanism's own
+configuration; at $k=3$ matching forces every order past its vacuity threshold, and on nine of twelve pairs
+the ranking reverses.\label{app:matched}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Four decoders at $k=3$, all publishing $K=3T$ and all vacuous for every protected passage. Attack
+columns: mean near-verbatim recall over $100$ passages from the memorising $8$B model; price columns: $150$
+ordinary prompts.}
+\label{tab:orders}
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{@{}lccccc@{}}
 \toprule
 & \multicolumn{2}{c}{attack recall} & \multicolumn{3}{c}{price on ordinary traffic} \\
@@ -69,23 +261,85 @@ $\alpha = 8$      & $0.0000$ & $0.0012$ & $0.08\%$ & $99.6\%$ & $0.9872$ \\
 \end{tabular}
 \end{table}
 
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Factor by which an exact $50$-token window becomes \emph{less} likely under order $\alpha$, at the
+budget $k_\alpha$ where it buys exactly the fidelity $\alpha{=}1$ buys at the published $k$; below $1$ the
+order leaks more at equal utility. Twelve pairs in seven families, \texttt{bfloat16} with a
+\texttt{float32} control per pair; $s(x)$ in nats per token.}\label{tab:orderlaw}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+& & \multicolumn{3}{c}{published $k = 1$} & \multicolumn{3}{c}{published $k = 3$} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+pair & $s(x)$ & $\alpha{=}2$ & $\alpha{=}4$ & $\alpha{=}8$ & $\alpha{=}2$ & $\alpha{=}4$ & $\alpha{=}8$ \\
+\midrule
+Pleias 350M    & $3.50$ & $5.0{\cdot}10^{4}$ & $2.5{\cdot}10^{7}$ & $1.4{\cdot}10^{7}$ & $67.5$ & $28.7$ & $2.4$ \\
+Pleias 1.2B    & $3.12$ & $3.6{\cdot}10^{4}$ & $1.3{\cdot}10^{7}$ & $1.9{\cdot}10^{7}$ & $67.3$ & $113$ & $27.2$ \\
+Comma 7B       & $2.32$ & $4.3{\cdot}10^{3}$ & $1.9{\cdot}10^{5}$ & $9.0{\cdot}10^{3}$ & $5.6$ & $2.2$ & $0.26$ \\
+KL3M 170M      & $2.61$ & $3.3{\cdot}10^{3}$ & $1.8{\cdot}10^{4}$ & $455$ & $4.1$ & $0.37$ & $0.12$ \\
+TinyComma 1.8B & $3.15$ & $3.0{\cdot}10^{3}$ & $5.3$ & $8.0{\cdot}10^{-7}$ & $0.67$ & $1.6{\cdot}10^{-3}$ & $1.3{\cdot}10^{-4}$ \\
+KL3M 3.7B      & $2.20$ & $1.4{\cdot}10^{3}$ & $8.6{\cdot}10^{3}$ & $909$ & $1.2$ & $0.37$ & $0.18$ \\
+KL3M 520M      & $2.42$ & $1.3{\cdot}10^{3}$ & $1.0{\cdot}10^{3}$ & $1.5$ & $1.4$ & $0.073$ & $7.3{\cdot}10^{-3}$ \\
+Llama-3.2 3B   & $2.81$ & $1.1{\cdot}10^{3}$ & $828$ & $1.6$ & $2.8$ & $0.30$ & $0.048$ \\
+KL3M 1.7B      & $2.25$ & $638$ & $7.4{\cdot}10^{4}$ & $4.4{\cdot}10^{5}$ & $46.4$ & $175$ & $311$ \\
+Llama-3.2 1B   & $2.78$ & $158$ & $9.4$ & $8.7{\cdot}10^{-3}$ & $0.84$ & $0.048$ & $7.8{\cdot}10^{-3}$ \\
+Qwen2.5 7B     & $2.62$ & $71.8$ & $1.0$ & $1.7{\cdot}10^{-4}$ & $0.47$ & $0.032$ & $3.7{\cdot}10^{-3}$ \\
+Phi-3.5 mini   & $2.71$ & $47.5$ & $7.8$ & $0.078$ & $0.15$ & $0.011$ & $2.7{\cdot}10^{-3}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
+\paragraph{A lower cap.}
+At $k=0.5$ neither outside judge separates the meter from its own safe model over $600$ comparisons each
+($-1.03\sigma$, $+1.52\sigma$); both separate only at $k \ge 10$ ($-6.97\sigma$, $-3.29\sigma$).
+
+\paragraph{A better schedule.}
+On the geodesic the charge and the fidelity bought are closed forms in $\psi(u) = \log Z(u)$,
 \begin{equation}
-r(x) \;=\; s_s(x) - s_r(x),
-\label{eq:req}
+C(\theta) = \theta\psi'(\theta) - \psi(\theta), \quad C'(\theta) = \theta\psi''(\theta), \qquad
+G(\theta) = \theta m - \psi(\theta), \quad G'(\theta) = m - \psi'(\theta),
+\label{eq:charge-gain}
 \end{equation}
-the rate a decoder must permit before it can pay for $x$ at all, predicting an onset ratio of
-$1 - s_r/s_s$ that must \emph{move} with memorisation. Committed for the last five pairs before any
-was swept, under three rules, it is refuted by all three: every miss low, held-out errors of $0.365$,
-$0.507$ and $0.296$ nats, and a directional claim that inverts (Appendix~\ref{app:collapse}).
-Eq.~\eqref{eq:req} is a correct statement about what a decoder must \emph{afford} and a wrong one
-about where leakage \emph{begins}: the budget granting access to a \emph{class} of works is not the
-budget at which one work becomes recoverable, and no scalar rate is both. The second refinement fails
-in the complementary direction. Warping the anchor's logits to $\tau = 0.4$ moves $s(x)$ itself by
-$67\%$ and $62\%$ on two pairs with everything else fixed, and the onset follows at an elasticity of
-$+0.72$ $[+0.41, +0.84]$ and $+0.61$ $[+0.40, +0.96]$ --- refuting a budget in constant nats twice
-over, without reaching exact proportionality. There $k_{\mathrm{crit}}$ misses by $21.9\%$ against a
-no-change null's $12.3\%$ and ranks its seven pairs at $\rho = +0.036$ and all nine at
-$-0.050$: it tracks which token of a
-fixed profile must be generated first, not a rescaling of the profile. The two propositions bound
-different things, and only one is a unit.
+with $m = \psi'(1)$, so $C'(0) = 0$ while $G'(0)$ is the Jeffreys divergence between the two models
+\citep{monteiropaes2026limits}: the first nat bought at a step is worth the most. The bucket takes whatever
+price $G'/C'$ its allowance lands on; the best allocation of the same total equalises it. Computed from two
+teacher-forced passes over $30$ targets of three kinds (memorised passages, a held-out novel, the risky
+model's own samples), the optimal reallocation buys $3$ to $13\%$ more fidelity at $k \le 1$ and under
+$1.4\%$ at $k=3$, against an offline optimum no causal scheduler can beat \citep{tomasi2026primaldual}; the
+three target kinds agree to within two points. The bucket already captures $46.7$--$54.5\%$ of the
+$\theta = 1$ fidelity at $k=0.25$ and $92.7$--$98.9\%$ at $k=3$, so three orders of magnitude are not there
+to recover.
+
+\paragraph{The budget granted up front.}
+The one causal policy Proposition~\ref{prop:sparse} positively permits spends a budget granted at the
+start. Judged order-averaged against the committed opponent it gains $-0.0015$ $[-0.0200,+0.0170]$ at
+$\log 8$ nats, $+0.0215$ $[+0.0015,+0.0415]$ at $\log 64$ and $+0.0545$ $[+0.0315,+0.0775]$ at $64$ nats:
+the causal horn is not empty, but at matched budget selection leads by $+0.083$ $[+0.052,+0.1135]$ and no
+budget on the grid reaches selection's $+0.1045$ at $\log 64$. Choosing \emph{where} to spend does not help:
+a rule that spends at step $t$ only if the full-tilt demand reaches $\tau$ nats reserves as designed (median
+spending step $3 \to 17$) and gains $+0.0215$, $+0.0150$, $+0.0110$, $+0.0045$ and $+0.0070$ at
+$\tau = 0,1,2,4,8$, falling except for a tick at the last, because a higher bar releases the budget less
+often ($0\%$ to $86.7\%$ of trajectories never spend) \emph{and} buys less when it does. An earlier arm,
+judged single-order and not compared with these, gave the front-loaded rule $-0.008$ $[-0.056, +0.041]$
+at $\log 8 = 2.0794$ nats against selection's $+0.054$ at the same budget.
+
+\paragraph{How far each mechanism sits from Theorem~\ref{thm:nfl}'s frontier.}
+Scoring the judge's verdict $1/\tfrac12/0$ and reading its law under $p_s$ off the anchor-only arm, the meter
+at $k=0.5,1,3,20$ spends $79.0$, $134.6$, $165.0$ and $171.3$ nats where $\Lambda^*_s$ of the utility it
+reaches asks for $0.0003$, $0.023$, $0.052$ and $0.061$. On the headline pass, order-averaged with each
+arm's own control as the safe law of $U$, selection at $n=64$ sits $32\times$ the frontier on its $3.175$-nat
+bound and the meter $11{,}646\times$ on its $171.3$ nats spent
+(\texttt{results/\allowbreak frontier\_\allowbreak distance\_\allowbreak h2h.csv}).
+
+\paragraph{Two anchors closer to the risky model.}\label{app:frontier3}
+Neither anchor here is a safe model, so no certificate, leakage or $s(x)$ number is taken from either; the pairs test whether the reversal is the mechanism's or the anchor's. A token-level meter needs a shared vocabulary, and no other openly licensed anchor has one with this risky model. At Llama-3.2-1B the meter is useful,
+$+0.051$, $+0.056$ and $+0.055$ under judge~B at $k=1,3,20$ for $88.1$ to $123.4$ nats, and selection at
+$n=8$ gains more, $+0.076$ $[+0.031, +0.122]$ and $+0.154$ $[+0.104, +0.200]$ on two judges, for $1.204$
+nats. At Llama-3.2-3B-Instruct, the closest meterable anchor and the one the protocol named the hardest
+case, the meter resolves at no budget on either judge (all eight point estimates negative, spends $54.8$ to
+$60.6$ nats over a $40\times$ range of caps) while selection gains $+0.150$ $[+0.106, +0.194]$ and $+0.273$
+$[+0.227, +0.323]$. A close anchor flattens the meter onto the anchor. The arms each pass holds twice (the
+meter's $k=0$ and selection's first draw) differ by at most $0.034$, and the same size appears independently
+at Comma-7B ($0.039$), so \textbf{the cross-pass floor on a judged gain is about $0.04$}, and gains from
+different passes are never compared here.

@@ -1,6 +1,9 @@
 % Plan v4 / section B: the anchor-scaling law. Written 2026-09-07 on branch iclr-2027.
 % Every number here comes from results/anchor_scaling_summary.csv, _paired.csv and
 % budget_drift.csv, produced by analysis/anchor_scaling.py and analysis/budget_drift.py.
+% SUPERSEDED 2026-09-11 (v6): the table and both controls moved into sections/appendix_robustness.tex
+% under \label{app:scaling}; Figure 1 and one paragraph of sections/frontier.tex carry the result in
+% the main text. Kept verbatim for provenance; not \input by iclr_2027.tex.
 
 \section{The separation widens as the safe model improves}\label{sec:scaling}
 
@@ -18,10 +21,9 @@ openly licensed corpora: KL3M (US public-domain legal text), Pleias~1.0 (Common 
 (the Common Pile), the last including the $1$T- and $2$T-token checkpoints of one $7$B model, which
 vary training data at fixed capacity. Every model scores the same $758$ protected passages, the
 same $50$ public-domain control books, and the same $300$ generations the risky model produced on
-ordinary instruction prompts. Rates are nats per character throughout, because total string
-log-probability is tokenizer-invariant and these models carry $64$k, $128$k and $152$k
-vocabularies; that is also why the measurement needs no shared vocabulary, and so is not restricted
-to safe models that could actually be fused with the risky one.
+ordinary instruction prompts. Rates are nats per character throughout: total string log-probability
+is tokenizer-invariant and these models carry $64$k, $128$k and $152$k vocabularies, so no shared
+vocabulary is needed and the measurement is not restricted to models fusable with the risky one.
 
 \paragraph{Result}
 Both rates fall as the safe model improves, and the one that must be permitted falls faster than
@@ -50,16 +52,10 @@ Pile anchor assigns the protected passages fewer nats than a $1.8$B one and conc
 the anchor weakens the guarantee. The observation is right, $0.778 \to 0.685$ nats per character;
 the conclusion does not follow, because $c_{\mathrm{use}}$ falls further over the same span,
 $0.191 \to 0.137$. Of the ten safe models scored here the $7$B anchor has the largest margin, not
-the smallest. Both readings of the measurement are true and belong together: in absolute terms the
-range of budgets over which the certificate says anything shrinks as anchors improve, so a deployer
-who fixed $k$ in nats will find it going vacuous under a better anchor; in relative terms the two
-rates separate. Which matters depends on whether the budget is chosen in nats or as a fraction of
-what ordinary traffic costs, and only the second is available to a deployer who does not know the
-protected works in advance.
-
-The trend has a terminus: it is driven by $c_{\rm use}$ falling, so in the limit the decoder becomes
-the identity on ordinary prompts and the mechanism's value vanishes in exactly the regime that makes
-its guarantee comfortable.
+the smallest. Both readings belong together: in absolute terms the range of budgets over which the certificate
+says anything shrinks, so a deployer who fixed $k$ in nats finds it going vacuous under a better
+anchor; in relative terms the two rates separate, and only the second reading is available to a
+deployer who does not know the protected works in advance.
 
 \paragraph{Two confounds, both measured}
 A safe model could look good on protected text merely by being bad at prose, and every safe model
@@ -70,11 +66,9 @@ model roughly halves $c_{\rm use}$ and raises every margin, making the numbers a
 conservative end. In all nine corpus-by-risky-model combinations the margin rises $16$ of $16$.
 
 \paragraph{What the margin does not license}\label{sec:price}
-The margin says how far apart the two rates are; it does not say a budget between them leaves
-utility intact, because the rate a decoder actually pays is not $c_{\mathrm{use}}$ but the
-$5$-to-$32$-times smaller rate reported in §\ref{sec:frontier}, measured across six prompt classes
-and two budgets. Cheap-step selection does not account for that gap, since the decoder pays more
-per unaltered step than the cheapest matching fraction of the unconstrained distribution would. The
-budgeted decoder walks a different trajectory from the one the risky model would have walked, and
-its price is a property of that trajectory --- the approximation gap Theorem~\ref{thm:nfl} leaves
-open, and the reason no quantity computable before serving predicts it.
+The margin says how far apart the two rates are, not that a budget between them leaves utility
+intact: the rate a decoder actually pays is not $c_{\mathrm{use}}$ but a rate $5$ to $32$ times
+smaller, measured across six prompt classes and two budgets (Appendix~\ref{app:limitations}). Cheap-step selection does not account for that gap: the decoder pays more per unaltered step
+than the cheapest matching fraction of the unconstrained distribution would, because it walks a
+different trajectory, and its price is a property of that trajectory --- the approximation gap
+Theorem~\ref{thm:nfl} leaves open.

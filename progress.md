@@ -1,5 +1,63 @@
 # Session Progress Log
 
+## 2026-09-24 (night) --- v10: the paper reframed around its contribution (user: "Reframe the paper around its novel contribution, not our experiment log ... figure/table-driven ... cut text without hesitation")
+
+The manuscript was restructured from the introduction outwards. No measured number changed; every
+number in the new tables and figures is read from a committed CSV by a script.
+
+- **Order.** Intro, with Figure 1 as the overview (a schematic of the two places a budget can be
+  spent, above the certificate-growth and utility-per-nat plots) -> Section 2 *Selection anchoring*
+  (Propositions 1-2; Table 1: what one response's certificate says about a protected 50-token window,
+  and how many responses a 400-nat cap admits) -> Section 3 *Why a per-token rate cannot be repaired*
+  (Proposition 3, Theorem 1, Proposition 4; Figure 2: the deployed meter's two horns; Table 2: the four
+  repairs) -> Section 4 *Experiments* (Table 3: served configurations including AnchoredByte; Figure 3:
+  every perturbation of the head-to-head as one forest; Figure 4 breadth; Figure 5 leakage; Table 4
+  cost) -> related work -> limitations and conclusion.
+- **New script and result.** `.venv/bin/python analysis/certificate_table.py --out results` ->
+  `results/certificate_table.csv` (K, K/S_w, the binary-KL window bound, responses under a 400-nat
+  cap; CPU only, reads `window_vacuity.csv` and `imitation_cost.csv`). `figures/make_figures_v4.py`
+  gains `meter_horns_rows()`/`meter_horns()` and `h2h_forest_rows()`/`h2h_forest()`; every plotted
+  value comes from a row function a test can call (caution (al)). Regenerate all figures with
+  `.venv/bin/python figures/make_figures_v4.py --copy-to ~/sub/satml/figures`.
+- **Length.** `57 -> 37` pages. Body exactly 9 of 9 (page 10 opens on the Ethics Statement); appendix
+  `42 -> 23` pages (v9 pages 16-57, v10 pages 15-37).
+- **Retired section files** (renamed `*_v9_2026-09-24.tex`, never compiled): `orders`, `onset`,
+  `appendix_opening`, `appendix_robustness`, `appendix_second_anchor`; their content is merged into
+  `appendix_onset.tex` (Appendix G, the meter audited; Appendix H, the four repairs). The v9 sources
+  and PDF are kept in `output/review_audit/pre_v10_2026-09-24/`.
+- **Guards.** The rewrite failed 231 guards at once. Five reconciliation passes (groups A-E), each on
+  a scratch copy through `SATML_DIR`, restored every concession, failed prediction and disclosure the
+  cut had taken out, and re-pointed the guards whose claims had moved to a new place; the merged edit
+  list was applied once (`output/v10/apply_restorations.py`, every edit asserted to land exactly
+  once). Four guards now check something different, each listed with its reason in
+  `tests/RETIRED_2026-09-24.md`; none is a concession. `tests/test_v10_restructure.py` (8 tests) pins
+  Table 1 to its CSV, Figures 2 and 3 to the rows they plot, the live `\input` set, and one label per
+  `\ref`. Mutation-tested: 17 mutations, 17 fail a named test. The first run found one silent: the
+  Figure 2 band in the prose was satisfied by the caption's copy in the same file (caution (an)), so
+  the prose is now checked with the caption cut out.
+- **Defects found by reading the rendered pages, all fixed.** (1) The intro attributed "50-token
+  windows on about a quarter of prompts" to Cooper et al. (2025), whose abstract says something else
+  and stronger: Llama-3.1-70B reproduces *Harry Potter and the Sorcerer's Stone* almost verbatim from
+  its first few words. The sentence now says that. (2) Figure 3's caption read as if `k=10` were the
+  rate-matched budget; the last block's rows have their own `k`. (3) Limitations said the judged
+  comparison "flips" under a stronger opponent; those intervals cover zero, so it "vanishes". (4) "No
+  violation in 100,000 trajectories" -> "more than 100,000", as the appendix and the known truths say.
+  (5) The abstract attached "under five of six judges" to every budget; the panel ran only at `k=10`.
+  It also said the zero held "because the bound is relative to the anchor"; it now says "a zero
+  relative to the anchor, which must be vetted". (6) Figure 6: both curves ran through panel (a)'s
+  legend, and panel (c)'s label hid the `k=0.5` arm (caution (ad)). Earlier in the pass: zero leakage
+  claimed "at any `n <= 256`" where `n <= 64` and `n = 256` were measured; vacuity claimed for every
+  event at `k = 1`, where the table supports `k >= 3` (the 50-token event from `k >= 0.8`); majority
+  vote called "the cheapest and the best instance", which the 14B scorer contradicts; an unscoped
+  "where its budget binds"; `0.06x` for `0.061x`; "budget" for "rate" in Section 3's title; and
+  heading punctuation, orphan floats, `\texttt` path breaks, the contaminated re-draw's wording and
+  the ladder table's caption.
+- **Build.** tectonic exit `0`, `0` overfull, `0` `??`, bold faces `4`, `37` pages;
+  `analysis/audit_numbers.py`: `3,417` literals, the two expected misses (`64256`, the Comma-7B padded
+  embedding count, and `0.99990`, an R^2 stored as text in `cost_grid_bands.csv`).
+- **Late fixes after the first full run** (`output/v10/suite_live.log`: 1162 passed, 2 failed). Both failures were concessions or justifications this pass had cut, and both were restored rather than re-pointed. First, shortening the opponent-ladder table's names removed the only full `Llama-3.1-8B-Instruct` from the appendices, and with it the name in the disclosure that judge C is the opponent's own checkpoint. The disclosure now names it. Second, cutting Section 2's extension sentence removed "one of the draws", the reason self-consistency is an instance; it now reads "serving one of the draws, one with the modal answer". Figure 6 was regenerated (panel (a) legend, panel (c) label; `judge_free.pdf` saved at `454.6` pt, shrink `0.948` at `\textwidth`).
+- **Final suite: 1164 passed, 0 failed, 0 skipped.** Each of the 178 test files ran as its own pytest process, 16 in parallel (`output/v10/shards_2035`, 9 min 43 s, bounded by `test_kl3m37b_scorer.py` at 578 s). The box's load average was about 80 on 64 cores, so the serial run was stopped at 37% (`init.sh` steps 1-4 had printed OK). `pytest-xdist` is not installed; file-level sharding needs no new dependency.
+
 ## 2026-09-24 (afternoon) --- the skipped review points, run on both hosts (user: "finish all the tasks that you skipped with utilizing all the gpus in this host and the other host")
 
 Every point the evening round skipped was run or, where it is human-only, stated as not done. Each arm

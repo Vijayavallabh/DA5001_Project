@@ -137,12 +137,21 @@ def test_limitations_carries_the_committed_consequence_of_f1_and_f3():
 
 def test_the_conceded_compute_ratios_were_not_softened_by_the_failed_rescue():
     """The committed consequence of NO CROSSING is that the n=64 concession stands EXACTLY as
-    written, in the introduction, in Section 2 and in Limitations: a failed rescue may not be spent
-    as a discount. The literal is read from the CSV rather than hardcoded, because it moved once
+    written wherever it is stated -- in v9 the introduction, Section 2 and Limitations; in v10 the
+    cost table, Section 4.5 and Limitations: a failed rescue may not be spent as a discount. The literal is read from the CSV rather than hardcoded, because it moved once
     already -- 57.5x was computed from the models' NAMES and is 61.3x from their parameter counts."""
     worst = max(float(r["cost_vs_metered"]) for r in _rows("results/compute_matched.csv"))
-    for f in ("sections/iclr_intro.tex", "sections/selection.tex", "sections/iclr_closing.tex"):
-        assert f"${worst:.1f}\\times$" in _tex(f), (f, worst)
+    # v10 (2026-09-24): the cost paragraph of the old Section 2 is Section 4.5 (experiments.tex),
+    # which now states the ratio twice -- in its price table and in its prose -- and the
+    # introduction prices selection by the deployable clock (21.8x) instead. The three sites are
+    # the three places the paper now states the n=64 forward-pass concession.
+    exp = _tex("sections/experiments.tex")
+    i = exp.index("\\label{tab:cost}")
+    j = exp.index("\\end{table}", i)
+    sites = {"Table tab:cost": exp[i:j], "Section 4.5 prose": exp[j:],
+             "Limitations": _tex("sections/iclr_closing.tex")}
+    for f, txt in sites.items():
+        assert f"${worst:.1f}\\times$" in txt, (f, worst)
 
 
 def test_the_cost_model_uses_measured_parameter_counts_and_not_model_names():
@@ -223,7 +232,7 @@ def test_the_matched_compute_cost_is_the_one_the_csv_computed():
     assert cost < 1.0, "sel05b_n4 is the cell F4 was built on; its FLOP cost is below the meter's"
     bands = open("results/compute_matched_bands.csv", encoding="utf-8").read()
     assert f"({cost:.2f}x)" in bands, f"the bands label disagrees with the column ({cost})"
-    body = _tex("sections/selection.tex")          # where a stale label does real damage
+    body = _tex("sections/experiments.tex")        # v10: Section 4.5 carries the cost concession
     apx = _tex("sections/appendix_selection.tex")
     assert f"${cost:.2f}\\times$" in apx, \
         f"the appendix must quote the computed cost, {cost:.2f}x"
@@ -232,6 +241,19 @@ def test_the_matched_compute_cost_is_the_one_the_csv_computed():
     assert f"${measured:.2f}\\times$" in apx, \
         "the measured price of the same cell must travel with the proxy, or the reader is told "\
         f"that {cost:.2f}x is what it costs when it is {measured:.2f}x"
-    # feat-164: the body now carries the DEPLOYABLE cell, and the superseded one with it
-    assert "the forward-pass count had put it at $n=4$" in body, \
-        "Section 2 dropped the cell the concession was originally stated at"
+    # feat-164: the body carries the DEPLOYABLE cell, derived here from the draw-cost CSVs ...
+    cd = next(float(r["C_over_D"]) for r in _rows("results/anchor_only_cost.csv")
+              if r["width"] == "200")
+    n_dep = int(next(r["value"] for r in _rows("results/anchor_only_cost_bands.csv")
+                     if r["band"].startswith("B3")))
+    assert f"$n={n_dep}$ at ${n_dep * cd:.2f}\\times$" in body, \
+        "Section 4.5 no longer states the deployable compute-matched cell"
+    # ... and v10 moved the superseded cell out of the body: it now travels beside the deployable
+    # one in Appendix F's deployable-server paragraph, which lists all three prices.
+    n_flop = next(int(r["n"]) for r in _rows("results/compute_matched.csv")
+                  if r["arm"] == "sel05b_n4")
+    k = apx.index("\\label{app:anchoronly}")
+    served = apx[k:apx.index("\\paragraph{", k)]
+    assert f"the forward-pass count's $n={n_flop}$" in served \
+        and f"the deployable $n={n_dep}$" in served, \
+        "the cell the concession was originally stated at no longer travels with the deployable one"

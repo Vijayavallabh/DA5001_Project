@@ -1408,6 +1408,15 @@
       "dependencies": [],
       "status": "done",
       "evidence": "results/onset_prediction_cotaeval_infringement.md scored 2026-09-24 17:07 IST: I1 sel64-risky -0.0150 [-0.0195,-0.0107], I1b -0.0148 [-0.0191,-0.0104], I2 sel64-anchor -0.0012 [-0.0052,+0.0027], I4 met_k10-risky +0.0004 [-0.0002,+0.0010], I5 0/500 at ROUGE-L>=0.5 at every one of 14 arms (Wilson upper 0.0076) -- as predicted; I3 oracle64-risky +0.0370 [+0.0336,+0.0404] -- WRONG (predicted below zero). The 'uninformative' rule does NOT fire: risky 0.1589 [0.1554,0.1624] is above the anchor's 0.1451 [0.1421,0.1481]. .venv/bin/python analysis/cotaeval_infringement.py --out results -> results/cotaeval_infringement.csv; reward cache merged from 4 prompt shards equals their union row for row (32000/32000). Appendix H 'Not run' sentence replaced by the result; Limitations names both halves; tests/test_skipped_round.py::test_the_cotaeval_infringement_paragraph_reads_its_csv, 8/8 mutations fail it. Build: exit 0, 0 overfull, 0 ??, page 10 opens on ETHICS STATEMENT; audit_numbers: 4205 literals, 1 expected miss (64256)."
+    },
+    {
+      "id": "feat-194",
+      "name": "v10 restructure: the paper reframed around its contribution, figure- and table-driven",
+      "description": "User, 2026-09-24: reframe around the novel contribution, lead with the result, carry the evidence in figures and tables with self-contained captions, cut prose and push mechanical detail to the appendix. Keep every measured number, concession and guard.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "Build: tectonic exit 0, 0 overfull, 0 ??, bold faces 4; 57 -> 37 pages, body exactly 9 of 9 (page 10 opens on ETHICS STATEMENT), appendix 42 -> 23 pages. New: analysis/certificate_table.py --out results -> results/certificate_table.csv (Table 1); figures/make_figures_v4.py meter_horns (Figure 2) and h2h_forest (Figure 3), each with a row function. Guards: 231 failed after the rewrite; five reconciliation passes restored every cut concession and re-pointed moved claims; four changed guards listed in tests/RETIRED_2026-09-24.md. tests/test_v10_restructure.py 8 tests, 17/17 mutations fail a named test (one silent mutation found and fixed: caption copy satisfied the prose check). audit_numbers: 3,417 literals, 2 expected misses (64256, 0.99990). Full suite on the live manuscript: 1164 passed, 0 failed, 0 skipped (all 178 test files, each its own pytest process, 16 in parallel, output/v10/shards_2035, 20:32-20:42 IST; init.sh steps 1-4 [OK] in output/v10/init_final.log, whose serial pytest step was stopped at 37% in favour of the parallel run). The two restored phrases were mutation-tested: removing either fails its guard."
     }
   ]
 }

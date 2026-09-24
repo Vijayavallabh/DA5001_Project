@@ -118,7 +118,7 @@ def test_the_front_loader_is_the_trivial_horn_by_construction():
 
 
 def test_the_threshold_grid_in_the_appendix_rounds_from_the_tagged_csvs():
-    """The five threshold gains are in one sentence of appendix_proofs.tex, and each lives in its
+    """The five threshold gains are in one sentence of the appendix, and each lives in its
     own tagged h2h CSV -- so nothing checked them together and nothing checked the claim the
     sentence made ABOUT them.
 
@@ -141,7 +141,9 @@ def test_the_threshold_grid_in_the_appendix_rounds_from_the_tagged_csvs():
         gains.append(float(d2["value"]))
         never[t] = float(sc[arm]["spent_nothing_pct"])
 
-    body = open(tex("sections/appendix_proofs.tex"), encoding="utf-8").read().replace("\n", " ")
+    # v10 (2026-09-24) moved the sentence from appendix_proofs.tex to Appendix H's "The budget
+    # granted up front" paragraph in appendix_onset.tex.
+    body = " ".join(open(tex("sections/appendix_onset.tex"), encoding="utf-8").read().split())
     sent = next(s for s in body.split(". ") if r"\tau = 0,1,2,4,8" in s)
     # the five grid values are the run that immediately precedes the tau list; the same sentence
     # also carries the conditional pair, so take the values before the marker, not all of them
