@@ -122,30 +122,35 @@ def run(a):
 
 
 def report(logs, out):
-    cells = {}
+    """Per-request seconds per cell, keyed by the log PART it was timed in: each part times its
+    selection cell on the same card, back to back with the meter it is compared with, so a ratio is
+    only ever formed within one part (the registration's same-card rule). Then T1-T4."""
+    cells, part = {}, "?"
     for log in logs:
         for line in open(log, encoding="utf-8"):
+            if line.startswith("[blat] START"):
+                part = re.search(r"part=(\S+)", line).group(1)
             m = LINE.search(line)
             if m:
                 arm, risky, W, n = m.group(1), m.group(2), int(m.group(3)), int(m.group(4))
-                cells.setdefault((arm, risky, W, n), []).append(
+                cells.setdefault((part, arm, risky, W, n), []).append(
                     (float(m.group(6)), float(m.group(7))))
     rows = []
-    for (arm, risky, W, n), v in sorted(cells.items()):
+    for (part, arm, risky, W, n), v in sorted(cells.items()):
         g, r = st.mean(x[0] for x in v), st.mean(x[1] for x in v)
-        rows.append(dict(arm=arm, risky=risky, W=W, n=n, reps=len(v), gen_s=round(g, 4),
+        rows.append(dict(part=part, arm=arm, risky=risky, W=W, n=n, reps=len(v), gen_s=round(g, 4),
                          reward_s=round(r, 4), per_request_s=round((g + r) / W, 4),
                          spread=round((max(x[0] + x[1] for x in v) - min(x[0] + x[1] for x in v))
                                       / (g + r), 4)))
-    by = {(r["arm"], r["risky"], r["W"], r["n"]): r["per_request_s"] for r in rows}
+    by = {(r["part"], r["arm"], r["risky"], r["W"], r["n"]): r for r in rows}
     for r in rows:
         if r["arm"] == "SEL":
-            for risky in sorted({k[1] for k in by if k[0] == "MET"}):
-                met = by.get(("MET", risky, r["W"], 1))
-                if met:
-                    r[f"vs_met_{risky.split('/')[-1]}"] = round(r["per_request_s"] / met, 4)
-    keys = sorted({k for r in rows for k in r}, key=lambda k: list(rows[0]).index(k)
-                  if k in rows[0] else 99)
+            for (pt, a, risky, W, n), met in by.items():
+                if pt == r["part"] and a == "MET" and W == r["W"]:
+                    r[f"vs_met_{risky.split('/')[-1]}"] = round(r["per_request_s"] / met["per_request_s"], 4)
+    keys = []
+    for r in rows:
+        keys += [k for k in r if k not in keys]
     path = os.path.join(out, "batched_latency.csv")
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=keys, lineterminator="\n")
@@ -154,6 +159,42 @@ def report(logs, out):
     for r in rows:
         print(r)
     print(f"wrote {path}")
+    # the registered bands (results/onset_prediction_batched_latency.md)
+    R8, R70 = "meta-llama/Meta-Llama-3.1-8B-Instruct", "unsloth/Meta-Llama-3.1-70B"
+    bands = []
+
+    def ratio(tag, W, num, den, lo, hi, predict):
+        if num not in by or den not in by:
+            return
+        a, b = by[num], by[den]
+        q = a["per_request_s"] / b["per_request_s"]
+        noise = a["spread"] + b["spread"]
+        ok = (lo is None or q > lo) and (hi is None or q < hi)
+        read = ("descriptive" if predict is None else
+                ("CONFIRMED" if ok else "REFUTED") if min(abs(q - x) / x for x in (lo, hi) if x) > noise
+                else "WITHIN NOISE")
+        bands.append(dict(band=tag, W=W, numerator=f"{a['arm']} n={a['n']} ({a['part']})",
+                          denominator=f"{b['arm']} {b['risky'].split('/')[-1]} n={b['n']} ({b['part']})",
+                          ratio=round(q, 4), cell_spreads=round(noise, 4), predicted=predict or "",
+                          reading=read))
+    for W in (1, 8):
+        d = None if W == 8 else True
+        ratio("T1" if W == 1 else "T4", W, ("70b", "SEL", "-", W, 64), ("70b", "MET", R70, W, 1),
+              None, 1.0, "below 1" if d else None)
+        ratio("T2" if W == 1 else "T4", W, ("single", "SEL", "-", W, 64), ("single", "MET", R8, W, 1),
+              0.5, 2.0, "between 0.5 and 2" if d else None)
+        ratio("T3" if W == 1 else "T4", W, ("single", "SEL", "-", W, 64), ("single", "SEL", "-", W, 1),
+              None, 8.0, "below 8" if d else None)
+        ratio("ref", W, ("70b", "SEL", "-", W, 64), ("70b", "RISKY", R70, W, 1), None, None, None)
+        ratio("ref", W, ("single", "SEL", "-", W, 64), ("single", "RISKY", R8, W, 1), None, None, None)
+    bpath = os.path.join(out, "batched_latency_bands.csv")
+    with open(bpath, "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(bands[0]), lineterminator="\n")
+        w.writeheader()
+        w.writerows(bands)
+    for b in bands:
+        print(b)
+    print(f"wrote {bpath}")
 
 
 def main():

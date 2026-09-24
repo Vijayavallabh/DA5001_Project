@@ -241,7 +241,9 @@ CONTRASTS = ("sel64-met_k10", "sel64-met_k0.5", "sel64-met_k1", "sel64-risky8b",
 
 
 def report(a):
-    rng = random.Random(1914)
+    # One bootstrap stream PER QUANTITY, seeded by its name: a shared stream made every interval
+    # depend on which other arms and metrics happened to exist, so adding FActScore moved the
+    # Prometheus intervals already quoted, and adding an arm would have moved them again.
     rows = []
     import glob
     for metric, pat, col in (("prometheus_fluency", "he_prometheus_per_item*.csv", "score"),
@@ -256,7 +258,7 @@ def report(a):
                     per.setdefault(r["arm"], {})[r["prompt_id"]] = float(r[col])
         for arm, d in sorted(per.items()):
             v = list(d.values())
-            lo, hi = boot(v, rng, 4000)
+            lo, hi = boot(v, random.Random(f"{metric}|{arm}"), 4000)
             rows.append(dict(metric=metric, arm=arm, contrast="", value=round(sum(v) / len(v), 4),
                              lo95=round(lo, 4), hi95=round(hi, 4), n=len(v)))
         for c in (a.contrast or CONTRASTS):
@@ -264,7 +266,7 @@ def report(a):
             if x in per and y in per:
                 common = sorted(set(per[x]) & set(per[y]))
                 v = [per[x][q] - per[y][q] for q in common]
-                lo, hi = boot(v, rng, 4000)
+                lo, hi = boot(v, random.Random(f"{metric}|{c}"), 4000)
                 rows.append(dict(metric=metric, arm="", contrast=c, value=round(sum(v) / len(v), 4),
                                  lo95=round(lo, 4), hi95=round(hi, 4), n=len(v)))
     path = os.path.join(a.out, "he_metrics.csv")

@@ -55,3 +55,37 @@ compute concession is about FLOPs and is **not** revised by a latency number.
 - Dropping a slow repeat; choosing `W`, `n`, `k` or the reward batch after seeing a timing.
 
 ## Scoring log
+
+### Scored 2026-09-24 15:50 IST --- T1 CONFIRMED (`0.220`), T3 CONFIRMED (`1.28`), T2 on its band edge within noise (`0.514`); at eight requests per call every ratio rises, as T4 expected
+
+Host B (H100s, a box shared with the other project's jobs): the single-card part on GPU 7
+(11:07--11:12 CEST: SEL, MET 8B, RISKY 8B, SEL again), the 70B part on GPUs 3, 5, 6 with its SEL cell
+on GPU 3 (12:02--12:08). `analysis/batched_latency.py --report --logs
+output/logs/batched_latency_hostb_all.log` -> `results/batched_latency.csv` (every cell with its repeat
+spread) and `results/batched_latency_bands.csv`. **Ratios are formed within one part only**, so each
+selection cell is compared with the meter it was timed beside on the same card; the first version of
+the report pooled both parts' selection cells, which the same-card rule above does not allow, and was
+changed before any band was read.
+
+| per-request seconds | `W = 1` | `W = 8` |
+|---|---|---|
+| selection `n=1` / `8` / `64` (single part) | `2.41` / `2.49` / `3.09` | `0.336` / `0.412` / `1.46` |
+| selection `n=64` (70B part, GPU 3) | `3.27` | `1.46` |
+| meter, `8`B pair, `k=10` | `6.00` | `0.866` |
+| meter, `70`B pair, `k=10` (GPUs 3, 5, 6) | `14.84` | `2.09` |
+| `8`B alone / `70`B alone | `3.19` / `12.19` | `0.462` / `1.74` |
+
+| band | ratio | cell spreads | predicted | reading |
+|---|---|---|---|---|
+| T1 `SEL(64) / MET(70B)`, `W=1` | `0.220` | `0.027` | below `1` | **CONFIRMED** |
+| T2 `SEL(64) / MET(8B)`, `W=1` | `0.514` | `0.048` | in `[0.5, 2]` | **WITHIN NOISE** of the lower edge (`2.9%` from it, spreads `4.8%`); not read |
+| T3 `SEL(64) / SEL(1)`, `W=1` | `1.28` | `0.065` | below `8` | **CONFIRMED** |
+| T4 at `W=8` | `0.696` (70B), `1.69` (8B), `4.35` (`n=1`) | | should rise | all three rose |
+
+**What the manuscript does, as fixed above.** Section 3's cost sentence and the Conclusion quote the
+batched per-request ratio at both pairs beside the unbatched `21.8x`, which stays as the
+throughput-bound price; T1 held, so the paper says that at the authors' own `70`B pair selection serves
+one request in about a fifth of the meter's time --- `0.70x` still at eight requests per call --- and
+that at the `8`B pair it is about half the meter's time for one request but `1.69x` at eight. Selection
+at `n=64` also serves a request in `0.27x` the time of the `70`B model alone. Nothing here revises the
+matched-compute concession, which is about FLOPs.
