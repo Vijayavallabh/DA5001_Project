@@ -270,3 +270,11 @@ def test_the_batched_latency_paragraph_and_table_quote_their_csvs():
         assert r["best_dominator"] == "sel_n64"
         v, lo, hi = (float(r[k]) for k in ("level_margin", "margin_lo95", "margin_hi95"))
         assert f"${v:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in p, arm
+
+
+def test_the_human_and_legal_validation_is_conceded_as_not_done():
+    """Two referees asked for human labels and a legal reading; neither was done, and the paper must
+    say so rather than let the absence pass unmentioned (caution (ag): concessions go first in a trim)."""
+    t = body("appendix_limitations.tex")
+    assert "No human rated anything" in t
+    assert "no lawyer assessed any output" in t and "legal question this paper does not answer" in t
