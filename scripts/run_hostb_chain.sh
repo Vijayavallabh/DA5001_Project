@@ -11,9 +11,9 @@ waitm() {  # waitm <marker> [<alt marker>]
   until [ -e "$L/$1" ] || { [ -n "${2:-}" ] && [ -e "$L/$2" ]; }; do
     [ "$(date +%s)" -ge "$dl" ] && { echo "[chain] gave up on $1 $(date '+%T')"; return 1; }; sleep 30; done
   echo "[chain] $1 ${2:+or $2 }seen $(date '+%T')"; }
-waitm dr_queue_q5b.finished
 waitm dr_queue_q7.finished
-waitm he_prom.done he_prom.fail
+waitm he_prom_a.done he_prom_a.fail
+waitm he_prom_b.done he_prom_b.fail
 echo "[chain] AnchoredByte on 5,6,7 $(date '+%T')"
 bash scripts/run_anchoredbyte.sh 5,6,7 "0.5 0.1 2"
 echo "[chain] finished $(date '+%T')"
