@@ -129,3 +129,61 @@ the one generation arm is `500` prompts at `200` tokens with TinyComma and the 8
 Well under the 24-hour threshold. Local GPUs 1, 2 and 4 (idle at registration), never GPU 3.
 
 ## Scoring log
+
+### Scored 2026-09-24 10:20 IST --- A1 REPRODUCES (and replaces +0.0645), B1 FAILS, B2 HOLDS
+
+All runs exited `0` (`output/logs/feat184_*.done`; launcher `scripts/run_feat184.sh`). The chat meter
+at `k=10` generated in `4` minutes on GPU 2 with the fixed slicing (`output/feat184/chat_k10`; its
+`generation` fields carry no echo, checked on a smoke run). Scored by
+`.venv/bin/python analysis/served_opponent.py --out results` -> `results/served_opponent.csv`.
+
+**Gates.** G0 PASS: `500` prompts in every arm, and the de-echo recovers `100.0%` of records in every
+directory read (`1,500/1,500` for each sweep arm, `32,000/32,000` for the selection pool). G1 PASS:
+the chat-served opponent's own second draw reads `0.504` against the first, a coin flip. G2 PASS:
+selection's per-prompt levels are identical in B1 and B2.
+
+**A1 --- REPRODUCES.** On de-echoed text the committed pass reads selection `+0.1015 [+0.0765,
++0.1260]`, the meter `+0.0510 [+0.025, +0.076]`, and `D3 = +0.0505 [+0.0155, +0.0860]`: interval clear
+of zero, `0.014` from `+0.0645`. That is inside the `0.02` band and outside the `0.005` rule fixed for
+what the paper quotes, so **the de-echoed `+0.0505` replaces `+0.0645`** wherever the paper quotes the
+headline difference. Prediction REPRODUCES, **right**.
+
+**Part B, levels against the chat-served opponent** (order-averaged, `500` prompts):
+
+| arm | level |
+|---|---|
+| selection `n=64` (committed) | `0.3630` |
+| selection `n=1` | `0.2485` |
+| chat meter `k=10` (new) | `0.5010` |
+| chat anchor `k=0` | `0.2380` |
+| chat opponent, second draw | `0.5040` |
+| plain meter `k=10` (committed) | `0.3050` |
+| plain anchor `k=0` (committed) | `0.2505` |
+| plain opponent text (committed) | `0.3200` |
+
+**B1 --- FAILS**: selection minus the chat meter at `k=10` is `-0.1380 [-0.1670, -0.1070]`. Served with
+its template the risky model answers as an assistant, and at `k=10` the meter is that model. Prediction
+FAILS, **right**.
+
+**B2 --- HOLDS**: selection minus the committed plain meter at `k=10`, judged against the chat-served
+opponent, is `+0.0580 [+0.0325, +0.0845]`. Prediction UNRESOLVED, **wrong**, in the direction of the
+paper's committed claim: the ordering of the two committed arms survives a full-strength opponent.
+
+**B3 --- the serving handicap**: the chat-served second draw minus the committed plain opponent text is
+`+0.1840 [+0.1550, +0.2130]`. Prediction at least `+0.15`, **right**.
+
+**B3k1, descriptive (the harness gives the anchor chat tokens)**: the chat meter at `k=1`, binding on
+`15.7%` of steps, reads `0.3220`; selection minus it is `+0.041 [+0.012, +0.0705]` on levels, and
+`D3 = +0.0305 [-0.0045, +0.0650]` on gains.
+
+**Two further facts the de-echoed text shows, not banded.** The audited anchor's first draw is empty on
+`64` of `500` prompts (`12.8%`), not the `6.8%` the echo-carrying text implied, and `13.9%` of the
+`32,000` candidates are empty. And the reward, which scored echo-carrying text, serves an empty
+completion at `n=64` on `41` prompts although every one of them had a non-empty candidate: the echo
+defect handicapped selection's reward, so every selection gain on record is measured with that
+handicap. No prompt has all `64` candidates empty.
+
+**Manuscript, as registered.** The paper states the serving configuration in Section 4.1 and the echo
+defect in the judging protocol; the headline difference becomes `+0.0505`; B1's failure is reported in
+the main text beside the committed comparison, and the abstract and introduction stop presenting the
+judged comparison without its serving configuration.

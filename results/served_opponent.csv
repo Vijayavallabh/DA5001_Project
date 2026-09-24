@@ -1,0 +1,18 @@
+band,quantity,value,lo95,hi95,n,reading
+A1,D3 on de-echoed text (committed +0.0645),0.0505,0.0155,0.086,500,REPRODUCES
+A1,replaces +0.0645 in the paper (|D3 - 0.0645| >= 0.005),0.014,,,,YES
+G0,prompts shared by B1 and B2,500,,,500,PASS
+G2,selection levels identical in B1 and B2,1.0,,,,PASS
+level,selection n=64 vs chat-served opponent,0.363,0.3365,0.3905,500,
+level,selection n=1 vs chat-served opponent,0.2485,0.2265,0.2705,500,
+level,chat meter k=10 vs chat-served opponent,0.501,0.4795,0.5225,500,
+level,chat anchor k=0 vs chat-served opponent,0.238,0.2155,0.2605,500,
+level,"chat opponent, 2nd draw vs chat-served opponent",0.504,0.482,0.526,500,
+level,plain meter k=10 (committed) vs chat-served opponent,0.305,0.2815,0.3295,500,
+level,plain anchor k=0 (committed) vs chat-served opponent,0.2505,0.2275,0.274,500,
+level,plain opponent text (committed) vs chat-served opponent,0.32,0.2965,0.3445,500,
+G1,"opponent's own second draw, level in [0.40, 0.60]",0.504,,,,PASS
+B1,selection n=64 minus chat meter k=10,-0.138,-0.167,-0.107,500,FAILS
+B2,selection n=64 minus plain meter k=10,0.058,0.0325,0.0845,500,HOLDS
+B3,serving handicap: chat 2nd draw minus committed plain opponent text,0.184,0.155,0.213,500,descriptive
+B3k1,"chat meter k=1 (binds 15.7%): D3 on gains, descriptive",0.0305,-0.0045,0.065,500,descriptive
