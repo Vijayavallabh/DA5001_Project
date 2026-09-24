@@ -278,3 +278,24 @@ def test_the_human_and_legal_validation_is_conceded_as_not_done():
     t = body("appendix_limitations.tex")
     assert "No human rated anything" in t
     assert "no lawyer assessed any output" in t and "legal question this paper does not answer" in t
+
+
+def test_the_anchoredbyte_table_and_the_abstract_follow_the_scored_bands():
+    import csv as _csv
+    from tests.manuscript import tex
+    ab = {r["k"]: r for r in rows("anchoredbyte.csv")}
+    assert set(ab) == {"0.1", "0.5", "2"} and all(r[g] == "PASS" for r in ab.values() for g in ("G0", "G1", "G2"))
+    t = body("appendix_selection.tex")
+    for k, r in ab.items():
+        h2h = {x["quantity"][:2]: x for x in rows(f"order_averaged_h2h_ab70_k{k}.csv")}
+        lo, hi = float(h2h["D3"]["lo95"]), float(h2h["D3"]["hi95"])
+        pp = list(_csv.DictReader(open(os.path.join(RES, f"order_averaged_h2h_per_prompt_ab70_k{k}.csv"))))
+        lvl = sum(float(x[f"u_metered_k{k}"]) for x in pp) / len(pp)
+        cells = (f"${float(k):g}$ & ${float(r['K']):.0f}$ & ${float(r['K_over_Sw']):.2f}$ & "
+                 f"${100 * float(r['binding_share']):.1f}\\%$ & ${lvl:.4f}$ & "
+                 f"${float(h2h['D3']['value']):+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$")
+        assert cells in t, cells
+        assert r["D3_reading"] == "REVERSAL CONFIRMED" and lo > 0
+    abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    # registered consequence: every band CONFIRMED -> the abstract names their byte-level decoder
+    assert "byte-level decoder included" in abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
