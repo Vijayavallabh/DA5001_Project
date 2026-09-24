@@ -377,5 +377,5 @@ def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
     ab = next(float(r["ratio"]) for r in b if r["band"] == "AB")
     a = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     a = a[a.index("begin{abstract}"):a.index("end{abstract}")]
-    assert f"two $70$B pairs in ${t1:.2f}\\times$ and ${ab:.2f}\\times$ the meter's time" in a
+    assert f"two $70$B pairs takes ${t1:.2f}\\times$ and ${ab:.2f}\\times$ the meter's time" in a
     assert "$21.8\\times$" in a
