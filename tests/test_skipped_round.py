@@ -327,3 +327,15 @@ def test_the_degeneracy_filter_check_quotes_the_rejudged_breadth():
     assert "still does but one --- Comma-1T's under judge~B" in t
     assert all(float(x["gain_nonempty"]) > float(x["gain"]) for x in r
                if x["anchor"].startswith("Comma-7B") and "Llama" in x["judge"])
+
+
+def test_the_anchoredbyte_paragraph_quotes_the_he_metrics_of_its_arms():
+    h = {(r["metric"], r["arm"] or r["contrast"]): r for r in rows("he_metrics.csv")}
+    p = para("app:anchoredbyte", "appendix_selection.tex")
+    F = "factscore_precision"
+    assert f"${float(h[(F, 'ab_k0.5')]['value']):.3f}$ against selection's ${float(h[(F, 'csel64')]['value']):.4f}$" in p
+    assert f"at $k=0.1$ it is ${float(h[(F, 'ab_k0.1')]['value']):.4f}$" in p
+    lo, hi = float(h[(F, "csel64-ab_k0.1")]["lo95"]), float(h[(F, "csel64-ab_k0.1")]["hi95"])
+    assert lo < 0 < hi, "the k=0.1 meter now separates from selection on precision; 'inseparable' is wrong"
+    assert all(float(h[("prometheus_fluency_nonempty", f"csel64-ab_k{k}")]["lo95"]) > 0 for k in ("0.1", "0.5", "2")), \
+        "selection is no longer the more fluent at every budget"

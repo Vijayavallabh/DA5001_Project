@@ -153,3 +153,15 @@ against `2.96` for one draw, and it abstains on `20` biographies against `80`.
 A report run with no `--contrast` flag wrote a `he_metrics.csv` without the paired rows the Prometheus
 scoring above reads (it happened once, at 15:37, and was committed); `he_metrics.py` now carries the
 note's contrast list as its default.
+
+### AnchoredByte arms scored 2026-09-24 16:25 IST (`scripts/run_he_ab.sh 2`, local GPU 2; tags `_ab01`, `_ab05`, `_ab2`)
+
+| arm | fluency, non-empty | FActScore precision | `csel64 -` arm, fluency | `csel64 -` arm, precision |
+|---|---|---|---|---|
+| `ab_k0.1` (`K = 80`) | `1.92` | `0.084 [0.057, 0.114]` | `+1.25 [+1.10, +1.40]` | `+0.015 [-0.015, +0.046]` |
+| `ab_k0.5` (`K = 400`) | `2.06` | `0.323 [0.275, 0.371]` | `+1.09 [+0.94, +1.24]` | `-0.203 [-0.250, -0.157]` |
+| `ab_k2` (`K = 1600`) | `1.92` | `0.319 [0.273, 0.368]` | `+1.21 [+1.07, +1.35]` | `-0.203 [-0.251, -0.155]` |
+
+The token-level pattern holds at the byte level: selection at Comma-7B is the more fluent at every
+budget, and the meter's factual precision is the `70`B's wherever its budget is vacuous for a window
+(`k >= 0.5`) and the anchor's where it is not (`k = 0.1`, inseparable from selection's).
