@@ -312,3 +312,18 @@ def test_the_main_text_quotes_the_batched_clock_at_both_pairs():
     close = body("iclr_closing.tex")
     assert f"${b[('T1', '1')]:.2f}\\times$ its time per request at the $70$B pair" in close
     assert "$21.8\\times$" in close
+
+
+def test_the_degeneracy_filter_check_quotes_the_rejudged_breadth():
+    r = rows("selection_breadth_rejudged.csv")
+    aud = next(x for x in r if "audited" in x["anchor"] and "Phi" in x["judge"])
+    t = " ".join(body("appendix_limitations.tex").split())
+    assert (f"${float(aud['gain_nonempty']):+.3f}$ $[{float(aud['gain_nonempty_lo95']):+.3f}, "
+            f"{float(aud['gain_nonempty_hi95']):+.3f}]$ against ${float(aud['gain']):+.3f}$ on all $500$") in t
+    moveB = max(abs(float(x["gain"]) - float(x["gain_nonempty"])) for x in r if "Phi" in x["judge"])
+    assert f"moves by at most ${moveB:.3f}$ at every anchor" in t
+    lost = [x for x in r if float(x["gain_lo95"]) > 0 and float(x["gain_nonempty_lo95"]) <= 0]
+    assert [(x["anchor"], "Phi" in x["judge"]) for x in lost] == [("Comma-7B (1T tokens)", True)]
+    assert "still does but one --- Comma-1T's under judge~B" in t
+    assert all(float(x["gain_nonempty"]) > float(x["gain"]) for x in r
+               if x["anchor"].startswith("Comma-7B") and "Llama" in x["judge"])
