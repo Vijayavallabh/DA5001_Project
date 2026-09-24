@@ -43,3 +43,22 @@ distribution, `q in {0.50, 0.75, 0.90, 0.95, 0.99}`, fixed before reading any se
   are not read.
 
 ## Scoring log
+
+### Reward-only table, 2026-09-24 14:40 IST --- stopping early saves draws and buys nothing at matched compute
+
+`analysis/adaptive_n.py --out results` -> `results/adaptive_n.csv`. Reward nats, paired over the
+`500` prompts, 95% bootstrap.
+
+- **Against fixed `n_max` (equal certificate) every rule loses reward**, by design: at `n_max = 64`,
+  `q = 0.75` stops after `6.77` draws on average (median `3`, `25.2%` on the first) and serves
+  `-9.80 [-10.49, -9.14]` below the fixed-`64` argmax; `q = 0.99` uses `45.5` draws and gives back
+  `-1.05 [-1.32, -0.80]`.
+- **Against fixed `n` at the same expected draws (equal compute) adaptivity helps only at the lowest
+  budget.** `q = 0.50` (`2.5` draws) beats fixed `n=2` by `+1.08 [+0.56, +1.61]`; `q = 0.75` (`6.8`)
+  is **below** fixed `n=7`, `-0.62 [-1.24, -0.01]`; `q = 0.90` (`17.4`) straddles against fixed `17`,
+  `-0.49 [-1.07, +0.07]`; `q >= 0.95` straddles. A threshold on the reward throws away the argmax's
+  information about the draws it never took, and at moderate `n` that costs more than it saves.
+- Empty-served fraction `4.4%`--`7.2%` throughout; certificate `log n_max` in every row.
+
+Picks for the judged pass written to `results/adaptive_picks_*.csv` (the two registered rules and
+their matched fixed-`n` arms, `n = 7` and `n = 17`).

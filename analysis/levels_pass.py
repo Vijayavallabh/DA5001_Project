@@ -9,6 +9,8 @@ Arm specs (`--arm name=spec`):
   sel:<gen_dir>:<reward_csv>:<n>[:<ktoken>]   argmax of the first n rewards (seed order) over the
                                                pool in gen_dir (files trajectories_k<ktoken>_*.jsonl,
                                                ktoken defaults to "0")
+  pick:<gen_dir>:<csv>[:<ktoken>]              the draw at the rank the csv names per prompt
+                                               (prompt_id,rank), e.g. an adaptive stopping rule
   traj:<run_dir>:<ktoken>[:<constraint>]       the lowest-seed trajectory of one arm (constraint
                                                defaults to "kl")
 
@@ -62,6 +64,11 @@ def load_texts(spec):
             r = r[:n]
             out[p] = cands[p][max(range(n), key=lambda i: r[i])][3]
         return out
+    if kind == "pick":   # pick:<gen_dir>:<csv of prompt_id,rank>[:<ktoken>] -- a served rank per prompt
+        gen_dir, path = f[0], f[1]
+        cands = load_candidates(gen_dir, k=(f[2] if len(f) > 2 else "0"), deecho=True)
+        return {r["prompt_id"]: cands[r["prompt_id"]][int(r["rank"])][3]
+                for r in csv.DictReader(open(path, encoding="utf-8"))}
     if kind == "traj":
         run_dir, tok = f[0], f[1]
         cons = f[2] if len(f) > 2 else "kl"
