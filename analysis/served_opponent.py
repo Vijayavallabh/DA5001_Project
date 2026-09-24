@@ -117,6 +117,43 @@ def main():
                 add("C-gain", f"{q} ({tag} pass)", float(r["value"]), float(r["lo95"]),
                     float(r["hi95"]), r["reading"], r["n"])
 
+    # ---- Table 1 of the paper: selection minus the meter by serving configuration ---------------
+    # One statistic in every row: the paired difference of order-averaged LEVELS inside one pass
+    # (one opponent, one judge, both orders), plus each arm's level. Levels compare within a block
+    # (same opponent), never across blocks.
+    table = (("released", "frontier_levels", (("0.5", "met_k0.5"), ("1", "met_k1"), ("3", "met_k3"),
+                                               ("10", "met_k10")), "u_anchor_k0"),
+             ("70B base", "he70b_k05", (("0.5", "metered_k0.5"),), "u_anchor_k0"),
+             ("70B base", "he70b_k20", (("1", "met70b_k1"), ("20", "metered_k20")), "u_anchor_k0"),
+             ("chat template", "served_k1chat", (("1", "metered_k1"),), "u_anchor_k0"),
+             ("chat template", "served_k10chat", (("10", "metered_k10"),), "u_anchor_k0"))
+    for config, tag, arms, anc in table:
+        if tag == "frontier_levels":
+            d = {}
+            for t in ("a", "b", "c"):
+                for p, r in per_prompt(os.path.join(a.dir, f"frontier_levels_per_prompt_{t}.csv")).items():
+                    d.setdefault(p, {}).update(r)
+        else:
+            d = per_prompt(f(tag))
+        ids = sorted(d)
+        fl = {r["arm"]: r for r in csv.DictReader(open(os.path.join(a.dir, "frontier_levels.csv")))}
+        b1row = next(r for r in rows if r["band"] == "B1")
+        for k, col in arms:
+            lv = lambda c: [float(d[p][c]) for p in ids]  # noqa: E731
+            # A quantity already bootstrapped elsewhere is COPIED, never re-sampled: two bootstraps
+            # of one difference print two intervals for it (caution (j)).
+            if tag == "frontier_levels":
+                r = fl[col]
+                m, l, h = float(r["sel64_minus"]), float(r["sel64_minus_lo95"]), float(r["sel64_minus_hi95"])
+            elif tag == "served_k10chat":
+                m, l, h = b1row["value"], b1row["lo95"], b1row["hi95"]
+            else:
+                m, l, h = paired([x - y for x, y in zip(lv("u_sel_n64"), lv(f"u_{col}"))], rng)
+            add("T1", f"{config} k={k}: selection n=64 minus meter", m, l, h, n=len(ids))
+            add("T1", f"{config} k={k}: meter level", sum(lv(f"u_{col}")) / len(ids), n=len(ids))
+        add("T1", f"{config} ({tag}): anchor-alone level", sum(lv(anc)) / len(ids), n=len(ids))
+        add("T1", f"{config} ({tag}): selection n=64 level", sum(lv("u_sel_n64")) / len(ids), n=len(ids))
+
     os.makedirs(a.out, exist_ok=True)
     out = os.path.join(a.out, "served_opponent.csv")
     with open(out, "w", newline="", encoding="utf-8") as fh:

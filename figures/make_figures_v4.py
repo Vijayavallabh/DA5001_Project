@@ -417,71 +417,81 @@ def selection_frontier():
                  color="0.35", ha="left", va="top", xytext=(4, 0), textcoords="offset points")
     axL.set_xscale("log"); axL.set_yscale("log")
     axL.set_xlim(10, 1000); axL.set_ylim(1.0, TOP)
-    axL.set_xlabel("length of the protected work, tokens")
+    axL.set_xlabel("length of the work, tokens")
     axL.set_ylabel("certified budget $K$, nats")
     axL.set_title("(a) $kT$ grows with the work; $\\log n$ does not",
                   fontsize=7.6 * F, loc="left")
 
-    # Panel (b) is ONE judge. The arms on record are judged by different models and the absolute
-    # levels are not comparable across them (caution (e)); plotting a judge-A curve beside a judge-B
-    # curve would invite exactly the reading the paper refuses. Both series here are judge B.
-    j2 = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "judge_separation_v6_judge2.csv"))
-          if r["decoder"] == "KL"}
-    price = {float(r["k"]): r for r in csv.DictReader(open(RESULTS / "utility_price.csv"))}
-    sweep = [r for r in csv.DictReader(open(RESULTS / "selection_scaling.csv"))
-             if "Phi-3.5" in r["judge"]]
-    u_safe = float(sweep[0]["u"])
-    w = math.exp(-float(dec[0]["lambda_star_u_max"]))          # P_{p_s}[U = 1]
-    t = 2 * (u_safe - w)                                        # from u = w + t/2
-    us = [u_safe + i * (1.0 - u_safe) / 200 for i in range(1, 201)]
+    # Panel (b) is ONE pass family (feat-186, results/frontier_levels.csv): every arm judged by
+    # judge B in BOTH presentation orders against the same opponent, on de-echoed text. Until
+    # 2026-09-24 this panel put the meter's levels from one single-order pass beside selection's
+    # from another -- two passes on one axis, which caution (ap) forbids -- on text that carried the
+    # prompt's tail (caution (bc)). Order-averaged levels against one opponent ARE comparable to one
+    # another (a greedy judge shown both orders is a function of the two texts alone), so the y axis
+    # is now a level with 0.5 = parity with serving the risky model, and it says so.
+    import glob
+    from collections import Counter
+    fl = {r["arm"]: r for r in csv.DictReader(open(RESULTS / "frontier_levels.csv"))}
+    anc = None
+    for f in sorted(glob.glob(str(RESULTS / "frontier_levels_per_prompt_*.csv"))):
+        rows_ = list(csv.DictReader(open(f)))
+        if rows_ and "u_anchor_k0" in rows_[0]:
+            anc = [float(r["u_anchor_k0"]) for r in rows_]
+    if anc is None:
+        raise FileNotFoundError("no per-prompt file carries the anchor-alone arm")
+    cnt = Counter(anc)
+    vals = sorted(cnt)
+    probs = [cnt[v] / len(anc) for v in vals]
+    u0 = sum(anc) / len(anc)
 
     def rate(u):
+        # Cramer rate function of the anchor's own order-averaged utility, the empirical law over
+        # the 500 prompts (Theorem 1 applied to the joint law of prompt and output).
         best = 0.0
         for j in range(1, 4001):
             lam = j * 0.02
-            f = lam * u - math.log(w * math.exp(lam) + t * math.exp(lam / 2) + (1 - w - t))
-            best = max(best, f)
+            best = max(best, lam * u - math.log(sum(q * math.exp(lam * v) for v, q in zip(vals, probs))))
         return best
-    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2,
-            # NOT "Thm.~1": matplotlib is not LaTeX, so a tilde outside $...$ renders as a literal
-            # tilde. It reached the compiled PDF as "Thm.~1" in the legend of the paper's only
-            # main-text figure. Same class as caution (y) -- a LaTeX habit in a non-LaTeX string.
-            label=r"$\Lambda^*_s(u)$, Thm. 1")
+    us = [u0 + i * (0.9 - u0) / 120 for i in range(1, 121)]
+    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2, label=r"$\Lambda^*_s(u)$, Thm. 1")
+    ax.axhline(0.5, color="0.55", lw=0.7, ls="--")
+    # Right-hand end: the Lambda* curve crosses 0.5 near x = 0.1, which struck through a
+    # left-anchored label, and the meter's points all sit below the line (caution (ad)).
+    ax.annotate("parity", (7e3, 0.5), fontsize=6.3 * F, color="0.4",
+                ha="right", va="bottom", xytext=(0, 1.5), textcoords="offset points")
+    ax.axhline(u0, color="0.55", lw=0.7, ls="-.")
+    ax.annotate("anchor alone", (4e-4, u0), fontsize=6.3 * F, color="0.4", va="top",
+                xytext=(0, -1.5), textcoords="offset points")
 
-    ks = sorted(k for k in j2 if k in price)
-    x = [float(price[k]["mean_spend_nats"]) for k in ks]
-    y = [float(j2[k]["utility"]) for k in ks]
+    met = sorted((a_ for a_ in fl if a_.startswith("met_k")), key=lambda a_: float(a_[5:]))
+    x = [float(fl[m]["x_nats"]) for m in met]
+    y = [float(fl[m]["level"]) for m in met]
     ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding")
-    for k, xv, yv in zip(ks, x, y):
-        if k in (min(ks), max(ks)):      # the sweep is dense; two labels bracket it
-            ax.annotate(f"$k={k:g}$", (xv, yv), fontsize=6.5 * F,
-                        xytext=(6, -3) if k == max(ks) else (6, -4),
-                        textcoords="offset points")
-
-    xs = [max(float(r["kl_nats"]), 1e-3) for r in sweep]
-    ys = [float(r["u"]) for r in sweep]
+    for m, xv, yv in zip(met, x, y):
+        if m in (met[0], met[-1]):
+            ax.annotate(f"$k={float(m[5:]):g}$", (xv, yv), fontsize=6.5 * F,
+                        xytext=(6, -3) if m == met[-1] else (-26, -9), textcoords="offset points")
+    sel = sorted((a_ for a_ in fl if a_.startswith("sel_n")), key=lambda a_: int(a_[5:]))
+    xs = [max(float(fl[s]["x_nats"]), 1e-3) for s in sel]
+    ys = [float(fl[s]["level"]) for s in sel]
     ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring")
-    for r, xv, yv in zip(sweep, xs, ys):
-        if r["n"] in ("1", "8", "64"):
-            ax.annotate(f"$n={r['n']}$", (xv, yv), fontsize=6.5 * F,
-                        xytext={"1": (4, -10), "64": (7, -4)}.get(r["n"], (6, -10)),
+    for s, xv, yv in zip(sel, xs, ys):
+        if s in ("sel_n1", "sel_n8", "sel_n64"):
+            ax.annotate(f"$n={s[5:]}$", (xv, yv), fontsize=6.5 * F,
+                        xytext={"sel_n1": (4, 3), "sel_n64": (6, -8)}.get(s, (5, -10)),
                         textcoords="offset points")
 
     ax.set_xscale("log")
     ax.set_xlim(3e-4, 8e3)
-    # Headroom for the legend, which now sits upper right: at ylim 0.80 its bottom border cut
-    # through the "n=64" label (u=0.578). Every legend move in this panel trades one collision
-    # for another unless the panel is given the room -- render the page after touching either.
-    # The legend size and this number move together: a taller box covers the n=64 label, which is
-    # caution (ad) reproduced. 0.90 is the headroom a 7.0 * F legend needs at \textwidth.
-    ax.set_ylim(0.37, 0.90)
-    # NOT "realised": only the metered points are measurements. The selection points are the
-    # closed form log n - (n-1)/n, a BOUND, so an axis calling them realised asserts a
-    # measurement nobody made -- cautions (ae)/(ah)/(am), fifth instance. The caption says
-    # which is which; the label must not contradict it.
-    ax.set_xlabel("divergence from the anchor, nats per trajectory (bound / spent)")
-    ax.set_ylabel("judged utility $u$ (judge B)")
-    ax.set_title("(b) what a nat buys, one judge", fontsize=7.6 * F, loc="left")
+    # Headroom for the legend: at 0.66 its box covered selection's n = 16..64 points (u up to
+    # 0.555 at x ~ 3); the box needs about 0.1 of this range above them.
+    ax.set_ylim(0.40, 0.72)
+    # NOT "realised": only the metered points are measurements; selection's are the closed form
+    # log n - (n-1)/n, a BOUND (cautions (ae)/(ah)/(am)). Short, so the two panels' x labels no
+    # longer run into each other at \textwidth (a referee saw them collide).
+    ax.set_xlabel("nats from the anchor (bound / spent)")
+    ax.set_ylabel("level vs. the risky model")
+    ax.set_title("(b) what a nat buys, one judge, one opponent", fontsize=7.6 * F, loc="left")
     # The legend labels lost their ", k swept" / ", n swept" tails and the panel gained headroom:
     # at readable type sizes the long three-line legend was as wide as the axes and sat on the
     # n=64 point whichever corner it was pinned to. The swept variable is on the curve labels.
@@ -493,7 +503,7 @@ def selection_frontier():
     # that placement, so nominal size is printed size. It was 6.6 at 0.70\textwidth, where it
     # measured 5.4pt on the page and was briefly raised to 8.0 instead; widening the figure is the
     # fix that removes the need. RENDER THE PAGE after changing this.
-    ax.legend(fontsize=7.0 * F, frameon=True, framealpha=1.0, edgecolor="none",
+    ax.legend(fontsize=6.6 * F, frameon=True, framealpha=1.0, edgecolor="none",
               loc="upper right", handlelength=1.6, borderaxespad=0.3)
     for _a in (axL, ax):
         _a.tick_params(labelsize=8 * F)
@@ -692,7 +702,10 @@ def selection_forest_rows():
         return float(r[g]), float(r[f"{g}_lo95"]), float(r[f"{g}_hi95"])
 
     JB = "Phi-3.5-mini-instruct"
-    breadth = {r["anchor"]: r for r in rows_of("selection_breadth.csv") if JB in r["judge"]}
+    # The entry gate as re-measured on de-echoed text (results/selection_breadth_deecho_note.md):
+    # an empty draw that carried the prompt's tail looked non-empty, so the committed CSV passed
+    # Comma-7B at 3.0% where its text is empty on 18.4%. Judged gains are identical in both files.
+    breadth = {r["anchor"]: r for r in rows_of("selection_breadth_deecho.csv") if JB in r["judge"]}
     scal64 = next(r for r in rows_of("selection_scaling.csv")
                   if JB in r["judge"] and int(float(r["n"])) == 64)
 
@@ -716,7 +729,12 @@ def selection_forest_rows():
               "TinyComma-1.8B (audited)", "Comma-7B"):
         r = breadth[a]
         add(f"{a}, $n=8$", r, math.log(int(float(r["n"]))), gate=r["entry_gate"] == "PASS")
-    add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64))
+    # The n=64 arm's own first draw, de-echoed, as counted by analysis/h2h_length_control.py
+    # ("served words, sel_n1 ... empty on 64 prompts"): 12.8%, above the same 5% gate.
+    lc = {r["quantity"]: r for r in rows_of("h2h_length_control.csv")}
+    e64 = int(lc["served words, sel_n1"]["note"].split("empty on ")[1].split()[0]) / int(
+        lc["served words, sel_n1"]["n"])
+    add("TinyComma-1.8B (audited), $n=64$", scal64, math.log(64), gate=e64 < 0.05)
 
     groups.append((len(items), "other workloads, judge B, $n = 8$"))
     add("AlpacaEval-805, TinyComma-1.8B", dom("selection_scaling_alpaca.csv"), math.log(8))
@@ -730,13 +748,10 @@ def selection_forest_rows():
     add("TriviaQA, majority vote, $n=64$", verif(T, "majority", 64), math.log(64))
     add("TriviaQA, pointwise reward, $n=16$", verif(T, "pointwise", 16), math.log(16))
 
-    # The comparator. Its gain is a difference of two levels in one judging pass, so it has no
-    # bootstrap interval on record; drawn as a point with no bar and said so in the caption.
-    groups.append((len(items), "what the metered decoder buys, same judge"))
-    js = {r["k"]: r for r in rows_of("judge_separation_v6_judge2.csv") if JB in r["judge"]}
-    anchor_u = float(js["0.0"]["utility"]) if "0.0" in js else 0.4505
-    met = float(js["10.0"]["utility"]) - anchor_u
-    items.append(("metered decoder, $k=10$", (met, None, None), 171.28, False, True))
+    # No metered row since 2026-09-24. This figure is selection against its OWN anchor; the
+    # head-to-head against the meter is Figure 1(b) and Table 1, both order-averaged against one
+    # opponent. A single-order meter point here set one construction beside another, and a
+    # referee read the figure as the head-to-head it is not.
     return items, groups
 
 
@@ -771,7 +786,7 @@ def selection_breadth_forest():
     # advance-width ratio caught it (the ratio compares DejaVu Sans against Times and overstates
     # by the font-width difference). Reserve the gutters INSIDE a 6.0in canvas instead, so the
     # shrink is ~1 and a drawn point is a printed point. Measure the SAVED file, never figsize.
-    fig, ax = plt.subplots(figsize=(6.0, 2.18))
+    fig, ax = plt.subplots(figsize=(6.0, 1.98))
     fig.subplots_adjust(left=0.345, right=0.875, bottom=0.145, top=0.985)
     # x in AXES fraction, y in data: the label gutters sit outside the data area by construction,
     # so no interval can ever print through a row label (the first draft's MT-Bench and TriviaQA
