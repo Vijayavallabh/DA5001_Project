@@ -122,3 +122,54 @@ B's `output/logs/selfix_redraw_queue.log`.
 chains finished, so the dispatcher was restarted as `--cards 4,5,6,7`; the six jobs already running on
 4 and 5 were left untouched (the new instance finds them by `--prefix` and does not re-place them).
 Which H100 a job lands on is not part of the command: seed `5678` and batch `32` are unchanged.
+
+### Read 2026-09-24 06:00 IST --- G0' and G2 PASS at all twelve; R1 DOES NOT REPLICATE, R2 and R3 REPLICATE
+
+All twelve anchors ran on host B under the deviation above and exited `0` (the last, KL3M-3.7B with
+`--experts-impl eager`, at 02:16 host time). `scripts/sync_status.sh pull`, then
+`.venv/bin/python analysis/selector_n256.py --redraw` -> `results/selector_redraw{,_readings,_replication}.csv`.
+**G0' PASS** at all twelve (same `100` `prompt_id`s; the `k = -1` fraction at recall `>= 0.01` within
+`|z| < 2.58` of each anchor's own arm) and **G2 PASS** at all twelve.
+
+**On this draw:** B1 **SATURATES** (`A(64)` on `E_08` at most `3.0`, inside the registered `<= 4`), B2 **NO
+READABLE ANCHOR**, B3 **SATURATED BY 64**. Against Part A:
+
+| band | Part A | re-draw | reading |
+|---|---|---|---|
+| R1 (B1) | GROWS | SATURATES | **DOES NOT REPLICATE** |
+| R2 (B2) | NO READABLE ANCHOR | NO READABLE ANCHOR | **REPLICATES** |
+| R3 (B3) | SATURATED BY 64 | SATURATED BY 64 | **REPLICATES** |
+
+Per anchor, both draws side by side (`E_08`; `T` is undefined on both draws at every anchor, because
+`256 p_hat >= 1` wherever an anchor leaks, which is B2's reading):
+
+| anchor | `p_hat` (A / re-draw) | one-draw rate | `A(64)` | `A(256)` |
+|---|---|---|---|---|
+| Llama-3.2-1B | `0.0179` / `0.0182` | `0.01` / `0.03` | `7.0` / `3.0` | `10.0` / `4.0` |
+| Llama-3.2-3B | `0.0469` / `0.0466` | `0.05` / `0.06` | `2.6` / `1.83` | `3.0` / `1.83` |
+| Qwen2.5-7B | `0.1031` / `0.1021` | `0.10` / `0.11` | `1.5` / `1.36` | `1.5` / `1.36` |
+| Pleias-1.2B | `0.0447` / `0.0448` | `0.04` / `0.05` | `1.25` / `1.0` | `1.25` / `1.0` |
+| Pleias-350M | `0.0417` / `0.0408` | `0.02` / `0.05` | `2.5` / `1.0` | `2.5` / `1.0` |
+| Phi-3.5-mini | `0.0068` / `0.0072` | `0.01` / `0.00` | `1.0` / --- | `2.0` / --- |
+| KL3M x4, OpenCALM x2 | `0` / `0` | `0` / `0` | --- | --- |
+
+**Why R1 fails, and it is the denominator.** The pool's per-draw rate `p_hat` moves by at most `0.001` at
+every leaking anchor, while the one-draw rate `A(n)` divides by --- one draw per passage, over `100`
+passages --- moved from one passage to three at Llama-3.2-1B and took its `A(64)` from `7.0` to `3.0`.
+The registration expected the ratio of two small counts to make B2 fragile; it made B1 fragile instead.
+Against the per-draw rate the served rates are `1.12`--`3.91x` (`n = 64`) and `1.12`--`5.59x` (`256`) on
+Part A's draw and `1.12`--`4.95x` and `1.12`--`6.61x` on this one; `256 p_hat` runs `1.73`--`26.40` and
+`1.85`--`26.13`; the same six anchors never enter `E` on either draw; the most any anchor gains from `64`
+to `256` is three passages against none lost (`p = 0.25`) on each.
+
+**Predictions:** B1 and B3 replicate, B2 at risk. B1 **wrong**; B3 **right**; B2's risk did not
+materialise.
+
+**Manuscript, as registered.** The factor is quoted per draw, both draws, never pooled, at every site:
+the introduction, Section 3, Section 4, the Ethics Statement, the `fig:safety` caption and panel (b) (the
+second draw hollow), `tab:contam` (each factor cell `first / second`) and Appendix I's prose. B1's verdict
+is stated as **draw-dependent** in Appendix I ("crossed by that one anchor on the first draw and by none
+on the second"), with both readings. The main text states the per-draw ranges and no B1 verdict. B3
+replicated and so *may* enter the main text; it was not added, because the body is at exactly 9 pages.
+Part A's own readings stand. The three main-text sentences were made length-neutral against a recorded
+layout baseline: pages 1--9 begin and end on the same lines as before the edit (caution (az)).

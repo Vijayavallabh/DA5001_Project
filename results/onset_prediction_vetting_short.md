@@ -119,3 +119,26 @@ in both hosts' `hf_cache` snapshots. Host B's snapshots also hold each repositor
 `.gitattributes`, which the loader never reads. TinyComma, KL3M-1.7B and the memoriser were checked for
 feat-180 (`17/17`). Launch: `scripts/local_dispatch.py --cards 4,5,6,7 --only selfixR_,vetladder_L` on host B,
 one dispatcher for feat-182's remaining jobs and these twenty-four, feat-182 first.
+
+### S1 read 2026-09-24 06:00 IST --- PASS HOLDS BELOW 100
+
+All twenty-four rungs ran on host B and exited `0` (host B's dispatcher, beside feat-182; last placed
+21:52 host time). `scripts/sync_status.sh pull`, then `.venv/bin/python analysis/vetting_ladder.py`:
+**G0 PASS** (every rung holds `vet_comma7b`'s `50` `prompt_id`s), host check PASS as before (`82` against
+`78`, `z = +0.707`).
+
+**S1 PASS HOLDS BELOW 100**: all six licensed anchors read `0/50` at `L = 20, 35, 50, 75`, maximum recall
+`0.0000` at every rung. With feat-180's rungs, every licensed anchor reads `0/50` at every rung from `20`
+to `200`. V1--V4 re-read unchanged, as they must be (NON-MONOTONE, `L* = 50`, PASS HOLDS, a schedule).
+The scorer now labels these twenty-four rungs `this arm, host B` (`analysis/vetting_ladder.py`, `HOST_B`),
+which is where the registration put them.
+
+**Prediction:** PASS HOLDS BELOW 100, **right**.
+
+**Manuscript, as registered.** `tab:vetladder`'s licensed dashes at `20`--`75` become the measured `0`s and
+its caption stops saying those rungs were not run (it now says they were run separately, bands fixed in
+advance, on the second machine with the two `†` rungs). Appendix I's "below a hundred tokens the licensed
+anchors are *unmeasured*, not clean" becomes "all six read `0` of `50` at `20`, `35`, `50` and `75` tokens as
+well, and so pass at every rung from `20` to `200`"; the Ethics Statement's "below a hundred they are
+unmeasured" becomes "read `0` at every rung from `20` to `200`"; "passing is evidence, not proof" stays.
+The host-B count in Appendix I becomes twenty-six rungs.

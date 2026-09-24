@@ -103,22 +103,21 @@ TASK TYPE SURVIVES (L2); L1 REFUTED raw (`+0.900`) and L4 CONSISTENT normalised 
 generator moves the committed opponent's strength by `0.17` on the same prompts. Appendix I carries
 it; `tests/test_opponent_axis.py` guards it. Before touching that paragraph or feat-175's, run it.
 
-## State at 2026-09-23 23:40 --- feat-180, grid64 and feat-181 DONE; feat-182 running on host B
+## State at 2026-09-24 06:30 --- every registered arm is scored; nothing is in flight
 
-**Done tonight** (all in the manuscript, body 9/9, 49 pages; last `./init.sh` 1114 passed):
-feat-180 (`9c8895e`: V3 PASS HOLDS, `tab:vetladder`, the Ethics schedule, five -> six licensed anchors,
-"one passage in full" -> two); grid64 (`03a3664`: `tab:extraction`'s substring row is the corrected
-selector's); feat-181 (`d446869`: C2 SATURATED on both, C3 NOT RESOLVED on both, C1 UNRESOLVED;
-Appendix I extended to `512`, no main-text change).
+Scored and in the manuscript since 2026-09-23 evening: feat-180 (V3 PASS HOLDS), grid64,
+feat-181 (C2 SATURATED, C3 NOT RESOLVED, C1 UNRESOLVED), **feat-182** (R1 DOES NOT REPLICATE, R2 and R3
+REPLICATE: the contamination factor is quoted per draw everywhere and B1 is stated as draw-dependent) and
+**feat-183** (S1 PASS HOLDS BELOW 100: the six licensed anchors read `0/50` at every rung from `20` to
+`200`). Body exactly 9/9 (pages 1--9 line-identical to the pre-edit baseline), 49 pages.
 
-| host | cards | arm | state | next step |
-|---|---|---|---|---|
-| host B | 4-7 | **feat-182** by declared deviation (`cb532ed`; anchors `76/76` md5, `507ae1e`): `local_dispatch.py --cards 4,5,6,7 --only selfixR_` | 11 of 12 placed, first done 23:30 IST | waiter `brgg29p1k` (host B `output/logs/selfix_redraw_queue.log`); `sync_status.sh pull`; `analysis/selector_n256.py --redraw`; then the registered consequence: **the amplification at `n=64` and `n=256` quoted per draw, both draws, at every site** (intro, Section 3, Section 4, the Ethics Statement, the `fig:safety` caption, `tab:contam` and its prose), and a verdict in the main text only if it REPLICATES. The three main-text sites are in a 9/9 body: measure heading positions before and after (caution (az)) |
-| host B | 4-7 | **feat-183** (`onset_prediction_vetting_short.md`, registered `b11046f` at the user's instruction): the six licensed anchors at `L = 20, 35, 50, 75`, 24 rungs, one dispatcher with feat-182 (`--only selfixR_,vetladder_L`) | first rung placed 00:09 IST | waiter `b6pvjj1qi` (dispatcher's last line `all done`/`gave up`); pull; `analysis/vetting_ladder.py` prints S1; consequences as registered: `tab:vetladder`'s licensed dashes become counts; HOLDS -> 'unmeasured' becomes 'every rung from 20 to 200' (Appendix I, Ethics); BREAKS -> main text |
-| host B | 0-3 | the user's other project's vLLM | not ours | never touch |
-| local | none | nothing of ours is running | | |
+Nothing of ours runs on either host. Host B's cards 0--3 are the user's other project's vLLM; 4--7 are
+idle as of 06:00 IST. Local cards are held by the sibling project's vLLM. Both hosts' dispatchers ended
+`all done`. Host B's clock is CEST (IST - 3:30).
 
-Host B's clock is CEST (IST - 3:30); its logs are in host time.
+**Unscored pre-registrations named for `tests/test_preregistration_count.py`:** none are in flight;
+`onset_prediction_vetting_short.md` (feat-183) and `onset_prediction_selector_redraw.md` (feat-182) are
+scored in their own `## Scoring log` sections.
 
 ## Scored tonight (2026-09-23 21:30) and what is still owed
 

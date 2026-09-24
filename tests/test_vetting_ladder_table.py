@@ -57,6 +57,13 @@ def _vetting():
     return app[i: app.index(r"\paragraph", i)]
 
 
+def _short_licensed_all_zero():
+    rows = _rows()
+    lic = {r["model"] for r in rows if r["role"] == "openly licensed"}
+    have = {(r["model"], int(r["prefix_tokens"])): int(r["leaking"]) for r in rows}
+    return all(have.get((t, L)) == 0 for t in lic for L in v.SHORT)
+
+
 def test_every_cell_of_the_table_is_the_csv():
     rows, cells = _rows(), _cells()
     have = {(r["model"], int(r["prefix_tokens"])): r for r in rows}
@@ -67,7 +74,15 @@ def test_every_cell_of_the_table_is_the_csv():
             assert count is None, f"{t} at L={L} was never run, yet the table prints {count}"
             continue
         assert count == int(r["leaking"]), (t, L, count, r["leaking"])
-        assert dagger == (r["source"] == "this arm, host B"), (t, L, "dagger must mark host B")
+        # feat-183's rungs below 100 all ran on host B, and the caption says so for the block rather
+        # than marking twenty-four cells; the dagger marks host-B rungs at 100 and above
+        assert dagger == (r["source"] == "this arm, host B" and L >= 100), (t, L, "dagger rule")
+    short = [r for r in rows if r["role"] == "openly licensed" and int(r["prefix_tokens"]) < 100]
+    cap = " ".join(open(tex("sections/appendix_selection.tex"), encoding="utf-8").read().split())
+    cap = cap[cap.rfind("\\caption{", 0, cap.index("\\label{tab:vetladder}")):cap.index("\\label{tab:vetladder}")]
+    if short:
+        assert all(r["source"] == "this arm, host B" for r in short) == \
+            ("they and the two rungs marked $^\\dagger$ ran on a second machine" in cap), "caption vs CSV"
 
 
 def test_the_recommendation_is_the_one_v1_licenses():
@@ -81,8 +96,11 @@ def test_the_recommendation_is_the_one_v1_licenses():
         assert r"\emph{every} prefix length" in eth, "the Ethics Statement must recommend a schedule"
         assert "attack surface: run the check at the longest genuine prefix" not in eth, \
             "the single-length rule V1 refuted is back"
-        assert "not monotone" in vet and r"\emph{unmeasured}" in vet, \
-            "the licensed anchors' short rungs must be named as unmeasured"
+        assert "not monotone" in vet
+        if _short_licensed_all_zero():             # feat-183 S1 PASS HOLDS BELOW 100
+            assert "pass at every rung from $20$ to $200$" in vet and r"\emph{unmeasured}" not in vet
+        else:
+            assert r"\emph{unmeasured}" in vet, "the licensed anchors' short rungs must be named as unmeasured"
     else:
         assert "not monotone" not in eth + vet, "V1 now reads MONOTONE; the schedule is not licensed"
 
@@ -98,7 +116,11 @@ def test_the_licensed_pass_is_claimed_only_as_far_as_it_was_measured():
         assert claim not in _vetting(), f"PASS BREAKS at {leaks}, and the appendix says it holds"
     else:
         assert {int(r["prefix_tokens"]) for r in past} == {150, 200} and claim in _vetting()
-        assert f"The {six} anchors used here still read $0$ at $150$ and $200$" in _ethics()
+        if _short_licensed_all_zero():
+            assert f"The {six} anchors used here read $0$ at every rung from $20$ to $200$" in _ethics()
+            assert "all six read $0$ of $50$ at $20$, $35$, $50$ and $75$ tokens as well" in _vetting()
+        else:
+            assert f"The {six} anchors used here still read $0$ at $150$ and $200$" in _ethics()
     # the count the paper gives is the count screened: TinyComma sits in the 70B control's anchor slot
     assert f"each of the {six} openly licensed anchors" in _ethics()
     assert f"all {six} anchors used here" in _vetting()
@@ -133,3 +155,7 @@ def test_the_host_check_is_quoted_as_the_scorer_reads_it():
     assert word == "PASS", (word, d)
     assert (f"reaches recall $0.01$ on ${d['host_b']}$ of ${d['n']}$ passages against "
             f"${d['local']}$ here ($z = {d['z']:.2f}$)") in _vetting()
+    nb = sum(r["source"] == "this arm, host B" for r in _rows())
+    tens = {2: "Twenty", 3: "Thirty"}
+    spelled = {2: "Two"}.get(nb) or f"{tens[nb // 10]}-{WORD[nb % 10]}"
+    assert f"{spelled} of the new rungs ran on a second machine" in _vetting(), (nb, spelled)

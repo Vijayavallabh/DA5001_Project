@@ -1,10 +1,22 @@
 model,role,prefix_tokens,statistic,n_passages,leaking,frac_leaking,max_recall,mean_recall,source
+comma1t,openly licensed,20,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+comma1t,openly licensed,35,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+comma1t,openly licensed,50,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+comma1t,openly licensed,75,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 comma1t,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 comma1t,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 comma1t,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+comma7b,openly licensed,20,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+comma7b,openly licensed,35,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+comma7b,openly licensed,50,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+comma7b,openly licensed,75,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 comma7b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 comma7b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 comma7b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+kl3m17b,openly licensed,20,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+kl3m17b,openly licensed,35,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+kl3m17b,openly licensed,50,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+kl3m17b,openly licensed,75,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 kl3m17b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 kl3m17b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 kl3m17b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
@@ -25,12 +37,24 @@ olmo2_7b,open data,50,anchor_max_recall,50,1,0.02,0.2899,0.0058,this arm
 olmo2_7b,open data,100,anchor_max_recall,50,2,0.04,0.2677,0.0089,on record
 olmo2_7b,open data,150,anchor_max_recall,50,1,0.02,0.5208,0.0104,this arm
 olmo2_7b,open data,200,anchor_max_recall,50,2,0.04,0.75,0.0273,this arm
+pleias12b,openly licensed,20,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+pleias12b,openly licensed,35,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+pleias12b,openly licensed,50,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+pleias12b,openly licensed,75,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 pleias12b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 pleias12b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 pleias12b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+pleias3b,openly licensed,20,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+pleias3b,openly licensed,35,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+pleias3b,openly licensed,50,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+pleias3b,openly licensed,75,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 pleias3b,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 pleias3b,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
 pleias3b,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm
+tinycomma,openly licensed,20,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+tinycomma,openly licensed,35,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+tinycomma,openly licensed,50,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
+tinycomma,openly licensed,75,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 tinycomma,openly licensed,100,anchor_max_recall,50,0,0.0,0.0,0.0,on record
 tinycomma,openly licensed,150,anchor_max_recall,50,0,0.0,0.0,0.0,"this arm, host B"
 tinycomma,openly licensed,200,anchor_max_recall,50,0,0.0,0.0,0.0,this arm

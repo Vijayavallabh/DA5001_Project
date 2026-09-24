@@ -852,13 +852,14 @@ def safety_rows():
     return arms
 
 
-def contamination_rows():
+def contamination_rows(fname="selector_n256.csv"):
     """(anchor, event, base_rate, realised amplification) at n=64, where the premise FAILS.
 
-    Read from feat-179's corrected-selector arm (results/selector_n256.csv). The earlier
-    contaminated_anchor.csv was measured with a selector that ranked partly on padding (caution
-    (ba)) and its n > 1 numbers are never shown beside these (the registration excludes it)."""
-    p = RESULTS / "selector_n256.csv"
+    Read from feat-179's corrected-selector arm (results/selector_n256.csv), or with
+    fname="selector_redraw.csv" from feat-182's independent re-draw, whose registration requires the
+    factor to be shown per draw, both draws, never pooled. The earlier contaminated_anchor.csv was
+    measured with a selector that ranked partly on padding (caution (ba)) and is never shown."""
+    p = RESULTS / fname
     if not p.exists():
         raise FileNotFoundError(p)
     out = []
@@ -870,7 +871,7 @@ def contamination_rows():
 
 
 def safety_envelope():
-    arms, contam = safety_rows(), contamination_rows()
+    arms, contam, redraw = safety_rows(), contamination_rows(), contamination_rows("selector_redraw.csv")
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(5.98, 1.48))
     fig.subplots_adjust(left=0.085, right=0.995, bottom=0.185, top=0.87, wspace=0.28)
 
@@ -906,27 +907,38 @@ def safety_envelope():
     import random as _rnd
     _rnd.seed(0)
     for ev, c, mk in (("E_001", "C0", "o"), ("E_08", "C3", "s")):
-        xs = [a for _, e, _, a in contam if e == ev]
-        if not xs:
-            continue
-        ys = [0.5 + 0.30 * (_rnd.random() - 0.5) + (0.22 if ev == "E_08" else -0.22) for _ in xs]
-        bx.scatter(xs, ys, s=17, c=c, marker=mk, alpha=0.85, zorder=3,
-                   label={"E_001": "recall 0.01 event", "E_08": "recall 0.8 event"}[ev])  # E_001 is >= 0.01
+        # feat-182: the second, independent draw is drawn hollow beside the first, never pooled
+        for rows, fill, lab in ((contam, True, ""), (redraw, False, ", second draw")):
+            xs = [a for _, e, _, a in rows if e == ev]
+            if not xs:
+                continue
+            ys = [0.5 + 0.30 * (_rnd.random() - 0.5) + (0.22 if ev == "E_08" else -0.22) for _ in xs]
+            bx.scatter(xs, ys, s=17, marker=mk, alpha=0.85, zorder=3,
+                       facecolors=c if fill else "none", edgecolors=c, linewidths=0.8,
+                       label=({"E_001": "recall 0.01", "E_08": "recall 0.8"}[ev] + lab))  # E_001 is >= 0.01
     bx.axvline(64, color="0.25", ls="--", lw=1.1, zorder=4)
-    bx.annotate("$n=64$: what the\ncertificate permits", xy=(120, 0.97), ha="right",
+    bx.annotate("$n=64$: what the\ncertificate permits", xy=(56, 1.22), ha="right",
                 fontsize=6.3, color="0.15", va="top")
     bx.axvspan(min(a for *_, a in contam), max(a for *_, a in contam), color="0.85",
                alpha=0.45, zorder=0)
     # matplotlib is not LaTeX: "--" prints as two hyphens, not an en-dash (caution (ad)).
-    bx.annotate(f"realised: {min(a for *_, a in contam):.1f} to {max(a for *_, a in contam):.1f}",
-                xy=(0.87, 0.06), fontsize=6.3, color="0.15", ha="left")
+    lo2, hi2 = min(a for *_, a in redraw), max(a for *_, a in redraw)
+    bx.annotate(f"realised: {min(a for *_, a in contam):.1f} to {max(a for *_, a in contam):.1f};\n"
+                f"second draw {lo2:.1f} to {hi2:.1f}",
+                xy=(0.87, 0.93), fontsize=6.3, color="0.15", ha="left", va="bottom")
     bx.set_yticks([])
-    bx.set_ylim(0, 1.0)
+    bx.set_ylim(0, 1.25)          # headroom: the two-draw annotation sat on the recall-0.01 points
     bx.set_xscale("log")
     bx.set_xlim(0.8, 140)
     bx.set_xlabel("realised amplification at $n=64$, twelve contaminated anchors")
     bx.set_title("(b) and degrades gracefully where it fails", fontsize=8)
-    bx.legend(loc="lower right", fontsize=5.8, frameon=True, framealpha=1.0,
+    # Three keys, not four: a two-column legend of both draws covered the recall-0.01 points
+    # (caution (ad)), so the second draw is one proxy entry for the hollow style.
+    from matplotlib.lines import Line2D
+    keys = [Line2D([], [], marker="o", ls="", color="C0", ms=4, label="recall 0.01"),
+            Line2D([], [], marker="s", ls="", color="C3", ms=4, label="recall 0.8"),
+            Line2D([], [], marker="s", ls="", mfc="none", mec="0.3", ms=4, label="hollow: second draw")]
+    bx.legend(handles=keys, loc="lower right", fontsize=5.8, frameon=True, framealpha=1.0,
               facecolor="white", edgecolor="none", handletextpad=0.3,
               bbox_to_anchor=(1.0, 0.02))
     _save(fig, "safety_envelope")

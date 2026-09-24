@@ -42,6 +42,8 @@ EXPECTED = dict({"llama70b": (20, 35, 50, 75, 100, 150, 200),
 # the memoriser draw of feat-179 Part A re-run there. Its reference is read off the twelve local Part A
 # files with this code, never typed (caution (at)); written before either host-B job had started.
 HOST_B = {("tinycomma", 150), ("kl3m17b", 150)}
+# feat-183 (registered for host B before any rung ran): every licensed rung below 100 ran there too
+HOST_B |= {(t, L) for t, m in MODELS.items() if m[2] == "openly licensed" for L in (20, 35, 50, 75)}
 HOST_CHECK, HOST_REF, HOST_Z = "hostcheck_memoriser_n1", "selfix256_*_per_passage.csv", 2.58
 # feat-183 (results/onset_prediction_vetting_short.md): the licensed anchors at the rungs feat-180 left
 # unmeasured. Its reading S1 is separate from V1-V4, which read no licensed rung below 100 and so cannot move.

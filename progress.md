@@ -1,5 +1,41 @@
 # Session Progress Log
 
+## 2026-09-24 (morning) --- feat-182 SCORED: B1 does not replicate, so the factor is quoted per draw everywhere; feat-183 SCORED: the licensed anchors pass at every rung from 20 to 200
+
+**feat-182** (Part A re-drawn under a disjoint seed, on host B by declared deviation, anchors `76/76`
+md5-identical): **G0' and G2 PASS** at all twelve. On this draw B1 reads **SATURATES** (`A(64)` at most
+`3.0`), B2 **NO READABLE ANCHOR**, B3 **SATURATED BY 64**, so **R1 DOES NOT REPLICATE**, R2 and R3 **REPLICATE**.
+The reason is measurable: the pool's per-draw rate barely moves (`0.0179 -> 0.0182` at Llama-3.2-1B, at most
+`0.001` anywhere), while the one-draw base `A(n)` divides by moved from one passage in a hundred to three,
+taking `A(64)` from `7.0` to `3.0`. Predictions: B1 wrong, B3 right, B2's risk did not materialise.
+**Manuscript, as registered:** the factor is quoted per draw, both draws, never pooled, at every site
+(intro, Sections 3 and 4, Ethics, the `fig:safety` caption and panel (b) with the second draw hollow,
+`tab:contam` as `first / second`, Appendix I's prose), and B1 is stated as **draw-dependent** in Appendix I.
+No B1 verdict is in the main text. The three body sentences were made length-neutral against a recorded
+layout baseline --- the first attempt pushed one intro line and stranded the "Contributions." run-in
+heading at the foot of page 2 (caution (az) exactly), and trimming the same paragraph restored every
+page's first and last line. Figure 5(b) needed two passes before it was clean (caution (ad)): the two-draw
+annotation first sat on the recall-0.01 points, then a two-column legend covered them.
+
+**feat-183** (registered `b11046f` at the user's instruction before any rung ran): the six licensed
+anchors at `L = 20, 35, 50, 75` on host B, all exit `0`. **S1 PASS HOLDS BELOW 100**: `0/50` at every rung,
+max recall `0.0000`, so every licensed anchor reads `0/50` at every rung from `20` to `200`. Prediction
+right. `tab:vetladder`'s licensed dashes become `0`s; Appendix I's and the Ethics Statement's "unmeasured"
+below `100` become "every rung from `20` to `200`"; the host-B count becomes twenty-six rungs.
+
+Guards: `tests/test_contaminated_amplification.py::test_every_site_quotes_the_factor_per_draw_both_draws`
+(both draws at all six sites, and "draw-dependent" wherever R1 fails); `tab:contam`'s factor cells parsed
+per draw; the defective `1.0 to 4.0` ban kept, with exactly the re-draw's genuine `n = 256` range
+`$1.0$ to $4.0\times$ at $256$` exempted while its CSV says so (a different quantity, same endpoints);
+the ladder table's dagger rule and its "unmeasured" and Ethics sentences conditioned on S1. Fifteen
+mutations across both arms, fifteen caught.
+
+```bash
+scripts/sync_status.sh pull
+.venv/bin/python analysis/selector_n256.py --redraw     # feat-182 -> results/selector_redraw*.csv
+.venv/bin/python analysis/vetting_ladder.py             # feat-183's S1 -> results/vetting_ladder.csv
+```
+
 ## 2026-09-23 (night) --- feat-181 SCORED: both ladders saturate at 512, the slope stays unresolved, and the off-support deficit is no longer clear of zero
 
 Both chains ran on host B GPUs 6 and 7 (`scripts/run_n512_post.sh a 6`, `b 7`). **G2 PASS** (every prompt
