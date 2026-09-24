@@ -1424,8 +1424,8 @@
       "description": "Sixth review round: every judged head-to-head ran the meter at temperature 1.0 with no penalty, where He et al. decode books at 0.7 and 1.1. Re-run the 8B arms, the 70B pair and the selection pool at 0.7/1.1 and judge J1-J4 (results/onset_prediction_he_decoding.md, registered before any token; addendum before launch: host B H100s, the 70B's committed sharding flags).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": "Launched on host B 2026-09-24 23:00 IST (scripts/run_feat195.sh gpu4|gpu12|judge_he with GPU_MAIN=4 GPUS_70B=5,6 GPU_J12=7 GPU_J34=5). t07_8b done (exit 0, 11 min); pool, rewards, 70B and J1-J4 running."
+      "status": "done",
+      "evidence": "scripts/run_feat195.sh gpu4|gpu12|judge_he on host B (GPU_MAIN=4 GPUS_70B=5,6 GPU_J12=7 GPU_J34=5), every job exit 0, 23:00-00:20 IST. .venv/bin/python analysis/he_decoding.py --out results -> results/he_decoding.csv: G0 PASS (500 prompts every pass; pool 32,000 trajectories, cache 32,000 finite rows), G1 PASS (every k=-1 record 0.7/1.1; text differs from the committed opponent on 500/500), G2 PASS (selection identical in J1-J4). H1 8B k=10 D3 -0.081 [-0.113, -0.049] REFUTED (wrong); H2 8B k=0.5 D5 -0.0245 [-0.057, +0.0095] TIE (wrong); H3 70B k=20 D3 +0.0485 [+0.0145, +0.082] CONFIRMED (wrong); H4 70B alone +0.0585 [+0.034, +0.0835] (right); H5 70B k=0.5 D5 -0.089 INCUMBENT LOSES. K/S_w against the warped anchor: analysis/regimes.py --temperature 0.7 --repetition-penalty 1.1 -> results/regimes_copybench_t07.csv, S_w 177.4 nats (same-host 1.0 control reproduces 159.8). Table 2 block from analysis/served_opponent.py (appended rows; first 73 unchanged) and analysis/served_activity.py. Registered consequence applied (abstract and Section 4 scoped to 1.0 with the 0.7 result beside it; H2/H5 reported; Limitations updated); tests/test_v11_review_round6.py::test_the_temperature_07_block_and_its_registered_sentences, 7 mutations fire."
     },
     {
       "id": "feat-196",

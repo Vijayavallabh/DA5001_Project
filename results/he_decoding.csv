@@ -1,0 +1,24 @@
+band,quantity,value,lo95,hi95,reading,n
+G0,J1: prompts judged,500,,,PASS,
+G0,J2: prompts judged,500,,,PASS,
+G0,J3: prompts judged,500,,,PASS,
+G0,J4: prompts judged,500,,,PASS,
+G0,reward cache rows (64 ranks x 500 prompts),32000,,,PASS,
+G1,every k=-1 record carries temperature 0.7 and repetition_penalty 1.1,1.0,,,PASS,500
+G1,k=-1 text differs from the committed opponent's,1.0,,,PASS,500
+G2,selection levels identical in J1-J4,1.0,,,PASS,500
+H1,"J1 8B k=10: D3 difference of gains, paired",-0.081,-0.113,-0.049,REVERSAL REFUTED,500
+H2,"J1 8B k=0.5: D5 met8b_k0.5 minus selection, paired",-0.0245,-0.057,0.0095,TIE,500
+H3,"J3 70B k=20: D3 difference of gains, paired",0.0485,0.0145,0.082,REVERSAL CONFIRMED,500
+H4,"J2 the 70B alone: D4 risky70b gain, order-averaged",0.0585,0.034,0.0835,SURVIVES,500
+H5,"J3 70B k=0.5: D5 met70b_k0.5 minus selection, paired",-0.089,-0.122,-0.0575,INCUMBENT LOSES,500
+desc,"J2 8B k=1: D3 difference of gains, paired",-0.0225,-0.056,0.0115,REVERSAL UNRESOLVED,500
+desc,"J4 70B k=1: D3 difference of gains, paired",0.1,0.067,0.1335,REVERSAL CONFIRMED,500
+desc,"J1 selection: D1 selection gain, order-averaged",0.107,0.0825,0.132,SURVIVES,500
+S_w,"50-token window, warped anchor (0.7, 1.1), median over passages",177.3927,,,,758
+K/S_w,"k=0.5, K = 200k over the warped anchor's S_w",0.5637,,,,
+K/S_w,"k=1, K = 200k over the warped anchor's S_w",1.1274,,,,
+K/S_w,"k=10, K = 200k over the warped anchor's S_w",11.2744,,,,
+K/S_w,"k=20, K = 200k over the warped anchor's S_w",22.5488,,,,
+desc,"J1 the k=0.5 meter over its anchor: D4 met8b_k0.5 gain, order-averaged",0.0825,0.0605,0.1045,SURVIVES,500
+desc,"J3 the k=0.5 meter over its anchor: D4 met70b_k0.5 gain, order-averaged",0.018,-0.0035,0.04,DISSOLVES,500

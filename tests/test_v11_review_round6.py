@@ -34,27 +34,32 @@ def test_table2_active_column_is_the_judged_trajectories_strict_blend_share():
     one definition on one population (strict blends, on exactly the trajectories the judge scored),
     and the caption must say so."""
     want = {(r["block"], float(r["k"])): 100 * float(r["active_share"]) for r in _rows("served_activity.csv")}
-    assert len(want) == 12, want
+    assert len(want) == 18, want
     t = body("experiments.tex")
     i = t.index(r"\label{tab:served}")
     tab = t[t.index(r"\midrule", i): t.index(r"\bottomrule", i)]
-    label, seen = None, 0
+    label, seen, t07 = None, 0, False
     names = {"$8$B-Instruct, continuing text": "8B-Instruct, continuing text",
              "$70$B base (the authors' pair)": "70B base",
              "$8$B-Instruct, chat template": "8B-Instruct, chat template"}
     for line in tab.replace(r"\midrule", "").split(r"\\"):
         cells = [c.strip() for c in line.split("&")]
-        if len(cells) < 6 or cells[0].startswith(r"\multicolumn"):
+        if cells[0].startswith(r"\multicolumn"):
+            t07 = "the authors' $0.7$ and $1.1$" in line        # the feat-195 block
+            continue
+        if len(cells) < 6:
             continue
         if cells[0]:
             label = names.get(cells[0])
+            if label and t07:
+                label += ", T=0.7"
         if label is None:
             continue                    # AnchoredByte rows: guarded by tests/test_skipped_round.py
         k = float(cells[1].strip("$").replace("^\\dagger", ""))
         printed = re.fullmatch(r"\$([\d.]+)\\%\$", cells[2]).group(1)
         assert _rounds(printed, want[(label, k)]), (label, k, printed, want[(label, k)])
         seen += 1
-    assert seen == 12, seen
+    assert seen == 18, seen
     assert "strict blend of the two models" in caption_of("tab:served")
 
 
@@ -213,3 +218,51 @@ def test_the_scorer_family_arm_is_reported_as_registered():
         close = body("iclr_closing.tex")
         assert "or with a scorer from another family" in close and "which scorer selects" in close
         assert "the headline depends on the scorer" in exp
+
+
+# ------------------------------------------------------------------ feat-195, the authors' decoding settings
+
+def test_the_temperature_07_block_and_its_registered_sentences():
+    """feat-195 (results/onset_prediction_he_decoding.md). Table 2's block rounds from
+    results/served_opponent.csv and results/he_decoding.csv (K/S_w against the WARPED anchor, as
+    registered), and H1's REFUTED carries its registered consequence: the continuing-text claim is
+    scoped to temperature 1.0 with the 0.7 result in the same sentence, in the abstract and Section 4."""
+    from decimal import ROUND_HALF_UP, Decimal
+    t1 = {r["quantity"]: r for r in _rows("served_opponent.csv") if r["band"] == "T1"}
+    he = {(r["band"], r["quantity"]): r for r in _rows("he_decoding.csv")}
+    sw = float(he[("S_w", "50-token window, warped anchor (0.7, 1.1), median over passages")]["value"])
+    t = body("experiments.tex")
+    i = t.index(r"\label{tab:served}")
+    tab = t[i: t.index(r"\bottomrule", i)]
+    blk = tab[tab.index("the authors' $0.7$ and $1.1$"):]
+    blk = blk[: blk.index(r"\midrule")]
+    for pair, ks in (("8B", ("0.5", "1", "10")), ("70B", ("0.5", "1", "20"))):
+        for k in ks:
+            d = t1[f"temperature 0.7, {pair} k={k}: selection n=64 minus meter"]
+            lvl = Decimal(t1[f"temperature 0.7, {pair} k={k}: meter level"]["value"]).quantize(
+                Decimal("0.001"), rounding=ROUND_HALF_UP)
+            kk = he[("K/S_w", f"k={k}, K = 200k over the warped anchor's S_w")]["value"]
+            rows = [ln for ln in blk.split(r"\\") if f"& ${k}$ &" in ln]
+            row = rows[0] if pair == "8B" else rows[-1]
+            assert f"${lvl}$" in row, (pair, k, row, lvl)
+            assert f"${float(d['value']):+.4f}$" in row, (pair, k, row)
+            assert any(_rounds(x, float(kk)) for x in re.findall(r"\$([\d.]+)\$", row)), (pair, k, kk, row)
+    assert f"$S_w = {sw:.1f}$ nats" in caption_of("tab:served")
+    h1 = he[("H1", "J1 8B k=10: D3 difference of gains, paired")]
+    h2 = he[("H2", "J1 8B k=0.5: D5 met8b_k0.5 minus selection, paired")]
+    h5 = he[("H5", "J3 70B k=0.5: D5 met70b_k0.5 minus selection, paired")]
+    h3 = he[("H3", "J3 70B k=20: D3 difference of gains, paired")]
+    # H2 and H5 are reported in the sentence about the informative budget, whatever they read
+    assert carries_band(float(h2["value"]), float(h2["lo95"]), float(h2["hi95"]), "experiments.tex")
+    assert f"selection leads by ${-float(h5['value']):.3f}$" in t
+    if h1["reading"] == "REVERSAL REFUTED":
+        assert f"the $8$B wins instead, ${float(h1['value']):+.3f}$ $[{float(h1['lo95']):+.3f}, {float(h1['hi95']):+.3f}]$" in t
+        assert carries_band(float(h3["value"]), float(h3["lo95"]), float(h3["hi95"]), "experiments.tex")
+        assert "Continuing text at temperature $1.0$, that model loses" in t
+        abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+        abstract = abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
+        assert "continuing text at temperature $1.0$" in abstract
+        assert "loses to the $8$B at their temperature $0.7$" in abstract
+    close = body("iclr_closing.tex")
+    assert "where its authors use $0.7$ and $1.1$" not in close, "Limitations still says the meter ran only at 1.0"
+    assert "at the authors' temperature $0.7$ and penalty $1.1$" in close

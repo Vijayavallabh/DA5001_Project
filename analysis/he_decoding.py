@@ -101,6 +101,18 @@ def main():
     rd("J4", "D3", "desc", "70B k=1")
     rd("J1", "D1", "desc", "selection")
 
+    # K/S_w at 0.7 is relative to the WARPED anchor; the registration forbids reading it off the 1.0
+    # anchor. analysis/regimes.py --temperature 0.7 --repetition-penalty 1.1 wrote the per-passage
+    # surprisal; S_w is 50 times its median per-token rate, as results/window_vacuity.csv does at 1.0.
+    import statistics
+    rg = list(csv.DictReader(open(os.path.join(a.dir, "regimes_copybench_t07.csv"))))
+    sw = 50 * statistics.median(float(r["nats_per_tok"]) for r in rg)
+    add("S_w", "50-token window, warped anchor (0.7, 1.1), median over passages", round(sw, 4), n=len(rg))
+    for k in (0.5, 1, 10, 20):
+        add("K/S_w", f"k={k:g}, K = 200k over the warped anchor's S_w", round(200 * k / sw, 4))
+    for j, q in (("J1", "D4"), ("J3", "D4")):
+        rd(j, q, "desc", "the k=0.5 meter over its anchor")
+
     out = os.path.join(a.out, "he_decoding.csv")
     with open(out, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0]))

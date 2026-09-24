@@ -41,12 +41,12 @@ ROWS = [  # (block, k, directory, filename token) -- Table 3's token-level rows
     ("8B-Instruct, chat template", 3.0, "output/feat196/chat_grid", "3"),
     ("8B-Instruct, chat template", 5.0, "output/feat196/chat_grid", "5"),
     # feat-195: temperature 0.7, penalty 1.1
-    # PENDING ("8B-Instruct, continuing text, T=0.7", 0.5, "output/feat195/t07_8b", "0.5"),
-    # PENDING ("8B-Instruct, continuing text, T=0.7", 1.0, "output/feat195/t07_8b", "1"),
-    # PENDING ("8B-Instruct, continuing text, T=0.7", 10.0, "output/feat195/t07_8b", "10"),
-    # PENDING ("70B base, T=0.7", 0.5, "output/feat195/t07_70b", "0.5"),
-    # PENDING ("70B base, T=0.7", 1.0, "output/feat195/t07_70b", "1"),
-    # PENDING ("70B base, T=0.7", 20.0, "output/feat195/t07_70b", "20"),
+    ("8B-Instruct, continuing text, T=0.7", 0.5, "output/feat195/t07_8b", "0.5"),
+    ("8B-Instruct, continuing text, T=0.7", 1.0, "output/feat195/t07_8b", "1"),
+    ("8B-Instruct, continuing text, T=0.7", 10.0, "output/feat195/t07_8b", "10"),
+    ("70B base, T=0.7", 0.5, "output/feat195/t07_70b", "0.5"),
+    ("70B base, T=0.7", 1.0, "output/feat195/t07_70b", "1"),
+    ("70B base, T=0.7", 20.0, "output/feat195/t07_70b", "20"),
 ]
 
 

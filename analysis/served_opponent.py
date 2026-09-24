@@ -130,7 +130,13 @@ def main():
              # feat-196 (results/onset_prediction_chat_grid.md): the chat block's remaining budgets,
              # judged on host B; APPENDED so no committed row's bootstrap draw moves.
              ("chat template, host B", "chatgrid_k05", (("0.5", "metered_k0.5"), ("2", "chat_k2")), "u_anchor_k0"),
-             ("chat template, host B", "chatgrid_k3", (("3", "metered_k3"), ("5", "chat_k5")), "u_anchor_k0"))
+             ("chat template, host B", "chatgrid_k3", (("3", "metered_k3"), ("5", "chat_k5")), "u_anchor_k0"),
+             # feat-195 (results/onset_prediction_he_decoding.md): temperature 0.7, penalty 1.1, host B;
+             # one opponent (the 8B's own draw at those settings) for all four passes. APPENDED.
+             ("temperature 0.7, 8B", "t07_8b_k10", (("0.5", "met8b_k0.5"), ("10", "metered_k10")), "u_anchor_k0"),
+             ("temperature 0.7, 8B", "t07_8b_k1", (("1", "metered_k1"),), "u_anchor_k0"),
+             ("temperature 0.7, 70B", "t07_70b_k20", (("0.5", "met70b_k0.5"), ("20", "metered_k20")), "u_anchor_k0"),
+             ("temperature 0.7, 70B", "t07_70b_k1", (("1", "metered_k1"),), "u_anchor_k0"))
     for config, tag, arms, anc in table:
         if tag == "frontier_levels":
             d = {}

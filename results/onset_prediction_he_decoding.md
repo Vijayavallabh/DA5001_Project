@@ -104,3 +104,51 @@ the rewards; four judge passes of about six minutes each.
   written above.
 
 ## Scoring log
+
+### Scored 2026-09-25 00:24 IST --- H1 REFUTED (wrong), H2 TIE (wrong), H3 CONFIRMED (wrong), H4 right, H5 INCUMBENT LOSES
+
+All jobs exited `0` on host B (`output/logs/feat195_{t07_8b,t07_70b,pool,rewards,J1,J2,J3,J4}.done`,
+launched 23:00 IST, J4 last at 00:20). Scored by `.venv/bin/python analysis/he_decoding.py --out results`
+-> `results/he_decoding.csv`; Table 2's rows by `analysis/served_opponent.py` (rows `temperature 0.7`,
+appended, so no committed row's bootstrap draw moved: the first `73` rows are byte-identical) and
+`analysis/served_activity.py` (rows `T=0.7`).
+
+**Gates.** G0 PASS: `500` prompts in every pass; the pool holds `32,000` trajectories (`64` per prompt,
+all within budget) and the reward cache `32,000` finite rows. G1 PASS: every `k=-1` record carries
+`temperature = 0.7` and `repetition_penalty = 1.1`, and its text differs from the committed
+temperature-`1.0` opponent's on `500/500` prompts (read by the judge's own loader). G2 PASS: selection's
+per-prompt levels are identical in J1-J4. Every class of both new sweeps is within budget with `0`
+invariant violations.
+
+**`K/S_w` against the warped anchor, as registered.** `analysis/regimes.py` gained `--temperature` and
+`--repetition-penalty` (the penalty is applied before the temperature, as the decoder's processor runs
+before its warper; checked equal to HF's `RepetitionPenaltyLogitsProcessor` to `0.0`). A same-host control
+at `1.0` reproduces the committed median `3.1966` nats per token as `3.1950` (`S_w = 159.8` both), and the
+warped anchor reads `3.5479`, so `S_w = 177.4` nats (`results/regimes_copybench_t07.csv`). `K/S_w` is
+`0.56`, `1.13`, `11.3` and `22.5` at `k = 0.5, 1, 10, 20`.
+
+| band | reading | registered | verdict |
+|---|---|---|---|
+| H1, `8`B `k=10`, `D3` | `-0.081 [-0.113, -0.049]`, REFUTED | UNRESOLVED or CONFIRMED | **wrong** |
+| H2, `8`B `k=0.5`, `D5` (meter minus selection) | `-0.0245 [-0.057, +0.0095]`, TIE | INCUMBENT LOSES | **wrong** |
+| H3, `70`B `k=20`, `D3` | `+0.0485 [+0.0145, +0.082]`, CONFIRMED | REFUTED | **wrong** |
+| H4, the `70`B alone over the anchor | `+0.0585 [+0.034, +0.0835]` | interval above zero | right |
+| H5, `70`B `k=0.5`, `D5` | `-0.089 [-0.122, -0.0575]`, INCUMBENT LOSES | read as H2 | --- |
+
+Descriptive: `8`B `k=1` `D3 = -0.0225 [-0.056, +0.0115]`; `70`B `k=1` `D3 = +0.100 [+0.067, +0.1335]`;
+selection's gain `+0.107 [+0.0825, +0.132]`; the `k=0.5` meters over their anchor: `8`B `+0.0825
+[+0.0605, +0.1045]`, `70`B `+0.018 [-0.0035, +0.040]`. Active shares: `8`B `44.6%`, `16.4%`, `0.040%`,
+`70`B `46.4%`, `20.2%`, `0.00%` at `k = 0.5, 1, 10|20`.
+
+**What it means.** At the authors' decoding settings the `8`B-Instruct continuing text beats selection
+at the vacuous budget, and at the one budget that certifies a window the `8`B meter blends on `45%` of
+steps, gains over its anchor and ties selection. The authors' own `70`B base, a weaker continuer under
+this judge, still loses to selection at every budget.
+
+**Manuscript, as registered.** Table 2 gains the temperature-`0.7` block (`S_w = 177.4` under the warped
+anchor in its caption). H1 reads REFUTED, so the abstract and Section 4 scope the continuing-text claim
+to temperature `1.0` and state the `0.7` result in the same sentence; Section 4's sentence about the
+informative budget reports H2 and H5; Limitations no longer says the meter ran only at `1.0` and lists
+the authors' settings among the configurations that reverse the comparison. Beyond the registration,
+the Section 4 heading and the contributions list stop saying the meter "is its anchor" wherever its
+certificate says anything: at `0.7` the `8`B meter is not.
