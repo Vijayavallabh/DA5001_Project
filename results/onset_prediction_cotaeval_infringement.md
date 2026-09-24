@@ -52,6 +52,14 @@ reproduces nothing (`0` items at `>= 0.5` and a mean ROUGE-L within the anchor's
 is reported as **uninformative about the defence** at this pair, because there is nothing to defend
 against, and the paper says so rather than quoting the zeros.
 
+*Added 2026-09-24 14:52 IST, before any generation on this split:* the committed reward rates an
+empty completion above a typical anchor completion (feat-188's amendment gives the numbers), and this
+pool is recorded correctly, so reward selection will serve empty drafts, which reproduce nothing and
+would make I1 and I5 trivially true. The scorer therefore also reports **`sel{n}_ne`**, the argmax
+over non-empty draws (`analysis/nonempty_rewards.py`), and **I1 and I5 are read on both**; the pool
+oracle, which is selector-free, is unaffected. The empty-served fraction of every selection arm is
+reported beside it.
+
 ## Excluded in advance
 
 - Another subsample, threshold, risky model, reward or `n` chosen after reading any score.

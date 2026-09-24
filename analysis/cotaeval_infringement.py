@@ -63,6 +63,10 @@ def main():
     for n in (1, 8, 64):
         arms[f"sel{n}"] = {p: cands[p][max(range(n), key=lambda i: rewards[p][i])][3]
                            for p in pids if p in rewards}
+        # secondary (registered 14:52): the argmax over NON-EMPTY draws, since the reward prefers empties
+        arms[f"sel{n}_ne"] = {p: cands[p][max(range(n), key=lambda i: (bool(cands[p][i][3].strip()),
+                                                                        rewards[p][i]))][3]
+                              for p in pids if p in rewards}
     missing = {nm: len(set(pids) - set(v)) for nm, v in arms.items()}
     assert not any(missing.values()), f"arms missing items: {missing}"
 
@@ -85,8 +89,11 @@ def main():
         lo, hi = wilson(k, len(pids))
         row.update(event_count=k, event_rate=round(k / len(pids), 4), event_lo=round(lo, 4),
                    event_hi=round(hi, 4))
+        if nm in arms:
+            row["empty_served"] = round(sum(not arms[nm][p].strip() for p in pids) / len(pids), 4)
         rows.append(row)
-    for x, y, tag in (("sel64", "risky", "I1"), ("sel64", "anchor", "I2"), ("oracle64", "risky", "I3"),
+    for x, y, tag in (("sel64", "risky", "I1"), ("sel64_ne", "risky", "I1b"), ("sel64", "anchor", "I2"),
+                      ("sel64_ne", "anchor", "I2b"), ("oracle64", "risky", "I3"),
                       ("met_k10", "risky", "I4"), ("met_k0.5", "risky", ""), ("sel64", "met_k10", "")):
         v = [per[x][p]["rouge_l"] - per[y][p]["rouge_l"] for p in pids]
         lo, hi = boot(v, rng)
