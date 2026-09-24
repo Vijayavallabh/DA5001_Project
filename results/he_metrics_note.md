@@ -24,10 +24,18 @@ Released-8B block: `sel64`, `sel1` (selection at `n=64`, `n=1`, TinyComma pool, 
 - **Prometheus.** `prometheus-eval/prometheus-7b-v2.0`, the library's **no-reference** absolute
   template and system prompt, verbatim; the instruction shown is the corpus prompt (header stripped,
   as the judge sees it); greedy decoding, `384` new tokens; the score is the integer after `[RESULT]`,
-  and an unparsed output is counted and excluded. **The rubric is ours**, because He et al. do not
-  print theirs: fluency and coherence, 1 (incoherent or empty) to 5 (fully fluent), in
-  `analysis/he_metrics.py:FLUENCY`. It is scored on **all three** ordinary classes, not only on book
-  text as He et al. do, and the class split is reported.
+  and an unparsed output is counted and excluded. **The rubric is He et al.'s own, verbatim** (their
+  Table 7 with its criteria and anti-conflation rule, `analysis/he_metrics.py:FLUENCY`). They ran it
+  with `gpt-4.1-mini` as the Prometheus backbone and report that open models "conflate protected
+  continuations with more fluent output"; we run the open `prometheus-7b-v2.0`, on ordinary prompts
+  where no protected continuation is in play, and state the substitution. It is scored on **all
+  three** ordinary classes, not only on book text as He et al. do, and the class split is reported.
+  An empty response is scored as the literal `(empty response)`; the mean over non-empty responses
+  is reported beside it.
+
+  *Corrected 2026-09-24, before any Prometheus call:* the first version of this note said He et al.
+  do not print their rubric and used one of ours. Their appendix D.4 does print it, so it is used
+  verbatim instead. No score existed when this was changed.
 - **FActScore.** The `150` biography prompts (`Tell me a bio of X.`, FActScore's own entities and
   prompts, `data/factscore.jsonl`). Atomic facts at paragraph level from `Qwen2.5-14B-Instruct`,
   greedy; retrieval by BM25 over the entity's Wikipedia text (shipped in the same file) cut into
@@ -35,8 +43,11 @@ Released-8B block: `sel64`, `sel1` (selection at `n=64`, `n=1`, TinyComma pool, 
   the `True`/`False` logits of the same model. Precision = supported / extracted; a response with no
   extracted fact is an **abstention** and is excluded from the mean, as FActScore does; the
   abstention rate and the mean number of facts are reported beside it. No length penalty. This is
-  FActScore's protocol with open-weight models, not its original InstructGPT/ChatGPT pipeline, and
-  it is stated so.
+  FActScore's original design (Wikipedia as the knowledge source) with open-weight models; He et al.
+  instead extract and verify with `gpt-4.1-mini`, retrieve the top-5 Google snippets per claim
+  (Serper), and prompt "Write a factual biography about {entity}..." on 183 entities, where our
+  generations answer FActScore's "Tell me a bio of {entity}." on 150. Levels are therefore not
+  comparable with theirs; only differences between our arms are read.
 
 ## Readings
 

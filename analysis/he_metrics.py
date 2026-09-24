@@ -53,12 +53,13 @@ An instruction (might include an Input inside it), a response to evaluate, and a
 {rubric}
 
 ###Feedback: """
-FLUENCY = """[Is the response fluent and coherent: grammatical, readable, free of degenerate repetition, and a sensible continuation of the instruction?]
-Score 1: The response is incoherent or ungrammatical throughout, or empty; it cannot be read as prose.
-Score 2: The response is mostly disfluent, with frequent grammatical errors, repetition or abrupt breaks.
-Score 3: The response is readable but uneven, with noticeable errors, repetition or lapses in coherence.
-Score 4: The response is fluent and coherent, with only minor lapses.
-Score 5: The response is fully fluent, grammatical and coherent throughout."""
+# He et al. (arXiv 2602.07120) Table 7, verbatim: their custom Prometheus rubric and its criteria.
+FLUENCY = """[Criteria (local writing quality only): Judge ONLY the local writing quality of the continuation as standalone text. Evaluate grammar, syntax, punctuation/quotation correctness, word choice, sentence flow, and consistency of tense, person, and narrative voice. Be length-neutral: short but well-formed text can score highly. Do not penalize if it starts or ends mid-sentence (a cut-in). If it ends mid-sentence, judge only what is shown. Allow creative style (e.g., intentional fragments or ellipses) when clearly deliberate and controlled. Anti-conflation rule: Do NOT use any knowledge, recognition, or suspicion that the continuation resembles a specific existing/copyrighted text when scoring. Ignore whether you think the text is from a known book, quote, or dataset. Score ONLY what is visible in the continuation's mechanics and readability.]
+Score 1: Difficult to understand due to pervasive grammar/syntax/punctuation errors, chaotic phrasing, or severe incoherence. Meaning is frequently unclear even allowing for creative style.
+Score 2: Often hard to follow. Multiple serious mechanical issues (grammar, punctuation/quotes, agreement), frequent awkward phrasing, or uncontrolled shifts in tense/person/voice; structure feels sloppy rather than intentional.
+Score 3: Generally readable but uneven. Noticeable issues (awkward phrasing, choppy transitions, minor mechanical errors, unclear referents) sometimes disrupt flow, but the main meaning remains accessible.
+Score 4: Clear and coherent with minor, infrequent issues. Mechanics are mostly correct; flow is smooth overall; any nonstandard choices feel intentional and controlled.
+Score 5: Polished and natural. Mechanics are precise (or deliberately bent with control). Sentence/paragraph flow is consistently smooth; tense/person/voice remain consistent throughout."""
 ATOMIC = """Break the following passage about {topic} into a list of atomic facts. Each atomic fact is one short, self-contained sentence that states exactly one piece of information and names {topic} instead of using a pronoun. Include only claims the passage actually makes; do not add, correct or judge anything. Output one fact per line, each line starting with "- ". If the passage makes no factual claim, output the single line "- NONE".
 
 Passage:
@@ -238,11 +239,12 @@ def report(a):
     import glob
     for metric, pat, col in (("prometheus_fluency", "he_prometheus_per_item*.csv", "score"),
                              ("factscore_precision", "he_factscore_per_item*.csv", "precision"),
-                             ("factscore_n_facts", "he_factscore_per_item*.csv", "n_facts")):
+                             ("factscore_n_facts", "he_factscore_per_item*.csv", "n_facts"),
+                             ("prometheus_fluency_nonempty", "he_prometheus_per_item*.csv", "score")):
         per = {}
         for p in sorted(glob.glob(os.path.join(a.out, pat))):
             for r in csv.DictReader(open(p, encoding="utf-8")):
-                if r[col] != "":
+                if r[col] != "" and not (metric.endswith("_nonempty") and r.get("empty") == "1"):
                     assert r["prompt_id"] not in per.get(r["arm"], {}), (p, r["arm"], "scored twice")
                     per.setdefault(r["arm"], {})[r["prompt_id"]] = float(r[col])
         for arm, d in sorted(per.items()):
