@@ -149,6 +149,13 @@ def main():
                          "until the gate clears' could otherwise only keep that promise by not "
                          "looking at numbers already on disk, and caution (ap) records exactly "
                          "that order being broken.")
+    ap.add_argument("--k-token", default="0",
+                    help="the literal k token in the pool's filenames (caution (o)); '0' is every "
+                         "pool on record, a global-budget decoder writes e.g. '1e-09'")
+    ap.add_argument("--deecho", action="store_true",
+                    help="score the de-echoed generation (dap.shared.served_generation, caution "
+                         "(bc)) under the CORPUS prompt (caution (aa)) instead of served_prompt. Off "
+                         "by default so every reward cache on record reproduces.")
     a = ap.parse_args()
     rng = random.Random(a.seed)
     grid = n_grid(a.max_n)
@@ -156,7 +163,11 @@ def main():
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    cands = load_candidates(a.gen_dir)
+    cands = load_candidates(a.gen_dir, k=a.k_token, deecho=a.deecho)
+    if a.deecho:
+        from analysis.order_averaged_h2h import true_prompts   # here: that module imports this one
+        corpus = true_prompts("data")
+        cands = {p: [(s, c, corpus[p], g) for s, c, _, g in v] for p, v in cands.items()}
     base = load_baseline(a.baseline_dir)
     pids = sorted(p for p in cands if p in base and len(cands[p]) >= a.max_n)
     assert pids, f"no prompt has {a.max_n} candidates in {a.gen_dir}"
