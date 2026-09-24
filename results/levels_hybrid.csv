@@ -1,0 +1,7 @@
+arm,spec,level,lo95,hi95,empty_frac,n
+sel64,sel:output/phase5/sel_anchor64:results/selection_rewards64.csv:64,0.555,0.534,0.576,0.082,500
+sel8,sel:output/phase5/sel_anchor64:results/selection_rewards64.csv:8,0.5115,0.4895,0.5335,0.218,500
+sel1,sel:output/phase5/sel_anchor64:results/selection_rewards64.csv:1,0.4535,0.432,0.475,0.128,500
+hyb8,sel:output/hybrid/pw_n8:results/selection_rewards8_hybrid.csv:8:0.010397,0.4995,0.478,0.521,0.39,500
+hyb2,sel:output/hybrid/pw_n2:results/selection_rewards2_hybrid.csv:2:0.017329,0.461,0.44,0.482,0.228,500
+pw1,traj:output/hybrid/pw_n1:0.020794:pathwise,0.44,0.419,0.461,0.128,500

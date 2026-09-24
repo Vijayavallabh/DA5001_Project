@@ -63,3 +63,43 @@ the abstract's framing (spend it on the draw) is qualified in the same sentence.
 - Turning prefix debt on for one arm and not another.
 
 ## Scoring log
+
+### Scored 2026-09-24 14:50 IST --- H1, H2, H3 BELOW ZERO and H4 STRADDLES, as predicted: at a fixed certificate, spend it on the draw
+
+Generation `output/hybrid/pw_n{8,2,1}` (local GPU 0, `scripts/run_hybrid.sh`), rewards
+`results/selection_rewards{8,2}_hybrid.csv`, judge `analysis/levels_pass.py --tag hybrid`, contrasts
+`--score hybrid` -> `results/levels_hybrid{,_per_prompt,_contrasts}.csv`.
+
+**G0 PASS**, on the quantity the pathwise decoder bounds: the realised log-ratio of every served path
+is within `B` (max `1.9459` against `log 8 = 2.0794`, `3.2658` against `log 32`, `3.6105` against
+`log 64`), and the harness's own invariant holds on all `5,500` drafts. The field `total_spend`
+exceeds `B` on `79` of the `n=8` drafts; it is the KL charge, which pathwise accounting does not cap,
+so it is not the gate's quantity and the registration's wording ("realised pathwise spend") meant the
+ratio. The drafts barely leave the anchor: median KL `0.125` nats at `B = log 8`.
+**G1 PASS**: `sel64`, `sel8`, `sel1` equal feat-186's per-prompt levels on `500` of `500` prompts.
+
+| arm | `n` | `B` | certificate | level |
+|---|---|---|---|---|
+| `sel64` | `64` | `0` | `log 64` | `0.5550 [0.5340, 0.5760]` |
+| `sel8` | `8` | `0` | `log 8` | `0.5115` |
+| `sel1` | `1` | `0` | `0` | `0.4535` |
+| `hyb8` | `8` | `log 8` | `log 64` | `0.4995 [0.4780, 0.5210]` |
+| `hyb2` | `2` | `log 32` | `log 64` | `0.4610` |
+| `pw1` | `1` | `log 64` | `log 64` | `0.4400 [0.4190, 0.4610]` |
+
+| band | contrast | reading | predicted |
+|---|---|---|---|
+| H1 | `hyb8 - sel64` | `-0.0555 [-0.0780, -0.0330]` BELOW ZERO | BELOW ZERO, right |
+| H2 | `pw1 - sel64` | `-0.1150 [-0.1380, -0.0915]` BELOW ZERO | BELOW ZERO, right |
+| H3 | `hyb2 - sel64` | `-0.0940 [-0.1170, -0.0715]` BELOW ZERO | BELOW ZERO, right |
+| H4 | `hyb8 - sel8` | `-0.0120 [-0.0300, +0.0060]` STRADDLES | STRADDLES, right |
+
+**The ordering is monotone in how much of the certificate goes to the draw**: `pw1` (`n=1`) `0.4400`,
+`hyb2` `0.4610`, `hyb8` `0.4995`, `sel64` (`n=64`) `0.5550`. And the pathwise meter given the whole
+certificate, `4.16` nats, is judged **no better than a single anchor draw** (`0.4400` against
+`0.4535`).
+
+**One confound, disclosed and not scored:** the drafts are the first correctly recorded pool, and the
+committed reward rates an empty completion above a typical one (median `-12.1` against `-26.8`), so
+`hyb8` serves an empty text on `39.0%` of prompts against `sel8`'s `21.8%`. H4 straddles zero despite
+it, so the tilt is at best worth what the extra empties cost; the registered readings stand as scored.
