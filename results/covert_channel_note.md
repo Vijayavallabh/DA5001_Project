@@ -53,7 +53,7 @@ certificate, is what bounds a patient user.
 
 ## Scoring log
 
-### Scored 2026-09-24 14:30 IST --- the channel is real, runs at two-thirds of `log2 n`, and the odometer shuts it before one window gets through
+### Scored 2026-09-24 14:11 IST --- the channel is real, runs at two-thirds of `log2 n`, and the odometer shuts it before one window gets through
 
 `analysis/covert_channel.py --out results` -> `results/covert_channel.csv`,
 `results/covert_channel_windows.csv`. Two of the expected readings were wrong, both for one reason.

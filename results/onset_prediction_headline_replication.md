@@ -47,7 +47,7 @@ judge B, seed `7717`, both presentation orders, `n=64`, `k=10`:
   Tag `replic`.
 - **R2** against the **re-drawn** opponent (`output/replic/opp`): the full replication. Tag `replic_opp`.
 
-*Corrected 2026-09-24 14:40 IST, before any reading:* this registration first named `--seeds 52 53
+*Corrected 2026-09-24 14:25 IST, before any reading:* this registration first named `--seeds 52 53
 54`. That tuple is **not** new: `output/phase5/sel_anchor64_seed52` already re-draws the headline pool
 on it (Appendix table `tab:h2hrepeat`, `D3 = +0.0635` on echo-carrying text, meter not re-drawn), and
 feat-184's chat arm used it too, so the claim above that every seed is new was false. About `35`

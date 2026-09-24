@@ -96,7 +96,7 @@ that read it are reported NOT SCORED rather than as surviving or not.
 
 ## Scoring log
 
-### Scored 2026-09-24 14:45 IST --- every registered reading survives the text repair; three secondary gains change sign class
+### Scored 2026-09-24 14:26 IST --- every registered reading survives the text repair; three secondary gains change sign class
 
 `.venv/bin/python analysis/deecho_rejudge.py --out results` -> `results/deecho_rejudge.csv` (60 rows);
 G0 from `results/deecho_rejudge_coverage.csv`. Launchers `scripts/run_deecho_rejudge.sh` (queues

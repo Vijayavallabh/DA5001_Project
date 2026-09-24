@@ -44,7 +44,7 @@ distribution, `q in {0.50, 0.75, 0.90, 0.95, 0.99}`, fixed before reading any se
 
 ## Scoring log
 
-### Reward-only table, 2026-09-24 14:40 IST --- stopping early saves draws and buys nothing at matched compute
+### Reward-only table, 2026-09-24 14:13 IST --- stopping early saves draws and buys nothing at matched compute
 
 `analysis/adaptive_n.py --out results` -> `results/adaptive_n.csv`. Reward nats, paired over the
 `500` prompts, 95% bootstrap.
@@ -63,7 +63,7 @@ distribution, `q in {0.50, 0.75, 0.90, 0.95, 0.99}`, fixed before reading any se
 Picks for the judged pass written to `results/adaptive_picks_*.csv` (the two registered rules and
 their matched fixed-`n` arms, `n = 7` and `n = 17`).
 
-### Judged pass, 2026-09-24 14:55 IST --- stopping early buys nothing the matched fixed `n` does not
+### Judged pass, 2026-09-24 14:28 IST --- stopping early buys nothing the matched fixed `n` does not
 
 `analysis/levels_pass.py --tag adaptive` on host B GPU 7 (judge B, the committed opponent, both
 orders, de-echoed), contrasts by `--score adaptive` -> `results/levels_adaptive{,_per_prompt,_contrasts}.csv`.

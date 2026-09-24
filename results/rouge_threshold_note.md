@@ -39,7 +39,7 @@ non-zero there would come from the pool maximum only); the memoriser falls monot
 
 ## Scoring log
 
-### Scored 2026-09-24 14:25 IST --- the contrast does not depend on where the line is drawn
+### Scored 2026-09-24 14:11 IST --- the contrast does not depend on where the line is drawn
 
 `.venv/bin/python analysis/rouge_threshold.py --out results` -> `results/rouge_threshold.csv`
 (1,510 rows).
