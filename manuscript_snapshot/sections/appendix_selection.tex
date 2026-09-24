@@ -51,7 +51,17 @@ above the rest (median $-18.75$ against $-26.12$), so best-of-$n$ serves an empt
 at $n=1$, $21.8\%$ at $n=8$ and $8.2\%$ at $n=64$. The judge does not score those as losses, and at $n \ge 8$
 the preference costs selection level rather than flattering it (prompts served empty are judged $0.4531$, $0.4771$ and $0.4939$ at $n=1$, $8$ and $64$, against $0.4536$, $0.5211$ and $0.5605$ for the rest). Excluding empty candidates from the argmax raises the
 fresh-seed headline difference from $+0.0495$ to $+0.0695$ $[+0.0385, +0.0995]$
-(\texttt{results/\allowbreak empty\_\allowbreak preference.csv}).
+(\texttt{results/\allowbreak empty\_\allowbreak preference.csv}). On the repaired headline pass (post hoc, no band),
+scoring every empty served text as a loss moves the difference from $+0.0505$ to $+0.0155$
+$[-0.0245, +0.0555]$: selection serves $41$ empty texts at $n=64$ and the meter none, against $64$ and $62$
+for the two anchor controls. Serving the best \emph{non-empty} draw, a selection rule over the same $n$
+draws and so certified at the same $\log n$, changes $41$ picks; judged as the judge scores them it leaves
+the difference at $+0.0505$, since the judge rates those $41$ replacements as it rated the empty texts,
+and with empty answers as losses it keeps $+0.056$ $[+0.0195, +0.093]$, the served levels differing by
+$+0.0655$ $[+0.039, +0.0915]$ (\texttt{results/\allowbreak empty\_\allowbreak as\_\allowbreak loss.csv},
+\texttt{results/\allowbreak nonempty\_\allowbreak rule.csv}). Every GPU was held by another job when the
+$41$ replacements were judged, so judge~B ran on CPU in float32; re-judging the $41$ committed picks the
+same way reproduces their committed levels on $37$.
 
 \paragraph{The judge.}\label{app:judgemethod}
 Every judged number compares an arm's served text with the fixed opponent's on the same prompt. The judge
@@ -130,10 +140,12 @@ the $150$ biographies with \texttt{Qwen2.5-14B-Instruct} extracting and verifyin
 fluency (1--5, non-empty responses) selection at $n=64$ scores $2.56$ against the meter's $1.88$ at $k=10$, a
 paired $+0.70$ $[+0.53, +0.85]$, beats the meter at every budget of both text-continuation pairs
 ($+1.15$ $[+1.00, +1.30]$ over the $70$B pair at $k=0.5$), and loses to the chat-template model,
-$-0.81$ $[-0.99, -0.64]$: the judge's pattern. FActScore reads the other way, as it must: every fact selection
-serves is one the anchor drew, so its precision is its anchor's ($0.042$ against $0.048$, paired $-0.008$
-$[-0.041, +0.022]$) and below every metered arm ($-0.182$ $[-0.222, -0.145]$ against $k=10$), while it
-abstains on $20$ of $150$ biographies where a single draw abstains on $80$. The head-to-head is a statement
+$-0.81$ $[-0.99, -0.64]$: the judge's pattern. FActScore reads the other way: selection's precision is its
+anchor's ($0.042$ against $0.048$, paired $-0.008$ $[-0.041, +0.022]$) and below every metered arm
+($-0.182$ $[-0.222, -0.145]$ against $k=10$), while it abstains on $20$ of $150$ biographies where a single
+draw abstains on $80$. Best-of-$n$ is bounded by its best draw, not its average, so the equality says this
+reward does not select for factual precision, not that a selection rule cannot; we did not test a
+factuality scorer. The head-to-head is a statement
 about fluency and helpfulness, not about factual recall, which the anchor bounds
 (\texttt{results/\allowbreak he\_\allowbreak metrics.csv}).
 
@@ -284,6 +296,19 @@ average, loses to fixed $n=64$ by $-0.0515$ $[-0.0720, -0.0310]$, and reads $+0.
 lower $n$.
 
 \section{Selection alone: \texorpdfstring{$n$}{n}, anchors, scorers and tasks}\label{app:sel-breadth}\label{app:selection}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/selection_breadth_forest.pdf}
+\caption{\textbf{Selection against its own anchor.} Gain over \emph{that arm's own} anchor-alone draw,
+single-order, $95\%$ interval, judged on the repaired text; right, the whole certificate in nats. Open
+markers miss the admission criterion of at most $5\%$ empty completions on the true generations
+(TinyComma $14.6\%$ and $12.8\%$, Comma-7B $18.4\%$, Comma-1T $31.6\%$); on non-empty prompts their gains
+move by at most $0.012$. MT-Bench's $80$ items resolve nothing at a half-width of $0.08$, and the
+pointwise reward falls with $n$ on TriviaQA (Appendix~\ref{app:judgefree}).}
+\label{fig:breadth}
+\end{figure}
+
 
 \paragraph{How far $n$ pays.}
 At Comma-7B the gain rises monotonically to $n=64$ within one pass ($+0.041$, $+0.060$, $+0.072$,
@@ -609,6 +634,22 @@ and cannot loosen $q(y) \le n\,p_s(y)$ by a single nat.
 
 \section{Leakage, and the premise it rests on}\label{app:sel-premise}
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/safety_envelope.pdf}
+\caption{\textbf{Selection reproduces no protected passage, and where its premise fails it amplifies
+the anchor by a small constant, not by $n$.} \textbf{(a)} Near-verbatim recall, $50$-token windows,
+$100$ held-out passages. Nine arms (six anchors, a paraphrase event, an attacker scoring the $n$ draws by
+the \emph{memorising model's own likelihood}, and \texttt{Llama-3.1-70B}) read $0.0000$ at every $n$ to
+$64$ and at $n=256$, on every passage. Dashed: the memoriser alone on the same passages and seeds,
+$0.3925$ mean and $0.8154$ maximum, and the $70$B, which memorised the novel in pre-training, at $0.2475$
+unaided, reproducing two passages in full. \textbf{(b)} Twelve anchors fine-tuned on the passages, attacker
+selecting at $n=64$: the certificate permits multiplying the anchor's own rate by $64$; the realised factor
+is $1.0$ to $7.0$ (filled) and $1.0$ to $3.0$ on a second, independent draw (hollow).}
+\label{fig:safety}
+\end{figure}
+
+
 \paragraph{An adversarial selector.}
 Table~\ref{tab:extraction} scores the anchor's $n$ draws by the \emph{memorising} model's likelihood, the
 attacker choosing the rule, on the same $100$ protected passages and seeds as the meter's onset analysis.
@@ -766,7 +807,69 @@ so it takes $357$ responses at $n=64$ and $237$ even at capacity; the $400$-nat 
 $\lfloor 400/\ln n \rfloor = 96$ responses and $400/\ln 2 = 577$ bits whatever $n$ is, less than one
 compressed window. Only a code built on the anchor itself fits: the window's surprisal is $231$ bits.
 
+\paragraph{The attack the composed certificate prices.}\label{app:prefixext}
+A user holds a memorised passage's $20$-token seed and extends it one query at a time. A scorer that
+knows the work serves, among $n$ fresh draws from the anchor, the one whose first token the leakage
+table's memoriser finds most likely, and the user appends that token; since only first tokens are read,
+each query is simulated exactly by $n$ draws from the anchor's next-token law (CPU, float32, the
+leakage table's $100$ passages, pre-registered in
+\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak prefix\_\allowbreak extension.md}).
+After $50$ queries the transcript is certified at $50\log n$ nats, against a window surprisal whose
+median is $179.5$ nats (Table~\ref{tab:prefixext}).
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{\textbf{Prefix extension through a colluding scorer}, $50$ queries on each of $100$ memorised
+passages. ``Vacuous'' counts windows whose surprisal under the anchor is at most $50\log n$; ``token in
+pool'' is the share of queries whose $n$ draws contain the true next token.}
+\label{tab:prefixext}
+\begin{tabular}{lrrrrrr}
+\toprule
+arm & $50\log n$ & vacuous & token accuracy & exact & near-verbatim & token in pool \\
+\midrule
+$n=1$ & $0$ & $0$ & $0.009$ & $0$ & $0.0000$ & $0.009$ \\
+$n=8$ & $104.0$ & $0$ & $0.026$ & $0$ & $0.0000$ & $0.045$ \\
+$n=64$ & $207.9$ & $88$ & $0.057$ & $0$ & $0.0062$ & $0.123$ \\
+memoriser, greedy & --- & --- & $0.843$ & $74$ & $0.8847$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The prediction for $n=64$, token accuracy at least $0.5$ and one exact window, failed on both
+halves: the certificate excludes nothing for $88$ of the $100$ windows and the attack reconstructs none,
+one passage reaching near-verbatim recall $0.5$. A scorer can serve only what the anchor proposes, so
+the chance of serving the true token $x_t$ is $1-(1-p_t)^n \le \min(1, n p_t)$ per query, while the
+certificate's $n^{50}\prod_t p_t$ counts in full the factors above one that no query can use. The
+certificate is loose for prefix extension and nearly tight for a scorer that sends bits instead of
+tokens (above), which is why the deployment rule caps queries rather than relying on this attack's
+weakness.
+
 \section{What selection costs}\label{app:sel-cost}
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{\textbf{What selection at $n=64$ costs against one metered response}, $200$ new tokens. The
+unbatched price is paid in draws: on a server that runs only the anchor the reward pass is $9.3\%$ of
+selection's clock. Batched, one request's $64$ draws run as one decode and never touch the risky model,
+which the meter runs at every step. Matched compute: the $n$ whose deployable draw cost equals one
+metered decode (Appendix~\ref{app:sel-cost}).}
+\label{tab:cost}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lr@{}}
+\toprule
+price model & selection $\div$ meter \\
+\midrule
+forward passes, parameters $\times$ tokens & $61.3\times$ \\
+wall-clock, anchor-only server, draws unbatched & $21.8\times$ \\
+wall-clock per request, draws batched: $8$B pair / $70$B pair & $0.51\times$ / $0.22\times$ \\
+\quad against AnchoredByte, Comma-7B $+$ $70$B & $0.061\times$ \\
+\midrule
+matched compute: $n=2$ at $0.68\times$, judged gain against the meter & $-0.0330$ $[-0.0625, -0.0025]$ \\
+\quad TriviaQA, no judge: accuracy against the meter at $k=20$ & $0.112$ vs.\ $0.618$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 
 \paragraph{The clock, and why the FLOP model has it backwards.}\label{app:latency}
 Both paths ran on one exclusively held card, interleaved \textsc{sel},\textsc{met},\textsc{met},\textsc{sel},

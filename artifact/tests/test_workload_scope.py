@@ -65,7 +65,10 @@ def test_the_body_scopes_the_claim_and_points_at_the_evidence():
     result to the WORKLOAD, which is what is measured, and must not name a cause. v10 (Section 4.2)
     words the scope `scoped by the opponent and the task` and `a property of prefix completion`."""
     txt = M.body("experiments.tex")
-    assert "survives fresh draws, judges and controls, and is scoped by the opponent and the task" in txt, \
+    # v11 (2026-09-24): the heading states the scope as what the difference does NOT survive: "At
+    # $k=10$ the difference survives fresh draws and most judges, and not a stronger opponent,
+    # instruction following or empty answers scored as losses".
+    assert "survives fresh draws and most judges, and not a stronger opponent, instruction following" in txt, \
         "the body's replication claim dropped the workload scope"
     # "moving off prefix completion" is a claim about SIX workloads, so it is checked against all
     # six: every completion workload must hold the difference clear of zero at its binding budget,
@@ -80,8 +83,8 @@ def test_the_body_scopes_the_claim_and_points_at_the_evidence():
         [(r["workload"], r["d3_lo95"]) for r in comp]
     assert not any(float(r["d3_lo95"]) > 0 for r in rest), \
         "a non-completion workload now holds the difference; 'a property of prefix completion' is stale"
-    assert "And it is a property of prefix completion: it holds on our prompts, on public-domain books " \
-           "and on BookMIA's unseen half" in txt, "the body no longer says what breaks it"
+    assert "the difference belongs to prefix completion: it holds on our prompts, public-domain books " \
+           "and BookMIA's unseen half" in txt, "the body no longer says what breaks it"
     # and the sentence's verdicts on the other three are the CSV's
     by = {r["workload"]: r for r in rest}
     assert all(float(by[w]["d3_lo95"]) < 0 < float(by[w]["d3_hi95"]) for w in ("CoTaEval-QA", "MT-Bench"))

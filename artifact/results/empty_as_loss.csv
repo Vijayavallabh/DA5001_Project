@@ -1,0 +1,12 @@
+rule,quantity,value,lo95,hi95,n
+as judged,D1 selection gain,0.1015,0.0765,0.126,500
+as judged,D2 metered gain,0.051,0.025,0.076,500
+as judged,D3 difference,0.0505,0.0155,0.086,500
+empty is a loss,D1 selection gain,0.119,0.0895,0.1485,500
+empty is a loss,D2 metered gain,0.1035,0.0745,0.132,500
+empty is a loss,D3 difference,0.0155,-0.0245,0.0555,500
+empty served texts,sel_n64,41,,,500
+empty served texts,sel_n1,64,,,500
+empty served texts,metered_k10,0,,,500
+empty served texts,anchor_k0,62,,,500
+empty served texts,opponent,0,,,500

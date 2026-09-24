@@ -1,11 +1,12 @@
-% v10 (2026-09-24): Section 3. The dichotomy, the price of utility and the imitation cost, each read
-% off the deployed meter in Figure 2; the four repairs in one table. v9 kept in
-% output/review_audit/pre_v10_2026-09-24/sections/.
+% v11 (2026-09-24, sixth review round): retitled and scoped to what is proved (a budget on the whole
+% sequence; the meter class that tilts toward p_r); Proposition 4 stated in expectation with explicit
+% constants; Figure 2's caption no longer reads the onset as Proposition 2's prediction; a paragraph on
+% the designs the dichotomy does not cover. v10 is in output/review_audit/pre_v11_2026-09-24/.
 
-\section{Why a per-token rate cannot be repaired}\label{sec:frontier}
+\section{What a per-token rate can certify}\label{sec:frontier}
 
-Could a metered decoder be repaired to certify as little as selection does? One line of the chain rule
-fixes the shape its spend must take.
+Could a metered decoder be made to certify as little as selection does? For a budget on the whole
+sequence, one line of the chain rule fixes the shape its spend must take.
 
 \begin{proposition}[A bounded budget is sparse]\label{prop:sparse}
 Let $q$ be any causal policy, $q(y) = \prod_{t \le T} q_t(y_t \mid y_{<t})$, with sequence budget
@@ -15,7 +16,7 @@ Then $\mathbb{E}_q[N_\varepsilon] \le K/\varepsilon$ for every $\varepsilon > 0$
 \end{proposition}
 
 The proof is the exact chain rule and Markov's inequality at each step (Appendix~\ref{app:proofs}). A
-per-token allowance therefore has two options. If it grows with the work, $K = kT$, it is vacuous from
+per-token allowance on the whole sequence therefore has two options. If it grows with the work, $K = kT$, it is vacuous from
 $k = s(x)$ on at every order (Proposition~\ref{prop:threshold}). If it stays bounded, the policy departs
 from the anchor by more than $\varepsilon$ at $O(K/\varepsilon)$ steps and is the anchor everywhere
 else. The bound constrains the \emph{shape} of a spend, not the class: selection's served law factorises
@@ -37,65 +38,69 @@ The proof is Donsker--Varadhan at the sequence level (Appendix~\ref{app:proofs})
 decoder enters. Reproducing a work costs $S(x)$, which grows with its length: $849$ nats for the median
 protected target and $159.8$ for a $50$-token window. Buying mean utility $u$ costs $\Lambda^*_s(u)$,
 which is $O(1)$ at any length for a utility the safe model itself sometimes attains. There is room for a
-mechanism that is both safe and useful, and a rate cannot occupy it: where its bucket is slack, a metered
-decoder is charged the full cost of imitating the risky model whatever utility that buys.
+mechanism that is both safe and useful; a meter that tilts toward the risky model does not occupy it,
+because where its bucket is slack it is charged the full cost of imitation whatever utility that buys.
 
 \begin{proposition}[Where its bucket is slack, a meter pays the imitation cost]\label{prop:imitation}
-Let a bucket-metered decoder, which serves the largest tilt $p_{\theta_t} \propto
-p_s^{1-\theta_t}p_r^{\theta_t}$ whose KL charge fits the bucket, run for $T$ steps, and let $\mathcal{S}$
-be the steps at which the bucket is slack, $|\mathcal{S}| = (1-\beta)T$. Its realised sequence divergence
-satisfies $Z_T \ge \sum_{t \in \mathcal{S}} D_{\mathrm{KL}}(p_{r,t} \| p_{s,t})$, whatever the utility
-achieved. If $\beta$ is bounded away from $1$, the slack steps carry divergence bounded away from $0$ and
-$U$'s best outcome is one the safe model reaches with probability not vanishing in $T$, then
-$Z_T / \Lambda^*_s(\mathbb{E}_q[U]) = \Omega(T)$.
+Let a bucket-metered decoder serve at each step the largest tilt $p_{\theta_t} \propto
+p_s^{1-\theta_t}p_r^{\theta_t}$ whose KL charge fits its bucket, and call a step slack when
+$\theta_t = 1$, and let $I_T$ sum $D_{\mathrm{KL}}(p_{r,t}\,\|\,p_{s,t})$ over the slack steps. Then
+$D_{\mathrm{KL}}(q\,\|\,p_s) \ge \mathbb{E}_q[I_T]$, whatever the utility achieved. If
+$\mathbb{E}_q[I_T] \ge \gamma T$, and a bounded utility $U$ that the decoder does not lower attains its
+maximum under $p_s$ with probability at least $\pi > 0$, then
+$D_{\mathrm{KL}}(q\,\|\,p_s) \ge \Lambda^*_s(\mathbb{E}_q[U])\cdot\gamma T/\log(1/\pi)$.
 \end{proposition}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{meter_horns.pdf}
-\caption{\textbf{The deployed meter on both horns.} \textbf{(a)} Near-verbatim recall of held-out
+\includegraphics[width=0.82\textwidth]{meter_horns.pdf}
+\caption{\textbf{Where the deployed meter leaks, and what it spends.} \textbf{(a)} Near-verbatim recall of held-out
 protected passages against the budget in units of the anchor's surprisal rate, nine (anchor, memoriser)
 pairs with nine distinct anchors and six tokenizers. Extraction begins between $0.88$ and $1.17$ of
-$s(x)$ (shaded), where Proposition~\ref{prop:threshold} says the certificate stops excluding the work.
+$s(x)$ (shaded), near Proposition~\ref{prop:threshold}'s threshold for the whole passage; the certificate
+for the scored $50$-token windows is void from about $0.8\,s(x)$, so it never excluded what was extracted.
 \textbf{(b)} Anchored decoding at its authors' anchor on ordinary prompts, $16{,}500$ trajectories: the
 cap it certifies (dashed) against what it spends (red). Past the risky model's imitation rate the
 bucket never binds and the spend stays at $171.3$ nats while the cap grows to $4000$.}
 \label{fig:horns}
 \end{figure}
 
-\paragraph{The deployed meter takes both horns (Figure~\ref{fig:horns}).} Where extraction begins is
-where the certificate becomes vacuous: on nine pairs the onset lies between $0.88$ and $1.17$ of $s(x)$,
-though one pair spans $0.88$ to $1.35$ when only its memoriser's fine-tuning length changes, so the level
-is the claim and the ordering is not (Appendix~\ref{app:onset}). Where the budget certifies something the
-meter binds and is judged indistinguishable from its own anchor (Table~\ref{tab:served}); the share of
-steps at which it binds falls from $0.954$ at $k=0.1$ to $0.033$ at $k=3$ and $0.0000$ at $k=20$, and past
-the imitation rate of $0.857$ nats per token it serves the risky model unchanged and spends $171.3$ nats,
-$4.3\%$ of the $4000$ it certifies at $k=20$ (Proposition~\ref{prop:imitation}). None of this contradicts
-the mechanism's own guarantee: no per-trajectory violation occurs in more than $100{,}000$ budgeted trajectories.
-The gap is between what the budget bounds and what $k$ is taken to mean.
+\paragraph{The deployed meter shows both options (Figure~\ref{fig:horns}).} By the time extraction begins
+the certificate is void: on nine pairs the onset lies between $0.88$ and $1.17$ of $s(x)$, near the
+whole-passage threshold, for reasons two mechanistic predictions failed to capture, and one pair spans
+$0.88$ to $1.35$ when only its memoriser's fine-tuning length changes, so the level is the claim and the
+ordering is not (Appendix~\ref{app:onset}). Where the budget certifies something the meter binds and is
+judged indistinguishable from its own anchor (Table~\ref{tab:served}); the share of steps its bucket
+constrains falls from $0.954$ at $k=0.1$ to $0.033$ at $k=3$ and $0.0000$ at $k=20$, and past the
+imitation rate of $0.857$ nats per token it serves the risky model unchanged and spends $171.3$ nats,
+$4.3\%$ of the $4000$ it certifies at $k=20$. With $\gamma = 0.857$ and, for winning a judged comparison,
+$\log(1/\pi) = 1.30$ nats, Proposition~\ref{prop:imitation} puts that spend at no less than $132$ times what
+the utility it reaches requires. No per-trajectory violation occurs in over $100{,}000$ budgeted
+trajectories; the gap is between what the budget bounds and how $k$ is read.
 
-\begin{table}[t]
-\centering\footnotesize
-\caption{\textbf{The four repairs a per-token meter has left}, each measured at the audited pair with
-bands fixed in advance (Appendix~\ref{app:repairs}). \citet{he2026anchored} ablate the first and last
-themselves, as their $\infty$-R\'enyi decoder and their Global variant.}
-\label{tab:repairs}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lll@{}}
-\toprule
-repair & measured at the audited pair, $k=3$ unless stated & result \\
-\midrule
-sharper charge ($\alpha{:}\,1 {\to} 8$) & oracle recall $0.0965 \to 0.0012$; binds on $99.6\%$ of steps vs $0.4\%$ & the anchor \\
-lower cap ($k = 0.5$) & no judge tells it from its anchor ($-1.03\sigma$, $+1.52\sigma$; $600$ pairs) & the anchor \\
-better schedule & $3$ to $13\%$ more fidelity at $k \le 1$, under $1.4\%$ at $k=3$, same spend & percent \\
-budget up front & $+0.0545$ $[+0.0315, +0.0775]$ at $64$ nats, selection $+0.1045$ at $\log 64$ & loses \\
-\bottomrule
-\end{tabular}
-\end{table}
+The repairs a meter has left each land on one of the two options or fall short of selection
+(Appendix~\ref{app:repairs}, Table~\ref{tab:repairs}): a sharper charge ($\alpha = 8$) cuts oracle recall
+from $0.0965$ to $0.0012$ only by binding on $99.6\%$ of steps against $0.4\%$, a lower cap ($k=0.5$) is its
+anchor to both judges, a better schedule buys $3$ to $13\%$ more fidelity at $k \le 1$ and under $1.4\%$ at $k=3$, and a budget granted
+up front gains $+0.0545$ $[+0.0315, +0.0775]$ at $64$ nats against selection's $+0.1045$ at $\log 64$. They
+share a currency, likelihood under $p_r$: as a criterion for choosing
+among draws it predicts judged quality no better than the answer's length, moving judged utility
+by $-0.006$ against a band of $+0.077$ where a circular oracle reaches $+0.488$
+(Appendix~\ref{app:currency}), and as a direction to tilt generation it buys the risky model's quality only
+by becoming the risky model.
 
-The repairs a meter has left each land on a horn or fall short of selection (Table~\ref{tab:repairs}).
-What they share is the currency they buy with, likelihood under $p_r$. As a criterion for choosing
-among the anchor's own draws it predicts judged quality no better than the answer's length does; as
-the first scorer we registered it moved judged utility by $-0.006$ against a band of $+0.077$, where a
-circular oracle reaches $+0.488$ (Appendix~\ref{app:currency}); as a direction to tilt generation it
-buys the risky model's quality only by becoming the risky model.
+\paragraph{What the dichotomy does not cover.}\label{sec:uncovered} Proposition~\ref{prop:sparse}
+constrains a budget on the whole sequence. A deployer could instead bound every $w$-token window, capping
+each step's max-divergence by the budget left in a sliding window and deducting the realised log-ratio,
+which certifies each window at its own budget. Nothing proved here rules that out, and it would seldom
+bind: on $1{,}500$ ordinary trajectories of the risky model the realised log-ratio of a $50$-token window
+has median $40.3$ nats, and a trajectory's largest window exceeds $125$ nats on only $1\%$ of them
+(Appendix~\ref{app:windowlr}), below the protected window's $159.8$. What such a meter pays is the
+imitation cost itself, so its window certificate is tens of nats where selection's is $\log n$, and that
+decides which events can be certified: an exact window's probability under the anchor has a closed form,
+a near-verbatim variant's must be sampled, and $40$ nats say something about a sampled event only after
+more than $3e^{40} \approx 7\times10^{17}$ clean draws (Table~\ref{tab:certificate}). Selection spent in
+installments, $n$ draws per block of $L$ tokens, is certified by the same composition at
+$(\lceil w/L\rceil + 1)\log n$ for any $w$-token window given what precedes it. What separates the
+mechanisms is not whether the budget is charged once or per token but what it buys: a choice among the
+anchor's own draws, or the risky model's tokens.

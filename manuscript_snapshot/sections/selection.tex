@@ -1,5 +1,8 @@
-% v10 (2026-09-24): Section 2, the contribution. Setting, the certificate, what it certifies (Table 1),
-% composition. v9 kept in output/review_audit/pre_v10_2026-09-24/sections/.
+% v11 (2026-09-24, sixth review round): Proposition 2 is the exact binary-Renyi inversion, attained at
+% every order; the window threshold replaces "never by T"; Table 1 prices how many queries a window's
+% certificate survives and the sampled near-verbatim event instead of a 400-nat cap that is itself
+% above the window's surprisal (the cap's arithmetic moved to Appendix A). v10 is in
+% DA5001_Project/output/review_audit/pre_v11_2026-09-24/sections/.
 
 \section{Selection anchoring}\label{sec:method}\label{sec:selection}
 
@@ -25,62 +28,77 @@ If $y$ is served then $y$ was drawn, so
 $q(y) \le \Pr[\exists i : y_i = y] \le \sum_i \Pr[y_i = y] = n\,p_s(y)$. A logarithm and a maximum
 over $y$ give the $\alpha = \infty$ statement, which dominates every lower order; summing over
 $y \in E$ gives the event form. Only the union bound is used, so the rule may consult the scores, the
-strings, external randomness or nothing. The KL form is \citet{beirami2025bestofn}, quoted not reproved.
+strings, external randomness or nothing. The KL form is due to \citet{beirami2025bestofn}.
 \end{proof}
 
-The inequality is elementary and its KL form known; what it \emph{certifies} has not been stated. It survives deterministic post-processing and stopping early (Appendix~\ref{app:proofs}), and it covers
-rules with no score in them:
+The inequality is elementary and its KL form known; what it \emph{certifies} has not been stated. It
+uses only that each draw's marginal is $p_s$, not their independence, and survives deterministic
+post-processing and stopping early (Appendix~\ref{app:proofs}); our draws are untruncated samples at the
+stated temperature, so the reference is the anchor exactly as sampled. It covers rules with no score in
+them:
 \textbf{self-consistency \citep{wang2023selfconsistency} is an instance}, serving one of the draws, one with the
 modal answer. The bound is tight: if $f$ has a unique maximiser $y^\star$ with $p_s(y^\star) = p$, then $q(y^\star) = 1-(1-p)^n \to np$. Over a web-trained model, as
 self-consistency is usually run, the same bound certifies nothing about copyright: the guarantee is
 relative to $p_s$ and is only as good as the anchor (Section~\ref{sec:leakage}).
 
 \begin{proposition}[The vacuity threshold does not depend on the order]\label{prop:threshold}
-Let $q$ be any law with $D_\alpha(q \,\|\, p_s) \le K$ for some $\alpha \in [1,\infty]$, and let $E$
-be the event that the output is $x$. For every such $\alpha$ the tightest bound on $\Pr_q[E]$
-implied by the budget equals $1$ if and only if $K \ge S(x)$.
+Let $E$ be an event with $\Pr_{p_s}[E] = e^{-S}$, and for $\alpha \in [1,\infty]$ let
+$b_\alpha(K) = \sup\{\Pr_q[E] : D_\alpha(q\,\|\,p_s) \le K\}$, the most a budget of $K$ nats at order
+$\alpha$ can say about $E$. Then $b_\alpha(K) = \max\{a : d_\alpha(a\,\|\,e^{-S}) \le K\}$, with
+$d_\alpha$ the R\'enyi divergence between Bernoulli laws, and $b_\alpha(K) = 1$ if and only if $K \ge S$,
+at every order.
 \end{proposition}
 
-The proof (Appendix~\ref{app:proofs}) applies one standard conversion per order: the change of measure
-at $\alpha = \infty$, the R\'enyi-to-probability bound \citep{mironov2017renyi} and the binary-KL
-inversion at $\alpha = 1$; all three break at $K = S(x)$. Below it the orders part company: the pathwise
-bound falls as $e^{K-S(x)}$ and the KL bound only as about $K/S(x)$, so a KL budget of half a work's
-surprisal still permits the work half the time. The risk is carried by $K/S(x)$, and a meter's
-$kT/S(x) \to k/s(x)$ never improves with length while $\log n / S(x) \to 0$.
-\citet{vyas2023provable} report their budget as a fraction of the safe model's entropy; new here is the
-exact threshold, for a specific work and every order at once.
+Data processing gives $d_\alpha(\Pr_q[E]\,\|\,\Pr_{p_s}[E]) \le D_\alpha(q\,\|\,p_s)$, a law that
+reweights $p_s$ uniformly on $E$ and on its complement attains it, and $d_\alpha(1\,\|\,e^{-S}) = S$ at
+every order (Appendix~\ref{app:proofs}). Below the threshold the orders part company: the pathwise bound
+is $e^{K-S}$ and the KL bound falls only as about $K/S$, so a KL budget of half a work's surprisal still
+permits the work half the time. For a work served at its own length $K = kT$ and $S(x) = s(x)T$ grow
+together, so vacuity is decided by $k$ against $s(x)$ and the KL bound, about $k/s(x)$, does not improve
+with length. A window is exposed sooner: $w$ tokens inside a $T_{\max}$-token response are unprotected
+from $k = s(x)\,w/T_{\max}$, a quarter of $s(x)$ for $50$ tokens at $T_{\max} = 200$
+(Table~\ref{tab:windowvacuity}). \citet{vyas2023provable} report their budget as a fraction of the safe
+model's entropy; new here is the exact threshold, for a specific event and every order at once.
 
 \begin{table}[t]
 \centering\footnotesize
 \caption{\textbf{What one response's certificate says about a protected $50$-token window}
-($S_w = 159.8$ nats, median over $758$ passages). Meter: KL charge, $K = kT_{\max}$, $T_{\max} = 200$,
-bounded by the binary-KL inversion of Proposition~\ref{prop:threshold} ($1$: nothing excluded).
-Selection: pathwise $K = \log n$, bound $n e^{-S_w}$. Responses under a $400$-nat per-user cap
-\citep{vijayavallabh2026audit}, charged at the certificate and, for the meter, at its measured spend.}
+($S_w = 159.8$ nats, median over $758$ passages). Meter: KL charge, $K = kT_{\max}$ at $T_{\max} = 200$,
+measured mean spend in brackets, bounded by Proposition~\ref{prop:threshold} ($1$: nothing excluded).
+Selection: pathwise $K = \log n$, bound $n e^{-S_w}$. \emph{queries}: adaptive queries whose composed
+certificate stays below $S_w$. \emph{draws}: clean anchor draws that certify near-verbatim reproduction
+below $1\%$ per response ($3n/N$); no feasible sample does so for a KL certificate of $100$ nats or more.}
 \label{tab:certificate}
-\setlength{\tabcolsep}{5pt}
+\setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{@{}llrrrrr@{}}
 \toprule
-& & & & & \multicolumn{2}{c}{responses under $400$ nats} \\
-\cmidrule(l){6-7}
-mechanism & charge & $K$, nats & $K/S_w$ & $\Pr_q[\text{window}] \le$ & at $K$ & at spend \\
+mechanism & charge & $K$ (spent), nats & $K/S_w$ & $\Pr_q[\text{window}] \le$ & queries & draws \\
 \midrule
-meter, $k=0.5$ & KL & $100$ & $0.63$ & $0.630$ & $4$ & $5$ ($78.5$ nats) \\
-meter, $k=3$ (authors') & KL & $600$ & $3.75$ & $1$ & $0$ & $2$ ($165.0$) \\
-meter, $k=10$ & KL & $2000$ & $12.5$ & $1$ & $0$ & $2$ ($171.3$) \\
+meter, $k=0.5$ & KL & $100$ ($78.5$) & $0.63$ & $0.630$ & $1$ & --- \\
+meter, $k=3$ (authors') & KL & $600$ ($165.0$) & $3.75$ & $1$ & $0$ & --- \\
+meter, $k=10$ & KL & $2000$ ($171.3$) & $12.5$ & $1$ & $0$ & --- \\
 \midrule
-selection, $n=8$ & pathwise & $2.08$ & $0.013$ & $10^{-68.5}$ & $192$ & --- \\
-selection, $n=64$ & pathwise & $4.16$ & $0.026$ & $10^{-67.6}$ & $96$ & --- \\
+selection, $n=8$ & pathwise & $2.08$ & $0.013$ & $10^{-68.5}$ & $76$ & $2{,}400$ \\
+selection, $n=64$ & pathwise & $4.16$ & $0.026$ & $10^{-67.6}$ & $38$ & $19{,}200$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{The certificate composes.}\label{sec:compose}
-Max-divergence adds exactly under adaptive composition, so $m$ responses at $n$ draws each are certified
-at $m\log n$ however the queries were chosen (Appendix~\ref{app:compose}); per-query access-freeness does
-not compose in general \citep{cohen2025blameless}. Table~\ref{tab:certificate} prices this under the
-$400$-nat per-user cap an earlier audit proposes, deployed nowhere: $192$ responses at $n=8$ against $2$
-for a meter at $k=3$ that spends a measured $165.0$ nats per response, and none at the $600$ it is
-certified at; the sharper KL bound of $1.204$ nats would give $332$, and we quote the pathwise $192$. The
-same factor bounds a colluding scorer at $\log_2 n$ bits per response, of which a keyed-hash code
-realises $3.97$ of $6$ at $n=64$ (Appendix~\ref{app:channel}).
+\paragraph{What one certificate covers, and for how many queries.}\label{sec:compose}
+Table~\ref{tab:certificate} prices the exact window at its own position, whose probability under the
+anchor has a closed form. Reproducing any near-verbatim variant of it has none, and a rights-holder can
+bound it only by sampling the anchor: $N$ clean draws give $3/N$ at $95\%$, so selection certifies the
+event at $3n/N$ per response, $0.75\%$ at $n=64$ from the $25{,}600$ clean draws of
+Section~\ref{sec:leakage}, while a pathwise certificate of $K$ nats needs more than $3e^{K}$ draws to say
+anything. Max-divergence adds exactly under adaptive composition, so $m$ responses at $n$ draws each are
+certified at $m\log n$ however the queries were chosen (Appendix~\ref{app:compose}); per-query
+access-freeness does not compose in general \citep{cohen2025blameless}. For one response to reproduce the
+window the union bound gives $m\,n\,e^{-S_w}$, below $10^{-60}$ after $10^4$ queries at $n=64$, but a
+transcript can carry the window piecewise, and there the certificate survives only $38$ queries at $n=64$
+(Table~\ref{tab:certificate}). A scorer that colludes with the user can spend it: a keyed hash
+realises $3.97$ of the $6$ bits a response at $n=64$ can carry (Appendix~\ref{app:channel}). A cruder
+collusion, extending a memorised passage one token per query with the draw the memoriser ranks highest,
+reconstructs none of $100$ windows after $50$ queries at $n=64$, though the certificate ($207.9$ nats)
+is vacuous for $88$: the anchor's draws hold the true next token on $12.3\%$ of queries
+(Appendix~\ref{app:prefixext}). That is looseness, not safety; a deployer who cannot vet the scorer
+must cap each user's queries below $S/\log n$ for the shortest event it protects.

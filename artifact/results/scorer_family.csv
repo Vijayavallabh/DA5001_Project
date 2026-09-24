@@ -1,0 +1,6 @@
+scorer,quantity,value,n
+both,prompts whose served draw changes,406,500
+Qwen2.5-7B-Instruct,empty served texts,41,500
+Qwen2.5-7B-Instruct,median words served,75,500
+gemma-2-27b-it,empty served texts,71,500
+gemma-2-27b-it,median words served,34,500

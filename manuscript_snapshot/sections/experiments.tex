@@ -8,15 +8,13 @@
 
 \section{Experiments}\label{sec:experiments}
 
-\subsection{Setup}\label{sec:setup}
-\textbf{Pairs.} The meter runs at the anchor its authors evaluate, \texttt{TinyComma-1.8B}
+\paragraph{Setup.}\label{sec:setup} \textbf{Pairs.} The meter runs at the anchor its authors evaluate, \texttt{TinyComma-1.8B}
 \citep{he2026anchored,kandpal2025commonpile}, trained only on openly licensed text and sharing the risky
 model's tokenizer, which a token-level meter needs. The risky model is \texttt{Llama-3.1-8B-Instruct}
 \citep{grattafiori2024llama3}, served as a text continuer as in an earlier audit's released logs
 \citep{vijayavallabh2026audit} or through its chat template, or \texttt{Llama-3.1-70B} base, the authors'
 own pair. Their byte-level decoder, AnchoredByte \citep{hayase2026bytesampler}, runs unmodified at their
-recommended pair, Comma-7B with the $70$B base. Decoding is at temperature $1.0$ without repetition
-penalty, where the authors use $0.7$ and $1.1$, with $T_{\max}=200$. \textbf{Workload.} $500$ ordinary
+recommended pair, Comma-7B with the $70$B base. Decoding is at temperature $1.0$ without repetition penalty, and again at the authors' $0.7$ and $1.1$, with $T_{\max}=200$. \textbf{Workload.} $500$ ordinary
 prompts, none from the protected corpus: $200$ questions, $150$ WritingPrompts premises
 \citep{fan2018writingprompts} and $150$ FactScore biography requests \citep{min2023factscore}
 (Table~\ref{tab:promptset}). \textbf{Utility.} Each arm is judged against one fixed opponent, the
@@ -25,18 +23,20 @@ position is removed by construction and $0.5$ is parity with the risky model. Ju
 \texttt{Phi-3.5-mini-instruct} \citep{abdin2024phi3}, is pre-specified; judge~A,
 \texttt{Qwen2.5-7B-Instruct} \citep{qwen2025qwen25}, supplies selection's pointwise reward,
 $\log p(\text{Yes}) - \log p(\text{No})$ on one fixed template, and never scores an arm it selected.
-\textbf{Leakage.} Near-verbatim recall of $50$-token windows on $100$ held-out protected passages.
+\textbf{Leakage.} Near-verbatim recall of $50$-token windows on $100$ held-out protected passages: the
+fraction of the reference's words inside in-order near-verbatim spans of at least $20$ words
+\citep{ahmed2026extracting}.
 Intervals are $95\%$ paired bootstraps over prompts, and every band was fixed before its run
 (Appendix~\ref{app:protocol}).
 
-\subsection{Selection against the metered decoder}\label{sec:main-results}
+\paragraph{Selection against the metered decoder.}\label{sec:main-results}
 
 \begin{table}[t]
 \centering\footnotesize
 \caption{\textbf{Selection against the metered decoder, by how the risky model is served.}
 Order-averaged judge-B levels against one opponent per block, the risky model's own draw ($0.5$ is
-parity); $500$ prompts, temperature $1.0$, no repetition penalty. \emph{binds}: share of steps at which
-the budget is active; $K/S_w$: the certificate against a $50$-token window ($S_w = 159.8$ nats; $139.7$
+parity); $500$ prompts, temperature $1.0$ without repetition penalty except in the block at the authors' $0.7$ and $1.1$, whose $K/S_w$ is against the warped anchor's $S_w = 177.4$ nats. \emph{active}: share of the judged
+trajectories' decode steps whose served token is a strict blend of the two models; $K/S_w$: the certificate against a $50$-token window ($S_w = 159.8$ nats; $139.7$
 under Comma-7B), which excludes nothing at or above $1$. Last column: selection at $n=64$ ($3.175$ nats,
 a bound attained only for a tie-free score and unrepeated strings, Appendix~\ref{app:realisedkl}) minus the meter, paired over prompts, $95\%$ interval. Levels compare within a block only
 (Appendix~\ref{app:served}).}
@@ -44,47 +44,57 @@ a bound attained only for a tie-free score and unrepeated strings, Appendix~\ref
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
-risky model, as served & $k$ & binds & $K/S_w$ & meter & selection $-$ meter \\
+risky model, as served & $k$ & active & $K/S_w$ & meter & selection $-$ meter \\
 \midrule
 \multicolumn{6}{@{}l}{\emph{opponent: the $8$B-Instruct without its chat template; anchor alone $0.439$, selection $0.555$}} \\
-$8$B-Instruct, continuing text & $0.5$ & $48.1\%$ & $0.63$ & $0.436$ & $+0.1195$ $[+0.0955, +0.1435]$ \\
- & $1$ & $5.5\%$ & $1.25$ & $0.456$ & $+0.0995$ $[+0.074, +0.1245]$ \\
+$8$B-Instruct, continuing text & $0.5$ & $49.1\%$ & $0.63$ & $0.436$ & $+0.1195$ $[+0.0955, +0.1435]$ \\
+ & $1$ & $6.6\%$ & $1.25$ & $0.456$ & $+0.0995$ $[+0.074, +0.1245]$ \\
  & $10$ & $0.008\%$ & $12.5$ & $0.490$ & $+0.0655$ $[+0.040, +0.092]$ \\
 $70$B base (the authors' pair) & $0.5$ & $26.5\%$ & $0.63$ & $0.429$ & $+0.1265$ $[+0.103, +0.1495]$ \\
  & $1$ & $6.3\%$ & $1.25$ & $0.433$ & $+0.1225$ $[+0.098, +0.146]$ \\
  & $20$ & $0.00\%$ & $25.0$ & $0.451$ & $+0.1040$ $[+0.080, +0.1285]$ \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{at the authors' $0.7$ and $1.1$, other host; opponent: the $8$B's own draw there; anchor $0.312$, selection $0.427$}} \\
+$8$B-Instruct, continuing text & $0.5$ & $44.6\%$ & $0.56$ & $0.394$ & $+0.0325$ $[+0.008, +0.0565]$ \\
+ & $1$ & $16.4\%$ & $1.13$ & $0.441$ & $-0.0145$ $[-0.039, +0.010]$ \\
+ & $10$ & $0.040\%$ & $11.3$ & $0.500$ & $-0.0730$ $[-0.096, -0.0515]$ \\
+$70$B base (the authors' pair) & $0.5$ & $46.4\%$ & $0.56$ & $0.330$ & $+0.0970$ $[+0.073, +0.1215]$ \\
+ & $1$ & $20.2\%$ & $1.13$ & $0.319$ & $+0.1080$ $[+0.083, +0.133]$ \\
+ & $20$ & $0.00\%$ & $22.5$ & $0.370$ & $+0.0565$ $[+0.0305, +0.082]$ \\
 \midrule
 \multicolumn{6}{@{}l}{\emph{AnchoredByte, $k$ per byte, own pass: Comma-7B alone $0.4660$, selection at Comma-7B $0.6245$}} \\
 $70$B base with Comma-7B & $0.1$ & $18.4\%$ & $0.57$ & $0.4860$ & $+0.1385$ $[+0.1155, +0.1620]$ \\
  & $0.5$ & $2.8\%$ & $2.86$ & $0.5005$ & $+0.1240$ $[+0.1010, +0.1470]$ \\
  & $2$ & $0.6\%$ & $11.45$ & $0.4900$ & $+0.1345$ $[+0.1105, +0.1590]$ \\
 \midrule
-\multicolumn{6}{@{}l}{\emph{opponent: the $8$B-Instruct through its chat template; anchor alone $0.238$, selection $0.363$}} \\
-$8$B-Instruct, chat template & $1$ & $15.7\%$ & $1.25$ & $0.322$ & $+0.0410$ $[+0.012, +0.0705]$ \\
+\multicolumn{6}{@{}l}{\emph{opponent: $8$B-Instruct via its chat template; anchor $0.238$, selection $0.363$ ($^\dagger$other host: $0.2385$, $0.367$)}} \\
+$8$B-Instruct, chat template & $0.5^\dagger$ & $62.7\%$ & $0.63$ & $0.248$ & $+0.1195$ $[+0.0925, +0.1465]$ \\
+ & $1$ & $16.8\%$ & $1.25$ & $0.322$ & $+0.0410$ $[+0.012, +0.0705]$ \\
+ & $2^\dagger$ & $2.5\%$ & $2.50$ & $0.384$ & $-0.0170$ $[-0.046, +0.0125]$ \\
+ & $3^\dagger$ & $1.1\%$ & $3.75$ & $0.405$ & $-0.0380$ $[-0.068, -0.008]$ \\
+ & $5^\dagger$ & $0.23\%$ & $6.26$ & $0.427$ & $-0.0600$ $[-0.091, -0.029]$ \\
  & $10$ & $0.16\%$ & $12.5$ & $0.501$ & $-0.1380$ $[-0.167, -0.107]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{The sign is set by how the risky model is served, and the budget never pays for the
-difference} (Table~\ref{tab:served}). Where the risky model continues text, selection at $n=64$ is
-judged better than the meter at every budget. At $k=0.5$, the one budget whose certificate says anything
-about a $50$-token window, the meter binds on half its steps and is indistinguishable from its own anchor
-($-0.0030$ $[-0.0235, +0.018]$); at $k=10$ it serves the risky model's distribution at $99.99\%$ of steps
-and spends a measured $171.3$ nats. On the registered statistic, gains over each arm's own anchor-alone
-control, selection gains $+0.1015$ $[+0.0765, +0.1260]$ for a bound of $3.175$ nats and the meter
-$+0.0510$ $[+0.025, +0.076]$ for $171.3$ nats spent, a difference of $+0.0505$ $[+0.0155, +0.0860]$ at one
-fifty-fourth of the divergence. Handed the same reward on TriviaQA, the meter gains nothing
-(Table~\ref{tab:parity}). The authors' $70$B pair and their byte-level decoder repeat it at every
-budget, and at this temperature the $70$B base is itself judged no better than the anchor,
-$+0.019$ $[-0.004, +0.042]$. Served through its chat template the $8$B beats its own templateless text by
-$0.184$, and there the $k=10$ meter, which \emph{is} that model at $99.84\%$ of steps, wins by $0.138$.
-\textbf{Every cell the meter wins is certified at $K/S_w \ge 1.25$, that is at nothing, and wherever
-$K/S_w < 1$ the meter is judged indistinguishable from its own anchor.}
+\textbf{Where the meter's certificate says anything, selection matches or beats it; elsewhere the meter is the risky model} (Table~\ref{tab:served}). At $k=0.5$, the one budget whose certificate says anything about a
+$50$-token window, the meter blends on half its steps and is judged indistinguishable from its own anchor
+($-0.0030$ $[-0.0235, +0.018]$), while selection at $n=64$ improves on that anchor by $+0.1015$ $[+0.0765, +0.1260]$ for a bound of $3.175$ nats. At the authors' $0.7$ and $1.1$ the $8$B meter there gains $+0.0825$ $[+0.0605, +0.1045]$ over its anchor and the gains tie, meter minus selection $-0.0245$ $[-0.057, +0.0095]$, while at their $70$B pair the meter is its anchor again ($+0.018$ $[-0.0035, +0.040]$) and selection leads by $0.089$ $[0.0575, 0.122]$. From $k=1$ on the
+certificate is vacuous for a window and the comparison is with the risky model itself, served unchanged
+at $99.99\%$ of steps at $k=10$ for a measured $171.3$ nats. Continuing text at temperature $1.0$, that model loses: over its
+anchor-alone control the meter gains $+0.0510$ $[+0.025, +0.076]$ at $k=10$, and the gains over each
+arm's own control differ by $+0.0505$ $[+0.0155, +0.0860]$, at one fifty-fourth of the divergence, and by more at the authors' $70$B pair, whose base model is at this
+temperature judged no better than the anchor, $+0.019$ $[-0.004, +0.042]$; at the authors' $0.7$ and $1.1$ the $8$B wins instead, $-0.081$ $[-0.113, -0.049]$, while their $70$B, now $+0.0585$ over the anchor, still loses, by $+0.0485$ $[+0.0145, +0.082]$ at $k=20$. Served through its chat
+template the $8$B beats its own templateless text by $0.184$, and the $k=10$ meter, which \emph{is} that
+model at $99.84\%$ of steps, wins by $0.138$; the meter's interval first lies above selection's at $k=3$,
+whose $K/S_w = 3.75$ excludes nothing about a window, after a tie at $k=2$; that model gains $+0.272$ over the anchor where selection
+gains $+0.1065$, so selection closes less than half the gap (Appendix~\ref{app:tokenswap}). Handed the
+same reward on TriviaQA, the meter gains nothing (Table~\ref{tab:parity}).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{h2h_forest.pdf}
+\includegraphics[width=0.86\textwidth]{h2h_forest.pdf}
 \caption{\textbf{The head-to-head difference under every perturbation we ran.} Each row is selection's
 order-averaged gain at $n=64$ over its own anchor-alone control minus the meter's at $k=10$ (last block:
 the named $k$, rate-matched to bind), paired over prompts, $95\%$ interval, all on the repaired
@@ -95,63 +105,43 @@ fixed Qwen2.5-Instruct models, each stronger than the committed one (Appendix~\r
 \label{fig:h2h}
 \end{figure}
 
-\textbf{The difference survives fresh draws, judges and controls, and is scoped by the opponent and the
-task} (Figure~\ref{fig:h2h}). Re-drawing selection, then every sampled arm, moves it by at most $0.0055$;
-five of six judges exclude zero, and the sixth, \texttt{Mixtral-8x7B}, straddles it at $-0.0015$. On the recorded text it replicates under four judges and is bounded below $0.03$ under the one clean frontier judge, whose interval contains zero at a half-width of $0.0247$ over $850$ prompts (Appendix~\ref{app:h2hrepeat}). It
-holds under a length control and with empty completions removed, both checks post hoc. It does not hold
-against a stronger fixed opponent: from \texttt{Qwen2.5-1.5B-Instruct} upward every interval covers zero.
-And it is a property of prefix completion: it holds on our prompts, on public-domain books and on
-BookMIA's unseen half, is unresolved on CoTaEval's news questions and MT-Bench, and reverses on
-AlpacaEval, where the meter wins by $0.0329$ (Appendix~\ref{app:workload}).
+\textbf{At $k=10$ the difference survives fresh draws and most judges, and not a stronger opponent,
+instruction following, empty answers scored as losses or a scorer from another family} (Figure~\ref{fig:h2h}). Re-drawing selection,
+then every sampled arm, moves it by at most $0.0055$; five of six judges exclude zero, and the sixth,
+\texttt{Mixtral-8x7B}, straddles it at $-0.0015$; on the recorded text the reversal replicates under four
+judges and is bounded below $0.03$ under the one clean frontier judge, whose interval over $850$ prompts,
+$+0.0226$ $[-0.0018, +0.0476]$, has half-width $0.0247$. The largest reading, $+0.1210$, is \texttt{Qwen2.5-14B}'s, the scorer's family; without the two
+Qwen judges three of four exclude zero. Scored instead by \texttt{gemma-2-27b-it}, which serves
+shorter drafts (median $34$ words against $75$) and more empty ones ($71$ against $41$), selection gains
+$+0.066$ $[+0.042, +0.0905]$ and the difference is $+0.015$ $[-0.0185, +0.0485]$ (pre-registered): the
+headline depends on the scorer, not only on the judge. The reward prefers empty drafts and the judge scores an empty
+answer near parity: counting empty answers as losses leaves $+0.0155$ $[-0.0245, +0.0555]$, since selection
+serves $41$ empty texts and the meter none, while a rule that never serves an empty draw, still certified
+at $\log n$, keeps $+0.056$ $[+0.0195, +0.093]$ (Appendix~\ref{app:empties}). From
+\texttt{Qwen2.5-1.5B-Instruct} upward every interval covers zero, and the difference belongs to prefix
+completion: it holds on our prompts, public-domain books and BookMIA's unseen half, is unresolved on
+CoTaEval's news questions and MT-Bench, and reverses on AlpacaEval, where the meter wins by $0.0329$
+(Appendix~\ref{app:workload}).
 
-\subsection{Selection against its own anchor}\label{sec:breadth}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.85\textwidth]{figures/selection_breadth_forest.pdf}
-\caption{\textbf{Selection against its own anchor.} Gain over \emph{that arm's own} anchor-alone draw,
-single-order, $95\%$ interval, judged on the repaired text; right, the whole certificate in nats. Open
-markers miss the admission criterion of at most $5\%$ empty completions on the true generations
-(TinyComma $14.6\%$ and $12.8\%$, Comma-7B $18.4\%$, Comma-1T $31.6\%$); on non-empty prompts their gains
-move by at most $0.012$. MT-Bench's $80$ items resolve nothing at a half-width of $0.08$, and the
-pointwise reward falls with $n$ on TriviaQA (Appendix~\ref{app:judgefree}).}
-\label{fig:breadth}
-\end{figure}
-
-Selection needs only its safe model, so it runs at every openly licensed anchor
-\citep{kandpal2025commonpile,langlais2026commoncorpus,bommarito2025kl3m}; the open-\emph{data} families
-are excluded because they fail the vetting check of Section~\ref{sec:leakage}, which makes Comma-7B the
-largest admissible anchor (Figure~\ref{fig:breadth}). At $n=8$ the gain excludes zero at four of six
-anchors in two families, largest at Comma-7B, $+0.126$ $[+0.087, +0.164]$, and does not track the
-anchor's own level ($\rho = +0.543$ on the two-judge mean). \textbf{With no judge}, majority vote over
-Comma-7B lifts GSM8K exact match from $0.320$ to $0.546$ at $n=32$ ($3.47$ nats), $3.4\times$ the
-pointwise reward's best lift, and lifts TriviaQA and MMLU; on TriviaQA the $7$B pointwise reward instead
-falls with $n$, so the scorer binds before the mechanism does. The ceiling is the anchor: on TriviaQA the
-meter reaches $0.618$ against selection's $0.190$, but only at $k=20$, where it \emph{is} the risky model,
-certified at $480$ nats for a $24$-token answer (Figure~\ref{fig:judgefree}, Table~\ref{tab:judgefree}).
+\paragraph{Selection against its own anchor.}\label{sec:breadth} Selection runs at every openly licensed
+anchor \citep{kandpal2025commonpile,langlais2026commoncorpus,bommarito2025kl3m}; the open-\emph{data}
+families fail the vetting check of Section~\ref{sec:leakage}, which makes Comma-7B the largest admissible
+anchor. At $n=8$ its gain excludes zero at four of six anchors in two families, largest at Comma-7B,
+$+0.126$ $[+0.087, +0.164]$ (Figure~\ref{fig:breadth}), and does not track the anchor's own level
+($\rho = +0.543$ on the two-judge mean). \textbf{With no judge}, majority vote over Comma-7B
+lifts GSM8K exact match from $0.320$ to $0.546$ at $n=32$ ($3.47$ nats), $3.4\times$ the pointwise reward's
+best lift, and lifts TriviaQA and MMLU, where the $7$B pointwise reward falls with $n$ on TriviaQA: the
+scorer binds before the mechanism does (Figure~\ref{fig:judgefree}, Table~\ref{tab:judgefree}).
 
 \subsection{Leakage}\label{sec:leakage}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.88\textwidth]{figures/safety_envelope.pdf}
-\caption{\textbf{Selection reproduces no protected passage, and where its premise fails it amplifies
-the anchor by a small constant, not by $n$.} \textbf{(a)} Near-verbatim recall, $50$-token windows,
-$100$ held-out passages. Nine arms (six anchors, a paraphrase event, an attacker scoring the $n$ draws by
-the \emph{memorising model's own likelihood}, and \texttt{Llama-3.1-70B}) read $0.0000$ at every $n$ to
-$64$ and at $n=256$, on every passage. Dashed: the memoriser alone on the same passages and seeds,
-$0.3925$ mean and $0.8154$ maximum, and the $70$B, which memorised the novel in pre-training, at $0.2475$
-unaided, reproducing two passages in full. \textbf{(b)} Twelve anchors fine-tuned on the passages, attacker
-selecting at $n=64$: the certificate permits multiplying the anchor's own rate by $64$; the realised factor
-is $1.0$ to $7.0$ (filled) and $1.0$ to $3.0$ on a second, independent draw (hollow).}
-\label{fig:safety}
-\end{figure}
 
 Proposition~\ref{prop:selection} bounds any event by $n$ times the anchor's own rate, so a scorer can
 only amplify leakage the anchor already has. Against an attacker who scores the $n$ draws by the
 memorising model's own likelihood, and against a paraphrase event, near-verbatim recall is $0.0000$ at
-every anchor, at every $n$ to $64$ and at $n=256$ (Figure~\ref{fig:safety}a); on $100$ passages the zero bounds the
-per-passage rate below $3.0\%$ at $95\%$. The zero verifies the anchor, not the mechanism: all six
+every anchor, at every $n$ to $64$ and at $n=256$ (Figure~\ref{fig:safety}a), where the memoriser alone
+reads $0.3925$ mean and $0.8154$ maximum on the same passages and the $70$B, unaided, $0.2475$,
+reproducing two passages in full; on $100$ passages the zero bounds the per-passage rate below $3.0\%$
+at $95\%$. The zero verifies the anchor, not the mechanism: all six
 anchors read $0$ on a vetting screen at every prefix length from $20$ to $200$ tokens, while the
 open-data \texttt{OLMo-2-7B} and \texttt{OLMo-2-13B} leak on up to $2$ and $6$ of $50$ passages
 \citep{olmo2024olmo2} (Appendix~\ref{app:vetting}). Breaking the premise on purpose, with anchors
@@ -161,37 +151,17 @@ floor under it.
 
 \subsection{Cost}\label{sec:cost}
 
-\begin{table}[t]
-\centering\footnotesize
-\caption{\textbf{What selection at $n=64$ costs against one metered response}, $200$ new tokens. The
-unbatched price is paid in draws: on a server that runs only the anchor the reward pass is $9.3\%$ of
-selection's clock. Batched, one request's $64$ draws run as one decode and never touch the risky model,
-which the meter runs at every step. Matched compute: the $n$ whose deployable draw cost equals one
-metered decode (Appendix~\ref{app:sel-cost}).}
-\label{tab:cost}
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}lr@{}}
-\toprule
-price model & selection $\div$ meter \\
-\midrule
-forward passes, parameters $\times$ tokens & $61.3\times$ \\
-wall-clock, anchor-only server, draws unbatched & $21.8\times$ \\
-wall-clock per request, draws batched: $8$B pair / $70$B pair & $0.51\times$ / $0.22\times$ \\
-\quad against AnchoredByte, Comma-7B $+$ $70$B & $0.061\times$ \\
-\midrule
-matched compute: $n=2$ at $0.68\times$, judged gain against the meter & $-0.0330$ $[-0.0625, -0.0025]$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Selection pays in draws (Table~\ref{tab:cost}). Counted in forward passes, $n=64$ costs $61.3\times$ the
+Selection pays in draws (Table~\ref{tab:cost}, Appendix~\ref{app:sel-cost}). Counted in forward passes, $n=64$ costs $61.3\times$ the
 meter, most of it the reward model's prefill; on the clock the reward pass is $9.3\%$ and the draws are
-the price, so the lever is $n$ and not the scorer. Unbatched, on a server that runs only the anchor, the
-draws cost $21.8\times$ a metered decode; that is the throughput price. Batched, a request is one decode
-loop that never runs the risky model, and selection serves it in $0.22\times$ the meter's time at the
-authors' $70$B pair and $0.51\times$ at the $8$B one. \textbf{Held to the meter's own compute,
-selection loses}: the matched cell is $n=2$ at $0.68\times$, gaining $-0.0330$ $[-0.0625, -0.0025]$
-against the meter. A $3.9\times$ larger safe model served alone is no substitute: it gains $+0.015$
-$[-0.0065, +0.0365]$ over the small one, a seventh of selection's gain, at $86\times$ less compute
-(Appendix~\ref{app:biggeranchor}). Majority vote has no scorer at all, $5.75\times$ the meter's forward
-passes at $n=32$, and where an answer is checkable it dominates the pointwise reward at every scorer up to $7.6$B --- but not at $14$B, which overtakes four draws of it on both tasks and every $n$ on TriviaQA (Appendix~\ref{app:scorerfree}).
+the price, so the lever is $n$ and not the scorer. On a server that runs only the anchor the draws cost
+$21.8\times$ a metered decode, the throughput price. Batched, a request is one decode loop that never runs
+the risky model, $0.22\times$ the meter's time at the authors' $70$B pair, $0.51\times$ at the $8$B one and
+$0.061\times$ against their byte-level decoder;
+a meter run as speculative decoding, the anchor drafting, might narrow that, which we did not try.
+\textbf{Held to the meter's own compute, selection loses}: the matched cell is $n=2$ at $0.68\times$,
+gaining $-0.0330$ $[-0.0625, -0.0025]$ against the meter, and on TriviaQA it reaches $0.112$ where the
+meter, vacuous at $k=20$, reaches $0.618$. A $3.9\times$ larger safe model served alone is no substitute:
+it gains $+0.015$ $[-0.0065, +0.0365]$ over the small one (Appendix~\ref{app:biggeranchor}). Majority
+vote has no scorer, costs $5.75\times$ the meter's forward passes at $n=32$, and on checkable answers
+dominates the pointwise reward at every scorer up to $7.6$B --- but not at $14$B, which overtakes four
+draws of it on both tasks and every $n$ on TriviaQA (Appendix~\ref{app:scorerfree}).

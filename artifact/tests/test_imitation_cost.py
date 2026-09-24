@@ -74,7 +74,9 @@ def test_the_binding_fraction_the_proposition_leans_on_is_measured():
     """beta is measured, not assumed, and the body quotes it at the two ends and at k=3."""
     # v10 names beta in words: "the share of steps at which it binds falls from ..."
     body = _norm(TEX)
-    m = re.search(r"(?:\$\\beta\$|binds) falls from \$([\d.]+)\$ at \$k=([\d.]+)\$ to \$([\d.]+)\$ at\s*"
+    # v11: "the share of steps its bucket constrains falls from ...", since Table 3's "active" column
+    # counts strict blends only and beta also counts the tokens the anchor writes outright.
+    m = re.search(r"(?:\$\\beta\$|binds|constrains) falls from \$([\d.]+)\$ at \$k=([\d.]+)\$ to \$([\d.]+)\$ at\s*"
                   r"\$k=(\d+)\$ and \$([\d.]+)\$ at \$k=(\d+)\$", body)
     assert m, "the beta sentence has moved"
     lo_b, lo_k, mid_b, mid_k, hi_b, hi_k = m.groups()

@@ -27,7 +27,9 @@ instruction-tuned model's $0.8278$ at $k=3$, where we had predicted it higher. T
 \begin{table}[h]
 \centering\footnotesize
 \caption{\textbf{Both factors of Proposition~\ref{prop:imitation}, $16{,}500$ logged trajectories at the
-audited pair.} $\beta$: fraction of steps at which the bucket binds; imitation rate: mean
+audited pair.} $\beta$: fraction of steps at which the bucket constrains the served law, strict blends
+plus tokens the anchor writes outright, averaged per trajectory (strict blends alone, Table~\ref{tab:served}'s
+\emph{active}, are $0.053$ of steps at $k=1$ against $\beta = 0.2057$); imitation rate: mean
 $D_{\mathrm{KL}}(p_{r,t}\|p_{s,t})$ over the slack steps; realised rate and spend: what the decoder
 actually incurs, a realisation throughout; $K = kT_{\max}$, $T_{\max} = 200$, the published cap. The last
 column regresses cumulative spend on the step index within a trajectory.}
@@ -70,6 +72,20 @@ Llama-3.2-3B-Inst., 8B-Inst. & $0.3010$ & $0.3034$ & $1.008$ & $0.0013$ & $60.6$
 \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{What a windowed meter would spend.}\label{app:windowlr}
+Section~\ref{sec:uncovered} asks what a meter certifying every $50$-token window would pay to serve the
+risky model. The per-step log of the risky model's own draws records $p_r$ and $p_s$ of every served
+token, so the realised log-ratio $\sum_t \log(p_{r,t}(y_t)/p_{s,t}(y_t))$ of every window is a sum over the
+log: $1{,}500$ trajectories on the $500$ ordinary prompts, $299{,}636$ steps before end-of-text,
+$226{,}136$ windows (\texttt{results/\allowbreak window\_\allowbreak logratio.csv}). Its median is $40.3$
+nats, its $90$th and $99$th percentiles $63.9$ and $92.5$, its maximum $188.7$; the per-step KL summed
+over the same windows, what serving $p_r$ costs in expectation, reads $40.7$, $59.6$ and $85.8$. A
+trajectory's largest window has median $63.2$ nats and exceeds $125.3$ on $1\%$ of trajectories, and
+$0.011\%$ of windows reach the protected window's median surprisal of $159.8$. A sliding-window meter
+with a budget near $125$ nats would rarely bind on ordinary text and would certify the median protected
+window at $e^{125-159.8}$; it certifies no event whose probability under the anchor must be sampled
+(Section~\ref{sec:compose}).
 
 \paragraph{Where extraction begins.}
 Table~\ref{tab:onset} gives the nine pairs Figure~\ref{fig:horns}(a) plots. Every pair clears the admission
@@ -228,6 +244,26 @@ Common Pile   & $1.8 \to 7$B    & $-28.6\%$ & $-12.0\%$ & $4.07 \to 5.02$ & $16/
 \end{table}
 
 \section{The four repairs, in full}\label{app:repairs}
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{\textbf{The four repairs a per-token meter has left}, each measured at the audited pair with
+bands fixed in advance (Appendix~\ref{app:repairs}). \citet{he2026anchored} ablate the first and last
+themselves, as their $\infty$-R\'enyi decoder and their Global variant.}
+\label{tab:repairs}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+repair & measured at the audited pair, $k=3$ unless stated & result \\
+\midrule
+sharper charge ($\alpha{:}\,1 {\to} 8$) & oracle recall $0.0965 \to 0.0012$; binds on $99.6\%$ of steps vs $0.4\%$ & the anchor \\
+lower cap ($k = 0.5$) & no judge tells it from its anchor ($-1.03\sigma$, $+1.52\sigma$; $600$ pairs) & the anchor \\
+better schedule & $3$ to $13\%$ more fidelity at $k \le 1$, under $1.4\%$ at $k=3$, same spend & percent \\
+budget up front & $+0.0545$ $[+0.0315, +0.0775]$ at $64$ nats, selection $+0.1045$ at $\log 64$ & loses \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 
 \paragraph{A sharper charge.}
 Table~\ref{tab:orders} runs four R\'enyi orders at the authors' $k=3$. Every one publishes $K=3T$ and is

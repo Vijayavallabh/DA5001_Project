@@ -48,6 +48,10 @@ class AuditConfig:
     # demand D_KL(p_r,t || p_s,t) reaches tau nats, otherwise serve the anchor and keep the nats.
     spend_threshold: "float | None" = None
     temperature: float = 1.0
+    # feat-195: He et al. decode books at temperature 0.7 with a repetition penalty of 1.1 and apply
+    # both to BOTH logit vectors before the solve (their App. B; a_patch/factory.py decode loop).
+    # 1.0 is no penalty, so every run on record is unchanged.
+    repetition_penalty: float = 1.0
     max_new_tokens: int = 200
     delta: float = 0.05
     num_classes: int = 6
@@ -127,6 +131,7 @@ class H1AuditRunner:
         return GenerationConfig(
             do_sample=not self.config.greedy,
             temperature=self.config.temperature,
+            repetition_penalty=self.config.repetition_penalty,
             max_new_tokens=self.config.max_new_tokens,
             num_return_sequences=1,
             num_beams=1,
@@ -276,6 +281,8 @@ class H1AuditRunner:
                     "seed": seed,
                     "trajectory_id": trajectory_id,
                     "chat_template": self.config.use_chat_template,
+                    "temperature": self.config.temperature,
+                    "repetition_penalty": self.config.repetition_penalty,
                     "constraint": self.config.constraint,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 },
@@ -481,6 +488,7 @@ def parse_args() -> AuditConfig:
     p.add_argument("--seeds", nargs="+", type=int, default=[42, 43, 44])
     p.add_argument("--prefix-n", type=int, default=5)
     p.add_argument("--temperature", type=float, default=1.0)
+    p.add_argument("--repetition-penalty", type=float, default=1.0, help="feat-195: applied to both logit vectors before the solve, as He et al. do; 1.0 (the default) is no penalty")
     p.add_argument("--max-new-tokens", type=int, default=200)
     p.add_argument("--delta", type=float, default=0.05)
     p.add_argument("--factscore-field", default="factscore_prompt", choices=["factscore_prompt", "hundredw_prompt", "around_100", "one_fact_prompt", "prompt_text"])
@@ -539,7 +547,8 @@ def parse_args() -> AuditConfig:
         seeds=tuple(args.seeds), prefix_n=args.prefix_n, use_prefix_debt=not args.no_prefix_debt,
         initial_bank=args.initial_bank,
         spend_threshold=args.spend_threshold,
-        temperature=args.temperature, max_new_tokens=args.max_new_tokens, delta=args.delta,
+        temperature=args.temperature, repetition_penalty=args.repetition_penalty,
+        max_new_tokens=args.max_new_tokens, delta=args.delta,
         num_classes=args.num_classes, verbose=args.verbose, trust_remote_code=args.trust_remote_code,
         device=args.device, batch_size=args.batch_size, length_bucket_width=args.length_bucket_width,
         device_map=args.device_map, dtype=args.dtype, parallelize=args.parallelize,

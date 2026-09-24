@@ -48,7 +48,7 @@ def char_offsets(tok, text, n_tok):
 
 
 @torch.no_grad()
-def token_nats(model, tok, prefix, target, device, temperature=1.0):
+def token_nats(model, tok, prefix, target, device, temperature=1.0, repetition_penalty=1.0):
     """Per-token surprisal of `target` given `prefix`, plus the cumulative character count.
 
     The target is tokenized on its own (add_special_tokens=False) so that the character offsets
@@ -58,6 +58,12 @@ def token_nats(model, tok, prefix, target, device, temperature=1.0):
     logit vectors before its solve (He et al., App. B). Lowering it sharpens the model, which
     raises its surprisal of text it does not know: that is the lever used to move s(x) across a
     range while holding the model pair, and so its memorisation, fixed. Default 1.0 is a no-op.
+
+    `repetition_penalty` is applied BEFORE the temperature, as the decoder's logits processor runs
+    before its warper (a_patch/factory.py, decode loop, HF RepetitionPenaltyLogitsProcessor): every
+    token already in the context (prefix and the target so far) has its logit divided by the
+    penalty if positive and multiplied by it if negative. feat-195 needs the anchor at the authors'
+    0.7 and 1.1, since its certificate is relative to that warped anchor. Default 1.0 is a no-op.
     """
     p_ids = tok(prefix).input_ids if prefix else [tok.bos_token_id or tok.eos_token_id]
     t_ids = tok(target, add_special_tokens=False).input_ids
@@ -65,6 +71,12 @@ def token_nats(model, tok, prefix, target, device, temperature=1.0):
         return [], []
     ids = torch.tensor([p_ids + t_ids], device=device)
     logits = model(ids).logits[0, :-1].float()          # row j predicts ids[j+1]
+    if repetition_penalty != 1.0:
+        seen = torch.zeros_like(logits, dtype=torch.bool)
+        for j in range(logits.shape[0]):                  # ids[0, j] is context for rows >= j
+            seen[j:, ids[0, j]] = True
+        pen = torch.where(logits < 0, logits * repetition_penalty, logits / repetition_penalty)
+        logits = torch.where(seen, pen, logits)
     if temperature != 1.0:
         logits = logits / temperature
     logp = torch.log_softmax(logits[len(p_ids) - 1:], dim=-1)
@@ -161,7 +173,11 @@ def main():
     ap.add_argument("--delta", type=float, default=0.0, help="initial bucket debt in nats (0 = pure work property)")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--temperature", type=float, default=1.0, help="decoding temperature of the anchor")
+    ap.add_argument("--repetition-penalty", type=float, default=1.0, help="applied before the temperature")
     a = ap.parse_args()
+    assert not os.path.exists(a.out) or (a.temperature == 1.0 and a.repetition_penalty == 1.0), \
+        f"{a.out} exists; a warped-anchor pass writes a new file"
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -172,7 +188,8 @@ def main():
     print(f"[regimes] {a.model}: {len(works)} works", flush=True)
     rows = []
     for i, w in enumerate(works):
-        nats, chars = token_nats(model, tok, w["prefix"], w["target"], device)
+        nats, chars = token_nats(model, tok, w["prefix"], w["target"], device,
+                                 temperature=a.temperature, repetition_penalty=a.repetition_penalty)
         r = regimes(nats, chars, a.c_use, a.delta)
         if r is None:
             continue

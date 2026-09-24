@@ -19,7 +19,7 @@ defence & what the guarantee is about & measured here \\
 \midrule
 anchored decoding \citep{he2026anchored} & the served law against a safe model, charged per token ($K = kT$) & audited throughout \\
 selection anchoring (this paper) & the served law against a safe model, charged once per draw (pathwise, $\log n$) & Sections~\ref{sec:method} and~\ref{sec:experiments} \\
-CP-$\Delta$, CP-$k$, CP-Fuse \citep{vyas2023provable,abad2025cpfuse} & the served law against shard models, per query, given a disjoint split & leakage (below) \\
+CP-$\Delta$, CP-$k$ \citep{vyas2023provable}, CP-Fuse \citep{abad2025cpfuse} & the served law against shard models, per query (CP-$k$ once per output), given a disjoint split & leakage (below) \\
 $n$-gram blocklist, MemFree \citep{ippolito2023preventing} & listed $n$-grams are never completed; no bound on the served law & leakage and utility (below) \\
 TokenSwap \citep{prashant2025tokenswap} & a memorised string's probability decays in its length & leakage and utility (below) \\
 TRBS \citep{fu2026duplicate} & beams reranked against an index of the corpus & not measured (a code method) \\
@@ -55,7 +55,7 @@ never abstain, and pay in draws. Both certificates inherit what their safe model
 checkable in advance by vetting (Appendix~\ref{app:vetting}). A deployer with a vetted anchor and several
 risky models could run both.
 
-\paragraph{TokenSwap, measured: cheaper than selection and just as suppressive.}
+\paragraph{TokenSwap, measured: cheaper than selection and just as suppressive.}\label{app:tokenswap}
 TokenSwap \citep{prashant2025tokenswap} substitutes the probabilities of high-frequency grammatical tokens
 from a small auxiliary model and proves that a memorised sequence's probability decays exponentially in its
 length; TRBS \citep{fu2026duplicate} reranks beams against an index of a code corpus. Both guarantee
@@ -64,7 +64,10 @@ TokenSwap from its Algorithm~1 with the published $110$-word $G$ on our $100$ pr
 ordinary prompts. It suppresses completely (recall $0.0000$, ROUGE-L $\ge 0.5$ on $0$ of $100$ and $\ge 0.3$
 on $0$, against $45$ and $69$ for the memoriser) and, judged against its own rule-off control, costs
 $-0.1040$ $[-0.1255, -0.0820]$, where selection at $n=64$ costs $-0.1655$ $[-0.2000, -0.1320]$: TokenSwap is
-ahead of selection by $+0.0615$ $[+0.0285, +0.0950]$. \textbf{The mechanism this paper is about is the most
+ahead of selection by $+0.0615$ $[+0.0285, +0.0950]$. The rule-off control is the risky model served
+through its chat template, judged against the committed templateless opponent, so selection's cost here
+is its distance from that model, which gains $+0.272$ over the anchor to selection's $+0.1065$: less than
+half the gap, as in Table~\ref{tab:served}'s chat-template block. \textbf{The mechanism this paper is about is the most
 expensive of the three and the only one that publishes a bound on the served law.} The margin depends on
 the auxiliary: at \texttt{DistilGPT-2}, the $82$M model its authors use, the two tie ($-0.0325$
 $[-0.0645, +0.0005]$). And the suppression is fragile in a way $|G|$ does not reveal: with
@@ -81,7 +84,8 @@ $0.000\%$ at $758$ passages, $0.140\%$ at $4{,}935$ and $0.140\%$ again at $9{,}
 doubled to $2.24$M $n$-grams ($0.000\%$, $0.147\%$, $0.147\%$ at $n=8$). Run as an exact rejection-sampling
 decoder against the memoriser on its own training split, it binds on $1.035\%$ of steps and takes recall
 from $0.4192$ to $0.0201$; on ordinary prompts it fires on $0$ of $850$, so its judged utility is the
-unconstrained model's exactly ($+0.272$ $[+0.247, +0.2965]$ with and without it). We predicted it would leak
+unconstrained model's exactly ($+0.272$ $[+0.247, +0.2965]$ over the anchor with and without it, the
+chat-templated model's gain). We predicted it would leak
 the non-literal event and it did not: $0$ of $100$ passages reach ROUGE-L $\ge 0.5$ under the rule, against
 $52$ without it. On a \emph{listed} work the blocklist costs no utility, which selection cannot approach,
 and it does not suppress more ($0.0201$ against its own $0.4192$; selection $0.0000$ against $0.3925$). The
@@ -91,7 +95,7 @@ exactly. Selection costs $21.8\times$ a metered decode in a server that runs onl
 (Appendix~\ref{app:anchoronly}); a blocklist costs a hash lookup. A deployer can run both.
 
 \paragraph{CP-Fuse, measured on leakage.}\label{app:cpfuse}
-We rebuilt CP-$\Delta$/CP-$k$ fusion from \citet{abad2025cpfuse}'s description as two LoRA copies of the
+We rebuilt CP-Fuse from \citet{abad2025cpfuse}'s description as two LoRA copies of the
 risky model, each fine-tuned on one of two disjoint halves of the protected passages and fused by the
 balancing rule. Each shard reproduces its own half (recall $0.6905$ and $0.6965$) and not the other's
 ($0.0000$); the fusion reproduces neither, $0.0000$ from a single query and $0.0209$ and $0.0199$ under

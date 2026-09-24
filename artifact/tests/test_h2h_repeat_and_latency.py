@@ -9,6 +9,7 @@ substring of the section source.
 The latency test also guards the claim the measurement overturned. The FLOP model says the reward
 model is the price; the clock says it is 9.3% of it. Anywhere the manuscript still asserted the
 FLOP version unqualified, a reader would take away the opposite of what was measured."""
+import re
 import csv
 
 from tests.manuscript import tex
@@ -58,7 +59,8 @@ def test_all_three_repeats_confirm_or_the_headline_is_not_allowed_to_stand():
         assert "stand as written" not in body and "All three new estimates are positive" not in body
         assert "survives fresh draws" not in main, "Section 4 claims a replication the data refuses"
     else:
-        assert "The difference survives fresh draws" in main
+        # v11: "At $k=10$ the difference survives fresh draws and most judges, and not ..."
+        assert re.search(r"[Tt]he difference survives fresh draws", main)
 
 
 def test_the_latency_table_rounds_from_serving_latency_csv():

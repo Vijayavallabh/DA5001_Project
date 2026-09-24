@@ -115,9 +115,13 @@ def test_the_second_horn_is_stated_as_a_shape_and_selection_actually_satisfies_i
     # and the introduction must name the second horn as sparsity and call it a shape, not an
     # impossibility result -- the caveat that keeps "cannot be repaired" from reading as a bound on
     # every causal policy.
-    assert "sparse" in intro and "Vacuous, or sparse" in intro, \
+    # v11 (2026-09-24): the introduction names the two options in its contributions list ("vacuous
+    # from $k = s(x)$ if it grows with the sequence, sparse if bounded"); what is protected is that
+    # the bounded option is named as sparsity and never as an impossibility or as triviality.
+    assert re.search(r"[Vv]acuous[^.]{0,120}sparse", intro), \
         "the introduction no longer names the second horn as sparsity"
-    assert "shape" in intro, "iclr_intro.tex no longer calls the second horn a shape"
+    assert not re.search(r"cannot be repaired|impossib|trivial", intro), \
+        "the introduction states the bounded option as an impossibility again"
     # Prop 3 applied at selection's own budget must be a real constraint (fewer steps than T)
     assert kl64 / 1.0 < 204, "log-n budget no longer implies O(1) high-divergence steps at T=204"
 
@@ -192,12 +196,13 @@ def test_proposition_four_bounds_over_slack_steps_and_carries_the_rate_function_
     # meter pays the imitation cost") and a guard keyed on a title retires on the first reword.
     i = txt.rindex(r"\begin{proposition}", 0, txt.index(r"\label{prop:imitation}"))
     stmt = txt[i: txt.index(r"\end{proposition}", i)]
-    assert r"\mathcal{S}" in stmt, "Proposition 4 no longer restricts its bound to the slack steps"
-    assert r"\sum_{t \in \mathcal{S}}" in stmt, \
-        "Proposition 4's sum is not over the slack set the proof derives it for"
-    assert "bounded away from $0$" in stmt, \
-        "Proposition 4 dropped the condition that slack steps carry divergence bounded away from 0"
-    assert "not vanishing in $T$" in stmt or "O(1)$" in stmt, \
+    # v11 (2026-09-24, sixth round): restated with I_T, the imitation KL summed over the SLACK steps,
+    # a linear rate gamma T for it, and the proviso made explicit in the bound as log(1/pi), the
+    # log-probability that the safe model attains the utility's maximum. Same three safeguards.
+    assert "slack" in stmt and "$I_T$" in stmt, "Proposition 4 no longer restricts its bound to the slack steps"
+    assert r"\ge \gamma T" in stmt, \
+        "Proposition 4 dropped the condition that slack steps carry divergence at a rate in T"
+    assert r"\log(1/\pi)" in stmt and r"\pi > 0" in stmt, \
         "Proposition 4 dropped the rate-function proviso its Omega(T) conclusion needs"
     # v10 (2026-09-24): the sentence saying the measured utility satisfies the proviso moved from
     # after the statement in Section 3 to the end of the proposition's proof in Appendix A.
@@ -348,7 +353,9 @@ def test_the_zero_reproduction_claim_carries_its_anchor_caveat_where_it_is_first
     assert amp and max(amp) > 1.0, "no contaminated anchor amplifies; the caveat would be moot"
 
     a = _abstract()
-    i = a.index("no protected passage")
+    # v11: "Its leakage, zero at any $n \le 64$ or at $256$, is relative to the anchor, which must be
+    # vetted" (v10: "reproduces no protected passage ... a zero relative to the anchor").
+    i = next(a.find(k) for k in ("no protected passage", "leakage, zero", "zero leakage") if a.find(k) >= 0)
     w = a[i: i + 260]
     assert "relative" in w, "the abstract states zero reproduction without the relative caveat"
     assert "anchor" in w, "the abstract's caveat does not name what the bound is relative to"

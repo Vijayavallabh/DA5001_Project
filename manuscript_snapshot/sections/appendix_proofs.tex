@@ -22,19 +22,33 @@ so Proposition~\ref{prop:selection} gives $q_j(y \mid \mathcal{H}_{j-1}) \le n\,
 \]
 hence $D_\infty(Q \,\|\, P_s) \le m \log n$ exactly, with no slack from adaptivity. A per-query
 access-freeness guarantee does not compose this way in general \citep{cohen2025blameless}, and a
-per-token meter composes to $mkT$, growing in the length of every response.
+per-token meter composes to $mkT$, growing in the length of every response. Under the $400$-nat per-user cap
+an earlier audit proposes \citep{vijayavallabh2026audit}, about half the median protected target's $849$
+nats, selection admits $192$ responses at $n=8$ at the pathwise charge, and the sharper KL bound of
+$1.204$ nats would give $332$; a meter at $k=3$ charged its measured $165.0$ nats admits $2$, and none at
+the $600$ it is certified at. The cap protects a whole target: it exceeds a $50$-token window's $159.8$
+nats, so for a window the composed certificate lapses long before the cap is reached
+(Table~\ref{tab:certificate}).
 
 \paragraph{Proposition~\ref{prop:threshold}.}
-Nothing below uses the form of $q$, only its budget. For $\alpha = \infty$,
-$q(E) \le e^{K} p_s(E) = e^{K - S(x)}$, at least $1$ exactly when $K \ge S(x)$. For
-$\alpha \in (1,\infty)$ the R\'enyi-to-probability conversion \citep{mironov2017renyi} gives
-$q(E) \le (e^{K} p_s(E))^{(\alpha-1)/\alpha}$, at least $1$ exactly when $K \ge S(x)$. For $\alpha = 1$
-the tightest bound is the binary-KL inversion $\max\{p : d(p \,\|\, e^{-S(x)}) \le K\}$, which attains $1$
-exactly when $d(1 \| e^{-S(x)}) = S(x) \le K$. \qed
+Write $p = \Pr_{p_s}[E] = e^{-S}$ and $a = \Pr_q[E]$. R\'enyi divergence satisfies data processing
+\citep{vanerven2014renyi}, so passing both laws through the indicator of $E$ gives
+$d_\alpha(a\,\|\,p) \le D_\alpha(q\,\|\,p_s) \le K$, where
+$d_\alpha(a\,\|\,p) = \frac{1}{\alpha-1}\log\bigl(a^{\alpha}p^{1-\alpha} + (1-a)^{\alpha}(1-p)^{1-\alpha}\bigr)$
+for $\alpha \in (1,\infty)$, the binary KL at $\alpha = 1$ and $\log\max\{a/p,\,(1-a)/(1-p)\}$ at
+$\alpha = \infty$. Conversely the law $q_a = a\,p_s(\cdot \mid E) + (1-a)\,p_s(\cdot \mid E^{c})$ has a
+constant likelihood ratio on $E$ and on its complement, so $D_\alpha(q_a\,\|\,p_s) = d_\alpha(a\,\|\,p)$
+exactly. Hence $b_\alpha(K) = \max\{a : d_\alpha(a\,\|\,p) \le K\}$, and since $d_\alpha(\cdot\,\|\,p)$
+increases on $[p,1]$, $b_\alpha(K) = 1$ if and only if $d_\alpha(1\,\|\,p) \le K$. At $a = 1$ every order
+gives $d_\alpha(1\,\|\,p) = \log(1/p) = S$. \qed\ The familiar closed forms relax this inversion and break
+at the same point: the change of measure $a \le e^{K}p$ is exact at $\alpha = \infty$, while
+\citet{mironov2017renyi}'s $a \le (e^{K}p)^{(\alpha-1)/\alpha}$ is an upper bound on $b_\alpha(K)$ for
+$\alpha \in (1,\infty)$, not $b_\alpha(K)$ itself.
 
 \paragraph{Below the threshold the orders part company.}\label{app:belowthreshold}
-Write $S = -\log p_s(E)$ and take $K < S$. At $\alpha = \infty$ the bound is $e^{K-S}$, and for
-$\alpha \in (1,\infty)$ it is $e^{-(1-1/\alpha)(S-K)}$, both exponential in the shortfall. At $\alpha = 1$
+Write $S = -\log p_s(E)$ and take $K < S$. At $\alpha = \infty$ the bound is exactly $e^{K-S}$, and for
+$\alpha \in (1,\infty)$ it is at most $e^{-(1-1/\alpha)(S-K)}$, Mironov's relaxation, so both fall
+exponentially in the shortfall. At $\alpha = 1$
 it is only linear: every $q$ with $d(q(E) \,\|\, p_s(E)) \le K$ has $q(E) \le (K + \log 2)/S$, since
 $d(a \,\|\, e^{-S}) \ge aS - \log 2$, and the law that emits $x$ with probability $a$ and otherwise follows
 $p_s$ costs $aS - h(a) \le aS$ to first order in $e^{-S}$, so $a = K/S$ is within budget. A KL budget of
@@ -144,11 +158,13 @@ a budget.
 \paragraph{Proposition~\ref{prop:imitation}.}
 The charge $c$ is nondecreasing on $[0,1]$ with $c(0) = 0$, and the decoder serves
 $\theta_t = \max\{\theta : c(\theta) \le k_t\}$. At a slack step, $c(1) \le k_t$, so $\theta_t = 1$: the
-decoder serves $p_{r,t}$ and is charged $D_{\mathrm{KL}}(p_{r,t} \| p_{s,t})$. Summing the nonnegative
-charges over the slack steps gives the first claim. For the second, $\Lambda^*_s$ is convex, vanishes at
-$\mathbb{E}_{p_s}[U]$ and is nondecreasing up to $u_{\max}$, so
-$\Lambda^*_s(\mathbb{E}_q[U]) \le -\log \Pr_{p_s}[U = u_{\max}]$, which is $O(1)$ in $T$ under the third
-proviso; dividing gives $\Omega(T)$. The proviso is substantive: a utility attained by one exact long
+decoder serves $p_{r,t}$ and is charged $D_{\mathrm{KL}}(p_{r,t} \| p_{s,t})$. By the chain rule
+$D_{\mathrm{KL}}(q \| p_s) = \mathbb{E}_q[\sum_t D_{\mathrm{KL}}(p_{\theta_t} \| p_{s,t})]$, and dropping the
+nonnegative terms of the other steps gives the first claim. For the second, $\Lambda^*_s$ is convex,
+vanishes at $\mathbb{E}_{p_s}[U]$ and is nondecreasing on $[\mathbb{E}_{p_s}[U], u_{\max}]$, where
+$\Lambda^*_s(u_{\max}) = -\log\Pr_{p_s}[U = u_{\max}] \le \log(1/\pi)$; so for a decoder that does not lower
+$\mathbb{E}[U]$, $\Lambda^*_s(\mathbb{E}_q[U]) \le \log(1/\pi)$, and $D_{\mathrm{KL}}(q\|p_s) \ge \gamma T$
+gives the ratio. The proviso is substantive: a utility attained by one exact long
 string has $\Lambda^*_s = \Theta(T)$ and no separation survives. Winning a judged comparison is not of that
 kind: the anchor's own unassisted draw already wins over a quarter of them outright, so winning every one, at any length, would cost an optimal policy $1.30$ nats, and the decoder spends $132$ times that to reach parity. \qed
 

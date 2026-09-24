@@ -296,8 +296,12 @@ def test_the_compute_matched_concession_survives_with_both_prices():
     # in its own sentence or row: a bare membership test let a sign flip in one hide behind the other
     assert (r"the matched cell is $n=2$ at $0.68\times$, gaining $-0.0330$ $[-0.0625, -0.0025]$ "
             r"against the meter") in main, "the deployable matched cell and its loss left the prose"
+    # v11 (2026-09-24): Table cost moved to Appendix D; its row is checked where the table lives.
+    t = apx_t = body("appendix_selection.tex")
+    row = t[t.index(r"\label{tab:cost}"): t.index(r"\end{table}", t.index(r"\label{tab:cost}"))]
     assert (r"$n=2$ at $0.68\times$, judged gain against the meter & $-0.0330$ $[-0.0625, -0.0025]$"
-            ) in main, "the deployable matched cell and its loss left Table cost"
+            ) in row, "the deployable matched cell and its loss left Table cost"
+    assert r"Table~\ref{tab:cost}" in main, "Section 4 no longer points at Table cost"
     apx = body("appendix_selection.tex")
     assert r"$n=4$ at $0.92\times$, it loses outright, $-0.0395\,[-0.0720,-0.0065]$" in apx, (
         "the compute-matched loss at the forward-pass cell was dropped")

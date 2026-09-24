@@ -126,7 +126,17 @@ def main():
              ("70B base", "he70b_k05", (("0.5", "metered_k0.5"),), "u_anchor_k0"),
              ("70B base", "he70b_k20", (("1", "met70b_k1"), ("20", "metered_k20")), "u_anchor_k0"),
              ("chat template", "served_k1chat", (("1", "metered_k1"),), "u_anchor_k0"),
-             ("chat template", "served_k10chat", (("10", "metered_k10"),), "u_anchor_k0"))
+             ("chat template", "served_k10chat", (("10", "metered_k10"),), "u_anchor_k0"),
+             # feat-196 (results/onset_prediction_chat_grid.md): the chat block's remaining budgets,
+             # judged on host B; APPENDED so no committed row's bootstrap draw moves.
+             ("chat template, host B", "chatgrid_k05", (("0.5", "metered_k0.5"), ("2", "chat_k2")), "u_anchor_k0"),
+             ("chat template, host B", "chatgrid_k3", (("3", "metered_k3"), ("5", "chat_k5")), "u_anchor_k0"),
+             # feat-195 (results/onset_prediction_he_decoding.md): temperature 0.7, penalty 1.1, host B;
+             # one opponent (the 8B's own draw at those settings) for all four passes. APPENDED.
+             ("temperature 0.7, 8B", "t07_8b_k10", (("0.5", "met8b_k0.5"), ("10", "metered_k10")), "u_anchor_k0"),
+             ("temperature 0.7, 8B", "t07_8b_k1", (("1", "metered_k1"),), "u_anchor_k0"),
+             ("temperature 0.7, 70B", "t07_70b_k20", (("0.5", "met70b_k0.5"), ("20", "metered_k20")), "u_anchor_k0"),
+             ("temperature 0.7, 70B", "t07_70b_k1", (("1", "metered_k1"),), "u_anchor_k0"))
     for config, tag, arms, anc in table:
         if tag == "frontier_levels":
             d = {}
@@ -153,6 +163,20 @@ def main():
             add("T1", f"{config} k={k}: meter level", sum(lv(f"u_{col}")) / len(ids), n=len(ids))
         add("T1", f"{config} ({tag}): anchor-alone level", sum(lv(anc)) / len(ids), n=len(ids))
         add("T1", f"{config} ({tag}): selection n=64 level", sum(lv("u_sel_n64")) / len(ids), n=len(ids))
+
+    # ---- feat-196 G1 (restated before launch): selection's per-prompt levels in J5 and J6 equal the
+    # same-host reference (feat-184 B3's command re-run on host B); the cross-host agreement with the
+    # committed local pass is a measurement with no band.
+    ref = per_prompt(f("served_k1chat_hostB"))
+    for tag in ("chatgrid_k05", "chatgrid_k3"):
+        d = per_prompt(f(tag))
+        same = sum(d[p]["u_sel_n64"] == ref[p]["u_sel_n64"] for p in ref) if set(d) == set(ref) else -1
+        add("G1-196", f"{tag}: selection levels equal the host-B reference", float(same),
+            reading="PASS" if same == len(ref) else "FAIL", n=len(ref))
+    loc = per_prompt(f("served_k1chat"))
+    for col in ("u_sel_n64", "u_sel_n1", "u_metered_k1", "u_anchor_k0"):
+        add("X-host", f"{col}: per-prompt level equal, host B vs local", float(
+            sum(loc[p][col] == ref[p][col] for p in ref)), n=len(ref))
 
     os.makedirs(a.out, exist_ok=True)
     out = os.path.join(a.out, "served_opponent.csv")

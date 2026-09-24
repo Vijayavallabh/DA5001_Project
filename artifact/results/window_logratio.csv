@@ -1,0 +1,6 @@
+quantity,w,n,median,p90,p99,max,frac_ge_S_w,S_w
+realised log-ratio per window,50,226136,40.3018,63.9142,92.5268,188.6774,0.000111,159.83
+per-step KL summed per window,50,226136,40.6777,59.6058,85.7547,171.6935,9.7e-05,159.83
+largest realised window per trajectory,50,1500,63.1591,87.9202,125.2918,188.6774,0.000667,159.83
+"trajectories (shorter than w, excluded)",50,1500,0,,,,,159.83
+decode steps before end-of-text,50,299636,,,,,,159.83

@@ -3,37 +3,43 @@
 \section{Related work}\label{sec:related}
 
 \textbf{Certified copyright defences.} Near-access-freeness \citep{vyas2023provable} bounds the served law
-against a safe model; CP-$\Delta$/CP-$k$ instantiate it with models trained on disjoint shards
-\citep{abad2025cpfuse}, and anchored decoding \citep{he2026anchored} per token with a bucket.
-\citet{cohen2025blameless} show that per-query access-freeness does not compose, and \citet{segal2026provably} report that CP-style
-guarantees can be numerically uninformative and demonstrate extraction against NAF-protected models
-\citep[see also][]{cohen2026barriers}. We are downstream of that observation: where they change what is
-metered, Proposition~\ref{prop:threshold} shows that no R\'enyi order moves the threshold, which licenses
-changing the primitive rather than the constant. An earlier audit of anchored decoding
-\citep{vijayavallabh2026audit} measured its vacuity on released logs; the order-invariant threshold, the
-sparsity bound, the selection certificate and every head-to-head here are new. Whether
-near-access-freeness tracks infringement at all is contested \citep{elkinkoren2024copyright}; our
-statements are about mechanisms, not law.
+against a safe model. Its authors' CP-$k$ already pays once per output, rejection-sampling complete
+outputs against models trained on disjoint shards with a bound that grows as acceptance falls; CP-Fuse
+\citep{abad2025cpfuse} fuses such shards per token and anchored decoding \citep{he2026anchored} charges per
+token from a bucket. Selection needs one safe model and no likelihood, and its $\log n$ depends on neither
+the rule nor an acceptance rate. Per-query access-freeness does not compose \citep{cohen2025blameless}, and
+\citet{segal2026provably} report that CP-style guarantees can be numerically uninformative and demonstrate
+extraction against NAF-protected models \citep[see also][]{cohen2026barriers}. We are downstream of that
+observation: where they change what is metered, Proposition~\ref{prop:threshold} shows that no R\'enyi
+order moves the threshold, which licenses changing the primitive rather than the constant. An earlier
+audit \citep{vijayavallabh2026audit} measured anchored decoding's vacuity on released logs; the
+order-invariant threshold, the window and imitation-cost analyses, the sparsity bound, the selection
+certificate and every head-to-head here are new. Whether near-access-freeness tracks infringement is
+contested \citep{elkinkoren2024copyright}; our statements are about mechanisms, not law.
 
 \textbf{Defences without a divergence certificate.} $n$-gram blocklists \citep{ippolito2023preventing},
 datastores \citep{min2024silo,golatkar2024cpr} and filtering \citep{liu2024shield}, compared by CoTaEval
 \citep{wei2024cotaeval}, guarantee something about the works they are handed and are silent on an unlisted
-work, a paraphrase, or an adversary who supplies the prefix. Measured as decoders on listed works
-(Appendix~\ref{app:blocklist}), a blocklist costs no utility and TokenSwap \citep{prashant2025tokenswap}
-suppresses as completely as selection at a lower utility cost; neither publishes a bound on the served law.
+work, a paraphrase, or an adversary who supplies the prefix. On listed works (Appendix~\ref{app:blocklist})
+a blocklist costs no utility and TokenSwap \citep{prashant2025tokenswap} suppresses as completely as
+selection at a lower utility cost; neither bounds the served law.
 
-\textbf{Best-of-$n$.} We claim no novelty for best-of-$n$ sampling or its divergence bound. Selecting among
-$n$ draws is standard inference-time alignment
-\citep{gao2023scaling,mudgal2024controlled,wang2023selfconsistency}; the bound
-$D_{\mathrm{KL}} \le \log n - (n-1)/n$ is \citet{beirami2025bestofn}, its coverage and optimality are
-characterised by \citet{huang2025bestofn}, and it is near-optimal in win rate against KL
-\citep{gui2024bonbon,yang2024asymptotics}. Charging the choice among repeated runs is the accounting of private selection in
-differential privacy \citep{liu2019private,papernot2022hyperparameter}. That literature reads the
-divergence as a \emph{cost}, the budget spent before reward overoptimisation or the one an attacker spends
-to jailbreak \citep{hughes2024bestofn}; we read the same inequality, in its pointwise form, as a copyright
-certificate. To our knowledge no prior work states that a selection rule satisfies near-access-freeness,
-nor compares the two mechanisms on one divergence axis. The closest neighbour, \citet{kalai2026consensus},
-serves only where several models agree, needing no named safe model and paying by abstaining
-(Appendix~\ref{app:kalai}). The accounting tools are standard
-\citep{feldman2020renyifilter,whitehouse2023fully,rogers2016odometers,loynes1962stability,cruz1991calculus},
-as is the extraction protocol \citep{carlini2021extracting,carlini2023quantifying,cooper2025extracting}.
+\textbf{Best-of-$n$ and private selection.} We claim no novelty for best-of-$n$ sampling or its divergence
+bound: selecting among draws is standard inference-time alignment
+\citep{gao2023scaling,mudgal2024controlled,wang2023selfconsistency}, the bound
+$D_{\mathrm{KL}} \le \log n - (n-1)/n$ is \citet{beirami2025bestofn}'s, its coverage and optimality are
+characterised by \citet{huang2025bestofn}, it is near-optimal in win rate against KL
+\citep{gui2024bonbon,yang2024asymptotics}, and blockwise best-of-$K$ \citep{mudgal2024controlled} is
+selection in installments. Charging the choice among repeated runs is private selection's accounting
+\citep{liu2019private,papernot2022hyperparameter}, and private next-token prediction mixes a public model in
+per token \citep{flemings2024pmixed} or pays only where private and public disagree
+\citep{amin2024private}, Proposition~\ref{prop:sparse}'s sparse option in privacy's currency. That
+literature reads the divergence as a \emph{cost}, spent before reward overoptimisation or by an attacker
+\citep{hughes2024bestofn}; we read the pointwise inequality as a copyright certificate. CP-$k$ aside, we know
+of no prior statement that a rule choosing among a safe model's draws satisfies near-access-freeness
+whatever the rule, nor a comparison of the two mechanisms on one divergence axis. The closest neighbour,
+\citet{kalai2026consensus}, serves only where several models agree and pays by abstaining
+(Appendix~\ref{app:kalai}). The accounting tools
+\citep{feldman2020renyifilter,whitehouse2023fully,rogers2016odometers,loynes1962stability,cruz1991calculus}
+and the extraction protocol \citep{carlini2021extracting,carlini2023quantifying,cooper2025extracting} are
+standard.

@@ -64,9 +64,17 @@ def test_the_blocklist_is_a_no_op_on_ordinary_text_so_its_utility_number_is_not_
             if r["quantity"].startswith("D4"):
                 g[tag] = float(r["value"])
     assert g["rule"] == g["norule"], g       # byte-identical text, so identical gains
+    # v11 (2026-09-24): Section 4 quotes +0.272 as what it is -- the chat-templated risky model's
+    # own gain over the anchor (the rule-off control), set against selection's +0.1065. What this
+    # guard forbids is the number standing as the BLOCKLIST's utility, so every sentence of the body
+    # that carries it must name the chat-served model and must not name the blocklist.
+    import re as _re
     body_txt = body("experiments.tex", "selection.tex", "iclr_closing.tex")
-    assert "0.272" not in body_txt, \
-        "a gain produced by a no-op reached the body as if it measured the blocklist"
+    for sent in _re.split(r"(?<=[.;])\s", body_txt):
+        if "0.272" in sent:
+            assert "chat template" in sent or "that model" in sent, sent[:200]
+            assert not _re.search(r"blocklist|MemFree|n-gram|rule", sent), \
+                "a gain produced by a no-op reached the body as if it measured the blocklist"
 
 
 def test_cpfuse_reproduced_before_its_contrast_was_stated():
@@ -133,9 +141,11 @@ def test_the_incumbent_concession_is_in_the_body_and_is_the_TRUE_one():
     # text it costs nothing"; v10 (2026-09-24): "Measured as decoders on listed works ..., a
     # blocklist costs no utility". Same concession, reworded.
     rw = body("related_work_v4.tex")
-    i = rw.find("Measured as decoders")
-    assert i >= 0, "Related Work no longer says the incumbent was measured"
-    assert "a blocklist costs no utility" in rw[i:i + 200], rw[i:i + 200]
+    # v11 (2026-09-24): "On listed works (Appendix~\ref{app:blocklist}) a blocklist costs no utility";
+    # the measurement is the appendix it points at, so the pointer must sit in the same clause.
+    i = rw.find("a blocklist costs no utility")
+    assert i >= 0, "Related Work dropped the incumbent concession"
+    assert "app:blocklist" in rw[max(0, i - 120):i], "Related Work no longer says the incumbent was measured"
     # and the appendix must carry the precise form, not the harsher one: no utility cost on a listed
     # work AND no stronger suppression, with the blocklist's own recall quoted from the CSV
     apx = body("appendix_related.tex")

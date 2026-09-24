@@ -145,10 +145,14 @@ def test_the_conceded_compute_ratios_were_not_softened_by_the_failed_rescue():
     # which now states the ratio twice -- in its price table and in its prose -- and the
     # introduction prices selection by the deployable clock (21.8x) instead. The three sites are
     # the three places the paper now states the n=64 forward-pass concession.
+    # v11 (2026-09-24): the price table moved to Appendix D (app:sel-cost) for the sixth round's
+    # additions; the prose that states the ratio stays in Section 4's cost subsection. Each site is
+    # read where it now lives, and each must still carry the literal.
+    apx = _tex("sections/appendix_selection.tex")
+    i = apx.index("\\label{tab:cost}")
+    j = apx.index("\\end{table}", i)
     exp = _tex("sections/experiments.tex")
-    i = exp.index("\\label{tab:cost}")
-    j = exp.index("\\end{table}", i)
-    sites = {"Table tab:cost": exp[i:j], "Section 4.5 prose": exp[j:],
+    sites = {"Table tab:cost": apx[i:j], "Section 4.5 prose": exp[exp.index("\\label{sec:cost}"):],
              "Limitations": _tex("sections/iclr_closing.tex")}
     for f, txt in sites.items():
         assert f"${worst:.1f}\\times$" in txt, (f, worst)

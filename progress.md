@@ -44,8 +44,23 @@ control" and "Served from the anchor alone". 22 were re-pointed (`tests/RETIRED_
 43 mutations all fire. New guards are in `tests/test_v11_review_round6.py`: 5 tests, 11 mutations.
 `analysis/audit_numbers.py`: `3,630` literals, the two expected misses.
 
-**Running at 23:50 IST on host B:** feat-195 (temperature `0.7`) and feat-198 (the gemma-2-27b
-scorer). See `session-handoff.md`.
+**Scored after midnight (2026-09-25), each against a registration committed before its first token:**
+
+- **feat-198** (`gemma-2-27b-it` re-scoring the headline pool): `D3 = +0.015 [-0.0185, +0.0485]`,
+  UNRESOLVED; I had predicted CONFIRMED. The gemma scorer serves shorter drafts (median `34` words
+  against `75`) and `71` empties against `41` (`analysis/scorer_family.py` -> `results/scorer_family.csv`).
+  The headline depends on the scorer.
+- **feat-195** (the authors' `0.7` and `1.1`): H1 REFUTED (`-0.081`; the `8`B continuing text beats
+  selection at `k=10`), H2 TIE, H3 CONFIRMED (the `70`B pair still loses to selection), H4 right.
+  `K/S_w` is against the warped anchor (`analysis/regimes.py --temperature 0.7 --repetition-penalty
+  1.1` -> `results/regimes_copybench_t07.csv`, `S_w = 177.4`), and Table 2 gains the block.
+- **Registered consequences, applied:** the abstract, introduction, Section 4, Limitations and the
+  conclusion scope the continuing-text win to temperature `1.0` and to the Qwen scorer. The Section 4
+  heading now reads "selection matches or beats it" where the certificate says anything, because at
+  `0.7` the `8`B meter ties.
+- **One of my own defects, found and fixed:** `served_activity.py` counted the anchor-sampled step
+  after a chat model's `<|eot_id|>` as "forced". The chat `k=0.5` active share moved `62.5% -> 62.7%`,
+  and the forced shares in feat-196's log are corrected.
 
 ## 2026-09-24 (night) --- v10: the paper reframed around its contribution (user: "Reframe the paper around its novel contribution, not our experiment log ... figure/table-driven ... cut text without hesitation")
 

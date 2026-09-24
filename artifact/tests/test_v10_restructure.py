@@ -93,25 +93,34 @@ def test_table1_rounds_from_the_certificate_csv():
         assert key.split("=")[1] in cells[0].replace("$", ""), (cells[0], key)
         assert _rounds_to(_num(cells[2]), float(r["certificate_nats"])), (cells, r)
         assert _rounds_to(_num(cells[3]), float(r["K_over_Sw"])), (cells, r)
+        # v11 (2026-09-24, sixth review round): the 400-nat response counts left the table for
+        # Appendix A (a cap above S_w is itself vacuous for the window it is quoted against); the
+        # table now prints the measured spend beside K, the queries before the composed certificate
+        # is vacuous for a window, and the draws that certify a near-verbatim event at 1%.
         if r["mechanism"] == "metered":
             assert _rounds_to(_num(cells[4]), float(r["window_bound"])), (cells, r)
-            assert _num(cells[6]) == r["responses_at_spend"], (cells, r)
-            assert _rounds_to(re.findall(r"\d+\.\d+", cells[6])[0], float(r["measured_spend_nats"]))
+            assert _rounds_to(re.findall(r"\(\$?(\d+\.\d+)\$?\)", cells[2])[0],
+                              float(r["measured_spend_nats"])), (cells, r)
+            assert cells[6] == "---" and r["draws_to_certify_nv_1pct"] == "", (cells, r)
         else:
             assert _rounds_to(re.search(r"10\^\{(-[\d.]+)\}", cells[4]).group(1),
                               float(r["window_bound_log10"])), (cells, r)
-        assert _num(cells[5]) == r["responses_at_certificate"], (cells, r)
+            assert _num(cells[6]) == r["draws_to_certify_nv_1pct"], (cells, r)
+        assert _num(cells[5]) == r["queries_before_vacuous"], (cells, r)
 
 
 def test_the_composition_paragraph_quotes_table1():
-    """Section 2's composition paragraph quotes the 192-against-2 the table computes."""
+    """Section 2's composition paragraph quotes the query horizon the table computes, and the draws
+    that certify a near-verbatim event; the 400-nat response counts it quoted in v10 (192 against 2)
+    are in Appendix A since v11 and are checked there (tests/test_selection_claims.py)."""
     rows = {r["param"]: r for r in _rows("certificate_table.csv")}
     t = body("selection.tex")
-    para = t[t.index("\\label{sec:compose}"):][:900]
-    assert f"${rows['n=8']['responses_at_certificate']}$ responses at $n=8$" in para
-    assert f"${rows['k=3']['responses_at_spend']}$ for a meter at $k=3$" in para
-    assert f"at the ${float(rows['k=3']['certificate_nats']):.0f}$ it is certified at" in para
-    assert f"${float(rows['k=3']['measured_spend_nats']):.1f}$ nats" in para
+    para = t[t.index("\\label{sec:compose}"):][:2600]
+    assert f"survives only ${rows['n=64']['queries_before_vacuous']}$ queries at $n=64$" in para
+    assert "$0.75\\%$ at $n=64$" in para and "$3e^{K}$ draws" in para
+    assert "$m\\log n$" in para
+    for key in ("n=8", "k=3"):
+        assert f"${rows[key]['responses_at_certificate']}$ responses" not in para
 
 
 # ---------------------------------------------------------------- Figure 3, the head-to-head forest
@@ -150,7 +159,7 @@ def test_figure3_prose_follows_the_plotted_rows():
     opp = dict(f["stronger fixed opponents, judge B"])
     assert opp["Qwen2.5-0.5B-Instruct"][1] > 0
     assert all(b[1] <= 0 <= b[2] for l, b in opp.items() if l != "Qwen2.5-0.5B-Instruct")
-    assert "from \\texttt{Qwen2.5-1.5B-Instruct} upward every interval covers zero" in t
+    assert re.search(r"[Ff]rom \\texttt\{Qwen2\.5-1\.5B-Instruct\} upward every interval covers zero", t)
     # workloads: holds on three, unresolved on two, reverses on AlpacaEval
     wl = dict(f["other workloads, binding budget, judge B"])
     holds = [l for l, b in wl.items() if b[1] > 0]
@@ -177,8 +186,13 @@ def test_figure2_text_follows_its_rows():
     assert f"imitation rate of ${k20[2]:.3f}$" in t
     assert f"spends ${k20[3]:.1f}$ nats" in t
     assert f"${100 * k20[3] / k20[4]:.1f}\\%$ of the ${k20[4]:.0f}$" in t
-    abstract = open(tex("iclr_2027.tex"), encoding="utf-8").read()
-    assert f"${lo:.2f}$ to ${hi:.2f}$" in " ".join(abstract.split())
+    # v11: the abstract states the vacuity theorem and the window exposure, not the measured onset
+    # band, which lives in Section 3 (asserted above, prose and caption). It may not state a
+    # DIFFERENT band: any "$a$ to $b$" pair of onset ratios in the abstract must be this one.
+    abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    abstract = abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
+    for a_, b_ in re.findall(r"\$(0\.\d\d)\$ to \$(1\.\d\d)\$", abstract):
+        assert (a_, b_) == (f"{lo:.2f}", f"{hi:.2f}"), (a_, b_, lo, hi)
 
 
 # ---------------------------------------------------------------- structure

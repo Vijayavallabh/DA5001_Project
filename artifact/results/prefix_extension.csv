@@ -1,0 +1,5 @@
+arm,queries,certificate_nats,passages_certificate_vacuous,token_accuracy_mean,exact_windows,nv_recall_mean,nv_recall_ge_0p5,lcs_word_mean,true_token_in_pool,S_median_nats,n_passages
+n=1,50,0.0,0,0.009,0,0.0,0,1.19,0.009,179.5,100
+n=8,50,103.972,0,0.026,0,0.0,0,1.6,0.0452,179.5,100
+n=64,50,207.944,88,0.0572,0,0.0062,1,2.35,0.123,179.5,100
+"memoriser alone, greedy",50,,,0.8432,74,0.8847,91,34.44,,179.5,100

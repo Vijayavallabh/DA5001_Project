@@ -1,0 +1,19 @@
+block,k,run_dir,prompts,decode_steps,active_share,forced_share
+"8B-Instruct, continuing text",0.5,output/sweep_plain,500,83894,0.49137,0.033757
+"8B-Instruct, continuing text",1.0,output/sweep_plain,500,86862,0.066001,0.015461
+"8B-Instruct, continuing text",10.0,output/phase2/conc_all,500,99907,8e-05,0.0
+70B base,0.5,output/phase5/imit_llama70b,500,62456,0.265115,0.04552
+70B base,1.0,output/phase5/imit_llama70b,500,63013,0.063003,0.021932
+70B base,20.0,output/phase5/imit_llama70b,500,84690,0.0,0.0
+"8B-Instruct, chat template",1.0,output/sweep_chat,500,63373,0.168368,0.0424
+"8B-Instruct, chat template",10.0,output/feat184/chat_k10,500,71164,0.001574,0.0
+"8B-Instruct, chat template",0.5,output/sweep_chat,500,66864,0.62669,0.08118
+"8B-Instruct, chat template",2.0,output/feat196/chat_grid,500,62377,0.025282,0.018372
+"8B-Instruct, chat template",3.0,output/feat196/chat_grid,500,62448,0.010777,0.010345
+"8B-Instruct, chat template",5.0,output/feat196/chat_grid,500,62614,0.0023,0.007985
+"8B-Instruct, continuing text, T=0.7",0.5,output/feat195/t07_8b,500,77675,0.445793,0.03597
+"8B-Instruct, continuing text, T=0.7",1.0,output/feat195/t07_8b,500,83945,0.163941,0.01582
+"8B-Instruct, continuing text, T=0.7",10.0,output/feat195/t07_8b,500,99863,0.000401,0.0
+"70B base, T=0.7",0.5,output/feat195/t07_70b,500,56271,0.463667,0.048106
+"70B base, T=0.7",1.0,output/feat195/t07_70b,500,60591,0.201631,0.021934
+"70B base, T=0.7",20.0,output/feat195/t07_70b,500,83440,0.0,0.0

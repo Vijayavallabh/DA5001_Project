@@ -1,35 +1,36 @@
 # Session handoff --- 2026-09-24
 
-## In flight, 2026-09-24 23:40 --- v11 (sixth review round, feat-200): one arm still running on host B
+## Current state, 2026-09-25 00:35 --- v11 (sixth review round, feat-200): every arm scored, nothing running
 
-**Running on host B (GPUs 4-7 were idle; 0-3 hold the user's own Qwen3-235B server, never touched):**
-feat-195 (`results/onset_prediction_he_decoding.md`), the head-to-head at temperature `0.7`, penalty
-`1.1`. Launched 23:00 IST with `GPU_MAIN=4 GPUS_70B=5,6 GPU_CHAT=7 GPU_J12=7 GPU_J34=5 setsid nohup bash
-scripts/run_feat195.sh <queue>` for `gpu4`, `gpu12`, `judge_he` (logs `output/logs/feat195_q_*.log`,
-sentinels `output/logs/feat195_<job>.{done,fail}` on host B). `t07_8b` is done; the pool
-(`output/feat195/t07_pool64`), its rewards (`results/selection_rewards64_t07.csv`), the `70`B arm and
-J1-J4 are running. When `judge_he` ends: `scripts/sync_status.sh pull`, score against the registration
-(G0-G2, H1-H5), add the temperature-`0.7` block to Table 2 (`tab:served`) and fix Limitations' "we ran
-the meter at temperature `1.0`" as registered.
+**No job of ours runs on either host.** Host B GPUs 4-7 were used from 23:00 to 00:20 IST and are free
+again; GPUs 0-3 hold the user's own Qwen3-235B server and were never touched. Local cards are the
+user's vLLM servers.
 
-**Scored this round:** feat-196 (chat grid: crossover at `k=3`, `K/S_w = 3.75`; G1 re-pointed to a
-same-host reference before any judge call, `500/500`), feat-199 (prefix extension: P1 FAILS, the
-attack reconstructs nothing although the composed certificate is vacuous for `88` of `100` windows).
+**Scored this round (each registered before its first token or reward):**
+
+- **feat-195** (`results/onset_prediction_he_decoding.md`): at the authors' temperature `0.7` and penalty
+  `1.1`, the `8`B continuing text beats selection at `k=10` (`-0.081 [-0.113, -0.049]`, REFUTED), the
+  `k=0.5` meter gains and ties selection, and the authors' `70`B pair still loses to selection at every
+  budget. `K/S_w` is read against the warped anchor (`S_w = 177.4`). Table 2 has the block, and the
+  abstract, Section 4 and Limitations are scoped as registered.
+- **feat-196** (chat grid): the meter overtakes selection from `k=3` (`K/S_w = 3.75`).
+- **feat-198** (a `gemma-2-27b` scorer): the headline difference is UNRESOLVED (`+0.015`), so it depends on
+  the scorer.
+- **feat-199** (prefix extension): the attack reconstructs nothing although the certificate is vacuous
+  for `88/100` windows. That is looseness, not safety.
+
 Post hoc, no bands: `results/{empty_answers,window_logratio,served_activity}_note.md`.
 
 **Manuscript (`~/sub/satml`, never committed; pre-v11 copy in `output/review_audit/pre_v11_2026-09-24/`):**
-body exactly 9 of 9 (page 10 opens on ETHICS), tectonic exit 0, 0 overfull, 0 `??`. Three floats moved
-to the appendix for space: `fig:breadth` and `tab:cost` to Appendix D, `tab:repairs` to Appendix H.
-There is **no page slack** for feat-195's block (about 8 lines): take it from floats or structure
-(caution (n)), never from a guarded concession (caution (ag)).
+body exactly 9 of 9 (page 10 opens on ETHICS), tectonic exit 0, 0 overfull, 0 `??`. Moved to the
+appendix for space: `fig:breadth`, `tab:cost`, `fig:safety` (Appendices D-F) and `tab:repairs`
+(Appendix H), each with its numbers kept in the main-text prose.
 
-**Guards:** 35 broke; 13 fixed by restoring the manuscript, 22 re-pointed and listed in
-`tests/RETIRED_2026-09-24_v11.md`; 43 mutations all fire; new `tests/test_v11_review_round6.py`.
-Full sharded suite: 180 files, all passing after the two `test_cost_grid` re-points.
+**Guards:** `tests/RETIRED_2026-09-24_v11.md` lists every re-pointed guard. New guards are in
+`tests/test_v11_review_round6.py` (7 tests). Every mutation of this round's changes fires.
 
-**feat-198 SCORED (00:07 IST):** the headline pool re-scored by `gemma-2-27b-it` reads `D3 = +0.015
-[-0.0185, +0.0485]`, UNRESOLVED (predicted CONFIRMED, wrong): the headline depends on the scorer. In
-the paper as registered, plus the same qualifier in the abstract, introduction, Limitations and conclusion.
+**Next:** refresh `manuscript_snapshot/` (`scripts/snapshot_manuscript.sh`), rebuild the artifact
+(`ARTIFACT_MAX_MB=250 bash scripts/build_artifact.sh artifact`), and a last read of the rendered body.
 
 ## Current state, 2026-09-24 night --- v10 restructure done; nothing in flight
 
