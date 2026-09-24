@@ -1455,8 +1455,8 @@
         "feat-196",
         "feat-199"
       ],
-      "status": "in-progress",
-      "evidence": "Guard reconciliation: 35 failures after the rewrite; 13 fixed by restoring registered sentences/concessions, 22 re-pointed (tests/RETIRED_2026-09-24_v11.md), 43 mutations all fire; new tests/test_v11_review_round6.py (5 tests, 11 mutations fire). Build: tectonic exit 0, 0 overfull, 0 ??, body 9/9 (page 10 opens on ETHICS)."
+      "status": "done",
+      "evidence": "Manuscript (~/sub/satml/iclr_2027.pdf): tectonic exit 0, 0 overfull, 0 ??, bold faces 4, 39 pages, body exactly 9 of 9 (page 10 opens on ETHICS STATEMENT), references p10, appendix p15. analysis/audit_numbers.py: 3,630 literals, the two expected misses (64256, 0.99990). Arms scored this round, each registered first: feat-195 (0.7/1.1: H1 REFUTED), feat-196 (chat crossover at k=3), feat-198 (gemma scorer: UNRESOLVED), feat-199 (prefix extension: P1 FAILS). Guards: 35 broke after the rewrite, 13 fixed by restoring registered/conceded text, the rest re-pointed (tests/RETIRED_2026-09-24_v11.md); every mutation of the change fires; new tests/test_v11_review_round6.py (7 tests). Full sharded suite: 180 files, 1174 passed, 0 failed (output/testrun_v11); the two edits after it started re-checked by all 214 abstract-reading guards and the intro guards. Artifact: 2,142 files, manifest verified, anonymity scan clean, zip 42 MB. manuscript_snapshot/ refreshed."
     },
     {
       "id": "feat-198",
