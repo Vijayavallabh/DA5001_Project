@@ -1,5 +1,18 @@
 # Session handoff --- 2026-09-24
 
+## In flight, 2026-09-24 23:00 --- sixth review round: arms registered and running
+
+Four referee reports (the fourth marked must-address) are being answered with new measurements
+before the text is revised. Registered and committed before any token was decoded:
+
+- `results/onset_prediction_he_decoding.md` (feat-195): the head-to-head at the authors' decoding
+  settings, temperature `0.7` and repetition penalty `1.1`; `scripts/run_feat195.sh gpu4|gpu12|judge_he`.
+- `results/onset_prediction_chat_grid.md` (feat-196): the chat-template meter at `k = 2, 3, 5`
+  beside the existing `0.5, 1, 10`; `scripts/run_feat195.sh gpu4` then `judge_chat`.
+
+Host B's eight cards are held by the user's own vLLM servers (Qwen3-235B, two copies, GPUs 0-3 and
+4-7); nothing of ours runs there. Local GPUs 1, 2 and 4 only; GPU 0 is the user's qubit job.
+
 ## Current state, 2026-09-24 night --- v10 restructure done; nothing in flight
 
 The user asked (2026-09-24 evening) for the paper to be reframed around its contribution: lead with the
