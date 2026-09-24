@@ -12,6 +12,7 @@ N=he_${ST:0:4}${TAG}
 # silicon would differ in the last bf16 bit (caution (as)) and leave two files for one reading.
 F=results/he_$([ "$ST" = prometheus ] && echo prometheus || echo factscore)_per_item${TAG}.csv
 [ -s "$F" ] && { echo "[he:$ST] $F exists; skipping" >> output/logs/$N.log; touch "$M/$N.done"; exit 0; }
+[ -e "$M/$N.remote" ] && { echo "[he:$ST] running on the other host; skipping" >> output/logs/$N.log; exit 0; }
 rm -f "$M/$N.done" "$M/$N.fail"
 echo "[he:$ST] start $(date '+%F %T') gpu=$GPU tag=$TAG" >> output/logs/$N.log
 CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=$GPU HF_HUB_OFFLINE=1 HF_HUB_CACHE=$PWD/hf_cache \
