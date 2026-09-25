@@ -87,8 +87,82 @@ with a budget near $125$ nats would rarely bind on ordinary text and would certi
 window at $e^{125-159.8}$; it certifies no event whose probability under the anchor must be sampled
 (Section~\ref{sec:compose}).
 
+\paragraph{The windowed meter, built.}\label{app:windowed}
+\texttt{a\_patch/\allowbreak factory.py} with \texttt{window=50}: at step $t$ the served law may give any
+token at most $W$ minus the largest realised log-ratio of a span of the last $49$ served tokens ending at
+$t-1$, never less than $0$, so negative ratios earn no credit and every span of at most $50$ tokens is
+certified at $W$ given the text before it (\texttt{tests/\allowbreak test\_\allowbreak windowed\_\allowbreak meter.py} runs the real decode loop on two small random models and checks every span of every path). It
+carries no prefix debt, since the output's spans are what it certifies. On the $500$ prompts it blends on
+$100\%$, $94.7\%$, $68.8\%$, $37.9\%$ and $0.08\%$ of steps at $W = 4.16$, $12.48$, $24.95$, $40$ and $125$
+($47.1\%$ at $40$ and $0.15\%$ at $125$ under the chat template), and none of $7{,}000$ trajectories has a
+span over its $W$ (\texttt{results/\allowbreak windowed\_\allowbreak arms.csv}). Registered in advance
+(\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak windowed\_\allowbreak meter.md}):
+the prediction that failed is that selection would still lead at $W=125$; it ties. Table~\ref{tab:windowed}
+gives the leakage grid and the chat-served comparison.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{All arms of Table~\ref{tab:matched}, and the rule that never serves an empty draw (\emph{never empty}), one judge pass, $500$ prompts. Certified
+max-divergence nats (KL at $k=0.5$) for any $50$-token span given the text before it (---: only the
+output's, which covers the first span) and for the $200$-token output. Gain over the arm's own zero-budget
+control, judge~B with $95\%$ interval, and judge~G. \emph{Leak}: near-verbatim recall of $100$ memorised
+passages, the memoriser as risky model ($0.495$ alone); for selection, the best of its $64$ draws.}
+\label{tab:matchedfull}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrlrr@{}}
+\toprule
+mechanism & span & output & gain, judge~B & judge~G & leak \\
+\midrule
+anchored decoding, $k=0.5$ & --- & $100$ & $-0.0030$ $[-0.0245, +0.0185]$ & $+0.015$ & --- \\
+budget up front & --- & $4.16$ & $+0.0230$ $[+0.0010, +0.0445]$ & $-0.0265$ & --- \\
+per-token pathwise meter & --- & $33.27$ & $+0.0125$ $[-0.0065, +0.0315]$ & $-0.0185$ & --- \\
+ & --- & $83.18$ & $+0.0160$ $[-0.0050, +0.0370]$ & $+0.0125$ & --- \\
+windowed meter, $W$ per span & $4.16$ & $16.64$ & $+0.0115$ $[-0.0110, +0.0340]$ & $-0.047$ & $0.000$ \\
+ & $12.48$ & $49.91$ & $+0.0190$ $[-0.0035, +0.0415]$ & $-0.0445$ & $0.000$ \\
+ & $24.95$ & $99.81$ & $+0.0375$ $[+0.0150, +0.0600]$ & $-0.0045$ & $0.000$ \\
+ & $40$ & $160$ & $+0.0375$ $[+0.0140, +0.0610]$ & $+0.0475$ & $0.000$ \\
+ & $125$ & $500$ & $+0.0795$ $[+0.0530, +0.1055]$ & $+0.130$ & $0.106$ \\
+\midrule
+best of $64$ & --- & $4.16$ & $+0.1015$ $[+0.0775, +0.1260]$ & $+0.176$ & $0.000$ \\
+best of $64$, never empty & --- & $4.16$ & $+0.1010$ $[+0.0775, +0.1245]$ & $+0.155$ & --- \\
+installments, $L=25$ & $12.48$ & $33.27$ & $+0.1455$ $[+0.1200, +0.1715]$ & $+0.2855$ & --- \\
+installments, $L=10$ & $24.95$ & $83.18$ & $+0.1580$ $[+0.1330, +0.1835]$ & $+0.305$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The windowed meter by budget. \emph{Recall}: mean near-verbatim recall of $100$ memorised passages
+with the memoriser as the risky model, served plainly and through the chat template (the memoriser alone
+reads $0.4952$ and $0.2193$, the anchor alone $0$). \emph{Chat}: selection's gain minus the windowed meter's,
+both against the chat-served $8$B, judges B and G, $95\%$ intervals.}
+\label{tab:windowed}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}rrrll@{}}
+\toprule
+$W$, nats & recall, plain & recall, chat & chat, judge B & chat, judge G \\
+\midrule
+$4.16$ & $0.0000$ & --- & --- & --- \\
+$12.48$ & $0.0000$ & --- & $+0.0450$ $[+0.0095, +0.0810]$ & $+0.0970$ $[+0.0590, +0.1355]$ \\
+$24.95$ & $0.0000$ & $0.0000$ & $+0.0065$ $[-0.0305, +0.0435]$ & $+0.0530$ $[+0.0110, +0.0945]$ \\
+$40$ & $0.0000$ & $0.0000$ & $-0.0525$ $[-0.0895, -0.0150]$ & $-0.0295$ $[-0.0725, +0.0145]$ \\
+$60$ & $0.0063$ & --- & --- & --- \\
+$80$ & $0.0286$ & $0.0043$ & --- & --- \\
+$100$ & $0.0634$ & --- & --- & --- \\
+$125$ & $0.1058$ & $0.0632$ & $-0.1600$ $[-0.1985, -0.1220]$ & $-0.2815$ $[-0.3335, -0.2295]$ \\
+$150$ & $0.1476$ & --- & --- & --- \\
+$200$ & $0.3993$ & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Selection in installments.}\label{app:blockwise}
-Section~\ref{sec:uncovered}'s installment rule draws $n$ continuations of up to $L$ tokens from the anchor
+Both selection rules sample a bounded tilt of the anchor, a law $p_s h$ with $h \le e^{\lambda}$ at every
+length: the Gibbs tilt $h = e^{\lambda U}/Z$ of any utility $U \in [0,1]$ is one, best-of-$n$ is another,
+$h = nF(f)^{n-1}$ with $F$ the anchor's distribution of a tie-free score $f$, so $\lambda = \log n$, and
+installments build one causally, block by block, with the completed candidate's reward as a sampled
+value. Section~\ref{sec:uncovered}'s installment rule draws $n$ continuations of up to $L$ tokens from the anchor
 alone, scores each by the committed reward of the candidate completed to $200$ tokens by one anchor
 rollout, serves the argmax and repeats until $200$ tokens or an end-of-text; at $L = 200$ it is
 whole-output selection through the same code, on fresh draws. Proposition~\ref{prop:selection} holds per
@@ -98,7 +172,7 @@ $\min(\lceil 50/L\rceil + 1, B)\log n$ (Table~\ref{tab:blockwise}; registered in
 installments of $10$ and $25$ tokens beat one choice among $64$ whole drafts, by $+0.0415$
 $[+0.0185, +0.0645]$ and $+0.0245$ $[+0.001, +0.0475]$, against our registered prediction of a tie, and
 installments of $50$ tie it; their window certificates, $24.95$ and $12.48$ nats, stay far below the
-protected window's $159.8$. A disjoint draw, registered after this one was read, reproduces it, where we had predicted a tie
+protected window's $159.8$. Two concessions go with them: the whole-output certificate, $\lceil T/L\rceil\log n$, grows linearly with the output as a meter's does, so installments are not a budget that does not grow, and outputs longer than $T_{\max}$ were not measured; and a near-verbatim window at their per-window certificate is no easier to audit than the windowed meter's at the same $W$ (Section~\ref{sec:uncovered}). A disjoint draw, registered after this one was read, reproduces it, where we had predicted a tie
 at $L = 25$: $+0.0435$
 $[+0.020, +0.067]$ and $+0.033$ $[+0.011, +0.0555]$ at $L = 10$ and $25$ under judge~B, $+0.0635$ $[+0.033,
 +0.0945]$ and $+0.0595$ $[+0.028, +0.0905]$ under judge~G; read post hoc by judge~G, the first draw's
@@ -147,7 +221,11 @@ criterion (sampled $k=-1$ recall $\ge 0.10$), and $k=0$, the anchor alone, reads
 columns are reported because they are not controlled: the memorisers span a factor of $5.1$ in their own
 recall, and five of the nine did not converge. Part of the residual tracks the words a $20$-token seed
 hands the adversary (Spearman $-0.958$), a caution for seeds fixed in tokens
-\citep{carlini2023quantifying}.
+\citep{carlini2023quantifying}. Every sweep decodes $T$ tokens for every passage, the longest target in
+it: $296$ at the audited pair, $306$ to $468$ elsewhere and $650$ in the KL3M tokenizer's tokens. The median
+target is $0.84$ to $0.89$ of $T$ long, so its own certificate is void from that fraction of $s(x)$,
+below the onset at eight of nine pairs (by $0.010$ to $0.273$) and $0.004$ above Pleias-1.2B's; a $50$-token window's is void from $50/T$, $0.08$ to $0.17$ of $s(x)$
+(\texttt{results/\allowbreak onset\_\allowbreak window\_\allowbreak threshold.csv}).
 
 \begin{table}[h]
 \centering\footnotesize
@@ -414,13 +492,24 @@ often ($0\%$ to $86.7\%$ of trajectories never spend) \emph{and} buys less when 
 judged single-order and not compared with these, gave the front-loaded rule $-0.008$ $[-0.056, +0.041]$
 at $\log 8 = 2.0794$ nats against selection's $+0.054$ at the same budget.
 
-\paragraph{How far each mechanism sits from Theorem~\ref{thm:nfl}'s frontier.}
-Scoring the judge's verdict $1/\tfrac12/0$ and reading its law under $p_s$ off the anchor-only arm, the meter
-at $k=0.5,1,3,20$ spends $79.0$, $134.6$, $165.0$ and $171.3$ nats where $\Lambda^*_s$ of the utility it
-reaches asks for $0.0003$, $0.023$, $0.052$ and $0.061$. On the headline pass, order-averaged with each
-arm's own control as the safe law of $U$, selection at $n=64$ sits $32\times$ the frontier on its $3.175$-nat
-bound and the meter $11{,}646\times$ on its $171.3$ nats spent
-(\texttt{results/\allowbreak frontier\_\allowbreak distance\_\allowbreak h2h.csv}).
+\paragraph{How far each mechanism sits from Theorem~\ref{thm:nfl}'s frontier.}\label{app:frontierratio}
+Read on the repaired text, order-averaged, with each arm's own control as the safe law of $U$, selection at
+$n=64$ sits $35.4\times$ the frontier on its $3.175$-nat bound and the meter at $k=10$ $7{,}384\times$ on its
+$171.3$ nats spent (\texttt{results/\allowbreak frontier\_\allowbreak distance\_\allowbreak h2h\_\allowbreak deecho.csv});
+the $32\times$ and $11{,}646\times$ an earlier version gave were read on text that carried the prompt's tail.
+Proposition~\ref{prop:imitation}'s conservative ratio needs $\pi$, the chance that the anchor attains the
+top utility. On Figure~\ref{fig:selection}(d)'s instrument the anchor wins both presentation orders on
+$2.2\%$ of prompts, $4.0\%$ of questions, $2.0\%$ of biographies and none of the stories, whose best anchor
+level is $0.75$: $\log(1/\pi)$ is $3.82$ pooled, $3.22$ and $3.91$ for the first two classes, and infinite for
+stories, where the bound says nothing. The meter's $171.3$ nats are at least $44.9\times$ what winning every
+comparison needs, $53.2\times$ and $43.8\times$ by class. The single-order pass this paragraph once used
+gave $\log(1/\pi) = 1.30$ and $132\times$: there a win in the one order shown came on over a quarter of
+prompts, and a win in both orders is the stricter event. Every figure here pools the prompts, so it bounds the prompt-averaged
+divergence, which each per-prompt certificate implies but does not equal; one anchor draw per prompt
+cannot estimate a per-prompt $\pi$. At the level each arm reaches rather than the top one,
+$\Lambda^*_s$ is $0.00255$, $0.0115$ and $0.0232$ nats at $k=1$, $3$ and $10$, a ratio of $52{,}864$,
+$14{,}357$ and $7{,}384$; at $k=0.5$ the meter gains nothing and the ratio is unbounded
+(\texttt{results/\allowbreak frontier\_\allowbreak ratio.csv}).
 
 \paragraph{Two anchors closer to the risky model.}\label{app:frontier3}
 Neither anchor here is a safe model, so no certificate, leakage or $s(x)$ number is taken from either; the pairs test whether the reversal is the mechanism's or the anchor's. A token-level meter needs a shared vocabulary, and no other openly licensed anchor has one with this risky model. At Llama-3.2-1B the meter is useful,

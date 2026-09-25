@@ -1,35 +1,37 @@
-% v10 (2026-09-24): limitations (every concession the pre-registrations committed the paper to carry)
-% and a two-sentence conclusion. Broader impact is in the uncounted Ethics Statement; the full
-% limitations are Appendix~\ref{app:limitations}.
+% v13 (2026-09-25, seventh review round): limitations now carry the factual-precision regression, the judge's
+% validity, the Holm reading, the windowed meter's place and why a certificate is worth more than measured
+% protection; every concession of v12 is kept. The full limitations are Appendix~\ref{app:limitations}.
 
 \section{Limitations and conclusion}\label{sec:limitations}
 
 \textbf{The two mechanisms are not substitutes, and the scorer binds first.} A served string is one the
-safe model would have drawn, so an anchor that cannot do the task gains nothing: on TriviaQA with no judge
-the meter reaches $0.618$ against selection's $0.190$, but only at $k=20$, where it \emph{is} the risky
-model, certified at $480$ nats for a $24$-token answer. Below that the scorer binds: it gains $3.4\times$
-less than majority vote on GSM8K at $n=64$ and \emph{loses} F1 on CoTaEval, whose infringement event not
-even the risky model reaches (Appendix~\ref{app:selection}). A capability gap is the regime a deployer most
-wants covered, and \emph{neither} mechanism covers it. \textbf{The judged comparison measures the serving
-configuration as much as the mechanism}: it reverses under a chat template, on instruction following and at the authors' temperature $0.7$ and penalty $1.1$, and vanishes against a stronger opponent, when empty answers count as losses or with a scorer from another family (Table~\ref{tab:served},
-Figure~\ref{fig:h2h}); every judge is a language model and no human rated anything. \textbf{And it is paid
-for in compute}: $61.3\times$ the meter's forward passes and $21.8\times$ its wall-clock in draws alone (batched, $0.22\times$ its time per request at the $70$B pair), and held to the meter's own compute
-it \emph{loses}. The \emph{gain} is the scorer's capability: a $0.5$B scorer never reaches the meter, a
-$1.5$B one buys $87\%$ of the $7.6$B gain on the judged workload and nothing on GSM8K, and where that bar
-sits is open. The \emph{price} is the drawing, not the scorer's one batched pass
-(Appendix~\ref{app:saturation}). Nor does the certificate say much about short works: on TriviaQA answers
-$\log 64$ reaches $S(x)$ on $36.2\%$ of questions, against $83.6\%$ for the meter's smallest budget, so
-$n$ must be set against the shortest work protected. Extraction is sixteen English novels plus four in
-French and German. What we prove about per-token budgets concerns whole-sequence budgets and meters
-tilting toward $p_r$: a windowed meter could certify exact windows at tens of nats
-(Section~\ref{sec:uncovered}), and how close a policy of the
-shape Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier is open.
+safe model would have drawn, so an anchor that cannot do the task gains nothing: on TriviaQA
+\citep{joshi2017triviaqa} with no judge the meter reaches $0.618$ against selection's $0.190$, but only at
+$k=20$, where it \emph{is} the risky model, certified at $480$ nats for a $24$-token answer. Below that the
+scorer binds: it gains $3.4\times$ less than majority vote on GSM8K at $n=64$ and \emph{loses} F1 on
+CoTaEval, whose infringement event not even the risky model reaches (Appendix~\ref{app:selection}). A
+capability gap is the regime a deployer most wants covered, and \emph{neither} mechanism covers it with a
+certificate a rights-holder can audit. Nor
+does selection improve facts: its FActScore precision is its anchor's, $0.042$, below every metered arm,
+though the best of its $64$ draws reaches $0.5054$ (Appendix~\ref{app:hemetrics}). \textbf{The judged
+comparison measures the serving configuration as much as the mechanism}: against the risky model it
+reverses under a chat template, on AlpacaEval \citep{li2023alpacaeval} and at the authors' temperature $0.7$
+and penalty $1.1$, and vanishes against a stronger opponent, when empty answers count as losses or with a
+scorer from another family (Table~\ref{tab:served}, Figure~\ref{fig:h2h}); under Holm's correction over $21$
+rows the headline row does not survive, every judge is a language model, the pre-specified one
+order-consistent on a third of items, and no human rated anything. \textbf{And it is paid for in compute}:
+$61.3\times$ the meter's forward passes and $21.8\times$ its wall-clock in draws alone, though batched it takes $0.22\times$ its time per request at the $70$B pair, and held to the
+meter's own compute it \emph{loses}. The \emph{gain} is the scorer's capability: a $0.5$B scorer never
+reaches the meter, a $1.5$B one buys $87\%$ of the $7.6$B gain on the judged workload and nothing on GSM8K,
+and where that bar sits is open; the \emph{price} is the drawing, not the scorer's one batched pass
+(Appendix~\ref{app:saturation}). On TriviaQA answers $\log 64$ reaches $S(x)$ on $36.2\%$ of questions,
+against $83.6\%$ for the meter's smallest budget, so $n$ must be set against the shortest work protected; we
+tested no lyrics, poems or code, and extraction is sixteen English novels plus four in French and German.
+\textbf{Why certify at all}: through the chat template the meter first beats selection at $k=3$, before a
+memoriser served the same way leaks, and a deployer may rationally prefer that measured protection; only a
+certificate covers works nobody tested and paraphrases nobody scored. How close a policy of the shape Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier is open.
 
 \paragraph{Conclusion.}\label{sec:conclusion}
-A per-token budget on the whole sequence must grow with the work or be spent almost nowhere, and a meter
-that tilts toward the risky model pays the imitation cost on every token it imitates. Spent instead on
-choices among a safe model's draws, a copyright budget is $\log n$ nats at any output length, or a few
-times that per window in installments, which buy more; it holds against an adversarial scorer for one
-response and composes to a query horizon a deployer can enforce. Where the
-metered decoder's certificate excludes anything it is its own anchor, which selection improves on; where
-it is the risky model, which of the two is better depends on how that model is served and decoded and which scorer selects.
+Spent on choices among a safe model's draws, a copyright budget is $\log n$ nats at any length, or a few times that per window in installments, which buy more, and beats
+every meter we ran at a matched certificate; where the risky model is far stronger, a windowed meter
+wins, certifying exact windows only.

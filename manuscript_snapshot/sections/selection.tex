@@ -1,18 +1,41 @@
-% v11 (2026-09-24, sixth review round): Proposition 2 is the exact binary-Renyi inversion, attained at
-% every order; the window threshold replaces "never by T"; Table 1 prices how many queries a window's
-% certificate survives and the sampled near-verbatim event instead of a 400-nat cap that is itself
-% above the window's surprisal (the cap's arithmetic moved to Appendix A). v10 is in
-% DA5001_Project/output/review_audit/pre_v11_2026-09-24/sections/.
+% v13 (2026-09-25, seventh review round): the threshold now comes first and the certificate that does not
+% grow second; the three protected objects (passage, window, target) are defined once, in units; the
+% rights-holder's audit is priced per work. v12 is in
+% DA5001_Project/output/review_audit/pre_v13_2026-09-25/sections/.
 
-\section{Selection anchoring}\label{sec:method}\label{sec:selection}
+\section{What a budget certifies}\label{sec:method}\label{sec:selection}
 
 Fix a prompt. Write $p_s$ for a \emph{safe} model, trained without the protected work, and $p_r$ for the
 \emph{risky} model a deployer would rather serve. A defence serves a law $q$ and certifies
 $D(q\,\|\,p_s) \le K$ for some divergence $D$. For a protected work $x$ write $S(x) = -\log p_s(x)$ for
-the safe model's surprisal of it and $s(x)$ for that surprisal per token. A \emph{selection rule} draws
-$y_1,\dots,y_n \sim p_s$ i.i.d., scores them with any function $f$, and serves one. Every served token
-was sampled from $p_s$; the served law departs from $p_s$ only through which draw survives, and that
-choice is all the certificate charges (notation: Table~\ref{tab:notation}).
+the safe model's surprisal of it and $s(x)$ for that surprisal per token (notation: Table~\ref{tab:notation}).
+Three protected objects recur, and they differ in length. A \emph{passage} is the continuation a CopyBench
+item protects \citep{chen2024copybench}, $64$ tokens and $204.8$ nats under the authors' anchor at the
+median of the $758$ we test; a \emph{window} is $50$ tokens of protected text given the true text before
+it, median $S_w = 159.8$ nats; a \emph{target} is what an extraction sweep asks for, all of a passage's text
+after a $20$-token seed, $259.5$ tokens and $849$ nats at the median of the $100$ passages attacked.
+
+\begin{proposition}[The vacuity threshold does not depend on the order]\label{prop:threshold}
+Let $E$ be an event with $\Pr_{p_s}[E] = e^{-S}$, and for $\alpha \in [1,\infty]$ let
+$b_\alpha(K) = \sup\{\Pr_q[E] : D_\alpha(q\,\|\,p_s) \le K\}$, the most a budget of $K$ nats at order
+$\alpha$ can say about $E$. Then $b_\alpha(K) = \max\{a : d_\alpha(a\,\|\,e^{-S}) \le K\}$, with
+$d_\alpha$ the R\'enyi divergence between Bernoulli laws, and $b_\alpha(K) = 1$ if and only if $K \ge S$,
+at every order.
+\end{proposition}
+
+Data processing gives $d_\alpha(\Pr_q[E]\,\|\,\Pr_{p_s}[E]) \le D_\alpha(q\,\|\,p_s)$, a law that
+reweights $p_s$ uniformly on $E$ and on its complement attains it, and $d_\alpha(1\,\|\,e^{-S}) = S$ at
+every order (Appendix~\ref{app:proofs}). Below it the orders differ: the pathwise bound
+is $e^{K-S}$ and the KL bound falls only as about $K/S$, so a KL budget of half a work's surprisal still
+permits the work half the time. For a work served at its own length, $K = kT$ and $S(x) = s(x)T$ grow
+together and the KL bound, about $k/s(x)$, does not improve with length; $w$ tokens inside a
+$T_{\max}$-token response are unprotected from $k = s(x)\,w/T_{\max}$, a quarter of $s(x)$ for $50$ tokens at
+$T_{\max} = 200$ (Table~\ref{tab:windowvacuity}). \citet{vyas2023provable} report their budget against the
+safe model's entropy; new here is the exact threshold, for one event and every order at once.
+
+\paragraph{A budget that does not grow.} A \emph{selection rule} draws $y_1,\dots,y_n \sim p_s$ i.i.d.,
+scores them with any function $f$, and serves one. Every served token was sampled from $p_s$; the served
+law departs from $p_s$ only through which draw survives, and that choice is all the certificate charges.
 
 \begin{proposition}[The budget of a selection rule]\label{prop:selection}
 Let $y_1,\dots,y_n$ be i.i.d.\ $p_s$ and let $q$ be the law of \emph{any} rule that serves one of
@@ -39,26 +62,9 @@ them:
 \textbf{self-consistency \citep{wang2023selfconsistency} is an instance}, serving one of the draws, one with the
 modal answer. The bound is tight: if $f$ has a unique maximiser $y^\star$ with $p_s(y^\star) = p$, then $q(y^\star) = 1-(1-p)^n \to np$. Over a web-trained model, as
 self-consistency is usually run, the same bound certifies nothing about copyright: the guarantee is
-relative to $p_s$ and is only as good as the anchor (Section~\ref{sec:leakage}).
-
-\begin{proposition}[The vacuity threshold does not depend on the order]\label{prop:threshold}
-Let $E$ be an event with $\Pr_{p_s}[E] = e^{-S}$, and for $\alpha \in [1,\infty]$ let
-$b_\alpha(K) = \sup\{\Pr_q[E] : D_\alpha(q\,\|\,p_s) \le K\}$, the most a budget of $K$ nats at order
-$\alpha$ can say about $E$. Then $b_\alpha(K) = \max\{a : d_\alpha(a\,\|\,e^{-S}) \le K\}$, with
-$d_\alpha$ the R\'enyi divergence between Bernoulli laws, and $b_\alpha(K) = 1$ if and only if $K \ge S$,
-at every order.
-\end{proposition}
-
-Data processing gives $d_\alpha(\Pr_q[E]\,\|\,\Pr_{p_s}[E]) \le D_\alpha(q\,\|\,p_s)$, a law that
-reweights $p_s$ uniformly on $E$ and on its complement attains it, and $d_\alpha(1\,\|\,e^{-S}) = S$ at
-every order (Appendix~\ref{app:proofs}). Below the threshold the orders part company: the pathwise bound
-is $e^{K-S}$ and the KL bound falls only as about $K/S$, so a KL budget of half a work's surprisal still
-permits the work half the time. For a work served at its own length $K = kT$ and $S(x) = s(x)T$ grow
-together, so vacuity is decided by $k$ against $s(x)$ and the KL bound, about $k/s(x)$, does not improve
-with length. A window is exposed sooner: $w$ tokens inside a $T_{\max}$-token response are unprotected
-from $k = s(x)\,w/T_{\max}$, a quarter of $s(x)$ for $50$ tokens at $T_{\max} = 200$
-(Table~\ref{tab:windowvacuity}). \citet{vyas2023provable} report their budget as a fraction of the safe
-model's entropy; new here is the exact threshold, for a specific event and every order at once.
+relative to $p_s$ and is only as good as the anchor (Section~\ref{sec:leakage}). Selection is also not a
+substitute for anchored decoding: it never consults $p_r$, so it cannot serve a capability the safe model
+lacks. It is a certified way to improve a licensed model.
 
 \begin{table}[t]
 \centering\footnotesize
@@ -67,7 +73,7 @@ model's entropy; new here is the exact threshold, for a specific event and every
 measured mean spend in brackets, bounded by Proposition~\ref{prop:threshold} ($1$: nothing excluded).
 Selection: pathwise $K = \log n$, bound $n e^{-S_w}$. \emph{queries}: adaptive queries whose composed
 certificate stays below $S_w$. \emph{draws}: clean anchor draws that certify near-verbatim reproduction
-below $1\%$ per response ($3n/N$); no feasible sample does so for a KL certificate of $100$ nats or more.}
+of one work below $1\%$ per response ($3n/N$); no feasible sample does so for a KL certificate of $100$ nats or more.}
 \label{tab:certificate}
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{@{}llrrrrr@{}}
@@ -88,9 +94,10 @@ selection, $n=64$ & pathwise & $4.16$ & $0.026$ & $10^{-67.6}$ & $38$ & $19{,}20
 Table~\ref{tab:certificate} prices the exact window at its own position, whose probability under the
 anchor has a closed form. Reproducing any near-verbatim variant of it has none, and a rights-holder can
 bound it only by sampling the anchor: $N$ clean draws give $3/N$ at $95\%$, so selection certifies the
-event at $3n/N$ per response, $0.75\%$ at $n=64$ from the $25{,}600$ clean draws of
-Section~\ref{sec:leakage}, while a pathwise certificate of $K$ nats needs more than $3e^{K}$ draws to say
-anything. Max-divergence adds exactly under adaptive composition, so $m$ responses at $n$ draws each are
+event at $3n/N$ per response: per work, $19{,}200$ draws for $1\%$ at $n=64$, about $0.12$ A100-hours, and
+$11{,}901$ for $10^5$ works, where our $25{,}600$ clean draws certify only the \emph{average} passage,
+$0.75\%$ at $n=64$ (Appendix~\ref{app:perwork}); a pathwise certificate of $K$ nats needs more than $3e^{K}$ draws. Max-divergence adds
+exactly under adaptive composition, so $m$ responses at $n$ draws each are
 certified at $m\log n$ however the queries were chosen (Appendix~\ref{app:compose}); per-query
 access-freeness does not compose in general \citep{cohen2025blameless}. For one response to reproduce the
 window the union bound gives $m\,n\,e^{-S_w}$, below $10^{-60}$ after $10^4$ queries at $n=64$, but a
@@ -100,5 +107,7 @@ realises $3.97$ of the $6$ bits a response at $n=64$ can carry (Appendix~\ref{ap
 collusion, extending a memorised passage one token per query with the draw the memoriser ranks highest,
 reconstructs none of $100$ windows after $50$ queries at $n=64$, though the certificate ($207.9$ nats)
 is vacuous for $88$: the anchor's draws hold the true next token on $12.3\%$ of queries
-(Appendix~\ref{app:prefixext}). That is looseness, not safety; a deployer who cannot vet the scorer
-must cap each user's queries below $S/\log n$ for the shortest event it protects.
+(Appendix~\ref{app:prefixext}). That is looseness, not safety: a deployer who cannot vet the scorer must
+cap each user's queries below $S/\log n$ for the shortest event it protects, $38$ at $n=64$ for a window, a
+cap few public services would accept; a vetted scorer, one that neither holds the work nor takes the user's
+instructions, removes the need, and the certificate cannot check that.

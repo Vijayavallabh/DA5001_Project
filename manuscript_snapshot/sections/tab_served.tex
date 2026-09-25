@@ -1,0 +1,48 @@
+% v13 (2026-09-25): Table tab:served, moved from Section 4 to Appendix C (page budget); the main text
+% quotes its reversals in prose. Kept as its own file so guards can read it wherever it is placed.
+\begin{table}[ht]
+\centering\footnotesize
+\caption{\textbf{Against the risky model: selection and the metered decoder, by how the risky model is served.}
+Order-averaged judge-B levels against one opponent per block, the risky model's own draw ($0.5$ is
+parity); $500$ prompts, temperature $1.0$ without repetition penalty except in the block at the authors' $0.7$ and $1.1$, whose $K/S_w$ is against the warped anchor's $S_w = 177.4$ nats. \emph{active}: share of the judged
+trajectories' decode steps whose served token is a strict blend of the two models; $K/S_w$: the certificate against a $50$-token window ($S_w = 159.8$ nats; $139.7$
+under Comma-7B), which excludes nothing at or above $1$. Last column: selection at $n=64$ ($3.175$ nats,
+a bound attained only for a tie-free score and unrepeated strings, Appendix~\ref{app:realisedkl}) minus the meter, paired over prompts, $95\%$ interval. Levels compare within a block only
+(Appendix~\ref{app:served}).}
+\label{tab:served}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+risky model, as served & $k$ & active & $K/S_w$ & meter & selection $-$ meter \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{opponent: the $8$B-Instruct without its chat template; anchor alone $0.439$, selection $0.555$}} \\
+$8$B-Instruct, continuing text & $0.5$ & $49.1\%$ & $0.63$ & $0.436$ & $+0.1195$ $[+0.0955, +0.1435]$ \\
+ & $1$ & $6.6\%$ & $1.25$ & $0.456$ & $+0.0995$ $[+0.074, +0.1245]$ \\
+ & $10$ & $0.008\%$ & $12.5$ & $0.490$ & $+0.0655$ $[+0.040, +0.092]$ \\
+$70$B base (the authors' pair) & $0.5$ & $26.5\%$ & $0.63$ & $0.429$ & $+0.1265$ $[+0.103, +0.1495]$ \\
+ & $1$ & $6.3\%$ & $1.25$ & $0.433$ & $+0.1225$ $[+0.098, +0.146]$ \\
+ & $20$ & $0.00\%$ & $25.0$ & $0.451$ & $+0.1040$ $[+0.080, +0.1285]$ \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{at the authors' $0.7$ and $1.1$, other host; opponent: the $8$B's own draw there; anchor $0.312$, selection $0.427$}} \\
+$8$B-Instruct, continuing text & $0.5$ & $44.6\%$ & $0.56$ & $0.394$ & $+0.0325$ $[+0.008, +0.0565]$ \\
+ & $1$ & $16.4\%$ & $1.13$ & $0.441$ & $-0.0145$ $[-0.039, +0.010]$ \\
+ & $10$ & $0.040\%$ & $11.3$ & $0.500$ & $-0.0730$ $[-0.096, -0.0515]$ \\
+$70$B base (the authors' pair) & $0.5$ & $46.4\%$ & $0.56$ & $0.330$ & $+0.0970$ $[+0.073, +0.1215]$ \\
+ & $1$ & $20.2\%$ & $1.13$ & $0.319$ & $+0.1080$ $[+0.083, +0.133]$ \\
+ & $20$ & $0.00\%$ & $22.5$ & $0.370$ & $+0.0565$ $[+0.0305, +0.082]$ \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{AnchoredByte, $k$ per byte, own pass: Comma-7B alone $0.4660$, selection at Comma-7B $0.6245$}} \\
+$70$B base with Comma-7B & $0.1$ & $18.4\%$ & $0.57$ & $0.4860$ & $+0.1385$ $[+0.1155, +0.1620]$ \\
+ & $0.5$ & $2.8\%$ & $2.86$ & $0.5005$ & $+0.1240$ $[+0.1010, +0.1470]$ \\
+ & $2$ & $0.6\%$ & $11.45$ & $0.4900$ & $+0.1345$ $[+0.1105, +0.1590]$ \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{opponent: $8$B-Instruct via its chat template; anchor $0.238$, selection $0.363$ ($^\dagger$other host: $0.2385$, $0.367$)}} \\
+$8$B-Instruct, chat template & $0.5^\dagger$ & $62.7\%$ & $0.63$ & $0.248$ & $+0.1195$ $[+0.0925, +0.1465]$ \\
+ & $1$ & $16.8\%$ & $1.25$ & $0.322$ & $+0.0410$ $[+0.012, +0.0705]$ \\
+ & $2^\dagger$ & $2.5\%$ & $2.50$ & $0.384$ & $-0.0170$ $[-0.046, +0.0125]$ \\
+ & $3^\dagger$ & $1.1\%$ & $3.75$ & $0.405$ & $-0.0380$ $[-0.068, -0.008]$ \\
+ & $5^\dagger$ & $0.23\%$ & $6.26$ & $0.427$ & $-0.0600$ $[-0.091, -0.029]$ \\
+ & $10$ & $0.16\%$ & $12.5$ & $0.501$ & $-0.1380$ $[-0.167, -0.107]$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -28,7 +28,7 @@ nats, selection admits $192$ responses at $n=8$ at the pathwise charge, and the 
 $1.204$ nats would give $332$; a meter at $k=3$ charged its measured $165.0$ nats admits $2$, and none at
 the $600$ it is certified at. The cap protects a whole target: it exceeds a $50$-token window's $159.8$
 nats, so for a window the composed certificate lapses long before the cap is reached
-(Table~\ref{tab:certificate}).
+(Table~\ref{tab:certificate}). Accounting per work rather than per user does not relax this: users can pool their transcripts, so a per-work budget is shared by everyone who can query the deployment, and the responses that exhaust a window's certificate become a total rather than a per-user allowance. Only a scorer that neither holds the work nor takes a user's instructions removes the channel the cap exists for. For an untrusted scorer the cap is $\lfloor S/\log n\rfloor$ queries for the shortest event protected: at $n=8$ and $n=64$, $15$ and $7$ for a $10$-token window of median surprisal $31.97$ nats, $76$ and $38$ for a $50$-token one, and for a TriviaQA answer, median $5.78$ nats, $2$ and $1$, with $20.8\%$ and $36.2\%$ of answers allowing none (\texttt{results/\allowbreak query\_\allowbreak caps.csv}).
 
 \paragraph{Proposition~\ref{prop:threshold}.}
 Write $p = \Pr_{p_s}[E] = e^{-S}$ and $a = \Pr_q[E]$. R\'enyi divergence satisfies data processing
@@ -170,7 +170,7 @@ $\Lambda^*_s(u_{\max}) = -\log\Pr_{p_s}[U = u_{\max}] \le \log(1/\pi)$; so for a
 $\mathbb{E}[U]$, $\Lambda^*_s(\mathbb{E}_q[U]) \le \log(1/\pi)$, and $D_{\mathrm{KL}}(q\|p_s) \ge \gamma T$
 gives the ratio. The proviso is substantive: a utility attained by one exact long
 string has $\Lambda^*_s = \Theta(T)$ and no separation survives. Winning a judged comparison is not of that
-kind: the anchor's own unassisted draw already wins over a quarter of them outright, so winning every one, at any length, would cost an optimal policy $1.30$ nats, and the decoder spends $132$ times that to reach parity. \qed
+kind: the anchor's own unassisted draw wins both presentation orders on $2.2\%$ of prompts, so winning every one, at any length, would cost an optimal policy $3.82$ nats, and the decoder spends $44.9$ times that to reach parity; on a single-order pass, where a win in the one order shown comes on over a quarter of prompts, the same reading is $1.30$ nats and $132$ times (Appendix~\ref{app:frontierratio}). \qed
 
 \paragraph{Protection outruns certification.}
 \begin{proposition}\label{prop:outrun}
@@ -183,7 +183,8 @@ with equality iff the running ratio is maximised at the last token.
 divergence between the served and reference probabilities of that token,
 $c_i \ge d(q \,\|\, e^{-s_i}) \ge (1-\eta)s_i - \log 2$ whenever $q \ge 1-\eta$. The banking rule
 \citep[Algorithm~1]{he2026anchored} caps the charge on the first $t$ tokens at $tk - \delta$, so
-$tk \ge (1-\eta)(\sum_{i \le t} s_i + \delta) - t\log 2$; dividing by $t$ and maximising over $t$ gives the
+$tk \ge (1-\eta)\sum_{i \le t} s_i + \delta - t\log 2$, which is at least
+$(1-\eta)(\sum_{i \le t} s_i + \delta) - t\log 2$; dividing by $t$ and maximising over $t$ gives the
 first claim, and a running maximum dominates its endpoint $(S(x)+\delta)/T$. \qed Equality holds exactly when the running ratio peaks at the last token; under a constant rate with $\delta > 0$ it is $s(x) + \delta/t$, strictly decreasing, so the maximum sits at $t=1$ and the inequality is strict.
 $k_{\mathrm{crit}}$ is the Loynes running maximum of a queue's workload \citep{loynes1962stability},
 equivalently the smallest rate of a $(\sigma,\rho)$ arrival curve admitting the surprisal process

@@ -30,8 +30,8 @@
 \renewcommand{\textfraction}{0.06}
 \renewcommand{\floatpagefraction}{0.75}
 
-\title{Two Nats, Not Six Hundred\\
-Spending the Copyright Budget on the Draw Instead of the Token}
+\title{What Does a Copyright Budget Certify?\\
+An Exact Threshold for Per-Token Meters, and a Length-Independent Certificate for Selection}
 
 \author{Anonymous authors\\Paper under double-blind review}
 
@@ -39,18 +39,23 @@ Spending the Copyright Budget on the Draw Instead of the Token}
 \maketitle
 
 \begin{abstract}
-Certified inference-time copyright defences bound how far the served distribution drifts from a
-\emph{safe} model trained without the protected work. Anchored decoding charges that drift per token, so
-its certificate grows with the output: at every R\'enyi order it excludes nothing about a work once it
-reaches the work's surprisal under the safe model, and a $50$-token window of a $200$-token response is
-exposed from a quarter of that rate. We spend the budget on the draw instead: any rule that serves one of
-$n$ draws from the safe model, whether a reward model, a vote or an adversary picks it, satisfies
-$q(y) \le n\,p_s(y)$, a \emph{pathwise} certificate of exactly $\log n$ nats however long the output. A meter that serves the risky model pays its divergence from the safe
-model on every imitated token, a median $40$ nats per $50$-token window of ordinary text, so at $k=0.5$,
-where its certificate still excludes something, neither of two judges separates it from its safe model at temperature $1.0$, which best-of-$64$ improves on; at the authors' $0.7$ it gains and ties selection. Judged against one fixed opponent, selection wins against the risky model continuing text at temperature $1.0$ (five of six judges agree at $k=10$, though not with a scorer from another family), against their $70$B pair at either temperature and against their byte-level decoder, and loses to the $8$B at their temperature $0.7$ and to it served as a chat assistant or following instructions; it never consults the risky model, so no $n$ rescues an anchor that cannot do the
-task. With no judge, majority vote lifts GSM8K from $0.320$ to $0.546$. Served from the anchor alone it costs $21.8\times$ the meter's
-decode time unbatched and $0.22\times$ and $0.061\times$ batched at the authors' two $70$B pairs, and loses
-at matched compute. Its leakage, zero at any $n \le 64$ or at $256$, is relative to the anchor, which must be vetted, and across many queries a colluding scorer can spend the certificate.
+Certified inference-time copyright defences publish a divergence budget between the served distribution
+and a safe model trained without the protected works. A budget of $K$ nats says nothing about a work whose
+surprisal under the safe model is at most $K$, at every R\'enyi order. Anchored decoding charges its budget
+per token, so it grows with the output, and at its authors' book setting it excludes nothing about any of
+$758$ protected passages. At $k=0.5$, the one budget that still covers a $50$-token window, neither of two
+judges separates it from its safe model. Spent instead on choosing among $n$ draws from the safe model, by
+any rule, an adversary's included, the budget is a pathwise certificate of exactly $\log n$ nats at any
+output length, adding up exactly over queries. At matched certificates, best-of-$64$ and its blockwise
+variant beat every meter we ran under two judges, including one that caps every $50$-token window; that
+windowed meter wins where the risky model is far stronger, as a chat assistant, but certifies exact windows
+only and leaks near-verbatim text at $125$ nats, where both judges prefer it. Where a meter's certificate
+is void, selection wins against the authors' own $70$B pair and against their byte-level decoder, and
+loses to the $8$B at their temperature $0.7$ or as a chat assistant. With no judge, majority vote lifts
+GSM8K from $0.320$ to $0.546$. Selection never consults the risky model, so no $n$ rescues an anchor that
+cannot do the task; served from the anchor alone it costs $21.8\times$ a metered decode and loses at
+matched compute. Its leakage, zero at any $n \le 64$ or at $256$, is relative to the anchor, which must be
+vetted, and a colluding scorer can spend the certificate across queries.
 \end{abstract}
 
 \input{sections/iclr_intro}
@@ -68,7 +73,8 @@ at matched compute. Its leakage, zero at any $n \le 64$ or at $256$, is relative
 \section*{Ethics Statement}
 Auditing a copyright defence means showing where it fails, so this paper fine-tunes memorising models
 and attacks a protected decoder. We report aggregate recall only, never reconstructed text, on passages
-already published as extraction benchmarks (CopyBench, BookMIA); the anonymised repository ships the
+already published as extraction benchmarks (CopyBench, \citealp{chen2024copybench}; BookMIA,
+\citealp{shi2024detecting}); the anonymised repository ships the
 fine-tuning recipes and every analysis script but not the merged memorising weights, which reproduce
 copyrighted text on demand. The constructive result carries its own risk, misplaced confidence: $\log n$
 bounds the probability that the served text is a protected work \emph{relative to the safe model's own},
@@ -81,7 +87,8 @@ protected passages' own prefixes and score recall. \textbf{The prefix length is 
 prefix tokens and leaks on $31$ of $50$ passages at $150$, and the check is not monotone in the prefix,
 so it must run at every prefix length the deployment accepts, and at the temperature it samples at (Appendix~\ref{app:vetting}). Passing is
 evidence, not proof, and like a blocklist the check speaks only about the works it is handed. Our
-statements concern mechanisms; we make no claim about legal thresholds for copyright infringement. The
+statements concern mechanisms; whether near-access-freeness tracks infringement is contested
+\citep{elkinkoren2024copyright}, and we make no claim about legal thresholds for copyright infringement. The
 recommendation we would rather see quoted than the theorems: publish $k/s(x)$ rather than $k$, prefer a
 budget whose size does not grow with what it protects, vet the anchor before quoting $\log n$,
 because $n$ multiplies whatever the anchor already has, and unless the scorer is vetted too, cap each

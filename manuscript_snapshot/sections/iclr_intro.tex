@@ -1,5 +1,7 @@
-% v10 (2026-09-24): leads with the contribution; Figure 1 is the overview (mechanism schematic and the
-% two measured consequences). v9 kept in output/review_audit/pre_v10_2026-09-24/sections/.
+% v13 (2026-09-25, seventh review round): leads with the threshold and the certificate that does not grow,
+% positions selection as a certified way to improve a licensed model rather than a substitute for anchored
+% decoding, and puts the comparisons at a matched certificate first. v12 is in
+% output/review_audit/pre_v13_2026-09-25/sections/.
 
 \section{Introduction}\label{sec:intro}
 
@@ -13,22 +15,25 @@ deployed instance, anchored decoding \citep{he2026anchored}, charges the diverge
 bucket of rate $k$, certifies a $T$-token response at $K = kT$, and publishes $k$ as a deployer would
 publish the $\varepsilon$ of differential privacy.
 
-A budget charged per token grows with the output, and a certificate about a work $x$ says nothing once
-$K$ reaches the safe model's surprisal of it, $S(x) = -\log p_s(x)$, at every R\'enyi order
-(Proposition~\ref{prop:threshold}). For a work served at its own length both grow with it, so vacuity is
-decided by $k$ against the surprisal rate $s(x)$ (Figure~\ref{fig:selection}c), and a $50$-token window
-of a $200$-token response is exposed from $k = s(x)/4$. At the authors' book setting, $k=3$ over $200$
-tokens, $K = 600$ nats and the certificate is vacuous for all $758$ protected passages we test, whose
-median surprisal is $204.8$ nats.
+We ask what such a budget excludes. A certificate about a work $x$ says nothing once $K$ reaches the safe
+model's surprisal of it, $S(x) = -\log p_s(x)$, and this threshold is the same at every R\'enyi order
+(Proposition~\ref{prop:threshold}). A budget charged per token grows with the output, so for a work served
+at its own length vacuity is decided by $k$ against the surprisal rate $s(x)$
+(Figure~\ref{fig:selection}c), and a $50$-token window of a $200$-token response is exposed from
+$k = s(x)/4$. At the authors' book setting, $k=3$ over $200$ tokens, $K = 600$ nats and the certificate is
+vacuous for all $758$ protected passages we test, whose median surprisal is $204.8$ nats.
 
-\textbf{We spend the budget on the draw.} Draw $n$ completions from the safe model, score them with
+\textbf{A budget that does not grow.} Draw $n$ completions from the safe model, score them with
 anything, and serve one (Figure~\ref{fig:selection}b). The served law satisfies $q(y) \le n\,p_s(y)$ for
 every $y$ (Proposition~\ref{prop:selection}): a pathwise certificate of $\log n$ nats that holds for any
-scorer, an adversarial one included, whatever the length of the output. At $n=8$ it is $2.08$ nats where
-the authors' meter publishes $600$. Self-consistency \citep{wang2023selfconsistency} run over a safe model
-is an instance. What separates the two is what the budget buys: a choice among the safe model's own
-draws, or the risky model's tokens, whose divergence from the safe model a meter pays on every token it
-imitates, about $40$ nats for a $50$-token window of ordinary text (Section~\ref{sec:frontier}).
+scorer, an adversarial one included, whatever the length of the output, and adds up to $m \log n$ over $m$
+queries; at $n=8$ it is $2.08$ nats where the authors' meter publishes $600$, and self-consistency
+\citep{wang2023selfconsistency} run over a safe model is an instance. Selection never consults the risky
+model, so it is no substitute for anchored decoding but a certified way to improve a licensed model, and it
+cannot supply a capability that model lacks. What separates the two is what the budget
+buys: a choice among the safe model's own draws, or the risky model's tokens, whose divergence from the
+safe model a meter pays on every token it imitates, about $40$ nats for a $50$-token window of ordinary
+text (Section~\ref{sec:frontier}).
 
 \begin{figure}[t]
 \centering
@@ -40,29 +45,33 @@ draws $n$ outputs from $p_s$ and serves one; only the choice is charged. \textbf
 its own length the meter's $K = kT$ (red) and the work's price $S(x) = s(x)T$ (grey, nine pairs) are both
 rays, so vacuity ($K \ge S(x)$, shaded) is decided by $k/s(x)$; a shorter window is exposed at a lower
 $k$, and selection's $\log n$ (blue) is flat. \textbf{(d)} One judge pass: order-averaged level against the
-risky model's own draw ($0.5$ is parity); $x$ is the meter's measured spend and selection's KL bound, its
-realised KL wherever the score has no tie (Appendix~\ref{app:realisedkl}), arms at $0$ nats drawn at
-$10^{-3}$. The meter reaches parity only as the risky model; selection passes it at $n=8$. Dotted:
-Theorem~\ref{thm:nfl}'s frontier, a lower bound no decoder here attains.}
+risky model's own draw ($0.5$ is parity), at the divergence the meter \emph{spent} (filled, measured) or
+selection is \emph{certified} not to exceed (open, a KL bound; Appendix~\ref{app:realisedkl}); arms at $0$ nats
+drawn at $10^{-3}$. Dotted: Theorem~\ref{thm:nfl}'s frontier, a lower bound no decoder here attains.}
 \label{fig:selection}
 \end{figure}
 
-Against anchored decoding at the authors' own anchor, the one budget whose certificate says anything
-about a $50$-token window, $k=0.5$, leaves the meter at temperature $1.0$ judged indistinguishable from its safe model, which best-of-$64$ ($\log 64 = 4.16$ nats) improves on, and at the authors' $0.7$ tied with it; at larger budgets the meter is the risky model, and
-best-of-$64$ is judged better than that model continuing text at temperature $1.0$, with its Qwen scorer though not with a gemma one, and worse than it at the authors' $0.7$ or served as a chat assistant or following instructions (Table~\ref{tab:served}, Figure~\ref{fig:h2h}). With an adversarial scorer selection's
-near-verbatim recall is $0.0000$ at every $n \le 64$ and at $n=256$, a bound \emph{relative} to a vetted anchor; with no
-judge, majority vote over a safe model lifts GSM8K exact match from $0.320$ to $0.546$ for $3.47$ nats
-(Figures~\ref{fig:breadth} and~\ref{fig:safety}).
+\textbf{At a matched certificate}, where two certificates can be compared, selection and selection in
+installments beat every meter we ran: anchored decoding at $k=0.5$, the one budget whose certificate still
+says anything about a $50$-token window, is judged indistinguishable from its safe model, which best-of-$64$
+($\log 64 = 4.16$ nats) improves on, and a meter that caps every $50$-token window, the design our
+dichotomy leaves open, trails selection up to $40$ nats a window (Table~\ref{tab:matched}); where the risky
+model is far stronger, served as a chat assistant, it wins, but it certifies only the exact window, and
+at $125$ nats, where both judges prefer it, it leaks near-verbatim text. At larger budgets anchored decoding serves the risky model, and
+which of the two is judged better depends on how that model is served. With an adversarial scorer selection's near-verbatim recall is
+$0.0000$ at every $n \le 64$ and at $n=256$, a bound \emph{relative} to a vetted anchor (Figure~\ref{fig:safety}).
 
 \paragraph{Contributions.}
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt,parsep=0pt]
+\item \textbf{What a budget certifies}: nothing about an event of surprisal $S \le K$, at every R\'enyi order
+(Proposition~\ref{prop:threshold}); for a whole-sequence per-token budget, vacuity if it grows and sparsity
+if it is bounded (Proposition~\ref{prop:sparse}), and the imitation cost a meter pays on every token it imitates
+(Proposition~\ref{prop:imitation}), two short consequences of the chain rule; and for anchored decoding,
+extraction from $0.88$ to $1.17$ of $s(x)$ over nine pairs, where its certificate is already void.
 \item \textbf{A certificate that does not grow with the output}: pathwise $\log n$ for any selection
-rule and score (Proposition~\ref{prop:selection}), $m\log n$ over $m$ adaptive queries, against a vacuity
-threshold exact at every R\'enyi order (Proposition~\ref{prop:threshold}; Section~\ref{sec:method}).
-\item \textbf{What a per-token rate can certify}: vacuous from $k = s(x)$ if it grows with the
-sequence, sparse if bounded (Proposition~\ref{prop:sparse}), and the imitation cost on every token a meter
-imitates (Proposition~\ref{prop:imitation}), tens of nats a window even for a windowed meter
-(Section~\ref{sec:frontier}).
-\item \textbf{A scoped head-to-head}: where the meter certifies anything selection matches or beats it; elsewhere the sign depends on how the risky model is served and decoded; selection costs $21.8\times$ a
-metered decode served from the anchor alone and loses at matched compute (Section~\ref{sec:experiments}).
+rule and score (Proposition~\ref{prop:selection}), $m\log n$ over $m$ adaptive queries, with what it does not
+buy priced: the query horizon, the per-work audit and the vetted anchor (Section~\ref{sec:method}).
+\item \textbf{Matched-certificate head-to-heads} under two judges, the windowed meter included,
+with the risky-model comparisons apart and the cost, $21.8\times$ a metered decode and a loss
+at matched compute.
 \end{itemize}

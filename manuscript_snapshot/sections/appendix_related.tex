@@ -108,6 +108,11 @@ ordinary prompts CP-Fuse is the risky model with a device attached, and judged a
 arithmetic, not evidence. Its guarantee holds per query given a split only the trainer can attest, and
 per-query access-freeness does not compose \citep{cohen2025blameless}.
 
+The accounting tools we use
+\citep{feldman2020renyifilter,whitehouse2023fully,rogers2016odometers,loynes1962stability,cruz1991calculus}
+and the extraction protocol \citep{carlini2021extracting,carlini2023quantifying,cooper2025extracting} are
+standard.
+
 \paragraph{Other defences.}
 BloomScrub certifies takedowns by Bloom-filter screening with abstention \citep{zhang2025bloomscrub}; SILO
 isolates legal risk in a nonparametric datastore \citep{min2024silo}; others refuse \citep{liu2024shield} or

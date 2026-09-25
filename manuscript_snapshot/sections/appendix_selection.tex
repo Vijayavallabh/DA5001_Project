@@ -130,6 +130,25 @@ re-run on a different $n$-grid moves by $0.04$ to $0.07$; the head-to-head escap
 paired within one pass. Judge~C is the opponent's own checkpoint, \texttt{Llama-3.1-8B-Instruct}, a self-preference risk
 \citep{panickssery2024llm}.
 
+\paragraph{How far the judges can be trusted.}\label{app:judgevalidity}
+Six judges read the headline's texts, and the share of items on which a judge gives the same verdict in both
+presentation orders runs $0.288$ to $0.370$ over the four arms for B, $0.630$ to $0.712$ for C, $0.756$ to
+$0.796$ for D (\texttt{Qwen2.5-72B}), $0.354$ to $0.420$ for E (\texttt{Mixtral-8x7B}), $0.676$ to $0.774$ for F
+and $0.784$ to $0.846$ for G (\texttt{gemma-2-27b-it}) (\texttt{results/\allowbreak judge\_\allowbreak order\_\allowbreak consistency.csv}). Three checks of the pre-specified judge~B, all in one pass that
+reproduces the committed levels on $500$ of $500$ prompts (\texttt{results/\allowbreak windowed\_\allowbreak meter.csv}). It detects a known difference: a second draw of the risky model gains $+0.065$
+$[+0.0395, +0.090]$ over the anchor ($+0.1485$ under~G). The $k=0.5$ null is informative: it had $80\%$ power
+against $+0.0305$, and its $90\%$ interval, $[-0.0205, +0.015]$, sits inside half of selection's gain, so a
+two one-sided test calls it equivalent to zero at that margin (post hoc). And on the $62$ prompts where both
+compared arms get order-consistent verdicts the headline difference is $+0.121$ $[+0.024, +0.222]$ ($+0.095$
+on the $21$ where all four arms do, too few to resolve). Neither judge scores an empty answer as a loss. B
+scores selection's $41$ empty picks at $0.494$ against the risky model's text, and G at $0.634$, above the
+arm's own $0.545$: on those prompts the templateless $8$B's continuation is often off task, and through the
+chat template G scores the same empties at $0.2195$. Counted instead as losses (post hoc), the matched
+differences of Table~\ref{tab:matched} hold under G at every budget but $W=125$, and under B against the
+per-token meters ($+0.094$) and the windowed meter at $\log 64$ ($+0.048$) but not at $24.95$ or $40$ nats
+($+0.021$ each); and under G the non-empty rule's headline difference is $+0.0335$ $[-0.020, +0.0875]$, so
+under the most reliable judge the headline rests partly on the empties. No human rated anything.
+
 \paragraph{A recording defect, and its repair.}
 The harness recorded each generation by slicing a left-padded batch row at that row's own prompt length,
 so a row with $p$ pad tokens carried the last $p$ tokens of its prompt into the recorded text: the
@@ -154,6 +173,7 @@ AlpacaEval against it; the headline row alone ($p \approx 0.005$) does not survi
 \section{The head-to-head in full}\label{app:sel-h2h}
 
 \paragraph{By serving configuration.}\label{app:served}
+\input{sections/tab_served}
 Table~\ref{tab:served} comes from two registered arms, banded before any judge call, and one descriptive
 re-judge that puts every budget in one pass; all three judge the same selection texts, whose per-prompt
 levels agree across them on $500$ of $500$ prompts. Served through its chat template the $8$B was generated
@@ -173,7 +193,26 @@ Served through the same chat template, the audited memoriser alone reaches near-
 ($0.4921$ on plain text); the meter stays below $0.01$ at every budget through $k=3.8$ and reaches it at
 $k=3.941$ $[2.968, 4.435]$, $1.22$ of $s(x)$, with $25.3\%$ of resamples never reaching it by $k=4.5$, so the upper
 end is a floor (\texttt{results/\allowbreak chat\_\allowbreak onset.csv}, registered). The chat-served
-meter's first win, at $k=3$, and extraction onset coincide within that interval.
+meter's first win, at $k=3$, lies within that interval, but at $k=3$ itself measured recall is below $0.01$: the meter wins there before any measured extraction, the regime the Limitations weigh against a certificate.
+
+\paragraph{The $70$B base as an opponent.} Is the base model at temperature $1.0$, judged no better than the
+anchor, simply degenerate? By the usual markers it is not: over the $500$ prompts its median response is
+$144$ words against the $8$B-Instruct's $154$ and the anchor's $63$, it is empty on $1.0\%$ (the anchor
+$12.4\%$), and a single $5$-gram fills a fifth of the text on $2.2\%$ of responses against the anchor's
+$17.8\%$. What it does is continue the prompt as a web page: asked for a story it writes the next post of a
+forum thread, signed with a username and followed by replies. It is fluent and off task, so
+the comparison is with a capable model that does not follow instructions, which is how its authors serve it
+(\texttt{results/\allowbreak opponent\_\allowbreak degeneracy.csv}).
+
+\paragraph{A difference of gains, or of levels.} Table~\ref{tab:served}'s last column is the direct
+difference of served levels; the text quotes the difference of gains, each arm's level minus its own
+zero-budget control's, which was the registered construction because the two pipelines' controls need not
+agree. They do not quite: selection's $n=1$ draw is judged $0.008$ to $0.0215$ above the meter's anchor-alone
+arm in every configuration but AnchoredByte, where the two are one arm. So the difference of gains is the
+less favourable to selection of the two, never the more, and over all $21$ rows of the table the two give the
+same reading on $19$; the two that differ are temperature $0.7$ at $k=0.5$ ($+0.0325$ against $+0.0245$
+$[-0.0090, +0.0570]$) and the chat template at $k=1$ ($+0.0410$ against $+0.0305$ $[-0.0030, +0.0655]$),
+each a direct win that is a tie on gains (\texttt{results/\allowbreak d3\_\allowbreak vs\_\allowbreak direct.csv}).
 
 \paragraph{Under the authors' own utility metrics.}\label{app:hemetrics}
 \citet{he2026anchored} score utility with Prometheus-2 fluency and FActScore precision, so we scored the same
@@ -214,6 +253,19 @@ byte steps and again gains nothing over its anchor, $+0.008$ $[-0.008, +0.0245]$
 at those settings gains $+0.099$ $[+0.068, +0.129]$ more over its own; the tempered Comma-7B has
 $S_w = 155.3$ nats against $140.7$ untempered, both over the $758$ protected works, so $K/S_w = 0.515$
 (\texttt{results/\allowbreak anchoredbyte\_\allowbreak t07.csv}).
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.86\textwidth]{h2h_forest.pdf}
+\caption{\textbf{The head-to-head difference under every perturbation we ran.} Each row is selection's
+order-averaged gain at $n=64$ over its own anchor-alone control minus the meter's at $k=10$ (last block:
+the named $k$, rate-matched to bind), paired over prompts, $95\%$ interval, all on the repaired
+text. Blue excludes zero above, red below. Judges C--G re-score the headline's texts; C is the
+opponent's own checkpoint. The controls regress out the length gap (the meter writes $151$ words to
+selection's $75$ at the median) and drop the $86$ prompts whose anchor controls are empty. Opponents:
+fixed Qwen2.5-Instruct models, each stronger than the committed one (Appendix~\ref{app:h2hrepeat}).}
+\label{fig:h2h}
+\end{figure}
 
 \paragraph{Other judges and fresh draws.}\label{app:h2hrepeat}
 Table~\ref{tab:h2hrepeat} gives the recorded-text readings the repaired ones in Figure~\ref{fig:h2h}
@@ -362,7 +414,9 @@ single-order, $95\%$ interval, judged on the repaired text; right, the whole cer
 markers miss the admission criterion of at most $5\%$ empty completions on the true generations
 (TinyComma $14.6\%$ and $12.8\%$, Comma-7B $18.4\%$, Comma-1T $31.6\%$); on non-empty prompts their gains
 move by at most $0.012$. MT-Bench's $80$ items resolve nothing at a half-width of $0.08$, and the
-pointwise reward falls with $n$ on TriviaQA (Appendix~\ref{app:judgefree}).}
+pointwise reward falls with $n$ on TriviaQA (Appendix~\ref{app:judgefree}). Only the audited anchor is
+plotted at $n=64$; the climbs to $n=64$ at three other anchors are Table~\ref{tab:climb}'s, where two carry
+a reduced warrant and the one that climbed did not survive a fresh draw.}
 \label{fig:breadth}
 \end{figure}
 
@@ -660,7 +714,7 @@ Comma-7B & $0.280$ & $-0.038$ & $+0.024$ & $+0.036$ \\
 scorer beats the risky model on it.} We ran it through the decoding path of every arm on record, each
 item with the benchmark's own prefix ($500$ of its $1{,}000$ items, the released pair, bands fixed in
 advance), and scored every arm against the item's reference with this paper's copying metrics and
-CoTaEval's event, ROUGE-L~$\ge 0.5$. \emph{No arm reaches the event on any item, the unconstrained
+CoTaEval's event, ROUGE-L \citep{lin2004rouge} $\ge 0.5$. \emph{No arm reaches the event on any item, the unconstrained
 risky model included} ($0/500$ each, Wilson upper bound $0.0076$). On mean ROUGE-L the risky model
 sits closer to the reference than the anchor ($0.1589$ $[0.1554, 0.1624]$ against $0.1451$ $[0.1421,
 0.1481]$); selection at $n=64$ is no closer than the anchor alone ($-0.0012$ $[-0.0052, +0.0027]$)
@@ -856,7 +910,12 @@ $e^{-S(x_{>c} \mid x_{\le c})}$, and after $m$ adaptive queries the bound is $m\
 $50$-token window, $S_w = 159.8$ nats, it is below $10^{-60}$ at $n=64$ even after $m=10^4$ queries. A
 near-verbatim event has no closed form, so the rights-holder samples: $N$ anchor draws with no event give
 $\Pr_{p_s}[E_x] \le 3/N$ at $95\%$ and so $\Pr_q[E_x] \le 3n/N$. Certifying one work at $1\%$ with $n=64$
-takes $19{,}200$ draws; our $n=256$ pools certify the average passage at $3 \times 64/25{,}600 = 0.75\%$.
+takes $19{,}200$ draws; our $n=256$ pools certify the average passage at $3 \times 64/25{,}600 = 0.75\%$,
+which is a statement about a passage drawn at random from the corpus and not about any one work. At the
+measured anchor-only serving rate ($0.0223$ seconds a draw on one A100), one work costs $0.12$ GPU-hours at
+$n=64$ and $1\%$ and $0.01$ at $n=8$; a catalogue of $10^5$ works costs $11{,}901$ and $1{,}488$ GPU-hours, and
+$10^6$ works ten times that (\texttt{results/\allowbreak audit\_\allowbreak cost.csv}). The draws are
+per work and reusable across queries, so the audit is paid once per catalogue, not per user.
 For a pathwise-metered decoder at the published $k = 0.5$ the multiplier is
 $e^{100} \approx 2.7 \times 10^{43}$, and no sample bounds an event below its reciprocal.
 
