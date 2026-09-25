@@ -252,3 +252,33 @@ def test_vetting_at_the_deployed_temperature_is_quoted_from_its_csv():
     assert f"$\\log 64$ reaches $S(x)$ on ${sel64:.1f}\\%$ of questions, against ${met['0.5']:.1f}\\%$ for the meter's smallest budget" in body("iclr_closing.tex")
     ethics = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
     assert "every prefix length the deployment accepts, and at the temperature it samples at" in ethics
+
+
+def test_the_nonempty_rule_across_table2_is_quoted_from_its_csv():
+    """feat-209: the non-empty rule re-judged at eight configurations of Table 2. The body may say no configuration
+    changes its reading only while every row keeps its label; if one ever does, the registration requires the body
+    to name it, and this guard fails until it does."""
+    from analysis.nonempty_tables import TABLE2
+    rows = _csv("nonempty_tables.csv")
+    assert len(rows) == 8 and all(int(r["n"]) == 500 for r in rows)
+    f = lambda x: f"{float(x):+.4f}".rstrip("0")
+    iv = lambda r, p: f"${f(r[p])}$ $[{f(r[p + '_lo95'])}, {f(r[p + '_hi95'])}]$"
+    a = body("appendix_selection.tex")
+    tab = a[a.index("\\label{tab:nonempty}"):a.index("\\end{tabular}", a.index("\\label{tab:nonempty}"))]
+    for r in rows:
+        assert r["same_label"] == str(r["D3_reading"] == r["D3_nonempty_reading"])
+        shift = f(r["D3_shift"]) if float(r["D3_shift"]) else "0"
+        assert f"& {iv(r, 'D3')} & {iv(r, 'D3_nonempty')} & ${shift}$ \\\\" in tab, r["row"]
+        t2 = next(x for x in _csv(f"order_averaged_h2h_{TABLE2[r['row']]}.csv") if x["quantity"].startswith("D3"))
+        assert abs(float(r["D3"]) - float(t2["value"]) - float(r["D3_shift"])) < 1e-9, r["row"]
+    assert len(re.findall(r"\\\\", tab)) == 9
+    h = next(r for r in rows if r["row"] == "headline")
+    assert h["D3_nonempty_reading"] == "CONFIRMED"
+    assert (f"the headline at {iv(h, 'D3_nonempty')} against the committed rule's {iv(h, 'D3')} in the same pass") in a
+    exp = body("experiments.tex")
+    if all(r["same_label"] == "True" for r in rows):
+        assert "and under it no re-judged configuration of Table~\\ref{tab:served} changes the difference's reading" in exp
+        assert "the difference keeps its reading under the non-empty rule at all eight configurations" in a
+    else:
+        changed = [r["row"] for r in rows if r["same_label"] != "True"]
+        raise AssertionError(f"rows {changed} change their reading; the body must name them (feat-209's registration)")

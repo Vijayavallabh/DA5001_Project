@@ -10,6 +10,9 @@ import random
 
 ROWS = ("headline", "he70b_k20", "he70b_k05", "chat_k10", "chat_k3", "t07_8b_k10", "t07_70b_k20", "ab70_k01")
 N_BOOT = 10000
+# the pass each row of Table 2 was built from (analysis/served_opponent.py's table; the headline is the repaired pass)
+TABLE2 = {"headline": "deecho", "he70b_k20": "he70b_k20", "he70b_k05": "he70b_k05", "chat_k10": "served_k10chat",
+          "chat_k3": "chatgrid_k3", "t07_8b_k10": "t07_8b_k10", "t07_70b_k20": "t07_70b_k20", "ab70_k01": "ab70_k0.1"}
 
 
 def label(lo, hi, v):
@@ -40,6 +43,14 @@ def main():
                         D3_nonempty_reading=label(lo, hi, v), prompts_level_moved=changed))
     for r in out:
         r["same_label"] = r["D3_reading"] == r["D3_nonempty_reading"]
+    # Post hoc, descriptive, after every registered bootstrap (so no registered draw moves): the committed rule's D3
+    # in this pass against the same row's D3 in the pass Table 2 was built from. Order averaging draws nothing, so any
+    # shift is the judge re-run itself, not a re-roll (caution (ap)).
+    for r in out:
+        t2 = next(x for x in csv.DictReader(open(os.path.join(a.results, f"order_averaged_h2h_{TABLE2[r['row']]}.csv")))
+                  if x["quantity"].startswith("D3"))
+        r["D3_table2_pass"] = float(t2["value"])
+        r["D3_shift"] = round(r["D3"] - float(t2["value"]), 4)
     path = os.path.join(a.out, "nonempty_tables.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
