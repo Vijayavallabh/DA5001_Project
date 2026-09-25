@@ -1,5 +1,39 @@
 # Session Progress Log
 
+## 2026-09-26 early --- feat-215: the composition_attack slicing fixed, and every chained arm re-run with it (user: "fix the composition_attack slicing bug too", "re-run the chained arms with the fix", "use host B's free GPUs to speed it up")
+
+**What's done.**
+- **The fix.** `analysis/composition_attack.py` `Attacker.query` and its copy in `analysis/bank_burst.py` sliced
+  each LEFT-padded row at its own token count (caution (bc)); both now slice at the padded width and assert the
+  sequences begin with the padded prompts. `tests/test_composition_left_pad.py` runs the real `Attacker.query` on a
+  fake padded batch (it returned `"ABz"` for the short row before the fix) and fails if any script slices a
+  generation at a row's own prompt length again.
+- **Impact, measured.** Single-query and oracle batches pad only if a prompt re-encodes to another length than it
+  was cut at. Every committed configuration was checked, not assumed: CopyBench at 20-token seeds under all six
+  anchor tokenizers, oracle windows at `L = 10, 20, 25, 50`, the 70B's 100-token raw seeds and their windows, the
+  matched-context 30- and 40-token seeds, BookMIA and Gutenberg under the tokenizers that ran on them (Phi-3.5
+  included) and the chat-wrapped seeds (all 54 tokens): no prompt changes length. Open-calm does not round-trip on
+  BookMIA (3/100, 20/600) and Gutenberg (1/600), where it never ran. So only chained rows were touched: 15
+  committed CSVs, none cited by the live manuscript.
+- **feat-215 SCORED** (`results/onset_prediction_chained_fix.md`): all 13 chained arms re-run with `--modes chained`
+  and nothing else changed; split across both hosts at the user's instruction (the local A100 arms reproduce their
+  old window-0 texts exactly, 1,200/1,200, 400/400, 400/400 and 100/100; the host-B H100 arms 0-81%, a re-draw).
+  G0 and G1 PASS: 12,658 chained rows replaced, no other row moved. P1 WRONG as registered (7 cells fall by more
+  than 0.02, all on re-drawn host-B arms; the same `k = -1` cell moves `+0.0007` locally and `-0.0535` there), P2
+  RIGHT but weightless. The fix itself barely moved chained `nv_recall` (at most `0.0057`) and raised the longest
+  exact run where recall is high (8B memoriser `k = -1`: `68.0 -> 79.8` words at `L = 20`, `69.1 -> 85.0` at
+  `L = 50`). The pathwise file's KL-excursion count is now 156 of 23,844 (146 before).
+- `analysis/chained_fix.py` (merge, gate, compare, apply; idempotent, refuses to write if a non-chained row
+  moves), `tests/test_chained_fix.py`, `scripts/run_feat215{,_split}.sh`.
+
+**Producing commands.** `scripts/run_feat215.sh small|nm`, then `scripts/run_feat215_split.sh
+kl|hpA|pathwise|bankcap|comma|nm1984a|nm1984b`; `analysis/chained_fix.py merge`, `gate`, `compare`, `apply`.
+
+**Defects caught on the way.** `compare` read phase 1's old files from `results/`, which `apply` had replaced; phase
+1's pre-fix files now live in `output/chainfix/old/phase1` and the comparison reproduces byte for byte. A rerun of
+`apply` refused to splice rows it had already spliced; it now accepts a row equal to either source. A waiter used
+`grep -c ... || echo 0`, which prints two lines on zero matches (harmless here: it waited for the right condition).
+
 ## 2026-09-26 early --- v15: review 3 Q13, short works, run (user: "run the short-works test for Q13 on the free GPUs")
 
 **Current state.** Manuscript (`~/sub/satml`, never committed; pre-v15 copy in
@@ -33,7 +67,7 @@ table); on host B `scripts/run_feat214.sh A|B|C|D` and `scripts/run_feat214_a2.s
 OOM at anchor batch 512, before any draw existed); locally `analysis/short_works.py score --runs
 output/short_works` and `analysis/v14_tables.py short`.
 
-**Blockers/Risks.** A latent defect, logged and not fixed (out of scope): `analysis/composition_attack.py`
+**Blockers/Risks.** A latent defect, logged here and FIXED later the same night (see the section above): `analysis/composition_attack.py`
 `Attacker.query` slices each LEFT-padded row at its own prompt token count (`seqs[j][plens[j]:]`), caution
 (bc)'s pattern. It is inert wherever a batch's prompts share one token length, and they do in every mode the
 paper quotes: every 20-token seed re-encodes to exactly 20 tokens under all six anchor tokenizers (458/458

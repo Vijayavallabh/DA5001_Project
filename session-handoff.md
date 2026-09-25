@@ -2,15 +2,18 @@
 
 
 
-## Current state, 2026-09-26 --- feat-215 RUNNING locally (the chained arms re-run with the slicing fix)
+## Current state, 2026-09-26 --- feat-215 complete (the composition_attack slicing fixed; every chained arm re-run)
 
-User: "fix the composition_attack slicing bug too", then "re-run the chained arms with the fix". The defect
-(caution (bc) in `analysis/composition_attack.py` and `analysis/bank_burst.py`) is fixed and pinned by
-`tests/test_composition_left_pad.py`. Registered in `results/onset_prediction_chained_fix.md` (unscored until its
-`### Scored` entry). Two local queues, `scripts/run_feat215.sh small` (GPU 4) and `scripts/run_feat215.sh nm`
-(GPUs 1+2), write `output/chainfix/<run>`; logs `output/chainfix/queue_{small,nm}.log`. When both read `queue ...
-drained`: `analysis/chained_fix.py merge`, `gate`, `compare`, then `apply` (which refuses to write if any
-non-chained row moves). GPU 0 belongs to the user's other project and is never touched.
+User: "fix the composition_attack slicing bug too", "re-run the chained arms with the fix", "use host B's free GPUs
+to speed it up". The defect is fixed in `analysis/composition_attack.py` and `analysis/bank_burst.py`
+(`tests/test_composition_left_pad.py`); every committed single-query and oracle configuration was shown not to pad,
+so only chained rows were affected. All 13 chained arms were re-run (locally and on host B), scored
+(`results/onset_prediction_chained_fix.md`) and spliced into the 15 committed CSVs with every other row
+byte-identical (`analysis/chained_fix.py`, idempotent). No number in the live manuscript changed. Nothing of ours is
+running on either host.
+
+**Recommended next step:** unchanged from v15: the user's read of `~/sub/satml/iclr_2027.pdf`, then submission before
+26 Sept 17:29 IST.
 
 ## Current state, 2026-09-26 early --- v15 complete (review 3 Q13, short works, run and in the paper)
 

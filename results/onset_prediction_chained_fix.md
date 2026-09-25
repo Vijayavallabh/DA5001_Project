@@ -68,3 +68,53 @@ The 8-passage *1984* runs are descriptive only. Nothing in the live manuscript c
 regenerated file moves any number the manuscript does quote, that is a G1 failure.
 
 ## Scoring log
+
+### Scored 2026-09-26
+
+`analysis/chained_fix.py merge`, `gate`, `compare`, `apply` -> `results/chained_fix.csv` (old against fixed chained
+recall per run, `k` and `L`, paired over passages), `results/chained_fix_reproduction.csv` (R0) and
+`results/chained_fix_scoring.csv` (the verdicts); the 15 committed files listed under *How the results are put
+back*, of which only chained rows moved.
+
+**Execution notes, one of them a deviation.** Both queues started locally as registered. At the user's instruction
+(01:36, "use host B's free GPUs to speed it up") the arms not yet started were moved to host B's H100s with
+`scripts/run_feat215_split.sh`, each job's arguments unchanged (checked mechanically against `run_feat215.sh`,
+all ten): `comp8b_pathwise`, the three bank caps, `comp_comma7b` and the three *1984* arms ran there; `phase1`,
+`nm/hp1_greedy`, `nm/hp1_B`, `comp8b_kl` and `nm/hp1_A` ran locally on A100s as registered. The two local queue
+shells were stopped by PID with their in-flight arms left running, and two local lanes waited on those PIDs. Host B
+held no Comma-7B memoriser; it was copied and started only after config, tokenizers and weights hashed identically
+on both hosts. Every arm exited 0 with no traceback.
+
+**Gates.** G0 PASS: in all 13 merges the chained keys matched exactly, and no re-run query exceeded its decoder's
+invariant (`Z` for KL, `R` for the pathwise decoder at `k > 0`). G1 PASS: every non-chained row of every file
+written is byte-identical to its committed version (checked by the script before writing and again from `git
+diff`: 12,658 chained rows changed across 15 files, no other row); `natural_memorisation.csv` came out unchanged.
+The pathwise file's `invariant_violations` keeps its documented meaning (KL excursions): 156 of 23,844 budgeted
+queries (153 at `k = 1`, 3 at `k = 3`), 146 before; `README_artifact.md` now says so.
+
+**R0 (diagnostic).** Every arm that ran on the registered hardware reproduced its old window-0 texts exactly:
+`comp8b_kl` 1,200 of 1,200, `nm/hp1_B` 400 of 400 (sampled at 0.7 and 1.1), `nm/hp1_A` 400 of 400,
+`nm/hp1_greedy` 100 of 100 (`phase1` kept no log; its `k = -1` and `k = 20` cells are the same experiment as
+`comp8b_kl`'s and agree with them to the fourth decimal). Every arm moved to host B reproduced between 0% and 81%
+(`comp8b_pathwise` 21.5%, bank caps 3%, 6% and 37%, `comp_comma7b` 25.2%, *1984* 81%, 11% and 0%): on those arms
+old against new is the fix plus a fresh draw, and the comparisons below say so.
+
+**Predictions.**
+
+- **P1 WRONG as registered**: 7 of 85 cells fall by more than `0.02`. All seven are on arms moved to host B
+  (`comp8b_pathwise` `k = -1`, 20 and 50 at `L = 50`; `bank_cap_k20_20`; `comp_comma7b` `k = 5` and 10), and the
+  re-draw alone is that large: the `k = -1` cell, the memoriser alone on the same passages and seed, moves by
+  `+0.0007` locally and by `-0.0535` on host B. On the arms run as registered the largest fall is `0.0033` (`hp1_B`,
+  `k = 5`), well inside the margin. The verdict stands as registered; the reason it failed is the move, not the fix.
+- **P2 RIGHT** in all four runs with both window lengths, and it carries no weight: on the arms run as registered
+  the sums are `+0.0037` against `-0.0010`, and on the host-B arms the re-draw dominates.
+
+**What the fix changed (descriptive, arms run as registered).** Chained near-verbatim recall barely moved: at most
+`0.0016` on the 8B memoriser's cells, between `-0.0033` and `+0.0057` `[+0.0000, +0.0145]` on `hp1_B` and at most
+`0.0003` on `hp1_A`.
+What the defect deflated was the longest exactly reconstructed run, where recall is high: for the 8B memoriser
+from `68.0` to `79.8` words at `k = -1`, `L = 20` and from `69.1` to `85.0` at `L = 50`; at `k = 20` from `63.9` to
+`74.3` and `64.2` to `78.7`. A duplicated tail of a word or two falls inside `nv_recall`'s two-word merge tolerance
+but breaks an exact common substring. The odometer's cap at `B_user = 400` is unchanged (`k = 20`: chained
+`0.2614`, oracle `0.3032`). No number in the live manuscript comes from these files (none of them is cited there,
+and `analysis/audit_numbers.py` and the full suite are unchanged by the splice).

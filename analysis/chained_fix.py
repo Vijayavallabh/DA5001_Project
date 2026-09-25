@@ -30,7 +30,9 @@ from analysis.order_averaged_h2h import paired_boot  # noqa: E402
 O = "output/chainfix"
 NM = ("hp1_greedy", "hp1_B", "hp1_A", "1984_greedy", "1984_B", "1984_A")
 RUNS = {  # re-run name: (old run directory, committed verbatim copies {file in the run dir: committed path})
-    "phase1": ("results", {}),  # the phase-1 run wrote straight into results/
+    # the phase-1 run wrote straight into results/, which `apply` replaces, so its pre-fix files are kept here
+    # (`merge` copies them from results/ the first time it runs, before any apply)
+    "phase1": ("output/chainfix/old/phase1", {}),
     "comp8b_kl": ("output/phase2/comp8b_kl", {"composition_summary.csv": "results/composition_8b_kl.csv",
                                              "composition.csv": "results/composition_8b_kl_per_passage.csv"}),
     "comp8b_pathwise": ("output/phase2/comp8b_pathwise",
@@ -132,6 +134,11 @@ def as_committed(new, old, out, pathwise):
 
 
 def merge(_):
+    keep = RUNS["phase1"][0]
+    if not os.path.exists(f"{keep}/composition.csv"):
+        os.makedirs(keep, exist_ok=True)
+        for f in KEYS:
+            shutil.copyfile(f"results/{f}", f"{keep}/{f}")
     for name, (old, _copies) in RUNS.items():
         new, out = f"{O}/{name}", f"{O}/merged/{name}"
         os.makedirs(out, exist_ok=True)
@@ -206,6 +213,14 @@ def compare(a):
                   reading=f"{len(p1)} cells fall by more than 0.02" + (": " + "; ".join(
                       f"{r['run']} k={r['k']:g} L={r['L']} {r['diff']:+.4f}" for r in p1) if p1 else ""),
                   verdict="RIGHT" if not p1 else "WRONG")]
+    repro = f"{a.results}/chained_fix_reproduction.csv"  # descriptive: P1 on the arms whose R0 held (>= 95%)
+    clean = {r["run"] for r in rows(repro) if float(r["share"]) >= 0.95} if os.path.exists(repro) else set()
+    cells = [r for r in out if r["run"] in clean]
+    if cells:
+        worst = min(cells, key=lambda r: r["diff"])
+        score.append(dict(prediction="P1 (descriptive)", scope=f"{len(cells)} cells of the runs whose R0 held: {', '.join(sorted(clean))}",
+                          reading=f"largest fall {-min(0.0, worst['diff']):.4f} ({worst['run']} k={worst['k']:g} L={worst['L']})",
+                          verdict="within 0.02" if worst["diff"] >= -0.02 else "beyond 0.02"))
     for name in RUNS:
         s = {L: sum(r["diff"] for r in big if r["run"] == name and r["L"] == L) for L in (20, 50)}
         if any(r["run"] == name and r["L"] == 20 for r in big):
@@ -222,7 +237,7 @@ def compare(a):
 def splice(target, source_of):
     """Replace the shared columns of every chained row of `target` from its merged source summary row. Every other
     column and row is left alone, and before anything changes each spliced row must equal its OLD source row on those
-    columns, so a wrong mapping fails instead of writing."""
+    columns (or, on a rerun after apply, its new one), so a wrong mapping fails instead of writing."""
     header, old_rows = lines(target)[0], rows(target)
     body = lines(target)[1:]
     out = [header]
@@ -235,7 +250,8 @@ def splice(target, source_of):
         o = next(s for s in rows(old_src) if key(s) == key(r))
         n = next(s for s in rows(new_src) if key(s) == key(r))
         shared = [c for c in r if c in o and c not in ("k", "mode", "L", "run")]
-        assert all(float(r[c]) == float(o[c]) for c in shared if r[c] != ""), f"{target}: {r} is not a copy of {old_src}"
+        same = lambda src: all(float(r[c]) == float(src[c]) for c in shared if r[c] != "")  # noqa: E731
+        assert same(o) or same(n), f"{target}: {r} is a copy of neither {old_src} nor {new_src}"  # n: already applied
         vals = dict(r, **{c: n[c] for c in shared})
         buf = __import__("io").StringIO()
         csv.DictWriter(buf, fieldnames=list(r), lineterminator=line[len(line.rstrip("\r\n")):]).writerow(vals)
