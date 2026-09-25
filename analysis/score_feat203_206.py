@@ -182,6 +182,12 @@ def score_205(res, outdir):
             / med("regimes_copybench.csv", "s_rate")
         rows.append(row("desc", "S_w under Comma-7B at 0.7/1.1 (the audited 50-token window rescaled per character, 758 works); K/S_w at k=0.1",
                         round(sw, 2), reading=f"K/S_w {80 / sw:.3f}", n=758))
+        # the same construction at 1.0 on the same 758 works (feat-203's V2 reference): the paper's 139.7 pools three
+        # corpora through anchor_scaling.csv, so it is not the like-for-like reference for the tempered figure
+        sw1 = s_w(os.path.join(res, "regimes_copybench.csv")) * med("regimes_copybench_t10_comma7b.csv", "s_rate") \
+            / med("regimes_copybench.csv", "s_rate")
+        rows.append(row("desc", "S_w under Comma-7B at 1.0, the same construction on the same 758 works; K/S_w at k=0.1",
+                        round(sw1, 2), reading=f"K/S_w {80 / sw1:.3f}", n=758))
     write(os.path.join(res, "anchoredbyte_t07.csv"), rows)
 
 
