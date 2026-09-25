@@ -1565,8 +1565,8 @@
       "description": "Review 1 Q1 / review 3 W1: CP-k's rejection rule run with the anchor as its safe model (64 risky draws per prompt, first with realised log-ratio <= kappa served, else the anchor's draw; D_inf <= log(1 + M e^kappa) pathwise), judged at matched certificates against selection and installments under judges B and G on host B, and its leakage against the memoriser (results/onset_prediction_cpk_baseline.md).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "Registered before any token (results/onset_prediction_cpk_baseline.md, commit 19271b2); scored in its log. `.venv/bin/python analysis/score_feat211.py` -> results/cpk_baseline_scoring.csv: C1 +0.1205 [+0.091,+0.1485], C2 +0.143 [+0.119,+0.168], C3 +0.110 [+0.0855,+0.135] all CONFIRMED under judge B (host B) and under G (C4); C5 WRONG (accepted draws 200 tokens, as all draws); C6 recall 0.0000 at every C <= 159.83, onset 600 nats. CP-k serves the risky model on 0% of prompts at log 64 and 33.27, 26.8% at 83.18, 99.6% at 159.83. A defect (R cut at an eot_id the plain harness does not stop at) was found and repaired before any verdict (commit after 9d6ac95's parent; tests/test_cpk_baseline.py). Manuscript: related work sentence + Appendix app:cpk and tab:cpk; guards tests/test_v14_skipped.py (8 mutations fire). Suite: 1239 passed, 0 failed."
     },
     {
       "id": "feat-212",
@@ -1574,8 +1574,8 @@
       "description": "Review 2 Q4 / W3, review 1 roadmap: the Qwen-scored and gemma-scored selections judged under all six judges on host B, and the gemma-scored selection at the matched log 64 (results/onset_prediction_scorer_judge_factorial.md).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "Registered before any verdict (results/onset_prediction_scorer_judge_factorial.md, commit 19271b2). `.venv/bin/python analysis/score_feat211.py` -> results/scorer_judge_factorial.csv: F1 WRONG (S = Qwen-scored minus gemma-scored confirmed under judge B only; refuted under G, the gemma family); M1 RIGHT (gemma-scored selection beats the windowed and budget-up-front meters at log 64 under B and G). The gemma-scored headline resolves under 4 of 6 judges; same-host passes reproduce the committed panel's D3 exactly. Manuscript: Section 4 scorer sentence, heading and Limitations qualified to judge B; Appendix app:factorial + tab:factorial; guards tests/test_v14_skipped.py, tests/test_v11_review_round6.py (7 mutations fire)."
     },
     {
       "id": "feat-213",
