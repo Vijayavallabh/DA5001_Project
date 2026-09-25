@@ -2,6 +2,14 @@
 
 
 
+## Current state, 2026-09-26 early --- feat-214 (review 3 Q13, short works) RUNNING on host B
+
+User: "run the short-works test for Q13 on the free GPUs". Registered in `results/onset_prediction_short_works.md`
+(unscored until its `### Scored` entry), corpus built by `analysis/short_works.py build` (gitignored text,
+`results/short_works_authors.csv` committed), four jobs `scripts/run_feat214.sh A|B|C|D` on host B GPUs 0-7,
+outputs `output/short_works/<job>/*.jsonl` there. Score with `analysis/short_works.py score` once all four
+logs (`~/v/logs/feat214_<job>.log`) read DONE.
+
 ## Current state, 2026-09-25 night --- v14 complete (the skipped review items that could run, run)
 
 feat-211, feat-212 and feat-213 are registered, run, scored and written into the manuscript (appendix-level,

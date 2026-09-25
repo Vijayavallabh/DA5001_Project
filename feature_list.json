@@ -1585,6 +1585,15 @@
       "dependencies": [],
       "status": "done",
       "evidence": "Registered before any token (results/onset_prediction_long_outputs.md, commit 3985b54; execution notes before any verdict). On host B: `.venv/bin/python analysis/score_feat213.py` -> results/long_outputs_scoring.csv, results/long_outputs.csv. 4 of 6 right: L1 best-of-64 gains +0.063 [+0.043,+0.083] at T_max=1000; L4 beats the pathwise (+0.062), up-front (+0.0305) and windowed (+0.0445) meters at log 64; L5 beats the KL meter at k=0.1 (+0.0775) and 0.5 (+0.104); L6 same sign under G; L2/L3 WRONG (installments at 20.79 nats unresolved vs the meters under B, confirmed under G). Installments (8 draws/100 tokens) lose to whole-output selection by 0.0445 [0.026,0.0635] (G 0.059). Two OOM re-runs at --gen-batch 128 and judge G moved off the user's GPUs, all before any verdict. Manuscript: Section 3 clause, app:blockwise concession, app:long + tab:long; guards tests/test_v14_skipped.py (7 mutations fire)."
+    },
+    {
+      "id": "feat-214",
+      "name": "Leakage and vacuity for short protected works (famous quotations)",
+      "description": "Review 3 Q13: on 1,049 protected and 218 public-domain Goodreads quotations (author status by death year under life plus 70), the audited pair's teacher-forced surprisal of each quotation's second half given its first, the anchor's 64-draw pool (selection's worst case at n = 1, 8, 64), the 70B alone, and anchored decoding at k = log(64)/64, 0.5, 1, 3, 10; exact and near reproduction, vacuity shares against log 64, 20 nats and 64k. Registered in results/onset_prediction_short_works.md.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
     }
   ]
 }
