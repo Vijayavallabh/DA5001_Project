@@ -23,6 +23,7 @@ import torch
 ANCHOR = "jacquelinehe/tinycomma-1.8b-llama3-tokenizer"
 RISKY = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 BUDGETS = [12.0, 24.0, 72.0, 480.0]
+TEMP = 1.0   # feat-203: --temperature scores the aliases under the tempered anchor, softmax(logits / T)
 
 
 def load(path):
@@ -52,7 +53,7 @@ def surprisal(model, tok, prompt, cont, device, probe=False):
     ids = ids_f.unsqueeze(0).to(device)
     with torch.no_grad():
         logits = model(ids).logits[0].float()
-    lp = torch.log_softmax(logits[:-1], dim=-1)
+    lp = torch.log_softmax(logits[:-1] / TEMP, dim=-1)
     tgt = ids_f[1:].to(lp.device)
     per = -lp[torch.arange(len(tgt)), tgt][k - 1:]
     if probe:
@@ -74,7 +75,11 @@ def main():
     ap.add_argument("--out", default="results/tqa_vacuity.csv")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--probe", type=int, default=0, help="G1: print N items' tokenization and exit")
+    ap.add_argument("--temperature", type=float, default=1.0,
+                    help="feat-203: the decoding temperature of the anchor whose S(x) is measured")
     a = ap.parse_args()
+    global TEMP
+    TEMP = a.temperature
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     rows = load(a.corpus)

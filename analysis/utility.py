@@ -128,16 +128,23 @@ def arm_won(verdict, flip):
     return (verdict == "B") if flip else (verdict == "A")
 
 
-def judge_batch(model, tok, items, device, batch_size=8):
-    """items: list of (prompt, first, second). Returns 'A'/'B'/'Tie' per item, for the order given."""
+def judge_batch(model, tok, items, device, batch_size=8, max_chars=1200):
+    """items: list of (prompt, first, second). Returns 'A'/'B'/'Tie' per item, for the order given.
+    Each of the three strings is cut at `max_chars` characters, 1,200 in every pass on record; 0 shows
+    the judge the whole text (feat-204), and then no token is truncated either (asserted)."""
     import torch
     verdicts = []
+    cut = (lambda t: t[:max_chars]) if max_chars else (lambda t: t)
     for i in range(0, len(items), batch_size):
         chunk = items[i:i + batch_size]
         texts = [tok.apply_chat_template(
-            [{"role": "user", "content": JUDGE_TMPL.format(prompt=p[:1200], a=a[:1200], b=b[:1200])}],
+            [{"role": "user", "content": JUDGE_TMPL.format(prompt=cut(p), a=cut(a), b=cut(b))}],
             tokenize=False, add_generation_prompt=True) for p, a, b in chunk]
-        enc = tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+        if not max_chars:
+            n = max(len(x) for x in tok(texts, add_special_tokens=False)["input_ids"])
+            assert n <= 8192, f"an uncut item is {n} tokens"
+        enc = tok(texts, return_tensors="pt", padding=True, truncation=True,
+                  max_length=2048 if max_chars else 8192).to(device)
         with torch.no_grad():
             gen = model.generate(**enc, max_new_tokens=4, do_sample=False,
                                  pad_token_id=tok.pad_token_id or tok.eos_token_id)

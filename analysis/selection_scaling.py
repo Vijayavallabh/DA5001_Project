@@ -78,15 +78,17 @@ def yes_no_ids(tok):
     return out
 
 
-def score_rewards(model, tok, items, device, batch_size=8, log_every=40):
-    """items: (prompt, completion). Returns log p(Yes) - log p(No) at the first answer position."""
+def score_rewards(model, tok, items, device, batch_size=8, log_every=40, tmpl=None):
+    """items: (prompt, completion). Returns log p(Yes) - log p(No) at the first answer position.
+    `tmpl` replaces the committed REWARD_TMPL (feat-202's factuality question); None keeps it."""
+    tmpl = tmpl or REWARD_TMPL
     import torch
     ids = yes_no_ids(tok)
     out = []
     for i in range(0, len(items), batch_size):
         chunk = items[i:i + batch_size]
         texts = [tok.apply_chat_template(
-            [{"role": "user", "content": REWARD_TMPL.format(prompt=p[:1200], completion=c[:1200])}],
+            [{"role": "user", "content": tmpl.format(prompt=p[:1200], completion=c[:1200])}],
             tokenize=False, add_generation_prompt=True) for p, c in chunk]
         enc = tok(texts, return_tensors="pt", padding=True, truncation=True,
                   max_length=2048).to(device)
