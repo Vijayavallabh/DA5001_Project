@@ -1,0 +1,7 @@
+prediction,scope,reading,verdict
+P1,"85 cells, runs with >= 50 passages",7 cells fall by more than 0.02: comp8b_pathwise k=-1 L=50 -0.0535; comp8b_pathwise k=20 L=50 -0.0366; comp8b_pathwise k=50 L=50 -0.0535; bank_cap_k20_20 k=20 L=50 -0.0408; comp_comma7b k=5 L=50 -0.0232; comp_comma7b k=10 L=20 -0.0240; comp_comma7b k=10 L=50 -0.0289,WRONG
+P1 (descriptive),"30 cells of the runs whose R0 held: comp8b_kl, nm/hp1_A, nm/hp1_B, nm/hp1_greedy",largest fall 0.0033 (nm/hp1_B k=5 L=50),within 0.02
+P2,phase1,"sum over k: L=20 +0.0037, L=50 -0.0010",RIGHT
+P2,comp8b_kl,"sum over k: L=20 +0.0037, L=50 -0.0010",RIGHT
+P2,comp8b_pathwise,"sum over k: L=20 +0.1344, L=50 -0.1633",RIGHT
+P2,comp_comma7b,"sum over k: L=20 -0.0131, L=50 -0.0281",RIGHT

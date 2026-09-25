@@ -77,11 +77,15 @@ class Attacker:
             r_steps = [s.get("r_t") for s in stats["per_step"]]
             debt = stats["per_step"][0].get("prefix_debt") if stats["per_step"] else None
             bd_steps = [s.get("bd") for s in stats["per_step"] if s.get("bd") is not None]  # per step: list over the batch
+            # The batch is LEFT-padded, so every row's generation starts at the padded width (caution (bc)). Until
+            # 2026-09-26 this sliced at the row's own token count, which kept a padded row's last prompt tokens as
+            # the start of its generation; inert wherever a batch's prompts share one length (every single-query
+            # and oracle-window arm on record), not in chained mode.
             enc = self.tok(chunk, return_tensors="pt", padding=True)
-            plens = enc.attention_mask.sum(dim=1).tolist()
-            seqs = o.sequences.detach().cpu()
+            W, seqs = enc.input_ids.shape[1], o.sequences.detach().cpu()
+            assert bool((seqs[:, :W] == enc.input_ids).all()), "sequences do not begin with the padded prompts"
             for j in range(len(chunk)):
-                gen_ids = seqs[j].tolist()[int(plens[j]):]
+                gen_ids = seqs[j].tolist()[W:]
                 n = true_gen_len(gen_ids, [self.tok.pad_token_id] + (self.eos if isinstance(self.eos, list) else [self.eos]))
                 bdj = [b[j] for b in bd_steps[:n]]
                 act = dict(steps=len(bdj), forced=sum(x <= 1e-6 for x in bdj), free=sum(x >= 1 - 1e-6 for x in bdj))
