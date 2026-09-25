@@ -1,5 +1,60 @@
 # Session Progress Log
 
+## 2026-09-25 --- v13: the seventh review round (three reviews; the user marked Review 3 "very important, address all of it")
+
+**Current state.** Manuscript (`~/sub/satml`, never committed; pre-v13 copy in
+`output/review_audit/pre_v13_2026-09-25/`) rebuilt: tectonic exit 0, 0 overfull, 0 `??`, 4 bold faces, 45
+pages, body exactly 9 of 9 (page 10 opens on ETHICS). Nothing of ours runs on either host.
+
+**What's done.**
+- **feat-210 SCORED** (`results/onset_prediction_windowed_meter.md`, registered before any token): the
+  sliding-window pathwise meter is built (`a_patch/factory.py window=`, `tests/test_windowed_meter.py`) and
+  every mechanism was judged at a matched certificate in one pass per judge (B local, G on host B; verdicts in
+  `results/matched_h2h_verdicts_*.csv`). Thirteen of fourteen registered readings right. Selection and
+  installments beat every meter at every matched certificate (P1, P3, P4 CONFIRMED under B, same sign and
+  8 of 9 resolved under G); the windowed meter ties selection only at `W=125` (P2, predicted a lead: wrong),
+  wins through the chat template (P5), and leaks near-verbatim text from `80` nats plain and `125` chat (P6).
+  The `k=0.5` meter is a null with `80%` power against `+0.0305` and TOST-equivalent to zero within half of
+  selection's gain (post hoc sensitivity, statistical-power skill).
+- **Review-audit analyses (CPU, post hoc, no bands):** `analysis/review7_checks.py` -> the frontier ratio on
+  the order-averaged instrument (`44.9x`, was `132x` single-order), the window and target thresholds of
+  Figure 2 (`results/onset_window_threshold.csv`: its "0.8 s(x)" was the absolute `k` at `T_max=200`, a unit
+  error), CP-k's certificate (`168.35` nats at half acceptance), the per-work audit price (`19,200` draws,
+  `0.12` A100-hours per work at `n=64`), the 70B opponent's degeneracy markers; `analysis/d3_vs_direct.py`
+  (same reading on `19` of `21` Table-served rows, D3 never the kinder); `results/frontier_distance_h2h_deecho.csv`
+  (`35.4x` and `7,384x` on the repaired text).
+- **Manuscript v13:** new title and abstract (plain sentences, the concessions of v12 kept); the threshold
+  first (Proposition 1), selection second; Table 2 is the matched-certificate table, `tab:served` and the
+  forest move to Appendix C; Section 3's open-design paragraph reports the windowed meter as measured;
+  judge validity (`app:judgevalidity`), the 70B opponent, D3 against direct levels, the per-work catalogue
+  price and CP-k's certificate added; Limitations adds FActScore, Holm, judge consistency, "why certify".
+- **Guards:** the restructure fired 46 guards; 20 were repaired by restoring what the rewrite had cut (the
+  Ethics sentence on legal thresholds, the open frontier question, the KL-attainment clause, the batched
+  ratio at the `70`B pair, the n=256 point, the matched-compute loss, "no n rescues", "relative to the anchor"),
+  26 were re-derived against the review's point (moved tables, the k=10 claim leaving the abstract), and all
+  26 re-derivations were mutation-tested: two case-sensitive triggers ("Continuing text") and one guard
+  satisfied by another sentence's "is open" were found and fixed. `tests/test_v13_review7.py` (18 guards,
+  20 mutations fire) pins every new number to its CSV.
+- **Late audit of Review 3 against the live text** (each point re-read against the sources before it was
+  called addressed): W10, the chat-template win now "comes before measured extraction, though within its
+  interval" (Section 4 and Appendix C; the registered reading kept); A5, per-work accounting (users pool
+  transcripts, so a per-work budget is a total, `app:compose`); W3/Q12, installments' whole-output
+  certificate grows with `T` and a window at their certificate is no easier to audit (`app:blockwise`); A2,
+  `tab:served` is captioned "Against the risky model"; A3, the non-empty rule is a row of `tab:matchedfull`;
+  Review 1 Q7, the query caps for a `10`- and `50`-token window and a TriviaQA answer at `n=8, 64`
+  (`analysis/review7_checks.py` -> `results/query_caps.csv`: TriviaQA median `5.78` nats allows `1` query at
+  `n=64`, and `36.2%` of answers none); Review 2 W9, the authors' settings spelled out once. A forum handle
+  the 70B base reproduced was removed from the paper, and the raw excerpts moved from `results/` to the
+  gitignored `output/review_audit/`.
+- `analysis/audit_numbers.py`: 4,382 literals, 2 not in a CSV, both pre-existing and sourced (`64256`; the
+  `R^2 = 0.99990` of `results/onset_prediction_serving_latency.md`).
+
+**What's next.** The user's read of the compiled PDF and submission before 26 Sept 17:29 IST.
+
+**Blockers / risks.** None of ours. Judge G scores an empty answer above parity against the templateless
+opponent (`0.62`-`0.75`) and near `0.2` against the chat one, so every judged difference involving empties is
+reported both ways.
+
 ## 2026-09-25 --- v12: the review items first skipped, pursued (user: "With the gpus available, rigorously pursue the tasks that you skipped that could be pursued [If not say so]")
 
 Host B GPUs 4-7 (GPUs 0-3 are the user's Qwen3-235B server; local cards are the user's vLLM). Every arm

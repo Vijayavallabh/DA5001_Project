@@ -89,7 +89,8 @@ def test_the_binding_fraction_the_proposition_leans_on_is_measured():
 def test_the_saturated_imitation_rate_in_the_body_comes_from_the_per_step_scan():
     # v10: "past the imitation rate of $0.857$ nats per token" (v9: "saturates at $0.857$ ...")
     body = _norm(TEX)
-    m = re.search(r"(?:saturates at|imitation rate of) \$([\d.]+)\$ nats per token", body)
+    # v13 (2026-09-25): "past the imitation rate $\gamma = 0.857$ nats per token", naming the symbol
+    m = re.search(r"(?:saturates at|imitation rate of|imitation rate) \$(?:\\gamma = )?([\d.]+)\$ nats per token", body)
     rate = float(IMIT[("ordinary", "20")]["imitation_rate_nats_per_token"])
     assert m and abs(float(m.group(1)) - rate) < 5e-4, (m.group(1) if m else None, rate)
     # saturation means the last two budgets agree while the cap doubles
@@ -193,7 +194,12 @@ def test_the_limitations_no_longer_call_the_shape_question_open():
     assert "could in principle concentrate" not in closing, "the weaker claim is back"
     assert re.search(r"(quantitative half|how close a policy of (that|the) shape)", closing,
                      re.IGNORECASE), "the limitation must say what is still open"
-    assert "is open" in closing, "the limitation must say that something is open"
+    # SCOPED to the sentence that cites the proposition (caution (an)): "where that bar sits is open"
+    # elsewhere in the closing satisfied a file-wide "is open" after this sentence lost its own.
+    flat = " ".join(closing.split())
+    i = flat.index(r"\ref{prop:sparse}")
+    sent = flat[flat.rfind(". ", 0, i) + 2: flat.find(".", i) + 1]
+    assert "is open" in sent, ("the limitation must say that something is open", sent)
 
 
 def test_the_appendix_prose_carries_the_imitation_rate_and_both_shapes():

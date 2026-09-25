@@ -1,0 +1,4 @@
+arm,prompts,median_words,empty_pct,distinct3_median,top5gram_share_median,looping_pct,nonascii_over_10pct
+"70B base, k=-1",500,144.0,1.0,0.9938,0.0081,2.2,0.0
+"8B-Instruct, k=-1",500,154.0,0.0,1.0,0.0068,0.0,0.2
+"anchor alone, k=0",500,63.0,12.4,1.0,0.0212,17.8,0.4

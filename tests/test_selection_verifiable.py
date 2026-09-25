@@ -172,7 +172,11 @@ def test_the_abstract_claims_the_judge_free_axis_only_because_it_was_measured():
         arm = [r for r in rows if r["arm"].startswith(rule) and r["gain_lo95"]]
         best = max(arm, key=lambda r: float(r["gain"]))
         assert float(best["gain_lo95"]) > 0, (rule, best)
-    assert "judged" in absr.lower(), "the abstract must still say which of the two metrics is judged"
+    # v13 (2026-09-25) names the judges instead of the participle ("beat every meter we ran under two
+    # judges", "neither of two judges separates it"); the property is that each judged claim says so
+    import re as _re
+    assert _re.search(r"\bjudged\b|under two judges|of two judges", absr.lower()), \
+        "the abstract must still say which of the two metrics is judged"
 
 
 @pytest.mark.skipif(not os.path.exists("results/selection_verifiable_tqa_comma7b.csv"),

@@ -466,7 +466,9 @@ def selection_frontier():
     met = sorted((a_ for a_ in fl if a_.startswith("met_k")), key=lambda a_: float(a_[5:]))
     x = [float(fl[m]["x_nats"]) for m in met]
     y = [float(fl[m]["level"]) for m in met]
-    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding")
+    # Filled = a measured spend, open = a certified bound (review 3, seventh round: the two were drawn
+    # alike on one axis, which reads as one kind of quantity).
+    ax.plot(x, y, "o-", ms=4.5, lw=1.5, color="#c1443c", label="anchored decoding, spent")
     for m, xv, yv in zip(met, x, y):
         if m in (met[0], met[-1]):
             ax.annotate(f"$k={float(m[5:]):g}$", (xv, yv), fontsize=6.5 * F,
@@ -474,7 +476,8 @@ def selection_frontier():
     sel = sorted((a_ for a_ in fl if a_.startswith("sel_n")), key=lambda a_: int(a_[5:]))
     xs = [max(float(fl[s]["x_nats"]), 1e-3) for s in sel]
     ys = [float(fl[s]["level"]) for s in sel]
-    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", label="selection anchoring")
+    ax.plot(xs, ys, "s-", ms=4.5, lw=1.5, color="#2f6f9f", mfc="white", mew=1.2,
+            label="selection anchoring, bound")
     for s, xv, yv in zip(sel, xs, ys):
         if s in ("sel_n1", "sel_n8", "sel_n64"):
             ax.annotate(f"$n={s[5:]}$", (xv, yv), fontsize=6.5 * F,

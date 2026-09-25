@@ -1,5 +1,26 @@
 # Session handoff --- 2026-09-24
 
+
+## Current state, 2026-09-25 evening --- v13 (seventh review round) complete; nothing running
+
+**Objective:** revise the ICLR draft against three reviews, depth over breadth, every Review 3 point
+addressed. **Done:** feat-210 (the windowed meter built; every mechanism at a matched certificate under judges
+B and G; scored, `results/onset_prediction_windowed_meter.md`), the review-audit analyses
+(`analysis/review7_checks.py`, `analysis/d3_vs_direct.py`), the v13 manuscript (new title, abstract, Section
+order, Table 2 at a matched certificate), guards (`tests/test_v13_review7.py`; 46 fired guards repaired or
+re-derived, each mutation-tested).
+
+**Files changed (repo):** `a_patch/{factory,pathwise}.py`, `dap/e1.py`, `analysis/{composition_attack,
+matched_h2h,score_feat210,review7_checks,d3_vs_direct}.py`, `scripts/run_feat210{,_judge}.sh`,
+`figures/make_figures_v4.py` (+ `selection_frontier.pdf`), `tests/test_windowed_meter.py`,
+`tests/test_v13_review7.py`, twenty re-derived guards, `results/*` (feat-210 and the audit CSVs).
+**Manuscript (`~/sub/satml`, never committed):** body exactly 9 of 9; pre-v13 copy in
+`output/review_audit/pre_v13_2026-09-25/`.
+
+**Recommended next step:** the user's read of `~/sub/satml/iclr_2027.pdf`, then submission. Host B's GPUs 4-7
+are idle (checked: 0 MiB each, no process of ours); GPUs 0-3 there run the user's own vLLM servers and were never
+touched.
+
 ## Current state, 2026-09-25 14:00 IST --- v12 complete: every pursuable skipped item scored; nothing running
 
 **Scored and in the manuscript, each registered before its first token and guarded in

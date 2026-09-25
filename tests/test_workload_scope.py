@@ -7,6 +7,7 @@ are checked against the data rather than against their phrasing.
 """
 import csv
 import os
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -68,7 +69,10 @@ def test_the_body_scopes_the_claim_and_points_at_the_evidence():
     # v11 (2026-09-24): the heading states the scope as what the difference does NOT survive: "At
     # $k=10$ the difference survives fresh draws and most judges, and not a stronger opponent,
     # instruction following or empty answers scored as losses".
-    assert "survives fresh draws and most judges, and not a stronger opponent, instruction following" in txt, \
+    # v13 (2026-09-25, Review 3 A3) says which judges: "survives fresh draws and the judges that read
+    # reliably, and not a stronger opponent, instruction following, ...". The scope is what is pinned.
+    assert re.search(r"survives fresh draws and (?:most judges|the judges that read reliably), and not a "
+                     r"stronger opponent, instruction following", txt), \
         "the body's replication claim dropped the workload scope"
     # "moving off prefix completion" is a claim about SIX workloads, so it is checked against all
     # six: every completion workload must hold the difference clear of zero at its binding budget,

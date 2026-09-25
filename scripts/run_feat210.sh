@@ -21,6 +21,14 @@ H1="h1.py --trajectories-per-prompt 1 --seeds 52 53 54 --cap-neutral 200 --cap-f
 WIN="--constraint pathwise --window 50 --no-prefix-debt"
 CA="analysis/composition_attack.py --risky-model output/memorizing_llama8b --split attack_train --limit 100
     --modes single --constraint pathwise --window 50 --no-prefix-debt"
+wait_any() {  # wait_any <deadline_s> <file>... : 0 once ANY file exists, 2 at the deadline
+  local deadline=$(( $(date +%s) + $1 )); shift
+  while :; do
+    for f in "$@"; do [ -e "$f" ] && return 0; done
+    [ "$(date +%s)" -ge "$deadline" ] && { echo "[wait] deadline passed: $*"; return 2; }
+    sleep 30
+  done
+}
 case "${1:?queue}" in
   q4) export CUDA_VISIBLE_DEVICES=${GPU:-4}
       run feat210_win_plain $PY $H1 $WIN --k-values 0 4.1589 12.4767 24.9534 40 125 --output-dir $O/win_plain ;;
@@ -35,4 +43,11 @@ case "${1:?queue}" in
         --out $O/leak_plain --figures $O/leak_plain --text-out $O/leak_plain/extracted.csv --queries-out $O/leak_plain/queries.jsonl
       run feat210_leak_chat $PY $CA --use-chat-template --k-values -1 0 24.9534 40 80 125 \
         --out $O/leak_chat --figures $O/leak_chat --text-out $O/leak_chat/extracted.csv --queries-out $O/leak_chat/queries.jsonl ;;
+  # judge G (gemma-2-27b-it is cached on this host only), after the generations it reads
+  g4) export CUDA_VISIBLE_DEVICES=${GPU:-4}
+      for j in win_plain front_plain; do wait_any 10800 $L/feat210_$j.done $L/feat210_$j.fail || exit 1; done
+      run feat210_judgeG_plain bash scripts/run_feat210_judge.sh plain G ;;
+  g5) export CUDA_VISIBLE_DEVICES=${GPU:-5}
+      wait_any 10800 $L/feat210_win_chat.done $L/feat210_win_chat.fail || exit 1
+      run feat210_judgeG_chat bash scripts/run_feat210_judge.sh chat G ;;
 esac

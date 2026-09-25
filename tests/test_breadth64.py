@@ -101,12 +101,18 @@ def test_the_paired_read_never_quotes_the_committed_breadth_table():
     """
     txt = body("appendix_selection.tex")
     # v10: the paragraph is the one that cites the n=64 climb table (heading-independent).
-    r = txt.find("\\ref{tab:climb}")
-    assert r != -1, "the paragraph this guard is about is gone"
-    i = txt.rfind("\\paragraph", 0, r)
-    j = txt.find("\\paragraph", r)
-    seg = txt[i: j if j != -1 else len(txt)]
-    assert "none of these numbers is set" in seg, \
+    # v13 (2026-09-25): Figure 4's caption now points at the table too, so the FIRST \ref is a caption;
+    # the paragraph guarded is the one that reads the climbs out ("bands fixed in advance"), located by
+    # content rather than by which mention comes first.
+    import re as _re
+    segs = []
+    for m in _re.finditer(_re.escape("\\ref{tab:climb}"), txt):
+        i = txt.rfind("\\paragraph", 0, m.start())
+        j = txt.find("\\paragraph", m.start())
+        segs.append(txt[i: j if j != -1 else len(txt)])
+    reading = [s for s in segs if "bands fixed in advance" in s]
+    assert reading, "the paragraph this guard is about is gone"
+    assert all("none of these numbers is set" in s for s in reading), \
         "the appendix must say these numbers are not compared with the committed breadth table"
 
 

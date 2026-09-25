@@ -103,9 +103,13 @@ def test_the_propositions_number_the_way_the_paper_talks_about_them():
             kinds[m.group(1)] += 1
             order.append((m.group(1), kinds[m.group(1)], m.group(2)))
     got = {lab: (kind, n) for kind, n, lab in order}
+    # v13 (2026-09-25, seventh review round): Section 2 now states the vacuity threshold before the
+    # certificate that does not grow, so the threshold is Proposition 1 and selection Proposition 2.
+    # Every in-text reference goes through \ref (checked: no hard-coded "Proposition~<n>" outside
+    # comments), so only this map had to move.
     want = {
-        "prop:selection": ("proposition", 1),
-        "prop:threshold": ("proposition", 2),
+        "prop:threshold": ("proposition", 1),
+        "prop:selection": ("proposition", 2),
         "prop:sparse": ("proposition", 3),
         "prop:imitation": ("proposition", 4),
         "prop:outrun": ("proposition", 5),

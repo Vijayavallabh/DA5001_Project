@@ -174,5 +174,7 @@ def test_the_conclusions_price_sentence_is_not_dash_interrupted():
     is the cost of drawing' was 'syntactically complex and slightly difficult to parse'. The
     committed concession it carries (where that bar sits is open) is guarded elsewhere."""
     close = " ".join(open(tex("sections/iclr_closing.tex"), encoding="utf-8").read().split())
-    assert r"The \emph{price} is not ---" not in close
-    assert r"The \emph{price} is the drawing, not the scorer's" in close
+    assert r"\emph{price} is not ---" not in close
+    # v13 (2026-09-25) joins the gain and price clauses with a semicolon, so the article is lower case;
+    # what the AC asked for is the undashed sentence, not its capital letter.
+    assert re.search(r"[Tt]he \\emph\{price\} is the drawing, not the scorer's", close), close[-900:]

@@ -109,7 +109,8 @@ def test_the_second_horn_is_stated_as_a_shape_and_selection_actually_satisfies_i
     # ("anchor alone $0.439$, selection $0.555$", with $0.5$ as parity in the caption).
     lv = {r["arm"]: r for r in _rows("frontier_levels.csv")}["sel_n64"]
     assert float(lv["lo95"]) > 0.5, (lv, "selection's level no longer clears parity; the sentence is false")
-    assert f"selection ${float(lv['level']):.3f}$" in _flat("experiments.tex"), \
+    # v13 (2026-09-25) moved Table~\ref{tab:served} into its own file, input from Appendix C
+    assert f"selection ${float(lv['level']):.3f}$" in _flat("tab_served.tex"), \
         "Table served no longer prints the level the sparse horn is read on"
 
     # and the introduction must name the second horn as sparsity and call it a shape, not an
@@ -118,7 +119,8 @@ def test_the_second_horn_is_stated_as_a_shape_and_selection_actually_satisfies_i
     # v11 (2026-09-24): the introduction names the two options in its contributions list ("vacuous
     # from $k = s(x)$ if it grows with the sequence, sparse if bounded"); what is protected is that
     # the bounded option is named as sparsity and never as an impossibility or as triviality.
-    assert re.search(r"[Vv]acuous[^.]{0,120}sparse", intro), \
+    # v13 (2026-09-25) words the two options as nouns: "vacuity if it grows and sparsity if it is bounded"
+    assert re.search(r"[Vv]acu(?:ous|ity)[^.]{0,120}spars(?:e|ity)", intro), \
         "the introduction no longer names the second horn as sparsity"
     assert not re.search(r"cannot be repaired|impossib|trivial", intro), \
         "the introduction states the bounded option as an impossibility again"

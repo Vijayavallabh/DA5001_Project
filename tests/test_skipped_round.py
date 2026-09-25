@@ -113,8 +113,11 @@ def test_every_older_reading_survives_the_repair_as_the_appendix_says():
     assert len(c) == 1 and sum(x["reading_deecho"] == "POSITIVE" for x in six) == 5 and len(six) == 6
     sec4 = body("experiments.tex")
     g, lo, hi = _gains("mixtral_deecho")["D3"]
-    assert lo < 0 < hi and f"five of six judges exclude zero, and the sixth, \\texttt{{Mixtral-8x7B}}, " \
-        f"straddles it at ${g:+.4f}$" in sec4, g
+    # v13 (2026-09-25) names, between the count and the sixth judge, the two judges that read reliably
+    # (Review 3 A3); the claim is the count and the sixth judge's own reading, in one sentence.
+    sent = next((x for x in re.split(r"(?<=\.)\s", sec4) if "of six judges exclude zero" in x.lower()), "")
+    assert lo < 0 < hi and sent.lower().startswith("five of six judges exclude zero"), (g, sent[:120])
+    assert f"the sixth, \\texttt{{Mixtral-8x7B}}, straddles it at ${g:+.4f}$" in sent, (g, sent)
     g, lo, hi = _gains("mixpowk_judgeB_deecho")["D3"]
     assert f"${g:+.4f}$ $[{lo:+.4f}, {hi:+.4f}]$" in para("app:workload", "appendix_selection.tex"), g
     # the three single-arm gains that change class on the repaired text, in the repair paragraph
@@ -334,7 +337,8 @@ def test_the_anchoredbyte_table_and_the_abstract_follow_the_scored_bands():
     assert set(ab) == {"0.1", "0.5", "2"} and all(r[g] == "PASS" for r in ab.values() for g in ("G0", "G1", "G2"))
     # v10 folded the AnchoredByte table into Section 4's Table tab:served (columns k, binds, K/S_w,
     # meter, selection - meter); K is no longer a column, and app:anchoredbyte states K = 800k instead.
-    e = body("experiments.tex")
+    # v13 (2026-09-25): Table~\ref{tab:served} is its own file, input from Appendix C
+    e = body("tab_served.tex")
     t = e[e.index("\\label{tab:served}"):e.index("\\end{tabular}", e.index("\\label{tab:served}"))]
     assert "so that $K = 800k$ nats" in para("app:anchoredbyte", "appendix_selection.tex")
     for k, r in ab.items():
@@ -450,8 +454,16 @@ def test_the_abstracts_batched_claim_holds_at_both_70b_pairs():
     # authors' two 70B pairs`
     # the byte-level ratio is printed at the body's precision ($0.061\times$, Table 4), so every number
     # in the abstract is literally in the body (test_abstract_consistency)
-    assert f"${t1:.2f}\\times$ and ${ab:.3f}\\times$ batched at the authors' two $70$B pairs" in a
-    assert "$21.8\\times$ the meter's decode time unbatched" in a
+    # v13 (2026-09-25): three reviews found the abstract's run of cost ratios unreadable, and it now
+    # quotes one price, the unbatched 21.8x a server running only the anchor pays (guarded in
+    # test_cost_grid). The rule this guard protects still binds any batched claim the abstract makes:
+    # it must bound BOTH 70B pairs and carry the unbatched price beside it. The body carries both
+    # batched ratios (test_the_main_text_quotes_the_batched_clock_at_both_pairs).
+    if "batched" in a:
+        assert f"${t1:.2f}\\times$ and ${ab:.3f}\\times$ batched at the authors' two $70$B pairs" in a
+        assert "$21.8\\times$ the meter's decode time unbatched" in a
+    else:
+        assert "$21.8\\times$" in a, "the abstract dropped its one price"
 
 
 def test_the_cotaeval_infringement_paragraph_reads_its_csv():

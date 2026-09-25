@@ -132,3 +132,85 @@ every other flag the script's default. Its passages and targets are built exactl
 is the length leak_plain decoded every passage to. It reports the memoriser-ranked pick, the best of the `n`
 draws (a selector that knows the answer) and the memoriser alone. No prediction is registered; it is
 reported beside leak_plain whatever it reads. Host B, GPU 6.
+
+### Scored 2026-09-25 (`analysis/score_feat210.py` -> `results/windowed_meter.csv`, `windowed_arms.csv`, `windowed_leakage.csv`)
+
+**Gates.** G0 PASS: `14` generation arms cover the `500` prompts, `18` leakage runs the `100` passages.
+G1 PASS: `0` of `7,000` trajectories and `0` leakage queries over their certified budget, each recomputed from
+the per-step log (every windowed arm's worst span at most `W`: `4.11`, `12.48`, `24.95`, `40.0`, `124.71`
+plain). G2 PASS: judge~B's plain pass reproduces the four committed arms' per-prompt levels on `500` of `500`
+prompts, so it is the committed instrument.
+
+**One deviation, stated before reading any comparison:** judge~G ran on host B (GPU 6), not the local A100,
+because `google/gemma-2-27b-it` is not in the local cache. Every judge~G verdict of both passes comes from
+that one host, so its differences are within one instrument; no judge~G level is set beside a committed one.
+
+| | difference (plain, judge~B) | value [95%] | predicted | reading | verdict |
+|---|---|---|---|---|---|
+| P1 | selection - windowed `W=4.16` | `+0.090 [+0.058, +0.122]` | CONFIRMED | CONFIRMED | right |
+| P1 | selection - front-loaded pathwise `4.16` | `+0.0785 [+0.0445, +0.1115]` | CONFIRMED | CONFIRMED | right |
+| P2 | selection - windowed `W=24.95` | `+0.064 [+0.0315, +0.0975]` | CONFIRMED | CONFIRMED | right |
+| P2 | selection - windowed `W=40` | `+0.064 [+0.0295, +0.099]` | CONFIRMED | CONFIRMED | right |
+| P2 | selection - windowed `W=125` | `+0.022 [-0.0145, +0.0585]` | CONFIRMED | UNRESOLVED | **wrong** |
+| P3 | installments `L=10` - pathwise `K=83.18` | `+0.142 [+0.1085, +0.1755]` | CONFIRMED | CONFIRMED | right |
+| P3 | installments `L=25` - pathwise `K=33.27` | `+0.133 [+0.1015, +0.164]` | CONFIRMED | CONFIRMED | right |
+| P4 | installments `L=10` - windowed `W=24.95` | `+0.1205 [+0.0855, +0.155]` | CONFIRMED | CONFIRMED | right |
+| P4 | installments `L=25` - windowed `W=12.48` | `+0.1265 [+0.0915, +0.162]` | CONFIRMED | CONFIRMED | right |
+| P5 | chat: selection - windowed `W=125` | `-0.160 [-0.1985, -0.122]` | REFUTED | REFUTED | right |
+| P5 | chat: selection - windowed `W=12.48` | `+0.045 [+0.0095, +0.081]` | CONFIRMED | CONFIRMED | right |
+| P6 | plain recall, `W<=40` / `W=125` | `0.000` / `0.106` | `<0.01` / `>=0.01` | | right |
+| P6 | chat recall, `W<=40` / `W=125` | `0.000` / `0.063` | `<0.01` / `>=0.01` | | right |
+| P7 | judge~G, P1-P4 same sign | `9` of `9` | all | | right |
+
+**Thirteen of fourteen registered readings right; P2 at `W=125` wrong.** The windowed meter draws level with
+selection at `125` nats a window, where it serves the risky model at `99.92%` of steps; we had predicted
+selection would still lead, as it leads the `k=10` meter. Per the outcome rule fixed above, the paper states
+that the windowed meter matches selection there, at that certificate (Section 4, `sec:matched`).
+
+**The outcome rules, applied.** The matched comparisons are Section 4's first table (`tab:matched`; all
+arms and both judges in `tab:matchedfull`), and Section 3's paragraph on designs the dichotomy leaves open
+reports the windowed meter as measured. P5 holds but leak_chat reads `0.0632` at `W = 125`, not below
+`0.01`, so the abstract and conclusion do **not** name the windowed meter as the mechanism for that regime:
+the abstract says it wins there, certifies exact windows only, and leaks near-verbatim text at `125` nats,
+where both judges prefer it. P6 holds in both configurations, so the paper states that an exact-window
+certificate of `125` nats coexisted with near-verbatim extraction (`0.106` plain, `0.063` chat).
+
+**Descriptive (no band).**
+
+- Windowed onset, the smallest grid `W` with mean recall at least `0.01`: plain `80` (`0.0286`; `0.0063` at
+  `60`), chat `125` (`0.0043` at `80`). The memoriser alone reads `0.4952` plain and `0.2193` chat; the
+  anchor `0.0000`.
+- Share of steps where the window binds (active) / serves the risky model unchanged, plain: `W=4.16`
+  `100` / `0`; `12.48` `94.66` / `5.15`; `24.95` `68.77` / `31.18`; `40` `37.94` / `61.94`; `125` `0.08` /
+  `99.92` (%). Chat `W=40`: `47.14` / `52.26`; `W=125`: `0.15` / `99.85`.
+- Installments `L=10` against the KL meter at `k=0.5` (matched total nats, different orders):
+  `+0.161 [+0.129, +0.1925]`.
+- Headline (selection minus the `k=10` meter) on order-consistent prompts, judge~B: both compared arms
+  consistent `+0.121 [+0.024, +0.222]` (`n = 62`); all four arms consistent `+0.0952 [0.000, +0.2143]`
+  (`n = 21`). Judge~G, all prompts `+0.0545 [+0.0005, +0.108]`; consistent pair `+0.0276 [-0.0366, +0.0948]`
+  (`n = 335`).
+- Known quality difference, a second draw of the opponent's configuration minus the anchor: `+0.065
+  [+0.0395, +0.090]` judge~B, `+0.1485 [+0.1045, +0.1915]` judge~G. Both judges detect it.
+- The `k=0.5` null, `-0.003 [-0.0245, +0.0185]`: at `80%` power and two-sided `0.05` it could detect
+  `0.0305` (`2.8016` standard errors); its `90%` interval `[-0.0205, +0.015]` lies inside both `+-0.065`
+  (the known difference) and `+-0.0508` (half selection's gain), so it is equivalent to zero at both
+  margins by two one-sided tests. Post hoc, a sensitivity reading and not observed power.
+- Level of items whose served text is empty, plain: judge~B `0.42`-`0.50`, judge~G `0.62`-`0.75` (two arms
+  with a single empty item read `1.0`); chat, both judges `0.19`-`0.29` (the chat anchor's two empties `0`).
+  Judge~G scores an empty answer above the templateless opponent and far below the chat opponent.
+- Chat, descriptive widths: selection minus windowed `W=24.95` `+0.0065 [-0.0305, +0.0435]` (B),
+  `+0.053 [+0.011, +0.0945]` (G); `W=40` `-0.0525 [-0.0895, -0.015]` (B), `-0.0295 [-0.0725, +0.0145]` (G).
+  So at `W = 40` through the chat template the meter wins under one judge and leaks nothing (`0.000`).
+
+**The addendum's arm** (`results/selection_extraction_feat210.csv`, host B GPU 6): on leak_plain's own
+passages and `296`-token targets, selection's near-verbatim recall is `0.0000` at `n = 1`, `8` and `64`, and
+so is the best of its `n` draws (a selector that knows the answer). The memoriser alone reads `0.4729` here
+against leak_plain's `0.4952`: two independent draws of the same configuration by two scripts with different
+batching (caution (u)), not a disagreement about the corpus.
+
+**Post hoc, labelled as such (not registered):** each registered difference re-read with every empty
+served text counted as a loss (level `0`) instead of its judged level. Both chat readings (P5) stay resolved in
+their registered direction under both judges. Of the plain ones judge~G still resolves every one but
+`W = 125`; judge~B resolves only selection against the windowed meter at `log 64`
+(`+0.048 [+0.0095, +0.0865]`) and installments against the per-token pathwise meters (`+0.0945`, `+0.094`).
+The rows are in `windowed_meter.csv` under `post hoc`.

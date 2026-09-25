@@ -102,7 +102,13 @@ def test_the_paper_quotes_the_measured_fraction_and_not_an_unqualified_claim():
     for f in ("iclr_2027", "experiments"):
         txt = section_text(f)
         if f == "iclr_2027":
-            assert claim in txt, f"the abstract must carry the measured fraction '{claim}'"
+            # v13 (2026-09-25): Review 3 (A2) made the matched-certificate comparisons the abstract's
+            # judged claim and moved the k=10 continuing-text head-to-head -- the claim this panel
+            # measured -- into Section 4. The fraction must travel with THAT claim: if the abstract
+            # states it again, the fraction comes back with it.
+            ab = txt[txt.index("begin{abstract}"):txt.index("end{abstract}")]
+            if "continuing text" in ab.lower() or "$k=10$" in ab:
+                assert claim in ab, f"the abstract must carry the measured fraction '{claim}'"
         else:
             # GUARD THE PROPERTY, NOT THE SPELLING (caution (an)): the section must state the
             # fraction, name every judge that does not resolve it with its own reading, and make no
@@ -156,8 +162,12 @@ def test_levels_are_never_quoted_across_judges():
     assert max(mets) / min(mets) > 2.5, mets      # the fact the paper asserts
     body = section_text("experiments")
     # the two judge-D/E/F/G LEVELS must not appear in the body; only the difference may
+    import re as _re
     for lvl in ("0.1950", "0.1330", "0.1680", "0.1975", "0.1185"):
-        assert lvl not in body, f"a panel LEVEL ({lvl}) reached the body; only D3 may be quoted"
+        # a LEVEL is printed bare; a signed number is a gain or an interval end (Table 2 prints
+        # installments' gain as +0.1580 [+0.1330, +0.1835], which is not a panel level)
+        assert not _re.search(r"(?<![+\-\d.])" + _re.escape(lvl) + r"(?!\d)", body), \
+            f"a panel LEVEL ({lvl}) reached the body; only D3 may be quoted"
 
 
 def test_the_exception_is_named_so_it_cannot_be_aggregated_away():

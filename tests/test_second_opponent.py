@@ -163,7 +163,15 @@ def test_the_intros_gain_ratio_is_qualified_by_the_opponent_because_it_is_a_gain
         # v11 (2026-09-24): "best-of-$64$ is judged better than that model continuing text and worse
         # than it served as a chat assistant or following instructions". Both halves together.
         j = flat.find("judged better than that model continuing text")
-        assert j >= 0, "the intro no longer states the head-to-head"
+        if j < 0:
+            # v13 (2026-09-25, Review 3 A2): the intro no longer names a winner against the risky model;
+            # it says the winner depends on how that model is served. An unqualified head-to-head is
+            # what this guard forbids, so the intro may state NO winner only if it states the
+            # dependence -- and must not name one anywhere without the qualifier.
+            assert "which of the two is judged better depends on how that model is served" in flat, \
+                "the intro no longer states the head-to-head or its dependence on serving"
+            assert "judged better than" not in flat, "the intro names a winner without its qualifier"
+            return
         w = flat[j: j + 300]
         assert "chat assistant" in w and "following instructions" in w, \
             "the intro states the head-to-head without its serving-configuration qualifier"

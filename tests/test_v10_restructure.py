@@ -152,7 +152,7 @@ def test_figure3_prose_follows_the_plotted_rows():
     judges = [f["headline"][0][1]] + [b for _, b in f["same texts, other judges"]]
     words = {4: "four", 5: "five", 6: "six"}
     n_ex = sum(lo > 0 for _, lo, _ in judges)
-    assert len(judges) == 6 and f"{words[n_ex]} of six judges exclude zero" in t
+    assert len(judges) == 6 and f"{words[n_ex]} of six judges exclude zero" in t.lower()
     (lab, (e, elo, ehi)), = [(l, b) for l, b in f["same texts, other judges"] if b[1] <= 0]
     assert "Mixtral" in lab and f"straddles it at ${e:+.4f}$".replace("+", "") in t.replace("+", "")
     # 'from Qwen2.5-1.5B-Instruct upward every interval covers zero', and not below it
@@ -183,7 +183,9 @@ def test_figure2_text_follows_its_rows():
     assert band in t
     assert band in cap
     k20 = [r for r in imit if r[0] == 20.0][0]
-    assert f"imitation rate of ${k20[2]:.3f}$" in t
+    # v13 (2026-09-25) names the rate by its symbol where it is used ("the imitation rate
+    # $\gamma = 0.857$", test_v12_skipped_items); either spelling prints the figure's own row
+    assert (f"imitation rate of ${k20[2]:.3f}$" in t or f"imitation rate $\\gamma = {k20[2]:.3f}$" in t), k20
     assert f"spends ${k20[3]:.1f}$ nats" in t
     assert f"${100 * k20[3] / k20[4]:.1f}\\%$ of the ${k20[4]:.0f}$" in t
     # v11: the abstract states the vacuity theorem and the window exposure, not the measured onset
@@ -202,7 +204,9 @@ def test_the_live_manuscript_inputs_exactly_the_v10_sections():
     assert live == {f"sections/{n}.tex" for n in (
         "iclr_intro", "fig_overview", "selection", "frontier", "experiments", "related_work_v4",
         "iclr_closing", "appendix_proofs", "appendix_selection", "appendix_onset",
-        "appendix_limitations", "appendix_related")}, live
+        "appendix_limitations", "appendix_related",
+        # v13 (2026-09-25): Table~\ref{tab:served}, moved out of Section 4, input from Appendix C
+        "tab_served")}, live
 
 
 def test_every_reference_resolves_to_exactly_one_live_label():
