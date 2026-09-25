@@ -83,3 +83,19 @@ Limitations sentence answers Q12 with L1's reading.
 - Pooling with any `T_max = 200` pass, or setting a level from this pass beside one from another.
 
 ## Scoring log
+
+### Execution notes, 2026-09-25, written before any verdict of this pass was read
+
+- **Two re-runs from scratch, at a smaller draw batch.** Installments (`q1`) ran out of GPU memory at block 5
+  of 10, before writing any output. At the default `--gen-batch 256` the anchor's KV cache for 256 rollouts at
+  ~1,100-token contexts sits beside the resident 7B scorer. The whole-output pool (`q0`) was stopped before
+  writing any output, because it runs its batches in ascending prompt length and its last batches would not
+  have fit either. Both were re-run from scratch at `--gen-batch 128` (`q1b`, `q0b`). Batch size moves the
+  sampled draws (caution (u)), so these are the arms' only draws; nothing from the stopped runs was kept or read.
+- **The judge-G pass moved cards.** While the pool ran, the user's own vLLM server started on GPUs 1 and 3,
+  and `q0b` would have put judge~G on GPUs 0 and 1. Its queue shell was stopped with the pool's python left
+  running. `~/v/f213_g2.sh` then waits for that python by PID, checks the pool's outputs, writes the sentinel
+  the judge-B pass waits on, and runs the registered judge-G command on GPUs 6 and 7. To save time it first
+  judges the ten arms that already exist under the same tag, then runs the full registered pass, which reuses
+  those cached verdicts. `matched_h2h.py` judges each arm alone against the opponent, in batches of 200 in
+  prompt order, so the split does not change a verdict.
