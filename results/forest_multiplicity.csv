@@ -1,0 +1,22 @@
+group,row,value,lo95,hi95,excludes_zero_95,p_normal,holm_reject,sign
+headline,"headline: judge B, 500 prompts",0.0505,0.0155,0.086,True,0.00499,False,+
+"fresh draws, judge B","selection re-drawn, seeds 52-54",0.05,0.0155,0.084,True,0.00422,False,+
+"fresh draws, judge B","every arm re-drawn, seeds 82-84",0.0495,0.0175,0.08,True,0.00191,True,+
+"fresh draws, judge B","same, committed opponent",0.045,0.011,0.079,True,0.00948,False,+
+"same texts, other judges",C: Llama-3.1-8B (the opponent),0.0765,0.029,0.1235,True,0.00151,True,+
+"same texts, other judges",D: Qwen2.5-72B,0.055,0.0075,0.1025,True,0.0232,False,+
+"same texts, other judges",E: Mixtral-8x7B,-0.0015,-0.0455,0.042,False,0.946,False,-
+"same texts, other judges",F: Qwen2.5-14B,0.121,0.077,0.1645,True,5.94e-08,True,+
+"same texts, other judges",G: gemma-2-27b,0.0545,0.0015,0.1075,True,0.0439,False,+
+"post-hoc controls, judge B",length-controlled,0.0605,0.0236,0.0971,True,0.00125,True,+
+"post-hoc controls, judge B",both anchor controls non-empty (414),0.0441,0.0024,0.0864,True,0.0396,False,+
+"stronger fixed opponents, judge B",Qwen2.5-0.5B-Instruct,0.0465,0.011,0.0825,True,0.0108,False,+
+"stronger fixed opponents, judge B",Qwen2.5-1.5B-Instruct,0.028,-0.0085,0.0645,False,0.133,False,+
+"stronger fixed opponents, judge B",Qwen2.5-3B-Instruct,-0.0025,-0.036,0.0315,False,0.885,False,-
+"stronger fixed opponents, judge B",Qwen2.5-14B-Instruct,0.009,-0.022,0.0405,False,0.572,False,+
+"other workloads, binding budget, judge B","ours, 850 prompts, $k=0.9$",0.1038,0.0844,0.1238,True,5.31e-25,True,+
+"other workloads, binding budget, judge B","public-domain books, $k=0.9$",0.105,0.085,0.1255,True,2.91e-24,True,+
+"other workloads, binding budget, judge B","BookMIA unseen books, $k=1$",0.0915,0.0715,0.111,True,1.08e-19,True,+
+"other workloads, binding budget, judge B","CoTaEval NewsQA, $k=1.4$",0.019,-0.006,0.0445,False,0.14,False,+
+"other workloads, binding budget, judge B","MT-Bench-80, $k=1$",-0.0312,-0.0813,0.0219,False,0.236,False,-
+"other workloads, binding budget, judge B","AlpacaEval-805, $k=1$",-0.0329,-0.0528,-0.0127,True,0.0013,True,-

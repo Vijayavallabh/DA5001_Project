@@ -1466,6 +1466,69 @@
       "dependencies": [],
       "status": "done",
       "evidence": "GPU=7 bash scripts/run_feat198.sh on host B (score 18 min, judge 2 min, both exit 0). G0 PASS (32,000 finite rewards, 64 ranks x 500 prompts); G1 PASS (served draw changes on 406/500). S1 WRONG: D3 +0.015 [-0.0185, +0.0485] UNRESOLVED; S2 fails: D1 +0.066 [+0.042, +0.0905] (headline +0.1015); D2 +0.051. .venv/bin/python analysis/scorer_family.py --out results -> results/scorer_family.csv: gemma serves median 34 words vs 75 and 71 empties vs 41. Manuscript: Section 4's heading adds the scorer, the arm is reported beside the Qwen-judge caveat, and the qualifier is carried to the abstract, introduction, Limitations and conclusion; tests/test_v11_review_round6.py::test_the_scorer_family_arm_is_reported_as_registered (4 mutations fire)."
+    },
+    {
+      "id": "feat-201",
+      "name": "Selection spent in installments (blockwise best-of-n)",
+      "description": "User, 2026-09-25: pursue the skipped review items. Review 4 Q3/W3(i), Review 3: blockwise selection at L in {10,25,50,T}, n=64, its window certificate (ceil(w/L)+1) log n, three arms at the whole-output certificate log 64 (2x8, 3x4, 6x2), the risky model as planner, the memoriser as adversary (results/onset_prediction_blockwise.md, registered before any registered draw).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-202",
+      "name": "FActScore oracle best-of-64 and a factuality scorer",
+      "description": "Review 4 Q8, Review 1 W6/Q4: FActScore every one of the 64 draws of the 150 biographies, the oracle at n=1/8/64, and the committed scorer asked for accurate facts (results/onset_prediction_factscore_oracle.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-203",
+      "name": "Vetting under the deployed decoding (temperature 0.7) and S under the tempered anchor",
+      "description": "Review 4 Q11: the vetting screen at temperature 0.7 for TinyComma and Comma-7B at 20/100/200-token prefixes with the 70B positive control; S_w and TriviaQA S(x) under the tempered anchor (results/onset_prediction_vetting_t07.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-204",
+      "name": "The headline judged on whole responses",
+      "description": "Review 1 Q4: the headline pass with the judge's 1,200-character cut removed (results/onset_prediction_full_response.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-205",
+      "name": "AnchoredByte at the authors' decoding settings",
+      "description": "Review 4 Q1: the authors' byte-level decoder at temperature 0.7 and penalty 1.1, k=0.1 per byte against its own k=0 anchor path (results/onset_prediction_anchoredbyte_t07.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-206",
+      "name": "Extraction onset in the chat serving configuration",
+      "description": "Review 4 Q2: the audited pair's onset sweep served through the chat template, against the chat crossover at k=3 (results/onset_prediction_chat_onset.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-207",
+      "name": "The skipped statistical and wording items",
+      "description": "Review 3 W12/Q9 (Holm over Figure 3's 21 rows, the NewsQA cell's registration), Review 4 Q6 (order consistency for every judge), Review 3 Q7 (the containment union), Review 2 Q6 (the onset shading is a range, not an interval). CPU only.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
     }
   ]
 }

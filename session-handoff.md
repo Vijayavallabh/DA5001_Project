@@ -1,5 +1,27 @@
 # Session handoff --- 2026-09-24
 
+## Current state, 2026-09-25 morning --- v12: the skipped review items, pursued (user: "rigorously pursue the tasks that you skipped that could be pursued")
+
+**In flight on host B (GPUs 4-7; GPUs 0-3 are the user's Qwen3-235B server and are never touched).**
+Each arm's bands were committed before its first token; queues write `output/logs/feat20x_<job>.{done,fail}`.
+
+- `results/onset_prediction_blockwise.md` (**feat-201**): selection in installments. `scripts/run_feat201.sh`
+  queues A (GPU 4, `blk10n64`), B (GPU 5, gate arms, `blk200n64`, `blk25n64`), C (GPU 6, `blk50n64`, the
+  reward ablation, the three matched-certificate arms, the memoriser arm), D (GPU 7, the planner).
+  Scorer: `analysis/blockwise_scoring.py` -> `results/blockwise.csv` (needs `output/feat201/` and
+  `output/logs/feat201_q*.log` pulled from host B).
+- `results/onset_prediction_factscore_oracle.md` (**feat-202**), `results/onset_prediction_vetting_t07.md`
+  (**feat-203**), `results/onset_prediction_full_response.md` (**feat-204**),
+  `results/onset_prediction_anchoredbyte_t07.md` (**feat-205**), `results/onset_prediction_chat_onset.md`
+  (**feat-206**): `scripts/run_feat202_206.sh` queues q7, q5, q6 and q456, each waiting (OR over
+  sentinels, with a deadline) on the feat-201 queue it follows. Scorers: `analysis/factscore_oracle.py
+  --report`, `analysis/score_feat203_206.py`.
+
+**Done on CPU (feat-207):** Holm over Figure 3's 21 rows (`analysis/forest_multiplicity.py`: 8 survive, the
+headline row alone does not), order consistency for every judge (`analysis/judge_order_consistency.py`),
+the containment union (Appendix A), and the onset shading called a range (Figure 2). Guards:
+`tests/test_v12_skipped_items.py`. Manuscript copy before v12: `output/review_audit/pre_v12_2026-09-25/`.
+
 ## Current state, 2026-09-25 00:35 --- v11 (sixth review round, feat-200): every arm scored, nothing running
 
 **No job of ours runs on either host.** Host B GPUs 4-7 were used from 23:00 to 00:20 IST and are free
