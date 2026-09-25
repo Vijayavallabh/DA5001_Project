@@ -1,0 +1,6 @@
+source,prompts,nonempty,nats_per_token
+pool rank 0,500,436,2.9914
+blk200n1,500,424,2.9378
+"pool rank 0, probe prompts",100,91,3.3465
+blk200n1_shipped,100,70,0.7485
+G1,500,,"rel 0.0179, probe 0.7763: PASS"

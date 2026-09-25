@@ -137,3 +137,52 @@ selection in installments" whatever the arms read.
   host; pooling arms; re-running an arm with a new seed because of its result.
 
 ## Scoring log
+
+### Scored 2026-09-25 09:58 IST --- B2 WRONG at `L=10` and `L=25` (installments win), B3 right (once wins at a fixed certificate), B4 half wrong (the planner loses to the reward), B1, B5, B6 right
+
+Every job exited `0` on host B (`output/logs/feat201_*.done`; queues A-D ran `08:02`-`09:52` IST, the `L=10` arm
+alone `110` minutes). Scored by `.venv/bin/python analysis/blockwise_scoring.py --out results` after pulling
+`output/feat201/` and the queue logs -> `results/blockwise.csv`, gate file `results/blockwise_gate.csv`.
+
+**Gates, read first.** G0 PASS for all ten pool arms and the memoriser arm. G1 PASS: the anchor alone through
+this code path reads `2.9378` nats per token against the committed pool's `2.9914` (`1.8%` apart), while the
+shipped-sampling probe reads `0.7485` against `3.3465` on its `100` prompts (`77.6%` apart), so the gate has
+power. G2 PASS: in all ten passes the meter's and the anchor's per-prompt levels equal feat-198's on `500/500`.
+G3 PASS: eleven generation logs print `temperature=1.0 top_k=0 top_p=1.0`, the probe's prints `0.6` and `0.9`.
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| B1 gains over the anchor, seven value arms | `+0.037` to `+0.1665`, all exclude zero | all SURVIVE | **right** |
+| B2 `L=10` minus once | `+0.0415 [+0.0185, +0.0645]`, INSTALLMENTS WIN | TIE | **wrong** |
+| B2 `L=25` minus once | `+0.0245 [+0.001, +0.0475]`, INSTALLMENTS WIN | TIE | **wrong** |
+| B2 `L=50` minus once | `+0.004 [-0.019, +0.0265]`, TIE | TIE | right |
+| B3 `2 x 8` minus once | `-0.0635 [-0.085, -0.0415]`, ONCE WINS | ONCE WINS | right |
+| B3 `3 x 4` minus once | `-0.082 [-0.1055, -0.0585]`, ONCE WINS | ONCE WINS | right |
+| B3 `6 x 2` minus once | `-0.088 [-0.1115, -0.0645]`, ONCE WINS | ONCE WINS | right |
+| B4 planner over the anchor | `+0.077 [+0.054, +0.1005]`, SURVIVES | SURVIVES | right |
+| B4 planner minus `blk10n64` | `-0.0895 [-0.115, -0.064]`, VALUE WINS | TIE | **wrong** |
+| B5 value minus prefix-only reward at `L=50` | `+0.0395 [+0.02, +0.059]`, VALUE WINS; median words `69` against `23` | shorter, loses | right |
+| B6 memoriser's recall, `100` passages | mean `0.0000`, max `0.0000`, `0` passages at `0.01` | both zero | right |
+
+**Descriptive, no band.** Gains over the anchor: once (`L=200`) `+0.125`, `L=50` `+0.129`, `L=25` `+0.1495`, `L=10`
+`+0.1665`; against the committed selection (`D5`), `L=10` gains `+0.0565 [+0.0225, +0.092]`. Certificates (whole
+output / any `50`-token window): `4.16 / 4.16`, `16.64 / 8.32`, `33.27 / 12.48`, `83.18 / 24.95` nats. Every
+arm with the reward in its own slot serves more empty answers than the committed pool's `41` (`103` once,
+`104`-`110` in installments, `192` for `2 x 8`); the planner serves none. The memoriser arm's ROUGE-L is
+`0.1168` against the whole-output adversarial arm's `0.1073`; the memoriser alone reads `0.3925` on the same
+passages and seeds. The null arm, the anchor alone through this code path, gains `+0.0065 [-0.015, +0.028]`.
+
+**What it means, read before anything else is run.** At `64` draws per block, spending the choice in
+installments of `10` or `25` tokens beats spending it once, at window certificates (`24.95`, `12.48` nats) far
+below the protected window's `159.8`; held instead to one whole-output `log 64`, installments of `8`, `4` or `2`
+draws lose to one choice among `64`. The certificate buys utility in both directions, and a choice among the
+anchor's draws buys more of it than the risky model's likelihood ratio does over the same draws (B4).
+`L=10` sits about `1.8` interval half-widths from zero, where a paired difference on record has failed to
+reproduce, so feat-208 (registered at `09:55`, before any of its tokens) re-draws it and reads it with a second
+judge before the manuscript leans on it.
+
+**Manuscript, as registered.** B2 reads INSTALLMENTS WIN, so Section 3's paragraph says installments buy more
+than one choice at an informative window certificate, and the conclusion stops describing the budget as
+spent once; how strongly depends on feat-208, whose own registration fixes the wording for each outcome.
+Limitations drops "we did not measure selection in installments". B4 and B6 go to the appendix beside the
+whole-output likelihood ranking and adversarial arm.

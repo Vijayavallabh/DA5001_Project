@@ -1473,8 +1473,8 @@
       "description": "User, 2026-09-25: pursue the skipped review items. Review 4 Q3/W3(i), Review 3: blockwise selection at L in {10,25,50,T}, n=64, its window certificate (ceil(w/L)+1) log n, three arms at the whole-output certificate log 64 (2x8, 3x4, 6x2), the risky model as planner, the memoriser as adversary (results/onset_prediction_blockwise.md, registered before any registered draw).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "scripts/run_feat201.sh A-D on host B (all exit 0); .venv/bin/python analysis/blockwise_scoring.py --out results -> results/blockwise.csv: G0-G3 PASS (G1: 1.8% from the pool, probe 77.6%). B1 right (seven SURVIVE); B2 WRONG at L=10 (+0.0415 [+0.0185,+0.0645]) and L=25 (+0.0245 [+0.001,+0.0475]), INSTALLMENTS WIN; L=50 TIE; B3 right (ONCE WINS at 2x8, 3x4, 6x2); B4 planner SURVIVES but loses to the reward-value scorer by 0.0895 (predicted TIE, wrong); B5 right; B6 recall 0.0000 on 100 passages. Replication registered as feat-208."
     },
     {
       "id": "feat-202",
