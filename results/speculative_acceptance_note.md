@@ -33,12 +33,16 @@ risky forward are a Monte Carlo over each trajectory's own `alpha_t`, and the he
   selection at `n=64` at **`0.880x`** the meter's time instead of `0.514x` (`k = 10`). At `k = 3` the figure is
   `0.881x`, and at `k = 0.5` it is `0.928x`. Parity would need a constant acceptance of `0.802`. At perfect
   acceptance selection would take `1.254x` the meter's time.
-- **`70`B pair.** Its acceptance was not measured, because teacher-forcing the `70`B needs two free cards and
-  none were free. The bound does not need it: the anchor's steps are cheap beside the `70`B's, and even at
-  **perfect** acceptance the best round with `g <= 8` leaves selection at **`0.901x`** the meter's time.
+- **`70`B pair.** Measured the same way on `output/phase5/imit_llama70b`, two H100s, once cards freed up.
+  Acceptance is `0.615` at `k = 20` and `0.618` at `k = 3` (the timed meter ran at `k = 10`). The rebuilt
+  `p*` matches the logged probability to a median `0.0005`. The best round is `g = 2`: `1.96` tokens per
+  risky forward, a meter `1.68x` faster, and selection at **`0.370x`** the meter's time instead of `0.220x`
+  (`0.372x` at `k = 3`). Even at **perfect** acceptance the best round with `g <= 8` leaves selection at
+  `0.901x` (`results/speculative_acceptance_70b.csv`, no model needed).
 
 So a speculative meter narrows selection's per-request advantage, from `0.51x` to at most `0.88x` at the `8`B
-pair and from `0.22x` to at most `0.90x` at the `70`B, but does not erase it at either. These are bounds on a
+pair and from `0.22x` to at most `0.37x` at the `70`B (`0.90x` even at perfect acceptance), but does not
+erase it at either. These are bounds on a
 favourable cost model, not timings. They bound latency at one request per call only. The throughput price (`21.8x`, measured at a batch width of `200`)
 is not re-estimated. At that width decoding is closer to compute-bound, so verifying `g+1` positions costs more
 than one decode step, and the optimistic charge used here would not hold.

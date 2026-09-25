@@ -41,9 +41,17 @@ def test_the_speculative_paragraph_quotes_its_csv():
 
 def test_the_main_text_bound_is_the_csvs_and_does_not_erase_the_advantage():
     a, b = spec()
+    m70 = {r["k"]: r for r in rows("speculative_acceptance_70b_measured.csv") if r["quantity"] == "acceptance"}
     txt = body("experiments.tex")
-    s70, s8 = float(b["selection_ratio_at_alpha1"]), float(a["10"]["selection_ratio"])
-    assert f"at most ${s70:.2f}\\times$ and ${s8:.2f}\\times$" in txt
+    # "at best": the larger of the two measured budgets that bracket the timed k=10, at each pair
+    s70 = max(float(m70[k]["selection_ratio"]) for k in ("20", "3"))
+    s8 = max(float(a[k]["selection_ratio"]) for k in ("10", "3"))
+    assert f"at best ${s70:.2f}\\times$ and ${s8:.2f}\\times$" in txt
+    assert s70 <= float(b["selection_ratio_at_alpha1"])            # measured sits inside the alpha=1 bound
+    app = body("appendix_selection.tex")
+    for want in (f"${float(m70['20']['alpha_mean']):.3f}$ at $k=20$", f"${float(m70['3']['alpha_mean']):.3f}$ at $k=3$",
+                 f"($g={m70['20']['best_g']}$)", f"to ${float(m70['20']['selection_ratio']):.3f}\\times$"):
+        assert want in app, want
     # "lift these to at most" is a claim that selection still wins: both bounds must stay below parity,
     # and the 70B bound must hold at PERFECT acceptance, which is why that pair needs no measured alpha
     assert s70 < 1 and s8 < 1
