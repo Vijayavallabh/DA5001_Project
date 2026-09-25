@@ -39,6 +39,7 @@ feat-211,desc,"B host-B vs local, identical per-prompt level: sel_n64",0.944,,,,
 feat-211,desc,"B host-B vs local, identical per-prompt level: sel_n1",0.938,,,,,
 feat-211,desc,"B host-B vs local, identical per-prompt level: metered_k10",0.948,,,,,
 feat-211,desc,"B host-B vs local, identical per-prompt level: anchor_k0",0.934,,,,,
+feat-212,F1,judges under which S = sel_n64 - sel_g64 is CONFIRMED,1,,,,>= 5 of 6,WRONG
 feat-212,M1,B: sel_g64 - win_4.16,0.054,0.0215,0.086,CONFIRMED,CONFIRMED,RIGHT
 feat-212,M1,B: sel_g64 - frontpw_4.16,0.0455,0.014,0.0775,CONFIRMED,CONFIRMED,RIGHT
 feat-212,M1,G: sel_g64 - win_4.16,0.263,0.215,0.312,CONFIRMED,CONFIRMED,RIGHT
