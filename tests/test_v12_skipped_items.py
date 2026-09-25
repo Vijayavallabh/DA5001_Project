@@ -65,3 +65,32 @@ def test_the_onset_shading_is_not_called_an_interval():
     cap = caption_of("fig:horns")
     assert "(shaded: their range, not an interval)" in cap
     assert not re.search(r"shaded\)[^.]*confidence", cap)
+
+
+def _row(name, band, start):
+    return next(r for r in _csv(name) if r["band"] == band and r["quantity"].startswith(start))
+
+
+def test_whole_response_judging_is_quoted_from_its_csv():
+    t = body("appendix_selection.tex")
+    r1, ref = _row("full_response.csv", "R1", "D3 uncut"), _row("full_response.csv", "ref", "D3 cut")
+    assert r1["reading"] == "REVERSAL CONFIRMED"
+    assert f"${float(r1['value']):+.3f}$ $[{float(r1['lo95']):+.4f}, {float(r1['hi95']):+.4f}]$ against ${float(ref['value']):+.3f}$ cut" in t
+    bio = _row("full_response.csv", "desc", "D3 uncut, biographies")
+    assert f"${float(bio['value']):+.4f}$ $[{float(bio['lo95']):+.4f}, {float(bio['hi95']):+.4f}]$ on the biographies alone" in t
+    inc = {r["quantity"].split(":")[0]: int(r["value"]) for r in _csv("full_response.csv") if "longer than 1,200" in r["quantity"]}
+    assert f"The cut reaches ${inc['opponent']}$ of the opponent's $500$ texts, ${inc['meter k=10']}$ of the meter's at $k=10$, ${inc['selection n=64']}$ of selection's and no prompt" in t
+    assert inc["prompt"] == 0
+
+
+def test_chat_onset_is_quoted_with_its_no_crossing_share():
+    t = body("appendix_selection.tex")
+    c2 = _row("chat_onset.csv", "C2", "chat onset")
+    g1 = _row("chat_onset.csv", "G1", "memoriser alone")
+    nc = _row("chat_onset.csv", "desc", "bootstrap resamples with no crossing")
+    lo, hi = float(c2["lo95"]), float(c2["hi95"])
+    assert c2["reading"] == ("ABOVE" if lo > 3 else "BELOW" if hi < 3 else "STRADDLES") == "STRADDLES"
+    assert f"$k={float(c2['value']):.3f}$ $[{lo:.3f}, {hi:.3f}]$" in t
+    assert f"near-verbatim recall ${float(g1['value']):.4f}$" in t and float(g1["value"]) >= 0.10
+    assert f"with ${float(nc['value']):.1f}\\%$ of resamples never reaching it" in t
+    assert "coincide within that interval" in t

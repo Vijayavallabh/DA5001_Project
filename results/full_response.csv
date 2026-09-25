@@ -5,4 +5,9 @@ R2,|D3 uncut - D3 cut|,0.003,,,WITHIN,
 desc,D1 uncut,0.113,0.088,0.138,SURVIVES,500
 desc,D2 uncut,0.051,0.0255,0.076,SURVIVES,500
 desc,"D3 uncut, biographies only",0.0217,-0.0517,0.0933,,150
+desc,"opponent: texts longer than 1,200 characters",19,,,3.8%,500
+desc,"meter k=10: texts longer than 1,200 characters",20,,,4.0%,500
+desc,"anchor alone: texts longer than 1,200 characters",0,,,0.0%,500
+desc,"selection n=64: texts longer than 1,200 characters",2,,,0.4%,500
+desc,"prompt: texts longer than 1,200 characters",0,,,0.0%,500
 desc,prompts on which any arm's level changed when nothing was cut,23,,,,500

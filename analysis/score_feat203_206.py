@@ -116,6 +116,22 @@ def score_204(res):
                     n=len(d)))
     changed = sum(any(U[p][c] != C[p][c] for c in ("u_sel_n64", "u_sel_n1", "u_metered_k10", "u_anchor_k0"))
                   for p in U)
+    # the cut's incidence on the texts the headline pass judges (the registration measured it in advance)
+    from analysis.order_averaged_h2h import lowest_seed, true_prompts
+    from analysis.selection_decoding import load_baseline, load_candidates
+    from analysis.selection_scaling import load_rewards
+    from analysis.utility import load_arm
+    opp = load_baseline("output/sweep_plain", deecho=True)
+    met = {p: v[1] for p, v in lowest_seed(load_arm("output/phase2/conc_all", 10.0, "kl", deecho=True)).items()}
+    anc = {p: v[1] for p, v in lowest_seed(load_arm("output/sweep_plain", 0.0, "kl", deecho=True)).items()}
+    cands, rw = load_candidates("output/phase5/sel_anchor64", deecho=True), load_rewards(os.path.join(res, "selection_rewards64.csv"))
+    sel = {p: cands[p][max(range(64), key=lambda i: rw[p][i])][3] for p in rw}
+    for name, t in (("opponent", opp), ("meter k=10", met), ("anchor alone", anc), ("selection n=64", sel),
+                    ("prompt", true_prompts("data"))):
+        t = {p: t[p] for p in U}
+        cut = sum(len(x) > 1200 for x in t.values())
+        rows.append(row("desc", f"{name}: texts longer than 1,200 characters", cut,
+                        reading=f"{100 * cut / len(t):.1f}%", n=len(t)))
     rows.append(row("desc", "prompts on which any arm's level changed when nothing was cut", changed, n=len(U)))
     write(os.path.join(res, "full_response.csv"), rows)
 
