@@ -79,7 +79,7 @@ quantity a deployer can measure with no attack and no access to the mechanism: d
 protected passages' own prefixes and score recall. \textbf{The prefix length is part of the test}:
 \texttt{Llama-3.1-70B}, which memorised the work in pre-training, reads $0.0000$ at fourteen genuine
 prefix tokens and leaks on $31$ of $50$ passages at $150$, and the check is not monotone in the prefix,
-so it must run at every prefix length the deployment accepts (Appendix~\ref{app:vetting}). Passing is
+so it must run at every prefix length the deployment accepts, and at the temperature it samples at (Appendix~\ref{app:vetting}). Passing is
 evidence, not proof, and like a blocklist the check speaks only about the works it is handed. Our
 statements concern mechanisms; we make no claim about legal thresholds for copyright infringement. The
 recommendation we would rather see quoted than the theorems: publish $k/s(x)$ rather than $k$, prefer a

@@ -115,10 +115,10 @@ $+0.0226$ $[-0.0018, +0.0476]$, has half-width $0.0247$. The largest reading, $+
 Qwen judges three of four exclude zero. Scored instead by \texttt{gemma-2-27b-it}, which serves
 shorter drafts (median $34$ words against $75$) and more empty ones ($71$ against $41$), selection gains
 $+0.066$ $[+0.042, +0.0905]$ and the difference is $+0.015$ $[-0.0185, +0.0485]$ (pre-registered): the
-headline depends on the scorer, not only on the judge. The reward prefers empty drafts and the judge scores an empty
-answer near parity: counting empty answers as losses leaves $+0.0155$ $[-0.0245, +0.0555]$, since selection
+headline depends on the scorer, not only on the judge. The reward prefers empty drafts, which the judge scores
+near parity: counting empty answers as losses leaves $+0.0155$ $[-0.0245, +0.0555]$, since selection
 serves $41$ empty texts and the meter none, while a rule that never serves an empty draw, still certified
-at $\log n$, keeps $+0.056$ $[+0.0195, +0.093]$ (Appendix~\ref{app:empties}). From
+at $\log n$, keeps $+0.056$ $[+0.0195, +0.093]$, and under it no re-judged configuration of Table~\ref{tab:served} changes the difference's reading (Appendix~\ref{app:empties}). From
 \texttt{Qwen2.5-1.5B-Instruct} upward every interval covers zero, and the difference belongs to prefix
 completion: it holds on our prompts, public-domain books and BookMIA's unseen half, is unresolved on
 CoTaEval's news questions and MT-Bench, and reverses on AlpacaEval, where the meter wins by $0.0329$

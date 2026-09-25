@@ -98,7 +98,12 @@ $\min(\lceil 50/L\rceil + 1, B)\log n$ (Table~\ref{tab:blockwise}; registered in
 installments of $10$ and $25$ tokens beat one choice among $64$ whole drafts, by $+0.0415$
 $[+0.0185, +0.0645]$ and $+0.0245$ $[+0.001, +0.0475]$, against our registered prediction of a tie, and
 installments of $50$ tie it; their window certificates, $24.95$ and $12.48$ nats, stay far below the
-protected window's $159.8$. Held instead to one whole-output $\log 64$, spent as $2$, $3$ or $6$
+protected window's $159.8$. A disjoint draw, registered after this one was read, reproduces it, where we had predicted a tie
+at $L = 25$: $+0.0435$
+$[+0.020, +0.067]$ and $+0.033$ $[+0.011, +0.0555]$ at $L = 10$ and $25$ under judge~B, $+0.0635$ $[+0.033,
++0.0945]$ and $+0.0595$ $[+0.028, +0.0905]$ under judge~G; read post hoc by judge~G, the first draw's
+advantage is $+0.083$, $+0.0635$ and $+0.031$ at $L = 10$, $25$ and $50$
+(\texttt{results/\allowbreak blockwise\_\allowbreak replication.csv}). Held instead to one whole-output $\log 64$, spent as $2$, $3$ or $6$
 installments of $8$, $4$ or $2$ draws, they lose to one choice among $64$ by $0.0635$, $0.082$ and $0.088$:
 a decoder steered by the same reward with its budget of $\log 64$ fixed up front, the closest we ran to a
 token-level reward tilt at that budget, does worse than selection spent once. Scored on the prefix alone,

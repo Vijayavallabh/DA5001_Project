@@ -61,7 +61,37 @@ and with empty answers as losses it keeps $+0.056$ $[+0.0195, +0.093]$, the serv
 $+0.0655$ $[+0.039, +0.0915]$ (\texttt{results/\allowbreak empty\_\allowbreak as\_\allowbreak loss.csv},
 \texttt{results/\allowbreak nonempty\_\allowbreak rule.csv}). Every GPU was held by another job when the
 $41$ replacements were judged, so judge~B ran on CPU in float32; re-judging the $41$ committed picks the
-same way reproduces their committed levels on $37$.
+same way reproduces their committed levels on $37$. Re-judged in one pass per configuration on one machine,
+the difference keeps its reading under the non-empty rule at all eight configurations of
+Table~\ref{tab:served} we re-ran, the headline at $+0.058$ $[+0.0225, +0.093]$ against the committed
+rule's $+0.059$ $[+0.0235, +0.094]$ in the same pass (Table~\ref{tab:nonempty},
+\texttt{results/\allowbreak nonempty\_\allowbreak tables.csv}).
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The non-empty rule at eight configurations of Table~\ref{tab:served}: the difference of gains
+(selection's over its $n=1$ control minus the meter's over its anchor), judge~B, both orders, all eight
+passes on one machine, under the committed rule and under the rule that serves the best non-empty draw
+($41$, $14$ and $30$ picks change in the three pools). Last column: the committed rule's difference here
+minus the same row's pass behind Table~\ref{tab:served}; order averaging draws nothing, so a shift is how
+the judge ran, not a re-roll.}
+\label{tab:nonempty}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+configuration & committed rule & non-empty rule & shift \\
+\midrule
+released $8$B, $k=10$ (headline) & $+0.059$ $[+0.0235, +0.094]$ & $+0.058$ $[+0.0225, +0.093]$ & $+0.0085$ \\
+$70$B base, $k=20$ & $+0.0815$ $[+0.0485, +0.1155]$ & $+0.0805$ $[+0.0475, +0.113]$ & $-0.001$ \\
+$70$B base, $k=0.5$ & $+0.1085$ $[+0.078, +0.1395]$ & $+0.1075$ $[+0.0765, +0.1375]$ & $+0.0035$ \\
+chat template, $k=10$ & $-0.145$ $[-0.184, -0.1065]$ & $-0.1485$ $[-0.187, -0.11]$ & $+0.0035$ \\
+chat template, $k=3$ & $-0.051$ $[-0.0885, -0.0135]$ & $-0.0545$ $[-0.091, -0.0175]$ & $0$ \\
+temperature $0.7$, $8$B, $k=10$ & $-0.081$ $[-0.113, -0.049]$ & $-0.0825$ $[-0.114, -0.051]$ & $0$ \\
+temperature $0.7$, $70$B, $k=20$ & $+0.0485$ $[+0.0145, +0.082]$ & $+0.047$ $[+0.014, +0.081]$ & $0$ \\
+AnchoredByte, $k=0.1$ & $+0.1385$ $[+0.1155, +0.162]$ & $+0.1475$ $[+0.125, +0.1705]$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{The judge.}\label{app:judgemethod}
 Every judged number compares an arm's served text with the fixed opponent's on the same prompt. The judge
@@ -177,7 +207,13 @@ about a window ($K = 80$) and the meter binds on $18.4\%$ of byte steps and is j
 Comma-7B alone. Under the authors' metrics selection is the more fluent at every budget; at $k=0.5$ the
 meter's FActScore precision is $0.323$ against selection's $0.0995$, the $70$B's facts passing through a
 certificate that is vacuous for any window ($K/S_w = 2.86$), and at $k=0.1$ it is $0.0843$, inseparable from
-selection's (\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak anchoredbyte.md}).
+selection's (\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak anchoredbyte.md}). At their
+temperature $0.7$ and penalty $1.1$ (registered; their \texttt{generate} refuses $k=0$, so the anchor control is
+their byte path at $k=10^{-6}$, forced to the anchor at every byte), the meter at $k=0.1$ binds on $22.9\%$ of
+byte steps and again gains nothing over its anchor, $+0.008$ $[-0.008, +0.0245]$, while TinyComma's selection
+at those settings gains $+0.099$ $[+0.068, +0.129]$ more over its own; the tempered Comma-7B has
+$S_w = 155.3$ nats against $140.7$ untempered, both over the $758$ protected works, so $K/S_w = 0.515$
+(\texttt{results/\allowbreak anchoredbyte\_\allowbreak t07.csv}).
 
 \paragraph{Other judges and fresh draws.}\label{app:h2hrepeat}
 Table~\ref{tab:h2hrepeat} gives the recorded-text readings the repaired ones in Figure~\ref{fig:h2h}
@@ -512,7 +548,8 @@ arm reaching that accuracy spends ($n=4$ to $64$); on the pathwise axis two rati
 ($0.106$ and $0.141$). Teacher-forcing the anchor on the accepted aliases gives a median $S(x)$ of
 $5.86$ nats (p10 $1.35$, p90 $12.14$), so the meter's certificate is vacuous on $89.6\%$ of questions at
 $k=0.5$, $99.4\%$ at $k=1$ and $100\%$ at $k=3$ and $k=20$, and selection's on $10.4\%$ at $n=4$ and
-$35.4\%$ at $n=64$: selection's worst budget is vacuous less often than the meter's best. Both figures are lower bounds, since scoring the single most likely
+$35.4\%$ at $n=64$: selection's worst budget is vacuous less often than the meter's best, and still is under
+the anchor tempered to the runs' $0.7$, at $36.2\%$ against $83.6\%$ (\texttt{results/\allowbreak vetting\_\allowbreak t07.csv}, \texttt{results/\allowbreak tqa\_\allowbreak vacuity\_\allowbreak t07\_\allowbreak summary.csv}). Both figures are lower bounds, since scoring the single most likely
 alias rather than their sum overstates $S(x)$. At matched
 compute the meter wins outright: it runs both models whatever $k$, so selection reaches parity at
 $n = 5.57$, reads about $0.13$ there against $0.618$, and at $11.5\times$ the compute is still at $0.190$
@@ -734,12 +771,16 @@ that holds the book. The certificate holds prompt by prompt, $\Pr_q[E \mid x] \l
 chooses $x$, so the prefix is part of the attack surface, not a parameter of the test. The
 recommendation is therefore a schedule: screen at every prefix length up to the
 longest genuine prefix the deployment accepts. Across the three web-trained models the leaking fraction
-rises with scale ($0.040$, $0.120$, $0.500$), a pattern on three points that confounds scale with corpus. The six anchors read $0$ of $50$ at all seven lengths. Twenty-six of the new rungs ran on a second machine (host check in Table~\ref{tab:vetladder}). The test is sound but not complete: recall at a given prefix is a lower bound on
+rises with scale ($0.040$, $0.120$, $0.500$), a pattern on three points that confounds scale with corpus. The six anchors read $0$ of $50$ at all seven lengths. Twenty-six of the new rungs ran on a second machine (host check in Table~\ref{tab:vetladder}). Every rung drew at temperature $1.0$. At the judge-free runs' $0.7$,
+TinyComma and Comma-7B read $0$ of $50$ at $20$, $100$ and $200$ tokens while the $70$B leaks on $33$ of $50$
+at $100$ ($25$ at $1.0$), and tempering raises the anchors' window surprisal $S_w$ from $159.8$ to $179.1$
+nats and, over $50$ of Comma-7B's own tokens, from $121.7$ to $135.1$, so margins quoted against the
+untempered anchor are conservative for the tempered runs (\texttt{results/\allowbreak vetting\_\allowbreak t07.csv}). The test is sound but not complete: recall at a given prefix is a lower bound on
 contamination, so passing is evidence and failing is a demonstration.
 
 \begin{table}[ht]
 \centering\footnotesize
-\caption{The vetting screen at seven prefix lengths: passages of $50$ on which a model leaks (recall
+\caption{The vetting screen at seven prefix lengths, temperature $1.0$: passages of $50$ on which a model leaks (recall
 $> 0$; the maximum over $64$ draws in the anchor slot, the single draw for the $70$B). A dash is a rung not run. The licensed anchors' rungs below $100$ were run once the screen proved not monotone; they and the two rungs marked $^\dagger$ ran on a second machine, declared before each ran (the memoriser's seeded draw re-run there
 reaches recall $0.01$ on $82$ of $100$ passages against $78$ here, $z = 0.71$).}
 \label{tab:vetladder}
