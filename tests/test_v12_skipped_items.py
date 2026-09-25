@@ -173,3 +173,11 @@ def test_the_factscore_oracle_and_the_factuality_scorer_are_quoted_from_their_cs
     assert f3["reading"] == "BELOW" and f"${float(f3['value']):+.4f}$ $[{float(f3['lo95']):+.4f}, {float(f3['hi95']):+.4f}]$ below the meter" in t
     assert "a scorer that asks for facts did not find them" in t
     assert "we did not test a factuality scorer" not in t
+
+
+def test_the_planner_is_compared_with_the_meter_only_through_its_interval():
+    r = _bw("desc", "blk10n64_planner - metered_k10")
+    a = body("appendix_onset.tex")
+    assert f"{_iv(r)} more than the meter does at $k=10$ (post hoc)" in a
+    assert float(r["lo95"]) > 0, "the planner no longer exceeds the meter; 'more than' is stale"
+    assert "above the meter's" not in a

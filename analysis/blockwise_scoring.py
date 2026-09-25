@@ -168,6 +168,14 @@ def main():
     add("desc", "blk200n1", "the anchor alone through this code path, gain over the anchor control",
         float(r["value"]), float(r["lo95"]), float(r["hi95"]), r["reading"], r["n"])
 
+    # descriptive, after every registered bootstrap so none of them moves: the planner against the meter
+    # at k=10, both over the same anchor control in the planner's own pass (post hoc, caution (az))
+    d = [float(U["blk10n64_planner"][p]["u_blk10n64_planner"]) - float(U["blk10n64_planner"][p]["u_metered_k10"])
+         for p in pids]
+    lo, hi = boot(d, rng)
+    add("desc", "blk10n64_planner - metered_k10", "paired difference of gains over the anchor control, post hoc",
+        round(sum(d) / len(d), 4), round(lo, 4), round(hi, 4), n=len(d))
+
     path = os.path.join(a.out, "blockwise.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0]))

@@ -85,3 +85,4 @@ desc,blk200n1,minus the committed selection at n=64 (D5),-0.1035,-0.137,-0.069,,
 desc,blk200n1,reward calls (candidates scored),500,,,,500
 desc,blk50n64_reward,gain over the anchor control (D4),0.0895,0.0665,0.1125,SURVIVES,500
 desc,blk200n1,"the anchor alone through this code path, gain over the anchor control",0.0065,-0.015,0.028,DISSOLVES,500
+desc,blk10n64_planner - metered_k10,"paired difference of gains over the anchor control, post hoc",0.026,0.001,0.051,,500
