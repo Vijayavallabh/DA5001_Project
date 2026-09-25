@@ -19,7 +19,7 @@ defence & what the guarantee is about & measured here \\
 \midrule
 anchored decoding \citep{he2026anchored} & the served law against a safe model, charged per token ($K = kT$) & audited throughout \\
 selection anchoring (this paper) & the served law against a safe model, charged once per draw (pathwise, $\log n$) & Sections~\ref{sec:method} and~\ref{sec:experiments} \\
-CP-$\Delta$, CP-$k$ \citep{vyas2023provable}, CP-Fuse \citep{abad2025cpfuse} & the served law against shard models, per query (CP-$k$ once per output), given a disjoint split & leakage (below) \\
+CP-$\Delta$, CP-$k$ \citep{vyas2023provable}, CP-Fuse \citep{abad2025cpfuse} & the served law against shard models, per query (CP-$k$ once per output), given a disjoint split & leakage (below); CP-$k$'s rule, run with one safe model (Appendix~\ref{app:cpk}) \\
 $n$-gram blocklist, MemFree \citep{ippolito2023preventing} & listed $n$-grams are never completed; no bound on the served law & leakage and utility (below) \\
 TokenSwap \citep{prashant2025tokenswap} & a memorised string's probability decays in its length & leakage and utility (below) \\
 TRBS \citep{fu2026duplicate} & beams reranked against an index of the corpus & not measured (a code method) \\
