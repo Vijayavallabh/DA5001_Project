@@ -126,11 +126,28 @@ def test_every_cell_of_the_installments_table_is_its_csv_row():
     assert len(re.findall(r"\\\\", tab)) == len(rows) + 1          # the header plus one line per arm
 
 
+def _d(x):
+    """Four decimals with one trailing zero dropped, the precision feat-208's readings are printed at."""
+    s = f"{float(x):+.4f}"
+    return s[:-1] if s.endswith("0") else s
+
+
+def _iv3(r):
+    return f"${_d(r['value'])}$ $[{_d(r['lo95'])}, {_d(r['hi95'])}]$"
+
+
+def _rep(band, start):
+    return next(r for r in _csv("blockwise_replication.csv") if r["band"] == band and r["quantity"].startswith(start))
+
+
 def test_the_installments_claims_follow_their_verdicts():
     t = body("frontier.tex")
     w10 = _bw("B2", "blk10n64 - blk200n64")
     assert w10["reading"] == "INSTALLMENTS WIN"
-    assert f"$10$-token installments beat one choice by {_iv(w10)} at $25$ nats a window" in t
+    p1 = _rep("P1", "judge B, new draw: L=10")
+    assert p1["reading"] == "INSTALLMENTS WIN", "the fresh draw no longer reproduces; Section 3 must say so"
+    assert (f"$10$-token installments beat one choice by {_iv(w10)}, and by {_iv3(p1)} on a fresh draw, "
+            "at $25$ nats a window") in t
     assert round(float(_bw("desc", "blk10n64", "certificate")["value"].split(" / ")[1])) == 25
     b3 = [_bw("B3", f"{a} - blk200n64") for a in ("blk100n8", "blk67n4", "blk34n2")]
     assert all(r["reading"] == "ONCE WINS" for r in b3)
@@ -181,3 +198,20 @@ def test_the_planner_is_compared_with_the_meter_only_through_its_interval():
     assert f"{_iv(r)} more than the meter does at $k=10$ (post hoc)" in a
     assert float(r["lo95"]) > 0, "the planner no longer exceeds the meter; 'more than' is stale"
     assert "above the meter's" not in a
+
+
+def test_the_fresh_draw_and_the_second_judge_are_quoted_from_their_csv():
+    """feat-208: the installment advantage re-drawn and read by judge G, each reading quoted beside the others and
+    none pooled; P2 was registered as a tie, and the appendix says so."""
+    a = body("appendix_onset.tex")
+    rows = _csv("blockwise_replication.csv")
+    assert all(r["reading"] == "PASS" for r in rows if r["band"] in ("G0", "G1", "G2"))
+    p1, p2 = _rep("P1", "judge B, new draw: L=10"), _rep("P2", "judge B, new draw: L=25")
+    p3, g25 = _rep("P3", "judge G, new draw: L=10"), _rep("desc", "judge G, new draw: L=25 minus once")
+    assert all(r["reading"] == "INSTALLMENTS WIN" for r in (p1, p2, p3, g25))
+    assert (f"reproduces it, where we had predicted a tie at $L = 25$: {_iv3(p1)} and {_iv3(p2)} at $L = 10$ and "
+            f"$25$ under judge~B, {_iv3(p3)} and {_iv3(g25)} under judge~G") in a
+    ph = [_rep("posthoc", f"judge G, feat-201's draw: L={L} minus once") for L in (10, 25, 50)]
+    assert all(r["reading"] == "INSTALLMENTS WIN" for r in ph), "a post-hoc 'advantage' whose interval reaches zero"
+    assert (f"read post hoc by judge~G, the first draw's advantage is ${_d(ph[0]['value'])}$, ${_d(ph[1]['value'])}$ "
+            f"and ${_d(ph[2]['value'])}$ at $L = 10$, $25$ and $50$") in a
