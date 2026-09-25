@@ -1,0 +1,6 @@
+certificate_nats,kappa,check_certificate,m,prompts,served_risky_pct,mean_pass_rate_per_draw,accepted_median_tokens,accepted_median_words,all_draws_median_tokens,all_draws_median_words,accepted_empty,token
+4.1589,-0.0157,4.1589,64,500,0.0,0.0,,,200.0,154.0,0,cpk4.1589
+33.271,29.1121,33.271,64,500,0.0,0.0,,,200.0,154.0,0,cpk33.271
+83.178,79.0191,83.178,64,500,26.8,0.00675,200.0,158.0,200.0,154.0,0,cpk83.178
+159.83,155.6711,159.83,64,500,99.6,0.36838,200.0,158.0,200.0,154.0,0,cpk159.83
+"median R of all risky draws, nats",169.63,,64,500,,,,,,,,

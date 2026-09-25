@@ -1,0 +1,65 @@
+quantity,arm,value,lo95,hi95,n,reading,consistency,n_empty,level_empty
+level,sel_n64,0.559,0.5375,0.581,500,,0.28,41,0.5
+level,sel_n1,0.449,0.4275,0.4705,500,,0.296,64,0.4492
+level,sel_g64,0.515,0.492,0.5375,500,,0.308,71,0.4261
+level,anchor_k0,0.4365,0.4155,0.458,500,,0.304,62,0.4315
+level,metered_k10,0.4875,0.464,0.5105,500,,0.374,0,
+level,opp_r1,0.507,0.485,0.5295,500,,0.35,0,
+level,blk10n64,0.603,0.5805,0.625,500,,0.348,110,0.4568
+level,blk25n64,0.586,0.5625,0.6095,500,,0.37,104,0.4663
+level,blk200n1,0.443,0.4215,0.4655,500,,0.324,76,0.4507
+level,win_0,0.4335,0.412,0.4555,500,,0.324,66,0.4432
+level,win_4.16,0.4455,0.4225,0.469,500,,0.32,1,0.5
+level,frontpw_4.16,0.454,0.431,0.477,500,,0.32,1,0.5
+level,pw_83.18,0.451,0.429,0.473,500,,0.362,50,0.455
+level,pw_33.27,0.4475,0.4265,0.4685,500,,0.322,59,0.4576
+level,cpk_4.16,0.4365,0.4155,0.4575,500,,0.304,62,0.4315
+level,cpk_33.27,0.4365,0.4155,0.458,500,,0.304,62,0.4315
+level,cpk_83.18,0.476,0.455,0.497,500,,0.266,37,0.4797
+level,cpk_159.83,0.523,0.5,0.546,500,,0.3,0,
+gain,sel_n64 - sel_n1,0.11,0.086,0.135,500,CONFIRMED,,,
+gain,sel_g64 - sel_n1,0.066,0.0415,0.09,500,CONFIRMED,,,
+gain,metered_k10 - anchor_k0,0.051,0.0255,0.077,500,CONFIRMED,,,
+gain,opp_r1 - anchor_k0,0.0705,0.045,0.096,500,CONFIRMED,,,
+gain,blk10n64 - blk200n1,0.16,0.1335,0.187,500,CONFIRMED,,,
+gain,blk25n64 - blk200n1,0.143,0.118,0.169,500,CONFIRMED,,,
+gain,win_4.16 - win_0,0.012,-0.011,0.035,500,UNRESOLVED,,,
+gain,frontpw_4.16 - win_0,0.0205,-0.0015,0.0425,500,UNRESOLVED,,,
+gain,pw_83.18 - win_0,0.0175,-0.003,0.0385,500,UNRESOLVED,,,
+gain,pw_33.27 - win_0,0.014,-0.0055,0.0335,500,UNRESOLVED,,,
+gain,cpk_4.16 - anchor_k0,0.0,0.0,0.0,500,UNRESOLVED,,,
+gain,cpk_33.27 - anchor_k0,0.0,0.0,0.0,500,UNRESOLVED,,,
+gain,cpk_83.18 - anchor_k0,0.0395,0.0245,0.0555,500,CONFIRMED,,,
+gain,cpk_159.83 - anchor_k0,0.0865,0.062,0.1105,500,CONFIRMED,,,
+difference,sel_n64 - sel_g64,0.044,0.023,0.065,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - sel_g64,0.0542,0.0181,0.0964,83,CONFIRMED,,,
+"difference, consistent four",sel_n64 - sel_g64,0.0167,0.0,0.05,30,UNRESOLVED,,,
+difference,sel_n64 - metered_k10,0.059,0.024,0.0935,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - metered_k10,0.1333,0.0417,0.2333,60,CONFIRMED,,,
+difference,sel_g64 - metered_k10,0.015,-0.0185,0.049,500,UNRESOLVED,,,
+"difference, consistent pair",sel_g64 - metered_k10,0.0541,-0.0203,0.1284,74,UNRESOLVED,,,
+"difference, consistent four",sel_g64 - metered_k10,0.0455,0.0,0.1364,22,UNRESOLVED,,,
+difference,blk10n64 - cpk_83.18,0.1205,0.091,0.1485,500,CONFIRMED,,,
+"difference, consistent pair",blk10n64 - cpk_83.18,0.1579,0.0702,0.25,57,CONFIRMED,,,
+"difference, consistent four",blk10n64 - cpk_83.18,0.1667,0.0694,0.2778,36,CONFIRMED,,,
+difference,blk25n64 - cpk_33.27,0.143,0.119,0.168,500,CONFIRMED,,,
+"difference, consistent pair",blk25n64 - cpk_33.27,0.1471,0.0625,0.2426,68,CONFIRMED,,,
+"difference, consistent four",blk25n64 - cpk_33.27,0.2262,0.119,0.3452,42,CONFIRMED,,,
+difference,sel_n64 - cpk_4.16,0.11,0.0855,0.135,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - cpk_4.16,0.1053,0.0263,0.1842,57,CONFIRMED,,,
+"difference, consistent four",sel_n64 - cpk_4.16,0.0857,0.0143,0.1714,35,CONFIRMED,,,
+difference,sel_g64 - win_4.16,0.054,0.0215,0.086,500,CONFIRMED,,,
+"difference, consistent pair",sel_g64 - win_4.16,0.0154,-0.05,0.0808,65,UNRESOLVED,,,
+"difference, consistent four",sel_g64 - win_4.16,0.02,0.0,0.06,25,UNRESOLVED,,,
+difference,sel_g64 - frontpw_4.16,0.0455,0.014,0.0775,500,CONFIRMED,,,
+"difference, consistent pair",sel_g64 - frontpw_4.16,0.066,0.0035,0.1285,72,CONFIRMED,,,
+"difference, consistent four",sel_g64 - frontpw_4.16,0.0192,0.0,0.0577,26,UNRESOLVED,,,
+difference,cpk_83.18 - pw_83.18,0.022,-0.006,0.0495,500,UNRESOLVED,,,
+"difference, consistent pair",cpk_83.18 - pw_83.18,0.0422,-0.0162,0.1104,77,UNRESOLVED,,,
+"difference, consistent four",cpk_83.18 - pw_83.18,0.01,0.0,0.03,50,UNRESOLVED,,,
+difference,cpk_33.27 - pw_33.27,-0.014,-0.0335,0.006,500,UNRESOLVED,,,
+"difference, consistent pair",cpk_33.27 - pw_33.27,0.0422,0.0065,0.0812,77,CONFIRMED,,,
+"difference, consistent four",cpk_33.27 - pw_33.27,0.0,0.0,0.0,56,UNRESOLVED,,,
+difference,cpk_159.83 - metered_k10,0.0355,0.009,0.062,500,CONFIRMED,,,
+"difference, consistent pair",cpk_159.83 - metered_k10,0.0214,-0.0357,0.0857,70,UNRESOLVED,,,
+"difference, consistent four",cpk_159.83 - metered_k10,0.0385,-0.0385,0.1154,39,UNRESOLVED,,,

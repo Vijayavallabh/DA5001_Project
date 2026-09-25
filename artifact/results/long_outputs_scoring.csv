@@ -1,0 +1,45 @@
+prediction,quantity,value,lo95,hi95,reading,predicted,verdict
+L1,B: sel_n64 - sel_n1,0.063,0.043,0.083,CONFIRMED,CONFIRMED,RIGHT
+L2,B: inst - pw_20.8,0.0165,-0.0045,0.038,UNRESOLVED,CONFIRMED,WRONG
+L3,B: inst - kl_20.8,0.019,-0.001,0.0395,UNRESOLVED,CONFIRMED,WRONG
+L4,B: sel_n64 - pw_4.16,0.062,0.0395,0.084,CONFIRMED,CONFIRMED,RIGHT
+L4,B: sel_n64 - front_4.16,0.0305,0.0055,0.056,CONFIRMED,CONFIRMED,RIGHT
+L4,B: sel_n64 - win_4.16,0.0445,0.02,0.0695,CONFIRMED,CONFIRMED,RIGHT
+L5,B: sel_n64 - kl_0.1,0.0775,0.054,0.101,CONFIRMED,CONFIRMED,RIGHT
+L5,B: sel_n64 - kl_0.5,0.104,0.079,0.1295,CONFIRMED,CONFIRMED,RIGHT
+L6,G: sel_n64 - sel_n1,0.2115,0.177,0.2465,CONFIRMED,same sign as B,RIGHT
+L6,G: inst - pw_20.8,0.1605,0.1185,0.2025,CONFIRMED,same sign as B,RIGHT
+L6,G: inst - kl_20.8,0.152,0.1145,0.19,CONFIRMED,same sign as B,RIGHT
+L6,G: sel_n64 - pw_4.16,0.2045,0.1655,0.243,CONFIRMED,same sign as B,RIGHT
+L6,G: sel_n64 - front_4.16,0.219,0.1715,0.2665,CONFIRMED,same sign as B,RIGHT
+L6,G: sel_n64 - win_4.16,0.267,0.219,0.316,CONFIRMED,same sign as B,RIGHT
+L6,G: sel_n64 - kl_0.1,0.249,0.208,0.289,CONFIRMED,same sign as B,RIGHT
+L6,G: sel_n64 - kl_0.5,0.248,0.2035,0.2925,CONFIRMED,same sign as B,RIGHT
+desc,B: sel_n16 - sel_n1,0.0305,0.0105,0.051,CONFIRMED,,
+desc,B: sel_n4 - sel_n1,0.024,0.0075,0.04,CONFIRMED,,
+desc,B: inst - sel_n1,0.0185,-0.0005,0.037,UNRESOLVED,,
+desc,B: inst - sel_n64,-0.0445,-0.0635,-0.026,REFUTED,,
+desc,B: sel_n64 - kl_10,0.0805,0.0565,0.105,CONFIRMED,,
+desc,B: kl_20.8 - anchor_k0,-0.0005,-0.0095,0.0085,UNRESOLVED,,
+desc,B: kl_0.1 - anchor_k0,-0.0145,-0.028,-0.001,REFUTED,,
+desc,B: kl_0.5 - anchor_k0,-0.041,-0.0575,-0.024,REFUTED,,
+desc,B: kl_10 - anchor_k0,-0.0175,-0.033,-0.0015,REFUTED,,
+desc,B: pw_4.16 - anchor_k0,0.001,-0.0095,0.0115,UNRESOLVED,,
+desc,B: pw_20.8 - anchor_k0,0.002,-0.011,0.015,UNRESOLVED,,
+desc,B: front_4.16 - anchor_k0,0.0325,0.016,0.049,CONFIRMED,,
+desc,B: win_4.16 - anchor_k0,0.0185,0.0015,0.0355,CONFIRMED,,
+desc,B: sel_n64 - sel_n1 on prompts whose served n=64 output is over 200 tokens,0.092,0.0567,0.1273,n=163,,
+desc,G: sel_n16 - sel_n1,0.1665,0.133,0.2,CONFIRMED,,
+desc,G: sel_n4 - sel_n1,0.096,0.067,0.126,CONFIRMED,,
+desc,G: inst - sel_n1,0.1525,0.1185,0.1875,CONFIRMED,,
+desc,G: inst - sel_n64,-0.059,-0.0895,-0.0295,REFUTED,,
+desc,G: sel_n64 - kl_10,0.102,0.053,0.1505,CONFIRMED,,
+desc,G: kl_20.8 - anchor_k0,0.0005,-0.0145,0.0165,UNRESOLVED,,
+desc,G: kl_0.1 - anchor_k0,-0.0375,-0.062,-0.0135,REFUTED,,
+desc,G: kl_0.5 - anchor_k0,-0.0365,-0.0675,-0.0055,REFUTED,,
+desc,G: kl_10 - anchor_k0,0.1095,0.072,0.1465,CONFIRMED,,
+desc,G: pw_4.16 - anchor_k0,0.007,-0.0095,0.024,UNRESOLVED,,
+desc,G: pw_20.8 - anchor_k0,-0.008,-0.0325,0.0155,UNRESOLVED,,
+desc,G: front_4.16 - anchor_k0,-0.0075,-0.039,0.024,UNRESOLVED,,
+desc,G: win_4.16 - anchor_k0,-0.0555,-0.0885,-0.0225,REFUTED,,
+desc,G: sel_n64 - sel_n1 on prompts whose served n=64 output is over 200 tokens,0.1825,0.1212,0.2454,n=163,,

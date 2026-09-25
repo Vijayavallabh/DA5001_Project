@@ -1,0 +1,2501 @@
+arm,prompt_id,first,second,text_sha
+sel_n64,1nzes2,A,A,f8d8b640ffb8
+sel_n64,2786lw,A,B,3a4e3dcc9581
+sel_n64,2ov45h,A,B,0aa0a70f7a09
+sel_n64,49u4dh,B,A,2ed6feebcbf2
+sel_n64,4iorz7,A,B,dd9d233642a6
+sel_n64,4xzr87,A,A,6e79fec70e83
+sel_n64,53rqr9,A,A,08020703481e
+sel_n64,5apkek,A,A,fb5358e2c1b6
+sel_n64,5e6rcz,A,A,74d59c08d962
+sel_n64,5ec7q2,A,B,de79e662559b
+sel_n64,5f5p86,A,B,473ae42529eb
+sel_n64,5fqwjc,A,A,89b44a8ebe6f
+sel_n64,5g58dz,A,A,9598caeb27fb
+sel_n64,5gq4jc,A,B,0cc1c61547df
+sel_n64,5j7ypk,A,A,89099c1f5b76
+sel_n64,5je6l4,A,B,8cac1c113dc8
+sel_n64,5nc21f,A,B,45b33b8b3547
+sel_n64,5nzsq6,B,A,6776ffdca82b
+sel_n64,5ozqb9,A,A,41e0f251ebea
+sel_n64,5qf97d,A,A,113a2ff34245
+sel_n64,5qwzjo,B,A,bb39c6b581fa
+sel_n64,5r104c,A,A,5466b229201c
+sel_n64,5te65i,B,A,e426c90ed56e
+sel_n64,5umucz,A,A,0d9cb7157999
+sel_n64,5w4x14,B,A,1bcbd463ed46
+sel_n64,609k0n,A,B,836644dbf6f6
+sel_n64,625es0,A,B,96928b7aa386
+sel_n64,63dn97,A,B,4eb4471e8b60
+sel_n64,63ku7q,B,A,8603089660f4
+sel_n64,64c0w6,B,B,20ae3a2024e0
+sel_n64,65458n,A,A,01ea7104804a
+sel_n64,66uo64,A,B,991c1939281c
+sel_n64,68f5c5,A,B,da39a3ee5e6b
+sel_n64,68ykga,A,B,c5eac493f686
+sel_n64,69dzba,B,A,444356f21fec
+sel_n64,6d1iqq,A,B,cf33f48ccca4
+sel_n64,6eytds,A,B,23648f14f8d2
+sel_n64,6gl289,Tie,A,6bffe0b726d4
+sel_n64,6hoxmq,A,A,870f7d210968
+sel_n64,6imc4i,A,A,361f2a84c2ba
+sel_n64,6isay3,B,A,811809bf254f
+sel_n64,6ixx9u,A,B,da39a3ee5e6b
+sel_n64,6k8gdu,A,A,9440a14bd29c
+sel_n64,6l6v6l,B,A,ddb1fdcc8c2c
+sel_n64,6m7z8a,A,A,c59b11db2b3a
+sel_n64,6mztko,Tie,Tie,92156113867c
+sel_n64,6o18uh,B,B,837c024c4ad0
+sel_n64,6o679d,A,A,5116e74e4314
+sel_n64,6ohgxv,B,B,da39a3ee5e6b
+sel_n64,6szrbs,A,A,6450c6fc6bd5
+sel_n64,6tsiyd,A,A,c8f0d77b4424
+sel_n64,6wgtsx,A,A,735a97bd6997
+sel_n64,6wxzhc,A,A,da39a3ee5e6b
+sel_n64,6xisxt,B,B,bfe9faf58eb7
+sel_n64,6xngfe,A,B,be3e34f80541
+sel_n64,6xsruw,A,B,19c1dbf884dd
+sel_n64,71p51h,A,B,da39a3ee5e6b
+sel_n64,72l2aj,A,B,4d90749e0891
+sel_n64,74ih3z,B,A,0d89038912d2
+sel_n64,765fhd,B,A,6a4e78082785
+sel_n64,76b9gc,B,A,81e5465a2dd4
+sel_n64,77dd17,A,B,db9e01a60763
+sel_n64,796161,B,B,7bb0763094f1
+sel_n64,7adktz,Tie,Tie,8c4b5edbe318
+sel_n64,7bowjq,A,B,623b41a75e28
+sel_n64,7d0x9k,B,A,05a234888d4d
+sel_n64,7dcwik,A,A,d37aa4e11b9c
+sel_n64,7e3im5,B,A,44dc38487ac6
+sel_n64,7en7vl,A,B,85d601c4684b
+sel_n64,7ezd5t,A,A,94321adfd0ae
+sel_n64,7gjj2w,A,A,9eaf77f994bd
+sel_n64,7h9f8e,A,A,61fa0355b84a
+sel_n64,7iltd1,A,B,837d572a5528
+sel_n64,7iubwq,A,A,5bcde8aec45e
+sel_n64,7jfvx7,A,B,1da30a33e832
+sel_n64,7jqj29,A,B,da39a3ee5e6b
+sel_n64,7l7e1m,A,B,66fd781ecd86
+sel_n64,7ld0jk,A,B,ea03bead1191
+sel_n64,7lzk5g,A,B,ac67e0586d08
+sel_n64,7q0acw,A,B,686e6ef2d9d3
+sel_n64,7rb6uj,A,A,b8c41350387f
+sel_n64,7rie85,A,A,7b41951aebe0
+sel_n64,7rpy8m,A,B,841381d35919
+sel_n64,7svmp5,A,A,2b121784608a
+sel_n64,7tge90,B,A,feda3625c6c5
+sel_n64,7u04a5,A,A,98015426f06c
+sel_n64,7uezw8,A,B,cc496ebf65ac
+sel_n64,7v8ind,A,A,5ade0cc19802
+sel_n64,80sf6g,A,B,227110a58ab1
+sel_n64,83mehz,A,B,eea639617f07
+sel_n64,849wc3,A,B,9a87e6ec04f4
+sel_n64,87ak6w,A,B,8ed0ad0b8be1
+sel_n64,87tx3g,B,A,de2e14620b4a
+sel_n64,8a18sf,A,A,a01dfec850cd
+sel_n64,8aec6t,B,A,87189d810a54
+sel_n64,8fk0hr,A,B,cf64763fd93a
+sel_n64,8gfhh9,A,A,31e581f071a2
+sel_n64,8gs4wp,A,A,e584990e83d9
+sel_n64,8k4am7,A,B,f11c765ac170
+sel_n64,8myeno,A,B,966e01758c8f
+sel_n64,8o89ko,B,A,8961c2c91687
+sel_n64,8p3ora,B,A,7732f9e9c5e7
+sel_n64,8pr271,A,B,1b4859f47b38
+sel_n64,8tmkfc,A,B,fc947983ed2e
+sel_n64,8vr4k2,B,A,bfc651744121
+sel_n64,8vyqdq,B,A,6df3cad4c9ce
+sel_n64,8x0xa7,A,A,aa5ee81e7295
+sel_n64,8x86s0,A,A,9a0e4b98ceea
+sel_n64,8y8wrr,B,A,b2b455a16850
+sel_n64,8z1sq1,A,B,caa858981347
+sel_n64,9470fc,A,B,f6a907f80921
+sel_n64,96myl6,A,A,e0147ab3a3ef
+sel_n64,96xnw9,A,A,3902169dd790
+sel_n64,99kk88,A,B,655227f3a78e
+sel_n64,9edjv0,B,A,c2e268981028
+sel_n64,9f7www,A,B,57f5ed8ace72
+sel_n64,9g2cbq,Tie,A,5db2f8b0cc7f
+sel_n64,9ki47u,A,A,2d7dfcea13f8
+sel_n64,9l0dam,A,Tie,fda1fc1b8273
+sel_n64,9neuk8,A,B,72f90d6fb06a
+sel_n64,9qn4tw,A,A,43aa0b6b93d8
+sel_n64,a318ye,A,A,f41f186ecfb5
+sel_n64,a3pdwk,A,B,e9c71aefa1b3
+sel_n64,acjzv0,A,B,da39a3ee5e6b
+sel_n64,afc9c4,A,A,d0ac182e74fe
+sel_n64,aowr4t,A,B,9ef87d410e99
+sel_n64,ar7nm2,A,A,d4e3f51c40a3
+sel_n64,auig0m,A,B,da39a3ee5e6b
+sel_n64,b4yx63,B,A,49c94e3b8154
+sel_n64,b87jl7,A,B,4b43429d6be3
+sel_n64,b9uzz1,A,B,4a431b92a3d0
+sel_n64,bhyplf,A,A,13e6617e4c68
+sel_n64,bk7lic,A,A,dc46bc72cc84
+sel_n64,ciifmd,A,B,966a6fcf6edb
+sel_n64,ck6twx,A,B,2d4c6be1f7c4
+sel_n64,cpxk2b,A,B,3125ba84bd84
+sel_n64,dqn4sj,A,A,6dbf8d333531
+sel_n64,eu7ub2,A,A,c4ea5fb0a210
+sel_n64,fact_00003_Fernando da Costa Novaes,A,B,13ca9efb73e5
+sel_n64,fact_00006_David Galloway (writer),B,A,3ef43e9b63fc
+sel_n64,fact_00007_Cheyenne Brando,A,B,0fb5eefc651b
+sel_n64,fact_00012_Braulio Lara,A,A,91d2d85cf44f
+sel_n64,fact_00015_Amr Shabana,A,A,193d9308ce6b
+sel_n64,fact_00017_Abdulqawi Yusuf,B,A,7144a54503b3
+sel_n64,fact_00025_Carlos P. Romulo,A,B,0c93c95816ae
+sel_n64,fact_00027_Arthur Ewert,A,A,61e13a790592
+sel_n64,fact_00032_Flavio Méndez Santiago,A,A,5fdaf387eca4
+sel_n64,fact_00039_Chris Duffield,B,A,8b1a67b1334e
+sel_n64,fact_00040_Daniil Medvedev,B,A,7da7a16832e6
+sel_n64,fact_00043_Alexander Vovin,B,A,22b0ebc2ca11
+sel_n64,fact_00044_Cobhams Asuquo,B,A,217c285db55b
+sel_n64,fact_00045_David Bogue,A,A,2d8af63da8a0
+sel_n64,fact_00048_Don Beard,A,A,c52f227c9a05
+sel_n64,fact_00053_Andriy Yarmolenko,B,A,0cf8887cafb7
+sel_n64,fact_00058_Danny Faure,B,A,ae67678120c0
+sel_n64,fact_00063_Ayman al-Zawahiri,A,A,21ae914608c0
+sel_n64,fact_00064_Diego Suarez (garden designer),A,B,78e27c8c0e7c
+sel_n64,fact_00066_Daniel Alexander Cameron,A,A,08a14f05832f
+sel_n64,fact_00075_Antonio Leviste,A,A,0ef2f227d3bc
+sel_n64,fact_00078_Chi Pu,B,A,ea541fbbed36
+sel_n64,"fact_00080_Felipe (footballer, born 1977)",A,B,6b59625a96d2
+sel_n64,fact_00084_Alfred Hitchcock,A,A,da39a3ee5e6b
+sel_n64,fact_00085_Dascha Polanco,A,B,e7b3153f7552
+sel_n64,fact_00086_Amelia Earhart,B,A,878e69e3a942
+sel_n64,fact_00087_Chris John (boxer),A,B,e7bc42c5191f
+sel_n64,fact_00088_Blair Tugman,A,B,1a5dde606b11
+sel_n64,fact_00093_David Oyite-Ojok,A,A,e2a3ce4d27a1
+sel_n64,fact_00097_Chris Cuomo,B,A,5e6fcaa59ded
+sel_n64,fact_00098_Adnan Sami,A,B,d3b33248016d
+sel_n64,fact_00108_Bhuma Nagi Reddy,A,A,68590fd7e538
+sel_n64,fact_00109_Charmion King,A,B,a9b54a454236
+sel_n64,fact_00110_Andreea Marin,A,A,a8e53517ef96
+sel_n64,fact_00114_Ahn Jae-hyun,A,B,e4bef79f8129
+sel_n64,fact_00116_Bobo Baldé,A,B,08b09651c8e7
+sel_n64,fact_00118_Chacho Gaytán,B,A,63ed8bd24bb5
+sel_n64,fact_00119_Bastian Schweinsteiger,A,A,da39a3ee5e6b
+sel_n64,fact_00120_Erich Hartmann,A,A,67871c005b98
+sel_n64,fact_00127_Ezechiel N'Douassel,A,B,0a29f0e18ad4
+sel_n64,fact_00131_Aditya Kalyanpur,B,A,56d0831a37c3
+sel_n64,fact_00132_Dennis Andersson,B,A,ce62bf3679ea
+sel_n64,fact_00133_Daniel Bedingfield,A,Tie,d49a8007c1d2
+sel_n64,fact_00134_Celâl Bayar,B,A,55e518dfb6fe
+sel_n64,fact_00138_Diana Ivanova,A,A,721131e56a1e
+sel_n64,fact_00140_André Le Nôtre,A,A,99d3dbbf8f4e
+sel_n64,fact_00142_Cierre Wood,A,A,151c2c178ea4
+sel_n64,fact_00145_Carmelo Anthony,B,A,8a7f89a66b71
+sel_n64,fact_00146_Asafa Powell,A,A,75e056eeac06
+sel_n64,fact_00152_Felix Newman,B,A,75fe349cd2a3
+sel_n64,fact_00154_Earl Garrison,A,A,a2e61cd86fcb
+sel_n64,fact_00162_Aleksandar Kolarov,A,A,da39a3ee5e6b
+sel_n64,fact_00163_Alexandre Hohagen,A,B,8204de7977b7
+sel_n64,fact_00166_Emcee N.I.C.E.,A,B,00f347d359dd
+sel_n64,fact_00181_Chris Woakes,B,A,c7e026ce7819
+sel_n64,fact_00182_Diosdado Cabello,B,A,ea0def6d4489
+sel_n64,fact_00184_Dana Awartani,A,A,d359dba500eb
+sel_n64,fact_00185_Brianna Keilar,B,A,0122e84234e0
+sel_n64,fact_00188_Cédric Bakambu,B,A,f722611d0ee0
+sel_n64,fact_00193_Bobby Fischer,A,A,062e849f41cf
+sel_n64,fact_00198_Benjamin Lawrence Reid,A,A,ccba9d49c4dc
+sel_n64,fact_00199_Djimon Hounsou,B,A,daafb96bbf14
+sel_n64,fact_00202_Ahsee Tuala,A,A,5e69808dbe1f
+sel_n64,fact_00204_Don DeLillo,A,A,3bec1df9ae3d
+sel_n64,fact_00207_Elizabeth Inglis,A,B,ea7e36d49101
+sel_n64,fact_00208_Fifi Cooper,B,A,6412e74b5290
+sel_n64,fact_00223_Ahmed Mumin Warfa,A,B,c129cb5771cd
+sel_n64,fact_00226_Dewi Sartika,B,A,31742730de15
+sel_n64,fact_00227_Alf Garland,A,B,a0729705f7c7
+sel_n64,fact_00230_Abdul Ilah Khatib,B,A,f970a8fc6b93
+sel_n64,fact_00239_Bif Naked,A,A,5574d032af4a
+sel_n64,fact_00245_Dominique Blake,A,A,9a799163c925
+sel_n64,fact_00247_Diafra Sakho,A,A,ce03350b70c6
+sel_n64,fact_00249_Fahadh Faasil,B,A,f4103fa6e44f
+sel_n64,fact_00250_Dr. Dre,A,A,a17d4db02496
+sel_n64,fact_00255_Caitlin Lowe,A,B,129d6520105a
+sel_n64,fact_00257_Camille Paulus,A,A,41a80006c1b8
+sel_n64,fact_00258_Charley Boorman,A,A,043c5dcc8840
+sel_n64,fact_00260_Douglas Wood (engineer),A,B,811655406c44
+sel_n64,fact_00263_Billy Snedden,A,A,69b08c7c4874
+sel_n64,fact_00264_Esteban Espíndola,A,B,2baa84cd4863
+sel_n64,fact_00270_Daniel Ek,A,A,9c2eebb6c6e1
+sel_n64,fact_00275_Belisarius,A,A,04ceef35a58a
+sel_n64,fact_00276_Carol Dweck,B,A,aaadbd3937ee
+sel_n64,fact_00286_Amr Diab,B,A,eeb5e7c55143
+sel_n64,fact_00296_Akbar Hossain,B,A,423ab4479402
+sel_n64,fact_00300_Coco Chanel,B,A,51f8930f049e
+sel_n64,fact_00302_Enamul Haque (engineer),B,A,46fca2ffb9a3
+sel_n64,fact_00304_Abdelhamid Shabana,B,A,ae8c82568809
+sel_n64,fact_00307_Abdullahi Mohammad Ahmad Hassan,A,A,d0bd6e424c33
+sel_n64,fact_00309_Diego Godín,B,A,313ea8093a31
+sel_n64,fact_00312_Adel Emam,A,A,a9fc7ffe8ad4
+sel_n64,fact_00315_Billy Conigliaro,A,A,bb1ff1edac75
+sel_n64,fact_00316_Arif Mohammad Khan,A,B,517427084db0
+sel_n64,fact_00321_Bob Marley,B,A,fd0891a47786
+sel_n64,fact_00328_Dana Ashbrook,A,A,2b92edc16eba
+sel_n64,fact_00332_Cha Eun-woo,A,A,b1edf9029839
+sel_n64,fact_00333_Abdul Halik Hudu,B,A,5010bbf89b7e
+sel_n64,fact_00335_Carl Braun (obstetrician),B,A,044cdd174e7a
+sel_n64,fact_00343_Ameyaw Debrah,B,A,a11d9c0d16eb
+sel_n64,fact_00344_Cleopatra,B,A,618dc2eb03af
+sel_n64,fact_00345_Ana Cláudia Bolzan,A,A,890c4162f6a2
+sel_n64,fact_00347_Evgeny Shalunov,A,B,0a871a660608
+sel_n64,fact_00348_Charles Allen (jurist),A,A,5c3e1d7f6185
+sel_n64,fact_00349_Deyverson,B,A,9cbb23653729
+sel_n64,fact_00351_Cris Cyborg,A,A,600d9debfc8d
+sel_n64,fact_00354_Bobby Thomson,B,A,b5bbcad0ea54
+sel_n64,fact_00356_Eric Winter,A,B,243b732d3f8d
+sel_n64,fact_00362_Aert van der Neer,B,A,e3fa9dd8626d
+sel_n64,fact_00364_Blanca Errázuriz,A,A,8b086fe473c2
+sel_n64,fact_00366_Deitrick Haddon,B,A,eac310a812f0
+sel_n64,fact_00367_Andreas Ivanschitz,B,A,7e554a1c014c
+sel_n64,fact_00368_Clancy Brown,A,A,818deff219a9
+sel_n64,fact_00371_Carrie Ann Inaba,B,A,ddd3213cc449
+sel_n64,fact_00374_Cicero,B,A,cf4f41b82e8a
+sel_n64,fact_00376_14th Dalai Lama,B,A,289727dbf648
+sel_n64,fact_00377_Christian Almeida,A,A,3b28f2716e0a
+sel_n64,fact_00378_Arthur Wakefield,A,A,c15b4ec0b90f
+sel_n64,fact_00384_Andry Rajoelina,B,A,9a6cd5c9b758
+sel_n64,fact_00394_Danny Almonte,A,A,942cc226a5fd
+sel_n64,fact_00396_Andy Middleton,A,A,00366f8c2169
+sel_n64,fact_00397_Anderson Silva,A,A,873336d74b97
+sel_n64,fact_00399_Edgar Bennett,A,B,162b4a594dc1
+sel_n64,fact_00401_Balázs Bekő,B,A,485000084432
+sel_n64,fact_00404_Abraham Ancer,A,A,4edb2c8ce976
+sel_n64,fact_00418_A. K. Ramanujan,B,A,0b91283c81c6
+sel_n64,fact_00420_Carlos Ghosn,B,A,a894be8baaf6
+sel_n64,fact_00421_Anurag Kashyap,B,A,4ca7e6738b67
+sel_n64,fact_00425_Angela Bairstow,A,B,ce0fb2edd04b
+sel_n64,fact_00427_Ernestine Eckstein,A,B,1477d3a053ab
+sel_n64,fact_00430_Ezekiel Elliott,A,A,cf67eaf7462c
+sel_n64,fact_00433_Aaron Burr,A,A,03392a84913e
+sel_n64,fact_00444_Charles B. McVay III,B,A,8986971eaa31
+sel_n64,fact_00448_Carol Chell,A,B,d2a1358568fe
+sel_n64,fact_00449_Alen Omić,A,A,3a96fbe1d3ab
+sel_n64,fact_00452_Alice Torriani,A,A,f7dd1ce186b8
+sel_n64,fact_00454_Albert Outler,A,B,9a219e7d828e
+sel_n64,fact_00459_Felician of Foligno,B,A,268372ce39b4
+sel_n64,fact_00460_Annie Landouw,A,B,633dfc33ebb2
+sel_n64,fact_00462_Bhāskara I,B,A,8392aff38464
+sel_n64,fact_00464_Damon Herriman,A,B,267cad71effc
+sel_n64,fact_00466_Feroze Gandhi,A,A,21875e61b9fa
+sel_n64,fact_00471_D. B. Nihalsinghe,A,B,55a48e5c8351
+sel_n64,fact_00478_F. Gwynplaine MacIntyre,A,A,a3eb9e2a1ea5
+sel_n64,fact_00486_Fidel Castro,B,A,24c1b63c95e1
+sel_n64,fact_00489_Bir Hambir,A,B,1e2023b303c3
+sel_n64,fact_00491_Avraham Eilam-Amzallag,B,A,d4dbb336862a
+sel_n64,fact_00492_Date Narikuni,A,B,d32463b95b46
+sel_n64,fact_00495_Ariel Behar,A,A,3799843771bf
+sel_n64,fact_00498_DeAnna Bennett,A,B,277041375323
+sel_n64,g4fs4z,A,A,bf34544352c9
+sel_n64,gyp3c3,A,A,c3b34234830e
+sel_n64,hmsv36,A,B,8c4f9ee9ec0a
+sel_n64,hrkod1,B,A,cfb246dd05e4
+sel_n64,irdp6g,A,B,72c794b15e5a
+sel_n64,iuj8br,Tie,Tie,204c144bdc3b
+sel_n64,jizn99,B,A,eb140a0bf3c0
+sel_n64,jjrido,A,A,25760fc0d22f
+sel_n64,llrdyo,B,A,1da287edb841
+sel_n64,lvcurd,A,A,4b689080f1e8
+sel_n64,m70bt5,A,B,bff0679c2217
+sel_n64,mjrz7h,A,A,83e529334bb4
+sel_n64,neutral_bio_000,A,B,da39a3ee5e6b
+sel_n64,neutral_bio_001,A,A,0f8f54ab100d
+sel_n64,neutral_bio_002,A,B,bf314477f9c2
+sel_n64,neutral_bio_003,A,B,e3206bbd96a0
+sel_n64,neutral_bio_004,A,A,da39a3ee5e6b
+sel_n64,neutral_bio_005,A,B,4ce7fd96d493
+sel_n64,neutral_bio_006,B,A,01bdd7f0e3f0
+sel_n64,neutral_bio_007,A,A,8f5c9bea4536
+sel_n64,neutral_bio_008,A,B,848b18776aa1
+sel_n64,neutral_bio_009,A,B,07218c2150bf
+sel_n64,neutral_bio_010,B,A,11c2c78dfd71
+sel_n64,neutral_bio_011,A,A,9fbe5cc4723f
+sel_n64,neutral_bio_012,A,B,90636325a22e
+sel_n64,neutral_bio_013,A,B,899b6e41ab66
+sel_n64,neutral_bio_014,A,A,da39a3ee5e6b
+sel_n64,neutral_bio_015,B,A,1699bfaff78f
+sel_n64,neutral_bio_016,A,A,23bfb44dab01
+sel_n64,neutral_bio_017,A,B,7c5413cc5d18
+sel_n64,neutral_bio_018,A,B,da39a3ee5e6b
+sel_n64,neutral_bio_019,A,B,da39a3ee5e6b
+sel_n64,neutral_bio_020,A,A,5940fd17df9e
+sel_n64,neutral_bio_021,A,A,c055638b4444
+sel_n64,neutral_bio_022,A,A,a106d16c0982
+sel_n64,neutral_bio_023,A,A,da39a3ee5e6b
+sel_n64,neutral_bio_024,A,B,dcbf0c687cc1
+sel_n64,neutral_bio_025,A,B,cc93a86e86bb
+sel_n64,neutral_bio_026,A,B,59410c755f4c
+sel_n64,neutral_bio_027,A,B,cbc51168913a
+sel_n64,neutral_bio_028,A,B,1cfb24ceb2e6
+sel_n64,neutral_bio_029,A,B,376e7627952f
+sel_n64,neutral_bio_030,B,A,04870c2237eb
+sel_n64,neutral_bio_031,A,A,69dacd009d07
+sel_n64,neutral_bio_032,A,B,cb978a0ec119
+sel_n64,neutral_bio_033,A,B,cbc78aa76ad0
+sel_n64,neutral_bio_034,A,A,fec766409716
+sel_n64,neutral_bio_035,A,B,8b76287662a6
+sel_n64,neutral_bio_036,A,A,db53e8027fdd
+sel_n64,neutral_bio_037,A,A,e4d72198f101
+sel_n64,neutral_bio_038,A,A,da39a3ee5e6b
+sel_n64,neutral_bio_039,A,B,49b38de674f4
+sel_n64,neutral_nar_000,A,A,23ddc6e7aca7
+sel_n64,neutral_nar_001,B,A,d7800fc8b3b2
+sel_n64,neutral_nar_002,A,B,95633ec9d611
+sel_n64,neutral_nar_003,A,A,6f287a638fb4
+sel_n64,neutral_nar_004,B,A,6f7450d5eb17
+sel_n64,neutral_nar_005,A,A,f5f85ee48a70
+sel_n64,neutral_nar_006,B,A,09a02fbe6e9f
+sel_n64,neutral_nar_007,B,A,da39a3ee5e6b
+sel_n64,neutral_nar_008,A,B,da39a3ee5e6b
+sel_n64,neutral_nar_009,B,A,c3725675bbda
+sel_n64,neutral_nar_010,A,A,da39a3ee5e6b
+sel_n64,neutral_nar_011,B,A,ebef3421a246
+sel_n64,neutral_nar_012,A,A,b76cf36bc9f5
+sel_n64,neutral_nar_013,Tie,B,da39a3ee5e6b
+sel_n64,neutral_nar_014,A,B,ee698b06c382
+sel_n64,neutral_nar_015,A,B,146c00d01d16
+sel_n64,neutral_nar_016,A,A,4a68ccf7546d
+sel_n64,neutral_nar_017,A,B,bacb0aa47535
+sel_n64,neutral_nar_018,A,B,da39a3ee5e6b
+sel_n64,neutral_nar_019,B,A,0503b92efe1c
+sel_n64,neutral_nar_020,A,B,452d1e65dcb3
+sel_n64,neutral_nar_021,A,B,358143668aab
+sel_n64,neutral_nar_022,B,A,c613e325c534
+sel_n64,neutral_nar_023,A,B,38967dc28e6d
+sel_n64,neutral_nar_024,A,A,d0129bf317b3
+sel_n64,neutral_nar_025,A,B,e2594e9a182e
+sel_n64,neutral_nar_026,A,B,fe2449878105
+sel_n64,neutral_nar_027,A,B,05d21d3e8c3d
+sel_n64,neutral_nar_028,A,A,16efbecf7420
+sel_n64,neutral_nar_029,A,B,96ff7774e8f5
+sel_n64,neutral_nar_030,A,A,f487293c2062
+sel_n64,neutral_nar_031,A,B,a25622831feb
+sel_n64,neutral_nar_032,A,B,e69c2bc3461c
+sel_n64,neutral_nar_033,A,B,893137718a0c
+sel_n64,neutral_nar_034,B,A,d3c3db7c1296
+sel_n64,neutral_nar_035,B,A,52e0a390ffc1
+sel_n64,neutral_nar_036,A,B,778d7483c7b6
+sel_n64,neutral_nar_037,B,A,641c6d5c8184
+sel_n64,neutral_nar_038,A,A,16401119b8d2
+sel_n64,neutral_nar_039,B,A,7172d619d048
+sel_n64,neutral_ncs_000,A,A,da39a3ee5e6b
+sel_n64,neutral_ncs_001,A,B,dbfacf894ea2
+sel_n64,neutral_ncs_002,B,A,a1c921cdf655
+sel_n64,neutral_ncs_003,A,B,28f2eed46f6c
+sel_n64,neutral_ncs_004,A,B,da39a3ee5e6b
+sel_n64,neutral_ncs_005,A,B,949c48e84752
+sel_n64,neutral_ncs_006,A,B,791f64d3203f
+sel_n64,neutral_ncs_007,A,B,5d9f56dd83a7
+sel_n64,neutral_ncs_008,A,A,51c7b9a5eac7
+sel_n64,neutral_ncs_009,A,B,f15a7316ec02
+sel_n64,neutral_ncs_010,B,A,2b4423317153
+sel_n64,neutral_ncs_011,A,B,c33af0979373
+sel_n64,neutral_ncs_012,B,A,462f323c236b
+sel_n64,neutral_ncs_013,A,B,da39a3ee5e6b
+sel_n64,neutral_ncs_014,A,B,a6a4d398c2c1
+sel_n64,neutral_ncs_015,A,A,da39a3ee5e6b
+sel_n64,neutral_ncs_016,A,A,c629e32e69a5
+sel_n64,neutral_ncs_017,A,A,da39a3ee5e6b
+sel_n64,neutral_ncs_018,A,B,ee3fdf8bcc9e
+sel_n64,neutral_ncs_019,B,B,da39a3ee5e6b
+sel_n64,neutral_ncs_020,B,A,5b9f87cc321d
+sel_n64,neutral_ncs_021,A,B,fcd7960989fc
+sel_n64,neutral_ncs_022,A,A,3dd8dc579143
+sel_n64,neutral_ncs_023,B,A,671c256d6f5f
+sel_n64,neutral_ncs_024,B,B,fd12a7655cda
+sel_n64,neutral_ncs_025,B,A,bea33616b4f6
+sel_n64,neutral_ncs_026,A,B,4fd239811a08
+sel_n64,neutral_ncs_027,A,A,a7b5015a949c
+sel_n64,neutral_ncs_028,A,B,b9d6c34f8df5
+sel_n64,neutral_ncs_029,A,A,da39a3ee5e6b
+sel_n64,neutral_ncs_030,B,A,06bc8a782c32
+sel_n64,neutral_ncs_031,A,B,ba994558f74a
+sel_n64,neutral_ncs_032,B,B,da39a3ee5e6b
+sel_n64,neutral_ncs_033,A,A,5be82b45fb96
+sel_n64,neutral_ncs_034,A,B,a54448b717eb
+sel_n64,neutral_ncs_035,A,A,c296781ba089
+sel_n64,neutral_ncs_036,A,B,987f43f1d5d4
+sel_n64,neutral_ncs_037,A,B,42ec53e569c8
+sel_n64,neutral_ncs_038,A,A,da39a3ee5e6b
+sel_n64,neutral_ncs_039,B,A,da39a3ee5e6b
+sel_n64,neutral_qa_000,A,A,5c229c564157
+sel_n64,neutral_qa_001,A,B,c5522686bff5
+sel_n64,neutral_qa_002,A,A,a1d14ed1d386
+sel_n64,neutral_qa_003,A,A,487405f9b04a
+sel_n64,neutral_qa_004,B,A,c205dc11875d
+sel_n64,neutral_qa_005,B,B,da39a3ee5e6b
+sel_n64,neutral_qa_006,B,A,f479c42a2952
+sel_n64,neutral_qa_007,A,A,49ad23d12bde
+sel_n64,neutral_qa_008,A,A,a60944906300
+sel_n64,neutral_qa_009,A,A,1dcdaa6b2724
+sel_n64,neutral_qa_010,B,A,f2a49bc735ff
+sel_n64,neutral_qa_011,B,A,4930cf6a4254
+sel_n64,neutral_qa_012,B,A,dc8038c64acb
+sel_n64,neutral_qa_013,A,B,2fea40aacd48
+sel_n64,neutral_qa_014,A,B,da39a3ee5e6b
+sel_n64,neutral_qa_015,A,A,d96b1f1ef378
+sel_n64,neutral_qa_016,A,B,da39a3ee5e6b
+sel_n64,neutral_qa_017,A,A,db6027da1ff2
+sel_n64,neutral_qa_018,A,B,17d2bdca7f09
+sel_n64,neutral_qa_019,A,A,6737702f02fd
+sel_n64,neutral_qa_020,B,A,40706caa1ec6
+sel_n64,neutral_qa_021,A,B,93049ca3713e
+sel_n64,neutral_qa_022,B,A,d6841e950549
+sel_n64,neutral_qa_023,A,B,da39a3ee5e6b
+sel_n64,neutral_qa_024,B,A,7b84a29446eb
+sel_n64,neutral_qa_025,A,B,bc90b0b560e5
+sel_n64,neutral_qa_026,A,B,9d61cc87bf8e
+sel_n64,neutral_qa_027,A,B,52d5c1fedf0d
+sel_n64,neutral_qa_028,A,B,0b0d41592b7e
+sel_n64,neutral_qa_029,A,B,4d82f7d78b42
+sel_n64,neutral_qa_030,B,A,49f8f23e958f
+sel_n64,neutral_qa_031,B,A,dfd81277618f
+sel_n64,neutral_qa_032,A,B,0327fb2b0244
+sel_n64,neutral_qa_033,B,A,d4c0e5c715bf
+sel_n64,neutral_qa_034,A,B,dc2cd401eba8
+sel_n64,neutral_qa_035,A,B,fa25dd1feccf
+sel_n64,neutral_qa_036,A,B,a68a69dcc1db
+sel_n64,neutral_qa_037,A,B,606b9f714e1a
+sel_n64,neutral_qa_038,B,B,da39a3ee5e6b
+sel_n64,neutral_qa_039,B,A,b39ee5871c80
+sel_n64,neutral_sum_000,B,A,9314b6622fcf
+sel_n64,neutral_sum_001,A,B,f5c87a4e975d
+sel_n64,neutral_sum_002,A,A,da39a3ee5e6b
+sel_n64,neutral_sum_003,A,B,8723d39bbfb5
+sel_n64,neutral_sum_004,A,B,e245e42edb52
+sel_n64,neutral_sum_005,A,A,104c94c689bf
+sel_n64,neutral_sum_006,Tie,Tie,7e33fb40461c
+sel_n64,neutral_sum_007,A,A,5047a7b01a23
+sel_n64,neutral_sum_008,B,A,3ca0d0bec74b
+sel_n64,neutral_sum_009,A,A,f2d4f76f06ce
+sel_n64,neutral_sum_010,A,B,f53be2b67a16
+sel_n64,neutral_sum_011,A,B,e2a91b0a9164
+sel_n64,neutral_sum_012,B,B,debc6d944552
+sel_n64,neutral_sum_013,A,A,7501e437cb1e
+sel_n64,neutral_sum_014,A,B,865b5f7109de
+sel_n64,neutral_sum_015,B,A,2b5ba25a316d
+sel_n64,neutral_sum_016,A,B,90f8749f52ef
+sel_n64,neutral_sum_017,A,A,da39a3ee5e6b
+sel_n64,neutral_sum_018,B,A,c56448d72f9f
+sel_n64,neutral_sum_019,A,B,b9e4d26eb40d
+sel_n64,neutral_sum_020,A,B,1c064f569091
+sel_n64,neutral_sum_021,A,A,a71d6bf296ee
+sel_n64,neutral_sum_022,A,B,03e89fd92715
+sel_n64,neutral_sum_023,B,A,8b364dc9b390
+sel_n64,neutral_sum_024,A,B,bf31acc1ea7c
+sel_n64,neutral_sum_025,B,A,43334c7053c9
+sel_n64,neutral_sum_026,A,B,c9600bd77e4c
+sel_n64,neutral_sum_027,A,B,c81cfc86a31e
+sel_n64,neutral_sum_028,B,A,786d69f69415
+sel_n64,neutral_sum_029,A,A,800390e1de26
+sel_n64,neutral_sum_030,A,A,d45d1959c290
+sel_n64,neutral_sum_031,A,A,a801f28d1366
+sel_n64,neutral_sum_032,A,A,7f19f6eaacad
+sel_n64,neutral_sum_033,A,B,e942cf2551ec
+sel_n64,neutral_sum_034,A,A,da39a3ee5e6b
+sel_n64,neutral_sum_035,B,A,f74081d97352
+sel_n64,neutral_sum_036,A,B,db6615a743dd
+sel_n64,neutral_sum_037,A,B,48aaf0bda76a
+sel_n64,neutral_sum_038,A,B,4c64e5c6429a
+sel_n64,neutral_sum_039,A,A,f3f8bc6c9a6a
+sel_n1,1nzes2,A,A,e8b7f048b79e
+sel_n1,2786lw,A,A,3531f686024e
+sel_n1,2ov45h,A,B,3e04c276ac6b
+sel_n1,49u4dh,B,A,59ccbf2a2ed8
+sel_n1,4iorz7,A,B,0e17e3710bbc
+sel_n1,4xzr87,A,B,905d72c2e6ea
+sel_n1,53rqr9,A,A,3c97b97706f4
+sel_n1,5apkek,B,A,04242bf57e1f
+sel_n1,5e6rcz,A,A,d048cea87ffa
+sel_n1,5ec7q2,A,B,2ad89decf63f
+sel_n1,5f5p86,A,A,82bcde939a80
+sel_n1,5fqwjc,A,B,40c5feb28000
+sel_n1,5g58dz,B,A,016a261918dc
+sel_n1,5gq4jc,B,B,0d2b82c84068
+sel_n1,5j7ypk,A,A,13562e99a3fb
+sel_n1,5je6l4,B,A,8a1aa26ac7b7
+sel_n1,5nc21f,B,A,26579414b1b4
+sel_n1,5nzsq6,A,A,1e766ec6a800
+sel_n1,5ozqb9,A,A,2ba91377b35f
+sel_n1,5qf97d,A,B,2c8fbdc77d5b
+sel_n1,5qwzjo,A,B,da39a3ee5e6b
+sel_n1,5r104c,A,B,75d55721ff41
+sel_n1,5te65i,B,A,9dd64d35489c
+sel_n1,5umucz,B,A,b2f1892dfe64
+sel_n1,5w4x14,B,A,aaeb51f1ae66
+sel_n1,609k0n,A,A,3a52ce780950
+sel_n1,625es0,A,B,d75b08c276c6
+sel_n1,63dn97,A,A,49f497dd556c
+sel_n1,63ku7q,B,A,6d9baad9fea1
+sel_n1,64c0w6,B,A,de6647e03a02
+sel_n1,65458n,B,A,a28b230a9e86
+sel_n1,66uo64,A,B,06ad2130e738
+sel_n1,68f5c5,A,A,e07c56874a95
+sel_n1,68ykga,A,B,46debb240ec3
+sel_n1,69dzba,A,A,da39a3ee5e6b
+sel_n1,6d1iqq,B,A,78df59d51411
+sel_n1,6eytds,A,B,6d0234b75cc1
+sel_n1,6gl289,Tie,A,cfd864513a40
+sel_n1,6hoxmq,A,A,cf6af7fa7929
+sel_n1,6imc4i,A,A,da39a3ee5e6b
+sel_n1,6isay3,B,A,40f7951c13b9
+sel_n1,6ixx9u,A,A,2f574443753a
+sel_n1,6k8gdu,A,A,9440a14bd29c
+sel_n1,6l6v6l,A,B,b9439529d496
+sel_n1,6m7z8a,A,A,49d8077aa738
+sel_n1,6mztko,B,A,db1d31e031b8
+sel_n1,6o18uh,B,A,c6ba912f7508
+sel_n1,6o679d,B,A,c40ac3f74807
+sel_n1,6ohgxv,B,A,ec1555d68dd2
+sel_n1,6szrbs,A,A,95df0edaadab
+sel_n1,6tsiyd,A,A,8048f32c3509
+sel_n1,6wgtsx,A,A,b0cf1be40593
+sel_n1,6wxzhc,A,A,da39a3ee5e6b
+sel_n1,6xisxt,B,A,b659b2521a42
+sel_n1,6xngfe,A,B,40e73a712fe0
+sel_n1,6xsruw,A,A,c15440fd661b
+sel_n1,71p51h,A,B,49d69ed15332
+sel_n1,72l2aj,A,B,27bc0ea1236b
+sel_n1,74ih3z,B,A,174031a55f04
+sel_n1,765fhd,B,A,407cebcb0ddd
+sel_n1,76b9gc,B,A,a6890c3dc0f0
+sel_n1,77dd17,A,B,265f18164e83
+sel_n1,796161,B,A,3c1d05c0beee
+sel_n1,7adktz,A,A,b2e7a5255bb9
+sel_n1,7bowjq,B,A,0f8d23e5f754
+sel_n1,7d0x9k,A,A,5a208ecbf018
+sel_n1,7dcwik,A,A,8426b27e0d95
+sel_n1,7e3im5,B,B,da39a3ee5e6b
+sel_n1,7en7vl,A,B,fc0aab6408ad
+sel_n1,7ezd5t,A,A,98883c7b4637
+sel_n1,7gjj2w,A,A,5f46dbc7a2c5
+sel_n1,7h9f8e,A,A,2e1322ecb5ed
+sel_n1,7iltd1,A,B,ebea7d6be46d
+sel_n1,7iubwq,A,B,15b148ff4b1f
+sel_n1,7jfvx7,A,B,7e2068c8fc4f
+sel_n1,7jqj29,A,B,ac00388bc26d
+sel_n1,7l7e1m,B,B,da39a3ee5e6b
+sel_n1,7ld0jk,A,B,da39a3ee5e6b
+sel_n1,7lzk5g,A,A,059c0b0ddc00
+sel_n1,7q0acw,A,B,9e5ab6fba406
+sel_n1,7rb6uj,B,A,79e6814e9ba2
+sel_n1,7rie85,A,A,da39a3ee5e6b
+sel_n1,7rpy8m,A,A,5b281a95e159
+sel_n1,7svmp5,A,B,589b8a785761
+sel_n1,7tge90,B,A,5413617d2b04
+sel_n1,7u04a5,A,A,da39a3ee5e6b
+sel_n1,7uezw8,A,B,2e6d3de1dfa9
+sel_n1,7v8ind,A,A,5b65a0e21951
+sel_n1,80sf6g,A,A,71c45227afa9
+sel_n1,83mehz,A,B,eea639617f07
+sel_n1,849wc3,A,A,96ec0a692d5c
+sel_n1,87ak6w,A,A,1201043c019e
+sel_n1,87tx3g,B,A,6cf94d29821d
+sel_n1,8a18sf,A,A,1c2f5fffd01c
+sel_n1,8aec6t,B,A,7aae358770a1
+sel_n1,8fk0hr,A,B,b014d3653700
+sel_n1,8gfhh9,A,A,fee71a32e8a7
+sel_n1,8gs4wp,A,A,129af707f1c5
+sel_n1,8k4am7,A,B,13168df05746
+sel_n1,8myeno,A,B,1301bbe95974
+sel_n1,8o89ko,B,A,6ae9c88f5200
+sel_n1,8p3ora,A,A,1606010dc8d5
+sel_n1,8pr271,A,A,28c71954de68
+sel_n1,8tmkfc,A,B,6fe9ac881764
+sel_n1,8vr4k2,B,A,da39a3ee5e6b
+sel_n1,8vyqdq,A,A,da39a3ee5e6b
+sel_n1,8x0xa7,B,A,c9a7bf243478
+sel_n1,8x86s0,A,A,fa4cd4610d37
+sel_n1,8y8wrr,B,A,00c1edd5c415
+sel_n1,8z1sq1,A,B,803afe93241a
+sel_n1,9470fc,A,B,79c3ab95ab3d
+sel_n1,96myl6,B,Tie,2725d9b2bdd0
+sel_n1,96xnw9,A,B,da39a3ee5e6b
+sel_n1,99kk88,A,B,34dde717c854
+sel_n1,9edjv0,A,A,911be6f20c7d
+sel_n1,9f7www,A,B,57d855c26898
+sel_n1,9g2cbq,Tie,Tie,da39a3ee5e6b
+sel_n1,9ki47u,A,B,ca5da2802b0f
+sel_n1,9l0dam,B,A,71d5157f29fa
+sel_n1,9neuk8,A,A,de3ea0f71954
+sel_n1,9qn4tw,A,A,91a36e0ece7b
+sel_n1,a318ye,A,B,7a171e81d0e7
+sel_n1,a3pdwk,A,B,576a6b1ab0bf
+sel_n1,acjzv0,A,B,c3c1bff8533a
+sel_n1,afc9c4,A,A,b55259f7d4b4
+sel_n1,aowr4t,A,B,f438f101ffe0
+sel_n1,ar7nm2,A,A,da39a3ee5e6b
+sel_n1,auig0m,A,A,734a3ab7f236
+sel_n1,b4yx63,A,B,429efee3d099
+sel_n1,b87jl7,A,B,d79ae823c6ba
+sel_n1,b9uzz1,B,B,da39a3ee5e6b
+sel_n1,bhyplf,A,A,df265ffb1411
+sel_n1,bk7lic,A,A,73bc660e9782
+sel_n1,ciifmd,A,B,af94e82ce3a0
+sel_n1,ck6twx,A,B,105d7d7c2291
+sel_n1,cpxk2b,A,B,ff0cd2769e56
+sel_n1,dqn4sj,A,A,57e3bf4425a0
+sel_n1,eu7ub2,A,A,61f98faeb62b
+sel_n1,fact_00003_Fernando da Costa Novaes,A,B,9071836fab09
+sel_n1,fact_00006_David Galloway (writer),B,A,d888b7c7b001
+sel_n1,fact_00007_Cheyenne Brando,A,A,28bc9797e26c
+sel_n1,fact_00012_Braulio Lara,B,A,14e645f56331
+sel_n1,fact_00015_Amr Shabana,B,A,00c6b308160c
+sel_n1,fact_00017_Abdulqawi Yusuf,B,A,68135efc7e4e
+sel_n1,fact_00025_Carlos P. Romulo,A,A,6737907629f8
+sel_n1,fact_00027_Arthur Ewert,A,A,e9494babdbfb
+sel_n1,fact_00032_Flavio Méndez Santiago,B,A,addb6e965309
+sel_n1,fact_00039_Chris Duffield,A,A,fba5ed162c5b
+sel_n1,fact_00040_Daniil Medvedev,B,A,adf9edab1a49
+sel_n1,fact_00043_Alexander Vovin,B,A,b5d23b4e2452
+sel_n1,fact_00044_Cobhams Asuquo,B,A,3ce581bf066e
+sel_n1,fact_00045_David Bogue,A,A,71ca1a22ae4f
+sel_n1,fact_00048_Don Beard,A,A,7155a5c93a41
+sel_n1,fact_00053_Andriy Yarmolenko,B,A,0cf8887cafb7
+sel_n1,fact_00058_Danny Faure,B,A,a3396ade76b8
+sel_n1,fact_00063_Ayman al-Zawahiri,A,A,a1c35a06850e
+sel_n1,fact_00064_Diego Suarez (garden designer),B,A,177bd6ed2af1
+sel_n1,fact_00066_Daniel Alexander Cameron,B,A,b5a609fba092
+sel_n1,fact_00075_Antonio Leviste,A,A,3caedf6689d0
+sel_n1,fact_00078_Chi Pu,B,A,6de107401823
+sel_n1,"fact_00080_Felipe (footballer, born 1977)",A,B,4cbba89eb8f3
+sel_n1,fact_00084_Alfred Hitchcock,B,A,b7670587591b
+sel_n1,fact_00085_Dascha Polanco,A,B,32c64f484bea
+sel_n1,fact_00086_Amelia Earhart,B,A,30355c923440
+sel_n1,fact_00087_Chris John (boxer),A,B,637f453dbbcb
+sel_n1,fact_00088_Blair Tugman,B,A,b7b555f5327f
+sel_n1,fact_00093_David Oyite-Ojok,B,A,1fe6a4d7abe3
+sel_n1,fact_00097_Chris Cuomo,B,A,b6a82a6b18b7
+sel_n1,fact_00098_Adnan Sami,A,B,2876c5567e48
+sel_n1,fact_00108_Bhuma Nagi Reddy,B,A,5bca753eae5c
+sel_n1,fact_00109_Charmion King,A,A,a44d00b1dfed
+sel_n1,fact_00110_Andreea Marin,A,A,408441ae00d6
+sel_n1,fact_00114_Ahn Jae-hyun,A,B,a0e49c7bd0cb
+sel_n1,fact_00116_Bobo Baldé,B,A,ced74db56e7f
+sel_n1,fact_00118_Chacho Gaytán,B,A,36817f53a310
+sel_n1,fact_00119_Bastian Schweinsteiger,B,A,ddb19b9b2dc8
+sel_n1,fact_00120_Erich Hartmann,B,A,e6762ec019e2
+sel_n1,fact_00127_Ezechiel N'Douassel,A,A,ba80883c4e8d
+sel_n1,fact_00131_Aditya Kalyanpur,B,A,42c91a27bb4d
+sel_n1,fact_00132_Dennis Andersson,B,A,62cd494c29b5
+sel_n1,fact_00133_Daniel Bedingfield,A,A,f8e5c50df6da
+sel_n1,fact_00134_Celâl Bayar,B,A,00040c5dfc9c
+sel_n1,fact_00138_Diana Ivanova,B,A,fa652c343230
+sel_n1,fact_00140_André Le Nôtre,A,A,e171043ce3f5
+sel_n1,fact_00142_Cierre Wood,B,A,97b77604287f
+sel_n1,fact_00145_Carmelo Anthony,B,A,cdb7f24a7589
+sel_n1,fact_00146_Asafa Powell,A,B,d51b08e9c5f8
+sel_n1,fact_00152_Felix Newman,B,A,b2e0ccdadf97
+sel_n1,fact_00154_Earl Garrison,A,A,3c0d4a083735
+sel_n1,fact_00162_Aleksandar Kolarov,B,A,ce723b8af693
+sel_n1,fact_00163_Alexandre Hohagen,B,A,edc26b63e2e4
+sel_n1,fact_00166_Emcee N.I.C.E.,A,A,aca9fe2abdb1
+sel_n1,fact_00181_Chris Woakes,B,A,04ef7f0ee986
+sel_n1,fact_00182_Diosdado Cabello,B,A,439558d52bb8
+sel_n1,fact_00184_Dana Awartani,B,A,d48e47e2ee06
+sel_n1,fact_00185_Brianna Keilar,B,A,5e0a01365c8b
+sel_n1,fact_00188_Cédric Bakambu,B,A,2a71efe3206b
+sel_n1,fact_00193_Bobby Fischer,A,A,a134aa0889a8
+sel_n1,fact_00198_Benjamin Lawrence Reid,B,A,fa7ea55a7695
+sel_n1,fact_00199_Djimon Hounsou,B,A,aea56500e968
+sel_n1,fact_00202_Ahsee Tuala,A,B,bfaa53c76222
+sel_n1,fact_00204_Don DeLillo,A,A,f17ef333932a
+sel_n1,fact_00207_Elizabeth Inglis,A,A,fb1e911c6955
+sel_n1,fact_00208_Fifi Cooper,B,A,5ee996108e69
+sel_n1,fact_00223_Ahmed Mumin Warfa,A,A,a83f037cb266
+sel_n1,fact_00226_Dewi Sartika,B,A,facc1af919bd
+sel_n1,fact_00227_Alf Garland,A,B,38daf8b33541
+sel_n1,fact_00230_Abdul Ilah Khatib,B,A,9e52d1ed39e7
+sel_n1,fact_00239_Bif Naked,A,A,2f22f9614515
+sel_n1,fact_00245_Dominique Blake,A,A,0ba68596fc29
+sel_n1,fact_00247_Diafra Sakho,B,A,6b36228f576b
+sel_n1,fact_00249_Fahadh Faasil,B,A,fed68d37f8ac
+sel_n1,fact_00250_Dr. Dre,A,A,29d8b0178b58
+sel_n1,fact_00255_Caitlin Lowe,B,A,b38fbbfbd9ba
+sel_n1,fact_00257_Camille Paulus,A,B,9398455f37f6
+sel_n1,fact_00258_Charley Boorman,B,A,076da24a2d9c
+sel_n1,fact_00260_Douglas Wood (engineer),A,B,8177bdea1c9e
+sel_n1,fact_00263_Billy Snedden,B,A,4c7750c7885e
+sel_n1,fact_00264_Esteban Espíndola,A,A,be87f9bff225
+sel_n1,fact_00270_Daniel Ek,B,A,579971cb53fa
+sel_n1,fact_00275_Belisarius,B,A,afb94f2beafc
+sel_n1,fact_00276_Carol Dweck,B,A,2f01ced883ff
+sel_n1,fact_00286_Amr Diab,B,A,b1df58b53f31
+sel_n1,fact_00296_Akbar Hossain,B,A,9351dc28b71b
+sel_n1,fact_00300_Coco Chanel,B,A,3d4288c53e9c
+sel_n1,fact_00302_Enamul Haque (engineer),A,A,21b331c502d9
+sel_n1,fact_00304_Abdelhamid Shabana,B,A,6f1230e6333e
+sel_n1,fact_00307_Abdullahi Mohammad Ahmad Hassan,A,A,1b4fcff3607d
+sel_n1,fact_00309_Diego Godín,B,A,31765bc20956
+sel_n1,fact_00312_Adel Emam,B,A,c6210259ffe7
+sel_n1,fact_00315_Billy Conigliaro,B,A,c6dd2a0eaf06
+sel_n1,fact_00316_Arif Mohammad Khan,B,A,a410958090a0
+sel_n1,fact_00321_Bob Marley,B,A,268902c9745e
+sel_n1,fact_00328_Dana Ashbrook,A,A,77a0e7942fa8
+sel_n1,fact_00332_Cha Eun-woo,A,A,0d4eca07af0b
+sel_n1,fact_00333_Abdul Halik Hudu,B,A,ef89ca8bfaa7
+sel_n1,fact_00335_Carl Braun (obstetrician),B,A,6145d27ac3d7
+sel_n1,fact_00343_Ameyaw Debrah,B,A,33fd1baab641
+sel_n1,fact_00344_Cleopatra,B,A,47a022a86bf3
+sel_n1,fact_00345_Ana Cláudia Bolzan,B,A,c9cfaaeb7d2b
+sel_n1,fact_00347_Evgeny Shalunov,B,A,8cf5d5e18334
+sel_n1,fact_00348_Charles Allen (jurist),A,A,45db4181cd9b
+sel_n1,fact_00349_Deyverson,B,A,b48b9e68b084
+sel_n1,fact_00351_Cris Cyborg,B,A,3fec97a81761
+sel_n1,fact_00354_Bobby Thomson,B,A,3b5716c561cf
+sel_n1,fact_00356_Eric Winter,A,A,b3a1c7756511
+sel_n1,fact_00362_Aert van der Neer,B,A,dbff3fc01350
+sel_n1,fact_00364_Blanca Errázuriz,A,A,f4facc1d711b
+sel_n1,fact_00366_Deitrick Haddon,B,A,05117a0e25fd
+sel_n1,fact_00367_Andreas Ivanschitz,B,A,a82dbbab427a
+sel_n1,fact_00368_Clancy Brown,B,A,87baf3732c14
+sel_n1,fact_00371_Carrie Ann Inaba,B,A,88f2b96b921f
+sel_n1,fact_00374_Cicero,B,A,8f3ffa7ada45
+sel_n1,fact_00376_14th Dalai Lama,B,A,352e2d7952a9
+sel_n1,fact_00377_Christian Almeida,B,A,4ba0a3b3808f
+sel_n1,fact_00378_Arthur Wakefield,B,A,ba8668c3d358
+sel_n1,fact_00384_Andry Rajoelina,B,A,641ca2701a19
+sel_n1,fact_00394_Danny Almonte,A,A,81b5ef669c2e
+sel_n1,fact_00396_Andy Middleton,B,A,9e26efbe3a7b
+sel_n1,fact_00397_Anderson Silva,A,A,34ff9d794ab1
+sel_n1,fact_00399_Edgar Bennett,B,A,a5a4ad1d3938
+sel_n1,fact_00401_Balázs Bekő,B,A,a058147917d4
+sel_n1,fact_00404_Abraham Ancer,A,A,78ab79038df3
+sel_n1,fact_00418_A. K. Ramanujan,B,A,91815c8c2730
+sel_n1,fact_00420_Carlos Ghosn,B,A,c098425b92cb
+sel_n1,fact_00421_Anurag Kashyap,B,A,6d93fa5efc50
+sel_n1,fact_00425_Angela Bairstow,A,B,048eab90f657
+sel_n1,fact_00427_Ernestine Eckstein,A,B,31ac8b64206b
+sel_n1,fact_00430_Ezekiel Elliott,B,A,b91252300a56
+sel_n1,fact_00433_Aaron Burr,B,A,f728c9761147
+sel_n1,fact_00444_Charles B. McVay III,B,A,25272f577010
+sel_n1,fact_00448_Carol Chell,A,B,3ef8bc770655
+sel_n1,fact_00449_Alen Omić,B,A,0830f657c3b3
+sel_n1,fact_00452_Alice Torriani,A,A,2f8ebcdb37ba
+sel_n1,fact_00454_Albert Outler,A,A,875d28e0360e
+sel_n1,fact_00459_Felician of Foligno,B,A,dcd73412b86c
+sel_n1,fact_00460_Annie Landouw,B,A,da64bc704957
+sel_n1,fact_00462_Bhāskara I,B,A,484062e74307
+sel_n1,fact_00464_Damon Herriman,A,B,8cf2aa076949
+sel_n1,fact_00466_Feroze Gandhi,A,A,c994bee0a6e4
+sel_n1,fact_00471_D. B. Nihalsinghe,B,A,7425d6b06ba7
+sel_n1,fact_00478_F. Gwynplaine MacIntyre,A,A,01f124e3edc6
+sel_n1,fact_00486_Fidel Castro,B,A,de8584ad257d
+sel_n1,fact_00489_Bir Hambir,B,A,f00fc1f358dc
+sel_n1,fact_00491_Avraham Eilam-Amzallag,B,A,b3510ec48ce1
+sel_n1,fact_00492_Date Narikuni,A,B,81599cfb5d8b
+sel_n1,fact_00495_Ariel Behar,B,A,b9d4fd702a4f
+sel_n1,fact_00498_DeAnna Bennett,A,B,6df9f952dc8d
+sel_n1,g4fs4z,A,A,8d4a49eb26d3
+sel_n1,gyp3c3,A,B,e9b653167335
+sel_n1,hmsv36,A,A,e433f90866a5
+sel_n1,hrkod1,B,A,6fe91ffddff8
+sel_n1,irdp6g,A,B,da39a3ee5e6b
+sel_n1,iuj8br,B,A,1d04754a7f71
+sel_n1,jizn99,B,A,841d0423d5a1
+sel_n1,jjrido,A,A,46556c05515c
+sel_n1,llrdyo,B,A,da39a3ee5e6b
+sel_n1,lvcurd,A,A,4fcfba0b53e3
+sel_n1,m70bt5,A,B,75f29dbd6f47
+sel_n1,mjrz7h,B,A,07c0cdb9299e
+sel_n1,neutral_bio_000,A,B,b4b15db8bd43
+sel_n1,neutral_bio_001,A,A,da39a3ee5e6b
+sel_n1,neutral_bio_002,B,A,f3af439929d5
+sel_n1,neutral_bio_003,A,B,402065524ebb
+sel_n1,neutral_bio_004,A,A,322f568b840f
+sel_n1,neutral_bio_005,A,A,0dc4c6c8a78f
+sel_n1,neutral_bio_006,B,A,b35fac1dc4ac
+sel_n1,neutral_bio_007,A,A,da39a3ee5e6b
+sel_n1,neutral_bio_008,A,B,ff3b34fabc1e
+sel_n1,neutral_bio_009,A,B,da39a3ee5e6b
+sel_n1,neutral_bio_010,B,A,413aa2ad3ae0
+sel_n1,neutral_bio_011,A,A,a0643f8a0e0f
+sel_n1,neutral_bio_012,A,B,80febda439a9
+sel_n1,neutral_bio_013,A,B,da39a3ee5e6b
+sel_n1,neutral_bio_014,B,A,452cdd3ffde6
+sel_n1,neutral_bio_015,B,A,1f36fe654b8e
+sel_n1,neutral_bio_016,B,A,09b0c2360cf6
+sel_n1,neutral_bio_017,A,A,1732f482f483
+sel_n1,neutral_bio_018,A,B,00a853e66690
+sel_n1,neutral_bio_019,A,A,d0c514379d4c
+sel_n1,neutral_bio_020,B,A,da39a3ee5e6b
+sel_n1,neutral_bio_021,A,B,37f451b11f3b
+sel_n1,neutral_bio_022,B,A,137a38a5ef07
+sel_n1,neutral_bio_023,A,B,b4c70805d492
+sel_n1,neutral_bio_024,A,B,7ff635678ee8
+sel_n1,neutral_bio_025,A,B,28f6866c82a6
+sel_n1,neutral_bio_026,A,B,59410c755f4c
+sel_n1,neutral_bio_027,B,A,a3d96bd2c016
+sel_n1,neutral_bio_028,A,B,d562f2095957
+sel_n1,neutral_bio_029,A,B,da39a3ee5e6b
+sel_n1,neutral_bio_030,B,A,242cb5b6a382
+sel_n1,neutral_bio_031,A,B,da39a3ee5e6b
+sel_n1,neutral_bio_032,A,B,fc7d2a9f1ad5
+sel_n1,neutral_bio_033,A,A,dad2a4d8f743
+sel_n1,neutral_bio_034,A,A,da39a3ee5e6b
+sel_n1,neutral_bio_035,A,A,da39a3ee5e6b
+sel_n1,neutral_bio_036,B,A,e1812cde9cc2
+sel_n1,neutral_bio_037,A,A,f1fecb4ebca8
+sel_n1,neutral_bio_038,A,A,fb9ccfdad90f
+sel_n1,neutral_bio_039,A,B,2054890ef3a2
+sel_n1,neutral_nar_000,A,A,499d40ae1f44
+sel_n1,neutral_nar_001,B,A,eabbfd4f6166
+sel_n1,neutral_nar_002,A,B,da0d93b99b5d
+sel_n1,neutral_nar_003,A,A,3eebf776acc3
+sel_n1,neutral_nar_004,B,A,8d46120f7c59
+sel_n1,neutral_nar_005,B,A,e1b64f1f808c
+sel_n1,neutral_nar_006,B,A,7b29e317e312
+sel_n1,neutral_nar_007,B,A,dc2e6f68156e
+sel_n1,neutral_nar_008,B,A,ce822596c0fc
+sel_n1,neutral_nar_009,B,A,83cdda8fd282
+sel_n1,neutral_nar_010,B,A,bf7f716f75bf
+sel_n1,neutral_nar_011,B,A,979609f62881
+sel_n1,neutral_nar_012,B,A,c079289d7b66
+sel_n1,neutral_nar_013,Tie,B,31b5444177a8
+sel_n1,neutral_nar_014,A,B,d37fc48e3cef
+sel_n1,neutral_nar_015,A,A,0548fe0f2694
+sel_n1,neutral_nar_016,B,A,6080c56c9b97
+sel_n1,neutral_nar_017,A,B,e2f7eb232f7c
+sel_n1,neutral_nar_018,A,B,c08d2629e49c
+sel_n1,neutral_nar_019,B,A,93e1088826eb
+sel_n1,neutral_nar_020,A,B,aa141c29109c
+sel_n1,neutral_nar_021,A,A,91f4db0ffdaa
+sel_n1,neutral_nar_022,B,A,c610e2b2157b
+sel_n1,neutral_nar_023,A,B,57f016dbcc98
+sel_n1,neutral_nar_024,B,A,095802752bef
+sel_n1,neutral_nar_025,A,B,57645bdfa996
+sel_n1,neutral_nar_026,A,A,5f54907e87c3
+sel_n1,neutral_nar_027,A,B,06c6f8b70f08
+sel_n1,neutral_nar_028,A,A,4b70802649bb
+sel_n1,neutral_nar_029,A,A,ae3f1e944045
+sel_n1,neutral_nar_030,A,B,4c4ceaf8d5b1
+sel_n1,neutral_nar_031,A,B,9e66ad385992
+sel_n1,neutral_nar_032,A,B,7ba4af963ea3
+sel_n1,neutral_nar_033,A,B,46fb0c04cdbc
+sel_n1,neutral_nar_034,B,A,c070b2b9f78a
+sel_n1,neutral_nar_035,B,A,c0f87ab28d72
+sel_n1,neutral_nar_036,A,A,329532d8d329
+sel_n1,neutral_nar_037,B,A,d05d750e1e3c
+sel_n1,neutral_nar_038,B,A,367b90b00fb9
+sel_n1,neutral_nar_039,B,B,9c5e5f12c763
+sel_n1,neutral_ncs_000,A,A,da39a3ee5e6b
+sel_n1,neutral_ncs_001,A,B,582416235444
+sel_n1,neutral_ncs_002,B,B,da39a3ee5e6b
+sel_n1,neutral_ncs_003,A,B,dde3cfffd0d3
+sel_n1,neutral_ncs_004,A,A,bee8b22b44a4
+sel_n1,neutral_ncs_005,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_006,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_007,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_008,A,B,e7ea2912f3a9
+sel_n1,neutral_ncs_009,A,B,fedaca8e65c9
+sel_n1,neutral_ncs_010,B,A,37b41d3dbd14
+sel_n1,neutral_ncs_011,A,A,ec74556b0d06
+sel_n1,neutral_ncs_012,B,A,6419ccd19d8a
+sel_n1,neutral_ncs_013,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_014,A,B,2a33ee906bef
+sel_n1,neutral_ncs_015,A,A,ea59ebf07bad
+sel_n1,neutral_ncs_016,A,A,da39a3ee5e6b
+sel_n1,neutral_ncs_017,A,A,ee3d49492384
+sel_n1,neutral_ncs_018,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_019,B,B,da39a3ee5e6b
+sel_n1,neutral_ncs_020,B,A,11cd24b20193
+sel_n1,neutral_ncs_021,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_022,A,A,839f7839fddb
+sel_n1,neutral_ncs_023,B,A,c852ba8d6812
+sel_n1,neutral_ncs_024,B,A,3f3feb4627d4
+sel_n1,neutral_ncs_025,A,A,da39a3ee5e6b
+sel_n1,neutral_ncs_026,A,A,4b0fd2e586d9
+sel_n1,neutral_ncs_027,B,A,b337900a1ec7
+sel_n1,neutral_ncs_028,B,A,360156e96b45
+sel_n1,neutral_ncs_029,B,A,bf7f2c49f879
+sel_n1,neutral_ncs_030,B,A,aec97e6b7f42
+sel_n1,neutral_ncs_031,B,A,b31d52cc4cd9
+sel_n1,neutral_ncs_032,B,B,da39a3ee5e6b
+sel_n1,neutral_ncs_033,B,B,da39a3ee5e6b
+sel_n1,neutral_ncs_034,A,B,82898cdd9b5e
+sel_n1,neutral_ncs_035,B,A,e82127bb1d8b
+sel_n1,neutral_ncs_036,A,B,68f2368c2a40
+sel_n1,neutral_ncs_037,A,B,da39a3ee5e6b
+sel_n1,neutral_ncs_038,A,A,da39a3ee5e6b
+sel_n1,neutral_ncs_039,B,A,174ec3a06ffb
+sel_n1,neutral_qa_000,B,A,754cd31f9d31
+sel_n1,neutral_qa_001,A,A,4f105a5ec790
+sel_n1,neutral_qa_002,B,A,fc601ff5f735
+sel_n1,neutral_qa_003,B,A,3aaceb8283e2
+sel_n1,neutral_qa_004,B,A,da39a3ee5e6b
+sel_n1,neutral_qa_005,B,B,7b74812d7c39
+sel_n1,neutral_qa_006,B,A,523df1cad494
+sel_n1,neutral_qa_007,A,A,8cdf7a8d0054
+sel_n1,neutral_qa_008,A,B,da39a3ee5e6b
+sel_n1,neutral_qa_009,B,B,da39a3ee5e6b
+sel_n1,neutral_qa_010,B,A,da39a3ee5e6b
+sel_n1,neutral_qa_011,B,A,da39a3ee5e6b
+sel_n1,neutral_qa_012,A,B,56c047ad5f87
+sel_n1,neutral_qa_013,A,B,da39a3ee5e6b
+sel_n1,neutral_qa_014,A,B,da39a3ee5e6b
+sel_n1,neutral_qa_015,A,B,da39a3ee5e6b
+sel_n1,neutral_qa_016,B,B,e07737ec2f7b
+sel_n1,neutral_qa_017,B,A,89822d12f630
+sel_n1,neutral_qa_018,A,B,da39a3ee5e6b
+sel_n1,neutral_qa_019,B,A,662b800de7b2
+sel_n1,neutral_qa_020,B,B,da39a3ee5e6b
+sel_n1,neutral_qa_021,A,A,eca9be4c53df
+sel_n1,neutral_qa_022,B,A,4ea3b365b419
+sel_n1,neutral_qa_023,A,B,ea9f15e4eb9e
+sel_n1,neutral_qa_024,A,A,0dcd9fe5c0c7
+sel_n1,neutral_qa_025,A,A,21990f0a8e45
+sel_n1,neutral_qa_026,A,B,f8df2ec4dced
+sel_n1,neutral_qa_027,B,A,f875407f1e00
+sel_n1,neutral_qa_028,B,A,6dab9ee6f189
+sel_n1,neutral_qa_029,A,B,da39a3ee5e6b
+sel_n1,neutral_qa_030,B,B,efc2a2a8500f
+sel_n1,neutral_qa_031,B,A,da39a3ee5e6b
+sel_n1,neutral_qa_032,A,A,e7a28b748637
+sel_n1,neutral_qa_033,A,A,da39a3ee5e6b
+sel_n1,neutral_qa_034,B,A,0c20aa02ac79
+sel_n1,neutral_qa_035,B,B,da39a3ee5e6b
+sel_n1,neutral_qa_036,A,B,871bc02c14c3
+sel_n1,neutral_qa_037,B,A,28ecc1adc253
+sel_n1,neutral_qa_038,B,B,da39a3ee5e6b
+sel_n1,neutral_qa_039,A,A,da39a3ee5e6b
+sel_n1,neutral_sum_000,B,A,763ab081e22c
+sel_n1,neutral_sum_001,A,A,8722f0f6d949
+sel_n1,neutral_sum_002,A,A,da39a3ee5e6b
+sel_n1,neutral_sum_003,A,B,da39a3ee5e6b
+sel_n1,neutral_sum_004,A,A,e51e26b5be59
+sel_n1,neutral_sum_005,B,A,75f04f8f5f08
+sel_n1,neutral_sum_006,B,A,bf51cbc0c9df
+sel_n1,neutral_sum_007,B,A,1a532cd522b3
+sel_n1,neutral_sum_008,B,A,c6befd582b2a
+sel_n1,neutral_sum_009,B,A,1975b86e145e
+sel_n1,neutral_sum_010,A,A,bdd08edf6e07
+sel_n1,neutral_sum_011,A,B,b4b698f1ef15
+sel_n1,neutral_sum_012,B,A,13ad126856e8
+sel_n1,neutral_sum_013,A,B,f97fbf292b06
+sel_n1,neutral_sum_014,A,A,389e9ae39eaf
+sel_n1,neutral_sum_015,B,A,9398b3c92e38
+sel_n1,neutral_sum_016,A,B,da39a3ee5e6b
+sel_n1,neutral_sum_017,B,A,199d8f4e321b
+sel_n1,neutral_sum_018,B,A,da39a3ee5e6b
+sel_n1,neutral_sum_019,A,B,c39dcd506e6d
+sel_n1,neutral_sum_020,A,A,4e415dac5fff
+sel_n1,neutral_sum_021,A,A,66798646c105
+sel_n1,neutral_sum_022,B,B,4a713c4991ad
+sel_n1,neutral_sum_023,A,A,2a342fb096a0
+sel_n1,neutral_sum_024,A,B,1ed249157b33
+sel_n1,neutral_sum_025,A,A,1fd883d19523
+sel_n1,neutral_sum_026,A,B,3a826eaf0404
+sel_n1,neutral_sum_027,A,A,863b706440ba
+sel_n1,neutral_sum_028,A,A,da39a3ee5e6b
+sel_n1,neutral_sum_029,A,B,e0efadfb5b84
+sel_n1,neutral_sum_030,B,A,f9d365477be4
+sel_n1,neutral_sum_031,B,A,3995052c8631
+sel_n1,neutral_sum_032,A,B,68546f8ad1b0
+sel_n1,neutral_sum_033,A,B,da39a3ee5e6b
+sel_n1,neutral_sum_034,B,A,1aaeee9d8be6
+sel_n1,neutral_sum_035,B,A,ddb8cc91f399
+sel_n1,neutral_sum_036,A,B,da39a3ee5e6b
+sel_n1,neutral_sum_037,A,A,e34a498410a9
+sel_n1,neutral_sum_038,B,A,a16eb8d3704d
+sel_n1,neutral_sum_039,B,A,94d277871093
+sel_g64,1nzes2,A,B,da39a3ee5e6b
+sel_g64,2786lw,A,A,5440149e041b
+sel_g64,2ov45h,A,B,da39a3ee5e6b
+sel_g64,49u4dh,B,A,da39a3ee5e6b
+sel_g64,4iorz7,A,B,2471b96f04b4
+sel_g64,4xzr87,A,B,da39a3ee5e6b
+sel_g64,53rqr9,A,A,e074b8cfb2ba
+sel_g64,5apkek,A,A,c432e36a5185
+sel_g64,5e6rcz,A,A,f8b9213fd179
+sel_g64,5ec7q2,B,A,1b97ae4d0b89
+sel_g64,5f5p86,A,A,697cd7187872
+sel_g64,5fqwjc,A,B,2c23012bde6f
+sel_g64,5g58dz,A,A,bafd40cdc39f
+sel_g64,5gq4jc,A,B,da39a3ee5e6b
+sel_g64,5j7ypk,A,B,2f94f6897f69
+sel_g64,5je6l4,B,A,bb1748f4094a
+sel_g64,5nc21f,A,B,45b33b8b3547
+sel_g64,5nzsq6,B,A,8520a97a1947
+sel_g64,5ozqb9,A,A,254f68b20dca
+sel_g64,5qf97d,A,B,c9093f70da89
+sel_g64,5qwzjo,B,A,e6e63a609302
+sel_g64,5r104c,A,A,5466b229201c
+sel_g64,5te65i,B,A,0311f8386c31
+sel_g64,5umucz,B,A,26d0f4bfbad2
+sel_g64,5w4x14,A,A,da39a3ee5e6b
+sel_g64,609k0n,A,A,ec044615a9f3
+sel_g64,625es0,A,B,96928b7aa386
+sel_g64,63dn97,A,B,da39a3ee5e6b
+sel_g64,63ku7q,B,A,da39a3ee5e6b
+sel_g64,64c0w6,A,B,567bc6477615
+sel_g64,65458n,A,A,5b5e51843a45
+sel_g64,66uo64,A,B,3f1d778907b9
+sel_g64,68f5c5,A,B,da39a3ee5e6b
+sel_g64,68ykga,A,B,da39a3ee5e6b
+sel_g64,69dzba,A,A,da39a3ee5e6b
+sel_g64,6d1iqq,A,A,da39a3ee5e6b
+sel_g64,6eytds,A,B,11dcfbfc4cf6
+sel_g64,6gl289,Tie,Tie,df64c1f8506e
+sel_g64,6hoxmq,B,A,65c77006e795
+sel_g64,6imc4i,A,A,bacd1920994f
+sel_g64,6isay3,B,A,f5ff4a86c9ec
+sel_g64,6ixx9u,A,B,da39a3ee5e6b
+sel_g64,6k8gdu,A,A,695e0ab3c1c5
+sel_g64,6l6v6l,A,A,7bf6a1d2b26b
+sel_g64,6m7z8a,A,B,da39a3ee5e6b
+sel_g64,6mztko,Tie,Tie,92156113867c
+sel_g64,6o18uh,B,B,5629e77eb1b6
+sel_g64,6o679d,B,A,da39a3ee5e6b
+sel_g64,6ohgxv,B,B,da39a3ee5e6b
+sel_g64,6szrbs,A,A,da39a3ee5e6b
+sel_g64,6tsiyd,A,B,f4828af94466
+sel_g64,6wgtsx,A,B,da39a3ee5e6b
+sel_g64,6wxzhc,A,B,a6f1bb75b906
+sel_g64,6xisxt,B,A,cfd1a134d02e
+sel_g64,6xngfe,A,B,da39a3ee5e6b
+sel_g64,6xsruw,A,B,da39a3ee5e6b
+sel_g64,71p51h,A,B,da39a3ee5e6b
+sel_g64,72l2aj,A,B,26331f3de309
+sel_g64,74ih3z,A,A,4b9b620d46d1
+sel_g64,765fhd,B,B,4e3aa62d4536
+sel_g64,76b9gc,B,A,f9323de53242
+sel_g64,77dd17,A,B,36eed89b2f5f
+sel_g64,796161,B,A,d5d2b7ec97fd
+sel_g64,7adktz,Tie,Tie,8c4b5edbe318
+sel_g64,7bowjq,B,B,da39a3ee5e6b
+sel_g64,7d0x9k,A,A,da39a3ee5e6b
+sel_g64,7dcwik,A,A,d37aa4e11b9c
+sel_g64,7e3im5,B,A,44dc38487ac6
+sel_g64,7en7vl,A,B,b3ee5ab0ca91
+sel_g64,7ezd5t,A,A,5f3cf444e8b9
+sel_g64,7gjj2w,A,A,b183436aa564
+sel_g64,7h9f8e,A,A,e4ed085eafd4
+sel_g64,7iltd1,A,B,f7adbc6bfbf5
+sel_g64,7iubwq,A,A,d2ee98a4b2c3
+sel_g64,7jfvx7,A,B,1da30a33e832
+sel_g64,7jqj29,A,B,740696af279b
+sel_g64,7l7e1m,A,B,0a76faf6ccf1
+sel_g64,7ld0jk,A,B,da39a3ee5e6b
+sel_g64,7lzk5g,A,B,ac67e0586d08
+sel_g64,7q0acw,A,B,231af8a83c1b
+sel_g64,7rb6uj,B,A,da39a3ee5e6b
+sel_g64,7rie85,A,A,da39a3ee5e6b
+sel_g64,7rpy8m,A,B,841381d35919
+sel_g64,7svmp5,A,B,d2f72294cdaa
+sel_g64,7tge90,B,A,feda3625c6c5
+sel_g64,7u04a5,A,A,da39a3ee5e6b
+sel_g64,7uezw8,A,B,6b1de1e8eca7
+sel_g64,7v8ind,B,A,3178cd3dee88
+sel_g64,80sf6g,B,B,da39a3ee5e6b
+sel_g64,83mehz,B,A,da39a3ee5e6b
+sel_g64,849wc3,A,B,da39a3ee5e6b
+sel_g64,87ak6w,A,B,8ed0ad0b8be1
+sel_g64,87tx3g,B,A,2440950a2a14
+sel_g64,8a18sf,A,B,da39a3ee5e6b
+sel_g64,8aec6t,B,A,dc84ffc4fe2f
+sel_g64,8fk0hr,A,B,da39a3ee5e6b
+sel_g64,8gfhh9,A,A,31e581f071a2
+sel_g64,8gs4wp,A,A,8c2e07cd3ef3
+sel_g64,8k4am7,A,B,f11c765ac170
+sel_g64,8myeno,A,B,966e01758c8f
+sel_g64,8o89ko,B,B,da39a3ee5e6b
+sel_g64,8p3ora,A,A,effa2eb43140
+sel_g64,8pr271,A,B,da39a3ee5e6b
+sel_g64,8tmkfc,A,B,da39a3ee5e6b
+sel_g64,8vr4k2,B,A,da39a3ee5e6b
+sel_g64,8vyqdq,B,A,b6c258530d2f
+sel_g64,8x0xa7,A,B,da39a3ee5e6b
+sel_g64,8x86s0,B,A,f8a717c747dd
+sel_g64,8y8wrr,A,A,b44b747ad676
+sel_g64,8z1sq1,A,B,3b3bc4ef63ab
+sel_g64,9470fc,A,B,5a66c9014220
+sel_g64,96myl6,B,Tie,2725d9b2bdd0
+sel_g64,96xnw9,A,B,da39a3ee5e6b
+sel_g64,99kk88,A,B,249c3d65756d
+sel_g64,9edjv0,B,B,da39a3ee5e6b
+sel_g64,9f7www,A,B,fbc755b5552c
+sel_g64,9g2cbq,Tie,A,79bd8dfd7541
+sel_g64,9ki47u,A,B,da39a3ee5e6b
+sel_g64,9l0dam,A,Tie,fda1fc1b8273
+sel_g64,9neuk8,B,A,a9a328952b4a
+sel_g64,9qn4tw,A,A,43aa0b6b93d8
+sel_g64,a318ye,A,A,f41f186ecfb5
+sel_g64,a3pdwk,A,B,e9c71aefa1b3
+sel_g64,acjzv0,A,B,da39a3ee5e6b
+sel_g64,afc9c4,A,B,da39a3ee5e6b
+sel_g64,aowr4t,A,B,f1fb381072cd
+sel_g64,ar7nm2,B,A,dddb4644675c
+sel_g64,auig0m,A,B,da39a3ee5e6b
+sel_g64,b4yx63,A,A,a37e521a0663
+sel_g64,b87jl7,A,A,f113367890c4
+sel_g64,b9uzz1,B,B,da39a3ee5e6b
+sel_g64,bhyplf,A,B,36cb72e6f250
+sel_g64,bk7lic,A,A,da39a3ee5e6b
+sel_g64,ciifmd,B,B,da39a3ee5e6b
+sel_g64,ck6twx,A,B,f5114e6fd38a
+sel_g64,cpxk2b,A,B,d99b6522fa5a
+sel_g64,dqn4sj,A,A,366e10b9bbe7
+sel_g64,eu7ub2,A,A,811490dd8e77
+sel_g64,fact_00003_Fernando da Costa Novaes,A,B,76d7cfc1d273
+sel_g64,fact_00006_David Galloway (writer),A,A,cbeb386392a0
+sel_g64,fact_00007_Cheyenne Brando,A,A,330c33674ccc
+sel_g64,fact_00012_Braulio Lara,B,A,b8d7051dd1bf
+sel_g64,fact_00015_Amr Shabana,B,A,aa4a7b79e9b5
+sel_g64,fact_00017_Abdulqawi Yusuf,B,A,cd68c3bb3703
+sel_g64,fact_00025_Carlos P. Romulo,A,B,0c93c95816ae
+sel_g64,fact_00027_Arthur Ewert,A,A,61e13a790592
+sel_g64,fact_00032_Flavio Méndez Santiago,A,B,55c00221d0f8
+sel_g64,fact_00039_Chris Duffield,A,A,6f135a109631
+sel_g64,fact_00040_Daniil Medvedev,B,A,a65a773ce340
+sel_g64,fact_00043_Alexander Vovin,B,A,13c3c9dae798
+sel_g64,fact_00044_Cobhams Asuquo,B,A,551e04a9e821
+sel_g64,fact_00045_David Bogue,A,A,2d8af63da8a0
+sel_g64,fact_00048_Don Beard,B,A,bfbf470e38c4
+sel_g64,fact_00053_Andriy Yarmolenko,B,A,b72d1693d118
+sel_g64,fact_00058_Danny Faure,B,A,923e3d933f12
+sel_g64,fact_00063_Ayman al-Zawahiri,A,A,da39a3ee5e6b
+sel_g64,fact_00064_Diego Suarez (garden designer),A,B,f0c5d7adbaaa
+sel_g64,fact_00066_Daniel Alexander Cameron,A,A,6c270f2e9ba9
+sel_g64,fact_00075_Antonio Leviste,A,A,0ef2f227d3bc
+sel_g64,fact_00078_Chi Pu,B,A,40a89fa650a6
+sel_g64,"fact_00080_Felipe (footballer, born 1977)",A,B,b45ebff1991c
+sel_g64,fact_00084_Alfred Hitchcock,B,A,3a1d3e25bc0e
+sel_g64,fact_00085_Dascha Polanco,A,B,da39a3ee5e6b
+sel_g64,fact_00086_Amelia Earhart,B,A,fe5ed6cc1f25
+sel_g64,fact_00087_Chris John (boxer),A,B,58ff22e92ddb
+sel_g64,fact_00088_Blair Tugman,B,A,0f7b30aecca9
+sel_g64,fact_00093_David Oyite-Ojok,B,A,619f849e8026
+sel_g64,fact_00097_Chris Cuomo,B,A,5f9384e668a0
+sel_g64,fact_00098_Adnan Sami,A,A,1398fed74c3d
+sel_g64,fact_00108_Bhuma Nagi Reddy,B,A,d408a8873a5a
+sel_g64,fact_00109_Charmion King,A,B,d4361ce0cf22
+sel_g64,fact_00110_Andreea Marin,A,A,89887085c20b
+sel_g64,fact_00114_Ahn Jae-hyun,A,B,e4bef79f8129
+sel_g64,fact_00116_Bobo Baldé,A,A,f624f6db469e
+sel_g64,fact_00118_Chacho Gaytán,B,A,0c2d70ce8162
+sel_g64,fact_00119_Bastian Schweinsteiger,B,A,296af00b4202
+sel_g64,fact_00120_Erich Hartmann,A,A,dbd46990abf2
+sel_g64,fact_00127_Ezechiel N'Douassel,A,B,05bcb6f89c83
+sel_g64,fact_00131_Aditya Kalyanpur,B,A,1ed1a5447910
+sel_g64,fact_00132_Dennis Andersson,B,A,ce62bf3679ea
+sel_g64,fact_00133_Daniel Bedingfield,A,Tie,d49a8007c1d2
+sel_g64,fact_00134_Celâl Bayar,B,A,4fe85b7ee0e6
+sel_g64,fact_00138_Diana Ivanova,A,A,038fa0813bba
+sel_g64,fact_00140_André Le Nôtre,A,A,e9f4070db06d
+sel_g64,fact_00142_Cierre Wood,B,A,6dbb56034f5c
+sel_g64,fact_00145_Carmelo Anthony,B,A,cdb7f24a7589
+sel_g64,fact_00146_Asafa Powell,A,B,a97631ce3939
+sel_g64,fact_00152_Felix Newman,B,A,75fe349cd2a3
+sel_g64,fact_00154_Earl Garrison,A,A,50a8ce7a9f0b
+sel_g64,fact_00162_Aleksandar Kolarov,B,A,375444b2c23f
+sel_g64,fact_00163_Alexandre Hohagen,A,B,305f126955f4
+sel_g64,fact_00166_Emcee N.I.C.E.,A,A,27a3b5358c03
+sel_g64,fact_00181_Chris Woakes,B,A,c7e026ce7819
+sel_g64,fact_00182_Diosdado Cabello,B,A,ea0def6d4489
+sel_g64,fact_00184_Dana Awartani,B,A,f999acea0483
+sel_g64,fact_00185_Brianna Keilar,B,A,7eb4d23ffbba
+sel_g64,fact_00188_Cédric Bakambu,A,A,0ce01db5e412
+sel_g64,fact_00193_Bobby Fischer,A,B,7cffd96d25df
+sel_g64,fact_00198_Benjamin Lawrence Reid,A,B,32bfad17cd1c
+sel_g64,fact_00199_Djimon Hounsou,B,A,6b11a6090229
+sel_g64,fact_00202_Ahsee Tuala,A,A,5e69808dbe1f
+sel_g64,fact_00204_Don DeLillo,B,A,bacd51927275
+sel_g64,fact_00207_Elizabeth Inglis,A,A,c5f2429d5181
+sel_g64,fact_00208_Fifi Cooper,B,A,f7fc6717cbe0
+sel_g64,fact_00223_Ahmed Mumin Warfa,A,B,c129cb5771cd
+sel_g64,fact_00226_Dewi Sartika,B,A,b3ee1048f063
+sel_g64,fact_00227_Alf Garland,A,B,09b45001367b
+sel_g64,fact_00230_Abdul Ilah Khatib,B,A,f970a8fc6b93
+sel_g64,fact_00239_Bif Naked,A,A,a538104e6604
+sel_g64,fact_00245_Dominique Blake,A,B,587259e1fce0
+sel_g64,fact_00247_Diafra Sakho,A,A,25d428854294
+sel_g64,fact_00249_Fahadh Faasil,B,A,ca40d5d77258
+sel_g64,fact_00250_Dr. Dre,A,A,a17d4db02496
+sel_g64,fact_00255_Caitlin Lowe,A,A,e83e944c9f7e
+sel_g64,fact_00257_Camille Paulus,A,A,9b45858fec47
+sel_g64,fact_00258_Charley Boorman,A,A,6a915ee54dc2
+sel_g64,fact_00260_Douglas Wood (engineer),A,B,658ca16c70d7
+sel_g64,fact_00263_Billy Snedden,B,A,5a0dbd5ba004
+sel_g64,fact_00264_Esteban Espíndola,A,B,c131388d0ea0
+sel_g64,fact_00270_Daniel Ek,B,A,7c3379b065ca
+sel_g64,fact_00275_Belisarius,A,A,04ceef35a58a
+sel_g64,fact_00276_Carol Dweck,B,A,2dbf6d6d6973
+sel_g64,fact_00286_Amr Diab,B,A,760541b83f59
+sel_g64,fact_00296_Akbar Hossain,B,A,c16c10b7392c
+sel_g64,fact_00300_Coco Chanel,B,A,d3316d027b86
+sel_g64,fact_00302_Enamul Haque (engineer),A,B,24db2fe24c96
+sel_g64,fact_00304_Abdelhamid Shabana,B,A,ae8c82568809
+sel_g64,fact_00307_Abdullahi Mohammad Ahmad Hassan,A,A,d0bd6e424c33
+sel_g64,fact_00309_Diego Godín,B,A,1a4ac1753368
+sel_g64,fact_00312_Adel Emam,B,A,b52d41ddac47
+sel_g64,fact_00315_Billy Conigliaro,B,A,5a526c3420b2
+sel_g64,fact_00316_Arif Mohammad Khan,B,A,aabe4c863cef
+sel_g64,fact_00321_Bob Marley,B,A,fd3c680035cc
+sel_g64,fact_00328_Dana Ashbrook,A,A,30b6d3294c1d
+sel_g64,fact_00332_Cha Eun-woo,A,B,43a34905e275
+sel_g64,fact_00333_Abdul Halik Hudu,B,A,5010bbf89b7e
+sel_g64,fact_00335_Carl Braun (obstetrician),B,A,a4a2cc251eb5
+sel_g64,fact_00343_Ameyaw Debrah,A,A,f57269357ba4
+sel_g64,fact_00344_Cleopatra,B,A,a2197240f958
+sel_g64,fact_00345_Ana Cláudia Bolzan,A,A,890c4162f6a2
+sel_g64,fact_00347_Evgeny Shalunov,A,B,9aa16dea34d0
+sel_g64,fact_00348_Charles Allen (jurist),B,A,50e51f33d207
+sel_g64,fact_00349_Deyverson,B,A,47072e8b38f4
+sel_g64,fact_00351_Cris Cyborg,B,A,069ee652478e
+sel_g64,fact_00354_Bobby Thomson,B,A,dead4716c7db
+sel_g64,fact_00356_Eric Winter,A,B,243b732d3f8d
+sel_g64,fact_00362_Aert van der Neer,B,A,413991c2194b
+sel_g64,fact_00364_Blanca Errázuriz,A,A,f4facc1d711b
+sel_g64,fact_00366_Deitrick Haddon,B,A,0ba948a50d49
+sel_g64,fact_00367_Andreas Ivanschitz,B,A,a82dbbab427a
+sel_g64,fact_00368_Clancy Brown,B,A,0e881889c968
+sel_g64,fact_00371_Carrie Ann Inaba,B,A,64fe15dcb986
+sel_g64,fact_00374_Cicero,B,A,7a33e0073619
+sel_g64,fact_00376_14th Dalai Lama,B,A,b7f2816d4954
+sel_g64,fact_00377_Christian Almeida,A,A,3b28f2716e0a
+sel_g64,fact_00378_Arthur Wakefield,B,A,540dce2b34c2
+sel_g64,fact_00384_Andry Rajoelina,B,A,ca50efdea95c
+sel_g64,fact_00394_Danny Almonte,A,A,942cc226a5fd
+sel_g64,fact_00396_Andy Middleton,A,B,91e545c47e3d
+sel_g64,fact_00397_Anderson Silva,A,A,c9ac11445d55
+sel_g64,fact_00399_Edgar Bennett,A,B,afad6fe842e3
+sel_g64,fact_00401_Balázs Bekő,B,A,485000084432
+sel_g64,fact_00404_Abraham Ancer,A,A,6e8cefb9ec33
+sel_g64,fact_00418_A. K. Ramanujan,B,A,55cd09adab4e
+sel_g64,fact_00420_Carlos Ghosn,B,A,a894be8baaf6
+sel_g64,fact_00421_Anurag Kashyap,B,A,4ca7e6738b67
+sel_g64,fact_00425_Angela Bairstow,A,B,24f555079385
+sel_g64,fact_00427_Ernestine Eckstein,A,A,02e1a2798282
+sel_g64,fact_00430_Ezekiel Elliott,A,A,663593571d61
+sel_g64,fact_00433_Aaron Burr,B,A,9fb50b0f0263
+sel_g64,fact_00444_Charles B. McVay III,B,A,2604ea337fcb
+sel_g64,fact_00448_Carol Chell,A,B,d2a1358568fe
+sel_g64,fact_00449_Alen Omić,A,A,0432ae1f56f3
+sel_g64,fact_00452_Alice Torriani,A,A,02c80ff492e8
+sel_g64,fact_00454_Albert Outler,A,B,101274424b65
+sel_g64,fact_00459_Felician of Foligno,B,A,268372ce39b4
+sel_g64,fact_00460_Annie Landouw,A,B,633dfc33ebb2
+sel_g64,fact_00462_Bhāskara I,A,A,0f75096fb07f
+sel_g64,fact_00464_Damon Herriman,A,A,6b632f6930d1
+sel_g64,fact_00466_Feroze Gandhi,A,A,4ab5b296d4eb
+sel_g64,fact_00471_D. B. Nihalsinghe,A,A,db31ca53a25a
+sel_g64,fact_00478_F. Gwynplaine MacIntyre,A,A,6bccc7175231
+sel_g64,fact_00486_Fidel Castro,B,A,1837c5604279
+sel_g64,fact_00489_Bir Hambir,A,B,510bf2f11866
+sel_g64,fact_00491_Avraham Eilam-Amzallag,B,A,8ea015617195
+sel_g64,fact_00492_Date Narikuni,A,B,a7bb0bcb0056
+sel_g64,fact_00495_Ariel Behar,B,A,f2b1a68d0861
+sel_g64,fact_00498_DeAnna Bennett,A,B,c1e7ec0febd1
+sel_g64,g4fs4z,A,A,bf34544352c9
+sel_g64,gyp3c3,A,B,757b4fe30b28
+sel_g64,hmsv36,A,B,da39a3ee5e6b
+sel_g64,hrkod1,B,A,4f35cf128fab
+sel_g64,irdp6g,A,B,3842bc46e2c0
+sel_g64,iuj8br,Tie,A,d42b771aa802
+sel_g64,jizn99,B,A,da39a3ee5e6b
+sel_g64,jjrido,A,A,25760fc0d22f
+sel_g64,llrdyo,B,A,0e7956ddea69
+sel_g64,lvcurd,A,A,4b689080f1e8
+sel_g64,m70bt5,A,B,da39a3ee5e6b
+sel_g64,mjrz7h,A,A,da39a3ee5e6b
+sel_g64,neutral_bio_000,A,A,4b87fca5e003
+sel_g64,neutral_bio_001,B,A,df9ee8a1acd6
+sel_g64,neutral_bio_002,A,B,da630b948ad4
+sel_g64,neutral_bio_003,A,B,e3206bbd96a0
+sel_g64,neutral_bio_004,A,A,4c1d1d01ef7c
+sel_g64,neutral_bio_005,A,B,249f9f33eb5b
+sel_g64,neutral_bio_006,B,A,01bdd7f0e3f0
+sel_g64,neutral_bio_007,B,A,4b87fca5e003
+sel_g64,neutral_bio_008,A,A,b5af0a3e9d3f
+sel_g64,neutral_bio_009,A,B,6659638b5a19
+sel_g64,neutral_bio_010,A,B,64e04ee58791
+sel_g64,neutral_bio_011,A,A,b6ba8f3e5bef
+sel_g64,neutral_bio_012,A,B,bb77550dd7d5
+sel_g64,neutral_bio_013,A,B,48976b0db880
+sel_g64,neutral_bio_014,A,A,71b7ae44056f
+sel_g64,neutral_bio_015,B,A,1736f47c6504
+sel_g64,neutral_bio_016,A,A,23bfb44dab01
+sel_g64,neutral_bio_017,A,B,e53c4046dd3d
+sel_g64,neutral_bio_018,A,B,81f349092664
+sel_g64,neutral_bio_019,A,B,965678e4718d
+sel_g64,neutral_bio_020,A,A,5940fd17df9e
+sel_g64,neutral_bio_021,A,B,e7a8385445d8
+sel_g64,neutral_bio_022,A,B,da39a3ee5e6b
+sel_g64,neutral_bio_023,A,A,038ca453f5f3
+sel_g64,neutral_bio_024,A,B,0fb9227fb8c3
+sel_g64,neutral_bio_025,A,B,356236603dc3
+sel_g64,neutral_bio_026,A,B,59410c755f4c
+sel_g64,neutral_bio_027,A,B,db0c52dce157
+sel_g64,neutral_bio_028,A,B,f384d174dd43
+sel_g64,neutral_bio_029,A,B,94108781b269
+sel_g64,neutral_bio_030,B,A,04870c2237eb
+sel_g64,neutral_bio_031,A,B,c1f24479e2de
+sel_g64,neutral_bio_032,A,B,cb978a0ec119
+sel_g64,neutral_bio_033,A,B,def70600e755
+sel_g64,neutral_bio_034,A,A,fec766409716
+sel_g64,neutral_bio_035,B,A,e5f24916af51
+sel_g64,neutral_bio_036,A,A,47ddd052fda1
+sel_g64,neutral_bio_037,A,A,92c03237379d
+sel_g64,neutral_bio_038,A,A,d009d75415ba
+sel_g64,neutral_bio_039,A,B,7eb223dc7845
+sel_g64,neutral_nar_000,A,A,647e5a983d4a
+sel_g64,neutral_nar_001,A,A,cb754235a88e
+sel_g64,neutral_nar_002,A,A,ed13326d96b6
+sel_g64,neutral_nar_003,A,B,3f437dfefe6a
+sel_g64,neutral_nar_004,A,A,6d82893d7a5e
+sel_g64,neutral_nar_005,A,A,abed6e212848
+sel_g64,neutral_nar_006,B,A,0732fbb73a74
+sel_g64,neutral_nar_007,B,A,228a1750092b
+sel_g64,neutral_nar_008,A,A,96ccce509e2f
+sel_g64,neutral_nar_009,B,A,cc8a1c6fdc93
+sel_g64,neutral_nar_010,B,A,2d336275ce88
+sel_g64,neutral_nar_011,A,A,da39a3ee5e6b
+sel_g64,neutral_nar_012,A,A,9e7a557e4eff
+sel_g64,neutral_nar_013,Tie,B,920b00c8f8a7
+sel_g64,neutral_nar_014,A,B,ee698b06c382
+sel_g64,neutral_nar_015,A,B,146c00d01d16
+sel_g64,neutral_nar_016,A,A,9e56384ecdc7
+sel_g64,neutral_nar_017,A,B,e2f7eb232f7c
+sel_g64,neutral_nar_018,A,B,da39a3ee5e6b
+sel_g64,neutral_nar_019,A,A,da39a3ee5e6b
+sel_g64,neutral_nar_020,A,B,452d1e65dcb3
+sel_g64,neutral_nar_021,A,B,da39a3ee5e6b
+sel_g64,neutral_nar_022,B,A,f9866e634021
+sel_g64,neutral_nar_023,A,B,4f389bc8164c
+sel_g64,neutral_nar_024,B,A,5192ae209f6a
+sel_g64,neutral_nar_025,A,B,e2594e9a182e
+sel_g64,neutral_nar_026,A,B,b9189002e7df
+sel_g64,neutral_nar_027,A,B,05d21d3e8c3d
+sel_g64,neutral_nar_028,A,A,16efbecf7420
+sel_g64,neutral_nar_029,A,B,6e484225e1d7
+sel_g64,neutral_nar_030,A,B,2341bd507051
+sel_g64,neutral_nar_031,A,B,da39a3ee5e6b
+sel_g64,neutral_nar_032,A,B,7ba4af963ea3
+sel_g64,neutral_nar_033,A,B,803384677434
+sel_g64,neutral_nar_034,B,A,da4febbd1238
+sel_g64,neutral_nar_035,A,A,e6e0da6d5ad0
+sel_g64,neutral_nar_036,A,B,da39a3ee5e6b
+sel_g64,neutral_nar_037,A,A,da39a3ee5e6b
+sel_g64,neutral_nar_038,B,A,71d5dd23a726
+sel_g64,neutral_nar_039,B,A,7172d619d048
+sel_g64,neutral_ncs_000,A,A,da39a3ee5e6b
+sel_g64,neutral_ncs_001,A,B,a60b94140f83
+sel_g64,neutral_ncs_002,A,A,548d7553ec23
+sel_g64,neutral_ncs_003,A,A,d9c88b292807
+sel_g64,neutral_ncs_004,A,B,e0420c592cbc
+sel_g64,neutral_ncs_005,A,B,f9d56b95cf31
+sel_g64,neutral_ncs_006,A,B,8772ae1c84d5
+sel_g64,neutral_ncs_007,B,B,5066ee6b207d
+sel_g64,neutral_ncs_008,A,B,078aba8871a5
+sel_g64,neutral_ncs_009,A,B,f15a7316ec02
+sel_g64,neutral_ncs_010,B,A,df5dcf3cf819
+sel_g64,neutral_ncs_011,A,B,f10ca4111b97
+sel_g64,neutral_ncs_012,A,A,2662d0bc4a5c
+sel_g64,neutral_ncs_013,A,B,a5d89d0b042e
+sel_g64,neutral_ncs_014,A,B,da39a3ee5e6b
+sel_g64,neutral_ncs_015,A,A,204c569c33a0
+sel_g64,neutral_ncs_016,A,A,ef05965ecf54
+sel_g64,neutral_ncs_017,A,A,b8db9c909ff1
+sel_g64,neutral_ncs_018,A,B,fb279d3b1478
+sel_g64,neutral_ncs_019,A,B,be00031c4de8
+sel_g64,neutral_ncs_020,B,A,5b9f87cc321d
+sel_g64,neutral_ncs_021,A,B,fcd7960989fc
+sel_g64,neutral_ncs_022,B,A,affc094ec144
+sel_g64,neutral_ncs_023,B,A,671c256d6f5f
+sel_g64,neutral_ncs_024,B,A,ae233c3f6536
+sel_g64,neutral_ncs_025,A,A,dd19c6f3d55c
+sel_g64,neutral_ncs_026,A,B,d4356adf03a7
+sel_g64,neutral_ncs_027,A,A,da39a3ee5e6b
+sel_g64,neutral_ncs_028,A,A,9987c83654ea
+sel_g64,neutral_ncs_029,A,A,da39a3ee5e6b
+sel_g64,neutral_ncs_030,B,A,5110564006c0
+sel_g64,neutral_ncs_031,B,B,da39a3ee5e6b
+sel_g64,neutral_ncs_032,B,A,5ca0a9820786
+sel_g64,neutral_ncs_033,B,A,ef8edf2aacc9
+sel_g64,neutral_ncs_034,A,B,a54448b717eb
+sel_g64,neutral_ncs_035,A,A,8f534d4cdbd3
+sel_g64,neutral_ncs_036,A,B,af4380cb4d4b
+sel_g64,neutral_ncs_037,A,B,42ec53e569c8
+sel_g64,neutral_ncs_038,A,A,da39a3ee5e6b
+sel_g64,neutral_ncs_039,B,A,da39a3ee5e6b
+sel_g64,neutral_qa_000,A,A,f4a2ae859012
+sel_g64,neutral_qa_001,A,B,c5522686bff5
+sel_g64,neutral_qa_002,A,A,a1d14ed1d386
+sel_g64,neutral_qa_003,B,A,1a44f31a37fc
+sel_g64,neutral_qa_004,B,A,cba3d5f4947b
+sel_g64,neutral_qa_005,A,B,c7a0b5c44071
+sel_g64,neutral_qa_006,B,A,cabe8460e927
+sel_g64,neutral_qa_007,A,A,c37a21068433
+sel_g64,neutral_qa_008,A,B,a85980614239
+sel_g64,neutral_qa_009,A,B,bf93a1cebb7c
+sel_g64,neutral_qa_010,B,A,4266ddd51f9b
+sel_g64,neutral_qa_011,A,A,83ec78c15164
+sel_g64,neutral_qa_012,A,B,0274f93f99aa
+sel_g64,neutral_qa_013,A,B,b13710e0f003
+sel_g64,neutral_qa_014,A,A,333afa09c26f
+sel_g64,neutral_qa_015,A,B,6dfe265a5204
+sel_g64,neutral_qa_016,A,B,da39a3ee5e6b
+sel_g64,neutral_qa_017,A,A,db6027da1ff2
+sel_g64,neutral_qa_018,A,B,73f077e392fa
+sel_g64,neutral_qa_019,B,A,91227ad63508
+sel_g64,neutral_qa_020,B,A,800e7b4233e0
+sel_g64,neutral_qa_021,A,A,b1bfda398966
+sel_g64,neutral_qa_022,B,A,67db23e18df7
+sel_g64,neutral_qa_023,A,B,deef825d3ed9
+sel_g64,neutral_qa_024,A,A,0dcd9fe5c0c7
+sel_g64,neutral_qa_025,B,A,5075e5829c77
+sel_g64,neutral_qa_026,A,B,9d61cc87bf8e
+sel_g64,neutral_qa_027,B,B,6c92bef40bca
+sel_g64,neutral_qa_028,A,B,0b0d41592b7e
+sel_g64,neutral_qa_029,A,B,882159d5661b
+sel_g64,neutral_qa_030,B,A,a249c6d9582b
+sel_g64,neutral_qa_031,B,A,ac949a4e2af9
+sel_g64,neutral_qa_032,A,B,0327fb2b0244
+sel_g64,neutral_qa_033,B,A,d4c0e5c715bf
+sel_g64,neutral_qa_034,A,B,dc2cd401eba8
+sel_g64,neutral_qa_035,B,A,96c876afe1e5
+sel_g64,neutral_qa_036,A,B,a68a69dcc1db
+sel_g64,neutral_qa_037,A,B,c47cc1c87d0d
+sel_g64,neutral_qa_038,B,B,da39a3ee5e6b
+sel_g64,neutral_qa_039,A,A,7e48c14528e4
+sel_g64,neutral_sum_000,B,A,9314b6622fcf
+sel_g64,neutral_sum_001,A,B,33edf162d64c
+sel_g64,neutral_sum_002,B,A,2e9a53d4100d
+sel_g64,neutral_sum_003,A,B,5b67f87de0fb
+sel_g64,neutral_sum_004,A,B,6d4386fd42e6
+sel_g64,neutral_sum_005,A,A,da39a3ee5e6b
+sel_g64,neutral_sum_006,A,A,90af17768228
+sel_g64,neutral_sum_007,B,A,a87f1bff09ca
+sel_g64,neutral_sum_008,A,A,281620cc1f78
+sel_g64,neutral_sum_009,B,A,b596964f71ae
+sel_g64,neutral_sum_010,A,B,936991fe6751
+sel_g64,neutral_sum_011,A,B,e2a91b0a9164
+sel_g64,neutral_sum_012,A,B,4644b56aa2fb
+sel_g64,neutral_sum_013,A,A,7501e437cb1e
+sel_g64,neutral_sum_014,A,B,865b5f7109de
+sel_g64,neutral_sum_015,A,A,75d3b0571648
+sel_g64,neutral_sum_016,A,B,9402893e694d
+sel_g64,neutral_sum_017,A,A,b851cc0568ba
+sel_g64,neutral_sum_018,B,A,1c9a94969de0
+sel_g64,neutral_sum_019,A,A,c9fc691865c6
+sel_g64,neutral_sum_020,A,B,23346e8e37bc
+sel_g64,neutral_sum_021,B,A,d3ee7dcd097e
+sel_g64,neutral_sum_022,A,B,03e89fd92715
+sel_g64,neutral_sum_023,B,A,8b364dc9b390
+sel_g64,neutral_sum_024,A,B,96a1543f177d
+sel_g64,neutral_sum_025,A,A,eb0bf96046b5
+sel_g64,neutral_sum_026,A,B,d0d13d345ce4
+sel_g64,neutral_sum_027,A,B,c81cfc86a31e
+sel_g64,neutral_sum_028,B,A,f7661cf4573c
+sel_g64,neutral_sum_029,A,A,41bc68492894
+sel_g64,neutral_sum_030,A,A,d45d1959c290
+sel_g64,neutral_sum_031,A,A,f22678d56498
+sel_g64,neutral_sum_032,A,B,abc27c4d5884
+sel_g64,neutral_sum_033,A,B,f45be3aff16b
+sel_g64,neutral_sum_034,A,A,da39a3ee5e6b
+sel_g64,neutral_sum_035,B,A,6120eda0c311
+sel_g64,neutral_sum_036,A,B,62d278c2cbab
+sel_g64,neutral_sum_037,A,B,48aaf0bda76a
+sel_g64,neutral_sum_038,A,B,4c64e5c6429a
+sel_g64,neutral_sum_039,A,B,fe2332d4602c
+anchor_k0,1nzes2,A,A,c853f3eaa286
+anchor_k0,2786lw,A,A,be8914029d58
+anchor_k0,2ov45h,A,B,b50bbfa8e1f4
+anchor_k0,49u4dh,A,B,0ca95a24ce2e
+anchor_k0,4iorz7,A,B,5235d8954c5b
+anchor_k0,4xzr87,A,B,e0813e9fbde0
+anchor_k0,53rqr9,A,A,5b0fd9cdcf5d
+anchor_k0,5apkek,B,A,405ded200d12
+anchor_k0,5e6rcz,A,A,46ed5829ad0d
+anchor_k0,5ec7q2,A,A,a74d3e71c67b
+anchor_k0,5f5p86,A,A,b2a3ea839d5f
+anchor_k0,5fqwjc,A,A,a8f6db52b983
+anchor_k0,5g58dz,B,A,3ff29b0f5404
+anchor_k0,5gq4jc,A,A,43320988e4fb
+anchor_k0,5j7ypk,A,A,e2292f3f8076
+anchor_k0,5je6l4,B,A,e57447206984
+anchor_k0,5nc21f,A,A,d1ce0b40aaa2
+anchor_k0,5nzsq6,A,A,68cda61c19e5
+anchor_k0,5ozqb9,A,A,a3ebabb8c34f
+anchor_k0,5qf97d,A,B,da39a3ee5e6b
+anchor_k0,5qwzjo,A,B,da39a3ee5e6b
+anchor_k0,5r104c,A,B,5c5353f80064
+anchor_k0,5te65i,B,A,371981e12d33
+anchor_k0,5umucz,B,A,ebb15232da8e
+anchor_k0,5w4x14,A,A,42facd057942
+anchor_k0,609k0n,A,A,62d7e7966d08
+anchor_k0,625es0,A,B,944eebd9ae2e
+anchor_k0,63dn97,B,A,ff9765bc8bf9
+anchor_k0,63ku7q,B,A,1473fefe0998
+anchor_k0,64c0w6,A,B,28bef6a29ae5
+anchor_k0,65458n,A,A,33fb4e5a2263
+anchor_k0,66uo64,A,B,f44de7f35457
+anchor_k0,68f5c5,A,A,682349f84060
+anchor_k0,68ykga,A,B,36607f6c9949
+anchor_k0,69dzba,A,A,da39a3ee5e6b
+anchor_k0,6d1iqq,B,A,7a73589f3aec
+anchor_k0,6eytds,A,B,3a0a0403955d
+anchor_k0,6gl289,A,A,11769ccb0df3
+anchor_k0,6hoxmq,A,A,f31b8a6a2585
+anchor_k0,6imc4i,A,A,6a81c76ce9ec
+anchor_k0,6isay3,A,A,da39a3ee5e6b
+anchor_k0,6ixx9u,A,B,8a83b61e000b
+anchor_k0,6k8gdu,A,A,9ba8ca093ef1
+anchor_k0,6l6v6l,A,A,d37fa03da14b
+anchor_k0,6m7z8a,A,A,bca94f015a53
+anchor_k0,6mztko,A,A,d5d3df319fa7
+anchor_k0,6o18uh,B,A,fc2751d400c5
+anchor_k0,6o679d,A,A,d65efc873e67
+anchor_k0,6ohgxv,A,A,72758dde689e
+anchor_k0,6szrbs,A,A,142b8047ebd5
+anchor_k0,6tsiyd,A,B,422cdafc0453
+anchor_k0,6wgtsx,A,A,b9260b41d064
+anchor_k0,6wxzhc,A,A,da39a3ee5e6b
+anchor_k0,6xisxt,B,A,1c8d6ffa17c5
+anchor_k0,6xngfe,A,B,35079b9b94df
+anchor_k0,6xsruw,A,A,aea577b228a6
+anchor_k0,71p51h,A,A,a31d6446064b
+anchor_k0,72l2aj,A,B,01ce9d503467
+anchor_k0,74ih3z,B,A,753d3b15481f
+anchor_k0,765fhd,B,A,712088af8c60
+anchor_k0,76b9gc,B,A,1cda235d1d3a
+anchor_k0,77dd17,A,B,b9b458e6d2e6
+anchor_k0,796161,A,B,08dd750214a1
+anchor_k0,7adktz,A,A,da62abdef736
+anchor_k0,7bowjq,A,B,8c7f7a3c831d
+anchor_k0,7d0x9k,B,A,2b8925dd90e5
+anchor_k0,7dcwik,A,A,51d75ed38dbd
+anchor_k0,7e3im5,B,B,da39a3ee5e6b
+anchor_k0,7en7vl,A,B,e98f881ca780
+anchor_k0,7ezd5t,A,A,654e52de0520
+anchor_k0,7gjj2w,A,A,9279096e1028
+anchor_k0,7h9f8e,A,A,e284492026ec
+anchor_k0,7iltd1,A,B,0a03542045ee
+anchor_k0,7iubwq,A,A,385fe8030304
+anchor_k0,7jfvx7,A,B,c99a1ccd9027
+anchor_k0,7jqj29,A,B,bee3876f75f5
+anchor_k0,7l7e1m,B,B,da39a3ee5e6b
+anchor_k0,7ld0jk,A,B,da39a3ee5e6b
+anchor_k0,7lzk5g,A,B,25a35575610d
+anchor_k0,7q0acw,A,Tie,e2f028d41d7a
+anchor_k0,7rb6uj,A,A,dddc45c1e472
+anchor_k0,7rie85,A,A,da39a3ee5e6b
+anchor_k0,7rpy8m,B,A,405ded200d12
+anchor_k0,7svmp5,A,B,992b7f3cbd18
+anchor_k0,7tge90,B,A,5432144286d9
+anchor_k0,7u04a5,A,A,da39a3ee5e6b
+anchor_k0,7uezw8,A,A,3cfb0e0a5bf5
+anchor_k0,7v8ind,A,A,bff68f9fc571
+anchor_k0,80sf6g,B,A,2f37a5caf7bc
+anchor_k0,83mehz,B,A,8479c8d4cf39
+anchor_k0,849wc3,A,B,a4e4ccf876f4
+anchor_k0,87ak6w,A,B,daf5ebb72d8f
+anchor_k0,87tx3g,B,A,e8e2bb71daf3
+anchor_k0,8a18sf,A,B,da39a3ee5e6b
+anchor_k0,8aec6t,A,B,3c7ae0d0694e
+anchor_k0,8fk0hr,A,B,f5d7fb507901
+anchor_k0,8gfhh9,A,A,3dfe49cc2a1a
+anchor_k0,8gs4wp,B,B,d7fab8cd3928
+anchor_k0,8k4am7,A,A,9608e05055d3
+anchor_k0,8myeno,A,B,85053bca0605
+anchor_k0,8o89ko,B,A,b3ace5d5f2cb
+anchor_k0,8p3ora,B,A,19446a5ca618
+anchor_k0,8pr271,A,B,493244930947
+anchor_k0,8tmkfc,A,B,2024c5bb6840
+anchor_k0,8vr4k2,B,A,da39a3ee5e6b
+anchor_k0,8vyqdq,A,A,d0d0f61b4e9a
+anchor_k0,8x0xa7,A,A,78dd3ffc4170
+anchor_k0,8x86s0,A,A,10e2d307e069
+anchor_k0,8y8wrr,B,A,bc6227f2cd2e
+anchor_k0,8z1sq1,A,A,a268fa87bd53
+anchor_k0,9470fc,A,B,0f340dd9c636
+anchor_k0,96myl6,B,A,42281c405371
+anchor_k0,96xnw9,A,B,da39a3ee5e6b
+anchor_k0,99kk88,A,B,8337866c2a02
+anchor_k0,9edjv0,A,B,617d2330cdd3
+anchor_k0,9f7www,A,B,3646a76725f9
+anchor_k0,9g2cbq,Tie,A,0424bb1692b1
+anchor_k0,9ki47u,A,A,9e542c1448c0
+anchor_k0,9l0dam,A,A,518f6cc24b92
+anchor_k0,9neuk8,B,A,d7806bad7298
+anchor_k0,9qn4tw,B,A,19f34c5a87b1
+anchor_k0,a318ye,A,A,6213f6b49ecc
+anchor_k0,a3pdwk,A,B,724503748ccf
+anchor_k0,acjzv0,A,B,343d8effa418
+anchor_k0,afc9c4,A,A,775c410df95f
+anchor_k0,aowr4t,A,B,f550fd237911
+anchor_k0,ar7nm2,A,A,da39a3ee5e6b
+anchor_k0,auig0m,A,B,3884cac5aeb4
+anchor_k0,b4yx63,B,A,efba11005cb6
+anchor_k0,b87jl7,B,A,a24a3e631cba
+anchor_k0,b9uzz1,B,B,da39a3ee5e6b
+anchor_k0,bhyplf,A,A,86f220871575
+anchor_k0,bk7lic,A,A,162abcfc301a
+anchor_k0,ciifmd,A,B,d9c82824e285
+anchor_k0,ck6twx,A,B,1b6648b51446
+anchor_k0,cpxk2b,A,B,1465673f9c72
+anchor_k0,dqn4sj,B,A,8300c9da36a1
+anchor_k0,eu7ub2,A,A,6c794fc8aae1
+anchor_k0,fact_00003_Fernando da Costa Novaes,A,B,0da753395bb4
+anchor_k0,fact_00006_David Galloway (writer),B,A,7a6035087090
+anchor_k0,fact_00007_Cheyenne Brando,B,A,0638d1d25436
+anchor_k0,fact_00012_Braulio Lara,A,A,a1337067625c
+anchor_k0,fact_00015_Amr Shabana,A,A,0dad5119b372
+anchor_k0,fact_00017_Abdulqawi Yusuf,B,A,f585a492ac20
+anchor_k0,fact_00025_Carlos P. Romulo,A,A,2d9daa91864c
+anchor_k0,fact_00027_Arthur Ewert,B,A,68877001a45d
+anchor_k0,fact_00032_Flavio Méndez Santiago,B,A,1be52ed91a2e
+anchor_k0,fact_00039_Chris Duffield,B,A,e6bf40b4bfa4
+anchor_k0,fact_00040_Daniil Medvedev,B,A,575753323633
+anchor_k0,fact_00043_Alexander Vovin,B,A,70034d904970
+anchor_k0,fact_00044_Cobhams Asuquo,B,A,81a71caa42b6
+anchor_k0,fact_00045_David Bogue,A,A,273820bdec9b
+anchor_k0,fact_00048_Don Beard,A,A,9cae9add4423
+anchor_k0,fact_00053_Andriy Yarmolenko,B,A,b242640ba86d
+anchor_k0,fact_00058_Danny Faure,B,A,e322a8e8f83b
+anchor_k0,fact_00063_Ayman al-Zawahiri,A,A,0ae54a7d9850
+anchor_k0,fact_00064_Diego Suarez (garden designer),B,A,b141b2ff3300
+anchor_k0,fact_00066_Daniel Alexander Cameron,B,A,04de3f0a9e5e
+anchor_k0,fact_00075_Antonio Leviste,A,A,e1c9d2f84162
+anchor_k0,fact_00078_Chi Pu,B,A,ab1b9fe93d32
+anchor_k0,"fact_00080_Felipe (footballer, born 1977)",A,B,6d9cb2c81241
+anchor_k0,fact_00084_Alfred Hitchcock,B,A,4e52dc3e79fb
+anchor_k0,fact_00085_Dascha Polanco,A,A,f07b788f30bc
+anchor_k0,fact_00086_Amelia Earhart,B,A,b218fe96e7ee
+anchor_k0,fact_00087_Chris John (boxer),A,B,108701cfd933
+anchor_k0,fact_00088_Blair Tugman,B,A,4a96a4b7b453
+anchor_k0,fact_00093_David Oyite-Ojok,B,A,eb444f91f79c
+anchor_k0,fact_00097_Chris Cuomo,B,A,03c68f78b341
+anchor_k0,fact_00098_Adnan Sami,A,A,98a4999d7731
+anchor_k0,fact_00108_Bhuma Nagi Reddy,B,A,da8dfe3857ca
+anchor_k0,fact_00109_Charmion King,A,A,1c4d2be7eeeb
+anchor_k0,fact_00110_Andreea Marin,A,A,ac8692f28a10
+anchor_k0,fact_00114_Ahn Jae-hyun,A,B,fc5176716e2a
+anchor_k0,fact_00116_Bobo Baldé,A,A,e240254c40eb
+anchor_k0,fact_00118_Chacho Gaytán,A,A,a33216f08d1d
+anchor_k0,fact_00119_Bastian Schweinsteiger,B,A,8a1f445e10b0
+anchor_k0,fact_00120_Erich Hartmann,B,A,203c242d4bea
+anchor_k0,fact_00127_Ezechiel N'Douassel,B,A,f6a56e66c0ce
+anchor_k0,fact_00131_Aditya Kalyanpur,B,A,1ef0cda19756
+anchor_k0,fact_00132_Dennis Andersson,A,A,4233f7d94afd
+anchor_k0,fact_00133_Daniel Bedingfield,A,A,74a33c11d0b5
+anchor_k0,fact_00134_Celâl Bayar,B,A,e529929f2e1f
+anchor_k0,fact_00138_Diana Ivanova,A,A,91b28b48a6e9
+anchor_k0,fact_00140_André Le Nôtre,A,B,da39a3ee5e6b
+anchor_k0,fact_00142_Cierre Wood,B,A,e4265373680d
+anchor_k0,fact_00145_Carmelo Anthony,B,A,96b2ee1477f1
+anchor_k0,fact_00146_Asafa Powell,A,A,9439b2522687
+anchor_k0,fact_00152_Felix Newman,B,A,03a023378d66
+anchor_k0,fact_00154_Earl Garrison,A,A,62d47dfed9d9
+anchor_k0,fact_00162_Aleksandar Kolarov,B,A,47d1f6cc23bd
+anchor_k0,fact_00163_Alexandre Hohagen,B,A,467ff1749669
+anchor_k0,fact_00166_Emcee N.I.C.E.,A,A,85f499f76e1c
+anchor_k0,fact_00181_Chris Woakes,B,A,ab01c922893e
+anchor_k0,fact_00182_Diosdado Cabello,B,A,96264e78b86a
+anchor_k0,fact_00184_Dana Awartani,B,A,9d97ac40ebad
+anchor_k0,fact_00185_Brianna Keilar,B,A,8843fbbf960d
+anchor_k0,fact_00188_Cédric Bakambu,B,A,5f66904e54c6
+anchor_k0,fact_00193_Bobby Fischer,A,A,9327deb8c7e7
+anchor_k0,fact_00198_Benjamin Lawrence Reid,A,B,05dfdf7f8d11
+anchor_k0,fact_00199_Djimon Hounsou,B,A,4f752f560d51
+anchor_k0,fact_00202_Ahsee Tuala,B,A,caf4c94a0291
+anchor_k0,fact_00204_Don DeLillo,B,A,3bf0678c3181
+anchor_k0,fact_00207_Elizabeth Inglis,B,A,cb9a5f8f0cf1
+anchor_k0,fact_00208_Fifi Cooper,B,A,63c8013a3446
+anchor_k0,fact_00223_Ahmed Mumin Warfa,B,A,e3b7e93d856d
+anchor_k0,fact_00226_Dewi Sartika,B,A,097d5742a70c
+anchor_k0,fact_00227_Alf Garland,A,B,5decfd13c9d5
+anchor_k0,fact_00230_Abdul Ilah Khatib,A,A,82f522f201e0
+anchor_k0,fact_00239_Bif Naked,A,A,fdbfe9a8e705
+anchor_k0,fact_00245_Dominique Blake,B,A,dcfcc3189a68
+anchor_k0,fact_00247_Diafra Sakho,B,A,3d947a48e34d
+anchor_k0,fact_00249_Fahadh Faasil,A,A,e9d655653abd
+anchor_k0,fact_00250_Dr. Dre,B,A,b668faca7646
+anchor_k0,fact_00255_Caitlin Lowe,A,A,78c75f2c01d4
+anchor_k0,fact_00257_Camille Paulus,B,A,e87b00c6bf67
+anchor_k0,fact_00258_Charley Boorman,A,A,1147ec2e0ab2
+anchor_k0,fact_00260_Douglas Wood (engineer),A,A,5a5400f7128b
+anchor_k0,fact_00263_Billy Snedden,B,A,70d6af2f32f7
+anchor_k0,fact_00264_Esteban Espíndola,B,A,f575172d5662
+anchor_k0,fact_00270_Daniel Ek,B,A,99f0fb3e9dbd
+anchor_k0,fact_00275_Belisarius,B,A,489baece8df0
+anchor_k0,fact_00276_Carol Dweck,B,A,d17f33bf0ebc
+anchor_k0,fact_00286_Amr Diab,B,A,94bcf71704f9
+anchor_k0,fact_00296_Akbar Hossain,B,A,26a1a70e22bc
+anchor_k0,fact_00300_Coco Chanel,B,A,cb3410e6eaf3
+anchor_k0,fact_00302_Enamul Haque (engineer),B,A,e37c96f03f58
+anchor_k0,fact_00304_Abdelhamid Shabana,B,A,8a0bca1a5e21
+anchor_k0,fact_00307_Abdullahi Mohammad Ahmad Hassan,A,A,6997c7e01b4b
+anchor_k0,fact_00309_Diego Godín,B,A,38d353dda492
+anchor_k0,fact_00312_Adel Emam,B,A,cffab71c36bf
+anchor_k0,fact_00315_Billy Conigliaro,B,A,78d003aaefa7
+anchor_k0,fact_00316_Arif Mohammad Khan,B,A,727ef01c98e2
+anchor_k0,fact_00321_Bob Marley,B,A,9a7d0d938d73
+anchor_k0,fact_00328_Dana Ashbrook,A,A,21d7dbb7c38e
+anchor_k0,fact_00332_Cha Eun-woo,A,A,000929cf9d99
+anchor_k0,fact_00333_Abdul Halik Hudu,B,A,1c416f3cb991
+anchor_k0,fact_00335_Carl Braun (obstetrician),B,A,9ad9d40f0923
+anchor_k0,fact_00343_Ameyaw Debrah,B,A,dd38ebd0c8fb
+anchor_k0,fact_00344_Cleopatra,B,A,2542a09263fa
+anchor_k0,fact_00345_Ana Cláudia Bolzan,B,A,88e0b47f3d9d
+anchor_k0,fact_00347_Evgeny Shalunov,B,B,e19a8d1fbf8a
+anchor_k0,fact_00348_Charles Allen (jurist),B,A,ff6337198c1f
+anchor_k0,fact_00349_Deyverson,B,A,c8c8843d29a7
+anchor_k0,fact_00351_Cris Cyborg,B,A,b6c96d891758
+anchor_k0,fact_00354_Bobby Thomson,B,A,cf2ebcb9ec1b
+anchor_k0,fact_00356_Eric Winter,A,A,90d942985f73
+anchor_k0,fact_00362_Aert van der Neer,B,A,e2ffb0e6f8de
+anchor_k0,fact_00364_Blanca Errázuriz,B,A,b28dffa46780
+anchor_k0,fact_00366_Deitrick Haddon,B,A,13dc01c8bf68
+anchor_k0,fact_00367_Andreas Ivanschitz,B,A,67167959e145
+anchor_k0,fact_00368_Clancy Brown,A,A,961f8cbf37d4
+anchor_k0,fact_00371_Carrie Ann Inaba,B,A,ff7bc0458d27
+anchor_k0,fact_00374_Cicero,B,A,e7315fa86e67
+anchor_k0,fact_00376_14th Dalai Lama,B,A,5d179bb6d4ed
+anchor_k0,fact_00377_Christian Almeida,B,A,da613a8cfe02
+anchor_k0,fact_00378_Arthur Wakefield,B,A,f5ebbe7b94b7
+anchor_k0,fact_00384_Andry Rajoelina,B,A,c78ffb8b44a4
+anchor_k0,fact_00394_Danny Almonte,A,A,e8e5defcc462
+anchor_k0,fact_00396_Andy Middleton,B,A,b303d30f74b3
+anchor_k0,fact_00397_Anderson Silva,A,A,700bf0353aa0
+anchor_k0,fact_00399_Edgar Bennett,A,B,a997f77ee4c3
+anchor_k0,fact_00401_Balázs Bekő,B,A,b1b1ff0f8221
+anchor_k0,fact_00404_Abraham Ancer,A,A,4cca89beb8f0
+anchor_k0,fact_00418_A. K. Ramanujan,B,A,c0dc819587de
+anchor_k0,fact_00420_Carlos Ghosn,B,A,de82463e882d
+anchor_k0,fact_00421_Anurag Kashyap,B,A,b7dc837b6436
+anchor_k0,fact_00425_Angela Bairstow,A,B,4b622947e3ee
+anchor_k0,fact_00427_Ernestine Eckstein,A,B,0bb7b57cfc4c
+anchor_k0,fact_00430_Ezekiel Elliott,A,A,b275b23bfbd9
+anchor_k0,fact_00433_Aaron Burr,B,A,35930c638470
+anchor_k0,fact_00444_Charles B. McVay III,B,A,66f2a3f89e4f
+anchor_k0,fact_00448_Carol Chell,A,A,15239973f66f
+anchor_k0,fact_00449_Alen Omić,B,A,c53c8056281c
+anchor_k0,fact_00452_Alice Torriani,A,A,29829ac358b6
+anchor_k0,fact_00454_Albert Outler,A,B,416ef7c533a0
+anchor_k0,fact_00459_Felician of Foligno,B,A,fbba8bb5fd03
+anchor_k0,fact_00460_Annie Landouw,B,A,427dd8158436
+anchor_k0,fact_00462_Bhāskara I,B,A,831b1970cdc6
+anchor_k0,fact_00464_Damon Herriman,A,A,4fb6d4ff7272
+anchor_k0,fact_00466_Feroze Gandhi,B,A,9b48eee21666
+anchor_k0,fact_00471_D. B. Nihalsinghe,B,A,addc1c63d782
+anchor_k0,fact_00478_F. Gwynplaine MacIntyre,A,A,84f41b928c69
+anchor_k0,fact_00486_Fidel Castro,B,A,d8fc35b9cc8f
+anchor_k0,fact_00489_Bir Hambir,B,A,8dd5a209e6ca
+anchor_k0,fact_00491_Avraham Eilam-Amzallag,B,A,00b5b53ad0b5
+anchor_k0,fact_00492_Date Narikuni,A,A,8aec312bd778
+anchor_k0,fact_00495_Ariel Behar,B,A,2fb895ec4c2b
+anchor_k0,fact_00498_DeAnna Bennett,A,B,54ae5af2eb9f
+anchor_k0,g4fs4z,A,A,949f2a9a75f8
+anchor_k0,gyp3c3,A,B,939e37758cf4
+anchor_k0,hmsv36,A,B,a090373a2b07
+anchor_k0,hrkod1,B,A,a296092b492e
+anchor_k0,irdp6g,A,B,da39a3ee5e6b
+anchor_k0,iuj8br,Tie,A,f333b91f9cad
+anchor_k0,jizn99,B,A,0ae98a657b55
+anchor_k0,jjrido,A,A,d6f5e4e47864
+anchor_k0,llrdyo,B,A,9692812fedf3
+anchor_k0,lvcurd,A,A,8effa70cd577
+anchor_k0,m70bt5,A,A,26e6851cb243
+anchor_k0,mjrz7h,A,A,0a3d1ab9519a
+anchor_k0,neutral_bio_000,A,B,e9f70335a4af
+anchor_k0,neutral_bio_001,B,A,0ad1ff5a48f1
+anchor_k0,neutral_bio_002,A,B,e69c78e486e9
+anchor_k0,neutral_bio_003,A,B,6e3f99dfca31
+anchor_k0,neutral_bio_004,B,A,07820eb462d2
+anchor_k0,neutral_bio_005,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_006,B,A,76e89a7bd52b
+anchor_k0,neutral_bio_007,A,A,da39a3ee5e6b
+anchor_k0,neutral_bio_008,A,A,7c941fc8170f
+anchor_k0,neutral_bio_009,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_010,B,A,92e35ec8c701
+anchor_k0,neutral_bio_011,A,A,1f5916939137
+anchor_k0,neutral_bio_012,A,B,33ce0b24a203
+anchor_k0,neutral_bio_013,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_014,B,A,8d8699fd25d4
+anchor_k0,neutral_bio_015,B,A,da39a3ee5e6b
+anchor_k0,neutral_bio_016,B,A,5d9cc9b80856
+anchor_k0,neutral_bio_017,A,B,23e798da83ff
+anchor_k0,neutral_bio_018,A,A,eab2dd72db6d
+anchor_k0,neutral_bio_019,A,A,d10425f16279
+anchor_k0,neutral_bio_020,B,A,cbefa43ce7e0
+anchor_k0,neutral_bio_021,A,B,beca1cd2bce4
+anchor_k0,neutral_bio_022,A,A,96c6076fd016
+anchor_k0,neutral_bio_023,B,A,76216d8a53bc
+anchor_k0,neutral_bio_024,A,B,887d7eeb22af
+anchor_k0,neutral_bio_025,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_026,A,A,e91a41928a32
+anchor_k0,neutral_bio_027,A,A,1d2edd68f900
+anchor_k0,neutral_bio_028,A,A,8fda650871c3
+anchor_k0,neutral_bio_029,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_030,B,A,5e25d0f304b3
+anchor_k0,neutral_bio_031,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_032,A,B,a7d12dcddeee
+anchor_k0,neutral_bio_033,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_034,A,A,3f77b889286e
+anchor_k0,neutral_bio_035,B,A,2efb9b82b006
+anchor_k0,neutral_bio_036,B,A,df3050902de5
+anchor_k0,neutral_bio_037,A,B,da39a3ee5e6b
+anchor_k0,neutral_bio_038,B,A,357b3a77e0a6
+anchor_k0,neutral_bio_039,A,A,a7db3688d1c1
+anchor_k0,neutral_nar_000,B,A,a66d272a40e7
+anchor_k0,neutral_nar_001,B,A,927fe47b8187
+anchor_k0,neutral_nar_002,A,B,da0d93b99b5d
+anchor_k0,neutral_nar_003,A,B,2915fb0d7874
+anchor_k0,neutral_nar_004,B,A,7ec49718c272
+anchor_k0,neutral_nar_005,A,A,f222e113884f
+anchor_k0,neutral_nar_006,B,A,f58a19bc0a9d
+anchor_k0,neutral_nar_007,A,A,68c671950a0d
+anchor_k0,neutral_nar_008,B,A,2d274df4ba62
+anchor_k0,neutral_nar_009,B,A,36c455af8474
+anchor_k0,neutral_nar_010,B,A,b9d6ed52aade
+anchor_k0,neutral_nar_011,A,A,249854a8a905
+anchor_k0,neutral_nar_012,B,A,56d0a5dd87c8
+anchor_k0,neutral_nar_013,A,B,b346665ce93b
+anchor_k0,neutral_nar_014,A,B,d37fc48e3cef
+anchor_k0,neutral_nar_015,A,B,98c891c7ff95
+anchor_k0,neutral_nar_016,B,A,233677459342
+anchor_k0,neutral_nar_017,A,B,fe825d372271
+anchor_k0,neutral_nar_018,A,B,c08d2629e49c
+anchor_k0,neutral_nar_019,B,A,fa3d4e2aadb9
+anchor_k0,neutral_nar_020,B,A,e0734a545de0
+anchor_k0,neutral_nar_021,A,A,bb464f47ce9e
+anchor_k0,neutral_nar_022,B,A,f74e5dc93cf3
+anchor_k0,neutral_nar_023,A,B,57f016dbcc98
+anchor_k0,neutral_nar_024,A,A,c869b25b5b32
+anchor_k0,neutral_nar_025,A,B,526df07b1c47
+anchor_k0,neutral_nar_026,A,B,05c6e51d5fc1
+anchor_k0,neutral_nar_027,A,B,473febc7816b
+anchor_k0,neutral_nar_028,A,A,4b70802649bb
+anchor_k0,neutral_nar_029,A,A,ae3f1e944045
+anchor_k0,neutral_nar_030,B,A,46d4afb7aab0
+anchor_k0,neutral_nar_031,A,B,1eb2a24f3e47
+anchor_k0,neutral_nar_032,A,B,77ee2e30be94
+anchor_k0,neutral_nar_033,A,B,46fb0c04cdbc
+anchor_k0,neutral_nar_034,B,A,8c79e2919b4e
+anchor_k0,neutral_nar_035,B,A,4464194b0ab6
+anchor_k0,neutral_nar_036,A,B,be61efdb3c1e
+anchor_k0,neutral_nar_037,B,A,d05d750e1e3c
+anchor_k0,neutral_nar_038,B,A,f2de8545b826
+anchor_k0,neutral_nar_039,B,A,71082edc69b4
+anchor_k0,neutral_ncs_000,B,A,02e36a7620ce
+anchor_k0,neutral_ncs_001,A,B,7dc0edea2bc3
+anchor_k0,neutral_ncs_002,B,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_003,A,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_004,B,A,93645cb79806
+anchor_k0,neutral_ncs_005,A,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_006,A,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_007,B,B,3550c58b50a7
+anchor_k0,neutral_ncs_008,A,B,c813bf57195c
+anchor_k0,neutral_ncs_009,A,B,a9d24a7922e3
+anchor_k0,neutral_ncs_010,B,A,df2e32c6a31d
+anchor_k0,neutral_ncs_011,B,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_012,B,A,6c30646ab49a
+anchor_k0,neutral_ncs_013,A,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_014,A,B,7442f357218e
+anchor_k0,neutral_ncs_015,A,A,d130a3b8d7ba
+anchor_k0,neutral_ncs_016,B,A,34f216719009
+anchor_k0,neutral_ncs_017,A,A,da39a3ee5e6b
+anchor_k0,neutral_ncs_018,A,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_019,B,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_020,B,A,dfc66f76b6e2
+anchor_k0,neutral_ncs_021,A,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_022,A,A,dfcc6e52de87
+anchor_k0,neutral_ncs_023,B,A,c246f18b4fed
+anchor_k0,neutral_ncs_024,B,A,c576b09a964b
+anchor_k0,neutral_ncs_025,A,A,0e74ea31f2f1
+anchor_k0,neutral_ncs_026,A,A,77acf30d2d6d
+anchor_k0,neutral_ncs_027,A,A,da39a3ee5e6b
+anchor_k0,neutral_ncs_028,A,A,f60ffb59d8e3
+anchor_k0,neutral_ncs_029,A,A,da39a3ee5e6b
+anchor_k0,neutral_ncs_030,B,A,1dc7c2e4f9cb
+anchor_k0,neutral_ncs_031,A,A,545404bfe77d
+anchor_k0,neutral_ncs_032,B,A,5526ced66b3b
+anchor_k0,neutral_ncs_033,B,B,da39a3ee5e6b
+anchor_k0,neutral_ncs_034,A,B,218ce1fde630
+anchor_k0,neutral_ncs_035,B,A,a65a21aa9893
+anchor_k0,neutral_ncs_036,A,B,03c9766c1137
+anchor_k0,neutral_ncs_037,B,A,6b5887053b22
+anchor_k0,neutral_ncs_038,B,A,a1d7a7799fd4
+anchor_k0,neutral_ncs_039,B,A,da39a3ee5e6b
+anchor_k0,neutral_qa_000,B,A,1f59064ecae0
+anchor_k0,neutral_qa_001,A,A,ee3055e1967c
+anchor_k0,neutral_qa_002,B,A,0a5c5de65bc4
+anchor_k0,neutral_qa_003,A,A,da39a3ee5e6b
+anchor_k0,neutral_qa_004,B,A,da39a3ee5e6b
+anchor_k0,neutral_qa_005,B,B,da39a3ee5e6b
+anchor_k0,neutral_qa_006,B,A,50e97e6b1ed0
+anchor_k0,neutral_qa_007,A,A,5db0ac35f38c
+anchor_k0,neutral_qa_008,A,B,da39a3ee5e6b
+anchor_k0,neutral_qa_009,B,B,da39a3ee5e6b
+anchor_k0,neutral_qa_010,B,A,da39a3ee5e6b
+anchor_k0,neutral_qa_011,B,A,da39a3ee5e6b
+anchor_k0,neutral_qa_012,A,B,8055d59c26bf
+anchor_k0,neutral_qa_013,A,B,da39a3ee5e6b
+anchor_k0,neutral_qa_014,A,A,0dad89cd5357
+anchor_k0,neutral_qa_015,A,B,da39a3ee5e6b
+anchor_k0,neutral_qa_016,A,B,da39a3ee5e6b
+anchor_k0,neutral_qa_017,B,A,2417a5765ad7
+anchor_k0,neutral_qa_018,A,B,da39a3ee5e6b
+anchor_k0,neutral_qa_019,B,A,6dd00beb0138
+anchor_k0,neutral_qa_020,B,B,da39a3ee5e6b
+anchor_k0,neutral_qa_021,A,A,29235a8456ef
+anchor_k0,neutral_qa_022,A,A,dcce9cb1fb70
+anchor_k0,neutral_qa_023,A,B,48bfd6517245
+anchor_k0,neutral_qa_024,A,A,2610c67cac04
+anchor_k0,neutral_qa_025,A,A,54f30867d554
+anchor_k0,neutral_qa_026,A,B,b468adf70d4b
+anchor_k0,neutral_qa_027,B,B,0618720eb32c
+anchor_k0,neutral_qa_028,A,B,7a4c39b5e4e7
+anchor_k0,neutral_qa_029,A,B,da39a3ee5e6b
+anchor_k0,neutral_qa_030,B,A,dd68b8b468a0
+anchor_k0,neutral_qa_031,B,A,da39a3ee5e6b
+anchor_k0,neutral_qa_032,A,B,fbc340ac9bfb
+anchor_k0,neutral_qa_033,A,A,d95ec23cbd41
+anchor_k0,neutral_qa_034,A,B,b915c9e6b87a
+anchor_k0,neutral_qa_035,B,B,da39a3ee5e6b
+anchor_k0,neutral_qa_036,A,B,aa286cf78098
+anchor_k0,neutral_qa_037,A,A,915ff10202df
+anchor_k0,neutral_qa_038,B,B,da39a3ee5e6b
+anchor_k0,neutral_qa_039,B,A,a142880d92e0
+anchor_k0,neutral_sum_000,B,A,f0206606ff3e
+anchor_k0,neutral_sum_001,B,A,a5d21108a4ca
+anchor_k0,neutral_sum_002,B,A,84239632201a
+anchor_k0,neutral_sum_003,A,B,ec2218f5bb42
+anchor_k0,neutral_sum_004,A,A,3ed3e5430bfb
+anchor_k0,neutral_sum_005,B,A,d7c53713189d
+anchor_k0,neutral_sum_006,B,B,da39a3ee5e6b
+anchor_k0,neutral_sum_007,B,A,e48d75f28b8a
+anchor_k0,neutral_sum_008,B,A,56d5c4b61f51
+anchor_k0,neutral_sum_009,B,A,f4d47b9fee76
+anchor_k0,neutral_sum_010,A,B,91176b2d690b
+anchor_k0,neutral_sum_011,A,A,f9d6efd50c37
+anchor_k0,neutral_sum_012,B,A,7be793306cf7
+anchor_k0,neutral_sum_013,B,A,326d93c4d13b
+anchor_k0,neutral_sum_014,B,A,a02c3c682899
+anchor_k0,neutral_sum_015,B,A,676734a9f77a
+anchor_k0,neutral_sum_016,A,A,523d606d432f
+anchor_k0,neutral_sum_017,B,A,cc775a61d439
+anchor_k0,neutral_sum_018,B,A,da39a3ee5e6b
+anchor_k0,neutral_sum_019,A,A,cff3e863d58d
+anchor_k0,neutral_sum_020,B,A,22f73cde53e2
+anchor_k0,neutral_sum_021,B,A,58dd839bbd3e
+anchor_k0,neutral_sum_022,B,B,da39a3ee5e6b
+anchor_k0,neutral_sum_023,B,A,0a424a501c73
+anchor_k0,neutral_sum_024,A,A,8d4059ef3003
+anchor_k0,neutral_sum_025,B,A,0dbe5b9fb594
+anchor_k0,neutral_sum_026,A,A,ea904fb312c3
+anchor_k0,neutral_sum_027,A,A,7e2d0e7936e2
+anchor_k0,neutral_sum_028,B,A,27ffa80de070
+anchor_k0,neutral_sum_029,A,B,39e966d4cd57
+anchor_k0,neutral_sum_030,B,A,b087a0b71a2a
+anchor_k0,neutral_sum_031,B,A,a05f46906b90
+anchor_k0,neutral_sum_032,A,B,036f8512f60e
+anchor_k0,neutral_sum_033,A,A,aad44f53a738
+anchor_k0,neutral_sum_034,A,A,da39a3ee5e6b
+anchor_k0,neutral_sum_035,B,A,65096f8ebf94
+anchor_k0,neutral_sum_036,A,B,50dd262b4c8f
+anchor_k0,neutral_sum_037,A,B,43d75b347881
+anchor_k0,neutral_sum_038,A,B,d5a5ce86a4b3
+anchor_k0,neutral_sum_039,A,B,da39a3ee5e6b
+metered_k10,1nzes2,A,A,e24bddb6ab70
+metered_k10,2786lw,A,A,a630ce7d47e0
+metered_k10,2ov45h,B,A,83e537441d2c
+metered_k10,49u4dh,B,A,5f5631377beb
+metered_k10,4iorz7,A,Tie,ef15a2e2ec2f
+metered_k10,4xzr87,A,B,73aac47935d1
+metered_k10,53rqr9,B,A,cf744f869603
+metered_k10,5apkek,B,A,aec4e6888924
+metered_k10,5e6rcz,B,A,07ba961e2d34
+metered_k10,5ec7q2,A,A,2921f90a2a9d
+metered_k10,5f5p86,B,A,0f0e7fe0fa48
+metered_k10,5fqwjc,A,B,86926271ad16
+metered_k10,5g58dz,A,A,50e53113d182
+metered_k10,5gq4jc,B,A,773a97f10041
+metered_k10,5j7ypk,A,A,ce65360dad7f
+metered_k10,5je6l4,B,A,6c1f37988d00
+metered_k10,5nc21f,A,A,67278c654f15
+metered_k10,5nzsq6,A,A,88b863a53ef3
+metered_k10,5ozqb9,B,A,3505bafd06a7
+metered_k10,5qf97d,B,A,a744754bfb3e
+metered_k10,5qwzjo,B,A,5a4b415c1fe4
+metered_k10,5r104c,A,B,2cba71638ab0
+metered_k10,5te65i,B,A,3322b99db361
+metered_k10,5umucz,B,B,f0bcfb34a684
+metered_k10,5w4x14,B,A,1383be76a94b
+metered_k10,609k0n,B,A,79775ec96f07
+metered_k10,625es0,A,A,dae680e06e7b
+metered_k10,63dn97,B,A,8ff71606c93e
+metered_k10,63ku7q,B,A,9305b1df0a70
+metered_k10,64c0w6,B,A,45becc03eb7e
+metered_k10,65458n,A,A,d8e434382779
+metered_k10,66uo64,A,B,6be79bbb9fe4
+metered_k10,68f5c5,A,B,a941d7d57d48
+metered_k10,68ykga,B,A,928258d3f315
+metered_k10,69dzba,B,A,50ba50a4cdd3
+metered_k10,6d1iqq,B,A,ddd3127b7927
+metered_k10,6eytds,A,A,1bd97daab09e
+metered_k10,6gl289,B,A,4e781760bd5e
+metered_k10,6hoxmq,B,A,c47d69bf5442
+metered_k10,6imc4i,A,B,d4243a660f2a
+metered_k10,6isay3,B,A,7a4b389581e5
+metered_k10,6ixx9u,A,B,2bf95e420449
+metered_k10,6k8gdu,A,A,dd97fb642ac5
+metered_k10,6l6v6l,B,A,0634cef17a35
+metered_k10,6m7z8a,B,A,eb4cd7428af7
+metered_k10,6mztko,B,A,62c9e3643da9
+metered_k10,6o18uh,B,B,1d71bf76931b
+metered_k10,6o679d,A,A,9bc74186172d
+metered_k10,6ohgxv,A,B,c5bae18bab25
+metered_k10,6szrbs,B,A,8a3101edcc39
+metered_k10,6tsiyd,A,B,cfd390701b31
+metered_k10,6wgtsx,A,A,11038eb3de03
+metered_k10,6wxzhc,B,A,e546cec2ef1a
+metered_k10,6xisxt,A,B,59c8dc50a420
+metered_k10,6xngfe,A,B,198d071887a7
+metered_k10,6xsruw,B,A,7a4d254f2e08
+metered_k10,71p51h,A,A,c0d5f7eaff79
+metered_k10,72l2aj,A,A,15039ad281c3
+metered_k10,74ih3z,B,A,5521c012b411
+metered_k10,765fhd,A,B,934fd582a7a2
+metered_k10,76b9gc,B,A,55c6c7ed2ee9
+metered_k10,77dd17,A,B,e13b5593f39a
+metered_k10,796161,B,A,e004654861fc
+metered_k10,7adktz,A,A,b1124681af9b
+metered_k10,7bowjq,A,A,f0e4bd155589
+metered_k10,7d0x9k,A,A,821ae7f24fc0
+metered_k10,7dcwik,B,A,8a1496de3a61
+metered_k10,7e3im5,B,A,b5880e1c4269
+metered_k10,7en7vl,A,B,a0ae0c3b987f
+metered_k10,7ezd5t,A,A,02d12a4c48cf
+metered_k10,7gjj2w,A,A,d24babb0df29
+metered_k10,7h9f8e,A,A,75363d24eefb
+metered_k10,7iltd1,A,B,1e7d57574a13
+metered_k10,7iubwq,A,A,0382da6a8a2b
+metered_k10,7jfvx7,A,B,ad132326b9f0
+metered_k10,7jqj29,A,B,65a0ef6b04da
+metered_k10,7l7e1m,A,B,65dfe9493bf1
+metered_k10,7ld0jk,A,B,8b50b2f4ad05
+metered_k10,7lzk5g,A,B,8dcc7783f8e2
+metered_k10,7q0acw,A,B,99f54ab5d858
+metered_k10,7rb6uj,B,A,e10c61b1074f
+metered_k10,7rie85,B,A,f060b3a328fc
+metered_k10,7rpy8m,A,A,f69e5a695731
+metered_k10,7svmp5,A,B,9b4b84361874
+metered_k10,7tge90,A,A,c923c35494d8
+metered_k10,7u04a5,A,A,117ae5e55f05
+metered_k10,7uezw8,A,A,72d03d6c0c3b
+metered_k10,7v8ind,B,A,b759a08b63c2
+metered_k10,80sf6g,A,B,317607f6693e
+metered_k10,83mehz,A,A,21a39e762e52
+metered_k10,849wc3,A,B,7b5ff8ebb7f1
+metered_k10,87ak6w,B,A,e210e92e13ec
+metered_k10,87tx3g,B,A,91a7efc7d29b
+metered_k10,8a18sf,A,A,0f0123032a24
+metered_k10,8aec6t,A,B,4440c481afb1
+metered_k10,8fk0hr,A,B,2ce1dab2da01
+metered_k10,8gfhh9,A,A,9b0456d507f3
+metered_k10,8gs4wp,A,A,172b84d78355
+metered_k10,8k4am7,A,A,6bb76253681e
+metered_k10,8myeno,A,B,9facb9c8e065
+metered_k10,8o89ko,B,A,c556466d43b7
+metered_k10,8p3ora,A,A,80917f6299e2
+metered_k10,8pr271,A,B,50dc9dd02233
+metered_k10,8tmkfc,A,B,f7b4b82ec1b8
+metered_k10,8vr4k2,B,A,c4a913349504
+metered_k10,8vyqdq,A,A,c11bb89b75b0
+metered_k10,8x0xa7,B,A,0b775f041d91
+metered_k10,8x86s0,A,A,8324da92aae5
+metered_k10,8y8wrr,B,A,45ab8427667a
+metered_k10,8z1sq1,A,B,854f2fa950c1
+metered_k10,9470fc,B,A,e7a7a309b469
+metered_k10,96myl6,B,A,ea8994e2e2ba
+metered_k10,96xnw9,A,B,147c778cb0d9
+metered_k10,99kk88,B,A,00538123eb70
+metered_k10,9edjv0,B,A,4727938f99c5
+metered_k10,9f7www,A,B,f4180e43df61
+metered_k10,9g2cbq,B,A,52edef07f59f
+metered_k10,9ki47u,A,B,878f74f93241
+metered_k10,9l0dam,A,A,7f55414cd797
+metered_k10,9neuk8,A,B,dac0033b5110
+metered_k10,9qn4tw,B,A,5db567d3eed3
+metered_k10,a318ye,A,A,d47a23b8f621
+metered_k10,a3pdwk,A,A,03f160e0e2a4
+metered_k10,acjzv0,B,A,65f0a32a02f2
+metered_k10,afc9c4,B,A,7f08d5a1772e
+metered_k10,aowr4t,A,A,ee38d3aaa6b4
+metered_k10,ar7nm2,B,A,61daa8f76997
+metered_k10,auig0m,A,A,71a3e33665d7
+metered_k10,b4yx63,B,A,31113ba8820e
+metered_k10,b87jl7,A,B,dd0e7b782062
+metered_k10,b9uzz1,B,A,b0989b08f4bb
+metered_k10,bhyplf,A,B,78728ce1ff15
+metered_k10,bk7lic,B,A,18ee14eb275b
+metered_k10,ciifmd,A,B,fb9c93336bcb
+metered_k10,ck6twx,A,B,9cec9cb0fef6
+metered_k10,cpxk2b,A,B,c2d8c4186c45
+metered_k10,dqn4sj,A,A,8e4f1d3dce6f
+metered_k10,eu7ub2,B,A,f38d54fa8da7
+metered_k10,fact_00003_Fernando da Costa Novaes,A,B,9eeeb90c22be
+metered_k10,fact_00006_David Galloway (writer),B,A,7da568f986db
+metered_k10,fact_00007_Cheyenne Brando,B,A,32462ace453b
+metered_k10,fact_00012_Braulio Lara,B,A,f7c27a01d37c
+metered_k10,fact_00015_Amr Shabana,B,A,00d853d499a3
+metered_k10,fact_00017_Abdulqawi Yusuf,A,A,4f0a80238d01
+metered_k10,fact_00025_Carlos P. Romulo,A,A,9c86fe4b1333
+metered_k10,fact_00027_Arthur Ewert,A,A,c17a62b61b46
+metered_k10,fact_00032_Flavio Méndez Santiago,A,A,0769b4df5280
+metered_k10,fact_00039_Chris Duffield,A,B,23e546583803
+metered_k10,fact_00040_Daniil Medvedev,B,A,dcd0364a8dc4
+metered_k10,fact_00043_Alexander Vovin,A,A,c5881c414a24
+metered_k10,fact_00044_Cobhams Asuquo,A,A,7ae2f07a4950
+metered_k10,fact_00045_David Bogue,A,A,21df114b2a6a
+metered_k10,fact_00048_Don Beard,A,A,08db015503ae
+metered_k10,fact_00053_Andriy Yarmolenko,B,A,8cb1588d32a1
+metered_k10,fact_00058_Danny Faure,B,A,ef55c2f0162b
+metered_k10,fact_00063_Ayman al-Zawahiri,A,B,486eaa7af7a4
+metered_k10,fact_00064_Diego Suarez (garden designer),A,B,7327dd661f8e
+metered_k10,fact_00066_Daniel Alexander Cameron,A,A,8c0be2fe549c
+metered_k10,fact_00075_Antonio Leviste,B,A,0ffe89be7829
+metered_k10,fact_00078_Chi Pu,B,A,7819afd77e0f
+metered_k10,"fact_00080_Felipe (footballer, born 1977)",A,A,fc56f7bb3189
+metered_k10,fact_00084_Alfred Hitchcock,B,A,4fb4ef4a7b0c
+metered_k10,fact_00085_Dascha Polanco,A,B,1a9017f17130
+metered_k10,fact_00086_Amelia Earhart,A,B,c5f9228e584b
+metered_k10,fact_00087_Chris John (boxer),A,B,5f8c676f5f67
+metered_k10,fact_00088_Blair Tugman,A,B,480139b8cd38
+metered_k10,fact_00093_David Oyite-Ojok,B,A,1aa8777177d3
+metered_k10,fact_00097_Chris Cuomo,B,A,2f934745b8cd
+metered_k10,fact_00098_Adnan Sami,A,B,869caa10b7b9
+metered_k10,fact_00108_Bhuma Nagi Reddy,B,A,9a8440b24ee0
+metered_k10,fact_00109_Charmion King,A,B,f191041b19df
+metered_k10,fact_00110_Andreea Marin,B,A,6998e6b31db0
+metered_k10,fact_00114_Ahn Jae-hyun,A,B,99c8a168f496
+metered_k10,fact_00116_Bobo Baldé,A,B,04276bce860c
+metered_k10,fact_00118_Chacho Gaytán,B,A,e959941e88ca
+metered_k10,fact_00119_Bastian Schweinsteiger,B,A,81b4eac4816e
+metered_k10,fact_00120_Erich Hartmann,A,B,12cbaac46249
+metered_k10,fact_00127_Ezechiel N'Douassel,A,A,12a112ef5210
+metered_k10,fact_00131_Aditya Kalyanpur,A,B,a2c8a87cefba
+metered_k10,fact_00132_Dennis Andersson,A,A,4ed9307a5764
+metered_k10,fact_00133_Daniel Bedingfield,A,B,caceb444e299
+metered_k10,fact_00134_Celâl Bayar,B,A,697891381b9d
+metered_k10,fact_00138_Diana Ivanova,A,B,69d0ea18d68b
+metered_k10,fact_00140_André Le Nôtre,A,B,e1aedb66ee16
+metered_k10,fact_00142_Cierre Wood,A,A,a98777a42c48
+metered_k10,fact_00145_Carmelo Anthony,B,A,710b9205f9bb
+metered_k10,fact_00146_Asafa Powell,A,B,e05d1dc2fe01
+metered_k10,fact_00152_Felix Newman,A,A,fafbd4f87a3d
+metered_k10,fact_00154_Earl Garrison,A,B,64463def3cbc
+metered_k10,fact_00162_Aleksandar Kolarov,A,A,63c251aad696
+metered_k10,fact_00163_Alexandre Hohagen,B,B,fddf54ff7742
+metered_k10,fact_00166_Emcee N.I.C.E.,A,B,b59fe81af275
+metered_k10,fact_00181_Chris Woakes,B,A,0fbaac24c070
+metered_k10,fact_00182_Diosdado Cabello,B,A,814efeed97ca
+metered_k10,fact_00184_Dana Awartani,B,A,505268e74a20
+metered_k10,fact_00185_Brianna Keilar,A,A,c6ff9a57779b
+metered_k10,fact_00188_Cédric Bakambu,B,A,cae0be888488
+metered_k10,fact_00193_Bobby Fischer,A,B,0a0f4d09f4cc
+metered_k10,fact_00198_Benjamin Lawrence Reid,A,A,dd0c011cb0d3
+metered_k10,fact_00199_Djimon Hounsou,B,A,65424360bfb6
+metered_k10,fact_00202_Ahsee Tuala,A,A,941f8aab68ea
+metered_k10,fact_00204_Don DeLillo,A,A,4ac232da884c
+metered_k10,fact_00207_Elizabeth Inglis,A,B,7975cf4090c9
+metered_k10,fact_00208_Fifi Cooper,A,B,b9cbbc51e191
+metered_k10,fact_00223_Ahmed Mumin Warfa,A,B,b8e758765075
+metered_k10,fact_00226_Dewi Sartika,A,A,8e74530f2de5
+metered_k10,fact_00227_Alf Garland,A,B,582e28669826
+metered_k10,fact_00230_Abdul Ilah Khatib,A,A,981931fa5bf7
+metered_k10,fact_00239_Bif Naked,A,A,b7c642310cf8
+metered_k10,fact_00245_Dominique Blake,B,A,b2fab9987c3e
+metered_k10,fact_00247_Diafra Sakho,A,A,e1e3a7fac5f2
+metered_k10,fact_00249_Fahadh Faasil,A,A,4afb6c4edd61
+metered_k10,fact_00250_Dr. Dre,A,A,63ab5f5300ae
+metered_k10,fact_00255_Caitlin Lowe,B,A,940f2b428c1e
+metered_k10,fact_00257_Camille Paulus,A,B,509f8e76aaf4
+metered_k10,fact_00258_Charley Boorman,A,A,275b14778fea
+metered_k10,fact_00260_Douglas Wood (engineer),A,B,187f038871c4
+metered_k10,fact_00263_Billy Snedden,B,A,b8176f75e215
+metered_k10,fact_00264_Esteban Espíndola,A,B,20f3779ca5cf
+metered_k10,fact_00270_Daniel Ek,A,A,46f0a2b0a3c0
+metered_k10,fact_00275_Belisarius,A,B,40f51aab2499
+metered_k10,fact_00276_Carol Dweck,A,A,41d856201a75
+metered_k10,fact_00286_Amr Diab,B,A,72502df9b5b2
+metered_k10,fact_00296_Akbar Hossain,B,A,4ce12e02a847
+metered_k10,fact_00300_Coco Chanel,A,A,d33b48544fd1
+metered_k10,fact_00302_Enamul Haque (engineer),Tie,Tie,88f0b62e3144
+metered_k10,fact_00304_Abdelhamid Shabana,B,A,24496e17df90
+metered_k10,fact_00307_Abdullahi Mohammad Ahmad Hassan,A,A,5dd49f84d3a7
+metered_k10,fact_00309_Diego Godín,B,A,1076acef106d
+metered_k10,fact_00312_Adel Emam,A,B,91c36d87469c
+metered_k10,fact_00315_Billy Conigliaro,B,A,b342316d8826
+metered_k10,fact_00316_Arif Mohammad Khan,B,A,8df8437ada52
+metered_k10,fact_00321_Bob Marley,A,A,2ae76091130c
+metered_k10,fact_00328_Dana Ashbrook,A,B,ca5852a651be
+metered_k10,fact_00332_Cha Eun-woo,A,B,cceb5469e092
+metered_k10,fact_00333_Abdul Halik Hudu,B,A,a019f71c3fa9
+metered_k10,fact_00335_Carl Braun (obstetrician),B,A,6634510d3441
+metered_k10,fact_00343_Ameyaw Debrah,A,A,e1772af1e967
+metered_k10,fact_00344_Cleopatra,B,A,8f5eaf02b83b
+metered_k10,fact_00345_Ana Cláudia Bolzan,B,A,829b48bd4c68
+metered_k10,fact_00347_Evgeny Shalunov,A,B,e9c49dd9198e
+metered_k10,fact_00348_Charles Allen (jurist),B,A,8f52b92de788
+metered_k10,fact_00349_Deyverson,A,A,34d2649af817
+metered_k10,fact_00351_Cris Cyborg,A,A,275e74d1674f
+metered_k10,fact_00354_Bobby Thomson,B,A,4db06408a7f0
+metered_k10,fact_00356_Eric Winter,A,A,b872b073f121
+metered_k10,fact_00362_Aert van der Neer,B,A,6cc389da4095
+metered_k10,fact_00364_Blanca Errázuriz,A,A,eef1fbe3d6df
+metered_k10,fact_00366_Deitrick Haddon,B,A,e7f79bc3a166
+metered_k10,fact_00367_Andreas Ivanschitz,A,A,0fa6794db096
+metered_k10,fact_00368_Clancy Brown,A,A,c49b20416052
+metered_k10,fact_00371_Carrie Ann Inaba,B,A,f8d160e9a5e1
+metered_k10,fact_00374_Cicero,B,A,63f392dda3c2
+metered_k10,fact_00376_14th Dalai Lama,B,A,adfe2758e3c9
+metered_k10,fact_00377_Christian Almeida,A,A,a039415c691d
+metered_k10,fact_00378_Arthur Wakefield,A,A,8b0510f045b0
+metered_k10,fact_00384_Andry Rajoelina,A,A,704e0b9da14d
+metered_k10,fact_00394_Danny Almonte,A,A,531e08db1f78
+metered_k10,fact_00396_Andy Middleton,A,A,81c46e20b069
+metered_k10,fact_00397_Anderson Silva,A,B,196cc50668f3
+metered_k10,fact_00399_Edgar Bennett,B,A,9607cede4769
+metered_k10,fact_00401_Balázs Bekő,B,A,8736198736aa
+metered_k10,fact_00404_Abraham Ancer,A,B,45f44d02c127
+metered_k10,fact_00418_A. K. Ramanujan,A,A,2a102a2b289c
+metered_k10,fact_00420_Carlos Ghosn,A,B,45b5a6b33a97
+metered_k10,fact_00421_Anurag Kashyap,B,A,db95f7f37db4
+metered_k10,fact_00425_Angela Bairstow,B,A,2f227ddbdb3a
+metered_k10,fact_00427_Ernestine Eckstein,A,A,d55885ad9863
+metered_k10,fact_00430_Ezekiel Elliott,A,A,2d0c332cb748
+metered_k10,fact_00433_Aaron Burr,A,A,a7f87da491c1
+metered_k10,fact_00444_Charles B. McVay III,A,A,7e42628608eb
+metered_k10,fact_00448_Carol Chell,B,A,2140a708cd9d
+metered_k10,fact_00449_Alen Omić,A,A,97b7ccfe2820
+metered_k10,fact_00452_Alice Torriani,A,A,3343994804f5
+metered_k10,fact_00454_Albert Outler,A,B,f283b85680bc
+metered_k10,fact_00459_Felician of Foligno,B,A,2a8a2708c6a4
+metered_k10,fact_00460_Annie Landouw,A,A,a12a890abba1
+metered_k10,fact_00462_Bhāskara I,B,A,ee59af87d301
+metered_k10,fact_00464_Damon Herriman,A,B,d3fd74087e2b
+metered_k10,fact_00466_Feroze Gandhi,B,A,71cee9254ce5
+metered_k10,fact_00471_D. B. Nihalsinghe,A,A,c90d75671551
+metered_k10,fact_00478_F. Gwynplaine MacIntyre,A,A,e80613a819d3
+metered_k10,fact_00486_Fidel Castro,B,A,f16f2bf45367
+metered_k10,fact_00489_Bir Hambir,A,B,540ae070ca1d
+metered_k10,fact_00491_Avraham Eilam-Amzallag,A,A,dd8255727023
+metered_k10,fact_00492_Date Narikuni,B,B,9efa52d02d54
+metered_k10,fact_00495_Ariel Behar,B,A,c5c6e9005512
+metered_k10,fact_00498_DeAnna Bennett,A,B,6843828a2eaf
+metered_k10,g4fs4z,A,B,024bb029690b
+metered_k10,gyp3c3,A,B,b647b31c2b09
+metered_k10,hmsv36,A,B,c17590cab83f
+metered_k10,hrkod1,A,A,331d18f65e6c
+metered_k10,irdp6g,A,B,9cea67bcb711
+metered_k10,iuj8br,B,A,4f36064354ed
+metered_k10,jizn99,B,A,2a018f793257
+metered_k10,jjrido,A,A,f0b8ac10ff2f
+metered_k10,llrdyo,B,A,3d2ea09f968b
+metered_k10,lvcurd,A,A,4a6af035d06c
+metered_k10,m70bt5,A,B,8eefc4ad7515
+metered_k10,mjrz7h,B,A,1eae0f45021b
+metered_k10,neutral_bio_000,A,B,2ab902d15655
+metered_k10,neutral_bio_001,B,A,b0335302b287
+metered_k10,neutral_bio_002,B,A,8ed943b31ed5
+metered_k10,neutral_bio_003,A,B,44c36d7249b7
+metered_k10,neutral_bio_004,A,B,1b043ec890e6
+metered_k10,neutral_bio_005,A,B,8330ccf40b1e
+metered_k10,neutral_bio_006,B,A,f64c2623009a
+metered_k10,neutral_bio_007,B,A,37eebff527ef
+metered_k10,neutral_bio_008,A,B,222de91b1ca0
+metered_k10,neutral_bio_009,A,B,f630135a8dcd
+metered_k10,neutral_bio_010,B,A,23f30683b738
+metered_k10,neutral_bio_011,A,B,cf381fdfcf38
+metered_k10,neutral_bio_012,A,A,635ed0927cbe
+metered_k10,neutral_bio_013,A,B,4a58972950ba
+metered_k10,neutral_bio_014,B,A,8307f34a4033
+metered_k10,neutral_bio_015,B,A,0eb14bb1a9c5
+metered_k10,neutral_bio_016,A,B,b650b4baad3e
+metered_k10,neutral_bio_017,B,A,f032a631f3f8
+metered_k10,neutral_bio_018,A,B,dee77ca1b3ba
+metered_k10,neutral_bio_019,A,B,c1caab4eadc7
+metered_k10,neutral_bio_020,B,A,3dc12953226e
+metered_k10,neutral_bio_021,A,B,a095931a4eb8
+metered_k10,neutral_bio_022,B,A,4fefd0798931
+metered_k10,neutral_bio_023,B,A,8f05fa4b232d
+metered_k10,neutral_bio_024,A,B,9fc25e0b2969
+metered_k10,neutral_bio_025,A,B,841bb1fb0c7d
+metered_k10,neutral_bio_026,A,B,66fbb13ee15e
+metered_k10,neutral_bio_027,B,A,2b5b58d0088c
+metered_k10,neutral_bio_028,A,A,74573fd71fe2
+metered_k10,neutral_bio_029,A,A,7ee5e4d9de60
+metered_k10,neutral_bio_030,B,A,be8219228e59
+metered_k10,neutral_bio_031,B,A,3579b6c0a793
+metered_k10,neutral_bio_032,A,B,2f9a14998f28
+metered_k10,neutral_bio_033,A,A,5f82706fa616
+metered_k10,neutral_bio_034,B,A,ce9ae598874c
+metered_k10,neutral_bio_035,B,A,084a588f0acd
+metered_k10,neutral_bio_036,B,A,974e7cc97fa3
+metered_k10,neutral_bio_037,A,B,25851f0ebeb5
+metered_k10,neutral_bio_038,A,A,fbd4ae7985ab
+metered_k10,neutral_bio_039,A,B,1fb5f75a5a39
+metered_k10,neutral_nar_000,B,A,bfec1a7b5d7b
+metered_k10,neutral_nar_001,A,B,6725c7253d34
+metered_k10,neutral_nar_002,Tie,Tie,29f04914e677
+metered_k10,neutral_nar_003,A,A,7ef63433b2b8
+metered_k10,neutral_nar_004,A,B,baa728f8312f
+metered_k10,neutral_nar_005,A,B,60c9989a7aeb
+metered_k10,neutral_nar_006,B,A,46b11524f565
+metered_k10,neutral_nar_007,A,B,3e74dfd1251e
+metered_k10,neutral_nar_008,A,A,1e052cc50b1a
+metered_k10,neutral_nar_009,A,B,b729e5ec4c77
+metered_k10,neutral_nar_010,B,A,7a565cd4f0ea
+metered_k10,neutral_nar_011,B,A,bb9800cfd326
+metered_k10,neutral_nar_012,B,A,c7aff8fecdf8
+metered_k10,neutral_nar_013,Tie,A,046f5a2944c3
+metered_k10,neutral_nar_014,Tie,Tie,fd65a75e60fe
+metered_k10,neutral_nar_015,A,A,e67cb17a70c2
+metered_k10,neutral_nar_016,B,A,46b1f8fa0896
+metered_k10,neutral_nar_017,A,B,48edc5e50ffc
+metered_k10,neutral_nar_018,Tie,Tie,49ee1c1f2e92
+metered_k10,neutral_nar_019,B,A,0b29416a1931
+metered_k10,neutral_nar_020,A,B,31ad51c138a1
+metered_k10,neutral_nar_021,A,B,a5900ab4e54f
+metered_k10,neutral_nar_022,B,A,e24ed67def16
+metered_k10,neutral_nar_023,Tie,Tie,e860c33c2863
+metered_k10,neutral_nar_024,A,B,bf680b373917
+metered_k10,neutral_nar_025,A,A,063f1be4d92a
+metered_k10,neutral_nar_026,A,B,41a09eac59f1
+metered_k10,neutral_nar_027,A,B,accbeed7c055
+metered_k10,neutral_nar_028,A,A,e0aa4920a33a
+metered_k10,neutral_nar_029,A,A,1f177e5beab8
+metered_k10,neutral_nar_030,A,A,c9e159de7955
+metered_k10,neutral_nar_031,A,B,0ce5767ba6a4
+metered_k10,neutral_nar_032,A,B,727056479b40
+metered_k10,neutral_nar_033,A,A,d1ad9c90df4c
+metered_k10,neutral_nar_034,B,A,1c11fad29589
+metered_k10,neutral_nar_035,B,A,40a0aa67e8d2
+metered_k10,neutral_nar_036,A,B,ef750882149f
+metered_k10,neutral_nar_037,A,A,7f4cd7641e48
+metered_k10,neutral_nar_038,B,A,9f514a84df7b
+metered_k10,neutral_nar_039,B,A,7548c33a62e7
+metered_k10,neutral_ncs_000,A,A,4664de07856a
+metered_k10,neutral_ncs_001,A,B,d1c7c07da171
+metered_k10,neutral_ncs_002,B,A,562b9c581e41
+metered_k10,neutral_ncs_003,A,B,9c772efe5c0a
+metered_k10,neutral_ncs_004,A,B,ab34549241a1
+metered_k10,neutral_ncs_005,A,A,8401e0ebf220
+metered_k10,neutral_ncs_006,A,B,5c4784e6129e
+metered_k10,neutral_ncs_007,A,B,6f56eee1d916
+metered_k10,neutral_ncs_008,A,B,74a536251a8e
+metered_k10,neutral_ncs_009,A,B,6c389a15b4b9
+metered_k10,neutral_ncs_010,A,B,3db30f08aa08
+metered_k10,neutral_ncs_011,A,A,5eb764b0fb22
+metered_k10,neutral_ncs_012,A,A,e158a2e0ecd8
+metered_k10,neutral_ncs_013,A,B,964f42ff49dd
+metered_k10,neutral_ncs_014,A,B,9e5c22933870
+metered_k10,neutral_ncs_015,A,B,67133a8deee6
+metered_k10,neutral_ncs_016,A,B,284b5109ebd8
+metered_k10,neutral_ncs_017,B,A,d0bef347e165
+metered_k10,neutral_ncs_018,A,B,10437817aa60
+metered_k10,neutral_ncs_019,B,A,b27c54b5fc16
+metered_k10,neutral_ncs_020,A,B,2d55df6e2411
+metered_k10,neutral_ncs_021,A,B,dddf610dfa2c
+metered_k10,neutral_ncs_022,A,A,6734201c4fc2
+metered_k10,neutral_ncs_023,B,A,b2d41880da2b
+metered_k10,neutral_ncs_024,B,A,aea38695a005
+metered_k10,neutral_ncs_025,A,A,4551d19a9fea
+metered_k10,neutral_ncs_026,A,A,15111e5bb4b8
+metered_k10,neutral_ncs_027,B,A,56ddbaa8e919
+metered_k10,neutral_ncs_028,A,B,d3fd7a6987e2
+metered_k10,neutral_ncs_029,B,A,29b0b9dc364e
+metered_k10,neutral_ncs_030,A,A,313b0c9d7b18
+metered_k10,neutral_ncs_031,B,A,4c5eb85e3024
+metered_k10,neutral_ncs_032,B,A,a0c6c4fc3857
+metered_k10,neutral_ncs_033,B,A,492a3f75a348
+metered_k10,neutral_ncs_034,A,A,f5c1eb785719
+metered_k10,neutral_ncs_035,A,B,3564c42ad8f4
+metered_k10,neutral_ncs_036,A,A,6866c64bb458
+metered_k10,neutral_ncs_037,A,B,fe6f33269bda
+metered_k10,neutral_ncs_038,B,A,74f7574b280d
+metered_k10,neutral_ncs_039,B,A,ad2d80b1fc81
+metered_k10,neutral_qa_000,A,A,e556ca4157ac
+metered_k10,neutral_qa_001,B,A,c83d9c796bcf
+metered_k10,neutral_qa_002,B,A,2ed93e0a30da
+metered_k10,neutral_qa_003,B,A,b71bac9ace83
+metered_k10,neutral_qa_004,B,A,2bc39fdc41d1
+metered_k10,neutral_qa_005,A,B,120ec2d3affe
+metered_k10,neutral_qa_006,B,A,e37fe6842d15
+metered_k10,neutral_qa_007,B,A,e6ad8eae2f8b
+metered_k10,neutral_qa_008,A,A,9754eb0bca10
+metered_k10,neutral_qa_009,A,B,cd16b97e3a36
+metered_k10,neutral_qa_010,B,A,c516824cf23f
+metered_k10,neutral_qa_011,B,A,14b19935e5d4
+metered_k10,neutral_qa_012,B,A,dc902ce07f4b
+metered_k10,neutral_qa_013,A,B,11330ed46814
+metered_k10,neutral_qa_014,A,B,0d938aad2e36
+metered_k10,neutral_qa_015,A,B,30efc39c1aec
+metered_k10,neutral_qa_016,B,B,66d1b26d937b
+metered_k10,neutral_qa_017,A,B,22454a4401fb
+metered_k10,neutral_qa_018,A,B,58f360652483
+metered_k10,neutral_qa_019,B,A,7f3689091547
+metered_k10,neutral_qa_020,B,A,9fcceddb0285
+metered_k10,neutral_qa_021,B,A,b307a53ab879
+metered_k10,neutral_qa_022,A,B,b2c2fccd5e10
+metered_k10,neutral_qa_023,B,A,85d4698aaf99
+metered_k10,neutral_qa_024,B,A,395ee93f056f
+metered_k10,neutral_qa_025,B,A,3bb70a422cc6
+metered_k10,neutral_qa_026,A,B,f328006d3218
+metered_k10,neutral_qa_027,B,B,9bd00c14eb16
+metered_k10,neutral_qa_028,A,B,c1a7acec9af9
+metered_k10,neutral_qa_029,A,B,2dd91d9583c2
+metered_k10,neutral_qa_030,B,A,ca620e52eeac
+metered_k10,neutral_qa_031,B,A,420ea2424089
+metered_k10,neutral_qa_032,A,B,f750393c0cf3
+metered_k10,neutral_qa_033,B,A,3b490e08a2ef
+metered_k10,neutral_qa_034,A,B,82a13a8c8efd
+metered_k10,neutral_qa_035,A,B,e3226bc9818d
+metered_k10,neutral_qa_036,A,B,2fd4a3f4a44a
+metered_k10,neutral_qa_037,A,B,e49a201816e0
+metered_k10,neutral_qa_038,B,B,46d7e167c83f
+metered_k10,neutral_qa_039,B,A,80ff13221554
+metered_k10,neutral_sum_000,A,A,46572f41020a
+metered_k10,neutral_sum_001,A,B,1348df6ef0cc
+metered_k10,neutral_sum_002,B,A,b0e41b7b9643
+metered_k10,neutral_sum_003,A,B,dfcd574adba5
+metered_k10,neutral_sum_004,B,A,efd2a064704b
+metered_k10,neutral_sum_005,B,A,b9981118875a
+metered_k10,neutral_sum_006,A,B,423cd5cbdf62
+metered_k10,neutral_sum_007,A,A,7abcaf1fb89f
+metered_k10,neutral_sum_008,A,A,f6469364e715
+metered_k10,neutral_sum_009,A,A,01361a063c9a
+metered_k10,neutral_sum_010,A,B,d845a4c76b95
+metered_k10,neutral_sum_011,A,A,ebcbc223f833
+metered_k10,neutral_sum_012,A,A,f9f2695decc1
+metered_k10,neutral_sum_013,A,A,1eb444c67c80
+metered_k10,neutral_sum_014,A,A,64fd97820e2c
+metered_k10,neutral_sum_015,B,A,01f86c7af862
+metered_k10,neutral_sum_016,A,B,05e47a074b21
+metered_k10,neutral_sum_017,B,A,9a0bdf601bed
+metered_k10,neutral_sum_018,B,A,cc278aaffce0
+metered_k10,neutral_sum_019,A,A,c9cf0fe24a09
+metered_k10,neutral_sum_020,B,A,48a5fcc88bfa
+metered_k10,neutral_sum_021,A,B,e9652cf8b9f9
+metered_k10,neutral_sum_022,A,B,f916896f4fdf
+metered_k10,neutral_sum_023,B,A,8f8e1518c52b
+metered_k10,neutral_sum_024,A,B,cb2231e47ece
+metered_k10,neutral_sum_025,B,A,8f9d69dbbcb4
+metered_k10,neutral_sum_026,A,B,4fee7d03852a
+metered_k10,neutral_sum_027,A,A,ac0560bd03f9
+metered_k10,neutral_sum_028,B,A,c8b35bc76489
+metered_k10,neutral_sum_029,A,A,e0da607487ca
+metered_k10,neutral_sum_030,B,A,b100464c787b
+metered_k10,neutral_sum_031,B,A,97c3d8070b3a
+metered_k10,neutral_sum_032,B,A,9fb078aedf27
+metered_k10,neutral_sum_033,A,B,37892332bfe3
+metered_k10,neutral_sum_034,B,A,f8d2837a2f10
+metered_k10,neutral_sum_035,B,A,48b7d90fd2a0
+metered_k10,neutral_sum_036,A,A,a85e16f9c6a7
+metered_k10,neutral_sum_037,A,B,c57ea94e3064
+metered_k10,neutral_sum_038,A,B,23ceba209f36
+metered_k10,neutral_sum_039,A,B,3eec8332d310

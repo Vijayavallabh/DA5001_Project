@@ -8,7 +8,8 @@ pass's levels (the registration's gate G2 checks it). Verdicts are cached per ar
 to a pass as their generations finish; a cached arm is only reused when it covers the same prompts.
 
 Arm spec, --arm NAME=KIND:ARGS
-  sel:N                  the argmax of the pool's cached reward over its first N draws (N=1: rank 0)
+  sel:N[:REWARDS]        the argmax of the pool's cached reward over its first N draws (N=1: rank 0);
+                         REWARDS, if given, is that arm's own reward cache (feat-212: a second scorer)
   arm:DIR:TOKEN:CONSTR   h1.py-style trajectories_k<TOKEN>_<class>.jsonl, lowest seed
   base:RANK              the opponent's own configuration at its RANK-th lowest seed
 
@@ -36,13 +37,35 @@ def label(lo, hi):
     return "UNRESOLVED" if lo <= 0 <= hi else ("CONFIRMED" if lo > 0 else "REFUTED")
 
 
+def fit_pairs(tok, pairs, prompts, limit, step=500):
+    """feat-213, uncut judging only: {pid: (arm_text, opp_text)} -> the same with BOTH texts of a pair cut
+    to the longest multiple of `step` characters at which the rendered judge prompt fits `limit` tokens,
+    for the pairs that do not fit whole (the same cut in both orders). Returns (pairs, n_cut)."""
+    from analysis.utility import JUDGE_TMPL
+
+    def n_tok(p, x, y):
+        s = tok.apply_chat_template([{"role": "user", "content": JUDGE_TMPL.format(prompt=p, a=x, b=y)}],
+                                    tokenize=False, add_generation_prompt=True)
+        return len(tok(s, add_special_tokens=False)["input_ids"])
+    out, n_cut = {}, 0
+    for pid, (x, y) in pairs.items():
+        if n_tok(prompts[pid], x, y) > limit:
+            c = (max(len(x), len(y)) // step) * step
+            while c > 0 and n_tok(prompts[pid], x[:c], y[:c]) > limit:
+                c -= step
+            x, y, n_cut = x[:c], y[:c], n_cut + 1
+        out[pid] = (x, y)
+    return out, n_cut
+
+
 def load_texts(spec, a):
     """NAME=KIND:ARGS -> (name, {prompt_id: text})."""
     name, _, rest = spec.partition("=")
     kind, _, args = rest.partition(":")
     if kind == "sel":
-        n = int(args)
-        cands, rewards = load_candidates(a.sel_dir, deecho=True), load_rewards(a.rewards)
+        n_s, _, rpath = args.partition(":")
+        n = int(n_s)
+        cands, rewards = load_candidates(a.sel_dir, deecho=True), load_rewards(rpath or a.rewards)
         out = {}
         for p, c in cands.items():
             if p not in rewards:
@@ -73,6 +96,9 @@ def main():
     ap.add_argument("--device-map", default="")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--judge-max-chars", type=int, default=1200)
+    ap.add_argument("--fit-window", type=int, default=0,
+                    help="feat-213, with --judge-max-chars 0: a pair whose judge prompt exceeds this many tokens "
+                         "is judged with both texts cut to the longest 500-character multiple that fits")
     ap.add_argument("--seed", type=int, default=7717)
     ap.add_argument("--tag", required=True)
     ap.add_argument("--out", default="results")
@@ -113,8 +139,13 @@ def main():
             model = (AutoModelForCausalLM.from_pretrained(a.judge, device_map=a.device_map, **kw) if a.device_map
                      else AutoModelForCausalLM.from_pretrained(a.judge, **kw).cuda()).eval()
             jdev = model.device if a.device_map else "cuda"
-        fwd = [(prompts[p], t[p], opp[p]) for p in pids]
-        rev = [(prompts[p], opp[p], t[p]) for p in pids]
+        pair = {p: (t[p], opp[p]) for p in pids}
+        if a.fit_window:
+            assert a.judge_max_chars == 0, "--fit-window is for uncut judging"
+            pair, n_cut = fit_pairs(tok, pair, prompts, a.fit_window)
+            print(f"[mh2h] {n}: {n_cut} of {len(pids)} pairs cut to fit {a.fit_window} tokens", flush=True)
+        fwd = [(prompts[p], pair[p][0], pair[p][1]) for p in pids]
+        rev = [(prompts[p], pair[p][1], pair[p][0]) for p in pids]
         got = {}
         for tag_, items in (("first", fwd), ("second", rev)):
             g = []

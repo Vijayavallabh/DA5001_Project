@@ -78,20 +78,27 @@ def yes_no_ids(tok):
     return out
 
 
-def score_rewards(model, tok, items, device, batch_size=8, log_every=40, tmpl=None):
+def score_rewards(model, tok, items, device, batch_size=8, log_every=40, tmpl=None, max_chars=1200):
     """items: (prompt, completion). Returns log p(Yes) - log p(No) at the first answer position.
-    `tmpl` replaces the committed REWARD_TMPL (feat-202's factuality question); None keeps it."""
+    `tmpl` replaces the committed REWARD_TMPL (feat-202's factuality question); None keeps it.
+    `max_chars` cuts prompt and completion, 1,200 in every committed arm; 0 shows the scorer the whole
+    text (feat-213, 1,000-token outputs, where the cut would hide all but the first ~270 tokens), and
+    then no token is truncated either (asserted)."""
     tmpl = tmpl or REWARD_TMPL
+    cut = (lambda s: s[:max_chars]) if max_chars else (lambda s: s)
     import torch
     ids = yes_no_ids(tok)
     out = []
     for i in range(0, len(items), batch_size):
         chunk = items[i:i + batch_size]
         texts = [tok.apply_chat_template(
-            [{"role": "user", "content": tmpl.format(prompt=p[:1200], completion=c[:1200])}],
+            [{"role": "user", "content": tmpl.format(prompt=cut(p), completion=cut(c))}],
             tokenize=False, add_generation_prompt=True) for p, c in chunk]
+        if not max_chars:
+            longest = max(len(x) for x in tok(texts, add_special_tokens=False)["input_ids"])
+            assert longest <= 8192, f"an uncut reward item is {longest} tokens"
         enc = tok(texts, return_tensors="pt", padding=True, truncation=True,
-                  max_length=2048).to(device)
+                  max_length=2048 if max_chars else 8192).to(device)
         with torch.no_grad():
             # Only the last position is scored, and the full [B, T, V] logits tensor is 5 GB at
             # B=8, T=2048, V=152k. Ask for one position where the installed transformers supports

@@ -1,0 +1,46 @@
+feature,prediction,quantity,value,lo95,hi95,reading,predicted,verdict
+feat-211,C1,B: blk10n64 - cpk_83.18,0.1205,0.091,0.1485,CONFIRMED,CONFIRMED,RIGHT
+feat-211,C2,B: blk25n64 - cpk_33.27,0.143,0.119,0.168,CONFIRMED,CONFIRMED,RIGHT
+feat-211,C3,B: sel_n64 - cpk_4.16,0.11,0.0855,0.135,CONFIRMED,CONFIRMED,RIGHT
+feat-211,C4,G: blk10n64 - cpk_83.18,0.254,0.2125,0.2965,CONFIRMED,same sign as B,RIGHT
+feat-211,C4,G: blk25n64 - cpk_33.27,0.2855,0.2475,0.323,CONFIRMED,same sign as B,RIGHT
+feat-211,C4,G: sel_n64 - cpk_4.16,0.176,0.1395,0.2125,CONFIRMED,same sign as B,RIGHT
+feat-211,C5,accepted median tokens at C=83.178 vs all draws,200.0,200.0,,,below,WRONG
+feat-211,C6,max near-verbatim recall over C <= 159.83,0.0,,,,< 0.01,RIGHT
+feat-211,desc,"C=4.1589: served from the risky model, %",0.0,,,,,
+feat-211,desc,B: gain cpk_4.16,0.0,0.0,0.0,UNRESOLVED,,
+feat-211,desc,G: gain cpk_4.16,0.0,0.0,0.0,UNRESOLVED,,
+feat-211,desc,"C=33.271: served from the risky model, %",0.0,,,,,
+feat-211,desc,B: gain cpk_33.27,0.0,0.0,0.0,UNRESOLVED,,
+feat-211,desc,G: gain cpk_33.27,0.0,0.0,0.0,UNRESOLVED,,
+feat-211,desc,"C=83.178: served from the risky model, %",26.8,,,,,
+feat-211,desc,B: gain cpk_83.18,0.0395,0.0245,0.0555,CONFIRMED,,
+feat-211,desc,G: gain cpk_83.18,0.051,0.028,0.0745,CONFIRMED,,
+feat-211,desc,"C=159.83: served from the risky model, %",99.6,,,,,
+feat-211,desc,B: gain cpk_159.83,0.0865,0.062,0.1105,CONFIRMED,,
+feat-211,desc,G: gain cpk_159.83,0.1335,0.092,0.174,CONFIRMED,,
+feat-211,desc,B: cpk_83.18 - pw_83.18,0.022,-0.006,0.0495,UNRESOLVED,,
+feat-211,desc,G: cpk_83.18 - pw_83.18,0.0385,-0.001,0.0775,UNRESOLVED,,
+feat-211,desc,B: cpk_33.27 - pw_33.27,-0.014,-0.0335,0.006,UNRESOLVED,,
+feat-211,desc,G: cpk_33.27 - pw_33.27,0.0185,-0.0065,0.043,UNRESOLVED,,
+feat-211,desc,B: cpk_159.83 - metered_k10,0.0355,0.009,0.062,CONFIRMED,,
+feat-211,desc,G: cpk_159.83 - metered_k10,0.012,-0.0335,0.057,UNRESOLVED,,
+feat-211,desc,"leakage onset (smallest C with recall >= 0.01), nats",600.0,,,,,
+feat-211,desc,leakage at C=4.1589: recall mean / served from memoriser %,0.0,0.0,,,,
+feat-211,desc,leakage at C=33.271: recall mean / served from memoriser %,0.0,0.0,,,,
+feat-211,desc,leakage at C=83.178: recall mean / served from memoriser %,0.0,0.0,,,,
+feat-211,desc,leakage at C=159.83: recall mean / served from memoriser %,0.0,0.0,,,,
+feat-211,desc,leakage at C=250.0: recall mean / served from memoriser %,0.0,1.0,,,,
+feat-211,desc,leakage at C=400.0: recall mean / served from memoriser %,0.0016,3.0,,,,
+feat-211,desc,leakage at C=600.0: recall mean / served from memoriser %,0.0563,80.0,,,,
+feat-211,desc,leakage at C=800.0: recall mean / served from memoriser %,0.2002,100.0,,,,
+feat-211,desc,"memoriser alone, near-verbatim recall",0.4629,,,,,
+feat-211,desc,"B host-B vs local, identical per-prompt level: sel_n64",0.944,,,,,
+feat-211,desc,"B host-B vs local, identical per-prompt level: sel_n1",0.938,,,,,
+feat-211,desc,"B host-B vs local, identical per-prompt level: metered_k10",0.948,,,,,
+feat-211,desc,"B host-B vs local, identical per-prompt level: anchor_k0",0.934,,,,,
+feat-212,F1,judges under which S = sel_n64 - sel_g64 is CONFIRMED,1,,,,>= 5 of 6,WRONG
+feat-212,M1,B: sel_g64 - win_4.16,0.054,0.0215,0.086,CONFIRMED,CONFIRMED,RIGHT
+feat-212,M1,B: sel_g64 - frontpw_4.16,0.0455,0.014,0.0775,CONFIRMED,CONFIRMED,RIGHT
+feat-212,M1,G: sel_g64 - win_4.16,0.263,0.215,0.312,CONFIRMED,CONFIRMED,RIGHT
+feat-212,M1,G: sel_g64 - frontpw_4.16,0.2425,0.1955,0.2915,CONFIRMED,CONFIRMED,RIGHT

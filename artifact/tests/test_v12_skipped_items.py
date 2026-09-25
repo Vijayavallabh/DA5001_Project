@@ -150,8 +150,12 @@ def test_the_installments_claims_follow_their_verdicts():
     assert w10["reading"] == "INSTALLMENTS WIN"
     p1 = _rep("P1", "judge B, new draw: L=10")
     assert p1["reading"] == "INSTALLMENTS WIN", "the fresh draw no longer reproduces; Section 3 must say so"
-    assert (f"$10$-token installments beat one choice by {_iv(w10)}, and by {_iv3(p1)} on a fresh draw, "
+    # v14 (2026-09-25): the page budget moved the fresh draw's band from Section 3 to Appendix app:blockwise,
+    # and its guard moved with it (caution (al)); Section 3 still claims the reproduction, only while P1 reads
+    # INSTALLMENTS WIN (asserted above)
+    assert (f"$10$-token installments beat one choice by {_iv(w10)}, reproduced on a fresh draw, "
             "at $25$ nats a window") in t
+    assert f"{_iv3(p1)} and" in body("appendix_onset.tex")
     assert round(float(_bw("desc", "blk10n64", "certificate")["value"].split(" / ")[1])) == 25
     b3 = [_bw("B3", f"{a} - blk200n64") for a in ("blk100n8", "blk67n4", "blk34n2")]
     assert all(r["reading"] == "ONCE WINS" for r in b3)
@@ -164,7 +168,14 @@ def test_the_installments_claims_follow_their_verdicts():
     assert _bw("B6", "blk10n64_memoriser", "near-verbatim recall, maximum")["value"] == "0.0"
     c = body("iclr_closing.tex")
     assert "we did not measure selection in installments" not in c
-    assert "in installments, which buy more" in c
+    # v14 (feat-213): at T_max = 1000 installments of 8 draws a block LOSE to one whole-output choice, so the
+    # conclusion may not say unscoped that they "buy more"; it names installments, and Section 3 carries both
+    # readings. Conditioned on the CSV, so a re-run that reverses feat-213 lets the claim come back.
+    assert "per window in installments" in c
+    long_ = {(r["quantity"], r["arm"]): r for r in _csv("matched_h2h_f213_B.csv")}
+    if long_[("difference", "inst - sel_n64")]["reading"] == "REFUTED":
+        assert "in installments, which buy more" not in c
+        assert "installments of $8$ draws a block lose to it" in body("frontier.tex")
 
 
 def test_the_notation_table_quotes_its_numbers_from_their_sources():

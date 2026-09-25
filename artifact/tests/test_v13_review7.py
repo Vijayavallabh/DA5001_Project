@@ -357,7 +357,9 @@ def test_the_cpk_sentence_rounds_from_its_csv():
     c = {r["quantity"]: r for r in rows("cpk_certificate.csv")}
     half = f(c["certificate at acceptance 0.5"]["value"])
     one = f(c["certificate at acceptance 0.01"]["value"])
-    rw = body("related_work_v4.tex")
+    # v14 (feat-211): the related-work sentence now reports the rule as run, as its registration fixed, and
+    # this certificate-only arithmetic moved with it into Appendix app:cpk (caution (al))
+    rw = body("appendix_onset.tex")
     assert f"${half:.2f}$ nats at half acceptance, above a window's $159.8$" in rw and half > 159.8
     assert f"${one:.2f}$ at one output in a hundred" in rw
 

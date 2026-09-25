@@ -173,6 +173,16 @@ def main():
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--results", default="results")
     ap.add_argument("--smoke", type=int, default=0, help="first N prompts only, for a launch check")
+    ap.add_argument("--reward-max-chars", type=int, default=1200,
+                    help="the reward's cut on prompt and response, 1,200 in every committed arm; 0 is uncut "
+                         "(feat-213: at T_max=1000 the cut would hide all but the first ~270 tokens)")
+    ap.add_argument("--only", default="", help="comma-separated prompt ids only, for a launch check whose "
+                                               "prompts must match another arm's")
+    ap.add_argument("--pool-arms", type=int, nargs="+", default=[],
+                    help="feat-213, whole-output selection only (--block-len == --t-max): also write the arm "
+                         "that serves the argmax over the FIRST n draws of the one pool, for each n, as "
+                         "trajectories_kwhole<T>n<n>_<class>.jsonl, and every draw's score to "
+                         "pool_scores_<tag>.csv; n=1 is the pool's rank-0 draw, the paired control")
     a = ap.parse_args()
 
     import torch
@@ -211,6 +221,12 @@ def main():
 
     if a.smoke:
         pids = pids[:a.smoke]
+    if a.only:
+        pids = [p for p in pids if p in set(a.only.split(","))]
+        assert pids, "--only matched no prompt"
+    assert not a.pool_arms or (len(lens) == 1 and max(a.pool_arms) <= a.n), "--pool-arms needs one block of n"
+    pool_served = {m: {} for m in a.pool_arms}
+    pool_rows = []
     anchor = AutoModelForCausalLM.from_pretrained(a.anchor, torch_dtype=torch.bfloat16).cuda().eval()
     gcfg = GenerationConfig(do_sample=True, temperature=1.0, top_k=0, top_p=1.0, eos_token_id=stok.eos_token_id,
                             pad_token_id=pad_id, bos_token_id=stok.bos_token_id)
@@ -264,7 +280,8 @@ def main():
                 tails = {ij: r[0] for ij, r in zip(open_, roll)}
             items = [(rprompt[active[i]], stok.decode(served[active[i]] + cands[i][j] + tails.get((i, j), []),
                                                       skip_special_tokens=True)) for i, j in flat]
-            sc = score_rewards(scorer, rtok, items, scorer.device, batch_size=a.score_batch, log_every=10 ** 9)
+            sc = score_rewards(scorer, rtok, items, scorer.device, batch_size=a.score_batch, log_every=10 ** 9,
+                               max_chars=a.reward_max_chars)
         else:
             cx = [ctxs[i] for i, _ in flat]
             bl = [cands[i][j] for i, j in flat]
@@ -277,6 +294,11 @@ def main():
         for i, p in enumerate(active):
             s = sc[i * a.n:(i + 1) * a.n]
             j = pick(s)
+            for m in a.pool_arms:
+                pool_served[m][p] = cands[i][pick(s[:m])]
+            if a.pool_arms:
+                pool_rows += [dict(prompt_id=p, rank=r, score=round(x, 5), tokens=len(cands[i][r]))
+                              for r, x in enumerate(s)]
             blk = cands[i][j]
             served[p] += blk
             if (blk and blk[-1] in eos) or not blk:
@@ -292,25 +314,37 @@ def main():
         w.writerows(log)
 
     meta = dict(block_len=a.block_len, n_per_block=a.n, blocks=len(lens), scorer=a.scorer,
+                reward_max_chars=a.reward_max_chars,
                 certificate_whole_nats=round(whole, 4), certificate_window50_nats=round(window, 4),
                 anchor_model=a.anchor, rng_seed=a.seed, gen_batch=a.gen_batch, score_batch=a.score_batch,
                 scorer_model=a.reward_model if a.scorer in ("reward", "value") else a.risky_model)
     if a.corpus == "pool":
-        by = {c: [] for c in CLASSES}
-        for p in pids:
-            cls, prefix_text, plen = pool[p]
-            gen = stok.decode([t for t in served[p] if t not in eos], skip_special_tokens=True)
-            by[cls].append(dict(
-                metadata=dict(prompt_id=p, seed=0, trajectory_id=0, k=tag, T_max=a.t_max, split=cls,
-                              **meta),
-                prefix_analysis=dict(prefix_text=prefix_text, prefix_length_tokens=plen),
-                aggregate=dict(generation=gen, full_text=prefix_text + gen,
-                               generation_length_tokens=len(served[p]))))
-        for cls, recs in by.items():
-            with open(os.path.join(a.out_dir, f"trajectories_k{tag}_{cls}.jsonl"), "w", encoding="utf-8") as fh:
-                for r in recs:
-                    fh.write(json.dumps(r) + "\n")
-        print(f"[blk] wrote {sum(map(len, by.values()))} records to {a.out_dir}", flush=True)
+        arms = [(tag, served, meta)] + [(f"whole{a.t_max}n{m}", pool_served[m],
+                                         {**meta, "n_per_block": m, "pool_n": a.n,
+                                          "certificate_whole_nats": round(math.log(m), 4),
+                                          "certificate_window50_nats": round(math.log(m), 4)})
+                                        for m in a.pool_arms]
+        for tg, srv, mt in arms:
+            by = {c: [] for c in CLASSES}
+            for p in pids:
+                cls, prefix_text, plen = pool[p]
+                gen = stok.decode([t for t in srv[p] if t not in eos], skip_special_tokens=True)
+                by[cls].append(dict(
+                    metadata=dict(prompt_id=p, seed=0, trajectory_id=0, k=tg, T_max=a.t_max, split=cls,
+                                  **mt),
+                    prefix_analysis=dict(prefix_text=prefix_text, prefix_length_tokens=plen),
+                    aggregate=dict(generation=gen, full_text=prefix_text + gen,
+                                   generation_length_tokens=len(srv[p]))))
+            for cls, recs in by.items():
+                with open(os.path.join(a.out_dir, f"trajectories_k{tg}_{cls}.jsonl"), "w", encoding="utf-8") as fh:
+                    for r in recs:
+                        fh.write(json.dumps(r) + "\n")
+            print(f"[blk] wrote {sum(map(len, by.values()))} records of {tg} to {a.out_dir}", flush=True)
+        if pool_rows:
+            with open(os.path.join(a.out_dir, f"pool_scores_{tag}.csv"), "w", newline="") as fh:
+                w = csv.DictWriter(fh, fieldnames=list(pool_rows[0]))
+                w.writeheader()
+                w.writerows(pool_rows)
     else:
         from dap.stats import nv_recall, rouge_l_score
         rows = []

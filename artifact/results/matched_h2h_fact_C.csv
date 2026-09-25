@@ -1,0 +1,18 @@
+quantity,arm,value,lo95,hi95,n,reading,consistency,n_empty,level_empty
+level,sel_n64,0.5575,0.5235,0.592,500,,0.63,41,0.6768
+level,sel_n1,0.4245,0.3895,0.46,500,,0.672,64,0.6328
+level,sel_g64,0.54,0.5045,0.5755,500,,0.674,71,0.6901
+level,anchor_k0,0.4185,0.3845,0.453,500,,0.662,62,0.6613
+level,metered_k10,0.475,0.438,0.5115,500,,0.712,0,
+gain,sel_n64 - sel_n1,0.133,0.102,0.165,500,CONFIRMED,,,
+gain,sel_g64 - sel_n1,0.1155,0.084,0.1465,500,CONFIRMED,,,
+gain,metered_k10 - anchor_k0,0.0565,0.016,0.097,500,CONFIRMED,,,
+difference,sel_n64 - sel_g64,0.0175,-0.0095,0.0455,500,UNRESOLVED,,,
+"difference, consistent pair",sel_n64 - sel_g64,0.0238,-0.004,0.0516,252,UNRESOLVED,,,
+"difference, consistent four",sel_n64 - sel_g64,0.0155,-0.0103,0.0412,194,UNRESOLVED,,,
+difference,sel_n64 - metered_k10,0.0765,0.0285,0.1265,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - metered_k10,0.0781,0.0074,0.1498,237,CONFIRMED,,,
+"difference, consistent four",sel_n64 - metered_k10,0.0414,-0.0414,0.1241,145,UNRESOLVED,,,
+difference,sel_g64 - metered_k10,0.059,0.01,0.109,500,CONFIRMED,,,
+"difference, consistent pair",sel_g64 - metered_k10,0.0972,0.0273,0.17,247,CONFIRMED,,,
+"difference, consistent four",sel_g64 - metered_k10,0.0888,0.0066,0.1743,152,CONFIRMED,,,
