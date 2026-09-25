@@ -39,5 +39,6 @@ risky forward are a Monte Carlo over each trajectory's own `alpha_t`, and the he
 
 So a speculative meter narrows selection's per-request advantage, from `0.51x` to at most `0.88x` at the `8`B
 pair and from `0.22x` to at most `0.90x` at the `70`B, but does not erase it at either. These are bounds on a
-favourable cost model, not timings. The throughput price (`21.8x` in draws) is untouched, because speculative
-decoding does not reduce the meter's work below one risky forward per round.
+favourable cost model, not timings. They bound latency at one request per call only. The throughput price (`21.8x`, measured at a batch width of `200`)
+is not re-estimated. At that width decoding is closer to compute-bound, so verifying `g+1` positions costs more
+than one decode step, and the optimistic charge used here would not hold.
