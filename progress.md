@@ -1,5 +1,37 @@
 # Session Progress Log
 
+## 2026-09-25 --- v12: the review items first skipped, pursued (user: "With the gpus available, rigorously pursue the tasks that you skipped that could be pursued [If not say so]")
+
+Host B GPUs 4-7 (GPUs 0-3 are the user's Qwen3-235B server; local cards are the user's vLLM). Every arm
+below was registered before its first token (`results/onset_prediction_*.md`), scored by a script written
+before its data, and put in the manuscript with a guard mutation-tested against the change.
+
+- **feat-201, selection in installments** (`analysis/blockwise_selection.py`, `analysis/blockwise_scoring.py`
+  -> `results/blockwise.csv`, gate `results/blockwise_gate.csv`): at `64` draws a block, installments of `10`
+  and `25` tokens beat one choice (`+0.0415 [+0.0185, +0.0645]`, `+0.0245 [+0.001, +0.0475]`; predicted TIE,
+  wrong) at window certificates `24.95` and `12.48` nats; `50` ties; held to one whole-output `log 64`,
+  installments of `8`, `4`, `2` draws lose (right); the risky model as planner loses to the reward by `0.0895`
+  (predicted TIE, wrong); the memoriser choosing twenty times reads recall `0.0000` on `100` passages.
+  Appendix `app:blockwise` + `tab:blockwise`; Section 3 and the conclusion say installments buy more.
+- **feat-208** re-draws `L = 10, 25, 200` (seed `20260926`) under judges B and G before the paper leans on
+  `L=10` (about `1.8` half-widths from zero); judge G on feat-201's texts is post hoc.
+- **feat-204, whole-response judging**: `D3 = +0.062 [+0.0265, +0.0975]` uncut against `+0.059` cut on the
+  same host (`results/full_response.csv`).
+- **feat-206, onset in the chat serving configuration**: `3.941 [2.968, 4.435]`, straddling the chat
+  crossover `k=3`; `25.3%` of resamples never cross (`results/chat_onset.csv`).
+- **feat-207 (CPU)**: Holm over Figure 3's `21` rows keeps `8`, not the headline row
+  (`results/forest_multiplicity.csv`); order consistency for every judge (`results/judge_order_consistency.csv`);
+  the containment union; the onset shading called a range.
+- **feat-202, feat-203, feat-205**: running or queued (FActScore oracle and a factuality scorer; vetting at
+  temperature `0.7`, all six licensed rungs `0/50`, `S_w` `159.8 -> 179.1` for TinyComma, TriviaQA
+  `35.4% -> 36.2%`; AnchoredByte at `0.7/1.1`).
+
+**Page budget.** Body exactly 9 of 9. A trim that removed the committed TIGHT ZERO sentence fired
+`tests/test_mixtral_resolved.py` and was reverted (caution (ag)); the space came from two paragraphs whose
+last lines were short. **Incident, recorded:** a one-off `regimes.py` launched on GPU 5 without reading the
+memory it had just printed (`80.9` GB used) died at load with an OOM; the replication arm on that card was
+unaffected (`0` OOM lines in its log). Check free memory before every ad hoc launch, not after.
+
 ## 2026-09-24 (late night) --- v11: the sixth review round (four reports, the fourth marked must-address; user: "select only the feedback you genuinely believe will meaningfully improve the draft ... work autonomously")
 
 **What the reviews changed, and the measurement behind each change.**

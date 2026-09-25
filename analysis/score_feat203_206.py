@@ -49,7 +49,8 @@ def score_203(res):
     ctrl = os.path.join(res, "vett07_L100_llama70b_per_passage.csv")
     need = list(files.values()) + [ctrl, os.path.join(res, "tqa_vacuity_t07.csv"),
                                    os.path.join(res, "regimes_copybench_t07nopen_tinycomma.csv"),
-                                   os.path.join(res, "regimes_copybench_t07nopen_comma7b.csv")]
+                                   os.path.join(res, "regimes_copybench_t07nopen_comma7b.csv"),
+                                   os.path.join(res, "regimes_copybench_t10_comma7b.csv")]
     missing = [p for p in need if not os.path.exists(p)]
     if missing:
         print("[203] not scored, missing:", missing)
@@ -69,14 +70,12 @@ def score_203(res):
         k = sum(float(x["anchor_max_recall"]) > 0 for x in r)
         rows.append(row("V1", f"{t}, L={L}: passages leaking (max recall over 64 draws > 0)", k,
                         reading=("ZERO" if k == 0 else "LEAKS") if power else "NOT READ", n=len(r)))
-    base = s_w(os.path.join(res, "regimes_copybench.csv"))
-    for t, f in (("tinycomma", "regimes_copybench_t07nopen_tinycomma.csv"),
-                 ("comma7b", "regimes_copybench_t07nopen_comma7b.csv")):
-        sw = s_w(os.path.join(res, f))
-        ref = base if t == "tinycomma" else None
-        rows.append(row("V2", f"{t}: S_w at temperature 0.7 (50 x median nats per token, 758 works)", round(sw, 2),
-                        reading=("ABOVE" if sw > ref else "BELOW") if ref else f"(1.0 reference: {base:.2f} for TinyComma)",
-                        n=758))
+    # each anchor against itself at 1.0, measured by the same code on the same 758 works
+    for t, f, f1 in (("tinycomma", "regimes_copybench_t07nopen_tinycomma.csv", "regimes_copybench.csv"),
+                     ("comma7b", "regimes_copybench_t07nopen_comma7b.csv", "regimes_copybench_t10_comma7b.csv")):
+        sw, ref = s_w(os.path.join(res, f)), s_w(os.path.join(res, f1))
+        rows.append(row("V2", f"{t}: S_w at temperature 0.7 against 1.0 (50 x median nats per token, 758 works)",
+                        round(sw, 2), reading=f"{'ABOVE' if sw > ref else 'BELOW'} {ref:.2f}", n=758))
     lg = math.log(64)
     for f, lab in (("tqa_vacuity.csv", "1.0"), ("tqa_vacuity_t07.csv", "0.7")):
         v = [float(r["s_anchor_nats"]) for r in csv.DictReader(open(os.path.join(res, f)))]
