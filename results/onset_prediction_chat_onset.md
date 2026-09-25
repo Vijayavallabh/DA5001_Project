@@ -53,7 +53,7 @@ interval. If G1 fails, that is said instead.
 
 ## Scoring log
 
-### Scored 2026-09-25 09:22 IST --- G1 PASS, C1 right, C2 STRADDLES (predicted): chat onset `3.94` `[2.97, 4.44]`, a quarter of resamples never cross
+### Scored 2026-09-25 09:18 IST --- G1 PASS, C1 right, C2 STRADDLES (predicted): chat onset `3.94` `[2.97, 4.44]`, a quarter of resamples never cross
 
 The sweep ran on host B, GPU 5, `09:10` to `09:15` IST (`output/logs/feat206_{onset,ci}.done`); every
 query's served text is the memoriser continuing its passage inside the assistant turn, not an echo of

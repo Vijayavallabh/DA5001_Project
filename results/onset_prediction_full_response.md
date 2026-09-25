@@ -40,7 +40,7 @@ fails, the headline sentence in Section 4 carries the uncut reading beside the c
 
 ## Scoring log
 
-### Scored 2026-09-25 09:22 IST --- R1 CONFIRMED, R2 WITHIN: nothing the cut removed moves the headline
+### Scored 2026-09-25 09:18 IST --- R1 CONFIRMED, R2 WITHIN: nothing the cut removed moves the headline
 
 The pass ran on host B, GPU 5, `09:08` to `09:10` IST (`output/logs/feat204_judge.done`, launcher
 `scripts/run_feat202_206.sh q5`); the script's own assertion that no uncut item reaches `8,192` tokens held.
