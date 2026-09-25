@@ -61,12 +61,12 @@ def long_():
 
 
 def short():
-    """tab:shortworks: per-draw exact reproduction of a quotation's second half, by mechanism and stratum."""
+    """tab:shortworks: per-draw exact reproduction of a quotation's second half, in percent, by mechanism and stratum."""
     S = {(r["stratum"], r["quantity"]): r for r in csv.DictReader(open(os.path.join(R, "short_works.csv")))}
 
     def rate(st, q):
         r = S[(st, q)]
-        return f"${float(r['value']):.3f}$ $[{float(r['lo95']):.3f}, {float(r['hi95']):.3f}]$"
+        return f"${100 * float(r['value']):.2f}$ $[{100 * float(r['lo95']):.2f}, {100 * float(r['hi95']):.2f}]$"
     rows = (("anchor alone, $k=0$", "anchor_exact", "0", None),
             ("selection, worst case, $n=8$", "sel_worst_n8", "2.08", "log 8"),
             ("selection, worst case, $n=64$", "sel_worst_n64", "4.16", "log 64"),

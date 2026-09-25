@@ -138,3 +138,114 @@ def test_the_scorer_end_to_end_on_synthetic_draws_commits_no_text(tmp_path):
     v = {r["prediction"]: r["verdict"] for r in csv.DictReader(open(tmp_path / "short_works_scoring.csv"))}
     assert v == dict(G0="PASS", G1="PASS", Q1="RIGHT", Q2="RIGHT", Q3="RIGHT", Q4="RIGHT", Q5="RIGHT", Q6="RIGHT",
                      Q7="RIGHT")
+
+
+# ---- the manuscript: Appendix app:shortworks, tab:shortworks and the body's limitation clause -----------------
+
+def _rows(name):
+    import csv
+    from manuscript import ROOT
+    return list(csv.DictReader(open(os.path.join(ROOT, "results", name))))
+
+
+def _agg():
+    return {(r["stratum"], r["quantity"]): r for r in _rows("short_works.csv")}
+
+
+def _protected():
+    return [r for r in _rows("short_works_per_quote.csv") if r["status"] == "protected"]
+
+
+def _para():
+    from manuscript import body
+    t = body("appendix_selection.tex")
+    i = t.index("\\paragraph{Short works.}\\label{app:shortworks}")
+    return t[i:t.index("\\begin{table}", i)]
+
+
+def test_the_short_works_table_is_printed_from_its_csv():
+    import contextlib
+    import io
+    from analysis.v14_tables import short
+    from manuscript import body
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        short()
+    t = body("appendix_selection.tex")
+    i = t.index("\\label{tab:shortworks}")
+    got = t[t.index("\\midrule", i) + len("\\midrule"):t.index("\\bottomrule", i)]
+    assert got.strip() == " ".join(buf.getvalue().split())
+    from manuscript import caption_of
+    cap = caption_of("tab:shortworks")
+    assert "$T_{\\max} = 64$ new tokens, so $K = 64k$" in cap  # caution (bg): the T the run decoded
+    assert "$1{,}049$ protected second halves" in cap and len(_protected()) == 1049
+
+
+def test_the_short_works_paragraph_quotes_its_csv():
+    A, P, p = _agg(), "protected", _para()
+    v = lambda q, st=P: float(A[(st, q)]["value"])  # noqa: E731
+    per = _rows("short_works_per_quote.csv")
+    n = {s: sum(r["status"] == s for r in per) for s in ("protected", "public_domain")}
+    assert (n["protected"], n["public_domain"]) == (1049, 218)
+    assert f"We split ${n['protected'] + n['public_domain']:,}$".replace(",", "{,}") in p
+    assert "$1{,}049$ are by authors" in p and "$218$ by authors who died before 1926" in p
+    assert f"median ${v('median S_anchor'):.1f}$ nats for a protected second half" in p
+    assert f"${100 * v('share S_anchor <= 20'):.1f}\\%$ need $20$ or fewer" in p
+    assert f"a whole quotation needs a median ${v('median S_whole_anchor'):.1f}$, and none needs $20$" in p
+    assert v("share S_whole_anchor <= 20") == 0
+    assert f"void for ${100 * v('share S_anchor <= 64k, k=0.5'):.1f}\\%$ of protected second halves at $k=0.5$" in p
+    for k in ("3", "10"):
+        assert f"${100 * v(f'meter_{k}_exact'):.2f}\\%$ at $k={k}$" in p
+    assert f"the $70$B's ${100 * v('risky_exact'):.2f}\\%$" in p
+    verdicts = {r["prediction"]: r["verdict"] for r in _rows("short_works_scoring.csv")}
+    right = sum(verdicts.get(f"Q{i}") == "RIGHT" for i in range(1, 8))
+    assert f"{['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'][right]} of seven predictions right" in p
+    assert verdicts["G0"] == verdicts["G1"] == "PASS"
+
+
+def test_what_the_paragraph_says_about_selection_is_what_the_draws_show():
+    import math
+    p, prot = _para(), _protected()
+    least = min(float(r["S_anchor"]) for r in prot)
+    assert least > math.log(64)  # "Selection's log 64 sits below every protected second half"
+    assert "Selection's $\\log 64$ sits below every protected second half" in p and f"the least needs ${least:.2f}$ nats" in p
+    served = [r for r in prot if float(r["sel_worst_n64"]) > 0]
+    assert f"would serve ${len(served)}$ of the $1{{,}}049$" in p
+    rates = sorted(float(r["anchor_exact"]) for r in served)
+    assert rates[0] > 0  # the anchor ITSELF writes each one
+    assert f"writes on ${100 * rates[0]:.1f}\\%$ to ${100 * rates[-1]:.1f}\\%$ of its draws" in p
+    # the concessions: the exact string is not the event that leaked, so every vacuity share is a lower bound
+    assert "the certificate is void for the event that leaked, as Proposition~\\ref{prop:selection} allows" in p
+    assert "every vacuity share here is a lower bound" in p
+    assert "We tested quotations at one pair, and no lyrics or whole poems" in p
+
+
+def test_what_the_paragraph_says_about_the_meter_is_what_the_draws_show():
+    p, prot = _para(), _protected()
+    assert "yet the meter leaks none, because its prefix debt leaves the opening tokens to the anchor" in p
+    assert all(float(r["meter_0.5_exact"]) == 0 for r in prot)
+    assert "every protected quotation it reproduced was one its certificate did not cover" in p
+    cols = [c for c in prot[0] if c.startswith("meter_") and c.endswith("_exact")]
+    assert len(cols) == 5
+    for c in cols:
+        K = 64 * float(c.split("_")[1])
+        assert all(float(r["S_anchor"]) <= K for r in prot if float(r[c]) > 0), c
+
+
+def test_the_body_limitation_quotes_the_protected_stratum_and_keeps_its_concession():
+    from manuscript import body
+    A = _agg()
+    t = body("iclr_closing.tex")
+    sel, met = float(A[("protected", "sel_worst_n64")]["value"]), float(A[("protected", "meter_10_exact")]["value"])
+    clause = (f"on protected quotations selection's worst case leaks ${100 * sel:.2f}\\%$ and the meter "
+              f"${100 * met:.1f}\\%$ at $k=10$ (Appendix~\\ref{{app:shortworks}}); we tested no lyrics, whole poems or code")
+    assert clause in t
+    assert sel < float(A[("protected", "risky_exact")]["value"]) and met < float(A[("protected", "risky_exact")]["value"])
+
+
+def test_no_quotation_text_is_committed():
+    assert set(_rows("short_works_per_quote.csv")[0]) == {
+        "row", "author", "status", "n_words", "target_words", "T_target", "S_anchor", "S_risky", "S_whole_anchor",
+        "S_whole_risky", "anchor_exact", "anchor_near", "sel_worst_n1", "sel_worst_n8", "sel_worst_n64", "risky_exact",
+        "risky_near", "meter_0.0649836_exact", "meter_0.0649836_near", "meter_0.5_exact", "meter_0.5_near",
+        "meter_1_exact", "meter_1_near", "meter_3_exact", "meter_3_near", "meter_10_exact", "meter_10_near"}

@@ -2,13 +2,22 @@
 
 
 
-## Current state, 2026-09-26 early --- feat-214 (review 3 Q13, short works) RUNNING on host B
+## Current state, 2026-09-26 early --- v15 complete (review 3 Q13, short works, run and in the paper)
 
-User: "run the short-works test for Q13 on the free GPUs". Registered in `results/onset_prediction_short_works.md`
-(unscored until its `### Scored` entry), corpus built by `analysis/short_works.py build` (gitignored text,
-`results/short_works_authors.csv` committed), four jobs `scripts/run_feat214.sh A|B|C|D` on host B GPUs 0-7,
-outputs `output/short_works/<job>/*.jsonl` there. Score with `analysis/short_works.py score` once all four
-logs (`~/v/logs/feat214_<job>.log`) read DONE.
+User: "run the short-works test for Q13 on the free GPUs". feat-214 is registered (`80da554`, before any
+token), run on host B's eight GPUs, scored 7 of 7 right with both gates PASS
+(`results/onset_prediction_short_works.md`, `results/short_works{,_per_quote,_scoring,_authors}.csv`), and written
+into the manuscript as `app:shortworks`/`tab:shortworks` plus one clause of the body's limitations. Body exactly 9
+of 9, 48 pages; guards `tests/test_short_works.py`. Nothing of ours is running on either host.
+
+**Files changed (repo):** `analysis/short_works.py`, `analysis/v14_tables.py` (`short`), `scripts/run_feat214.sh`,
+`scripts/run_feat214_a2.sh`, `tests/test_short_works.py`, `results/*short_works*`. **Manuscript (`~/sub/satml`,
+never committed):** `sections/appendix_selection.tex`, `sections/iclr_closing.tex`, `sections/experiments.tex`
+(Table 2's caption, one line), `iclr_2027.tex` (the guide row); pre-v15 copy in
+`output/review_audit/pre_v15_2026-09-26/`.
+
+**Recommended next step:** the user's read of `~/sub/satml/iclr_2027.pdf` (page 33 holds the new table), then
+submission before 26 Sept 17:29 IST.
 
 ## Current state, 2026-09-25 night --- v14 complete (the skipped review items that could run, run)
 

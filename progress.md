@@ -1,5 +1,47 @@
 # Session Progress Log
 
+## 2026-09-26 early --- v15: review 3 Q13, short works, run (user: "run the short-works test for Q13 on the free GPUs")
+
+**Current state.** Manuscript (`~/sub/satml`, never committed; pre-v15 copy in
+`output/review_audit/pre_v15_2026-09-26/`) rebuilt: tectonic exit 0, 0 overfull, 0 `??`, 4 bold faces, 48 pages,
+body exactly 9 of 9 (page 10 opens on ETHICS). `analysis/audit_numbers.py`: 4,838 literals, the same 2 known
+misses. Host B idle again (all eight cards at 0 MiB, no process of ours).
+
+**What's done.**
+- **feat-214 SCORED**, 7 of 7 right, both gates PASS (`results/onset_prediction_short_works.md`). Corpus:
+  `Abirate/english_quotes` (Goodreads), 8-60 words, no misattributed tag, authors with >= 3 quotations; status
+  by death year under life plus 70 (`results/short_works_authors.csv`): 1,049 protected quotations by 102
+  authors, 218 public-domain by 19. Prompt: an opening quote mark and the first half; target: the second half.
+  At the audited pair (TinyComma, Llama-3.1-70B base; T_max 64) the 70B reproduces protected second halves on
+  76.39% of draws, the anchor on 0.03%, selection's worst case over every scorer at n = 64 on 0.38% (four
+  8-13-word quotations the anchor itself writes on 1.6-14.1% of its draws), the meter 0.00% at k = log(64)/64
+  and 0.5, 0.25% at 1, 9.74% at 3, 69.82% at 10. The meter's certificate `64k` is void for 44.5% of protected
+  second halves at k = 0.5 (prefix debt is why it still leaks nothing there), and no meter reproduced a
+  protected quotation whose exact string its certificate covered. Whole quotations cost the anchor a median
+  91.1 nats (none <= 20); second halves 35.6 (16.2% <= 20). S is of the exact string, so every vacuity share is
+  a lower bound for the case- and punctuation-insensitive event counted.
+- Manuscript: `app:shortworks` + `tab:shortworks` (Appendix E, after `app:multilingual`), the guide row, and the
+  body's limitation clause (protected stratum, keeps "no lyrics, whole poems or code"). The one line it cost was
+  bought back from Table 2's caption (", both judges": the table shows both judges' columns already).
+- Guards: `tests/test_short_works.py` (12 tests: the metric, the status rule, padded-batch surprisal, every
+  verdict branch, an end-to-end scorer run on synthetic draws, the table cell by cell from `v14_tables.py
+  short`, every number in the paragraph and the limitation, the three shape claims against the per-quotation
+  CSV). 22 manuscript mutations and 3 data mutations, all killed; sources restored byte-identical.
+
+**Producing commands.** `analysis/short_works.py build` (local; writes the gitignored corpus and the author
+table); on host B `scripts/run_feat214.sh A|B|C|D` and `scripts/run_feat214_a2.sh` (job A's draw arms after an
+OOM at anchor batch 512, before any draw existed); locally `analysis/short_works.py score --runs
+output/short_works` and `analysis/v14_tables.py short`.
+
+**Blockers/Risks.** A latent defect, logged and not fixed (out of scope): `analysis/composition_attack.py`
+`Attacker.query` slices each LEFT-padded row at its own prompt token count (`seqs[j][plens[j]:]`), caution
+(bc)'s pattern. It is inert wherever a batch's prompts share one token length, and they do in every mode the
+paper quotes: every 20-token seed re-encodes to exactly 20 tokens under all six anchor tokenizers (458/458
+attack_train and 150/150 test, with and without the header), and no oracle-window prompt changes length on
+re-encoding (0 of 30,466 at L = 10, 25, 50). Chained mode feeds the model's own text back, so its batches pad;
+its numbers appear only in the retired SaTML sections. `analysis/short_works.py` slices at the padded width and
+asserts the prompt columns.
+
 ## 2026-09-25 night --- v14: the review items first skipped, run (user: "With the gpus available, pursue the skipped items that can be run")
 
 **Current state.** Manuscript (`~/sub/satml`, never committed; pre-v14 copy in

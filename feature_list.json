@@ -1592,8 +1592,8 @@
       "description": "Review 3 Q13: on 1,049 protected and 218 public-domain Goodreads quotations (author status by death year under life plus 70), the audited pair's teacher-forced surprisal of each quotation's second half given its first, the anchor's 64-draw pool (selection's worst case at n = 1, 8, 64), the 70B alone, and anchored decoding at k = log(64)/64, 0.5, 1, 3, 10; exact and near reproduction, vacuity shares against log 64, 20 nats and 64k. Registered in results/onset_prediction_short_works.md.",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "Registered before any token (results/onset_prediction_short_works.md, commit 80da554; smoke on 16 EXCLUDED quotations only). Host B, 8 H100s: scripts/run_feat214.sh A|B|C|D and scripts/run_feat214_a2.sh (job A's draw arms re-run at anchor batch 64 after an OOM at 512, before any draw existed). Scored locally: `.venv/bin/python analysis/short_works.py score --runs output/short_works` -> G0 PASS (64/16/8 draws, 0 of 50,680 meter trajectories over budget), G1 PASS (70B on public domain 0.8105 [0.7933, 0.8325]); Q1 RIGHT +0.7636 [+0.7052, +0.8158]; Q2 RIGHT 16.2% of protected second halves <= 20 nats; Q3 RIGHT 0.0% <= log 64 (least 5.69); Q4 RIGHT 70B minus selection's worst case at n=64 +0.7601 [+0.7015, +0.8126] (worst case 0.0038); Q5 RIGHT meter k=10 minus anchor +0.6979 [+0.6398, +0.7509]; Q6 RIGHT -0.0003; Q7 RIGHT 2.747 vs 2.934 nats/token. Manuscript: app:shortworks + tab:shortworks, the guide row, the body's limitation clause; body exactly 9 of 9, 48 pages, 0 overfull, 0 '??'; analysis/audit_numbers.py 4,838 literals, the same 2 known misses. tests/test_short_works.py 12 tests; 22 manuscript and 3 data mutations all killed. ./init.sh: 1254 passed."
     }
   ]
 }
