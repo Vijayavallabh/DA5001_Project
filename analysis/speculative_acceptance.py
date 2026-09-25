@@ -130,7 +130,7 @@ def main():
             w.writeheader()
             s = alpha_star()
             w.writerow(dict(k="", quantity="break-even", alpha_star=s if s == "" else round(s, 4),
-                            selection_ratio_at_alpha1=round(ratio_at(1.0), 4), c_anchor=round(c_s, 6),
+                            selection_ratio_at_alpha1=round(ratio_at(1.0), 6), c_anchor=round(c_s, 6),
                             c_risky=round(c_r, 6), c_meter=round(c_m, 6), selection_ratio_committed=round(sel64, 4)))
         return
 
@@ -196,7 +196,7 @@ def main():
                          alpha_p10=round(sorted(flat)[len(flat) // 10], 4), pstar_median_abs_err=round(med_err, 6),
                          best_g=best[1], tokens_per_risky_forward=round(best[2], 4), speedup=round(best[0], 4),
                          selection_ratio=round(sel64 * best[0], 4), alpha_star=lo,
-                         selection_ratio_at_alpha1=round(ratio_at(1.0), 4),
+                         selection_ratio_at_alpha1=round(ratio_at(1.0), 6),
                          c_anchor=round(c_s, 6), c_risky=round(c_r, 6), c_meter=round(c_m, 6),
                          selection_ratio_committed=round(sel64, 4)))
         print(rows[-1], flush=True)
