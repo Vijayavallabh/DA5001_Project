@@ -1583,8 +1583,8 @@
       "description": "Review 3 Q12: every mechanism at T_max = 1000 on the headline's 500 prompts (whole-output best-of-n at n = 1, 4, 16, 64 from one pool, installments L=100 n=8, the KL meter at k = 0.020794, 0.1, 0.5, 10, the pathwise meter at whole-output 4.16 and 20.79 nats, the front-loaded and the windowed meter at log 64), judged uncut under judges B and G on host B (results/onset_prediction_long_outputs.md).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "Registered before any token (results/onset_prediction_long_outputs.md, commit 3985b54; execution notes before any verdict). On host B: `.venv/bin/python analysis/score_feat213.py` -> results/long_outputs_scoring.csv, results/long_outputs.csv. 4 of 6 right: L1 best-of-64 gains +0.063 [+0.043,+0.083] at T_max=1000; L4 beats the pathwise (+0.062), up-front (+0.0305) and windowed (+0.0445) meters at log 64; L5 beats the KL meter at k=0.1 (+0.0775) and 0.5 (+0.104); L6 same sign under G; L2/L3 WRONG (installments at 20.79 nats unresolved vs the meters under B, confirmed under G). Installments (8 draws/100 tokens) lose to whole-output selection by 0.0445 [0.026,0.0635] (G 0.059). Two OOM re-runs at --gen-batch 128 and judge G moved off the user's GPUs, all before any verdict. Manuscript: Section 3 clause, app:blockwise concession, app:long + tab:long; guards tests/test_v14_skipped.py (7 mutations fire)."
     }
   ]
 }

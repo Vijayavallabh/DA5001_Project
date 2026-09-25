@@ -1,37 +1,38 @@
 # Session Progress Log
 
-## 2026-09-25 evening --- v14: the review items first skipped, run (user: "With the gpus available, pursue the skipped items that can be run")
+## 2026-09-25 night --- v14: the review items first skipped, run (user: "With the gpus available, pursue the skipped items that can be run")
 
-**In flight on host B (sentinels `~/v/logs/{f211,f213}_<job>.{done,fail}`):** feat-211 (CP-k's rejection rule
-as a baseline) and feat-212 (scorer family by judge family), `scripts/run_feat211.sh` q4b/q5b/q6/q7/q67 on GPUs
-4-7; feat-213 (every mechanism at `T_max = 1000`), `scripts/run_feat213.sh` q0b/q1b/q2/q3 on GPUs 0-3, which
-were idle; `~/v/spec70b.sh` (the 70B pair's speculative acceptance) queued behind feat-213's meters and
-judge-B pass on GPUs 2,3. Local A100s are held by the user's vLLM servers.
+**Current state.** Manuscript (`~/sub/satml`, never committed; pre-v14 copy in
+`output/review_audit/pre_v14_2026-09-25/`) rebuilt: tectonic exit 0, 0 overfull, 0 `??`, 4 bold faces, 47 pages,
+body exactly 9 of 9 (page 10 opens on ETHICS). `analysis/audit_numbers.py`: 4,727 literals, the same 2 known
+misses. Nothing of ours runs on either host.
 
-**Done (post hoc, committed):**
-- Review 2 Q6, `results/utility_surprisal_note.md` (`analysis/utility_surprisal.py`): all of majority
-  vote's gain lies on answers the anchor already gives >= 1/32 on held-out draws (GSM8K `+0.257` on 439,
-  `0.000` on 61; TriviaQA `+0.084` on 287, `0.000` on 213); on open-ended text all of the judged gain
-  (`+0.110`, 460 prompts) is on served completions with `S > log 64` (median `184.6` nats), and the 40 others
-  are empties.
-- Review 2 Q3, `results/speculative_acceptance_note.md` (`analysis/speculative_acceptance.py`): the meter
-  as speculative decoding with the anchor drafting accepts `0.599` of drafted tokens at `k=10` and `k=3`
-  (`0.681` at `k=0.5`) at the 8B pair; on a cost model optimistic for the meter selection's per-request
-  ratio rises from `0.514x` to at most `0.880x` (parity needs `0.802`); at the 70B pair even perfect
-  acceptance leaves `0.901x`.
+**What's done.**
+- **feat-211 SCORED**, 5 of 6 right (`results/onset_prediction_cpk_baseline.md`): CP-k's rejection rule, run
+  with the anchor as its safe model (64 risky draws, first with realised log-ratio <= kappa, else the anchor),
+  serves the risky model on 0% of prompts at log 64 and 33.27 nats, 26.8% at 83.18, 99.6% at 159.83; best-of-64
+  and installments beat it at every matched certificate under B and G; it leaks nothing below 400 nats (onset
+  600); C5 (short accepted outputs) wrong.
+- **feat-212 SCORED**, M1 right and F1 wrong (`results/onset_prediction_scorer_judge_factorial.md`): the Qwen
+  reward's drafts are preferred under judge B only, the gemma-family judge prefers the gemma-scored ones, and
+  the gemma-scored headline resolves under four of six judges. Section 4's scorer concession is now scoped to
+  judge B (feat-198's guard re-derived against the CSV).
+- **feat-213 SCORED**, 4 of 6 right (`results/onset_prediction_long_outputs.md`): at `T_max = 1000` best-of-64
+  still gains +0.063 and beats every meter at log 64 and the KL meter at k = 0.1 and 0.5; installments (8
+  draws per 100 tokens) tie the meters at their 20.79 nats under B (L2, L3 wrong; confirmed under G) and lose
+  to whole-output selection under both judges.
+- **Post hoc**: review 2 Q6 (`results/utility_surprisal_note.md`, `app:gainwhere`) and review 2 Q3
+  (`results/speculative_acceptance_note.md`, `app:speculative`; both pairs' acceptance measured: at best
+  0.37x and 0.88x against a speculative meter, 0.90x at the 70B pair even at perfect acceptance).
+- Page budget held by trims that cut no concession: Table 2's caption, the matched paragraph, a replication
+  clause and ", which buy more" in the conclusion (installments buy less at 1,000 tokens).
 
-**Defects caught before any verdict was read (each re-run from scratch, recorded in its scoring log):**
-- feat-211: `cpk_baseline.py` summed `R` only through the first `<|eot_id|>`, which the plain harness does
-  not stop at; all three draws the flawed arm served at `C = 33.27` were such truncations. Fixed
-  (`served_steps`, test); the two judge passes were stopped and re-entered (q4b/q5b). The same reader,
-  `analysis/window_logratio.trajectory_steps`, cuts `3` of the `1,500` committed `sweep_plain` `k=-1`
-  trajectories the same way (`0.2%`); left as is and logged here, since it cannot move a median over
-  1,500 trajectories.
-- feat-213: installments and the pool ran out of memory at the default `--gen-batch 256` (anchor KV cache
-  ~58 GB at 1,150 tokens beside the 7B scorer); both re-run from scratch at `128` (q1b, q0b).
-- smoke: overwriting a shell script while a lane of it was running made that lane read shifted bytes
-  after its `case` finished (harmless there). Never `scp` over a running script.
+**Not run, and why**: human evaluation (no raters); short works (review 3 Q13: no corpus of short protected
+works or a memoriser of one, a data-collection project); a certified value-function decoder (Q9), B2, C1, C2
+(research programmes); a stronger licensed anchor (none passes vetting).
 
+**Defects caught before any verdict was read:** the eot_id truncation in CP-k's R (caution (bh)); two OOM
+re-runs at `--gen-batch 128`; judge G moved off GPUs 1 and 3 when the user's vLLM server started there.
 
 ## 2026-09-25 --- v13: the seventh review round (three reviews; the user marked Review 3 "very important, address all of it")
 
