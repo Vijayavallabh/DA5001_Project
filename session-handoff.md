@@ -4,13 +4,20 @@
 
 ## Current state, 2026-09-25 evening --- the review items first skipped, pursued on host B (user: "With the gpus available, pursue the skipped items that can be run")
 
-**In progress, each registered before its first token:** feat-211 (CP-k's rejection rule as a baseline,
-`results/onset_prediction_cpk_baseline.md`) and feat-212 (scorer family by judge family,
-`results/onset_prediction_scorer_judge_factorial.md`), queued by `scripts/run_feat211.sh` on host B GPUs 4-7
-(queues q4, q5, q6, q7, q67; sentinels `~/v/logs/f211_<job>.{done,fail}`). Local A100s are all held by the
-user's vLLM servers. feat-213 (every mechanism at `T_max = 1000`, `results/onset_prediction_long_outputs.md`)
-runs on host B GPUs 0-3, which were idle when it launched (`scripts/run_feat213.sh q0..q3`, sentinels
-`~/v/logs/f213_<job>.{done,fail}`). Post hoc, CPU: `results/utility_surprisal_note.md` (review 2 Q6).
+- **feat-211 DONE** (CP-k's rejection rule as a baseline, `results/onset_prediction_cpk_baseline.md`, scored):
+  five of six readings right; the manuscript's related-work sentence, `app:cpk` and `tab:cpk` carry it.
+- **feat-212 DONE** (scorer family by judge family, `results/onset_prediction_scorer_judge_factorial.md`,
+  scored): M1 right, F1 wrong; Section 4's scorer sentence, `app:factorial` and `tab:factorial` carry it.
+- **feat-213 IN PROGRESS** (every mechanism at `T_max = 1000`, `results/onset_prediction_long_outputs.md`):
+  `scripts/run_feat213.sh` q0b (pool, then judge G on GPUs 0,1), q2 (meters, then judge B on GPU 2); sentinels
+  `~/v/logs/f213_<job>.{done,fail}`; scorer `analysis/score_feat213.py` (run on host B, where `output/feat213`
+  lives); table rows from `analysis/v14_tables.py long`.
+- Post hoc, done: `results/utility_surprisal_note.md` (review 2 Q6, `app:gainwhere`) and
+  `results/speculative_acceptance_note.md` (review 2 Q3, `app:speculative`, both pairs measured).
+- **Manuscript**: backed up in `output/review_audit/pre_v14_2026-09-25/`; the body is currently 2 lines over 9
+  pages (the v14 clauses); fix in one pass after feat-213's clause is in (candidates: the replication clause in
+  Section 3's installments passage, the duplicated "not a substitute" sentence).
+- Local A100s are held by the user's vLLM servers; host B GPUs 0-3 were idle when feat-213 launched.
 
 ## Current state, 2026-09-25 evening --- v13 (seventh review round) complete; nothing running
 
