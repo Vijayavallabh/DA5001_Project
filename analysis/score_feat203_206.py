@@ -136,13 +136,15 @@ def score_204(res):
 
 
 def score_205(res, outdir):
+    # the control is the authors' byte path at k = 1e-6 (the registration's addendum of 12:20: their
+    # generate() refuses k = 0), forced to the anchor at every byte, which G1' checks
     need = [os.path.join(res, "order_averaged_h2h_ab07_k01.csv")] + \
-           [os.path.join(outdir, f"trajectories_k{k}_{c}.jsonl") for k in ("0.1", "0") for c in ("neutral", "factual", "creative")]
+           [os.path.join(outdir, f"trajectories_k{k}_{c}.jsonl") for k in ("0.1", "1e-06") for c in ("neutral", "factual", "creative")]
     if not all(map(os.path.exists, need)):
         print("[205] not scored, missing:", [p for p in need if not os.path.exists(p)])
         return
     rows = []
-    for k in ("0.1", "0"):
+    for k in ("0.1", "1e-06"):
         recs = [json.loads(line) for f in sorted(glob.glob(os.path.join(outdir, f"trajectories_k{k}_*.jsonl"))) for line in open(f)]
         m = [r["metadata"] for r in recs]
         ok = len({x["prompt_id"] for x in m}) == 500 and all(x["temperature"] == 0.7 and x["repetition_penalty"] == 1.1 for x in m)
@@ -150,7 +152,11 @@ def score_205(res, outdir):
                         n=len(recs)))
         K = float(k) * 800
         worst = max(r["aggregate"]["total_spend"] for r in recs)
-        ok = worst <= K + 1e-3 and (k != "0" or worst == 0)
+        ok = worst <= K + 1e-3
+        if k == "1e-06":
+            forced = all(r["aggregate"]["steps_forced_safe"] == r["aggregate"]["bytes_generated"] for r in recs)
+            rows.append(row("G1'", "k=1e-6: the anchor served at every byte (forced steps == bytes, every record)",
+                            float(forced), reading="PASS" if forced else "FAIL", n=len(recs)))
         rows.append(row("G1", f"k={k}: largest realised spend against K = {K:g}", round(worst, 4),
                         reading="PASS" if ok else "FAIL", n=len(recs)))
         b = [r["aggregate"]["binding_share"] for r in recs]

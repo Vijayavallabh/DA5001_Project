@@ -59,3 +59,22 @@ scoped to temperature `1.0`, and Section 4's temperature paragraph says so.
 - Any other budget, temperature, penalty, seed or judge chosen after a byte is decoded.
 
 ## Scoring log
+
+### Addendum 2026-09-25 12:20 IST, before the control is re-run and before any judge call --- the `k = 0` control could not run as registered
+
+The `k=0.1` arm ran (`08:59`-`12:11` IST, exit `0`). The `k = 0` control died at its first batch
+(`output/logs/feat208_qab.log`): the authors' `generate()` routes every budget to `generate_byte`, which
+asserts `k_radius not in {-1, 0}` with the message "Use generate_batched instead for your k-radius", and
+the package contains no `generate_batched`. So the registered control, "the authors' own anchor-only path
+at `k_radius == 0`", does not exist in the code we pinned; this is a defect in our specification, not a
+reading (caution (w)), and it retires nothing.
+
+**Replacement, fixed now.** The same path at `k = 1e-6` per byte (`K = 8 x 10^-4` nats): the budget
+`(t+1)k` minus the prefix debt is negative at every byte, so the factory forces the safe distribution at
+every step and the fused law is the anchor's, through the authors' own byte sampler at `0.7` and `1.1`.
+**Gate G1', read before the judge:** every record has `steps_forced_safe == bytes_generated` (the anchor
+served at every byte) and total spend `<= K + 1e-3`; if any record fails it, the control is not the
+anchor and A1 is not read. The files (`trajectories_k1e-06_*`) are copied to
+`output/feat205/ab07_anchor/trajectories_k0_*` so the judge's anchor loader reads them at its token `0`;
+nothing else about the judge pass changes. Launcher `scripts/run_feat205_control.sh`, host B GPUs
+`5,6,7` after feat-203's `70`B control releases them.
