@@ -119,7 +119,8 @@ fine-tunes account for at most $73$ of those hours.
 \small
 \clearpage
 \section*{Guide to the appendices}\label{app:guide}
-\noindent Table~\ref{tab:guide} maps each theme of the paper to the appendix that holds it.
+\noindent Table~\ref{tab:guide} maps each theme of the paper to the appendix that holds it, and
+Table~\ref{tab:notation} collects the symbols and terms used throughout.
 
 \begin{table}[!ht]
 \centering\footnotesize
@@ -137,6 +138,38 @@ Cost & \ref{app:sel-cost} & forward passes, the clock, a deployable server, batc
 The meter, audited & \ref{app:onset} & imitation cost at four pairs, onset over nine pairs, the opening, vacuity at scale \\
 Repairs & \ref{app:repairs} & sharper charge, lower cap, schedule, budget up front, frontier distance, closer anchors \\
 Limits, related & \ref{app:limitations}, \ref{app:related} & limitations in full; positioning and incumbents measured \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering\footnotesize
+\caption{Notation and terms.}\label{tab:notation}
+\begin{tabular}{@{}p{0.2\textwidth}p{0.76\textwidth}@{}}
+\toprule
+symbol or term & meaning \\
+\midrule
+$p_s$, the anchor & \raggedright the safe model, trained without the protected work; every certificate is relative to it as sampled \tabularnewline
+$p_r$ & \raggedright the risky model, which may hold the work; the meter tilts toward it, selection never runs it \tabularnewline
+$q$ & \raggedright the law a mechanism actually serves \tabularnewline
+$x$, $S(x)$, $s(x)$ & \raggedright a protected work; $S(x) = -\log p_s(x)$, its surprisal under the anchor in nats; $s(x)$, that surprisal per token \tabularnewline
+$S_w$ & \raggedright the anchor's surprisal of a $50$-token window of a protected passage given its true prefix, median $159.8$ nats \tabularnewline
+$k$, $T_{\max}$, $K$ & \raggedright the meter's per-token budget, the output cap ($200$ tokens), and its certificate $K = kT_{\max}$ \tabularnewline
+$n$, $\log n$, $m$ & \raggedright the draws selection chooses among; its pathwise certificate (Proposition~\ref{prop:selection}); $m\log n$ over $m$ queries \tabularnewline
+$L$ & \raggedright tokens per installment when selection is spent in installments; any $w$-token window is then certified at $(\lceil w/L\rceil+1)\log n$ \tabularnewline
+$D_\alpha$, $D_\infty$ & \raggedright R\'enyi divergence of order $\alpha$; $D_\infty$, the max-divergence, is the pathwise order \tabularnewline
+$b_\alpha(K)$ & \raggedright the most a budget of $K$ nats at order $\alpha$ allows an event of anchor probability $e^{-S}$ (Proposition~\ref{prop:threshold}); it is $1$, and the certificate vacuous, iff $K \ge S$ \tabularnewline
+$N_\varepsilon$ & \raggedright the steps at which a causal policy spends more than $\varepsilon$ (Proposition~\ref{prop:sparse}) \tabularnewline
+$I_T$, $\gamma$ & \raggedright the imitation cost, the KL of $p_r$ from $p_s$ summed over a meter's slack steps (Proposition~\ref{prop:imitation}); $\gamma = 0.857$ nats per token on ordinary text \tabularnewline
+$\Lambda^*_s(u)$ & \raggedright Theorem~\ref{thm:nfl}'s frontier, the least divergence from $p_s$ at which expected utility $u$ is attainable \tabularnewline
+\midrule
+meter & \raggedright anchored decoding \citep{he2026anchored}: a KL budget charged per token, tilting toward $p_r$ \tabularnewline
+selection & \raggedright serving one of $n$ anchor draws by any rule, a reward, a vote or an adversary \tabularnewline
+onset & \raggedright the smallest budget at which mean near-verbatim recall reaches $0.01$ \tabularnewline
+near-verbatim recall & \raggedright the fraction of a reference's words inside in-order near-verbatim spans of at least $20$ words \tabularnewline
+level, gain & \raggedright an arm's order-averaged score against one fixed opponent ($0.5$ is parity); its level minus its own control's \tabularnewline
+$D_1$--$D_5$ & \raggedright selection's gain; the meter's; their paired difference; an extra arm's gain; the extra arm minus selection \tabularnewline
+judges A--G & \raggedright A, \texttt{Qwen2.5-7B} (selection's reward, never judging its own picks); B, \texttt{Phi-3.5-mini}, pre-specified; C--G, \texttt{Llama-3.1-8B}, \texttt{Qwen2.5-72B}, \texttt{Mixtral-8x7B}, \texttt{Qwen2.5-14B}, \texttt{gemma-2-27b} \tabularnewline
 \bottomrule
 \end{tabular}
 \end{table}

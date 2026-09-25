@@ -26,8 +26,7 @@ $\log p(\text{Yes}) - \log p(\text{No})$ on one fixed template, and never scores
 \textbf{Leakage.} Near-verbatim recall of $50$-token windows on $100$ held-out protected passages: the
 fraction of the reference's words inside in-order near-verbatim spans of at least $20$ words
 \citep{ahmed2026extracting}.
-Intervals are $95\%$ paired bootstraps over prompts, and every band was fixed before its run
-(Appendix~\ref{app:protocol}).
+Intervals are $95\%$ paired bootstraps; every band was fixed in advance (Appendix~\ref{app:protocol}).
 
 \paragraph{Selection against the metered decoder.}\label{sec:main-results}
 
@@ -88,7 +87,9 @@ arm's own control differ by $+0.0505$ $[+0.0155, +0.0860]$, at one fifty-fourth 
 temperature judged no better than the anchor, $+0.019$ $[-0.004, +0.042]$; at the authors' $0.7$ and $1.1$ the $8$B wins instead, $-0.081$ $[-0.113, -0.049]$, while their $70$B, now $+0.0585$ over the anchor, still loses, by $+0.0485$ $[+0.0145, +0.082]$ at $k=20$. Served through its chat
 template the $8$B beats its own templateless text by $0.184$, and the $k=10$ meter, which \emph{is} that
 model at $99.84\%$ of steps, wins by $0.138$; the meter's interval first lies above selection's at $k=3$,
-whose $K/S_w = 3.75$ excludes nothing about a window, after a tie at $k=2$; that model gains $+0.272$ over the anchor where selection
+whose $K/S_w = 3.75$ excludes nothing about a window, after a tie at $k=2$, and a memoriser served the same
+way starts to leak at $k=3.9$ $[3.0, 4.4]$, so that win and extraction onset coincide within the interval
+(Appendix~\ref{app:served}); that model gains $+0.272$ over the anchor where selection
 gains $+0.1065$, so selection closes less than half the gap (Appendix~\ref{app:tokenswap}). Handed the
 same reward on TriviaQA, the meter gains nothing (Table~\ref{tab:parity}).
 

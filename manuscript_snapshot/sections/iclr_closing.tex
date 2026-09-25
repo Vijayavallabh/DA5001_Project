@@ -20,15 +20,16 @@ sits is open. The \emph{price} is the drawing, not the scorer's one batched pass
 (Appendix~\ref{app:saturation}). Nor does the certificate say much about short works: on TriviaQA answers
 $\log 64$ reaches $S(x)$ on $35.4\%$ of questions, against $89.6\%$ for the meter's smallest budget, so
 $n$ must be set against the shortest work protected. Extraction is sixteen English novels plus four in
-French and German. What we prove about per-token budgets concerns a budget on the whole sequence and
-meters that tilt toward $p_r$: a windowed meter could certify exact windows at tens of nats
-(Section~\ref{sec:uncovered}), we did not measure selection in installments, and how close a policy of the
+French and German. What we prove about per-token budgets concerns whole-sequence budgets and meters
+tilting toward $p_r$: a windowed meter could certify exact windows at tens of nats
+(Section~\ref{sec:uncovered}), and how close a policy of the
 shape Proposition~\ref{prop:sparse} permits comes to Theorem~\ref{thm:nfl}'s frontier is open.
 
 \paragraph{Conclusion.}\label{sec:conclusion}
 A per-token budget on the whole sequence must grow with the work or be spent almost nowhere, and a meter
-that tilts toward the risky model pays the imitation cost on every token it imitates. Spent instead on the
-choice among a safe model's draws, a copyright budget is $\log n$ nats at any output length, holds against
-an adversarial scorer for one response, and composes to a query horizon a deployer can enforce. Where the
+that tilts toward the risky model pays the imitation cost on every token it imitates. Spent instead on
+choices among a safe model's draws, a copyright budget is $\log n$ nats at any output length, or a few
+times that per window in installments, which buy more; it holds against an adversarial scorer for one
+response and composes to a query horizon a deployer can enforce. Where the
 metered decoder's certificate excludes anything it is its own anchor, which selection improves on; where
 it is the risky model, which of the two is better depends on how that model is served and decoded and which scorer selects.

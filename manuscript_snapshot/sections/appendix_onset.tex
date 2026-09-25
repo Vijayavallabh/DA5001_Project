@@ -87,6 +87,55 @@ with a budget near $125$ nats would rarely bind on ordinary text and would certi
 window at $e^{125-159.8}$; it certifies no event whose probability under the anchor must be sampled
 (Section~\ref{sec:compose}).
 
+\paragraph{Selection in installments.}\label{app:blockwise}
+Section~\ref{sec:uncovered}'s installment rule draws $n$ continuations of up to $L$ tokens from the anchor
+alone, scores each by the committed reward of the candidate completed to $200$ tokens by one anchor
+rollout, serves the argmax and repeats until $200$ tokens or an end-of-text; at $L = 200$ it is
+whole-output selection through the same code, on fresh draws. Proposition~\ref{prop:selection} holds per
+block, so $B$ blocks certify the output at $B\log n$ and any $50$-token window at
+$\min(\lceil 50/L\rceil + 1, B)\log n$ (Table~\ref{tab:blockwise}; registered in
+\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak blockwise.md}). At $64$ draws per block,
+installments of $10$ and $25$ tokens beat one choice among $64$ whole drafts, by $+0.0415$
+$[+0.0185, +0.0645]$ and $+0.0245$ $[+0.001, +0.0475]$, against our registered prediction of a tie, and
+installments of $50$ tie it; their window certificates, $24.95$ and $12.48$ nats, stay far below the
+protected window's $159.8$. Held instead to one whole-output $\log 64$, spent as $2$, $3$ or $6$
+installments of $8$, $4$ or $2$ draws, they lose to one choice among $64$ by $0.0635$, $0.082$ and $0.088$:
+a decoder steered by the same reward with its budget of $\log 64$ fixed up front, the closest we ran to a
+token-level reward tilt at that budget, does worse than selection spent once. Scored on the prefix alone,
+without the rollout, the rule serves $23$ words at the median and loses to the rollout by $0.0395$
+$[0.02, 0.059]$. The risky model as planner, scoring each $10$-token block by $\log p_r - \log p_s$ over the
+same $64$ draws, gains $+0.077$ $[+0.054, +0.1005]$ over the anchor, $+0.026$ $[+0.001, +0.051]$ more than
+the meter does at $k=10$ (post hoc), and loses to the reward by $0.0895$ $[0.064, 0.115]$: the same choice
+buys more when the reward makes it than when the risky model does. The memoriser choosing twenty times among $64$ ten-token continuations
+reads near-verbatim recall $0.0000$ on all $100$ passages it memorised (alone it reads $0.3925$), and
+ROUGE-L $0.1168$ against whole-output selection's $0.1073$. With the prompt and the served text each in
+its own slot of the reward's template, every rule serves more empty answers than the committed pool's $41$ ($103$ once, $104$ to $110$ in
+installments of $64$ draws, $113$ to $192$ at one $\log 64$), and the planner none.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Selection in installments, judge~B, order-averaged, one draw each (seed $20260925$). Certificates
+in nats for the whole output and for any $50$-token window given what precedes it; gains over the
+anchor-alone control and differences from one choice among $64$ (first row), paired over the $500$
+prompts; $\lceil 200/L\rceil$ blocks (\texttt{results/\allowbreak blockwise.csv}).}\label{tab:blockwise}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}lrrcll@{}}
+\toprule
+rule & $L$ & $n$ & output / window & gain over the anchor & minus once \\
+\midrule
+once & $200$ & $64$ & $4.16$ / $4.16$ & $+0.125$ $[+0.1015, +0.1485]$ & --- \\
+installments & $50$ & $64$ & $16.64$ / $8.32$ & $+0.129$ $[+0.1045, +0.153]$ & $+0.004$ $[-0.019, +0.0265]$ \\
+ & $25$ & $64$ & $33.27$ / $12.48$ & $+0.1495$ $[+0.1245, +0.175]$ & $+0.0245$ $[+0.001, +0.0475]$ \\
+ & $10$ & $64$ & $83.18$ / $24.95$ & $+0.1665$ $[+0.141, +0.1925]$ & $+0.0415$ $[+0.0185, +0.0645]$ \\
+one $\log 64$ & $100$ & $8$ & $4.16$ / $4.16$ & $+0.0615$ $[+0.0385, +0.085]$ & $-0.0635$ $[-0.085, -0.0415]$ \\
+ & $67$ & $4$ & $4.16$ / $2.77$ & $+0.043$ $[+0.0205, +0.0655]$ & $-0.082$ $[-0.1055, -0.0585]$ \\
+ & $34$ & $2$ & $4.16$ / $2.08$ & $+0.037$ $[+0.0155, +0.0585]$ & $-0.088$ $[-0.1115, -0.0645]$ \\
+prefix only & $50$ & $64$ & $16.64$ / $8.32$ & $+0.0895$ $[+0.0665, +0.1125]$ & --- \\
+planner & $10$ & $64$ & $83.18$ / $24.95$ & $+0.077$ $[+0.054, +0.1005]$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Where extraction begins.}
 Table~\ref{tab:onset} gives the nine pairs Figure~\ref{fig:horns}(a) plots. Every pair clears the admission
 criterion (sampled $k=-1$ recall $\ge 0.10$), and $k=0$, the anchor alone, reads $0.000$ at all nine. Two

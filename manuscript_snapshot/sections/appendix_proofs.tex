@@ -61,7 +61,11 @@ $\delta S/\varepsilon$ steps above $\varepsilon$ in expectation, $1.6$ at $\delt
 Proposition~\ref{prop:threshold} holds verbatim for $E_w$, ``reproduce a $w$-token window of the work'',
 and every extraction number in this paper is a window event. The scored event is a union over windows, at
 least as probable as any member, so each threshold in Table~\ref{tab:windowvacuity} is an upper bound on
-where the certificate for the scored event goes vacuous.
+where the certificate for the scored event goes vacuous. The same holds for the union over the at most
+$151$ positions at which a $50$-token window can start in a $200$-token response: Propositions~\ref{prop:selection}
+and~\ref{prop:threshold} bound the union itself, so no position factor enters either certificate, only a
+closed-form price of the anchor's rate, which covers one position; the union's rate under the anchor is
+the sampled quantity of Section~\ref{sec:compose}.
 
 \begin{table}[ht]
 \centering\footnotesize

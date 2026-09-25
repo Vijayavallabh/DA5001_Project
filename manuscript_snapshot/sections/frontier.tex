@@ -57,7 +57,7 @@ $D_{\mathrm{KL}}(q\,\|\,p_s) \ge \Lambda^*_s(\mathbb{E}_q[U])\cdot\gamma T/\log(
 \caption{\textbf{Where the deployed meter leaks, and what it spends.} \textbf{(a)} Near-verbatim recall of held-out
 protected passages against the budget in units of the anchor's surprisal rate, nine (anchor, memoriser)
 pairs with nine distinct anchors and six tokenizers. Extraction begins between $0.88$ and $1.17$ of
-$s(x)$ (shaded), near Proposition~\ref{prop:threshold}'s threshold for the whole passage; the certificate
+$s(x)$ (shaded: their range, not an interval), near Proposition~\ref{prop:threshold}'s threshold for the whole passage; the certificate
 for the scored $50$-token windows is void from about $0.8\,s(x)$, so it never excluded what was extracted.
 \textbf{(b)} Anchored decoding at its authors' anchor on ordinary prompts, $16{,}500$ trajectories: the
 cap it certifies (dashed) against what it spends (red). Past the risky model's imitation rate the
@@ -101,6 +101,8 @@ decides which events can be certified: an exact window's probability under the a
 a near-verbatim variant's must be sampled, and $40$ nats say something about a sampled event only after
 more than $3e^{40} \approx 7\times10^{17}$ clean draws (Table~\ref{tab:certificate}). Selection spent in
 installments, $n$ draws per block of $L$ tokens, is certified by the same composition at
-$(\lceil w/L\rceil + 1)\log n$ for any $w$-token window given what precedes it. What separates the
+$(\lceil w/L\rceil + 1)\log n$ for any $w$-token window given what precedes it, and it buys more: at $64$
+draws a block, $10$-token installments beat one choice by $+0.0415$ $[+0.0185, +0.0645]$ at $25$ nats a
+window, while held to one whole-output $\log 64$ they lose (Appendix~\ref{app:blockwise}). What separates the
 mechanisms is not whether the budget is charged once or per token but what it buys: a choice among the
 anchor's own draws, or the risky model's tokens.

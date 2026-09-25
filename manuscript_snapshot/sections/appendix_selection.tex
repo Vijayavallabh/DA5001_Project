@@ -75,7 +75,10 @@ exactly one word: A, B, or Tie.
 \end{quote}
 Fields are truncated to $1{,}200$ characters, the prompt is the corpus prompt without the harness header,
 decoding is greedy with at most four new tokens, and the verdict is the first letter (anything else a
-tie). An order-averaged score shows the item in both orders and averages the two
+tie). The cut reaches $19$ of the opponent's $500$ texts, $20$ of the meter's at $k=10$, $2$ of selection's and
+no prompt; shown whole, the headline difference reads $+0.062$ $[+0.0265, +0.0975]$ against $+0.059$ cut, on
+the same machine, and $+0.0217$ $[-0.0517, +0.0933]$ on the biographies alone
+(\texttt{results/\allowbreak full\_\allowbreak response.csv}, registered). An order-averaged score shows the item in both orders and averages the two
 (\texttt{analysis/\allowbreak order\_\allowbreak averaged\_\allowbreak h2h.py}). \textbf{Position dominates a
 single order} \citep{zheng2023judging}: the same two texts win $261$ of $500$ shown second and $24$ shown
 first, only $29.2\%$ of items get a consistent verdict, the first slot wins $12.7\%$ of decided
@@ -112,6 +115,11 @@ criterion, stop rule and excluded outcomes; each registration and its scoring lo
 (\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak *.md}). Predictions that failed are reported as
 results: the first scorer, the judge-C prediction, the $70$B pair's expected wins for the meter, the
 CoTaEval turnover, the adversarial oracle on CoTaEval's infringement half, and the monotone vetting ladder.
+Figure~\ref{fig:h2h}'s NewsQA row is registered, its $k=1.4$ fixed by a registered calibration rule before
+any judge call. Read as one family of $21$ under Holm's correction, each $p$-value taken from its row's
+interval, eight of Figure~\ref{fig:h2h}'s rows still exclude zero, seven in selection's favour and
+AlpacaEval against it; the headline row alone ($p \approx 0.005$) does not survive a $21$-way correction
+(\texttt{results/\allowbreak forest\_\allowbreak multiplicity.csv}, post hoc).
 
 \section{The head-to-head in full}\label{app:sel-h2h}
 
@@ -131,6 +139,11 @@ is $+0.0441$ $[+0.0024, +0.0864]$ (\texttt{results/\allowbreak h2h\_\allowbreak 
 Read with a Bonferroni correction over its rows, every row of Table~\ref{tab:served}'s released and chat
 blocks still excludes zero in the same direction, the narrowest being the chat-template $k=1$ row at
 $[+0.0015, +0.0820]$ (\texttt{results/\allowbreak served\_\allowbreak multiplicity.csv}, post hoc).
+Served through the same chat template, the audited memoriser alone reaches near-verbatim recall $0.2193$
+($0.4921$ on plain text); the meter stays below $0.01$ at every budget through $k=3.8$ and reaches it at
+$k=3.941$ $[2.968, 4.435]$, $1.22$ of $s(x)$, with $25.3\%$ of resamples never reaching it by $k=4.5$, so the upper
+end is a floor (\texttt{results/\allowbreak chat\_\allowbreak onset.csv}, registered). The chat-served
+meter's first win, at $k=3$, and extraction onset coincide within that interval.
 
 \paragraph{Under the authors' own utility metrics.}\label{app:hemetrics}
 \citet{he2026anchored} score utility with Prometheus-2 fluency and FActScore precision, so we scored the same
@@ -143,9 +156,13 @@ paired $+0.70$ $[+0.53, +0.85]$, beats the meter at every budget of both text-co
 $-0.81$ $[-0.99, -0.64]$: the judge's pattern. FActScore reads the other way: selection's precision is its
 anchor's ($0.042$ against $0.048$, paired $-0.008$ $[-0.041, +0.022]$) and below every metered arm
 ($-0.182$ $[-0.222, -0.145]$ against $k=10$), while it abstains on $20$ of $150$ biographies where a single
-draw abstains on $80$. Best-of-$n$ is bounded by its best draw, not its average, so the equality says this
-reward does not select for factual precision, not that a selection rule cannot; we did not test a
-factuality scorer. The head-to-head is a statement
+draw abstains on $80$. Best-of-$n$ is bounded by its best draw, not its average: FActScored draw by draw,
+the most precise of the $64$ reaches $0.5054$ $[0.4553, 0.5564]$ ($0.2392$ among draws claiming at least five
+facts) where one draw averages $0.0613$ and the reward's pick $0.0431$, so the draws hold far more precise
+biographies than the reward serves. Asked instead whether every claim is accurate, the same scorer serves $0.0768$ by claiming
+fewer facts and abstaining on $45$, paired $+0.0102$ $[-0.0144, +0.0399]$ over the committed pick and
+$-0.1246$ $[-0.1727, -0.0725]$ below the meter at $k=10$: a scorer that asks for facts did not find them
+(\texttt{results/\allowbreak factscore\_\allowbreak oracle.csv}, registered). The head-to-head is a statement
 about fluency and helpfulness, not about factual recall, which the anchor bounds
 (\texttt{results/\allowbreak he\_\allowbreak metrics.csv}).
 
@@ -168,7 +185,11 @@ replaced. Judges D to G re-score byte-identical text, so every difference betwee
 instrument. \texttt{Mixtral-8x7B}, the one judge whose interval contains zero, re-asked on the $850$-prompt
 pass at a binding budget reads $+0.0226$ $[-0.0018, +0.0476]$: the same sign as the others and a small, not an absent, effect. Two earlier attempts ran on AlpacaEval, where the reversal does not hold, and were refused by their gates; the extra prompts cut a half-width of $0.0443$ to $0.0247$, and the dispute is the meter's ($+0.0971$ under Mixtral, $+0.0253$ under judge~B). Family and size do not account for it ($3.8$B, $14$B, $27$B and $72$B resolve;
 $47$B does not). The judges disagree item by item (per-prompt correlation $+0.284$ between D and E), so we
-report the fraction that resolve and never average them. Two readings are reported against us: the
+report the fraction that resolve and never average them. Order consistency, the share of prompts whose
+two presentation orders agree, spans $0.29$--$0.37$ over the four arms for judge~B, $0.35$--$0.42$ for E,
+$0.63$--$0.71$ for C, $0.68$--$0.77$ for F, $0.76$--$0.80$ for D and $0.78$--$0.85$ for G; the two most
+consistent judges both place the repaired difference above zero
+(\texttt{results/\allowbreak judge\_\allowbreak order\_\allowbreak consistency.csv}). Two readings are reported against us: the
 seed-$52$ judge-C estimate, $+0.1000$, falls just outside the original interval on the favourable side and
 is never quoted as the headline; and we predicted judge~C, the opponent's own checkpoint, would be a harsh
 test, and it did the opposite, so that prediction is withdrawn.
