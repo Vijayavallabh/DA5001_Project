@@ -39,3 +39,21 @@ fails, the headline sentence in Section 4 carries the uncut reading beside the c
 - Any other character limit, judge or seed chosen after a verdict is read.
 
 ## Scoring log
+
+### Scored 2026-09-25 09:22 IST --- R1 CONFIRMED, R2 WITHIN: nothing the cut removed moves the headline
+
+The pass ran on host B, GPU 5, `09:08` to `09:10` IST (`output/logs/feat204_judge.done`, launcher
+`scripts/run_feat202_206.sh q5`); the script's own assertion that no uncut item reaches `8,192` tokens held.
+Scored by `.venv/bin/python analysis/score_feat203_206.py --only 204` -> `results/full_response.csv`.
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| R1, `D3` with nothing cut | `+0.062 [+0.0265, +0.0975]`, CONFIRMED | CONFIRMED | **right** |
+| R2, gap to the cut pass on the same host (`+0.059 [+0.0235, +0.094]`) | `0.003` | within `0.02` | **right** |
+
+**Descriptive, no band.** `D1 = +0.113 [+0.088, +0.138]` and `D2 = +0.051 [+0.0255, +0.076]` uncut. On the
+`150` biographies alone the uncut difference is `+0.0217 [-0.0517, +0.0933]`. Any arm's level moved on `23`
+of `500` prompts when nothing was cut.
+
+**Manuscript, as registered.** The judging paragraph of the appendix states the cut, its incidence and
+R1-R2; the headline sentence is unchanged because R1 holds.

@@ -52,3 +52,28 @@ interval. If G1 fails, that is said instead.
 - Any other grid, seed length, temperature, memoriser or template chosen after a query is read.
 
 ## Scoring log
+
+### Scored 2026-09-25 09:22 IST --- G1 PASS, C1 right, C2 STRADDLES (predicted): chat onset `3.94` `[2.97, 4.44]`, a quarter of resamples never cross
+
+The sweep ran on host B, GPU 5, `09:10` to `09:15` IST (`output/logs/feat206_{onset,ci}.done`); every
+query's served text is the memoriser continuing its passage inside the assistant turn, not an echo of
+the prompt (read on the first records of `output/feat206/chat_onset/queries.jsonl` before scoring).
+Scored by `.venv/bin/python analysis/score_feat203_206.py --only 206` -> `results/chat_onset.csv`.
+
+**Gates.** G0 PASS: `100` passages at all eight budgets, `0` budget violations. G1 PASS: served through the
+chat template the memoriser alone reads mean recall `0.2193` at `k=-1` (plain text: `0.4921`).
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| C1 | G1 passes, `0.2193 < 0.4921` | passes, below plain | **right** |
+| C2, onset against the crossover `k=3` | `3.9412 [2.9683, 4.435]`, STRADDLES | STRADDLES | **right** |
+
+**Descriptive, no band.** Mean recall `0.0000` at `k=0` and `k=1.5`, `0.0010` at `2`, `0.0034` at `2.6`, `0.0054`
+at `3.2`, `0.0086` at `3.8` and `0.0155` at `4.5`, so it stays below `0.01` at every budget through `3.8`. As a
+ratio of `s(x) = 3.239` the onset is `1.2168 [0.9164, 1.3693]`. **`25.3%` of bootstrap resamples never reach
+`0.01` on this grid** (caution (g)): the interval is conditioned on the crossing and its upper end is a
+floor, not a bound.
+
+**Manuscript, as registered.** Section 4's chat sentence adds that in the same configuration extraction
+begins at `k = 3.9` (`[3.0, 4.4]`, a quarter of resamples not crossing by `4.5`), so the meter's first win at
+`k=3` and onset coincide within the interval.

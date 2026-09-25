@@ -1,0 +1,14 @@
+band,quantity,value,lo95,hi95,reading,n
+G0,"100 passages at every k, no budget violation",1.0,,,PASS,8
+G1,memoriser alone through the chat template: sampled k=-1 mean recall,0.2193,,,PASS,100
+desc,mean near-verbatim recall at k=-1,0.2193,,,,100
+desc,mean near-verbatim recall at k=0,0.0,,,,100
+desc,mean near-verbatim recall at k=1.5,0.0,,,,100
+desc,mean near-verbatim recall at k=2,0.001,,,,100
+desc,mean near-verbatim recall at k=2.6,0.0034,,,,100
+desc,mean near-verbatim recall at k=3.2,0.0054,,,,100
+desc,mean near-verbatim recall at k=3.8,0.0086,,,,100
+desc,mean near-verbatim recall at k=4.5,0.0155,,,,100
+C2,chat onset against the crossover k=3,3.9412,2.9683,4.435,STRADDLES,100
+desc,chat onset as a ratio of s(x) = 3.239,1.2168,0.9164,1.3693,,
+desc,bootstrap resamples with no crossing (%),25.3,,,,

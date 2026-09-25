@@ -161,6 +161,9 @@ def main():
             float(r["hi95"]), n=r["n"])
         blog = list(csv.DictReader(open(os.path.join(a.outdir, x, f"blocks_{x}.csv"))))
         add("desc", x, "reward calls (candidates scored)", len(blog) * n, n=len(blog))
+    r = S["blk50n64_reward"]["D4"]
+    add("desc", "blk50n64_reward", "gain over the anchor control (D4)", float(r["value"]), float(r["lo95"]),
+        float(r["hi95"]), r["reading"], r["n"])
     r = S["blk200n1"]["D4"]
     add("desc", "blk200n1", "the anchor alone through this code path, gain over the anchor control",
         float(r["value"]), float(r["lo95"]), float(r["hi95"]), r["reading"], r["n"])

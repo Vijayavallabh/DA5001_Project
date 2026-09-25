@@ -1500,8 +1500,8 @@
       "description": "Review 1 Q4: the headline pass with the judge's 1,200-character cut removed (results/onset_prediction_full_response.md).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "scripts/run_feat202_206.sh q5 on host B GPU 5 (exit 0); .venv/bin/python analysis/score_feat203_206.py --only 204 -> results/full_response.csv: R1 D3 uncut +0.062 [+0.0265, +0.0975] CONFIRMED (right); R2 gap to the cut pass on the same host 0.003 (<= 0.02, right); biographies alone +0.0217 [-0.0517, +0.0933]; 23/500 prompts moved."
     },
     {
       "id": "feat-205",
@@ -1518,8 +1518,8 @@
       "description": "Review 4 Q2: the audited pair's onset sweep served through the chat template, against the chat crossover at k=3 (results/onset_prediction_chat_onset.md).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "scripts/run_feat202_206.sh q5 on host B GPU 5 (exit 0); .venv/bin/python analysis/score_feat203_206.py --only 206 -> results/chat_onset.csv: G0 PASS, G1 PASS (k=-1 recall 0.2193 chat-served vs 0.4921 plain), C2 onset 3.9412 [2.9683, 4.435] STRADDLES k=3 (predicted STRADDLES), 25.3% of resamples never cross by 4.5."
     },
     {
       "id": "feat-207",

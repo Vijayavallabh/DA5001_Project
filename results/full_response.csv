@@ -1,0 +1,8 @@
+band,quantity,value,lo95,hi95,reading,n
+R1,D3 uncut,0.062,0.0265,0.0975,REVERSAL CONFIRMED,500
+ref,"D3 cut at 1,200 characters, same host (feat-201's null-arm pass)",0.059,0.0235,0.094,REVERSAL CONFIRMED,500
+R2,|D3 uncut - D3 cut|,0.003,,,WITHIN,
+desc,D1 uncut,0.113,0.088,0.138,SURVIVES,500
+desc,D2 uncut,0.051,0.0255,0.076,SURVIVES,500
+desc,"D3 uncut, biographies only",0.0217,-0.0517,0.0933,,150
+desc,prompts on which any arm's level changed when nothing was cut,23,,,,500
