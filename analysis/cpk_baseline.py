@@ -5,9 +5,8 @@ trained on disjoint shards. No model pair here meets that premise, so this runs 
 one safe model the paper has: for each prompt the risky model's draws y_1..y_M are tested in seed
 order, the first whose realised log-ratio
     R(y) = log p_r(y|x) - log p_s(y|x),
-summed over the served tokens through the terminating end-of-text (analysis/window_logratio.py's
-trajectory_steps, which reads both probabilities off the harness's per-step log), is at most kappa is
-served, and if none passes the anchor's own draw (the committed anchor arm) is served. Then
+summed over the served tokens through the harness's own terminating token (served_steps, which reads
+both probabilities off the per-step log), is at most kappa is served, and if none passes the anchor's own draw (the committed anchor arm) is served. Then
     q(y) <= M p_r(y) 1[R(y) <= kappa] + p_s(y) <= (M e^kappa + 1) p_s(y)
 for every y, so D_inf(q || p_s) <= C = log(1 + M e^kappa) pathwise, whatever the acceptance rate.
 
@@ -27,10 +26,10 @@ import statistics as st
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from analysis.window_logratio import trajectory_steps  # noqa: E402
 from dap.shared import served_generation  # noqa: E402
 
 CLASSES = ("neutral", "factual", "creative")
+END_OF_TEXT = 128001
 GRID = (4.1589, 33.271, 83.178, 159.83)
 
 
@@ -44,6 +43,26 @@ def certificate(kappa, m):
     """log(1 + m e^kappa), as a stable softplus."""
     x = kappa + math.log(m)
     return x + math.log1p(math.exp(-x)) if x > 0 else math.log1p(math.exp(x))
+
+
+def served_steps(rec):
+    """log p_r - log p_s of every SERVED token, through the harness's own terminating token.
+
+    A plain run (no chat template) stops only at <|end_of_text|>: dap/e1.py passes eos=tokenizer.eos_token_id,
+    128001. An <|eot_id|> (128009) mid-generation is therefore not the end -- the model writes on and the served
+    text keeps every token after it. analysis/window_logratio.trajectory_steps treats 128009 as an end, which
+    cut R short on exactly the draws a small kappa then accepted: all three served at C = 33.27 had an eot_id
+    at step 8 or 18 and ran on to 200 tokens (caught 2026-09-25 from the arm summary, before any verdict)."""
+    assert not rec["metadata"].get("chat_template"), "a chat-template run stops at <|eot_id|> too"
+    out = []
+    for st in rec["per_step_log"]:
+        ps, pr = st.get("p_s_prob"), st.get("p_risky_prob")
+        if ps is None or pr is None or ps <= 0 or pr <= 0:
+            raise ValueError(f"step without both probabilities: {st}")
+        out.append(math.log(pr) - math.log(ps))
+        if st.get("sampled_token_id") == END_OF_TEXT:
+            break
+    return out
 
 
 def token(c):
@@ -67,10 +86,10 @@ def main():
             for path in glob.glob(os.path.join(d, f"trajectories_k-1_{cls}.jsonl")):
                 for line in open(path):
                     r = json.loads(line)
-                    steps = trajectory_steps(r)
+                    steps = served_steps(r)
                     gen = served_generation(r["aggregate"], r["prefix_analysis"]["prefix_text"])
                     draws.setdefault(r["metadata"]["prompt_id"], []).append(
-                        (r["metadata"]["seed"], cls, sum(x for x, _ in steps), len(steps), len(gen.split()), line))
+                        (r["metadata"]["seed"], cls, sum(steps), len(steps), len(gen.split()), line))
     anchor = {}
     for cls in CLASSES:
         for line in open(os.path.join(a.anchor_dir, f"trajectories_k0_{cls}.jsonl")):

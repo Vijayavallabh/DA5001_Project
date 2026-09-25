@@ -72,6 +72,16 @@ case "${1:?q4|q5|q6|q7|q67}" in
   q7) export CUDA_VISIBLE_DEVICES=7
       gen gen_d 1104 $O/risky_d
       run fact_C "${MH[@]}" --tag fact_C --judge meta-llama/Meta-Llama-3.1-8B-Instruct "${ARMS[@]}" ;;
+  # 2026-09-25: q4 and q5 were stopped before any verdict was read, because the first `arms` summed R only
+  # through an <|eot_id|> the plain harness does not stop at (analysis/cpk_baseline.py served_steps). These
+  # re-enter them after the draws: arms again, then the same passes (the non-CP-k verdicts are cached).
+  q4b) export CUDA_VISIBLE_DEVICES=4
+      run arms $PY analysis/cpk_baseline.py --risky-dirs $O/risky_a $O/risky_b $O/risky_c $O/risky_d || exit 1
+      run judge_B "${MH[@]}" --tag cpk_B_hostb --judge microsoft/Phi-3.5-mini-instruct "${ARMS[@]}" "${CPK[@]}"
+      run fact_F "${MH[@]}" --tag fact_F --judge Qwen/Qwen2.5-14B-Instruct --device-map auto "${ARMS[@]}" ;;
+  q5b) export CUDA_VISIBLE_DEVICES=5
+      sleep 60; wait_for 3600 arms || exit 1
+      run judge_G "${MH[@]}" --tag cpk_G --judge google/gemma-2-27b-it --device-map auto "${ARMS[@]}" "${CPK[@]}" ;;
   q67) wait_for 21600 leak fact_C || exit 1
       export CUDA_VISIBLE_DEVICES=6,7
       run fact_D "${MH[@]}" --tag fact_D --judge Qwen/Qwen2.5-72B-Instruct --device-map auto "${ARMS[@]}"

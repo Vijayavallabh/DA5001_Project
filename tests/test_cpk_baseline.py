@@ -72,3 +72,18 @@ def test_serve_takes_the_first_passing_draw_in_order():
     for rs in itertools.permutations([0.2, 0.9, 3.0]):
         j = serve(list(rs), 1.0)
         assert all(r > 1.0 for r in rs[:j]) and rs[j] <= 1.0
+
+
+def test_r_runs_through_the_harness_end_not_an_eot_id():
+    """A plain run stops only at <|end_of_text|>; an <|eot_id|> mid-generation is served text, and R must count it."""
+    from analysis.cpk_baseline import served_steps
+    import math
+    steps = [dict(p_s_prob=0.5, p_risky_prob=0.5, sampled_token_id=11),
+             dict(p_s_prob=0.1, p_risky_prob=0.9, sampled_token_id=128009),     # eot_id: the model writes on
+             dict(p_s_prob=0.01, p_risky_prob=0.5, sampled_token_id=12),
+             dict(p_s_prob=0.2, p_risky_prob=0.4, sampled_token_id=128001),     # the harness's end
+             dict(p_s_prob=1.0, p_risky_prob=1.0, sampled_token_id=128001)]     # padding past the end
+    rec = dict(metadata=dict(chat_template=False), per_step_log=steps)
+    got = served_steps(rec)
+    assert len(got) == 4
+    assert abs(sum(got) - (math.log(9) + math.log(50) + math.log(2))) < 1e-9
