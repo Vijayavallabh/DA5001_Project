@@ -99,3 +99,42 @@ Limitations sentence answers Q12 with L1's reading.
   judges the ten arms that already exist under the same tag, then runs the full registered pass, which reuses
   those cached verdicts. `matched_h2h.py` judges each arm alone against the opponent, in batches of 200 in
   prompt order, so the split does not change a verdict.
+
+### Scored 2026-09-25 (host B, judge~B and judge~G) --- four of six registered readings right
+
+Command, on host B where `output/feat213` lives: `.venv/bin/python analysis/score_feat213.py` ->
+`results/long_outputs_scoring.csv` and `results/long_outputs.csv` (lengths). No pair needed the fit rule:
+`0` of `500` were cut in every arm under B. Verdicts: `results/matched_h2h_verdicts_f213_{B,G}.csv`.
+
+| | judge~B | registered | verdict |
+|---|---|---|---|
+| L1 best-of-`64` over its own draw at `T_max = 1000` | `+0.063` `[+0.043, +0.083]` CONFIRMED | CONFIRMED | RIGHT |
+| L2 installments minus the pathwise meter at `20.79` | `+0.0165` `[-0.0045, +0.038]` unresolved | CONFIRMED | **WRONG** |
+| L3 installments minus the KL meter at `20.79` | `+0.019` `[-0.001, +0.0395]` unresolved | CONFIRMED | **WRONG** |
+| L4 best-of-`64` minus the pathwise, up-front and windowed meters at `log 64` | `+0.062`, `+0.0305`, `+0.0445`, all CONFIRMED | CONFIRMED | RIGHT |
+| L5 best-of-`64` minus the KL meter at `k = 0.1` and `0.5` | `+0.0775`, `+0.104`, both CONFIRMED | CONFIRMED | RIGHT |
+| L6 judge~G, same sign on L1-L5 | all eight positive and CONFIRMED (`+0.1605` and `+0.152` for L2, L3) | same sign | RIGHT |
+
+**Descriptive.**
+- **Whole-output selection does not need installments at `1,000` tokens.** Installments of `8` draws per
+  `100`-token block gain `+0.0185` `[-0.0005, +0.037]` under B (`+0.1525` under G) and lose to one choice
+  among `64` by `0.0445` `[0.026, 0.0635]` (G: `0.059` `[0.0295, 0.0895]`). At `T_max = 200`, with `64`
+  draws per block, installments won instead.
+- **Lengths.** The opponent, the risky model continuing text, always runs to `1,000` tokens. Every anchor-based
+  arm stops far sooner. The anchor averages `179` tokens, best-of-`64` `203` (`32.6%` of outputs longer than
+  `200` tokens, `2.2%` at the cap) and installments `159`. The meters lengthen with their budget: `215` at
+  `k = 0.0208`, `461` at `0.1`, `831` at `0.5`, and the cap at `10`.
+- On the `163` prompts whose served best-of-`64` output is longer than `200` tokens, its gain is `+0.092`
+  `[+0.057, +0.127]` (G: `+0.1825`).
+- **At this length the meters buy nothing over the anchor under B.** The KL meter reads `-0.0145` at
+  `k = 0.1`, `-0.041` at `0.5` and `-0.0175` at `10`, where it is the risky model. The pathwise meters read
+  `+0.001` and `+0.002`. The windowed meter reads `+0.0185` and the up-front one `+0.0325`. The judges part on
+  the risky model's own `1,000` tokens: G reads `k = 10` at `+0.1095` over the anchor, B at `-0.0175`.
+- Selection's scaling at `1,000` tokens (B): `+0.024` at `n = 4`, `+0.0305` at `16`, `+0.063` at `64`. The
+  uncut reward serves many empty answers, `97` of `500` at `n = 64` and `167` at `n = 16`, against `65` for
+  one draw (`results/matched_h2h_f213_B.csv`, `n_empty`).
+
+**What the manuscript does (as fixed above).** L1 held, so the paper says whole-output selection still gains
+at `1,000` tokens at the same `log 64`. L2 and L3 are reported as the matched comparison at `1,000` tokens:
+installments tie the meters at their whole-output `20.79` nats under B, beat them under G, and lose to
+whole-output selection under both.
