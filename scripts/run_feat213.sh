@@ -51,6 +51,11 @@ case "${1:?q0|q1|q2|q3}" in
   q1) export CUDA_VISIBLE_DEVICES=1
       run inst $PY analysis/blockwise_selection.py --block-len 100 --t-max 1000 --n 8 --scorer value \
         --reward-max-chars 0 --out-dir $O/inst ;;
+  # 2026-09-25: q1 ran out of memory at block 5 of 10 (anchor rollouts of 256 rows at ~1,100-token contexts
+  # beside the resident 7B scorer), before writing any output; re-run from scratch at half the draw batch.
+  q1b) export CUDA_VISIBLE_DEVICES=1
+      run inst $PY analysis/blockwise_selection.py --block-len 100 --t-max 1000 --n 8 --scorer value \
+        --reward-max-chars 0 --gen-batch 128 --out-dir $O/inst ;;
   q2) export CUDA_VISIBLE_DEVICES=2
       run kl $PY "${H1[@]}" --k-values -1 0 0.020794 0.1 0.5 10 --output-dir $O/kl || exit 1
       wait_for 21600 sel inst meters || exit 1
