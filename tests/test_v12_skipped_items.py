@@ -282,3 +282,33 @@ def test_the_nonempty_rule_across_table2_is_quoted_from_its_csv():
     else:
         changed = [r["row"] for r in rows if r["same_label"] != "True"]
         raise AssertionError(f"rows {changed} change their reading; the body must name them (feat-209's registration)")
+
+
+def test_anchoredbyte_at_the_authors_settings_is_quoted_from_its_csv():
+    """feat-205: the authors' byte-level decoder at temperature 0.7 and penalty 1.1. A1 may be quoted only because the
+    replacement control passed G1' (the anchor at every byte); if A1 ever reads SURVIVES, the registration requires
+    the temperature-1.0 'indistinguishable' sentence and Section 4 to be scoped, and this guard fails until they are.
+    The binding shares are the pooled construction on both sides (caution (ai): one word, one denominator)."""
+    rows = _csv("anchoredbyte_t07.csv")
+    get = lambda band, start: next(r for r in rows if r["band"] == band and r["quantity"].startswith(start))
+    for band in ("G0", "G1", "G1'", "G2"):
+        gs = [r for r in rows if r["band"] == band]
+        assert gs and all(r["reading"] == "PASS" for r in gs), band
+    f = lambda x: f"{float(x):+.4f}".rstrip("0")
+    iv = lambda r: f"${f(r['value'])}$ $[{f(r['lo95'])}, {f(r['hi95'])}]$"
+    a = body("appendix_selection.tex")
+    a1, d3 = get("A1", "the meter's gain"), get("desc", "TinyComma selection")
+    ab10 = next(r for r in _csv("anchoredbyte.csv") if r["k"] == "0.1")
+    assert (f"binds on ${100 * float(ab10['binding_share']):.1f}\\%$ of byte steps and is judged indistinguishable from "
+            "Comma-7B alone") in a
+    if a1["reading"] != "DISSOLVES":
+        raise AssertionError("A1 no longer dissolves: scope the temperature-1.0 sentence and Section 4 (feat-205)")
+    bind = get("posthoc", "k=0.1: binding share pooled over bytes")
+    assert f"the meter at $k=0.1$ binds on ${100 * float(bind['value']):.1f}\\%$ of byte steps and again gains nothing over its anchor, {iv(a1)}" in a
+    assert d3["reading"] == "REVERSAL CONFIRMED" and float(d3["lo95"]) > 0
+    assert f"TinyComma's selection at those settings gains {iv(d3)} more over its own" in a
+    sw07, sw10 = get("desc", "S_w under Comma-7B at 0.7/1.1"), get("desc", "S_w under Comma-7B at 1.0")
+    ratio = 80 / float(sw07["value"])
+    assert sw07["reading"] == f"K/S_w {ratio:.3f}"
+    assert (f"$S_w = {float(sw07['value']):.1f}$ nats against ${float(sw10['value']):.1f}$ untempered, both over the "
+            f"$758$ protected works, so $K/S_w = {ratio:.3f}$") in a
