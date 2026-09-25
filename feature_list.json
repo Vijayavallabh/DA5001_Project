@@ -1576,6 +1576,15 @@
       "dependencies": [],
       "status": "in-progress",
       "evidence": ""
+    },
+    {
+      "id": "feat-213",
+      "name": "Selection, installments and the meters at 1,000-token outputs",
+      "description": "Review 3 Q12: every mechanism at T_max = 1000 on the headline's 500 prompts (whole-output best-of-n at n = 1, 4, 16, 64 from one pool, installments L=100 n=8, the KL meter at k = 0.020794, 0.1, 0.5, 10, the pathwise meter at whole-output 4.16 and 20.79 nats, the front-loaded and the windowed meter at log 64), judged uncut under judges B and G on host B (results/onset_prediction_long_outputs.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
     }
   ]
 }

@@ -8,7 +8,9 @@
 `results/onset_prediction_cpk_baseline.md`) and feat-212 (scorer family by judge family,
 `results/onset_prediction_scorer_judge_factorial.md`), queued by `scripts/run_feat211.sh` on host B GPUs 4-7
 (queues q4, q5, q6, q7, q67; sentinels `~/v/logs/f211_<job>.{done,fail}`). Local A100s are all held by the
-user's vLLM servers; host B GPUs 0-3 are the user's and untouched.
+user's vLLM servers. feat-213 (every mechanism at `T_max = 1000`, `results/onset_prediction_long_outputs.md`)
+runs on host B GPUs 0-3, which were idle when it launched (`scripts/run_feat213.sh q0..q3`, sentinels
+`~/v/logs/f213_<job>.{done,fail}`). Post hoc, CPU: `results/utility_surprisal_note.md` (review 2 Q6).
 
 ## Current state, 2026-09-25 evening --- v13 (seventh review round) complete; nothing running
 
