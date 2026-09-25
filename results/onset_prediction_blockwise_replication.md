@@ -1,6 +1,6 @@
 # Pre-registration: selection in installments, a fresh draw and a second judge (feat-208)
 
-**feat-208.** Committed **2026-09-25 10:05 IST**, after feat-201 was scored and before any token of this
+**feat-208.** Committed **2026-09-25 09:55 IST**, after feat-201 was scored and before any token of this
 arm is drawn. Nothing above `## Scoring log` is edited after the first registered draw.
 
 ## Why
