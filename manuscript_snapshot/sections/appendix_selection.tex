@@ -861,6 +861,51 @@ is multilingual and openly licensed, so that ``selection reproduces nothing'' is
 where the memoriser reaches $93\%$; the anchor's own leakage is $0.0000$. The anchor's utility in these
 languages is unmeasured.
 
+\paragraph{Short works.}\label{app:shortworks}
+A short work is where a small certificate can meet $S$. We split $1{,}267$ famous quotations of $8$ to $60$
+words (\texttt{Abirate/\allowbreak english\_\allowbreak quotes}, from Goodreads) in half. Of these, $1{,}049$
+are by authors living or dead since 1956, so in copyright under a life-plus-seventy term, and $218$ by authors
+who died before 1926. The prompt is an opening quotation mark and the first half, and a mechanism leaks when
+its continuation starts with the second half, case and punctuation ignored (registered in
+\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak short\_\allowbreak works.md}; seven of
+seven predictions right). The anchor needs a median $35.6$ nats for a protected second half, and $16.2\%$ need
+$20$ or fewer. Read from the start of a document, a whole quotation needs a median $91.1$, and none needs $20$
+or fewer. Table~\ref{tab:shortworks} gives the rates. The meter's certificate is void for $44.5\%$ of protected
+second halves at $k=0.5$, yet the meter leaks none, because its prefix debt leaves the opening tokens to the
+anchor. It leaks $9.74\%$ at $k=3$ and $69.82\%$ at $k=10$, against the $70$B's $76.39\%$, and every protected
+quotation it reproduced was one its certificate did not cover. Selection's $\log 64$ sits below every protected second
+half (the least needs $5.69$ nats). Even so, a scorer that always picks the quotation would serve $4$ of the
+$1{,}049$: short quotations the anchor itself writes on $1.6\%$ to $14.1\%$ of its draws. Ignoring case and
+punctuation makes that event far likelier than the exact string whose surprisal we measured, so the certificate
+is void for the event that leaked, as Proposition~\ref{prop:selection} allows. For the same reason every
+vacuity share here is a lower bound. We tested quotations at one pair, and no lyrics or whole poems.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Short works: the second half of a famous quotation, given the first, at the audited pair
+($T_{\max} = 64$ new tokens, so $K = 64k$). A rate is the percentage of draws that continue with the second
+half, case and punctuation ignored; for selection it is the percentage of quotations for which any of the $n$
+anchor draws does, which bounds every scorer. \emph{Void for}: the share of the $1{,}049$ protected second
+halves whose exact string has anchor surprisal $S \le K$. $95\%$ intervals resample authors
+(\texttt{results/\allowbreak short\_\allowbreak works.csv}).}\label{tab:shortworks}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+mechanism & $K$, nats & void for & protected, \% & public domain, \% \\
+\midrule
+anchor alone, $k=0$ & $0$ & --- & $0.03$ $[0.00, 0.06]$ & $0.37$ $[0.00, 0.94]$ \\
+selection, worst case, $n=8$ & $2.08$ & $0.0\%$ & $0.19$ $[0.00, 0.45]$ & $1.83$ $[0.00, 5.21]$ \\
+selection, worst case, $n=64$ & $4.16$ & $0.0\%$ & $0.38$ $[0.09, 0.75]$ & $3.67$ $[0.00, 8.33]$ \\
+meter, $k=\log(64)/64$ & $4.16$ & $0.0\%$ & $0.00$ $[0.00, 0.00]$ & $0.40$ $[0.00, 1.11]$ \\
+meter, $k=0.5$ & $32$ & $44.5\%$ & $0.00$ $[0.00, 0.00]$ & $0.40$ $[0.00, 1.11]$ \\
+meter, $k=1$ & $64$ & $78.9\%$ & $0.25$ $[0.10, 0.45]$ & $0.92$ $[0.26, 2.02]$ \\
+meter, $k=3$ & $192$ & $99.9\%$ & $9.74$ $[7.98, 11.69]$ & $15.48$ $[12.61, 18.87]$ \\
+meter, $k=10$ & $640$ & $100.0\%$ & $69.82$ $[64.01, 75.13]$ & $78.33$ $[75.84, 82.22]$ \\
+the $70$B alone, $k=-1$ & --- & --- & $76.39$ $[70.53, 81.62]$ & $81.05$ $[79.33, 83.25]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Vetting the anchor.}\label{app:vetting}
 $\Pr_{p_s}[E]$ is the one quantity in the construction measurable with no attack, no risky model and no
 access to the mechanism: draw from the candidate on the protected passages' own prefixes and score
