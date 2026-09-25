@@ -78,11 +78,27 @@ def main():
             float(leak[k]["nv_recall_mean"]), float(leak[k]["served_from_memoriser_pct"]), "", "", "", None)
     add("feat-211", "desc", "memoriser alone, near-verbatim recall",
         float(leak["memoriser alone"]["nv_recall_mean"]), "", "", "", "", None)
+    # how far a host-B judge-B pass reproduces the local one on the four committed arms (caution (as))
+    here = {r["prompt_id"]: r for r in csv.DictReader(open(os.path.join(R, "matched_h2h_per_prompt_cpk_B_hostb.csv")))}
+    there = {r["prompt_id"]: r for r in csv.DictReader(open(os.path.join(R, "matched_h2h_per_prompt_matched_plain_B.csv")))}
+    for arm in ("sel_n64", "sel_n1", "metered_k10", "anchor_k0"):
+        same = sum(here[p][f"u_{arm}"] == there[p][f"u_{arm}"] for p in here)
+        add("feat-211", "desc", f"B host-B vs local, identical per-prompt level: {arm}", round(same / len(here), 4),
+            "", "", "", "", None)
 
     # ---- feat-212 -------------------------------------------------------------------------------------------
+    # the committed de-echoed panel's D3 per judge (descriptive reproduction; B's was judged on a local A100)
+    committed = {}
+    for r in csv.DictReader(open(os.path.join(R, "deecho_rejudge.csv"))):
+        if r["quantity"] != "D3 difference of gains":
+            continue
+        j = r["judge"].split()[0]
+        if r["pass"] == "panel k=10" or (j == "C" and r["pass"] == "ladder opp Llama-3.1-8B"):
+            committed[j] = float(r["value_deecho"])
     fact = []
     n_conf = 0
-    for j, tag in JUDGES_212:
+    ready = all(os.path.exists(os.path.join(R, f"matched_h2h_{tag}.csv")) for _, tag in JUDGES_212)
+    for j, tag in (JUDGES_212 if ready else ()):
         P = read_pass(R, tag)
         s = row(P, "difference", "sel_n64 - sel_g64")
         dq = row(P, "difference", "sel_n64 - metered_k10")
@@ -90,9 +106,11 @@ def main():
         n_conf += s[3] == "CONFIRMED"
         fact.append(dict(judge=j, tag=tag, S=s[0], S_lo=s[1], S_hi=s[2], S_reading=s[3], D3_qwen=dq[0],
                          D3_qwen_lo=dq[1], D3_qwen_hi=dq[2], D3_qwen_reading=dq[3], D3_gemma=dg[0],
-                         D3_gemma_lo=dg[1], D3_gemma_hi=dg[2], D3_gemma_reading=dg[3]))
-    add("feat-212", "F1", "judges under which S = sel_n64 - sel_g64 is CONFIRMED", n_conf, "", "", "", ">= 5 of 6",
-        n_conf >= 5)
+                         D3_gemma_lo=dg[1], D3_gemma_hi=dg[2], D3_gemma_reading=dg[3],
+                         D3_qwen_committed=committed.get(j, "")))
+    if ready:
+        add("feat-212", "F1", "judges under which S = sel_n64 - sel_g64 is CONFIRMED", n_conf, "", "", "",
+            ">= 5 of 6", n_conf >= 5)
     for P, j in ((B, "B"), (G, "G")):
         for diff in ("sel_g64 - win_4.16", "sel_g64 - frontpw_4.16"):
             v, lo, hi, rd = row(P, "difference", diff)
@@ -102,10 +120,11 @@ def main():
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
-    with open(os.path.join(R, "scorer_judge_factorial.csv"), "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(fact[0]))
-        w.writeheader()
-        w.writerows(fact)
+    if fact:
+        with open(os.path.join(R, "scorer_judge_factorial.csv"), "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(fact[0]))
+            w.writeheader()
+            w.writerows(fact)
     for r in out:
         print(r)
     for r in fact:

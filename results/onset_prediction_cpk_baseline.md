@@ -90,3 +90,56 @@ the paper states that CP-k accepts only outputs short enough to pay the imitatio
   verdict read; pooling this pass with any other; setting a host-B judge-B level beside a committed one.
 
 ## Scoring log
+
+### Scored 2026-09-25 (host B, judge~B and judge~G passes) --- five of six registered readings right
+
+Command: `.venv/bin/python analysis/score_feat211.py` -> `results/cpk_baseline_scoring.csv` (every verdict computed
+from `results/matched_h2h_cpk_{B_hostb,G}.csv`, `results/cpk_baseline.csv` and `results/cpk_extraction.csv`).
+
+**A defect in our code, found and repaired before any verdict was read.** The first `arms` step summed `R`
+only through the first `<|eot_id|>` (`analysis/window_logratio.trajectory_steps` treats `128009` as an end).
+The plain harness stops only at `<|end_of_text|>`, so the model writes on after an `<|eot_id|>` and the served
+text keeps those tokens. The flawed arm served the risky model on three prompts at `C = 33.27`, and all three
+were such truncations: an eot_id at step `8` or `18`, then `132` to `154` words served. G1 held there on an
+under-counted `R`, which is not what this document registers ("summed over the served tokens through the
+terminating end-of-text"). Both judge passes were stopped while they were still judging non-CP-k arms. The
+fix is `analysis/cpk_baseline.py:served_steps`, which sums through the harness's own end; a test fails on the
+old rule. The arms were rebuilt and the passes re-entered (`scripts/run_feat211.sh q4b`/`q5b`); the non-CP-k
+verdicts stayed cached. No CP-k verdict of the flawed arms was computed. The same reader cuts `3` of the
+`1,500` committed `sweep_plain` `k=-1` trajectories the same way (`0.2%`), which is logged in `progress.md`
+rather than changed here.
+
+**Gates.** G0: every prompt has `64` draws at `64` distinct seeds, and every passage `64` memoriser draws
+(the scripts assert both). G1: every served draw has `R <= kappa` (asserted), and `log(1 + M e^kappa)`
+reproduces every grid `C` to `1e-4` (asserted by the scorer).
+
+| | reading | registered | verdict |
+|---|---|---|---|
+| C1 installments `L=10` minus CP-k at `83.18` (B) | `+0.1205` `[+0.091, +0.1485]` CONFIRMED | CONFIRMED | RIGHT |
+| C2 installments `L=25` minus CP-k at `33.27` (B) | `+0.143` `[+0.119, +0.168]` CONFIRMED | CONFIRMED | RIGHT |
+| C3 best-of-`64` minus CP-k at `log 64` (B) | `+0.110` `[+0.0855, +0.135]` CONFIRMED | CONFIRMED | RIGHT |
+| C4 the same three under G | `+0.254`, `+0.2855`, `+0.176`, all CONFIRMED | same sign | RIGHT |
+| C5 accepted draws shorter at `83.18` | median `200` tokens, as all draws (`200`) | below | **WRONG** |
+| C6 leakage below `0.01` at every `C <= 159.83` | `0.0000` at all four | `< 0.01` | RIGHT |
+
+**Descriptive.**
+- Share of prompts CP-k serves from the risky model: `0.0%` at `log 64` and at `33.27`, `26.8%` at
+  `83.18` and `99.6%` at `159.83`. Where it serves the anchor on every prompt, the arm is the anchor arm
+  itself (gain `0.000`).
+- Gains over the anchor: `+0.0395` `[+0.0245, +0.0555]` (B) and `+0.051` (G) at `83.18`; `+0.0865`
+  `[+0.062, +0.1105]` and `+0.1335` at `159.83`.
+- CP-k minus the per-token pathwise meter at the same nats: `+0.022` `[-0.006, +0.0495]` at `83.18` and
+  `-0.014` `[-0.0335, +0.006]` at `33.27`, both unresolved (G: `+0.0385`, `+0.0185`).
+- CP-k at `159.83` minus the `k=10` meter: `+0.0355` `[+0.009, +0.062]` under B and `+0.012`
+  `[-0.0335, +0.057]` under G.
+- Leakage: the memoriser alone reads `0.4629` on these draws. CP-k's recall is `0.0000` through `C = 250`,
+  `0.0016` at `400` (`3%` of passages served from the memoriser), `0.0563` at `600` (`80%`) and `0.2002` at
+  `800` (`100%`), so its onset on this grid is `600` nats. The median `R` of a memoriser draw here is in
+  `cpk_extraction.csv`, and the median `R` of a risky draw on the judged workload is `169.6` nats.
+- This host-B judge-B pass gives the local pass's per-prompt level on `93.4%` to `94.8%` of prompts for
+  the four committed arms.
+
+**What the manuscript does (as fixed above).** Section 5's CP-k sentence reports the rule as run: it
+serves the risky model on no prompt at `log 64` or `33` nats and on `26.8%` at `83`, and at every matched
+certificate best-of-`64` and installments beat it (C1-C4). The paper states that C5 failed: CP-k does not
+buy its acceptances with short outputs here, because nearly every draw runs to the `200`-token cap.
