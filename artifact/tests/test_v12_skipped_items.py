@@ -93,7 +93,11 @@ def test_chat_onset_is_quoted_with_its_no_crossing_share():
     assert f"$k={float(c2['value']):.3f}$ $[{lo:.3f}, {hi:.3f}]$" in t
     assert f"near-verbatim recall ${float(g1['value']):.4f}$" in t and float(g1["value"]) >= 0.10
     assert f"with ${float(nc['value']):.1f}\\%$ of resamples never reaching it" in t
-    assert "coincide within that interval" in t
+    # v13 (2026-09-25, Review 3 W10): the registered reading (the first win lies inside the onset's
+    # interval) stays, and so does what the point estimate says -- at k=3 recall is still below 0.01
+    assert "lies within that interval" in t or "coincide within that interval" in t
+    assert float(c2["value"]) > 3 and "the meter wins there before any measured extraction" in t
+    assert "the win comes before measured extraction, though within its interval" in body("experiments.tex")
 
 
 def _bw(band, arm, start=""):
@@ -277,7 +281,10 @@ def test_the_nonempty_rule_across_table2_is_quoted_from_its_csv():
     assert (f"the headline at {iv(h, 'D3_nonempty')} against the committed rule's {iv(h, 'D3')} in the same pass") in a
     exp = body("experiments.tex")
     if all(r["same_label"] == "True" for r in rows):
-        assert "and under it no re-judged configuration of Table~\\ref{tab:served} changes the difference's reading" in exp
+        # v13 (2026-09-25) states the same claim as "keeps +0.056 [...] and every reading of Table served"
+        assert ("and under it no re-judged configuration of Table~\\ref{tab:served} changes the difference's reading" in exp
+                or re.search(r"keeps \$\+[\d.]+\$ \$\[[^\]]*\]\$ and every reading of Table~\\ref\{tab:served\}", exp)), \
+            "the body no longer says the non-empty rule keeps every reading of Table served"
         assert "the difference keeps its reading under the non-empty rule at all eight configurations" in a
     else:
         changed = [r["row"] for r in rows if r["same_label"] != "True"]

@@ -137,7 +137,10 @@ def test_the_majority_vote_dominance_claim_matches_its_whole_grid():
     txt = body("selection.tex", "experiments.tex")
     assert "four draws of it beat all $28$ reward cells" not in txt, \
         "the withdrawn dominance claim is back in the body; feat-158 registered its withdrawal"
-    assert "up to $7.6$B --- but not at $14$B" in txt, \
+    # v13 (2026-09-25) dropped the dash ("beats the pointwise reward up to a $7.6$B scorer but not at
+    # $14$B"); what is pinned is the claim: dominance up to 7.6B, and not at 14B, in one clause.
+    import re as _re
+    assert _re.search(r"up to (?:a )?\$7\.6\$B(?: scorer)?,?(?: ---)? but not at \$14\$B", txt), \
         "the replacement judge-free dominance claim was reworded or trimmed"
 
 

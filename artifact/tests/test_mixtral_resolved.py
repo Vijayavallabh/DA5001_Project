@@ -35,8 +35,18 @@ def test_mixtral_reads_tight_zero_and_the_band_still_qualifies():
 
 def test_the_body_adopts_the_committed_tight_zero_sentence():
     txt = M.body("experiments.tex")
-    assert "replicates under four judges and is bounded below $0.03$ under the one clean" in txt, \
-        "the committed TIGHT ZERO sentence is not in the body"
+    # v13 (2026-09-25): Review 3 (A3) asked how far each judge can be trusted, and Mixtral's two
+    # verdicts on an item agree on only 35-42% of items, so "the one clean judge" is gone. The
+    # committed TIGHT ZERO is the substance and must stay: Mixtral named, the difference bounded below
+    # 0.03 on the recorded text, with its band, in one sentence.
+    import re as _re
+    sent = [x for x in _re.split(r"(?<=[.;])\s", txt) if "below $0.03$" in x]
+    assert sent, "the committed TIGHT ZERO sentence is not in the body"
+    s = " ".join(sent)
+    i = txt.find(sent[0])
+    assert "Mixtral" in txt[max(0, i - 400): i + len(sent[0])], "the bound is no longer attributed to Mixtral"
+    assert "$+0.0226$ $[-0.0018, +0.0476]$" in s, s
+    assert "the one clean" not in txt, "Mixtral is called the clean judge again; its consistency is 35-42%"
     # The withdrawn framing must be gone: it said only that an exception exists.
     assert "four of five} put its interval clear of zero" not in txt, \
         "the superseded 'four of five' framing is back; the exception is now bounded, not open"

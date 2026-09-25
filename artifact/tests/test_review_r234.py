@@ -307,13 +307,18 @@ def test_the_open_markers_are_explained_by_the_gate_that_failed_them():
 def test_the_headline_pass_frontier_distances_round_from_their_csv():
     """A report asked whether log 64 is near Theorem 1's frontier; Appendix A answered only at n=8.
     Both headline-pass ratios are recomputed by analysis/frontier_distance_h2h.py."""
-    r = {x["arm"]: float(x["over_frontier"]) for x in _csv("frontier_distance_h2h.csv")}
+    # v13 (2026-09-25, seventh review round): the paragraph reads the ratios on the REPAIRED text
+    # (results/frontier_distance_h2h_deecho.csv, caution (bc)); the echo-carrying figures it used to
+    # quote survive only as "an earlier version gave", and must stay labelled as such.
+    r = {x["arm"]: float(x["over_frontier"]) for x in _csv("frontier_distance_h2h_deecho.csv")}
+    old = {x["arm"]: float(x["over_frontier"]) for x in _csv("frontier_distance_h2h.csv")}
     sel, met = r["selection, n=64"], r["metered decoder, k=10"]
-    # v10 moved the paragraph to Appendix H (appendix_onset.tex) and reads "sits" for "is"
     app = body("appendix_onset.tex")
-    m = re.search(r"selection at \$n=64\$ (?:is|sits) \$(\d+)\\times\$ the frontier", app)
-    assert m and m.group(1) == f"{sel:.0f}", (m and m.group(1), sel)
+    m = re.search(r"selection at \$n=64\$ (?:is|sits) \$([\d.]+)\\times\$ the frontier", app)
+    assert m and m.group(1) == f"{sel:.1f}", (m and m.group(1), sel)
     assert f"${met:,.0f}\\times$".replace(",", "{,}") in app
+    assert (f"the ${old['selection, n=64']:.0f}\\times$ and ${old['metered decoder, k=10']:,.0f}\\times$ an "
+            "earlier version gave") in app.replace("{,}", ","), "the echo-text ratios lost their label"
     assert sel < met / 100, "selection is no longer two orders of magnitude nearer the frontier"
 
 

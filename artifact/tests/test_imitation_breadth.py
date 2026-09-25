@@ -133,7 +133,8 @@ def test_section2_quotes_the_further_saturated_rates():
     # the quoted rate is the SATURATED one, r_imit(20), which is what "the imitation rate of 0.857"
     # means for the audited pair
     aud = float(arms()["_audited"]["20"]["imitation_rate_nats_per_token"])
-    assert f"${aud:.3f}$" in main, aud
+    # v13 (2026-09-25) names the symbol where the rate is used: "the imitation rate $\\gamma = 0.857$"
+    assert f"${aud:.3f}$" in main or f"$\\gamma = {aud:.3f}$" in main, aud
     a = arms()
     words = {3: "three", 4: "four", 5: "five"}
     apx = body("appendix_onset.tex")

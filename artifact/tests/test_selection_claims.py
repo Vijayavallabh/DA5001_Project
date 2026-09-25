@@ -153,7 +153,9 @@ def test_no_absolute_judged_level_is_quoted_as_a_comparison():
     body = open(_tex("sections/experiments.tex"), encoding="utf-8").read().replace("\n", " ")
     assert "reaches $0.522$" not in body and "reaches $0.577$" not in body, \
         "a level-vs-level comparison is back in Section 6"
-    assert "gains over each arm's own" in body or "gain over control" in body
+    # v13 (2026-09-25) defines the gain in the Setup: "its level minus its own zero-budget control's"
+    assert ("gains over each arm's own" in body or "gain over control" in body
+            or "level minus its own zero-budget control" in " ".join(body.split()))
 
 
 def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
@@ -195,14 +197,18 @@ def test_the_reversal_claim_is_true_of_the_csvs_it_cites():
                             for f in ("iclr_intro", "selection", "experiments")).split())
     # v11: the two gains are quoted where each is read, selection's beside the k=0.5 meter (the one
     # budget that certifies a window) and the meter's at k=10, then their paired difference.
-    m = _re.search(r"improves on that anchor by \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ "
-                   r"for a bound of \$3\.175\$ nats", body)
+    # v13 (2026-09-25): selection's gain is quoted where the matched comparison is read ("Best-of-$64$
+    # gains $+0.1015$ for a KL bound of $3.175$ nats"), its interval in Table~\ref{tab:matched}, which
+    # reproduces these per-prompt levels on 500 of 500 prompts (feat-210 G2); the point estimate must be
+    # D1's, and the meter's band and the difference are quoted with their intervals as before.
+    m = _re.search(r"(?:improves on that anchor by|gains) \$\+([\d.]+)\$(?: \$\[\+([\d.]+), \+([\d.]+)\]\$)? "
+                   r"for a (?:KL )?bound of \$3\.175\$ nats", body)
     mm = _re.search(r"the meter gains \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$ at \$k=10\$",
                     body)
     assert m and mm, "the order-averaged head-to-head sentence has moved"
-    for got, want in zip(m.groups() + mm.groups(), (sel["value"], sel["lo95"], sel["hi95"],
-                                                    met["value"], met["lo95"], met["hi95"])):
-        assert abs(float(got) - float(want)) < 5e-4, (m.groups(), mm.groups(), sel, met)
+    assert abs(float(m.group(1)) - float(sel["value"])) < 5e-4, (m.groups(), sel)
+    for got, want in zip(mm.groups(), (met["value"], met["lo95"], met["hi95"])):
+        assert abs(float(got) - float(want)) < 5e-4, (mm.groups(), met)
     m2 = _re.search(r"(?:difference of|differ by) \$\+([\d.]+)\$ \$\[\+([\d.]+), \+([\d.]+)\]\$",
                     body)
     assert m2, "the paired difference has moved"
@@ -280,7 +286,12 @@ def test_the_memoriser_baseline_is_identical_at_every_anchor():
         # German passages, its own LoRA), so its k=-1 baseline has no reason to equal the English
         # one and in fact exceeds it, 0.5455 against 0.3925. The invariant here is about the SAME
         # memoriser measured beside different ANCHORS; it does not reach across corpora.
-        if path.endswith("_per_passage.csv") or "_70b" in path or "_multilingual" in path:
+        # _feat210 is selection on the LEAKAGE SWEEP's protocol (feat-210 addendum): targets built as
+        # composition_attack.py builds them and decoded to 296 tokens, and a different batching, so the
+        # same memoriser reads 0.4729 there against leak_plain's own 0.4952 (caution (u)). The invariant
+        # is about one protocol measured beside different anchors; it does not reach across protocols.
+        if (path.endswith("_per_passage.csv") or "_70b" in path or "_multilingual" in path
+                or "_feat210" in path):
             continue
         r = {x["n"]: x for x in _rows(path)}
         if "-1" not in r:

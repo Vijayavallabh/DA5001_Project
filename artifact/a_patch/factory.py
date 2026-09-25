@@ -24,7 +24,7 @@ from transformers.generation.stopping_criteria import (
 from .tokenizer import init_tokenizer
 from .bank import bucket_step
 from .loader import _is_bitsandbytes_available, _build_quantization_config
-from .pathwise import solve_theta_pathwise
+from .pathwise import max_suffix_sum, solve_theta_pathwise
 from .renyi import renyi_divergence, solve_theta_renyi
 
 
@@ -47,6 +47,7 @@ class AnchoredDecodingFactory:
         bank_cap: Optional[float] = None,
         initial_bank: float = 0.0,
         spend_threshold: Optional[float] = None,
+        window: Optional[int] = None,
         meter: str = "token",
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
@@ -193,6 +194,7 @@ class AnchoredDecodingFactory:
             bank_cap=bank_cap,
             initial_bank=initial_bank,
             spend_threshold=spend_threshold,
+            window=window,
             meter=meter,
             device=device,
         )
@@ -210,6 +212,7 @@ class AnchoredDecodingFactory:
         bank_cap: Optional[float] = None,
         initial_bank: float = 0.0,
         spend_threshold: Optional[float] = None,
+        window: Optional[int] = None,
         meter: str = "token",
         verbose: bool = False,
         device: Optional[torch.device] = None,
@@ -281,6 +284,19 @@ class AnchoredDecodingFactory:
         self.meter = meter
         self._tok_chars = None   # built lazily: characters per vocabulary entry
         self.constraint = constraint  # feat-019: 'pathwise' budgets the realised log-ratio (Delta_max-NAF); 'kl' is He et al.'s decoder
+        # feat-210: a SLIDING-WINDOW pathwise meter, the design Section 3 leaves open. k_radius is then
+        # the budget W of every span of at most `window` consecutive output tokens, not a per-token
+        # rate: at step t the served law may give any token at most W minus the largest realised
+        # log-ratio of a span ending at t-1 inside the window (never less than 0), so every span of at
+        # most `window` tokens has realised log-ratio <= W on every path, and every event on such a
+        # span given its prefix has q(E) <= e^W p_s(E). Negative ratios earn no credit. The output
+        # windows are the certified object, so there is no prefix debt, bank or threshold.
+        # None is every meter on record.
+        if window is not None:
+            assert constraint == "pathwise" and int(window) >= 1, "a windowed meter is pathwise, window >= 1"
+            assert not use_prefix_debt and initial_bank == 0.0 and bank_cap is None and spend_threshold is None, \
+                "a windowed meter has no prefix debt, initial bank, bank cap or spend threshold"
+        self.window = int(window) if window is not None else None
 
     def get_kl_stats_summary(self) -> dict:
         if not hasattr(self, "kl_stats_history") or not self.kl_stats_history:
@@ -812,6 +828,8 @@ class AnchoredDecodingFactory:
         cum_kl_spent = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
         cum_renyi = torch.zeros(batch_size, device=self.device, dtype=torch.float32)
         cum_ratio = torch.zeros(batch_size, device=self.device, dtype=torch.float32)  # realised cumulative log-ratio R_t (L(y) so far)
+        # feat-210: realised log-ratios of the last window-1 served tokens, oldest first
+        win_hist = torch.zeros(batch_size, max(0, (self.window or 1) - 1), device=self.device, dtype=torch.float32)
         eps_kl = self.eps_kl
 
         if self.use_prefix_debt:
@@ -955,7 +973,10 @@ class AnchoredDecodingFactory:
             else:
                 budget_so_far = (float(t_gen + 1) * float(k_radius)) + init_budget_tensor
                 charged = {"pathwise": cum_ratio, "renyi": cum_renyi}.get(self.constraint, cum_kl_spent)
-                if self.bank_cap is not None:  # feat-021: capped token bucket (a_patch/bank.py)
+                if self.window is not None:  # feat-210: W minus the worst span ending at t-1
+                    budget_so_far = torch.full((B,), float(k_radius), device=win_hist.device, dtype=torch.float32)
+                    remaining = (budget_so_far - max_suffix_sum(win_hist)).clamp(min=0.0)
+                elif self.bank_cap is not None:  # feat-021: capped token bucket (a_patch/bank.py)
                     bank, remaining = bucket_step(bank, k_radius, self.bank_cap)
                 else:
                     remaining = (budget_so_far - charged).clamp(min=0.0)
@@ -1014,6 +1035,8 @@ class AnchoredDecodingFactory:
                 if over > eps_kl:
                     warnings.warn(f"pathwise constraint exceeded by {over:.6f} (eps={eps_kl})", RuntimeWarning)
             cum_ratio = cum_ratio + r_step * unfinished_sequences.float()
+            if win_hist.shape[1] > 0:
+                win_hist = torch.cat([win_hist[:, 1:], (r_step * unfinished_sequences.float()).unsqueeze(1).to(win_hist.device)], dim=1)
             if self.bank_cap is not None and k_radius not in (0.0, -1.0):
                 debit = {"pathwise": r_step, "renyi": renyi_step}.get(self.constraint, kl_step)
                 bank = bank - debit * unfinished_sequences.float()

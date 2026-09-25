@@ -1,0 +1,7 @@
+quantity,value,kappa,acceptance,trajectories
+"best certificate over kappa, nats",60.69,53.38,0.0007,1500
+"median realised log-ratio of a whole output, nats",167.75,,,1500
+certificate at acceptance 0.01,87.97,83.36,0.01,1500
+certificate at acceptance 0.1,119.73,117.43,0.1,1500
+certificate at acceptance 0.5,168.35,167.66,0.5,1500
+certificate at acceptance 0.9,230.05,229.94,0.9,1500

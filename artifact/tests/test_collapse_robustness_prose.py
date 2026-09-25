@@ -33,12 +33,21 @@ def test_the_top_of_the_utility_scale_is_priced_from_the_same_law_as_the_rest():
                    for f in ("frontier", "appendix_proofs"))
     lam = float(rows["3.0"]["lambda_star_u_max"])           # a property of the safe law, same on every row
     assert len({r["lambda_star_u_max"] for r in rows.values()}) == 1
-    m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats\s*(?:,)?\s*and the decoder\s*\n?"
-                  r"\s*spends \$(\d+)\$ times that", body.replace("\n", " "))
-    assert m, "the ceiling sentence has moved"
-    assert float(m.group(1)) == round(lam, 2), (m.group(1), lam)
     best = max(float(r["spend_over_lambda_star_u_max"]) for r in rows.values())
-    assert float(m.group(2)) == round(best), (m.group(2), best)
+    flat = " ".join(body.split())
+    # v13 (2026-09-25, seventh review round): the ceiling is now read on the ORDER-AVERAGED instrument
+    # every other judged number in the paper uses (results/frontier_ratio.csv: the anchor wins BOTH
+    # presentation orders), and the single-order figures above survive only as a labelled comparison.
+    fr = {r["group"]: r for r in csv.DictReader(open("results/frontier_ratio.csv"))}["all"]
+    m = re.search(r"would cost an optimal policy \$([\d.]+)\$ nats\s*,?\s*and the decoder "
+                  r"spends \$([\d.]+)\$ times that", flat)
+    assert m, "the ceiling sentence has moved"
+    assert m.group(1) == f"{float(fr['log_inv_pi']):.2f}", (m.group(1), fr["log_inv_pi"])
+    assert m.group(2) == f"{float(fr['ratio_at_u_max']):.1f}", (m.group(2), fr["ratio_at_u_max"])
+    # the single-order reading is still quoted, and only as the single-order pass's
+    s = re.search(r"on a single-order pass[^.]*?the same reading is \$([\d.]+)\$ nats and \$(\d+)\$ times", flat)
+    assert s, "the single-order ceiling lost its label"
+    assert float(s.group(1)) == round(lam, 2) and float(s.group(2)) == round(best), (s.groups(), lam, best)
 
 
 def test_the_two_judge_sigmas_in_the_introduction_come_from_the_v6_separation_csvs():

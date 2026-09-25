@@ -35,7 +35,7 @@ def test_table2_active_column_is_the_judged_trajectories_strict_blend_share():
     and the caption must say so."""
     want = {(r["block"], float(r["k"])): 100 * float(r["active_share"]) for r in _rows("served_activity.csv")}
     assert len(want) == 18, want
-    t = body("experiments.tex")
+    t = body("tab_served.tex")          # v13 (2026-09-25): the table is its own file, in Appendix C
     i = t.index(r"\label{tab:served}")
     tab = t[t.index(r"\midrule", i): t.index(r"\bottomrule", i)]
     label, seen, t07 = None, 0, False
@@ -77,7 +77,8 @@ def test_the_chat_block_reports_every_budget_and_the_crossover_it_shows():
             rows[float(k)] = (bool(m.group(1)), r, lvl)
     assert sorted(rows) == [0.5, 1.0, 2.0, 3.0, 5.0, 10.0], sorted(rows)
     t = body("experiments.tex")
-    tab = t[t.index(r"\label{tab:served}"): t.index(r"\bottomrule", t.index(r"\label{tab:served}"))]
+    tt = body("tab_served.tex")         # v13 (2026-09-25): the table is its own file, in Appendix C
+    tab = tt[tt.index(r"\label{tab:served}"): tt.index(r"\bottomrule", tt.index(r"\label{tab:served}"))]
     block = tab[tab.index("via its chat template"):]
     for k, (hostb, d, lvl) in rows.items():
         kk = f"{k:g}" + ("^\\dagger" if hostb else "")
@@ -85,7 +86,7 @@ def test_the_chat_block_reports_every_budget_and_the_crossover_it_shows():
         i = block.index(cell)
         line = block[i: block.index("\\\\", i)]
         v, lo, hi = float(d["value"]), float(d["lo95"]), float(d["hi95"])
-        assert f"${v:+.4f}$" in line and carries_band(v, lo, hi, "experiments.tex"), (k, line)
+        assert f"${v:+.4f}$" in line and carries_band(v, lo, hi, "experiments.tex", "tab_served.tex"), (k, line)
         # round the CSV's DECIMAL string half-up, as a reader would: 0.2475 is 0.24749999... in binary
         from decimal import ROUND_HALF_UP, Decimal
         want = Decimal(lvl["value"]).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
@@ -108,17 +109,18 @@ def test_the_windowed_meter_numbers_round_from_the_log():
     sec3 = body("frontier.tex")
     i = sec3.index(r"\label{sec:uncovered}")
     para = sec3[i: sec3.index(r"\section", i) if r"\section" in sec3[i:] else None]
-    assert f"on ${int(top['n']):,}$".replace(",", "{,}") in para
-    assert f"has median ${float(real['median']):.1f}$ nats" in para
-    # "exceeds $125$ nats on only $1\%$ of them": the p99 of the per-trajectory maximum
-    assert f"exceeds ${int(float(top['p99']))}$ nats on only $1\\%$" in para
+    # v13 (2026-09-25, feat-210): the windowed meter is BUILT and measured (Table~\ref{tab:matched},
+    # Appendix~\ref{app:windowed}), so Section 3 no longer argues from this log what the meter would
+    # do on 1,500 trajectories; it quotes the log's median as the imitation cost per window and points
+    # at the appendix, which keeps the whole distribution (checked below).
+    assert f"has median ${float(real['median']):.1f}$ nats" in para and r"\ref{app:windowlr}" in para
     assert float(top["p99"]) < float(real["S_w"]), "the windowed meter would bind on the protected window"
-    assert f"below the protected window's ${float(real['S_w']):.1f}$" in para
-    # the sampling floor quoted for a 40-nat certificate
-    assert abs(3 * math.exp(40) / 1e17 - 7.06) < 0.01 and r"3e^{40} \approx 7\times10^{17}" in para
-    # the abstract's "a median $40$ nats per $50$-token window" is the same median, rounded
-    abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
-    assert f"a median ${round(float(real['median']))}$ nats per $50$-token window" in abstract
+    # the sampling floor a near-verbatim variant faces at 40 nats is quoted where the meter's chat win is
+    assert abs(3 * math.exp(40) / 1e17 - 7.06) < 0.01
+    assert "only with more than $3e^{40}$ clean draws" in body("experiments.tex")
+    # the introduction's "about $40$ nats for a $50$-token window" is the same median, rounded
+    assert (f"about ${round(float(real['median']))}$ nats for a $50$-token window"
+            in body("iclr_intro.tex")), "the imitation cost per window left the introduction"
     app = body("appendix_onset.tex")
     for q in ("median", "p90", "p99", "max"):
         assert f"${float(real[q]):.1f}$" in app, (q, real[q])
@@ -213,10 +215,16 @@ def test_the_scorer_family_arm_is_reported_as_registered():
     if not confirmed:
         abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
         abstract = abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
-        assert "though not with a scorer from another family" in abstract
-        assert "with its Qwen scorer though not with a gemma one" in body("iclr_intro.tex")
+        # The qualifier travels with every sentence that states the continuing-text win. v13
+        # (2026-09-25, Review 3 A2) moved that win out of the abstract and the introduction into
+        # Section 4; wherever either states it again, the qualifier comes back with it.
+        if "continuing text" in abstract.lower() or "$k=10$" in abstract:
+            assert "though not with a scorer from another family" in abstract
+        intro = body("iclr_intro.tex")
+        if "continuing text" in intro.lower():
+            assert "with its Qwen scorer though not with a gemma one" in intro
         close = body("iclr_closing.tex")
-        assert "or with a scorer from another family" in close and "which scorer selects" in close
+        assert "or with a scorer from another family" in close
         assert "the headline depends on the scorer" in exp
 
 
@@ -232,8 +240,9 @@ def test_the_temperature_07_block_and_its_registered_sentences():
     he = {(r["band"], r["quantity"]): r for r in _rows("he_decoding.csv")}
     sw = float(he[("S_w", "50-token window, warped anchor (0.7, 1.1), median over passages")]["value"])
     t = body("experiments.tex")
-    i = t.index(r"\label{tab:served}")
-    tab = t[i: t.index(r"\bottomrule", i)]
+    tt = body("tab_served.tex")         # v13 (2026-09-25): the table is its own file, in Appendix C
+    i = tt.index(r"\label{tab:served}")
+    tab = tt[i: tt.index(r"\bottomrule", i)]
     blk = tab[tab.index("the authors' $0.7$ and $1.1$"):]
     blk = blk[: blk.index(r"\midrule")]
     for pair, ks in (("8B", ("0.5", "1", "10")), ("70B", ("0.5", "1", "20"))):
@@ -258,11 +267,15 @@ def test_the_temperature_07_block_and_its_registered_sentences():
     if h1["reading"] == "REVERSAL REFUTED":
         assert f"the $8$B wins instead, ${float(h1['value']):+.3f}$ $[{float(h1['lo95']):+.3f}, {float(h1['hi95']):+.3f}]$" in t
         assert carries_band(float(h3["value"]), float(h3["lo95"]), float(h3["hi95"]), "experiments.tex")
-        assert "Continuing text at temperature $1.0$, that model loses" in t
+        assert ("Continuing text at temperature $1.0$, that model loses" in t
+                or "Continuing text at temperature $1.0$, the risky model loses" in t)
         abstract = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
         abstract = abstract[abstract.index("begin{abstract}"):abstract.index("end{abstract}")]
-        assert "continuing text at temperature $1.0$" in abstract
+        # the registered consequence: the 0.7 loss is in the abstract, and a continuing-text WIN, if the
+        # abstract states one (v13 moved it to Section 4, Review 3 A2), is scoped to temperature 1.0
         assert "loses to the $8$B at their temperature $0.7$" in abstract
+        if "continuing text" in abstract.lower():
+            assert "continuing text at temperature $1.0$" in abstract.lower()
     close = body("iclr_closing.tex")
     assert "where its authors use $0.7$ and $1.1$" not in close, "Limitations still says the meter ran only at 1.0"
     assert "at the authors' temperature $0.7$ and penalty $1.1$" in close

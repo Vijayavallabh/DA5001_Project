@@ -28,6 +28,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from a_patch import AnchoredDecodingFactory  # noqa: E402
+from a_patch.pathwise import max_span_sum  # noqa: E402
 from a_patch.renyi import constraint_arg  # noqa: E402
 from analysis.corpus_file import load_corpus_file  # noqa: E402
 from dap.shared import chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat  # noqa: E402
@@ -73,6 +74,7 @@ class Attacker:
             stats = self.f.get_kl_stats_summary()
             Z, B = stats["final_cum_kl_spent_per_seq"], stats["final_budget_per_seq"]
             R = stats.get("final_realised_ratio_per_seq") or [0.0] * len(chunk)
+            r_steps = [s.get("r_t") for s in stats["per_step"]]
             debt = stats["per_step"][0].get("prefix_debt") if stats["per_step"] else None
             bd_steps = [s.get("bd") for s in stats["per_step"] if s.get("bd") is not None]  # per step: list over the batch
             enc = self.tok(chunk, return_tensors="pt", padding=True)
@@ -84,7 +86,11 @@ class Attacker:
                 bdj = [b[j] for b in bd_steps[:n]]
                 act = dict(steps=len(bdj), forced=sum(x <= 1e-6 for x in bdj), free=sum(x >= 1 - 1e-6 for x in bdj))
                 self.last_activity.append(act)
-                out.append((self.tok.decode(gen_ids[:n], skip_special_tokens=True), float(Z[j]), float(B[j]), float(debt[j]) if debt else None, n, float(R[j])))
+                # feat-210: a windowed meter certifies every span of at most `window` tokens, so the R it
+                # is checked against its budget B = W with is the worst such span, not the total
+                Rj = (max_span_sum([float(r[j]) for r in r_steps[:n] if r is not None], self.f.window)
+                      if getattr(self.f, "window", None) else float(R[j]))
+                out.append((self.tok.decode(gen_ids[:n], skip_special_tokens=True), float(Z[j]), float(B[j]), float(debt[j]) if debt else None, n, Rj))
             torch.cuda.empty_cache()
         return out
 
@@ -168,6 +174,9 @@ def main():
     ap.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl', 'pathwise', or 'renyi[:alpha]'")
     ap.add_argument("--bank-cap", type=float, default=None, help="feat-021: token-bucket depth in nats (unset = unbounded bank)")
     ap.add_argument("--no-prefix-debt", action="store_true", help="feat-025: delta_init = 0")
+    ap.add_argument("--window", type=int, default=None,
+                    help="feat-210: sliding-window pathwise meter; each --k-values entry is then the budget W of "
+                         "every span of at most this many output tokens (needs --constraint pathwise --no-prefix-debt)")
     ap.add_argument("--use-chat-template", action="store_true",
                     help="feat-206: wrap every query as one user turn of the Llama-3.1 chat template and stop on <|eot_id|>")
     ap.add_argument("--raw-prompt", action="store_true", help="feat-018: drop the 'Complete the prefix:' instruction header and seed with the raw passage text (base models)")
@@ -198,7 +207,7 @@ def main():
         max_memory = {int(a): b for a, b in (kv.split("=") for kv in args.max_memory.split(","))}
     factory = AnchoredDecodingFactory.from_pretrained(safe_model_path=args.safe_model, risky_model_path=args.risky_model,
                                                       k_radius=max(0.0, args.k_values[0]), use_prefix_debt=not args.no_prefix_debt, prefix_n=5, log_kl_stats=True,
-                                                      constraint=args.constraint, bank_cap=args.bank_cap, device="cuda", dtype=torch.bfloat16, device_map="auto",
+                                                      constraint=args.constraint, bank_cap=args.bank_cap, window=args.window, device="cuda", dtype=torch.bfloat16, device_map="auto",
                                                       max_memory=max_memory, risky_device_map=(args.risky_device_map or None), trust_remote_code=True)
     tok = factory.tokenizer
     atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty, greedy=args.greedy,
@@ -239,6 +248,9 @@ def main():
     rows, t0 = [], time.time()
     for k in args.k_values:
         K_per_tok = k
+
+        def qK(n_tok):  # a query's certified budget: k per token, or W for every span under --window (feat-210)
+            return k if args.window else K_per_tok * n_tok
         for mode in args.modes:
             for L in (args.windows if mode != "single" else [0]):
                 queries = [[] for _ in passages]  # per passage: list of (Z, B, K, debt, n, R)
@@ -251,10 +263,10 @@ def main():
                     res = atk.query([x["seed"] for x in passages], k, T)
                     for i, (txt, Z, B, d, n, R) in enumerate(res):
                         stitched[i] = txt
-                        queries[i].append((Z, B, K_per_tok * T, d, n, R))
+                        queries[i].append((Z, B, qK(T), d, n, R))
                         attempts_total[i] += 1
                         n_windows[i] += 1
-                        log_query(k=k, mode=mode, L=L, prompt_id=passages[i]["prompt_id"], window=0, attempt=1, Z=Z, B=B, K=K_per_tok * T, delta_init=d, R=R, n_tokens=n, matched=None, text=txt, **atk.last_activity[i])
+                        log_query(k=k, mode=mode, L=L, prompt_id=passages[i]["prompt_id"], window=0, attempt=1, Z=Z, B=B, K=qK(T), delta_init=d, R=R, n_tokens=n, matched=None, text=txt, **atk.last_activity[i])
                 else:
                     n_win = max(math.ceil(x["n_target"] / L) for x in passages)
                     for w in range(n_win):
@@ -278,9 +290,9 @@ def main():
                             for jj, (j, (txt, Z, B, d, n, R)) in enumerate(zip(pending, res)):
                                 i = active[j]
                                 attempts_total[i] += 1
-                                queries[i].append((Z, B, K_per_tok * L, d, n, R))
+                                queries[i].append((Z, B, qK(L), d, n, R))
                                 matched = window_matches(txt, truths[j]) if truths[j] is not None else None
-                                log_query(k=k, mode=mode, L=L, prompt_id=passages[i]["prompt_id"], window=w, attempt=attempt, Z=Z, B=B, K=K_per_tok * L, delta_init=d, R=R, n_tokens=n, matched=matched, text=txt, **acts[jj])
+                                log_query(k=k, mode=mode, L=L, prompt_id=passages[i]["prompt_id"], window=w, attempt=attempt, Z=Z, B=B, K=qK(L), delta_init=d, R=R, n_tokens=n, matched=matched, text=txt, **acts[jj])
                                 last_txt[j] = txt
                                 if matched:
                                     matched_windows[i] += 1

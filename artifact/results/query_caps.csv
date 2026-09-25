@@ -1,0 +1,7 @@
+event,S_nats,n,cap_median,frac_no_query
+"10-token window, median",31.97,8,15,0.0
+"10-token window, median",31.97,64,7,0.0
+"50-token window, median",159.83,8,76,0.0
+"50-token window, median",159.83,64,38,0.0
+"TriviaQA answer, median over questions",5.78,8,2.0,0.208
+"TriviaQA answer, median over questions",5.78,64,1.0,0.362

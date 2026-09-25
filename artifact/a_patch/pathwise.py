@@ -25,6 +25,27 @@ def max_log_ratio(log_pc: torch.Tensor, log_pd: torch.Tensor, theta: torch.Tenso
     return (theta.squeeze(1) * l.max(dim=-1).values) - logz
 
 
+def max_suffix_sum(hist: torch.Tensor) -> torch.Tensor:
+    """feat-210: per row, the largest sum of a suffix of `hist` ([B, n], oldest first), and 0 for the
+    empty suffix, so a windowed meter never earns credit from negative realised log-ratios. [B, n] -> [B]."""
+    if hist.shape[1] == 0:
+        return torch.zeros(hist.shape[0], dtype=hist.dtype, device=hist.device)
+    suffix = torch.flip(torch.cumsum(torch.flip(hist, [1]), dim=1), [1])
+    return suffix.max(dim=1).values.clamp(min=0.0)
+
+
+def max_span_sum(xs, w: int) -> float:
+    """feat-210: the largest realised log-ratio of any span of at most w consecutive steps (0 if none is
+    positive), the quantity a windowed meter certifies at its budget W on every path."""
+    best = 0.0
+    for end in range(len(xs)):
+        s = 0.0
+        for j in range(end, max(-1, end - w), -1):
+            s += xs[j]
+            best = max(best, s)
+    return best
+
+
 def solve_theta_pathwise(log_pc: torch.Tensor, log_pd: torch.Tensor, k_t: torch.Tensor, iters: int = 40) -> torch.Tensor:
     """Largest theta in [0,1] with max_log_ratio(theta) <= k_t, per row. k_t <= 0 gives 0; m(1) <= k_t gives 1."""
     B = log_pc.size(0)
