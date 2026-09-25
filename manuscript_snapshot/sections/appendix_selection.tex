@@ -149,6 +149,41 @@ per-token meters ($+0.094$) and the windowed meter at $\log 64$ ($+0.048$) but n
 ($+0.021$ each); and under G the non-empty rule's headline difference is $+0.0335$ $[-0.020, +0.0875]$, so
 under the most reliable judge the headline rests partly on the empties. No human rated anything.
 
+\paragraph{Scorer family by judge family.}\label{app:factorial}
+The largest judged reading comes from a judge in the Qwen scorer's family, so we scored the headline pool a
+second time with \texttt{gemma-2-27b-it} and judged both selections under all six judges on one host,
+registered in advance (\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak scorer\_\allowbreak judge\_\allowbreak factorial.md}; Table~\ref{tab:factorial}). We predicted that the Qwen reward's
+drafts would be preferred under at least five of the six judges. Only judge~B prefers them. Under C, D, E
+and F the two scorers are unresolved, and under G, the gemma scorer's own family, the gemma-scored drafts
+win. So there is a same-family preference in the gemma family and none measurable in the Qwen family. The
+Qwen-family judges D and F read the gemma-scored headline at $+0.0765$ and $+0.1325$, as high as the
+Qwen-scored one. With the gemma scorer the headline resolves under four of six judges, against five with
+the Qwen scorer, and B, where it depends on the scorer, is one of the two that do not resolve it. At the
+matched $\log 64$ the gemma-scored selection still beats the windowed meter, by $+0.054$
+$[+0.0215, +0.086]$ under~B, and the budget-up-front meter, by $+0.0455$ $[+0.014, +0.0775]$, and both
+margins are confirmed under~G. Every same-host pass gives the committed panel's difference exactly.
+Judge~B's, committed on a local A100, reads $+0.059$ here against $+0.0505$ there.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{The headline scored twice and judged six times, one host, $500$ prompts, order-averaged, $95\%$
+intervals. $S$: the Qwen-scored selection's level minus the gemma-scored one's. $D_3$: selection's gain
+minus the $k=10$ meter's, each over its own control (\texttt{results/\allowbreak scorer\_\allowbreak judge\_\allowbreak factorial.csv}).}\label{tab:factorial}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llll@{}}
+\toprule
+judge & $S$ & $D_3$, Qwen-scored & $D_3$, gemma-scored \\
+\midrule
+B & $+0.0440$ $[+0.0230, +0.0650]$ & $+0.0590$ $[+0.0240, +0.0935]$ & $+0.0150$ $[-0.0185, +0.0490]$ \\
+C & $+0.0175$ $[-0.0095, +0.0455]$ & $+0.0765$ $[+0.0285, +0.1265]$ & $+0.0590$ $[+0.0100, +0.1090]$ \\
+D & $-0.0215$ $[-0.0455, +0.0020]$ & $+0.0550$ $[+0.0075, +0.1035]$ & $+0.0765$ $[+0.0285, +0.1260]$ \\
+E & $+0.0100$ $[-0.0185, +0.0375]$ & $-0.0015$ $[-0.0450, +0.0425]$ & $-0.0115$ $[-0.0560, +0.0330]$ \\
+F & $-0.0115$ $[-0.0345, +0.0115]$ & $+0.1210$ $[+0.0770, +0.1655]$ & $+0.1325$ $[+0.0890, +0.1765]$ \\
+G & $-0.0400$ $[-0.0670, -0.0135]$ & $+0.0545$ $[+0.0030, +0.1080]$ & $+0.0945$ $[+0.0390, +0.1480]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{A recording defect, and its repair.}
 The harness recorded each generation by slicing a left-padded batch row at that row's own prompt length,
 so a row with $p$ pad tokens carried the last $p$ tokens of its prompt into the recorded text: the
@@ -567,6 +602,21 @@ reward $7.6$B & $64$ & $61.29\times$ & $0.386$ & $0.266$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{Where the gain lies, against where the certificate speaks.}\label{app:gainwhere}
+Proposition~\ref{prop:selection} excludes something about an event $E$ only when $S(E) > \log n$. Estimate
+the anchor's probability of the correct answer on the $32$ draws that the vote at $n=32$ does not read. Then
+\emph{all} of the vote's gain lies on questions where the anchor already gives the correct answer at least
+$1/32$. GSM8K gains $+0.257$ $[+0.212, +0.303]$ on those $439$ and nothing on the $61$ where no held-out
+draw is correct. TriviaQA gains $+0.084$ $[+0.038, +0.129]$ on $287$ and nothing on $213$
+(\texttt{results/\allowbreak utility\_\allowbreak surprisal.csv}, post hoc). That holds by construction: a
+rule that serves one of $n$ draws raises $q(E)$ at most to $n\,p_s(E)$, so it cannot make an answer likely
+that the anchor gives less than about $1/n$. On these tasks the certificate and the utility sit on
+different events. That is the design, since a protected $50$-token window has median surprisal $159.8$
+nats. On open-ended text the event is the served completion itself, and there the gain lies where the
+certificate does exclude something. The $460$ prompts whose served completion has $S > \log 64$ (median
+$184.6$ nats) carry all of the headline's judged gain, $+0.110$ $[+0.085, +0.135]$ under~B. The other $40$
+are empty answers, and they gain nothing.
 
 \paragraph{The judge-free axis.}\label{app:judgefree}
 Both arms run at Comma-7B at temperature $0.7$ and score the \emph{served} string, which the tie rule
@@ -1092,6 +1142,21 @@ beaten on all three axes, at one request per call by $n=64$ with a level margin 
 $[+0.0410, +0.0920]$ over the $8$B meter at $k=10$ and $+0.1040$ $[+0.0810, +0.1275]$ over the $70$B at
 $k=20$, and at eight by $n=8$, whose margin excludes zero only for $k \le 3$
 (\texttt{results/\allowbreak pareto\_\allowbreak frontier.csv}, descriptive).
+
+\paragraph{The meter as speculative decoding.}\label{app:speculative}
+The meter can be served by exact speculative sampling with the anchor drafting. A drafted token is kept
+with probability $\alpha_t = \sum_x \min\{p_s(x), p^*_t(x)\}$, and the served law is unchanged. We
+teacher-forced both models on the $8$B meter's own served tokens and rebuilt $p^*_t$ from its logged weights,
+which reproduces the served token's logged probability to a median $0.0002$. Over $500$ trajectories the
+mean acceptance is $0.599$ at $k=10$ and $k=3$ and $0.681$ at $k=0.5$. We charge a round that drafts $g$
+tokens as $g$ anchor steps plus one risky step, which is optimistic for the meter. The best round then
+($g=1$) serves $1.59$ tokens per risky forward, and selection at $n=64$ takes $0.880\times$ the meter's time
+instead of $0.514\times$ ($0.928\times$ at $k=0.5$). Parity would need an acceptance of $0.802$. At the $70$B
+pair the acceptance is $0.615$ at $k=20$ and $0.618$ at $k=3$, and the best round ($g=2$) takes selection from
+$0.220\times$ to $0.370\times$ the meter's time. The anchor's steps are cheap beside the $70$B's, and even
+perfect acceptance would leave selection at $0.901\times$ for drafts up to $8$ tokens. These bounds are on
+latency at one request per call, not timings
+(\texttt{results/\allowbreak speculative\_\allowbreak acceptance\_\allowbreak note.md}, post hoc).
 
 \begin{table}[ht]
 \centering\footnotesize

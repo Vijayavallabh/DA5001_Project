@@ -108,8 +108,9 @@ probability has no closed form and at $W$ nats could be bounded only with more t
 (Table~\ref{tab:certificate}). Selection spent in installments, $n$ draws per block of $L$ tokens, is
 certified by the same composition at $(\lceil w/L\rceil + 1)\log n$ for any $w$-token span given what
 precedes it, and it buys more: at $64$ draws a block, $10$-token installments beat one choice by $+0.0415$
-$[+0.0185, +0.0645]$, and by $+0.0435$ $[+0.020, +0.067]$ on a fresh draw, at $25$ nats a window, while held
-to one whole-output $\log 64$ they lose (Appendix~\ref{app:blockwise}). Both sample a bounded tilt of the
+$[+0.0185, +0.0645]$, reproduced on a fresh draw, at $25$ nats a window, while held
+to one whole-output $\log 64$ they lose (Appendix~\ref{app:blockwise}). At $1{,}000$ tokens one choice among $64$
+still gains $+0.063$ $[+0.043, +0.083]$, and installments of $8$ draws a block lose to it (Appendix~\ref{app:long}). Both sample a bounded tilt of the
 anchor, $p_s h$ with $h \le e^{\lambda}$ at every length (Appendix~\ref{app:blockwise}); whether a causal
 policy that consults $p_r$ can realise one without paying the imitation cost is the question
 Proposition~\ref{prop:sparse} leaves open. What separates the mechanisms is not whether the budget is charged once or per token but what

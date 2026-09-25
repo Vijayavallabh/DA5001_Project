@@ -36,7 +36,7 @@ Intervals are $95\%$ paired bootstraps; every band was fixed in advance (Appendi
 
 \paragraph{At a matched certificate.}\label{sec:main-results}\label{sec:matched}
 Table~\ref{tab:matched} puts every mechanism into one judge pass at the headline configuration, the $8$B
-continuing text at temperature $1.0$, reproducing the committed levels on $500$ of $500$ prompts. \textbf{Selection beats every meter at every matched certificate.} Best-of-$64$ gains
+continuing text at temperature $1.0$. \textbf{Selection beats every meter at every matched certificate.} Best-of-$64$ gains
 $+0.1015$ for a KL bound of $3.175$ nats, attained only for a tie-free score and unrepeated strings (Appendix~\ref{app:realisedkl}), while the meter at $k=0.5$, the one published budget that says anything
 about a window, blends on half its steps and is judged indistinguishable from its own anchor,
 $-0.0030$ $[-0.0245, +0.0185]$, a null with $80\%$ power against $+0.0305$ and, by a two one-sided test, equivalent to zero within half of selection's gain; the same judge gives $+0.065$
@@ -45,9 +45,8 @@ the budget granted up front by $+0.0785$ $[+0.0445, +0.1115]$ and a meter cappin
 $+0.090$ $[+0.058, +0.122]$; installments ($L=10$) lead the per-token meter at their own whole-output
 $83.18$ nats by $+0.142$ $[+0.1085, +0.1755]$, the windowed meter at their own $24.95$ nats a span by
 $+0.1205$ $[+0.0855, +0.155]$, and the meter at $k=0.5$ by $+0.161$. Judge~G gives all nine registered
-differences the same sign and resolves all but one. Empty answers qualify this: both judges score one at or above parity, and
-counted as losses the differences hold under judge~G at every budget but $W=125$, and under judge~B against
-the per-token meters and the windowed meter at $\log 64$ only (Appendix~\ref{app:judgevalidity}). The windowed meter, the design Section~\ref{sec:uncovered} leaves open, climbs
+differences the same sign and resolves all but one. Empty answers qualify this: both judges score one at or above parity; counted as losses the differences hold under judge~G at every budget but $W=125$, and under judge~B against
+the per-token meters and the windowed meter at $\log 64$ only (Appendix~\ref{app:judgevalidity}). The windowed meter climbs
 with its budget and draws level only at $W = 125$ ($+0.022$ $[-0.0145, +0.0585]$; we had predicted selection
 would still lead), where a memoriser served through it already reproduces near-verbatim text: $0.106$,
 against $0.495$ alone and $0.000$ at every $W \le 40$.
@@ -55,8 +54,8 @@ against $0.495$ alone and $0.000$ at every $W \le 40$.
 \begin{table}[t]
 \centering\footnotesize
 \caption{\textbf{Every mechanism at a matched certificate}, one judge pass, $500$ prompts. Certified
-max-divergence nats (KL at $k=0.5$) for any $50$-token span given the text before it (---: only the
-output's, which covers the first span) and for the $200$-token output. Gain over the arm's own zero-budget
+max-divergence nats (KL at $k=0.5$) for any $50$-token span given the text before it (---: none
+beyond the output's) and for the $200$-token output. Gain over the arm's own zero-budget
 control, judge~B with $95\%$ interval, and judge~G. \emph{Leak}: near-verbatim recall of $100$ memorised
 passages, the memoriser as risky model ($0.495$ alone); for selection, the best of its $64$ draws. All
 twelve arms, both judges: Table~\ref{tab:matchedfull}.}
@@ -108,7 +107,7 @@ same reward on TriviaQA, the meter gains nothing (Table~\ref{tab:parity}).
 
 
 \textbf{At $k=10$ the difference survives fresh draws and the judges that read reliably, and not a stronger
-opponent, instruction following, empty answers scored as losses or a scorer from another family}
+opponent, instruction following, empty answers scored as losses or, under judge~B, a scorer from another family}
 (Figure~\ref{fig:h2h}). Re-drawing selection, then every sampled arm, moves it by at most $0.0055$. Five of six judges
 exclude zero, among them both whose two verdicts on an item agree on over three quarters of items,
 \texttt{Qwen2.5-72B} ($+0.055$, the scorer's family) and \texttt{gemma-2-27b-it} ($+0.0545$); the sixth,
@@ -117,8 +116,9 @@ exclude zero, among them both whose two verdicts on an item agree on over three 
 $[-0.0018, +0.0476]$ over $850$ prompts, half-width $0.0247$. The largest reading, $+0.1210$, is
 \texttt{Qwen2.5-14B}'s, the scorer's family; without the two Qwen judges three of four exclude zero. Scored instead by \texttt{gemma-2-27b-it}, which serves
 shorter drafts (median $34$ words against $75$) and more empty ones ($71$ against $41$), selection gains
-$+0.066$ $[+0.042, +0.0905]$ and the difference is $+0.015$ $[-0.0185, +0.0485]$ (pre-registered): the
-headline depends on the scorer, not only on the judge. The reward prefers empty drafts, which the judge scores
+$+0.066$ $[+0.042, +0.0905]$ and the difference is $+0.015$ $[-0.0185, +0.0485]$ (pre-registered): under~B
+the headline depends on the scorer, though four of six judges resolve it with either scorer and only~B prefers the
+Qwen reward's drafts (Appendix~\ref{app:factorial}). The reward prefers empty drafts, which the judge scores
 near parity: counting empty answers as losses leaves $+0.0155$ $[-0.0245, +0.0555]$ (selection serves $41$ empty texts
 and the meter none), and a rule that never serves an empty draw, still certified at $\log n$, keeps $+0.056$
 $[+0.0195, +0.093]$ and every reading of Table~\ref{tab:served}, though judge~G, which scores empty
@@ -134,7 +134,7 @@ pass the vetting check of Section~\ref{sec:leakage}, selection's gain at $n=8$ e
 two families, largest at Comma-7B, $+0.126$ $[+0.087, +0.164]$ (Figure~\ref{fig:breadth}), and does not
 significantly track the anchor's own level over six anchors ($\rho = +0.543$ on the two-judge mean). \textbf{With no judge}, majority vote over Comma-7B
 lifts GSM8K \citep{cobbe2021gsm8k} exact match from $0.320$ to $0.546$ at $n=32$ ($3.47$ nats), $3.4\times$ the pointwise reward's
-best lift, and lifts TriviaQA and MMLU \citep{hendrycks2021mmlu}, where on TriviaQA the $7$B pointwise reward falls with $n$:
+best lift, and lifts TriviaQA and MMLU \citep{hendrycks2021mmlu}, where on TriviaQA the reward falls with $n$:
 the scorer binds first (Figure~\ref{fig:judgefree}, Table~\ref{tab:judgefree}).
 
 \subsection{Leakage}\label{sec:leakage}
@@ -156,12 +156,12 @@ floor under it.
 \subsection{Cost}\label{sec:cost}
 
 Selection pays in draws, and one number is the price: on a server that runs only the anchor the $64$ draws
-cost $21.8\times$ a metered decode (Table~\ref{tab:cost}, Appendix~\ref{app:sel-cost}); the rest are views of it. Counted in forward passes $n=64$ costs $61.3\times$ the
+cost $21.8\times$ a metered decode (Table~\ref{tab:cost}, Appendix~\ref{app:sel-cost}). Counted in forward passes $n=64$ costs $61.3\times$ the
 meter, most of it the reward model's prefill, but on the clock the reward pass is $9.3\%$ and the draws are
 the rest, so the lever is $n$ and not the scorer. Batched into one decode loop a request takes $0.22\times$
 the meter's time at the authors' $70$B pair and $0.51\times$ at the $8$B one, because it never runs the risky model
-($0.061\times$ against their byte-level decoder); a meter run as speculative
-decoding might narrow that, which we did not try.
+($0.061\times$ against their byte-level decoder); speculative decoding would
+lift these to at best $0.37\times$ and $0.88\times$ (Appendix~\ref{app:speculative}).
 \textbf{Held to the meter's own compute, selection loses}: the matched cell is $n=2$ at $0.68\times$,
 gaining $-0.0330$ $[-0.0625, -0.0025]$ against the meter, and on TriviaQA it reaches $0.112$ where the
 meter, vacuous at $k=20$, reaches $0.618$. A $3.9\times$ larger safe model served alone is no substitute:

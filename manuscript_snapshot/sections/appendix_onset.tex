@@ -172,7 +172,8 @@ $\min(\lceil 50/L\rceil + 1, B)\log n$ (Table~\ref{tab:blockwise}; registered in
 installments of $10$ and $25$ tokens beat one choice among $64$ whole drafts, by $+0.0415$
 $[+0.0185, +0.0645]$ and $+0.0245$ $[+0.001, +0.0475]$, against our registered prediction of a tie, and
 installments of $50$ tie it; their window certificates, $24.95$ and $12.48$ nats, stay far below the
-protected window's $159.8$. Two concessions go with them: the whole-output certificate, $\lceil T/L\rceil\log n$, grows linearly with the output as a meter's does, so installments are not a budget that does not grow, and outputs longer than $T_{\max}$ were not measured; and a near-verbatim window at their per-window certificate is no easier to audit than the windowed meter's at the same $W$ (Section~\ref{sec:uncovered}). A disjoint draw, registered after this one was read, reproduces it, where we had predicted a tie
+protected window's $159.8$. Two concessions go with them: the whole-output certificate, $\lceil T/L\rceil\log n$, grows linearly with the output as a meter's does, so installments are not a budget that does not grow, and at $1{,}000$ tokens, with $8$ draws a block, they lose to one
+whole-output choice (Appendix~\ref{app:long}); and a near-verbatim window at their per-window certificate is no easier to audit than the windowed meter's at the same $W$ (Section~\ref{sec:uncovered}). A disjoint draw, registered after this one was read, reproduces it, where we had predicted a tie
 at $L = 25$: $+0.0435$
 $[+0.020, +0.067]$ and $+0.033$ $[+0.011, +0.0555]$ at $L = 10$ and $25$ under judge~B, $+0.0635$ $[+0.033,
 +0.0945]$ and $+0.0595$ $[+0.028, +0.0905]$ under judge~G; read post hoc by judge~G, the first draw's
@@ -211,6 +212,94 @@ one $\log 64$ & $100$ & $8$ & $4.16$ / $4.16$ & $+0.0615$ $[+0.0385, +0.085]$ & 
  & $34$ & $2$ & $4.16$ / $2.08$ & $+0.037$ $[+0.0155, +0.0585]$ & $-0.088$ $[-0.1115, -0.0645]$ \\
 prefix only & $50$ & $64$ & $16.64$ / $8.32$ & $+0.0895$ $[+0.0665, +0.1125]$ & --- \\
 planner & $10$ & $64$ & $83.18$ / $24.95$ & $+0.077$ $[+0.054, +0.1005]$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{CP-$k$'s rejection rule, run.}\label{app:cpk}
+CP-$k$ \citep{vyas2023provable} rejection-samples complete outputs of the protected model against safe
+models trained on disjoint shards. No model pair here meets that premise, so we ran its rule with the one
+safe model we have. For each prompt the risky model's $M = 64$ draws are tested in seed order. The first
+whose realised log-ratio $R(y) = \log p_r(y \mid x) - \log p_s(y \mid x)$ over its served tokens is at most
+$\kappa$ is served; otherwise the anchor's own draw is. Then $q(y) \le (Me^{\kappa} + 1)\,p_s(y)$ for every
+$y$, a pathwise certificate of $C = \log(1 + Me^{\kappa})$ whatever the acceptance rate. CP-$k$'s own rule
+retries until it accepts and pays more as acceptance falls: $168.35$ nats at half acceptance, above a
+window's $159.8$, and $87.97$ at one output in a hundred (\texttt{results/\allowbreak cpk\_\allowbreak certificate.csv}). Table~\ref{tab:cpk} runs the rule at the certificates of
+Table~\ref{tab:matchedfull} (registered in \texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak cpk\_\allowbreak baseline.md}). A risky draw's median $R$ is $169.6$ nats. So at $\log 64$ and at $33.27$
+nats the rule serves the anchor on every prompt and gains nothing, and at $83.18$ it serves the risky
+model on $26.8\%$ of prompts. Selection beats it at each matched certificate: best-of-$64$ by $+0.110$
+$[+0.0855, +0.135]$ at $\log 64$, and installments by $+0.143$ $[+0.119, +0.168]$ at $33.27$ and $+0.1205$
+$[+0.091, +0.1485]$ at $83.18$, all three confirmed under judge~G. Against the per-token pathwise meter at
+the same nats it is unresolved: $+0.022$ $[-0.006, +0.0495]$ at $83.18$ and $-0.014$ $[-0.0335, +0.006]$
+at $33.27$. We registered that its acceptances would be short outputs. They are not, since nearly every
+draw runs to the $200$-token cap. Against the memoriser the rule serves nothing near-verbatim through $250$
+nats and leaks from $600$ ($0.0563$ recall; the memoriser alone reads $0.4629$).
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{CP-$k$'s rejection rule with the anchor as its safe model, $64$ risky draws per prompt, $500$
+prompts. $C$: pathwise certificate in nats, whole output; $\kappa$: the acceptance threshold on the
+realised log-ratio; \emph{risky}: share of prompts served a risky draw. Gain over the anchor's own draw,
+judge~B with $95\%$ interval, and judge~G. \emph{Leak}: near-verbatim recall of $100$ memorised passages
+with the memoriser as risky model.}\label{tab:cpk}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}rrrlrr@{}}
+\toprule
+$C$ & $\kappa$ & risky & gain, judge~B & judge~G & leak \\
+\midrule
+$4.16$ & $-0.02$ & $0.0\%$ & $+0.0000$ $[+0.0000, +0.0000]$ & $+0.0000$ & $0.0000$ \\
+$33.27$ & $29.11$ & $0.0\%$ & $+0.0000$ $[+0.0000, +0.0000]$ & $+0.0000$ & $0.0000$ \\
+$83.18$ & $79.02$ & $26.8\%$ & $+0.0395$ $[+0.0245, +0.0555]$ & $+0.0510$ & $0.0000$ \\
+$159.83$ & $155.67$ & $99.6\%$ & $+0.0865$ $[+0.0620, +0.1105]$ & $+0.1335$ & $0.0000$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{At $1{,}000$ tokens.}\label{app:long}
+Every judged arm above stops at $200$ tokens. We asked whether whole-output selection still buys utility at
+$1{,}000$ or needs installments, whose certificate grows with the output, and how either compares with the
+meters at matched nats. We ran every mechanism at $T_{\max} = 1000$ on the $500$ prompts and judged it
+uncut against the risky model's own $1{,}000$-token draw, registered in advance
+(\texttt{results/\allowbreak onset\_\allowbreak prediction\_\allowbreak long\_\allowbreak outputs.md};
+Table~\ref{tab:long}). One choice among $64$ whole drafts still gains $+0.063$ $[+0.043, +0.083]$ over the
+anchor at the same $\log 64$. It beats every meter at its own certificate: the per-token pathwise meter by
+$+0.062$ $[+0.0395, +0.084]$, the budget granted up front by $+0.0305$ $[+0.0055, +0.056]$ and the windowed
+meter by $+0.0445$ $[+0.020, +0.0695]$. It also beats anchored decoding at $k=0.1$ ($100$ nats) by
+$+0.0775$ and at $k=0.5$ ($500$ nats) by $+0.104$, all confirmed under judge~G. Installments of $8$ draws
+per $100$ tokens, certified at $20.79$ nats for the output and $4.16$ for any window, gain $+0.0185$
+$[-0.0005, +0.037]$. Against the meters at their own $20.79$ nats they are unresolved under~B, $+0.0165$
+$[-0.0045, +0.038]$ pathwise and $+0.019$ $[-0.001, +0.0395]$ KL, where we had predicted wins that only
+judge~G confirms. They lose to one choice among $64$ by $0.0445$ $[0.026, 0.0635]$ (G: $0.059$), so long
+outputs do not need them. The anchor's drafts are short: best-of-$64$ serves a mean $203$ tokens, and
+$32.6\%$ of its outputs are longer than $200$, while the risky model always runs to the cap. On the $163$
+prompts where the served draft is longer than $200$ tokens its gain is $+0.092$ $[+0.057, +0.127]$. At
+this length no meter improves on the anchor by more than $0.033$ under~B, and anchored decoding falls
+below it at $k = 0.1$, $0.5$ and $10$. The judges part on the risky model's own $1{,}000$ tokens: G reads
+them $+0.1095$ over the anchor and B $-0.0175$.
+
+\begin{table}[ht]
+\centering\footnotesize
+\caption{Every mechanism at $T_{\max} = 1000$, $500$ prompts, judged uncut against the risky model's own
+$1{,}000$-token draw. Certified nats for any $50$-token span given the text before it (---: none beyond
+the output's) and for the output, max-divergence except anchored decoding's KL. \emph{Tokens}: mean
+served length. Gain over the arm's own zero-budget control (the anchor alone, or the pool's single draw),
+judge~B with $95\%$ interval, and judge~G (\texttt{results/\allowbreak long\_\allowbreak outputs.csv}).}\label{tab:long}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrrlr@{}}
+\toprule
+mechanism & span & output & tokens & gain, judge~B & judge~G \\
+\midrule
+best of $64$, whole output & $4.16$ & $4.16$ & $203$ & $+0.0630$ $[+0.0430, +0.0830]$ & $+0.2115$ \\
+best of $16$ & $2.77$ & $2.77$ & $163$ & $+0.0305$ $[+0.0105, +0.0510]$ & $+0.1665$ \\
+installments, $L=100$, $n=8$ & $4.16$ & $20.79$ & $159$ & $+0.0185$ $[-0.0005, +0.0370]$ & $+0.1525$ \\
+pathwise meter & --- & $4.16$ & $220$ & $+0.0010$ $[-0.0095, +0.0115]$ & $+0.0070$ \\
+ & --- & $20.79$ & $339$ & $+0.0020$ $[-0.0110, +0.0150]$ & $-0.0080$ \\
+budget up front & --- & $4.16$ & $275$ & $+0.0325$ $[+0.0160, +0.0490]$ & $-0.0075$ \\
+windowed meter & $4.16$ & $83.18$ & $499$ & $+0.0185$ $[+0.0015, +0.0355]$ & $-0.0555$ \\
+anchored decoding, $k=0.0208$ & --- & $20.79$ & $215$ & $-0.0005$ $[-0.0095, +0.0085]$ & $+0.0005$ \\
+anchored decoding, $k=0.1$ & --- & $100$ & $461$ & $-0.0145$ $[-0.0280, -0.0010]$ & $-0.0375$ \\
+anchored decoding, $k=0.5$ & --- & $500$ & $831$ & $-0.0410$ $[-0.0575, -0.0240]$ & $-0.0365$ \\
+anchored decoding, $k=10$ & --- & $10^4$ & $1000$ & $-0.0175$ $[-0.0330, -0.0015]$ & $+0.1095$ \\
 \bottomrule
 \end{tabular}
 \end{table}

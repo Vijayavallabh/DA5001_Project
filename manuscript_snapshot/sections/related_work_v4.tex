@@ -7,9 +7,9 @@ against a safe model. Its authors' CP-$k$ already pays once per output, rejectio
 outputs against models trained on disjoint shards with a bound that grows as acceptance falls; CP-Fuse
 \citep{abad2025cpfuse} fuses such shards per token and anchored decoding \citep{he2026anchored} charges per
 token from a bucket. Selection needs one safe model and no likelihood, and its $\log n$ depends on neither
-the rule nor an acceptance rate. No model pair here meets CP-$k$'s premise of disjoint shards, but run
-against the risky model its certificate would be $168.35$ nats at half acceptance, above a window's $159.8$,
-and $87.97$ at one output in a hundred (\texttt{results/\allowbreak cpk\_\allowbreak certificate.csv}).
+the rule nor an acceptance rate. No model pair here meets CP-$k$'s premise of disjoint shards. Run with
+the anchor as its one safe model, its rule serves the risky model on no prompt at $\log 64$ and on $26.8\%$
+at $83$ nats, and best-of-$64$ and installments beat it at every matched certificate (Appendix~\ref{app:cpk}).
 \citet{segal2026provably} report that CP-style guarantees can be numerically uninformative and demonstrate
 extraction against NAF-protected models \citep[see also][]{cohen2026barriers}. We are downstream of that
 observation: Proposition~\ref{prop:threshold} gives the exact point at which a budget stops saying anything
