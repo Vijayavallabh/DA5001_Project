@@ -94,3 +94,53 @@ def test_chat_onset_is_quoted_with_its_no_crossing_share():
     assert f"near-verbatim recall ${float(g1['value']):.4f}$" in t and float(g1["value"]) >= 0.10
     assert f"with ${float(nc['value']):.1f}\\%$ of resamples never reaching it" in t
     assert "coincide within that interval" in t
+
+
+def _bw(band, arm, start=""):
+    return next(r for r in _csv("blockwise.csv") if r["band"] == band and r["arm"] == arm
+                and r["quantity"].startswith(start))
+
+
+def _iv(r):
+    f = lambda x: f"{float(x):+.4f}".rstrip("0")
+    return f"${f(r['value'])}$ $[{f(r['lo95'])}, {f(r['hi95'])}]$"
+
+
+def test_every_cell_of_the_installments_table_is_its_csv_row():
+    """tab:blockwise is generated from results/blockwise.csv; each row must still be that row (caution (j))."""
+    import re
+    src = body("appendix_onset.tex")
+    tab = src[src.index("\\label{tab:blockwise}"):src.index("\\end{tabular}", src.index("\\label{tab:blockwise}"))]
+    rows = {"blk200n64": ("once", 200, 64), "blk50n64": ("installments", 50, 64), "blk25n64": ("", 25, 64),
+            "blk10n64": ("", 10, 64), "blk100n8": ("one $\\log 64$", 100, 8), "blk67n4": ("", 67, 4),
+            "blk34n2": ("", 34, 2), "blk50n64_reward": ("prefix only", 50, 64),
+            "blk10n64_planner": ("planner", 10, 64)}
+    for arm, (lab, L, n) in rows.items():
+        cert = _bw("desc", arm, "certificate")["value"].split(" / ")
+        gain = (_bw("B1", arm, "gain") if arm in ("blk200n64", "blk50n64", "blk25n64", "blk10n64", "blk100n8",
+                                                  "blk67n4", "blk34n2")
+                else _bw("B4", arm, "gain") if arm.endswith("planner") else _bw("desc", arm, "gain over the anchor"))
+        diff = next((r for r in _csv("blockwise.csv") if r["arm"] == f"{arm} - blk200n64"), None)
+        line = f"{lab} & ${L}$ & ${n}$ & ${cert[0]}$ / ${cert[1]}$ & {_iv(gain)} & {_iv(diff) if diff else '---'} \\\\"
+        assert line.strip() in tab, (arm, line)
+    assert len(re.findall(r"\\\\", tab)) == len(rows) + 1          # the header plus one line per arm
+
+
+def test_the_installments_claims_follow_their_verdicts():
+    t = body("frontier.tex")
+    w10 = _bw("B2", "blk10n64 - blk200n64")
+    assert w10["reading"] == "INSTALLMENTS WIN"
+    assert f"$10$-token installments beat one choice by {_iv(w10)} at $25$ nats a window" in t
+    assert round(float(_bw("desc", "blk10n64", "certificate")["value"].split(" / ")[1])) == 25
+    b3 = [_bw("B3", f"{a} - blk200n64") for a in ("blk100n8", "blk67n4", "blk34n2")]
+    assert all(r["reading"] == "ONCE WINS" for r in b3)
+    assert "while held to one whole-output $\\log 64$ they lose" in t
+    a = body("appendix_onset.tex")
+    assert "against our registered prediction of a tie" in a
+    b4 = _bw("B4", "blk10n64_planner - blk10n64")
+    assert b4["reading"] == "VALUE WINS" and f"loses to the reward by ${-float(b4['value']):.4f}$ $[{-float(b4['hi95']):.3f}, {-float(b4['lo95']):.3f}]$" in a
+    assert "reads near-verbatim recall $0.0000$ on all $100$ passages it memorised" in a
+    assert _bw("B6", "blk10n64_memoriser", "near-verbatim recall, maximum")["value"] == "0.0"
+    c = body("iclr_closing.tex")
+    assert "we did not measure selection in installments" not in c
+    assert "in installments, which buy more" in c
