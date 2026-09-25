@@ -8,7 +8,8 @@ pass's levels (the registration's gate G2 checks it). Verdicts are cached per ar
 to a pass as their generations finish; a cached arm is only reused when it covers the same prompts.
 
 Arm spec, --arm NAME=KIND:ARGS
-  sel:N                  the argmax of the pool's cached reward over its first N draws (N=1: rank 0)
+  sel:N[:REWARDS]        the argmax of the pool's cached reward over its first N draws (N=1: rank 0);
+                         REWARDS, if given, is that arm's own reward cache (feat-212: a second scorer)
   arm:DIR:TOKEN:CONSTR   h1.py-style trajectories_k<TOKEN>_<class>.jsonl, lowest seed
   base:RANK              the opponent's own configuration at its RANK-th lowest seed
 
@@ -41,8 +42,9 @@ def load_texts(spec, a):
     name, _, rest = spec.partition("=")
     kind, _, args = rest.partition(":")
     if kind == "sel":
-        n = int(args)
-        cands, rewards = load_candidates(a.sel_dir, deecho=True), load_rewards(a.rewards)
+        n_s, _, rpath = args.partition(":")
+        n = int(n_s)
+        cands, rewards = load_candidates(a.sel_dir, deecho=True), load_rewards(rpath or a.rewards)
         out = {}
         for p, c in cands.items():
             if p not in rewards:

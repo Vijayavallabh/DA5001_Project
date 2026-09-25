@@ -1558,6 +1558,24 @@
       "dependencies": [],
       "status": "done",
       "evidence": "Host B GPUs 4-7: scripts/run_feat210.sh (generation, leakage, judge G), local A100: scripts/run_feat210_judge.sh (judge B); .venv/bin/python analysis/score_feat210.py --out results -> results/windowed_meter.csv, windowed_arms.csv, windowed_leakage.csv (re-run to a scratch --out reproduces all three byte-identically). Thirteen of fourteen registered readings right; P2 at W=125 wrong (a tie, +0.022 [-0.0145, +0.0585]), stated in Section 4 per the outcome rule. One deviation stated in the scoring log: judge G ran on host B (gemma-2-27b-it is not cached locally). Integrated: Table 2 tab:matched + tab:matchedfull + tab:windowed, Section 3 sec:uncovered (built and measured), Appendix app:windowed and app:judgevalidity; guards tests/test_v13_review7.py (18 tests; 20 mutations, 20 fire) and tests/test_windowed_meter.py (7 tests on a real decode). Scorer output:\nband=G0  quantity=generation arms covering all 500 prompts  value=14  n=14  reading=PASS\nband=G1  quantity=trajectories over their certified budget (window or output)  value=0  n=7000  reading=PASS\nband=G0  quantity=leakage runs covering the 100 passages  value=18  n=18  reading=PASS\nband=G1  quantity=leakage queries over their certified budget  value=0  n=18  reading=PASS\nband=P6  quantity=plain: recall < 0.01 at every W <= 40 and >= 0.01 at W = 125  value=0.000 / 0.106  n=100  reading=right\nband=P6  quantity=chat: recall < 0.01 at every W <= 40 and >= 0.01 at W = 125  value=0.000 / 0.063  n=100  reading=right\nband=G2  quantity=committed arms' per-prompt levels reproduced in the plain judge-B pass  value=500  n=500  reading=PASS\nband=P1  quantity=sel_n64 - win_4.16 (plain_B)  value=0.09  lo95=0.058  hi95=0.122  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P1  quantity=sel_n64 - frontpw_4.16 (plain_B)  value=0.0785  lo95=0.0445  hi95=0.1115  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P2  quantity=sel_n64 - win_24.95 (plain_B)  value=0.064  lo95=0.0315  hi95=0.0975  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P2  quantity=sel_n64 - win_40 (plain_B)  value=0.064  lo95=0.0295  hi95=0.099  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P2  quantity=sel_n64 - win_125 (plain_B)  value=0.022  lo95=-0.0145  hi95=0.0585  n=500  reading=UNRESOLVED  predicted=CONFIRMED  verdict=wrong\nband=P3  quantity=blk10n64 - pw_83.18 (plain_B)  value=0.142  lo95=0.1085  hi95=0.1755  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P3  quantity=blk25n64 - pw_33.27 (plain_B)  value=0.133  lo95=0.1015  hi95=0.164  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P4  quantity=blk10n64 - win_24.95 (plain_B)  value=0.1205  lo95=0.0855  hi95=0.155  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P4  quantity=blk25n64 - win_12.48 (plain_B)  value=0.1265  lo95=0.0915  hi95=0.162  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P5  quantity=sel_n64 - winc_125 (chat_B)  value=-0.16  lo95=-0.1985  hi95=-0.122  n=500  reading=REFUTED  predicted=REFUTED  verdict=right\nband=P5  quantity=sel_n64 - winc_12.48 (chat_B)  value=0.045  lo95=0.0095  hi95=0.081  n=500  reading=CONFIRMED  predicted=CONFIRMED  verdict=right\nband=P7  quantity=differences of P1-P4 with the same sign under judge G  value=9  n=9  reading=right  predicted=all  verdict="
+    },
+    {
+      "id": "feat-211",
+      "name": "CP-k's once-per-output rejection rule as a baseline",
+      "description": "Review 1 Q1 / review 3 W1: CP-k's rejection rule run with the anchor as its safe model (64 risky draws per prompt, first with realised log-ratio <= kappa served, else the anchor's draw; D_inf <= log(1 + M e^kappa) pathwise), judged at matched certificates against selection and installments under judges B and G on host B, and its leakage against the memoriser (results/onset_prediction_cpk_baseline.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
+    },
+    {
+      "id": "feat-212",
+      "name": "Scorer family by judge family",
+      "description": "Review 2 Q4 / W3, review 1 roadmap: the Qwen-scored and gemma-scored selections judged under all six judges on host B, and the gemma-scored selection at the matched log 64 (results/onset_prediction_scorer_judge_factorial.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
     }
   ]
 }

@@ -1,6 +1,15 @@
 # Session handoff --- 2026-09-24
 
 
+
+## Current state, 2026-09-25 evening --- the review items first skipped, pursued on host B (user: "With the gpus available, pursue the skipped items that can be run")
+
+**In progress, each registered before its first token:** feat-211 (CP-k's rejection rule as a baseline,
+`results/onset_prediction_cpk_baseline.md`) and feat-212 (scorer family by judge family,
+`results/onset_prediction_scorer_judge_factorial.md`), queued by `scripts/run_feat211.sh` on host B GPUs 4-7
+(queues q4, q5, q6, q7, q67; sentinels `~/v/logs/f211_<job>.{done,fail}`). Local A100s are all held by the
+user's vLLM servers; host B GPUs 0-3 are the user's and untouched.
+
 ## Current state, 2026-09-25 evening --- v13 (seventh review round) complete; nothing running
 
 **Objective:** revise the ICLR draft against three reviews, depth over breadth, every Review 3 point
