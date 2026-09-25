@@ -22,9 +22,27 @@ before its data, and put in the manuscript with a guard mutation-tested against 
 - **feat-207 (CPU)**: Holm over Figure 3's `21` rows keeps `8`, not the headline row
   (`results/forest_multiplicity.csv`); order consistency for every judge (`results/judge_order_consistency.csv`);
   the containment union; the onset shading called a range.
-- **feat-202, feat-203, feat-205**: running or queued (FActScore oracle and a factuality scorer; vetting at
-  temperature `0.7`, all six licensed rungs `0/50`, `S_w` `159.8 -> 179.1` for TinyComma, TriviaQA
-  `35.4% -> 36.2%`; AnchoredByte at `0.7/1.1`).
+- **feat-208 SCORED** (`analysis/blockwise_replication.py` -> `results/blockwise_replication.csv`): the
+  installment advantage holds on a disjoint draw, `L=10` `+0.0435 [+0.020, +0.067]` (P1 right), `L=25`
+  `+0.033 [+0.011, +0.0555]` (P2 predicted TIE, wrong in selection's favour), and judge G agrees on both
+  draws (`+0.0635`, `+0.0595`; post hoc on feat-201's texts `+0.083`, `+0.0635`, `+0.031`). Section 3 quotes
+  both draws; the appendix quotes all of them and the wrong tie prediction.
+- **feat-202 SCORED** (`results/factscore_oracle.csv`): the best of `64` biography drafts reaches FActScore
+  precision `0.5054` against the served `0.0431`, and a scorer asking for accurate claims ties the reward
+  (`+0.0102 [-0.0144, +0.0399]`, F2 predicted RAISES, wrong); it buys raw precision by saying less.
+- **feat-203 SCORED** (`results/vetting_t07.csv`): at the judge-free runs' temperature `0.7` the screen has
+  power (the `70`B leaks on `33/50` at `L=100`, `25` at `1.0`) and TinyComma and Comma-7B read `0/50` at
+  `L = 20, 100, 200`; `S_w` rises under tempering (`159.8 -> 179.1`, `121.7 -> 135.1`); TriviaQA `log 64`
+  vacuity `35.4% -> 36.2%`, the meter's `89.6% -> 83.6%`. The body's Limitations sentence now quotes the
+  `0.7` pair (the runs' own temperature); the parenthetical form cost two lines of the Conclusion.
+- **feat-209 SCORED** (`results/nonempty_tables.csv`): the non-empty rule re-judged at eight Table 2
+  configurations, one pass each on host B: `8/8` keep their `D3` label, the headline `+0.058 [+0.0225, +0.093]`.
+  Post hoc, the committed rule's `D3` equals its Table 2 pass in the four host-B rows and moves at most
+  `0.0085` in the four judged on a local A100. `tab:nonempty` in `app:empties`.
+- **feat-205**: the `k=0.1` arm ran; the registered `k=0` control cannot run in the authors' code
+  (`generate_byte` asserts `k not in {-1, 0}` and the `generate_batched` it names does not exist), so an
+  addendum written before any judge call replaced it with `k = 1e-6` gated on the anchor being served at
+  every byte (`scripts/run_feat205_control.sh`, host B GPUs 5-7).
 
 **Page budget.** Body exactly 9 of 9. A trim that removed the committed TIGHT ZERO sentence fired
 `tests/test_mixtral_resolved.py` and was reverted (caution (ag)); the space came from two paragraphs whose
