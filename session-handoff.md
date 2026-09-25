@@ -22,6 +22,10 @@ Each arm's bands were committed before its first token; queues write `output/log
   queues a (GPU 4), b (GPU 5), c (GPU 6) and ab (GPUs 5-7: feat-205 and feat-203's 70B control, re-queued
   here after the first q456 shell was stopped, by PID, before it started anything).
 
+- `results/onset_prediction_nonempty_tables.md` (**feat-209**): eight rows of Table 2 with the non-empty rule's
+  pick judged beside the committed one, `scripts/run_feat209.sh` on GPU 4 after feat-208's queue a
+  (`output/feat184/chat_k10` was copied to host B for it, md5 verified).
+
 **Done on CPU (feat-207):** Holm over Figure 3's 21 rows (`analysis/forest_multiplicity.py`: 8 survive, the
 headline row alone does not), order consistency for every judge (`analysis/judge_order_consistency.py`),
 the containment union (Appendix A), and the onset shading called a range (Figure 2). Guards:

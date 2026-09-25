@@ -1540,6 +1540,15 @@
       ],
       "status": "in-progress",
       "evidence": ""
+    },
+    {
+      "id": "feat-209",
+      "name": "The non-empty rule across Table 2",
+      "description": "Review 4 Q9: do the conclusions change if every table is rerun with the non-empty rule? Eight rows of Table 2 re-judged on host B with the non-empty pick as an extra arm beside the committed pick (results/onset_prediction_nonempty_tables.md).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": ""
     }
   ]
 }
