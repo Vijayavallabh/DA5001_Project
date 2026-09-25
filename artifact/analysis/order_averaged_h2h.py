@@ -127,6 +127,9 @@ def main():
     ap.add_argument("--extra-rank", type=int, default=0,
                     help="which seed of the --extra-dir arm is judged (0 = lowest); 1 judges a second, "
                          "independent draw of the same arm, e.g. the opponent's own model")
+    ap.add_argument("--judge-max-chars", type=int, default=1200,
+                    help="characters of prompt and of each text the judge sees; 1200 in every pass on "
+                         "record, 0 for the whole text (feat-204)")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
     rng = random.Random(a.seed)
@@ -200,7 +203,7 @@ def main():
         for tag, items in (("first", fwd), ("second", rev)):
             got = []
             for i in range(0, len(items), 200):
-                got += judge_batch(model, tok, items[i:i + 200], jdev)
+                got += judge_batch(model, tok, items[i:i + 200], jdev, max_chars=a.judge_max_chars)
                 print(f"[h2h] {arm} arm-{tag} {len(got)}/{len(items)}", flush=True)
             v[tag] = got
         for p, x, y in zip(pids, v["first"], v["second"]):

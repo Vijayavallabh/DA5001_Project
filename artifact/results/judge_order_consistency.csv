@@ -1,0 +1,7 @@
+judge,model,consistency_sel_n64,consistency_sel_n1,consistency_metered_k10,consistency_anchor_k0,consistency_min,consistency_max,d3,d3_lo95,d3_hi95,d3_reading,n,source
+B,Phi-3.5-mini-instruct,0.288,0.3,0.37,0.294,0.288,0.37,0.0505,0.0155,0.086,REVERSAL CONFIRMED,500,order_averaged_h2h_deecho.csv
+C,Llama-3.1-8B-Instruct (the opponent's checkpoint),0.63,0.672,0.712,0.662,0.63,0.712,0.0765,0.029,0.1235,REVERSAL CONFIRMED,500,order_averaged_h2h__opp_committed_judgeC_deecho.csv
+D,Qwen2.5-72B-Instruct,0.784,0.756,0.796,0.762,0.756,0.796,0.055,0.0075,0.1025,REVERSAL CONFIRMED,500,order_averaged_h2h__qwen72b_deecho.csv
+E,Mixtral-8x7B-Instruct,0.386,0.374,0.42,0.354,0.354,0.42,-0.0015,-0.0455,0.042,REVERSAL UNRESOLVED,500,order_averaged_h2h__mixtral_deecho.csv
+F,Qwen2.5-14B-Instruct,0.676,0.694,0.774,0.698,0.676,0.774,0.121,0.077,0.1645,REVERSAL CONFIRMED,500,order_averaged_h2h__qwen14b_deecho.csv
+G,gemma-2-27b-it,0.784,0.796,0.846,0.81,0.784,0.846,0.0545,0.0015,0.1075,REVERSAL CONFIRMED,500,order_averaged_h2h__gemma27b_deecho.csv

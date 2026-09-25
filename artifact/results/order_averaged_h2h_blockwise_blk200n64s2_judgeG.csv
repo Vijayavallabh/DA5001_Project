@@ -1,0 +1,11 @@
+quantity,arm,value,lo95,hi95,n,single_order,reading
+"D1 selection gain, order-averaged",sel_n64,0.176,0.1395,0.2125,500,0.171,SURVIVES
+"D2 metered gain, order-averaged",metered_k10,0.1215,0.078,0.165,500,0.112,SURVIVES
+"D3 difference of gains, paired",sel_n64 - metered_k10,0.0545,0.0015,0.1075,500,0.059,REVERSAL CONFIRMED
+"D4 blk200n64s2 gain, order-averaged",blk200n64s2,0.21,0.1735,0.245,500,0.227,SURVIVES
+"D5 blk200n64s2 minus selection, paired",blk200n64s2 - sel_n64,0.034,-0.011,0.0805,500,,TIE
+order consistency,sel_n64,0.784,,,500,,STABLE
+order consistency,sel_n1,0.796,,,500,,STABLE
+order consistency,metered_k10,0.846,,,500,,STABLE
+order consistency,anchor_k0,0.81,,,500,,STABLE
+order consistency,blk200n64s2,0.792,,,500,,STABLE

@@ -72,6 +72,10 @@ def main():
     ap.add_argument("--opp-dir", default="output/sweep_plain")
     ap.add_argument("--data-dir", default="data")
     ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--temperature", type=float, default=1.0,
+                    help="feat-205: passed to the authors' generate(), which applies it to both "
+                         "log-probability vectors before the fusion; 1.0 in every run on record")
+    ap.add_argument("--repetition-penalty", type=float, default=1.0, help="feat-205: likewise")
     a = ap.parse_args()
 
     import torch
@@ -125,7 +129,7 @@ def main():
         prompts = [corpus[p] for p, _ in batch]
         seed = a.seed * 100000 + si * 1000 + bi // a.batch_size
         out = factory.generate(text=prompts, max_new_tokens=a.max_new_tokens, do_sample=True,
-                               temperature=1.0, repetition_penalty=1.0, seed=seed,
+                               temperature=a.temperature, repetition_penalty=a.repetition_penalty, seed=seed,
                                log_kl_stats=True)
         hist = factory._last_sampler.kl_stats_history
         debt0 = hist[0]["budget_so_far"] if hist else [a.k] * len(batch)
@@ -137,7 +141,8 @@ def main():
                 metadata=dict(prompt_id=pid, split=c, seed=seed, k=a.k, K=a.k * b_max, B_max=b_max,
                               T_max=a.max_new_tokens, level="byte", constraint="kl",
                               target_model=a.risky, anchor_model=a.safe, chat_template=False,
-                              temperature=1.0, repetition_penalty=1.0, batch_size=a.batch_size,
+                              temperature=a.temperature, repetition_penalty=a.repetition_penalty,
+                              batch_size=a.batch_size,
                               implementation="anchoreddecode.BytewiseAnchoredDecodingFactory"),
                 prefix_analysis=dict(prefix_text=prompt, prefix_debt=a.k - float(debt0[i])),
                 aggregate=dict(generation=gen, full_text=prompt + gen, total_spend=float(spend),

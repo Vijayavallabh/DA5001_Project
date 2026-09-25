@@ -1,0 +1,31 @@
+band,quantity,value,lo95,hi95,reading,n
+G0,"blk10n64s2: 500 records, block log complete",1.0,,,PASS,500
+G0,"blk25n64s2: 500 records, block log complete",1.0,,,PASS,500
+G0,"blk200n64s2: 500 records, block log complete",1.0,,,PASS,500
+G0,three generation logs print pure sampling,3,,,PASS,
+G1,"L=10: served text differs from feat-201's, share of prompts both non-empty",1.0,,,PASS,345
+G1,"L=25: served text differs from feat-201's, share of prompts both non-empty",1.0,,,PASS,338
+G1,"L=200: served text differs from feat-201's, share of prompts both non-empty",1.0,,,PASS,333
+G2,blk10n64s2: meter and anchor levels equal feat-198's,500,,,PASS,500
+G2,blk25n64s2: meter and anchor levels equal feat-198's,500,,,PASS,500
+G2,blk200n64s2: meter and anchor levels equal feat-198's,500,,,PASS,500
+P1,"judge B, new draw: L=10 minus once",0.0435,0.02,0.067,INSTALLMENTS WIN,500
+P2,"judge B, new draw: L=25 minus once",0.033,0.011,0.0555,INSTALLMENTS WIN,500
+P3,"judge G, new draw: L=10 minus once",0.0635,0.033,0.0945,INSTALLMENTS WIN,500
+desc,"judge G, new draw: L=25 minus once",0.0595,0.028,0.0905,INSTALLMENTS WIN,500
+desc,"judge B, new draw: blk10n64s2 gain over the anchor",0.161,0.1345,0.187,SURVIVES,500
+desc,"judge G, new draw: blk10n64s2 gain over the anchor",0.2735,0.237,0.311,SURVIVES,500
+desc,blk10n64s2: median words / empty,89 / 98,,,,
+desc,"judge B, new draw: blk25n64s2 gain over the anchor",0.1505,0.1245,0.176,SURVIVES,500
+desc,"judge G, new draw: blk25n64s2 gain over the anchor",0.2695,0.233,0.3055,SURVIVES,500
+desc,blk25n64s2: median words / empty,77 / 114,,,,
+desc,"judge B, new draw: blk200n64s2 gain over the anchor",0.1175,0.0935,0.141,SURVIVES,500
+desc,"judge G, new draw: blk200n64s2 gain over the anchor",0.21,0.1735,0.245,SURVIVES,500
+desc,blk200n64s2: median words / empty,59 / 104,,,,
+posthoc,"judge G, feat-201's draw: L=10 minus once",0.083,0.0525,0.114,INSTALLMENTS WIN,500
+posthoc,"judge G, feat-201's draw: L=25 minus once",0.0635,0.0325,0.0955,INSTALLMENTS WIN,500
+posthoc,"judge G, feat-201's draw: L=50 minus once",0.031,0.001,0.062,INSTALLMENTS WIN,500
+posthoc,"judge G, feat-201's draw: blk10n64 gain over the anchor",0.3065,0.2715,0.342,SURVIVES,500
+posthoc,"judge G, feat-201's draw: blk25n64 gain over the anchor",0.287,0.251,0.322,SURVIVES,500
+posthoc,"judge G, feat-201's draw: blk50n64 gain over the anchor",0.2545,0.2195,0.2905,SURVIVES,500
+posthoc,"judge G, feat-201's draw: blk200n64 gain over the anchor",0.2235,0.188,0.26,SURVIVES,500

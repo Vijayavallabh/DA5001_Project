@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from a_patch import AnchoredDecodingFactory  # noqa: E402
 from a_patch.renyi import constraint_arg  # noqa: E402
 from analysis.corpus_file import load_corpus_file  # noqa: E402
-from dap.shared import load_prompt_corpus, true_gen_len  # noqa: E402
+from dap.shared import chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat  # noqa: E402
 from dap.stats import lcs_word, nv_recall  # noqa: E402
 from recipes.finetune_memorizing import join  # noqa: E402
 
@@ -52,8 +52,12 @@ def window_matches(hypothesis: str, reference: str) -> bool:
 
 
 class Attacker:
-    def __init__(self, factory, tok, batch_size, temperature, seed, repetition_penalty=1.0, greedy=False):
+    def __init__(self, factory, tok, batch_size, temperature, seed, repetition_penalty=1.0, greedy=False, chat=False):
         self.f, self.tok, self.bs, self.temp, self.seed, self.rp, self.greedy = factory, tok, batch_size, temperature, seed, repetition_penalty, greedy
+        # feat-206: serve every query as one user turn of the chat template, as h1.py --use-chat-template
+        # does, and stop at <|eot_id|> too. Off by default, so every run on record is unchanged.
+        self.chat = chat
+        self.eos = chat_eos_ids(tok) if chat else tok.eos_token_id
 
     def query(self, prompts, k, max_new, seed_offset=0):
         """Generate max_new tokens for each prompt at budget k; returns list of (text, Z, B, delta_init, n_tokens, R)."""
@@ -61,8 +65,10 @@ class Attacker:
         out = []
         self.last_activity = []  # per returned query: decode-step counts (forced to the anchor / free = risky unchanged / total)
         for chunk in batches(prompts, self.bs):
+            if self.chat:
+                chunk = [wrap_chat(p, self.tok) for p in chunk]
             cfg = GenerationConfig(do_sample=not self.greedy, temperature=self.temp, max_new_tokens=max_new, num_return_sequences=1, num_beams=1,
-                                   repetition_penalty=self.rp, pad_token_id=self.tok.pad_token_id, eos_token_id=self.tok.eos_token_id)
+                                   repetition_penalty=self.rp, pad_token_id=self.tok.pad_token_id, eos_token_id=self.eos)
             o = self.f.generate(text=chunk, generation_config=cfg, k_radius=k, seed=self.seed + seed_offset, parallelize=False, show_progress=False)
             stats = self.f.get_kl_stats_summary()
             Z, B = stats["final_cum_kl_spent_per_seq"], stats["final_budget_per_seq"]
@@ -74,7 +80,7 @@ class Attacker:
             seqs = o.sequences.detach().cpu()
             for j in range(len(chunk)):
                 gen_ids = seqs[j].tolist()[int(plens[j]):]
-                n = true_gen_len(gen_ids, [self.tok.pad_token_id, self.tok.eos_token_id])
+                n = true_gen_len(gen_ids, [self.tok.pad_token_id] + (self.eos if isinstance(self.eos, list) else [self.eos]))
                 bdj = [b[j] for b in bd_steps[:n]]
                 act = dict(steps=len(bdj), forced=sum(x <= 1e-6 for x in bdj), free=sum(x >= 1 - 1e-6 for x in bdj))
                 self.last_activity.append(act)
@@ -162,6 +168,8 @@ def main():
     ap.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl', 'pathwise', or 'renyi[:alpha]'")
     ap.add_argument("--bank-cap", type=float, default=None, help="feat-021: token-bucket depth in nats (unset = unbounded bank)")
     ap.add_argument("--no-prefix-debt", action="store_true", help="feat-025: delta_init = 0")
+    ap.add_argument("--use-chat-template", action="store_true",
+                    help="feat-206: wrap every query as one user turn of the Llama-3.1 chat template and stop on <|eot_id|>")
     ap.add_argument("--raw-prompt", action="store_true", help="feat-018: drop the 'Complete the prefix:' instruction header and seed with the raw passage text (base models)")
     ap.add_argument("--greedy", action="store_true", help="argmax decoding; only for the baselines k in {-1, 0}")
     ap.add_argument("--retries", type=int, default=1, help="oracle windows: re-sample up to N times until the window is reproduced exactly (extraction cost)")
@@ -193,7 +201,8 @@ def main():
                                                       constraint=args.constraint, bank_cap=args.bank_cap, device="cuda", dtype=torch.bfloat16, device_map="auto",
                                                       max_memory=max_memory, risky_device_map=(args.risky_device_map or None), trust_remote_code=True)
     tok = factory.tokenizer
-    atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty, greedy=args.greedy)
+    atk = Attacker(factory, tok, args.batch_size, args.temperature, args.seed, args.repetition_penalty, greedy=args.greedy,
+                   chat=args.use_chat_template)
 
     corpus = (load_corpus_file(args.corpus_file) if args.corpus_file
               else load_prompt_corpus(args.data, "factscore_prompt"))
