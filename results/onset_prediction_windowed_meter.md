@@ -120,3 +120,15 @@ that an exact-window certificate of `W` nats coexisted with near-verbatim extrac
   decoded or a verdict read; pooling this pass with any other.
 
 ## Scoring log
+
+### Addendum 2026-09-25 19:05 IST, before it runs --- selection on the leakage sweep's own protocol (descriptive, no band)
+
+Review 1 (Q6) asks for meter and selection leakage "on the same passages, the same target lengths, and the
+same scorer". leak_plain is that protocol for the meters. One descriptive arm puts selection on it:
+`analysis/selection_extraction.py --risky-model output/memorizing_llama8b --split attack_train --limit 100
+--seed-tokens 20 --max-new-tokens 296 --n-values 1 8 64 --prefix selection_extraction_feat210 --out results`,
+every other flag the script's default. Its passages and targets are built exactly as
+`composition_attack.py` builds them (`join(prefix, reference)`, a `20`-token seed, the rest as target), and `296`
+is the length leak_plain decoded every passage to. It reports the memoriser-ranked pick, the best of the `n`
+draws (a selector that knows the answer) and the memoriser alone. No prediction is registered; it is
+reported beside leak_plain whatever it reads. Host B, GPU 6.
