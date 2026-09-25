@@ -39,10 +39,22 @@ before its data, and put in the manuscript with a guard mutation-tested against 
   configurations, one pass each on host B: `8/8` keep their `D3` label, the headline `+0.058 [+0.0225, +0.093]`.
   Post hoc, the committed rule's `D3` equals its Table 2 pass in the four host-B rows and moves at most
   `0.0085` in the four judged on a local A100. `tab:nonempty` in `app:empties`.
-- **feat-205**: the `k=0.1` arm ran; the registered `k=0` control cannot run in the authors' code
-  (`generate_byte` asserts `k not in {-1, 0}` and the `generate_batched` it names does not exist), so an
-  addendum written before any judge call replaced it with `k = 1e-6` gated on the anchor being served at
-  every byte (`scripts/run_feat205_control.sh`, host B GPUs 5-7).
+- **feat-205 SCORED** (`results/anchoredbyte_t07.csv`): AnchoredByte at the authors' `0.7`/`1.1`. The registered
+  `k=0` control cannot run in the authors' code (`generate_byte` asserts `k not in {-1, 0}` and the
+  `generate_batched` it names does not exist), so an addendum written before any judge call replaced it with
+  `k = 1e-6`, gated on the anchor being served at every byte (G1' PASS on all `500`). The meter's gain over its
+  anchor at `k=0.1` dissolves again, `+0.008 [-0.008, +0.0245]` (A1 right); TinyComma selection's gain exceeds it
+  by `+0.099 [+0.068, +0.129]`; pooled binding `22.9%` (`18.4%` at `1.0`); `S_w` `155.3` against `140.7`,
+  `K/S_w = 0.515`. Post hoc: `5` of `140` prompts on which the meter and its control serve identical text are
+  judged differently, batch composition alone. Caution (bf) in AGENTS.md.
+
+**Final checks (2026-09-25 14:00 IST).** Build exit `0`, `0` overfull, `0` `??`, page 10 opens on ETHICS, bold
+roman embedded; `analysis/audit_numbers.py` `4,101` literals with the two expected misses; the manuscript
+snapshot and the artifact (`2,263` files, manifest verified, anonymity scan clean) rebuilt and committed. Host B:
+nothing of ours running, all eight cards idle. Not pursued, with reasons (in the final report): human
+evaluation (needs raters), the matching bound for budget-concentrating decoders and an onset theory (proofs, not
+experiments, and an unreviewed theorem the day before submission is a liability), and frontier-scale vetted
+anchors or chat models (no openly licensed model above Comma-7B exists; frontier chat models are gated).
 
 **Page budget.** Body exactly 9 of 9. A trim that removed the committed TIGHT ZERO sentence fired
 `tests/test_mixtral_resolved.py` and was reverted (caution (ag)); the space came from two paragraphs whose

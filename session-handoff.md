@@ -1,26 +1,21 @@
 # Session handoff --- 2026-09-24
 
-## Current state, 2026-09-25 13:00 IST --- v12: the skipped review items, pursued (user: "rigorously pursue the tasks that you skipped that could be pursued")
+## Current state, 2026-09-25 14:00 IST --- v12 complete: every pursuable skipped item scored; nothing running
 
 **Scored and in the manuscript, each registered before its first token and guarded in
-`tests/test_v12_skipped_items.py` (every guard mutation-tested):** feat-201 (selection in installments,
-`results/blockwise.csv`), feat-202 (FActScore oracle and a factuality scorer), feat-203 (vetting at the
-deployed temperature `0.7`), feat-204 (whole-response judging), feat-206 (onset in the chat configuration),
-feat-207 (Holm, order consistency, containment union, notation table; CPU), feat-208 (the installment
-advantage on a disjoint draw and under judge G), feat-209 (the non-empty rule at eight Table 2
-configurations, `tab:nonempty`).
+`tests/test_v12_skipped_items.py` (every guard mutation-tested):** feat-201 (selection in installments),
+feat-202 (FActScore oracle, factuality scorer), feat-203 (vetting at temperature `0.7`), feat-204 (whole-response
+judging), feat-205 (AnchoredByte at `0.7`/`1.1`, `k = 1e-6` control per its addendum), feat-206 (chat onset),
+feat-207 (Holm, order consistency, containment union, notation table), feat-208 (installments on a disjoint draw
+and under judge G), feat-209 (the non-empty rule at eight Table 2 configurations).
 
-**Still in flight on host B (GPUs 5-7; GPUs 0-3 are the user's Qwen3-235B server and are never touched):**
+**Nothing of ours runs on either host.** Host B's eight cards are idle; GPUs 0-3 there are the user's Qwen3-235B
+server and were never touched.
 
-- `results/onset_prediction_anchoredbyte_t07.md` (**feat-205**): the `k=0.1` arm ran; the addendum's
-  `k = 1e-6` anchor control runs through `scripts/run_feat205_control.sh` (GPUs 5-7, ~`7.1` s a prompt,
-  started 12:35 IST), then its judge pass on GPU 5. Sentinels `output/logs/feat205_ab07_k1e-6.{done,fail}`
-  and `output/logs/feat205_judge.{done,fail}`. Pull `output/feat205/` and `results/order_averaged_h2h{,_per_prompt}_ab07_k01.csv`
-  (`results/regimes_copybench_t07_comma7b.csv` is already local); score with
-  `.venv/bin/python analysis/score_feat203_206.py --only 205` (G0, G1, G1', G2, A1, D3, `K/S_w`), then
-  `app:anchoredbyte` and, if A1 SURVIVES, Section 4's temperature paragraph.
-
-Manuscript copy before v12: `output/review_audit/pre_v12_2026-09-25/`.
+**Manuscript (`~/sub/satml`, never committed; pre-v12 copy in `output/review_audit/pre_v12_2026-09-25/`):** body
+exactly 9 of 9 (page 10 opens on ETHICS), tectonic exit 0, 0 overfull, 0 `??`; `manuscript_snapshot/` and
+`artifact/` refreshed. The remaining steps are the user's: one read of the compiled PDF, then submission before
+26 Sept, 17:29 IST.
 
 ## Current state, 2026-09-25 00:35 --- v11 (sixth review round, feat-200): every arm scored, nothing running
 
