@@ -48,6 +48,15 @@ case "${1:?q0|q1|q2|q3}" in
       wait_for 21600 inst kl meters || exit 1
       export CUDA_VISIBLE_DEVICES=0,1
       run judge_G "${MH[@]}" --tag f213_G --judge google/gemma-2-27b-it --device-map auto "${ARMS[@]}" ;;
+  # 2026-09-25: q0's pool was stopped before writing output. At 256 rows its anchor KV cache alone reaches
+  # ~58 GB at 1,150 tokens beside the 7B scorer, and the batches are sorted by ascending prompt length, so
+  # the last ones would not fit (q1 died of exactly this). Re-run from scratch at half the draw batch.
+  q0b) export CUDA_VISIBLE_DEVICES=0
+      run sel $PY analysis/blockwise_selection.py --block-len 1000 --t-max 1000 --n 64 --scorer reward \
+        --reward-max-chars 0 --pool-arms 1 4 16 64 --gen-batch 128 --out-dir $O/sel || exit 1
+      wait_for 21600 inst kl meters || exit 1
+      export CUDA_VISIBLE_DEVICES=0,1
+      run judge_G "${MH[@]}" --tag f213_G --judge google/gemma-2-27b-it --device-map auto "${ARMS[@]}" ;;
   q1) export CUDA_VISIBLE_DEVICES=1
       run inst $PY analysis/blockwise_selection.py --block-len 100 --t-max 1000 --n 8 --scorer value \
         --reward-max-chars 0 --out-dir $O/inst ;;
