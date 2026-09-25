@@ -202,3 +202,59 @@ def test_the_factorial_counts_and_claims_are_the_csvs():
     for j in "CDEFG":
         assert abs(float(fac[j]["D3_qwen"]) - float(fac[j]["D3_qwen_committed"])) < 1e-9, j
     assert f"reads ${float(fac['B']['D3_qwen']):+.3f}$ here against ${float(fac['B']['D3_qwen_committed']):+.4f}$" in par
+
+
+# ---- feat-213: every mechanism at T_max = 1000 --------------------------------------------------------------------
+
+def long_rows():
+    B, G = pass_("f213_B"), pass_("f213_G")
+    L = {r["arm"]: r for r in rows("long_outputs.csv")}
+    return B, G, L
+
+
+def test_the_long_output_table_is_its_csvs():
+    import subprocess
+    import sys
+    out = subprocess.run([sys.executable, os.path.join(ROOT, "analysis", "v14_tables.py"), "long"],
+                         capture_output=True, text=True, check=True).stdout.strip().splitlines()
+    app = body("appendix_onset.tex")
+    i = app.index("\\label{tab:long}")
+    tab = app[i:app.index("\\end{tabular}", i)]
+    assert len(out) == 11
+    for line in out:
+        assert line in tab, line
+
+
+def test_the_long_output_paragraph_quotes_its_csvs():
+    B, G, L = long_rows()
+    app = body("appendix_onset.tex")
+    par = app[app.index("\\label{app:long}"):app.index("\\label{tab:long}")]
+    for q, arm in (("gain", "sel_n64 - sel_n1"), ("difference", "sel_n64 - pw_4.16"),
+                   ("difference", "sel_n64 - front_4.16"), ("difference", "sel_n64 - win_4.16"),
+                   ("gain", "inst - sel_n1"), ("difference", "inst - pw_20.8"), ("difference", "inst - kl_20.8")):
+        assert band4(B[(q, arm)]) in par, arm
+    d = B[("difference", "inst - sel_n64")]
+    assert d["reading"] == "REFUTED" and "lose to one choice among $64$" in par
+    neg = lambda x: f"{-float(x):.{dp(x)}f}"                               # noqa: E731  a loss, printed unsigned
+    assert f"by ${neg(d['value'])}$ $[{neg(d['hi95'])}, {neg(d['lo95'])}]$" in par
+    for arm in ("sel_n64 - kl_0.1", "sel_n64 - kl_0.5"):
+        v = B[("difference", arm)]["value"]
+        assert f"${float(v):+.{dp(v)}f}$" in par, arm
+    assert f"mean ${float(L['sel_n64']['mean_tokens']):.0f}$ tokens" in par
+    assert f"${float(L['sel_n64']['over_200_tokens_pct']):.1f}\\%$" in par
+
+
+def test_the_long_output_claims_match_the_readings():
+    """Main text: whole-output selection still gains at 1,000 tokens (L1) and installments lose to it; the
+    registered installments predictions (L2, L3) failed and the appendix says so."""
+    B, G, L = long_rows()
+    fr = body("frontier.tex")
+    g = B[("gain", "sel_n64 - sel_n1")]
+    assert g["reading"] == "CONFIRMED" and G[("gain", "sel_n64 - sel_n1")]["reading"] == "CONFIRMED"
+    assert f"still gains {band4(g)}" in fr
+    assert B[("difference", "inst - sel_n64")]["reading"] == "REFUTED" and "lose to it" in fr
+    for arm in ("inst - pw_20.8", "inst - kl_20.8"):
+        assert B[("difference", arm)]["reading"] == "UNRESOLVED"
+    par = body("appendix_onset.tex")
+    assert "where we had predicted wins" in par
+    assert "outputs longer than $T_{\\max}$ were not measured" not in par
