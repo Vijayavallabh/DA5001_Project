@@ -1,5 +1,38 @@
 # Session Progress Log
 
+## 2026-09-25 evening --- v14: the review items first skipped, run (user: "With the gpus available, pursue the skipped items that can be run")
+
+**In flight on host B (sentinels `~/v/logs/{f211,f213}_<job>.{done,fail}`):** feat-211 (CP-k's rejection rule
+as a baseline) and feat-212 (scorer family by judge family), `scripts/run_feat211.sh` q4b/q5b/q6/q7/q67 on GPUs
+4-7; feat-213 (every mechanism at `T_max = 1000`), `scripts/run_feat213.sh` q0b/q1b/q2/q3 on GPUs 0-3, which
+were idle; `~/v/spec70b.sh` (the 70B pair's speculative acceptance) queued behind feat-213's meters and
+judge-B pass on GPUs 2,3. Local A100s are held by the user's vLLM servers.
+
+**Done (post hoc, committed):**
+- Review 2 Q6, `results/utility_surprisal_note.md` (`analysis/utility_surprisal.py`): all of majority
+  vote's gain lies on answers the anchor already gives >= 1/32 on held-out draws (GSM8K `+0.257` on 439,
+  `0.000` on 61; TriviaQA `+0.084` on 287, `0.000` on 213); on open-ended text all of the judged gain
+  (`+0.110`, 460 prompts) is on served completions with `S > log 64` (median `184.6` nats), and the 40 others
+  are empties.
+- Review 2 Q3, `results/speculative_acceptance_note.md` (`analysis/speculative_acceptance.py`): the meter
+  as speculative decoding with the anchor drafting accepts `0.599` of drafted tokens at `k=10` and `k=3`
+  (`0.681` at `k=0.5`) at the 8B pair; on a cost model optimistic for the meter selection's per-request
+  ratio rises from `0.514x` to at most `0.880x` (parity needs `0.802`); at the 70B pair even perfect
+  acceptance leaves `0.901x`.
+
+**Defects caught before any verdict was read (each re-run from scratch, recorded in its scoring log):**
+- feat-211: `cpk_baseline.py` summed `R` only through the first `<|eot_id|>`, which the plain harness does
+  not stop at; all three draws the flawed arm served at `C = 33.27` were such truncations. Fixed
+  (`served_steps`, test); the two judge passes were stopped and re-entered (q4b/q5b). The same reader,
+  `analysis/window_logratio.trajectory_steps`, cuts `3` of the `1,500` committed `sweep_plain` `k=-1`
+  trajectories the same way (`0.2%`); left as is and logged here, since it cannot move a median over
+  1,500 trajectories.
+- feat-213: installments and the pool ran out of memory at the default `--gen-batch 256` (anchor KV cache
+  ~58 GB at 1,150 tokens beside the 7B scorer); both re-run from scratch at `128` (q1b, q0b).
+- smoke: overwriting a shell script while a lane of it was running made that lane read shifted bytes
+  after its `case` finished (harmless there). Never `scp` over a running script.
+
+
 ## 2026-09-25 --- v13: the seventh review round (three reviews; the user marked Review 3 "very important, address all of it")
 
 **Current state.** Manuscript (`~/sub/satml`, never committed; pre-v13 copy in
