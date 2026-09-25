@@ -15,6 +15,7 @@ from transformers import GenerationConfig
 
 from a_patch import AnchoredDecodingFactory
 from a_patch.renyi import constraint_arg
+from a_patch.pathwise import max_span_sum
 from dataclasses import replace
 
 from .shared import CLASS_ORDER, PromptRecord, chat_eos_ids, load_prompt_corpus, true_gen_len, wrap_chat
@@ -47,6 +48,9 @@ class AuditConfig:
     # constraint binds (a greedy front-loader); a float tau = spend at step t only if the full-tilt
     # demand D_KL(p_r,t || p_s,t) reaches tau nats, otherwise serve the anchor and keep the nats.
     spend_threshold: "float | None" = None
+    # feat-210: a sliding-window pathwise meter; k is then the budget W of every span of at most
+    # `window` output tokens (a_patch/factory.py). None is every meter on record.
+    window: "int | None" = None
     temperature: float = 1.0
     # feat-195: He et al. decode books at temperature 0.7 with a repetition penalty of 1.1 and apply
     # both to BOTH logit vectors before the solve (their App. B; a_patch/factory.py decode loop).
@@ -112,6 +116,7 @@ class H1AuditRunner:
             constraint=config.constraint,
             initial_bank=config.initial_bank,
             spend_threshold=config.spend_threshold,
+            window=config.window,
             device=config.device,
             dtype=dtype,
             device_map=config.device_map,
@@ -235,6 +240,11 @@ class H1AuditRunner:
             steps_forced = sum(b <= 1e-6 for b in bd_i)
             steps_free = sum(b >= 1 - 1e-6 for b in bd_i)
             utilisation = final_cum_spend / final_budget if final_budget > 0 and math.isfinite(final_budget) else None
+            # feat-210: what a windowed meter certifies is every span of at most `window` tokens, so its
+            # invariant is on the worst such span of the realised log-ratio, not on the total.
+            max_span = (max_span_sum([float(step["r_t"][i]) for step in per_step_stats[:own_len]
+                                      if "r_t" in step and i < len(step["r_t"])], self.config.window)
+                        if self.config.window else None)
 
             per_step_log = []
             if self.config.save_full_trajectories:
@@ -272,7 +282,8 @@ class H1AuditRunner:
                     "anchor_model": self.config.safe_model_path,
                     "level": "token",
                     "k": k,
-                    "K": budget_K(k, self.config.max_new_tokens, self.config.initial_bank),
+                    "K": (k if self.config.window else budget_K(k, self.config.max_new_tokens, self.config.initial_bank)),
+                    "window": self.config.window,
                     "initial_bank": self.config.initial_bank,
                     "spend_threshold": self.config.spend_threshold,
                     "T_max": self.config.max_new_tokens,
@@ -307,7 +318,10 @@ class H1AuditRunner:
                     "utilisation": utilisation,
                     "total_realised_ratio": final_ratio,
                     "ratio_invariant_ok": bool(final_ratio <= max(0.0, final_budget) + 1e-3),
-                    "invariant_ok": bool(final_ratio <= max(0.0, final_budget) + 1e-3) if self.config.constraint == "pathwise" else bool(final_cum_spend <= max(0.0, final_budget) + 1e-3),
+                    "invariant_ok": (bool(max_span <= k + 1e-3) if self.config.window and k > 0 else
+                                     bool(final_ratio <= max(0.0, final_budget) + 1e-3) if self.config.constraint == "pathwise" else
+                                     bool(final_cum_spend <= max(0.0, final_budget) + 1e-3)),
+                    "max_span_ratio": max_span,
                     "steps_forced_safe": steps_forced,
                     "steps_active": len(bd_i) - steps_forced - steps_free,
                     "steps_risky_unchanged": steps_free,
@@ -528,6 +542,10 @@ def parse_args() -> AuditConfig:
                         "the anchor and keep the nats. Causal: reads only the current step. "
                         "Default None is the deployed rule (spend as soon as the constraint binds).")
     p.add_argument("--constraint", type=constraint_arg, default="kl", help="feat-019/040: 'kl' (He et al.), 'pathwise' (realised log-ratio, Delta_max-NAF), or 'renyi[:alpha]' (alpha=1 is kl, alpha->inf is the max log-ratio)")
+    p.add_argument("--window", type=int, default=None,
+                   help="feat-210: sliding-window pathwise meter; each --k-values entry is then the budget W "
+                        "of every span of at most this many output tokens. Needs --constraint pathwise "
+                        "--no-prefix-debt.")
     args = p.parse_args()
 
     if args.num_classes != len(CLASS_ORDER):
@@ -547,6 +565,7 @@ def parse_args() -> AuditConfig:
         seeds=tuple(args.seeds), prefix_n=args.prefix_n, use_prefix_debt=not args.no_prefix_debt,
         initial_bank=args.initial_bank,
         spend_threshold=args.spend_threshold,
+        window=args.window,
         temperature=args.temperature, repetition_penalty=args.repetition_penalty,
         max_new_tokens=args.max_new_tokens, delta=args.delta,
         num_classes=args.num_classes, verbose=args.verbose, trust_remote_code=args.trust_remote_code,
