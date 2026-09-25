@@ -84,6 +84,7 @@ def main():
     ap.add_argument("--safe-model", default="jacquelinehe/tinycomma-1.8b-llama3-tokenizer")
     ap.add_argument("--risky-model", default="meta-llama/Llama-3.1-8B-Instruct")
     ap.add_argument("--device-map", default="")
+    ap.add_argument("--max-memory", default="", help="per-card caps for a sharded risky model, e.g. '0=66GiB,1=76GiB'")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--latency", default="results/batched_latency.csv")
@@ -140,6 +141,8 @@ def main():
     tok = AutoTokenizer.from_pretrained(a.safe_model)
     kw = dict(torch_dtype=torch.bfloat16)
     ms = AutoModelForCausalLM.from_pretrained(a.safe_model, **kw).cuda().eval()
+    if a.max_memory:
+        kw["max_memory"] = {int(d): m for d, m in (x.split("=") for x in a.max_memory.split(","))}
     mr = (AutoModelForCausalLM.from_pretrained(a.risky_model, device_map=a.device_map, **kw) if a.device_map
           else AutoModelForCausalLM.from_pretrained(a.risky_model, **kw).cuda()).eval()
 

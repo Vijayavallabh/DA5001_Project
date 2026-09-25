@@ -85,3 +85,72 @@ def test_gains_only_where_log_n_reaches_S_is_true_of_the_numbers():
     assert re.search(r"a vote gains only where \$\\log n \\ge S\$", body("iclr_closing.tex"))
     # and the judged side says the opposite, which the paragraph must not blur: all of it where S > log 64
     assert float(s[("judged headline (judge B)", "served S <= log 64")]["gain"]) == 0.0
+
+
+# ---- feat-211: CP-k's rejection rule, run -------------------------------------------------------------------------
+
+def pass_(tag):
+    return {(r["quantity"], r["arm"]): r for r in rows(f"matched_h2h_{tag}.csv")}
+
+
+def band4(r):
+    return f"${float(r['value']):+.{dp(r['value'])}f}$ $[{float(r['lo95']):+.{dp(r['lo95'])}f}, {float(r['hi95']):+.{dp(r['hi95'])}f}]$"
+
+
+def dp(x):
+    """The decimals the paper prints a CSV value at: its own, with trailing zeros kept to at least 3."""
+    s = str(x).split(".")[-1] if "." in str(x) else ""
+    return max(3, len(s))
+
+
+def test_the_related_work_sentence_is_the_rule_as_run():
+    a = {r["certificate_nats"]: r for r in rows("cpk_baseline.csv")}
+    rw = body("related_work_v4.tex")
+    assert float(a["4.1589"]["served_risky_pct"]) == 0.0
+    assert f"on ${float(a['83.178']['served_risky_pct']):.1f}\\%$ at $83$ nats" in rw
+    assert "serves the risky model on no prompt at $\\log 64$" in rw
+    # "beat it at every matched certificate" is a claim about three intervals under two judges (C1-C4)
+    assert "beat it at every matched certificate" in rw
+    for j in ("cpk_B_hostb", "cpk_G"):
+        P = pass_(j)
+        for d in ("blk10n64 - cpk_83.18", "blk25n64 - cpk_33.27", "sel_n64 - cpk_4.16"):
+            assert P[("difference", d)]["reading"] == "CONFIRMED", (j, d)
+
+
+def test_the_cpk_appendix_quotes_its_csvs():
+    B = pass_("cpk_B_hostb")
+    app = body("appendix_onset.tex")
+    i = app.index("\\label{app:cpk}")
+    par = app[i:app.index("\\label{tab:cpk}", i)]
+    for d in ("sel_n64 - cpk_4.16", "blk25n64 - cpk_33.27", "blk10n64 - cpk_83.18", "cpk_83.18 - pw_83.18",
+              "cpk_33.27 - pw_33.27"):
+        assert band4(B[("difference", d)]) in par, d
+    for d in ("cpk_83.18 - pw_83.18", "cpk_33.27 - pw_33.27"):
+        assert B[("difference", d)]["reading"] == "UNRESOLVED"          # "it is unresolved"
+    leak = {r["certificate_nats"]: r for r in rows("cpk_extraction.csv")}
+    assert all(float(leak[c]["nv_recall_mean"]) == 0.0 for c in ("4.1589", "33.271", "83.178", "159.83", "250.0"))
+    assert float(leak["400.0"]["nv_recall_mean"]) > 0 and "through $250$ nats" in par   # nothing only THROUGH 250
+    assert f"(${float(leak['600.0']['nv_recall_mean']):.4f}$ recall" in par
+    assert f"reads ${float(leak['memoriser alone']['nv_recall_mean']):.4f}$" in par
+    med = [r for r in rows("cpk_baseline.csv") if r["certificate_nats"].startswith("median R")][0]
+    assert f"median $R$ is ${float(med['kappa']):.1f}$ nats" in par
+    # C5 failed and the paper says so: accepted draws are as long as all draws
+    a = {r["certificate_nats"]: r for r in rows("cpk_baseline.csv")}
+    assert float(a["83.178"]["accepted_median_tokens"]) >= float(a["83.178"]["all_draws_median_tokens"])
+    assert "They are not" in par
+
+
+def test_the_cpk_table_is_its_csvs():
+    B, G = pass_("cpk_B_hostb"), pass_("cpk_G")
+    a = {r["certificate_nats"]: r for r in rows("cpk_baseline.csv")}
+    leak = {r["certificate_nats"]: r for r in rows("cpk_extraction.csv")}
+    from manuscript import caption_of  # noqa: F401  (the table is found by its label below)
+    app = body("appendix_onset.tex")
+    tab = app[app.index("\\label{tab:cpk}"):app.index("\\end{tabular}", app.index("\\label{tab:cpk}"))]
+    for c, name in (("4.1589", "4.16"), ("33.271", "33.27"), ("83.178", "83.18"), ("159.83", "159.83")):
+        g = f"cpk_{name} - anchor_k0"
+        b = B[("gain", g)]
+        row = (f"${float(c):.2f}$ & ${float(a[c]['kappa']):.2f}$ & ${float(a[c]['served_risky_pct']):.1f}\\%$ & "
+               f"${float(b['value']):+.4f}$ $[{float(b['lo95']):+.4f}, {float(b['hi95']):+.4f}]$ & "
+               f"${float(G[('gain', g)]['value']):+.4f}$ & ${float(leak[c]['nv_recall_mean']):.4f}$ \\\\")
+        assert row in tab, row
