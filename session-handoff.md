@@ -2,6 +2,16 @@
 
 
 
+## Current state, 2026-09-26 --- feat-215 RUNNING locally (the chained arms re-run with the slicing fix)
+
+User: "fix the composition_attack slicing bug too", then "re-run the chained arms with the fix". The defect
+(caution (bc) in `analysis/composition_attack.py` and `analysis/bank_burst.py`) is fixed and pinned by
+`tests/test_composition_left_pad.py`. Registered in `results/onset_prediction_chained_fix.md` (unscored until its
+`### Scored` entry). Two local queues, `scripts/run_feat215.sh small` (GPU 4) and `scripts/run_feat215.sh nm`
+(GPUs 1+2), write `output/chainfix/<run>`; logs `output/chainfix/queue_{small,nm}.log`. When both read `queue ...
+drained`: `analysis/chained_fix.py merge`, `gate`, `compare`, then `apply` (which refuses to write if any
+non-chained row moves). GPU 0 belongs to the user's other project and is never touched.
+
 ## Current state, 2026-09-26 early --- v15 complete (review 3 Q13, short works, run and in the paper)
 
 User: "run the short-works test for Q13 on the free GPUs". feat-214 is registered (`80da554`, before any

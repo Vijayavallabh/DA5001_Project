@@ -104,10 +104,10 @@ def main():
                 stats = factory.get_kl_stats_summary()
                 per_step = stats["per_step"]
                 enc = tok(chunk, return_tensors="pt", padding=True)
-                plens = enc.attention_mask.sum(dim=1).tolist()
-                seqs = o.sequences.detach().cpu()
+                W, seqs = enc.input_ids.shape[1], o.sequences.detach().cpu()  # LEFT-padded: caution (bc)
+                assert bool((seqs[:, :W] == enc.input_ids).all()), "sequences do not begin with the padded prompts"
                 for j, x in enumerate(chunk_p):
-                    gen_ids = seqs[j].tolist()[int(plens[j]):]
+                    gen_ids = seqs[j].tolist()[W:]
                     n = true_gen_len(gen_ids, [tok.pad_token_id, tok.eos_token_id])
                     gen = tok.decode(gen_ids[:n], skip_special_tokens=True)
                     a = [float(s["kl_to_safe"][j]) for s in per_step[:n]]
