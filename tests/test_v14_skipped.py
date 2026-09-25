@@ -154,3 +154,43 @@ def test_the_cpk_table_is_its_csvs():
                f"${float(b['value']):+.4f}$ $[{float(b['lo95']):+.4f}, {float(b['hi95']):+.4f}]$ & "
                f"${float(G[('gain', g)]['value']):+.4f}$ & ${float(leak[c]['nv_recall_mean']):.4f}$ \\\\")
         assert row in tab, row
+
+
+# ---- feat-212: scorer family by judge family ---------------------------------------------------------------------
+
+WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
+
+
+def test_the_factorial_table_is_its_csv():
+    app = body("appendix_selection.tex")
+    i = app.index("\\label{tab:factorial}")
+    tab = app[i:app.index("\\end{tabular}", i)]
+    for r in rows("scorer_judge_factorial.csv"):
+        cells = [f"${float(r[k]):+.4f}$ $[{float(r[k + '_lo']):+.4f}, {float(r[k + '_hi']):+.4f}]$"
+                 for k in ("S", "D3_qwen", "D3_gemma")]
+        assert f"{r['judge']} & " + " & ".join(cells) + " \\\\" in tab, r["judge"]
+
+
+def test_the_factorial_counts_and_claims_are_the_csvs():
+    fac = {r["judge"]: r for r in rows("scorer_judge_factorial.csv")}
+    n_g = sum(r["D3_gemma_reading"] == "CONFIRMED" for r in fac.values())
+    n_q = sum(r["D3_qwen_reading"] == "CONFIRMED" for r in fac.values())
+    prefer_q = [j for j, r in fac.items() if r["S_reading"] == "CONFIRMED"]
+    exp, app = body("experiments.tex"), body("appendix_selection.tex")
+    assert f"{WORDS[n_g]} of six judges resolve it with either scorer" in exp
+    assert n_q >= n_g                                         # "with either scorer": both counts at least n_g
+    assert prefer_q == ["B"] and "only~B prefers the Qwen reward's drafts" in exp
+    par = app[app.index("\\label{app:factorial}"):app.index("\\label{tab:factorial}")]
+    assert "Only judge~B prefers them" in par
+    assert fac["G"]["S_reading"] == "REFUTED" and "the gemma-scored drafts win" in par
+    assert all(fac[j]["S_reading"] == "UNRESOLVED" for j in "CDEF")
+    assert f"headline resolves under {WORDS[n_g]} of six judges, against {WORDS[n_q]}" in par
+    assert fac["B"]["D3_gemma_reading"] != "CONFIRMED"         # "B ... is one of the two that do not resolve it"
+    assert sum(r["D3_gemma_reading"] != "CONFIRMED" for r in fac.values()) == 2
+    for j in ("D", "F"):
+        assert f"${float(fac[j]['D3_gemma']):+.4f}$".replace("0$", "$") in par or \
+               f"${float(fac[j]['D3_gemma']):+.4f}$" in par
+    # the same-host reproduction claim: every same-host pass equals the committed panel's D3
+    for j in "CDEFG":
+        assert abs(float(fac[j]["D3_qwen"]) - float(fac[j]["D3_qwen_committed"])) < 1e-9, j
+    assert f"reads ${float(fac['B']['D3_qwen']):+.3f}$ here against ${float(fac['B']['D3_qwen_committed']):+.4f}$" in par

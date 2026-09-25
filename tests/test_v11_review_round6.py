@@ -224,8 +224,15 @@ def test_the_scorer_family_arm_is_reported_as_registered():
         if "continuing text" in intro.lower():
             assert "with its Qwen scorer though not with a gemma one" in intro
         close = body("iclr_closing.tex")
-        assert "or with a scorer from another family" in close
+        assert "with a scorer from another family" in close
         assert "the headline depends on the scorer" in exp
+        # v14 (feat-212): the same comparison judged by all six judges resolves under four of them, so the
+        # concession is judge~B's and must say so wherever it is stated -- conditioned on the CSV, not a phrase
+        fac = {r["judge"]: r for r in _rows("scorer_judge_factorial.csv")}
+        if any(fac[j]["D3_gemma_reading"] == "CONFIRMED" for j in fac if j != "B"):
+            assert "under the pre-specified judge, with a scorer from another family" in close
+            assert "under~B the headline depends on the scorer" in exp
+            assert "or, under judge~B, a scorer from another family" in exp
 
 
 # ------------------------------------------------------------------ feat-195, the authors' decoding settings
