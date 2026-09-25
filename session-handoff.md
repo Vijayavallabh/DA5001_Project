@@ -17,6 +17,11 @@ Each arm's bands were committed before its first token; queues write `output/log
   sentinels, with a deadline) on the feat-201 queue it follows. Scorers: `analysis/factscore_oracle.py
   --report`, `analysis/score_feat203_206.py`.
 
+- `results/onset_prediction_blockwise_replication.md` (**feat-208**): feat-201's comparison on a disjoint draw
+  (seed `20260926`) under judges B and G, plus judge G post hoc on feat-201's texts. `scripts/run_feat208.sh`
+  queues a (GPU 4), b (GPU 5), c (GPU 6) and ab (GPUs 5-7: feat-205 and feat-203's 70B control, re-queued
+  here after the first q456 shell was stopped, by PID, before it started anything).
+
 **Done on CPU (feat-207):** Holm over Figure 3's 21 rows (`analysis/forest_multiplicity.py`: 8 survive, the
 headline row alone does not), order consistency for every judge (`analysis/judge_order_consistency.py`),
 the containment union (Appendix A), and the onset shading called a range (Figure 2). Guards:

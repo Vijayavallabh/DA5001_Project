@@ -1529,6 +1529,17 @@
       "dependencies": [],
       "status": "in-progress",
       "evidence": ""
+    },
+    {
+      "id": "feat-208",
+      "name": "Selection in installments: a disjoint draw and a second judge",
+      "description": "feat-201's installments beat one choice at L=10 and 25, against its prediction, at about 1.8 interval half-widths; re-draw blk10n64, blk25n64 and blk200n64 with a new seed and read them by judge B and judge G before the manuscript leans on it (results/onset_prediction_blockwise_replication.md). Judge G on feat-201's own texts is post hoc.",
+      "priority": "high",
+      "dependencies": [
+        "feat-201"
+      ],
+      "status": "in-progress",
+      "evidence": ""
     }
   ]
 }
