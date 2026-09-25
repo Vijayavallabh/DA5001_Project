@@ -144,3 +144,16 @@ def test_the_installments_claims_follow_their_verdicts():
     c = body("iclr_closing.tex")
     assert "we did not measure selection in installments" not in c
     assert "in installments, which buy more" in c
+
+
+def test_the_notation_table_quotes_its_numbers_from_their_sources():
+    """Reviews 3 and 4 asked for a notation table; its numbers are the paper's, not new ones."""
+    from tests.manuscript import tex
+    t = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    tab = t[t.index("\\caption{Notation and terms.}"):t.index("\\bottomrule", t.index("\\caption{Notation and terms.}"))]
+    w = next(r for r in _csv("window_vacuity.csv") if r["window_tokens"] == "50")
+    assert f"median ${float(w['S_median_nats']):.1f}$ nats" in tab
+    assert "$\\gamma = 0.857$ nats per token" in tab and "$\\gamma = 0.857$" in body("frontier.tex")
+    for label in ("prop:selection", "prop:threshold", "prop:sparse", "prop:imitation", "thm:nfl"):
+        assert f"\\ref{{{label}}}" in tab, label
+    assert "(notation: Table~\\ref{tab:notation})" in body("selection.tex")
