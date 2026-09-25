@@ -58,3 +58,33 @@ manuscript leans on it, the same comparison is drawn again and read by a second 
 - Pooling the two draws; a third draw chosen after this one is read; any other `L`, `n`, scorer or judge.
 
 ## Scoring log
+
+### Scored 2026-09-25 12:24 IST --- P1 right (the `L=10` advantage holds on a fresh draw), P2 WRONG in selection's favour (`L=25` wins too), P3 right; judge G agrees on both draws
+
+All jobs exited `0` on host B (`scripts/run_feat208.sh`): judge G post hoc on feat-201's texts `09:56`-`10:24`
+IST; the re-draws `blk200n64s2` `10:18`-`10:30`, `blk25n64s2` `10:08`-`10:50`, `blk10n64s2` `10:24`-`12:13`; each
+judged by B and then G. Scored by `.venv/bin/python analysis/blockwise_replication.py --out results` ->
+`results/blockwise_replication.csv`.
+
+**Gates.** G0 PASS (`500` records and complete block logs for the three arms; three generation logs print
+`temperature=1.0 top_k=0 top_p=1.0`). G1 PASS: on every prompt where both draws serve text, the new draw
+serves a different text from feat-201's (`345`, `338` and `333` prompts at `L = 10, 25, 200`). G2 PASS:
+meter and anchor levels equal feat-198's on `500/500` in all three judge-B passes.
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| P1 judge B, new draw, `L=10` minus once | `+0.0435 [+0.020, +0.067]`, INSTALLMENTS WIN | INSTALLMENTS WIN | **right** |
+| P2 judge B, new draw, `L=25` minus once | `+0.033 [+0.011, +0.0555]`, INSTALLMENTS WIN | TIE | **wrong** (in selection's favour) |
+| P3 judge G, new draw, `L=10` minus once | `+0.0635 [+0.033, +0.0945]` | positive | **right** |
+
+**Descriptive, no band.** Judge G, new draw, `L=25` minus once: `+0.0595 [+0.028, +0.0905]`. Gains over the
+anchor on the new draw: judge B `+0.161`, `+0.1505`, `+0.1175` at `L = 10, 25, 200`; judge G `+0.2735`,
+`+0.2695`, `+0.21`. **Post hoc**, judge G on feat-201's own texts: `+0.083 [+0.0525, +0.114]`,
+`+0.0635 [+0.0325, +0.0955]` and `+0.031 [+0.001, +0.062]` at `L = 10, 25, 50` minus once. Served medians
+`89`, `77` and `59` words with `98`, `114` and `104` empty answers.
+
+Both registered draws and both judges put installments of `10` and `25` tokens above one choice among `64`
+whole drafts; no reading is pooled.
+
+**Manuscript, as registered.** Section 3 says the `L=10` advantage held on a fresh draw and quotes both
+readings; the conclusion keeps its installments clause; the appendix reports judge G beside judge B.

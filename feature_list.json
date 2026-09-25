@@ -1538,8 +1538,8 @@
       "dependencies": [
         "feat-201"
       ],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "scripts/run_feat208.sh a/b/c on host B (all exit 0); .venv/bin/python analysis/blockwise_replication.py --out results -> results/blockwise_replication.csv: G0-G2 PASS; P1 judge B new draw L=10 minus once +0.0435 [+0.020, +0.067] INSTALLMENTS WIN (right); P2 L=25 +0.033 [+0.011, +0.0555] INSTALLMENTS WIN (predicted TIE, wrong in selection's favour); P3 judge G L=10 +0.0635 [+0.033, +0.0945] (right); post hoc judge G on feat-201's draw +0.083/+0.0635/+0.031 at L=10/25/50."
     },
     {
       "id": "feat-209",
