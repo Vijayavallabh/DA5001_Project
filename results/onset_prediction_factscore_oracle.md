@@ -68,3 +68,31 @@ stays, with the oracle beside it if space allows.
   score is read; judging the factuality picks' fluency without a new registration.
 
 ## Scoring log
+
+### Scored 2026-09-25 11:02 IST --- F1 right (the best draw reaches `0.505`), F2 WRONG (the factuality scorer ties the reward), F3 right
+
+All jobs exited `0` on host B, GPU 7 (`scripts/run_feat202_206.sh q7`): the dump `09:16`-`09:17` IST, FActScore
+over `9,475` non-empty drafts (`32,163` atomic facts) `09:17`-`10:54`, the factuality rewards `10:54`-`10:55`,
+the report `10:55`. Read from `results/factscore_oracle.csv` (`.venv/bin/python analysis/factscore_oracle.py
+--report`).
+
+**Gates.** G0 PASS: `9,600` per-item rows (`64` per prompt) and `9,600` finite factuality rewards. G1 PASS: the
+committed reward's pick is, character for character, the committed FActScore pass's `sel64` text on `150`
+of `150` prompts; recomputed, its precision differs from that pass's by `0.0008` on average.
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| F1 oracle, first `64` drafts | `0.5054 [0.4553, 0.5564]` (`150` prompts) | at least `0.25` | **right** |
+| F1 oracle, drafts with `>= 5` facts | `0.2392 [0.2155, 0.2642]` | lower than unrestricted | **right** |
+| F2 factuality pick minus committed pick | `+0.0102 [-0.0144, +0.0399]`, TIE (`97` prompts) | RAISES | **wrong** |
+| F3 factuality pick minus the meter at `k=10` | `-0.1246 [-0.1727, -0.0725]`, BELOW (`89` prompts) | below | **right** |
+
+**Descriptive, no band.** The oracle at `n=1` and `n=8` reads `0.0494` and `0.1764` (`0.0393` and `0.1012` with
+`>= 5` facts); a single draw averages `0.0613`. The committed pick scores `0.0431` on `130` non-abstaining
+biographies, abstains on `20` and claims `8.82` facts; the factuality pick scores `0.0768` on `105`, abstains
+on `45` and claims `3.41`: it buys its raw precision by saying less, and paired it is not separable from the
+reward's.
+
+**Manuscript, as registered.** Appendix `app:hemetrics` replaces "we did not test a factuality scorer" with F1
+and F2: the best of `64` draws is far more precise than what this reward serves (`0.5054` against `0.0431`),
+and a scorer asked for accurate claims does not find it.

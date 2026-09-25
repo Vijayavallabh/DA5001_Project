@@ -1,0 +1,19 @@
+band,quantity,value,lo95,hi95,n,reading
+G0,"150 prompts x 64 drafts scored, 9,600 factuality rewards",1.0,,,,PASS
+G1,committed pick's text equals the committed FActScore pass's sel64 text,150,,,150,PASS
+F1,"oracle precision, first 1 drafts",0.0494,0.0227,0.0807,68,
+F1,"oracle precision, first 1 drafts, drafts with >= 5 facts",0.0393,0.0156,0.0682,41,
+F1,"oracle precision, first 8 drafts",0.1764,0.1368,0.2194,146,
+F1,"oracle precision, first 8 drafts, drafts with >= 5 facts",0.1012,0.0786,0.126,134,
+F1,"oracle precision, first 64 drafts",0.5054,0.4553,0.5564,150,
+F1,"oracle precision, first 64 drafts, drafts with >= 5 facts",0.2392,0.2155,0.2642,150,
+desc,committed reward's pick: precision (non-abstaining),0.0431,0.027,0.0621,130,
+desc,committed reward's pick: abstentions,20,,,150,
+desc,committed reward's pick: mean facts,8.82,,,150,
+desc,factuality scorer's pick: precision (non-abstaining),0.0768,0.0414,0.1188,105,
+desc,factuality scorer's pick: abstentions,45,,,150,
+desc,factuality scorer's pick: mean facts,3.407,,,150,
+F2,"factuality pick minus committed pick, paired",0.0102,-0.0144,0.0399,97,TIE
+F3,"factuality pick minus the meter at k=10, paired",-0.1246,-0.1727,-0.0725,89,BELOW
+desc,"a single draw's precision, averaged over the 64 then over prompts",0.0613,,,150,
+desc,"committed pick recomputed, mean |difference| from the committed pass",0.0008,,,130,

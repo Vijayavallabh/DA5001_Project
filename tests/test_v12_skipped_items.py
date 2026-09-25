@@ -157,3 +157,19 @@ def test_the_notation_table_quotes_its_numbers_from_their_sources():
     for label in ("prop:selection", "prop:threshold", "prop:sparse", "prop:imitation", "thm:nfl"):
         assert f"\\ref{{{label}}}" in tab, label
     assert "(notation: Table~\\ref{tab:notation})" in body("selection.tex")
+
+
+def test_the_factscore_oracle_and_the_factuality_scorer_are_quoted_from_their_csv():
+    t = body("appendix_selection.tex")
+    rows = _csv("factscore_oracle.csv")
+    get = lambda band, q: next(r for r in rows if r["band"] == band and r["quantity"] == q)
+    o = get("F1", "oracle precision, first 64 drafts")
+    o5 = get("F1", "oracle precision, first 64 drafts, drafts with >= 5 facts")
+    f2 = get("F2", "factuality pick minus committed pick, paired")
+    f3 = get("F3", "factuality pick minus the meter at k=10, paired")
+    assert f"reaches ${float(o['value']):.4f}$ $[{float(o['lo95']):.4f}, {float(o['hi95']):.4f}]$" in t
+    assert f"(${float(o5['value']):.4f}$ among draws claiming at least five facts)" in t
+    assert f2["reading"] == "TIE" and f"paired ${float(f2['value']):+.4f}$ $[{float(f2['lo95']):+.4f}, {float(f2['hi95']):+.4f}]$ over the committed pick" in t
+    assert f3["reading"] == "BELOW" and f"${float(f3['value']):+.4f}$ $[{float(f3['lo95']):+.4f}, {float(f3['hi95']):+.4f}]$ below the meter" in t
+    assert "a scorer that asks for facts did not find them" in t
+    assert "we did not test a factuality scorer" not in t

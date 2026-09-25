@@ -1482,8 +1482,8 @@
       "description": "Review 4 Q8, Review 1 W6/Q4: FActScore every one of the 64 draws of the 150 biographies, the oracle at n=1/8/64, and the committed scorer asked for accurate facts (results/onset_prediction_factscore_oracle.md).",
       "priority": "high",
       "dependencies": [],
-      "status": "in-progress",
-      "evidence": ""
+      "status": "done",
+      "evidence": "scripts/run_feat202_206.sh q7 on host B GPU 7 (all exit 0); .venv/bin/python analysis/factscore_oracle.py --report -> results/factscore_oracle.csv: G0/G1 PASS (150/150 aligned, recomputed pick 0.0008 from the committed pass); F1 oracle at n=64 0.5054 [0.4553, 0.5564], 0.2392 with >=5 facts (right); F2 factuality pick minus committed +0.0102 [-0.0144, +0.0399] TIE (predicted RAISES, wrong); F3 minus the meter at k=10 -0.1246 [-0.1727, -0.0725] BELOW (right)."
     },
     {
       "id": "feat-203",

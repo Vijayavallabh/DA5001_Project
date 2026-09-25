@@ -168,8 +168,13 @@ def score_205(res, outdir):
                     float(s["D3"]["lo95"]), float(s["D3"]["hi95"]), s["D3"]["reading"], s["D3"]["n"]))
     reg = os.path.join(res, "regimes_copybench_t07_comma7b.csv")
     if os.path.exists(reg):
-        sw = s_w(reg)
-        rows.append(row("desc", "S_w under Comma-7B at 0.7/1.1 (50 x median nats per Comma token, 758 works); K/S_w at k=0.1",
+        # the committed construction (analysis/anchoredbyte_score.py:s_w_comma): the audited anchor's
+        # 50-token window, 159.83 nats, rescaled by the per-character surprisal of Comma-7B -- here the
+        # tempered one -- against TinyComma's at 1.0, on the same 758 works
+        med = lambda f, c: st.median(float(r[c]) for r in csv.DictReader(open(os.path.join(res, f))))
+        sw = s_w(os.path.join(res, "regimes_copybench.csv")) * med("regimes_copybench_t07_comma7b.csv", "s_rate") \
+            / med("regimes_copybench.csv", "s_rate")
+        rows.append(row("desc", "S_w under Comma-7B at 0.7/1.1 (the audited 50-token window rescaled per character, 758 works); K/S_w at k=0.1",
                         round(sw, 2), reading=f"K/S_w {80 / sw:.3f}", n=758))
     write(os.path.join(res, "anchoredbyte_t07.csv"), rows)
 
