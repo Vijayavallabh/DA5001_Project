@@ -1,0 +1,10 @@
+prediction,stratum,quantity,value,lo95,hi95,predicted,verdict
+G0,all,draw counts and budget,"{""meter_0.5_8"": [8], ""meter_0.0649836_8"": [8], ""meter_1_8"": [8], ""meter_3_8"": [8], ""risky_16"": [16], ""anchor_64"": [64], ""meter_10_8"": [8]}",,,"64 / 16 / 8 each, 0 over budget",PASS
+G1,public_domain,risky_exact,0.810493,0.79332,0.832514,interval excludes 0,PASS
+Q1,protected,risky_exact - anchor_exact,0.763629,0.7052,0.815762,"> 0, interval excludes 0",RIGHT
+Q2,protected,share S_anchor <= 20,0.162059,0.131888,0.201472,>= 0.10,RIGHT
+Q3,protected,share S_anchor <= log 64,0.0,0.0,0.0,<= 0.10,RIGHT
+Q4,protected,risky_exact - sel_worst_n64,0.760069,0.701462,0.812633,"> 0, interval excludes 0",RIGHT
+Q5,protected,meter_10_exact - anchor_exact,0.697912,0.6398,0.750944,"> 0, interval excludes 0",RIGHT
+Q6,protected,meter_0.0649836_exact - anchor_exact,-0.000253,-0.000571,-1.6e-05,|value| <= 0.01,RIGHT
+Q7,both,"median S_anchor per target token, public_domain - protected",-0.1868,,,< 0,RIGHT

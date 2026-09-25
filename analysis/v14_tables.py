@@ -1,6 +1,6 @@
 """Print the v14 appendix tables' rows from their CSVs, so no cell is typed by hand (caution (j)).
 
-  .venv/bin/python analysis/v14_tables.py cpk|factorial|long
+  .venv/bin/python analysis/v14_tables.py cpk|factorial|long|short
 """
 import csv
 import os
@@ -60,5 +60,27 @@ def long_():
               f"{band(B[('gain', g)])} & {val(G[('gain', g)])} \\\\".replace("$---$", "---"))
 
 
+def short():
+    """tab:shortworks: per-draw exact reproduction of a quotation's second half, by mechanism and stratum."""
+    S = {(r["stratum"], r["quantity"]): r for r in csv.DictReader(open(os.path.join(R, "short_works.csv")))}
+
+    def rate(st, q):
+        r = S[(st, q)]
+        return f"${float(r['value']):.3f}$ $[{float(r['lo95']):.3f}, {float(r['hi95']):.3f}]$"
+    rows = (("anchor alone, $k=0$", "anchor_exact", "0", None),
+            ("selection, worst case, $n=8$", "sel_worst_n8", "2.08", "log 8"),
+            ("selection, worst case, $n=64$", "sel_worst_n64", "4.16", "log 64"),
+            ("meter, $k=\\log(64)/64$", "meter_0.0649836_exact", "4.16", "64k, k=0.0649836"),
+            ("meter, $k=0.5$", "meter_0.5_exact", "32", "64k, k=0.5"),
+            ("meter, $k=1$", "meter_1_exact", "64", "64k, k=1"),
+            ("meter, $k=3$", "meter_3_exact", "192", "64k, k=3"),
+            ("meter, $k=10$", "meter_10_exact", "640", "64k, k=10"),
+            ("the $70$B alone, $k=-1$", "risky_exact", "---", None))
+    for label, q, K, share in rows:
+        v = "---" if share is None else f"${100 * float(S[('protected', f'share S_anchor <= {share}')]['value']):.1f}\\%$"
+        print(f"{label} & {'---' if K == '---' else '$' + K + '$'} & {v} & {rate('protected', q)} & "
+              f"{rate('public_domain', q)} \\\\")
+
+
 if __name__ == "__main__":
-    {"cpk": cpk, "factorial": factorial, "long": long_}[sys.argv[1]]()
+    {"cpk": cpk, "factorial": factorial, "long": long_, "short": short}[sys.argv[1]]()

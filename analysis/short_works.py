@@ -318,7 +318,7 @@ def cluster_boot(vals, authors, n_boot=2000, seed=214):
 
 
 def score(a):
-    rows = load_quotes()
+    rows = load_quotes(a.limit, a.data)
     S, draws = {}, {}
     for p in glob.glob(os.path.join(a.runs, "*", "*.jsonl")):
         arm = os.path.basename(p)[:-6]
@@ -337,6 +337,7 @@ def score(a):
     meters = sorted((k for k in draws if k.startswith("meter_")), key=lambda k: float(k.split("_")[1]))
     per = []
     for i, r in enumerate(rows):
+        assert S[i]["row"] == r["row"]
         d = dict(row=r["row"], author=r["author"], status=r["status"], n_words=r["n_words"],
                  target_words=len(r["target"].split()), T_target=S[i]["T_target"],
                  S_anchor=round(S[i]["S_anchor"], 4), S_risky=round(S[i]["S_risky"], 4),
@@ -377,7 +378,8 @@ def score(a):
         for c, ref in (("risky_exact", "anchor_exact"), ("risky_exact", "sel_worst_n64")) + tuple(
                 (f"meter_{m.split('_')[1]}_exact", "anchor_exact") for m in meters):
             add(f"{c} - {ref}", [d[c] - d[ref] for d in P])
-        for K, name in [(math.log(64), "log 64"), (20.0, "20")] + [(T_MAX * k, f"{T_MAX}k, k={k:g}") for k in kvals]:
+        for K, name in [(math.log(8), "log 8"), (math.log(64), "log 64"), (20.0, "20")] + [
+                (T_MAX * k, f"{T_MAX}k, k={k:g}") for k in kvals]:
             for s in ("S_anchor", "S_whole_anchor"):
                 add(f"share {s} <= {name}", [float(d[s] <= K) for d in P], f"K={K:.4f}")
         for s in ("S_anchor", "S_risky", "S_whole_anchor", "S_whole_risky"):
@@ -405,6 +407,54 @@ def score(a):
         w.writerows(out)
     for r in out:
         print(r)
+    counts = {arm: {len(v) for v in by.values()} for arm, by in draws.items()}
+    verdicts(out, counts, a.results)
+
+
+def verdicts(out, counts, results):
+    """The registered readings of results/onset_prediction_short_works.md, in its order (gates first)."""
+    R = {(r["stratum"], r["quantity"]): r for r in out}
+    rows = []
+
+    def add(pid, stratum, quantity, predicted, right, value=None):
+        r = R.get((stratum, quantity), {})
+        rows.append(dict(prediction=pid, stratum=stratum, quantity=quantity,
+                         value=r.get("value", value), lo95=r.get("lo95", ""), hi95=r.get("hi95", ""),
+                         predicted=predicted, verdict=right))
+
+    want = {"anchor_64": 64, "risky_16": 16}
+    ok = (all(counts[k] == {n} for k, n in want.items())
+          and all(v == {8} for k, v in counts.items() if k.startswith("meter_"))
+          and R[("all", "meter trajectories over budget")]["value"] == 0)
+    add("G0", "all", "draw counts and budget", "64 / 16 / 8 each, 0 over budget", "PASS" if ok else "FAIL",
+        value=json.dumps({k: sorted(v) for k, v in counts.items()}))
+    g1 = R[("public_domain", "risky_exact")]["lo95"] > 0
+    add("G1", "public_domain", "risky_exact", "interval excludes 0", "PASS" if g1 else "FAIL")
+    if not (ok and g1):
+        for pid in ("Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7"):
+            rows.append(dict(prediction=pid, stratum="", quantity="", value="", lo95="", hi95="", predicted="",
+                             verdict="INVALID"))
+    else:
+        rv = lambda b: "RIGHT" if b else "WRONG"  # noqa: E731
+        P = "protected"
+        q1 = R[(P, "risky_exact - anchor_exact")]["lo95"] > 0
+        add("Q1", P, "risky_exact - anchor_exact", "> 0, interval excludes 0", rv(q1))
+        add("Q2", P, "share S_anchor <= 20", ">= 0.10", rv(R[(P, "share S_anchor <= 20")]["value"] >= 0.10))
+        add("Q3", P, "share S_anchor <= log 64", "<= 0.10", rv(R[(P, "share S_anchor <= log 64")]["value"] <= 0.10))
+        for pid, q, test, pred in (
+                ("Q4", "risky_exact - sel_worst_n64", lambda r: r["lo95"] > 0, "> 0, interval excludes 0"),
+                ("Q5", "meter_10_exact - anchor_exact", lambda r: r["lo95"] > 0, "> 0, interval excludes 0"),
+                ("Q6", "meter_0.0649836_exact - anchor_exact", lambda r: abs(r["value"]) <= 0.01, "|value| <= 0.01")):
+            add(pid, P, q, pred, rv(test(R[(P, q)])) if q1 else "UNINFORMATIVE")
+        pd_, pr = (R[(s, "median S_anchor per target token")]["value"] for s in ("public_domain", P))
+        add("Q7", "both", "median S_anchor per target token, public_domain - protected", "< 0", rv(pd_ < pr),
+            value=round(pd_ - pr, 4))
+    with open(os.path.join(results, "short_works_scoring.csv"), "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    for r in rows:
+        print(r)
 
 
 def main():
@@ -422,7 +472,7 @@ def main():
     ap.add_argument("--score-bs", type=int, default=32)
     ap.add_argument("--seed", type=int, default=214)
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--data", default=DATA, help=f"run only; {SMOKE} for a smoke")
+    ap.add_argument("--data", default=DATA, help=f"{SMOKE} for a smoke")
     a = ap.parse_args()
     {"build": build, "run": run, "score": score}[a.cmd](a)
 

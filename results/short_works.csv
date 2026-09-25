@@ -1,0 +1,108 @@
+stratum,quantity,value,lo95,hi95,quotes,authors,note
+protected,anchor_exact,0.000253,1.6e-05,0.000572,1049,102,
+protected,anchor_near,0.000372,6.9e-05,0.000741,1049,102,
+protected,sel_worst_n1,0.0,0.0,0.0,1049,102,
+protected,sel_worst_n8,0.001907,0.0,0.004452,1049,102,
+protected,sel_worst_n64,0.003813,0.000873,0.007484,1049,102,
+protected,risky_exact,0.763882,0.705307,0.816162,1049,102,
+protected,risky_near,0.788847,0.732284,0.839305,1049,102,
+protected,meter_0.0649836_exact,0.0,0.0,0.0,1049,102,
+protected,meter_0.0649836_near,0.000119,0.0,0.0004,1049,102,
+protected,meter_0.5_exact,0.0,0.0,0.0,1049,102,
+protected,meter_0.5_near,0.000238,0.0,0.000584,1049,102,
+protected,meter_1_exact,0.002502,0.000963,0.004468,1049,102,
+protected,meter_1_near,0.006792,0.003871,0.010499,1049,102,
+protected,meter_3_exact,0.097355,0.079808,0.116883,1049,102,
+protected,meter_3_near,0.142874,0.121745,0.165832,1049,102,
+protected,meter_10_exact,0.698165,0.640118,0.751302,1049,102,
+protected,meter_10_near,0.730815,0.674622,0.782708,1049,102,
+protected,risky_exact - anchor_exact,0.763629,0.7052,0.815762,1049,102,
+protected,risky_exact - sel_worst_n64,0.760069,0.701462,0.812633,1049,102,
+protected,meter_0.0649836_exact - anchor_exact,-0.000253,-0.000571,-1.6e-05,1049,102,
+protected,meter_0.5_exact - anchor_exact,-0.000253,-0.000571,-1.6e-05,1049,102,
+protected,meter_1_exact - anchor_exact,0.002249,0.000814,0.004127,1049,102,
+protected,meter_3_exact - anchor_exact,0.097101,0.079566,0.116666,1049,102,
+protected,meter_10_exact - anchor_exact,0.697912,0.6398,0.750944,1049,102,
+protected,share S_anchor <= log 8,0.0,0.0,0.0,1049,102,K=2.0794
+protected,share S_whole_anchor <= log 8,0.0,0.0,0.0,1049,102,K=2.0794
+protected,share S_anchor <= log 64,0.0,0.0,0.0,1049,102,K=4.1589
+protected,share S_whole_anchor <= log 64,0.0,0.0,0.0,1049,102,K=4.1589
+protected,share S_anchor <= 20,0.162059,0.131888,0.201472,1049,102,K=20.0000
+protected,share S_whole_anchor <= 20,0.0,0.0,0.0,1049,102,K=20.0000
+protected,"share S_anchor <= 64k, k=0.0649836",0.0,0.0,0.0,1049,102,K=4.1590
+protected,"share S_whole_anchor <= 64k, k=0.0649836",0.0,0.0,0.0,1049,102,K=4.1590
+protected,"share S_anchor <= 64k, k=0.5",0.445186,0.388552,0.506494,1049,102,K=32.0000
+protected,"share S_whole_anchor <= 64k, k=0.5",0.0,0.0,0.0,1049,102,K=32.0000
+protected,"share S_anchor <= 64k, k=1",0.789323,0.731417,0.847122,1049,102,K=64.0000
+protected,"share S_whole_anchor <= 64k, k=1",0.197331,0.168016,0.231984,1049,102,K=64.0000
+protected,"share S_anchor <= 64k, k=3",0.999047,0.997235,1.0,1049,102,K=192.0000
+protected,"share S_whole_anchor <= 64k, k=3",0.889418,0.846154,0.930136,1049,102,K=192.0000
+protected,"share S_anchor <= 64k, k=10",1.0,1.0,1.0,1049,102,K=640.0000
+protected,"share S_whole_anchor <= 64k, k=10",1.0,1.0,1.0,1049,102,K=640.0000
+protected,median S_anchor,35.6239,,,1049,102,nats
+protected,median S_risky,4.4056,,,1049,102,nats
+protected,median S_whole_anchor,91.0841,,,1049,102,nats
+protected,median S_whole_risky,28.0973,,,1049,102,nats
+protected,median S_anchor per target token,2.9342,,,1049,102,nats/token
+protected,sel_worst_n64 where S > K (log 64),0.003813,0.000873,0.007484,1049,102,K=4.1589
+protected,meter_0.0649836_exact where S > K (64k),0.0,0.0,0.0,1049,102,K=4.1590
+protected,meter_0.5_exact where S <= K (64k),0.0,0.0,0.0,467,98,K=32.0000
+protected,meter_0.5_exact where S > K (64k),0.0,0.0,0.0,582,92,K=32.0000
+protected,meter_1_exact where S <= K (64k),0.00317,0.00125,0.0058,828,100,K=64.0000
+protected,meter_1_exact where S > K (64k),0.0,0.0,0.0,221,62,K=64.0000
+protected,meter_3_exact where S <= K (64k),0.097448,0.079963,0.116883,1048,102,K=192.0000
+protected,meter_10_exact where S <= K (64k),0.698165,0.640118,0.751302,1049,102,K=640.0000
+public_domain,anchor_exact,0.003727,0.0,0.00944,218,19,
+public_domain,anchor_near,0.005734,0.00021,0.014692,218,19,
+public_domain,sel_worst_n1,0.004587,0.0,0.020833,218,19,
+public_domain,sel_worst_n8,0.018349,0.0,0.052083,218,19,
+public_domain,sel_worst_n64,0.036697,0.0,0.083333,218,19,
+public_domain,risky_exact,0.810493,0.79332,0.832514,218,19,
+public_domain,risky_near,0.839163,0.82358,0.855239,218,19,
+public_domain,meter_0.0649836_exact,0.004014,0.0,0.011068,218,19,
+public_domain,meter_0.0649836_near,0.005161,0.0,0.014706,218,19,
+public_domain,meter_0.5_exact,0.004014,0.0,0.011068,218,19,
+public_domain,meter_0.5_near,0.006307,0.000856,0.014974,218,19,
+public_domain,meter_1_exact,0.009174,0.002593,0.020202,218,19,
+public_domain,meter_1_near,0.017202,0.008603,0.031106,218,19,
+public_domain,meter_3_exact,0.154817,0.126121,0.188665,218,19,
+public_domain,meter_3_near,0.233945,0.195378,0.276316,218,19,
+public_domain,meter_10_exact,0.783257,0.758359,0.822154,218,19,
+public_domain,meter_10_near,0.817661,0.793782,0.849719,218,19,
+public_domain,risky_exact - anchor_exact,0.806766,0.78659,0.829811,218,19,
+public_domain,risky_exact - sel_worst_n64,0.773796,0.714674,0.823544,218,19,
+public_domain,meter_0.0649836_exact - anchor_exact,0.000287,-0.001176,0.00253,218,19,
+public_domain,meter_0.5_exact - anchor_exact,0.000287,-0.001176,0.00253,218,19,
+public_domain,meter_1_exact - anchor_exact,0.005447,0.001563,0.012019,218,19,
+public_domain,meter_3_exact - anchor_exact,0.151089,0.12375,0.182555,218,19,
+public_domain,meter_10_exact - anchor_exact,0.77953,0.754072,0.818837,218,19,
+public_domain,share S_anchor <= log 8,0.0,0.0,0.0,218,19,K=2.0794
+public_domain,share S_whole_anchor <= log 8,0.0,0.0,0.0,218,19,K=2.0794
+public_domain,share S_anchor <= log 64,0.0,0.0,0.0,218,19,K=4.1589
+public_domain,share S_whole_anchor <= log 64,0.0,0.0,0.0,218,19,K=4.1589
+public_domain,share S_anchor <= 20,0.293578,0.204082,0.373272,218,19,K=20.0000
+public_domain,share S_whole_anchor <= 20,0.0,0.0,0.0,218,19,K=20.0000
+public_domain,"share S_anchor <= 64k, k=0.0649836",0.0,0.0,0.0,218,19,K=4.1590
+public_domain,"share S_whole_anchor <= 64k, k=0.0649836",0.0,0.0,0.0,218,19,K=4.1590
+public_domain,"share S_anchor <= 64k, k=0.5",0.651376,0.584459,0.716216,218,19,K=32.0000
+public_domain,"share S_whole_anchor <= 64k, k=0.5",0.0,0.0,0.0,218,19,K=32.0000
+public_domain,"share S_anchor <= 64k, k=1",0.926606,0.862745,0.960317,218,19,K=64.0000
+public_domain,"share S_whole_anchor <= 64k, k=1",0.385321,0.260638,0.490196,218,19,K=64.0000
+public_domain,"share S_anchor <= 64k, k=3",1.0,1.0,1.0,218,19,K=192.0000
+public_domain,"share S_whole_anchor <= 64k, k=3",0.977064,0.95,0.992537,218,19,K=192.0000
+public_domain,"share S_anchor <= 64k, k=10",1.0,1.0,1.0,218,19,K=640.0000
+public_domain,"share S_whole_anchor <= 64k, k=10",1.0,1.0,1.0,218,19,K=640.0000
+public_domain,median S_anchor,25.3066,,,218,19,nats
+public_domain,median S_risky,4.4558,,,218,19,nats
+public_domain,median S_whole_anchor,72.2703,,,218,19,nats
+public_domain,median S_whole_risky,25.6272,,,218,19,nats
+public_domain,median S_anchor per target token,2.7474,,,218,19,nats/token
+public_domain,sel_worst_n64 where S > K (log 64),0.036697,0.0,0.083333,218,19,K=4.1589
+public_domain,meter_0.0649836_exact where S > K (64k),0.004014,0.0,0.011068,218,19,K=4.1590
+public_domain,meter_0.5_exact where S <= K (64k),0.006162,0.0,0.017405,142,19,K=32.0000
+public_domain,meter_0.5_exact where S > K (64k),0.0,0.0,0.0,76,16,K=32.0000
+public_domain,meter_1_exact where S <= K (64k),0.009901,0.002799,0.022436,202,19,K=64.0000
+public_domain,meter_1_exact where S > K (64k),0.0,0.0,0.0,16,10,K=64.0000
+public_domain,meter_3_exact where S <= K (64k),0.154817,0.126121,0.188665,218,19,K=192.0000
+public_domain,meter_10_exact where S <= K (64k),0.783257,0.758359,0.822154,218,19,K=640.0000
+all,meter trajectories over budget,0,,,1267,,"Z > max(0,B) + 1e-3"

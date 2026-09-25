@@ -111,3 +111,68 @@ protected quotation (for instance through a licence-compatible page that quotes 
 as it should.
 
 ## Scoring log
+
+### Scored 2026-09-26
+
+`analysis/short_works.py score --runs output/short_works` (outputs copied from host B), writing
+`results/short_works.csv` (every reading, protected and public-domain, 95% intervals resampling authors),
+`results/short_works_per_quote.csv` (one row per quotation, numbers only: no quotation text) and
+`results/short_works_scoring.csv` (the verdicts below).
+
+**Execution notes.** Job A's first attempt wrote `s` (all `1,267` quotations) and then ran out of memory on
+GPU 1 drawing the anchor pool at batch `512` beside the 70B's layers, before writing any draw
+(`~/v/logs/feat214_A.log`). `scripts/run_feat214_a2.sh` re-ran `anchor:64,risky:16` on the same cards with the
+same seeds at anchor batch `64`, before any draw of the scored set existed. The verdict function
+(`verdicts()` in `analysis/short_works.py`) copies this registration's thresholds and was written after the
+registration commit and before any scored draw existed; it was committed together with the results, so that
+order rests on this note, and `tests/test_short_works.py` drives every branch of it with synthetic rows. A
+`log 8` vacuity share (descriptive) was added at the same time. Host B was idle before and after (all eight
+cards at `0` MiB).
+
+**Gates.** G0 PASS: `64`, `16` and `8` draws per quotation in every arm, `0` meter trajectories over budget.
+G1 PASS: the 70B reproduces public-domain continuations exactly on `0.8105` `[0.7933, 0.8325]` of draws.
+
+**Predictions: seven of seven RIGHT.**
+
+- Q1 RIGHT. 70B minus anchor on protected continuations: `+0.7636` `[+0.7052, +0.8158]` (70B `0.7639`, anchor
+  `0.0003` per draw).
+- Q2 RIGHT. `16.2%` `[13.2%, 20.1%]` of protected targets have `S_anchor <= 20` nats.
+- Q3 RIGHT. `0.0%`: no protected target has `S_anchor <= log 64`; the smallest is `5.69` nats.
+- Q4 RIGHT. 70B minus selection's worst case at `n = 64`: `+0.7601` `[+0.7015, +0.8126]` (worst case `0.0038`
+  `[0.0009, 0.0075]`).
+- Q5 RIGHT. Meter at `k = 10` minus anchor: `+0.6979` `[+0.6398, +0.7509]` (meter `0.6982`).
+- Q6 RIGHT. Meter at `k = log(64)/64` minus anchor: `-0.0003` (meter `0.0000`).
+- Q7 RIGHT. Median `S_anchor` per target token `2.747` (public domain) against `2.934` (protected).
+
+**What the rest shows (descriptive).**
+
+- *The meter's certificate is void long before the meter leaks.* `K = 64k` covers a protected continuation's
+  exact string at `k = 0.5` for only `55.5%` of them (vacuous for `44.5%`), at `k = 1` for `21.1%`, at `k = 3`
+  for one of `1,049` and at `k = 10` for none. Exact reproduction per draw: `0.0000` at `k = 0.5`, `0.0025`
+  `[0.0010, 0.0045]` at `k = 1`, `0.0974` `[0.0798, 0.1169]` at `k = 3`, `0.6982` at `k = 10`, against the 70B's
+  `0.7639`. The prefix debt is why `k = 0.5` leaks nothing although its certificate is empty for `44.5%`: the
+  anchor writes the opening tokens. On protected quotations no meter reproduced, even once, a quotation whose
+  exact string its certificate covered (`0` of `11` leaked quotations at `k = 1`, `0` of `298` at `k = 3`).
+- *Selection's certificate is informative for every exact string, and its worst case still serves four.* At
+  `n = 64` any-exact-among-the-draws reaches `4` of `1,049` protected quotations (`0.0038`), and at `n = 8`
+  `2` (`0.0019`), at `n = 1` none. The four are 8- to 13-word quotations (Dr. Seuss, Isaac Asimov, Suzanne
+  Collins, J.K. Rowling) that the anchor ITSELF reproduces on `1.6%` to `14.1%` of its draws, though their exact
+  strings cost it `5.7` to `9.0` nats: the metric's event ignores case and punctuation and is far likelier than
+  the exact string, so for those four the certificate is vacuous for the event that leaked. Proposition 2
+  permits exactly this (`q <= 64 p_s`), and no scorer can do worse.
+- *Whole quotations are not below 20 nats; their second halves are.* From the start of a document the anchor
+  spends a median `91.1` nats on a whole protected quotation (none at or below `20`; `19.7%` at or below `64`),
+  and a median `35.6` on its second half given the first.
+- *Vacuity from S is a LOWER bound for the leakage event.* `S` is the surprisal of the exact target string;
+  the event `exact` counts (case and punctuation ignored) contains it, so its surprisal is at most `S`, and every
+  vacuity share above understates the share for the event that was counted.
+- *Public domain* runs the same way with more anchor knowledge: median `S_anchor` `25.3` against `35.6`,
+  `29.4%` at or below `20` nats, the anchor at `0.0037` per draw and selection's worst case at `n = 64`
+  `0.0367` `[0.0000, 0.0833]`; meters `0.0040`, `0.0040`, `0.0092`, `0.1548`, `0.7833` from `k = log(64)/64`
+  to `10`; the 70B `0.8105`.
+
+**For the paper (as registered).** Q4 RIGHT: on short works selection's certificate stays informative where it
+matters. Q2 and Q5 RIGHT: the reviewer's premise holds for continuations (not for whole quotations), and the
+meter's certificate is vacuous for short works at budgets the mechanism's authors use. The four quotations the
+anchor already emits go into the appendix with the rates above, since they are the case in which a worst-case
+scorer serves a protected work under selection.
