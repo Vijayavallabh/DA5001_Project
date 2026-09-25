@@ -215,3 +215,40 @@ def test_the_fresh_draw_and_the_second_judge_are_quoted_from_their_csv():
     assert all(r["reading"] == "INSTALLMENTS WIN" for r in ph), "a post-hoc 'advantage' whose interval reaches zero"
     assert (f"read post hoc by judge~G, the first draw's advantage is ${_d(ph[0]['value'])}$, ${_d(ph[1]['value'])}$ "
             f"and ${_d(ph[2]['value'])}$ at $L = 10$, $25$ and $50$") in a
+
+
+def test_vetting_at_the_deployed_temperature_is_quoted_from_its_csv():
+    """feat-203: every rung of the ladder drew at 1.0; the judge-free runs sample at 0.7. The 0.7 rungs may be
+    quoted as zeros only because their positive control leaked (G1), and the TriviaQA shares the body quotes are
+    the tempered anchor's, the temperature those runs sampled at."""
+    import math
+    from tests.manuscript import tex
+    v = _csv("vetting_t07.csv")
+    get = lambda band, start: next(r for r in v if r["band"] == band and r["quantity"].startswith(start))
+    g1 = get("G1", "positive control")
+    assert g1["reading"] == "PASS" and int(g1["value"]) >= 10, "the 0.7 screen has no power; no zero from it may be quoted"
+    assert all(r["reading"] == "ZERO" for r in v if r["band"] == "V1") and sum(r["band"] == "V1" for r in v) == 6
+    a = body("appendix_selection.tex")
+    ladder = a[a.index("\\label{tab:vetladder}"):a.index("\\end{tabular}", a.index("\\label{tab:vetladder}"))]
+    at100 = re.search(r"Llama-3\.1-70B & [^&]+ & \$1\$ & \$2\$ & \$11\$ & \$20\$ & \$(\d+)\$", ladder).group(1)
+    assert (f"Every rung drew at temperature $1.0$. At the judge-free runs' $0.7$, TinyComma and Comma-7B read $0$ of "
+            f"$50$ at $20$, $100$ and $200$ tokens while the $70$B leaks on ${int(g1['value'])}$ of $50$ at $100$ "
+            f"(${at100}$ at $1.0$)") in a
+    assert "temperature $1.0$:" in caption_of("tab:vetladder")
+    tc, c7 = get("V2", "tinycomma"), get("V2", "comma7b")
+    assert all(r["reading"].startswith("ABOVE") for r in (tc, c7)), "'conservative' needs S_w to rise under tempering"
+    ref = lambda r: float(r["reading"].split()[1])
+    assert (f"$S_w$ from ${ref(tc):.1f}$ to ${float(tc['value']):.1f}$ nats and, over $50$ of Comma-7B's own tokens, "
+            f"from ${ref(c7):.1f}$ to ${float(c7['value']):.1f}$, so margins quoted against the untempered anchor are "
+            "conservative") in a
+    # TriviaQA at the runs' temperature: the ordering is rebuilt from the tempered CSV, not taken on trust
+    s = [float(r["s_anchor_nats"]) for r in _csv("tqa_vacuity_t07.csv")]
+    share = lambda K: 100 * sum(x <= K for x in s) / len(s)
+    met = {r["k"]: 100 * float(r["vacuous_frac"]) for r in _csv("tqa_vacuity_t07_summary.csv")}
+    assert max(share(math.log(n)) for n in (4, 8, 16, 32, 64)) < min(met.values())
+    sel64 = float(get("V3", "TriviaQA: share of questions with S(x) <= log 64, temperature 0.7")["value"])
+    assert abs(sel64 - share(math.log(64))) < 0.05
+    assert f"and still is under the anchor tempered to the runs' $0.7$, at ${sel64:.1f}\\%$ against ${met['0.5']:.1f}\\%$" in a
+    assert f"$\\log 64$ reaches $S(x)$ on ${sel64:.1f}\\%$ of questions, against ${met['0.5']:.1f}\\%$ for the meter's smallest budget" in body("iclr_closing.tex")
+    ethics = " ".join(open(tex("iclr_2027.tex"), encoding="utf-8").read().split())
+    assert "every prefix length the deployment accepts, and at the temperature it samples at" in ethics

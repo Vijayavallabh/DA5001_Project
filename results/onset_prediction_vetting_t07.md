@@ -56,3 +56,36 @@ figures at `0.7` go beside their `1.0` counterparts where the judge-free runs' c
 - Any other rung, temperature, penalty, corpus or anchor chosen after a draw is read.
 
 ## Scoring log
+
+### Scored 2026-09-25 12:36 IST --- G1 PASS (the control leaks on `33` of `50`), V1 right (every rung zero), V2 right for both anchors
+
+All jobs exited `0` on host B (`scripts/run_feat202_206.sh` q5/q6, then `scripts/run_feat208.sh ab`; times IST): the
+six screen rungs `09:02`-`10:07`, `S` under the tempered anchors `10:06`-`10:07`, the TriviaQA aliases `10:08`-`10:17`,
+Comma-7B at temperature `1.0` for V2's reference, finished `10:20` (a one-off; its first launch was put on a card
+that was already full and died at load, recorded in `progress.md`), and the `70`B positive control `12:12`-`12:34`. The control's run line
+reads `50 passages from ["harry_potter_and_the_sorcerer's_stone"], n_max=64, seed 100 tokens raw_prompt=True`
+(caution (v)). Scored by `.venv/bin/python analysis/score_feat203_206.py --only 203` -> `results/vetting_t07.csv`.
+
+**Gates.** G0 PASS: all six screen files hold `50` *Harry Potter* passages. G1 PASS: Llama-3.1-70B, single draw at
+`L=100` and temperature `0.7`, leaks on `33` of `50` (mean near-verbatim recall `0.3855`), so the screen at `0.7` has
+power and its zeros may be quoted.
+
+| reading | value | registered | verdict |
+|---|---|---|---|
+| V1 TinyComma, `L = 20, 100, 200` | `0`, `0`, `0` of `50` | all zero | **right** |
+| V1 Comma-7B, `L = 20, 100, 200` | `0`, `0`, `0` of `50` | all zero | **right** |
+| V2 TinyComma `S_w`, `0.7` against `1.0` | `179.14` against `159.83` | above | **right** |
+| V2 Comma-7B `S_w`, `0.7` against `1.0` (`50` of its own tokens) | `135.09` against `121.70` | above | **right** |
+
+**Descriptive, no band.** V3: `log 64` reaches `S(x)` on `36.2%` of TriviaQA questions under the tempered TinyComma
+against `35.4%` at `1.0` (median `S(x)` `5.78` against `5.86` nats). The `70`B leaks on more passages at `0.7` than
+the `25` of `50` the ladder records for it at `L=100` and `1.0`, so the screen is not weaker at the deployed
+temperature.
+
+**Manuscript, as registered.** The vetting paragraph states that every rung of Table `tab:vetladder` drew at `1.0`
+(and the caption says so), reports the `0.7` rungs with their control, and gives both `S_w` shifts; the appendix
+TriviaQA paragraph carries `36.2%` and the meter's `83.6%` at `0.7` beside `35.4%` and `89.6%` at `1.0`. The body's
+Limitations sentence, which had no room for both, now quotes the `0.7` pair, the temperature those runs sampled at
+(the parenthetical form pushed two lines of the Conclusion onto page 10). The Ethics statement's prefix schedule
+adds the sampling temperature. Guarded by `tests/test_v12_skipped_items.py::test_vetting_at_the_deployed_temperature_is_quoted_from_its_csv`
+(eleven mutations, eleven fire).
