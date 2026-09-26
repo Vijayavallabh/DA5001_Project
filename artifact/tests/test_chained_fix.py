@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from analysis.chained_fix import g1, merge_csv, merge_queries, splice
+from analysis.chained_fix import g1, identity, merge_csv, merge_queries, splice
 
 HEAD = "k,mode,L,prompt_id,nv_recall\r\n"
 
@@ -77,3 +77,21 @@ def test_a_wider_rerun_is_projected_onto_the_committed_header_and_pathwise_cells
         "k,mode,L,prompt_id,invariant_violations,nv_recall\r\n3.0,chained,20,a,1,0.25\r\n3.0,chained,20,b,2,0.5\r\n")
     assert open(out / "composition_summary.csv", newline="").read() == (
         "k,mode,L,invariant_violations,nv_recall_mean\r\n3.0,chained,20,3,0.375\r\n")
+
+
+def test_the_identity_gate_compares_only_k_at_most_0_and_every_column_but_the_constraint(tmp_path):
+    head = "k,mode,L,constraint,prompt_id,nv_recall\r\n"
+    q = lambda k, mode, t: json.dumps(dict(k=k, mode=mode, text=t)) + "\n"  # noqa: E731
+    for d, c, r3, t in (("kl", "kl", "0.5", "a"), ("pw", "pathwise", "0.9", "a"),  # k=3 may differ, k<=0 may not
+                        ("pw_row", "pathwise", "0.5", "a"), ("pw_q", "pathwise", "0.5", "b")):
+        (tmp_path / d).mkdir()
+        rows = [f"-1.0,chained,20,{c},p,0.7", f"0.0,chained,20,{c},p,0.0", f"3.0,chained,20,{c},p,{r3}",
+                f"-1.0,single,20,{c},p,0.1"]
+        if d == "pw_row":
+            rows[1] = f"0.0,chained,20,{c},p,0.01"
+        write(tmp_path / d / "composition.csv", head + "".join(r + "\r\n" for r in rows))
+        write(tmp_path / d / "queries.jsonl", q(-1.0, "chained", t) + q(3.0, "chained", d) + q(0.0, "single", d))
+    assert identity(str(tmp_path / "kl"), str(tmp_path / "pw")) == (2, 1)
+    for d in ("pw_row", "pw_q"):
+        with pytest.raises(AssertionError):
+            identity(str(tmp_path / "kl"), str(tmp_path / d))

@@ -137,3 +137,42 @@ feat-215 they were (`0.4701` / `0.5307`); they now read `0.4716` / `0.5314` agai
 - **Scoring.** This pass writes `results/chained_fix_a100{,_reproduction,_scoring}.csv`. The first pass's files and
   its P1 verdict (WRONG) stay as they are: that verdict was read on runs that did not follow this registration, and
   it is not replaced, only set beside the registered reading.
+
+### Addendum scored 2026-09-26
+
+The eight arms ran on local GPUs 1, 2 and 4 with `scripts/run_feat215_a100.sh`, each job's arguments identical to
+`run_feat215.sh`'s, and every one exited 0 with no traceback (the last at 14:46). The 15 committed files were restored
+to `2ab68b6` first, then `analysis/chained_fix.py merge`, `gate --tag _a100`, `compare --tag _a100` and `apply` ->
+`results/chained_fix_a100{,_reproduction,_scoring}.csv` and the 15 files.
+
+**Gates.** G0 PASS in all 13 merges. G1 PASS against the true originals: `12,210` chained rows changed across the 15
+files, no other row (the script before writing, and again line by line against `git show 2ab68b6`);
+`natural_memorisation.csv` unchanged. Against the first pass exactly six files moved, the ones built from the eight
+re-run arms (`bank_cap`, `composition_70b`, `composition_8b_pathwise{,_per_passage}`, `composition_comma7b{,_summary}`);
+the files of the arms that ran locally both times are byte-identical to the first pass. **R0 reads 1.0 on every arm
+that kept a query log**, all twelve: `comp8b_pathwise` 1,600 of 1,600, the bank caps 100 of 100 each, `comp_comma7b`
+1,800 of 1,800, the *1984* arms 16 of 16, 64 of 64 and 64 of 64, and the four first-pass local arms as before. **The
+identity gate PASSES**: at `k = -1` and `k = 0` the pathwise run's 400 chained rows equal `comp8b_kl`'s on every
+column but `constraint`, and its 3,874 chained query records are the same records (`k = -1` recall `0.4716` /
+`0.5314` at `L = 20` / `50` for both). `apply` refuses to write if it fails.
+
+**Predictions, on the registered reading.**
+
+- **P1 RIGHT**: 0 of 85 cells fall by more than `0.02`; the largest fall is `0.0062` `[-0.0133, -0.0005]`
+  (`comp8b_pathwise`, `k = 20`, `L = 50`). The first pass's WRONG stays in `results/chained_fix_scoring.csv` as
+  recorded; it was read on arms that had moved to other hardware, and this is the reading the registration describes.
+- **P2 RIGHT** in all four runs with both window lengths, by small sums: at `L = 20` `+0.0037` (`phase1` and
+  `comp8b_kl`), `+0.0068` (`comp8b_pathwise`) and `+0.0161` (`comp_comma7b`), against `-0.0010` to `-0.0036` at
+  `L = 50`.
+
+**What the fix changed, every arm on its original hardware.** Chained `nv_recall` moved by between `-0.0062` and
+`+0.0085` over all 103 cells (the *1984* arms by `0.0000` to `+0.0018`). Three intervals exclude zero:
+`comp_comma7b` `k = -1`, `L = 20`, `+0.0085` `[+0.0020, +0.0165]`, and `k = 20`, `L = 20`, `+0.0081`
+`[+0.0018, +0.0161]`, and the fall above. The longest exact run rose where recall is high, as in the first pass:
+Comma-7B from `106.0` to `125.8` words at `k = -1`, `L = 20`. The two pairings the H100 re-draw broke are back:
+`bank_cap.csv`'s cap against no cap at `k = 20` reads `0.4687` against `0.5050` (before the fix `0.4686` against
+`0.5039`; the H100 pass `0.4277`), and the cells the H100 pass moved most return to the fix's own scale (*1984* `A`,
+`k = -1`: `-0.1359` there, `0.0000` here). The pathwise file's KL excursions (its documented meaning) are 148 of
+23,844 budgeted queries (146 at `k = 1`, 2 at `k = 3`), against 146 before the fix and 156 in the first pass;
+`README_artifact.md` now says 148. The 70B pathwise rows still hold none. No number the live manuscript prints comes
+from these files.

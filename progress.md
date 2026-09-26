@@ -1,5 +1,32 @@
 # Session Progress Log
 
+## 2026-09-26 afternoon --- feat-215 addendum: the eight host-B chained arms re-run on the registered A100s (user: "re-run the host-B chained arms on local A100s [if it is actually required, else don't]")
+
+**Why it was required.** Not for the paper (no live number comes from these files) but for the committed results: the
+H100 re-draw broke two same-seed pairings the files were built on, the KL/pathwise identity at `k = -1` (one decoder,
+so identical rows) and `bank_cap.csv`'s cap-against-no-cap rows. Registered as an addendum before any token.
+
+**What's done.**
+- `scripts/run_feat215_a100.sh` ran the eight arms on local GPUs 1, 2 and 4 with arguments identical to
+  `run_feat215.sh`'s; all exited 0 (last 14:46). H100 outputs kept in `output/chainfix_h100/`.
+- The 15 committed CSVs were restored to `2ab68b6`, then `analysis/chained_fix.py merge`, `gate --tag _a100`,
+  `compare --tag _a100`, `apply`. **R0 1.0 on all twelve arms with a query log**; the new **identity gate**
+  (`chained_fix.py identity()`, in `compare` and required by `apply`; unit test in `tests/test_chained_fix.py`,
+  mutation-checked on the originals) PASS: 400/400 rows and 3,874/3,874 query records. G0 PASS; G1 PASS against the
+  true originals (12,210 chained rows, no other row; against the first pass only the six files built from the eight
+  arms moved). **P1 RIGHT** on the registered reading (0 of 85 cells fall > 0.02; largest fall 0.0062), **P2 RIGHT**
+  in all four runs; the first pass's P1 WRONG is kept beside it in `results/chained_fix_scoring.csv`.
+- Across all 103 cells the fix moved chained `nv_recall` by `-0.0062` to `+0.0085`; bank-cap pairing restored
+  (`k = 20`: `0.4687` against `0.5050`, pre-fix `0.4686` against `0.5039`); pathwise KL excursions 148 of 23,844
+  (146 before, 156 in the H100 pass), `README_artifact.md` corrected. Caution (bc) now says hardware is part of the
+  seed.
+- Files: `results/chained_fix_a100{,_reproduction,_scoring}.csv`, the six moved CSVs, `analysis/chained_fix.py`,
+  `tests/test_chained_fix.py`, `results/onset_prediction_chained_fix.md` (### Addendum scored), `README_artifact.md`,
+  `AGENTS.md`.
+
+**What's next.** Unchanged: the user's read of `~/sub/satml/iclr_2027.pdf` and submission before 26 Sept 17:29 IST.
+Nothing of ours is running on either host.
+
 ## 2026-09-26 early --- feat-215: the composition_attack slicing fixed, and every chained arm re-run with it (user: "fix the composition_attack slicing bug too", "re-run the chained arms with the fix", "use host B's free GPUs to speed it up")
 
 **What's done.**

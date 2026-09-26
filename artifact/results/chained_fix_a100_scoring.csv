@@ -1,0 +1,8 @@
+prediction,scope,reading,verdict
+P1,"85 cells, runs with >= 50 passages",0 cells fall by more than 0.02,RIGHT
+P1 (descriptive),"85 cells of the runs whose R0 held: bank_cap_k10_10, bank_cap_k10_50, bank_cap_k20_20, comp8b_kl, comp8b_pathwise, comp_comma7b, nm/1984_A, nm/1984_B, nm/1984_greedy, nm/hp1_A, nm/hp1_B, nm/hp1_greedy",largest fall 0.0062 (comp8b_pathwise k=20 L=50),within 0.02
+identity gate,"comp8b_pathwise against comp8b_kl, chained, k = -1 and 0",400 of 400 rows equal on every column but constraint; 3874 of 3874 query records equal,PASS
+P2,phase1,"sum over k: L=20 +0.0037, L=50 -0.0010",RIGHT
+P2,comp8b_kl,"sum over k: L=20 +0.0037, L=50 -0.0010",RIGHT
+P2,comp8b_pathwise,"sum over k: L=20 +0.0068, L=50 -0.0036",RIGHT
+P2,comp_comma7b,"sum over k: L=20 +0.0161, L=50 -0.0031",RIGHT

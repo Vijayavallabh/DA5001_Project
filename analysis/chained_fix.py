@@ -185,6 +185,24 @@ def gate(a):
         print(r)
 
 
+def identity(kl=f"{O}/comp8b_kl", pw=f"{O}/comp8b_pathwise"):
+    """The addendum's identity gate. At k = -1 and k = 0 the KL and pathwise decoders are the same decoder, so the
+    pathwise run's chained rows must equal the KL run's on every column but `constraint`, and its chained queries must
+    be the same records (both held, passage for passage, before feat-215). Returns (rows, queries) compared."""
+    def pick(d):
+        rs = {(r["k"], r["L"], r["prompt_id"]): {c: v for c, v in r.items() if c != "constraint"}
+              for r in rows(f"{d}/composition.csv") if r["mode"] == "chained" and float(r["k"]) <= 0}
+        qs = [line for line in open(f"{d}/queries.jsonl", encoding="utf-8")
+              if (q := json.loads(line))["mode"] == "chained" and q["k"] <= 0]
+        return rs, qs
+    (ra, qa), (rb, qb) = pick(kl), pick(pw)
+    assert ra and set(ra) == set(rb), f"identity: the k <= 0 chained keys of {kl} and {pw} differ"
+    bad = [k for k in ra if ra[k] != rb[k]]
+    assert not bad, f"identity: {len(bad)} of {len(ra)} rows differ, first {bad[0]}"
+    assert qa == qb, f"identity: the k <= 0 chained queries differ ({len(qa)} vs {len(qb)} records)"
+    return len(ra), len(qa)
+
+
 def compare(a):
     out = []
     for name, (old, _) in RUNS.items():
@@ -221,6 +239,11 @@ def compare(a):
         score.append(dict(prediction="P1 (descriptive)", scope=f"{len(cells)} cells of the runs whose R0 held: {', '.join(sorted(clean))}",
                           reading=f"largest fall {-min(0.0, worst['diff']):.4f} ({worst['run']} k={worst['k']:g} L={worst['L']})",
                           verdict="within 0.02" if worst["diff"] >= -0.02 else "beyond 0.02"))
+    if a.tag:  # the A100 pass (addendum): the identity gate, recorded beside the verdicts
+        n_rows, n_q = identity()
+        score.append(dict(prediction="identity gate", scope="comp8b_pathwise against comp8b_kl, chained, k = -1 and 0",
+                          reading=f"{n_rows} of {n_rows} rows equal on every column but constraint; {n_q} of {n_q} "
+                                  "query records equal", verdict="PASS"))
     for name in RUNS:
         s = {L: sum(r["diff"] for r in big if r["run"] == name and r["L"] == L) for L in (20, 50)}
         if any(r["run"] == name and r["L"] == 20 for r in big):
@@ -260,6 +283,7 @@ def splice(target, source_of):
 
 
 def apply(a):
+    identity()  # the addendum's identity gate: nothing is written if the KL and pathwise runs disagree at k <= 0
     staged = f"{O}/staged"
     os.makedirs(staged, exist_ok=True)
     plan = []  # (staged file, committed path)

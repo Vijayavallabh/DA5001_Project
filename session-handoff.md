@@ -2,14 +2,15 @@
 
 
 
-## Current state, 2026-09-26 afternoon --- feat-215 addendum RUNNING locally; Claude attribution removed
+## Current state, 2026-09-26 afternoon --- feat-215 addendum complete; Claude attribution removed
 
-User: "re-run the host-B chained arms on local A100s [if it is actually required]" (it is: the H100 re-draw broke the
-KL/pathwise identity at k=-1 and the bank-cap pairing; addendum `a963f5b`, before any token). The eight arms run on
-local GPUs 1, 2 and 4 via `scripts/run_feat215_a100.sh comma|nm1984|pathwise|bankcap` into `output/chainfix/<run>`
-(the H100 outputs are kept in `output/chainfix_h100/`); logs `output/chainfix/a100_<lane>.log`. When all four read
-`drained`: restore the 15 committed CSVs to `2ab68b6`, then `analysis/chained_fix.py merge`, `gate --tag _a100`,
-`compare --tag _a100`, `apply`, plus the identity gate (pathwise k=-1/0 chained rows == comp8b_kl's).
+User: "re-run the host-B chained arms on local A100s [if it is actually required]" (it was: the H100 re-draw broke the
+KL/pathwise identity at k=-1 and the bank-cap pairing; addendum `a963f5b`, before any token). The eight arms ran on
+local GPUs 1, 2 and 4 (`scripts/run_feat215_a100.sh`), were merged against the 15 CSVs restored to `2ab68b6`, and
+applied: R0 1.0 on every arm, the identity gate PASS (400/400 rows, 3,874/3,874 queries), G0 and G1 PASS (12,210
+chained rows, no other row), P1 and P2 RIGHT on the registered reading (`results/chained_fix_a100_scoring.csv`; the
+first pass's P1 WRONG is kept). Scoring entry: `results/onset_prediction_chained_fix.md`, *Addendum scored*. No
+number in the live manuscript changed. Nothing of ours is running on either host.
 Claude attribution removed at the user's instruction: the 24 `Co-Authored-By: Claude` trailers were stripped by rewriting the 201 commits from `eafa6cd` onward (trees, authors, committers and dates identical, verified pair by pair) and force-pushing; the 18 hashes quoted in the repo were updated. No commit carries a trailer from here on.
 
 ## Current state, 2026-09-26 --- feat-215 complete (the composition_attack slicing fixed; every chained arm re-run)
