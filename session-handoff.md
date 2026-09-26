@@ -2,16 +2,15 @@
 
 
 
-## Current state, 2026-09-26 afternoon --- feat-215 addendum RUNNING locally; attribution rewrite awaits the user
+## Current state, 2026-09-26 afternoon --- feat-215 addendum RUNNING locally; Claude attribution removed
 
 User: "re-run the host-B chained arms on local A100s [if it is actually required]" (it is: the H100 re-draw broke the
-KL/pathwise identity at k=-1 and the bank-cap pairing; addendum `c70cbc9`, before any token). The eight arms run on
+KL/pathwise identity at k=-1 and the bank-cap pairing; addendum `a963f5b`, before any token). The eight arms run on
 local GPUs 1, 2 and 4 via `scripts/run_feat215_a100.sh comma|nm1984|pathwise|bankcap` into `output/chainfix/<run>`
 (the H100 outputs are kept in `output/chainfix_h100/`); logs `output/chainfix/a100_<lane>.log`. When all four read
-`drained`: restore the 15 committed CSVs to `73db1e5`, then `analysis/chained_fix.py merge`, `gate --tag _a100`,
+`drained`: restore the 15 committed CSVs to `2ab68b6`, then `analysis/chained_fix.py merge`, `gate --tag _a100`,
 `compare --tag _a100`, `apply`, plus the identity gate (pathwise k=-1/0 chained rows == comp8b_kl's).
-User also asked to "remove any claude attribution": no new commit carries a trailer; the 24 already pushed
-(`34892c5` onward) need a history rewrite + force-push, which the permission layer refused -- the user decides.
+Claude attribution removed at the user's instruction: the 24 `Co-Authored-By: Claude` trailers were stripped by rewriting the 201 commits from `eafa6cd` onward (trees, authors, committers and dates identical, verified pair by pair) and force-pushing; the 18 hashes quoted in the repo were updated. No commit carries a trailer from here on.
 
 ## Current state, 2026-09-26 --- feat-215 complete (the composition_attack slicing fixed; every chained arm re-run)
 
@@ -28,7 +27,7 @@ running on either host.
 
 ## Current state, 2026-09-26 early --- v15 complete (review 3 Q13, short works, run and in the paper)
 
-User: "run the short-works test for Q13 on the free GPUs". feat-214 is registered (`80da554`, before any
+User: "run the short-works test for Q13 on the free GPUs". feat-214 is registered (`8eb740c`, before any
 token), run on host B's eight GPUs, scored 7 of 7 right with both gates PASS
 (`results/onset_prediction_short_works.md`, `results/short_works{,_per_quote,_scoring,_authors}.csv`), and written
 into the manuscript as `app:shortworks`/`tab:shortworks` plus one clause of the body's limitations. Body exactly 9
@@ -169,7 +168,7 @@ has every result and producing command.
 Ethics Statement and **zero** slack --- any body edit must be length-neutral, and the cheapest lines
 are paragraphs ending in a runt (find them with `pdftotext -layout` and a length filter).
 `analysis/audit_numbers.py`: `4,205` literals, one expected miss (`64256`).
-The artifact was rebuilt at 17:50 (`8034124`): `2,086` files, anonymity scan clean, zip `41.8` MB; rebuild with
+The artifact was rebuilt at 17:50 (`d8b256f`): `2,086` files, anonymity scan clean, zip `41.8` MB; rebuild with
 `ARTIFACT_MAX_MB=250 bash scripts/build_artifact.sh artifact` (the committed results alone exceed the 80 MB default).
 
 **Deadline (user, 2026-09-24): submission 26 Sept 2026, 17:29 IST.** Recommended next step: one read
@@ -325,10 +324,10 @@ scored in their own `## Scoring log` sections.
 
 ## Scored tonight (2026-09-23 21:30) and what is still owed
 
-- **feat-179 Part A SCORED and in the manuscript** (`9af5e1d`): B1 GROWS (`A(64)` up to `7.0`), B2 NO
+- **feat-179 Part A SCORED and in the manuscript** (`821d491`): B1 GROWS (`A(64)` up to `7.0`), B2 NO
   READABLE ANCHOR, B3 SATURATED BY 64; `1.0 to 4.0` -> `1.0 to 7.0` at every site; `tab:contam`;
   Figure 5(b) on the corrected CSV. **Main-text verdict wording waits for feat-182.**
-- **feat-180 read on all but two rungs** (`a47a378`): V1 NON-MONOTONE, V2 `L* = 50`; **V3 waits** for
+- **feat-180 read on all but two rungs** (`142f73a`): V1 NON-MONOTONE, V2 `L* = 50`; **V3 waits** for
   TinyComma and KL3M-1.7B at `L = 150` (OOM'd); manuscript changes go in one pass once V3 is read.
 - **Owed locally, placed by `scripts/local_dispatch.py`** (log `output/logs/local_dispatch.log`): the two
   feat-180 rungs, the grid64 re-run, feat-182's remaining anchors. The sibling project's vLLM holds
@@ -378,7 +377,7 @@ its card's last feat-179/180 job; log `output/logs/selfix_redraw_queue.log`). Sc
 | host B | --- | nothing of ours | cards 0-3 run another account's training job, 4-7 hold 81 GB each at 0%; no shells, waiters or live logs of ours |
 
 Part A: 8 of 12 anchors landed, G0/G2 PASS on the three checked; feat-180: 17 of 27 new rungs, G0 PASS on
-nine. Both scorers now refuse to read a band on an incomplete arm (`e23ad8e`). Waiters: `bxh080axe`
+nine. Both scorers now refuse to read a band on an incomplete arm (`fe07ced`). Waiters: `bxh080axe`
 (queue drained) and `b0t93wcem` (queue drained AND grid64 ended, 12 h). **When they fire: run
 `analysis/selector_n256.py` and `analysis/vetting_ladder.py`, append each scoring log, then apply
 the registered manuscript consequences** (Part A: replace `1.0 to 4.0` at every site --- abstract,

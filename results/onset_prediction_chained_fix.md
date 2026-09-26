@@ -133,7 +133,7 @@ feat-215 they were (`0.4701` / `0.5307`); they now read `0.4716` / `0.5314` agai
 - **Gates.** R0 must now read 1.0 on every arm, since every arm runs on the hardware of its original. A new identity
   gate: `comp8b_pathwise`'s `k = -1` and `k = 0` chained rows must equal `comp8b_kl`'s passage for passage (recall,
   longest run, queries, tokens). G0 and G1 as registered; the 15 committed files are restored to their pre-feat-215
-  versions (`73db1e5`) before `apply`, so G1 is read against the true originals.
+  versions (`2ab68b6`) before `apply`, so G1 is read against the true originals.
 - **Scoring.** This pass writes `results/chained_fix_a100{,_reproduction,_scoring}.csv`. The first pass's files and
   its P1 verdict (WRONG) stay as they are: that verdict was read on runs that did not follow this registration, and
   it is not replaced, only set beside the registered reading.

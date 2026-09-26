@@ -26,6 +26,14 @@
 - `analysis/chained_fix.py` (merge, gate, compare, apply; idempotent, refuses to write if a non-chained row
   moves), `tests/test_chained_fix.py`, `scripts/run_feat215{,_split}.sh`.
 
+- **Claude attribution removed** (user: "remove any claude attribution to the repo", then "go ahead with the history
+  rewrite and force-push"). The only attribution was 24 `Co-Authored-By: Claude` trailers in commit messages,
+  2026-09-23 to 2026-09-26. `git filter-branch --msg-filter` rewrote the 201 commits from `eafa6cd` onward on
+  `iclr-2027` only; every pair was checked (identical trees, authors, committers and dates; each message equal to its
+  original minus the trailer), `master` (`dd7e801`) untouched, and the 18 commit hashes the repo quotes were mapped to
+  their new values. Pushed with `--force-with-lease`. Operational mentions (CLAUDE.md, `.claude*` ignore and exclude
+  entries, notes about another agent session on the box) are not attribution and remain.
+
 **Producing commands.** `scripts/run_feat215.sh small|nm`, then `scripts/run_feat215_split.sh
 kl|hpA|pathwise|bankcap|comma|nm1984a|nm1984b`; `analysis/chained_fix.py merge`, `gate`, `compare`, `apply`.
 
@@ -499,7 +507,7 @@ heading at the foot of page 2 (caution (az) exactly), and trimming the same para
 page's first and last line. Figure 5(b) needed two passes before it was clean (caution (ad)): the two-draw
 annotation first sat on the recall-0.01 points, then a two-column legend covered them.
 
-**feat-183** (registered `b11046f` at the user's instruction before any rung ran): the six licensed
+**feat-183** (registered `14a2282` at the user's instruction before any rung ran): the six licensed
 anchors at `L = 20, 35, 50, 75` on host B, all exit `0`. **S1 PASS HOLDS BELOW 100**: `0/50` at every rung,
 max recall `0.0000`, so every licensed anchor reads `0/50` at every rung from `20` to `200`. Prediction
 right. `tab:vetladder`'s licensed dashes become `0`s; Appendix I's and the Ethics Statement's "unmeasured"
@@ -588,11 +596,11 @@ Build: tectonic exit `0`, `0` overfull, `0` `??`, bold `3`, `49` pages, page 10 
 Statement; audit `3,542` literals, the one expected miss. `./init.sh`: `1108 passed, 1 failed` (the
 breadth guard above), then that file `6 passed` after the scoping fix.
 
-**feat-182 moved to host B** (declared deviation `cb532ed`, before any of its draws existed): the local
+**feat-182 moved to host B** (declared deviation `652aeaa`, before any of its draws existed): the local
 cards are held by the sibling project's vLLM, two jobs had died of OOM and two were running at `14` and
 `25` hours each. The two partial local runs were stopped before writing anything; the eleven anchors
 host B lacked are being copied and must hash identically before launch. **grid64 stays local** (its pool
-is gated bit-identical) and has landed: G0, G1, G2 PASS. **In the manuscript (`03a3664`)**: `tab:extraction`'s
+is gated bit-identical) and has landed: G0, G1, G2 PASS. **In the manuscript (`6092fc2`)**: `tab:extraction`'s
 substring row now reads the corrected selector's served means (`1.59, 1.76, 1.73, 1.66, 1.58, 1.56` at
 `n = 1 ... 64`, `1.56` at `256`, from `1.83`--`1.93` at `n >= 4`), and its caption says why only that row
 could move: no draw in either pool has recall above zero or reaches ROUGE-L `0.5`. Guarded cell by cell
