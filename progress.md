@@ -1,5 +1,60 @@
 # Session Progress Log
 
+## 2026-09-26 late afternoon --- v16, the eighth review round (user: "select only the feedback you genuinely believe will meaningfully improve the draft ... work autonomously ... depth over breadth")
+
+Text-only revision of `~/sub/satml/iclr_2027.tex` and its sections before the 17:29 IST deadline: no new run, no
+measured number changed. The pre-revision manuscript is kept in `output/review_audit/pre_v16_2026-09-26/`.
+
+**Acted on.**
+- **Abstract (W9, W3, W4, m3).** Plain sentences around three points: the threshold at every order; `log n` pathwise
+  and auditable by sampling the anchor alone; at `k=0.5` the meter is its anchor and selection wins at matched
+  certificates only with the risky model served as a text continuer at 1.0, under one of two judges once empty
+  answers count as losses. The losses are named (the 8B at their 0.7, the chat assistant, the windowed meter there),
+  the 70B base is called weak on instruction prompts, and the price is the anchor-alone draws.
+- **Windowed meter (W7, Q5, Q7).** No longer "certifies exact windows only": a per-span D_inf of W bounds every event
+  in the span by e^W, near-verbatim variants included; what is missing is an anchor probability a rights-holder can
+  audit (plain sampling needs more than 3e^W draws; an importance sampler's upper bound rests on its proposal). Table 2's
+  caption now says the span certificate is conditional and the output one joint, so rows match in nats, not in type;
+  `app:windowed` carries the rare-event point, the joint/conditional difference and which one covers "a protected
+  window anywhere in the response".
+- **Novelty (W1).** Theorem 1 is now Lemma 1, the Donsker--Varadhan principle, no novelty claimed (figure legend
+  regenerated: `figures/make_figures_v4.py`, selection_frontier only); Proposition 1's identity credited as elementary
+  (van Erven and Harremoes), what is new being the reading of deployed budgets against it; related work's "new here"
+  recalibrated; Proposition 4's 44.9x/7,384x sentence moved into `app:frontierratio`, which now concedes that the
+  second clause follows from the first.
+- **Scorer vetting (W5).** The `S/log n` cap binds every set of users who can pool transcripts, in practice the whole
+  deployment (Section 2 and the Ethics Statement said "each user"); the paper says its Qwen scorer is not vetted.
+- **Reference law (W6).** Any fixed sampling law of the licensed model may serve as the reference, so tempering is a
+  choice of reference, not a rival to selection, and must be vetted at its own temperature; the untested tempering
+  control is a stated limitation.
+- **Q3.** Section 4 says the headline configuration was measured before the chat-template and 0.7 arms were
+  registered (`results/order_averaged_h2h.csv` added 2026-09-14 in `93d5903`; `served_opponent.csv` and
+  `onset_prediction_he_decoding.md` on 2026-09-24).
+- **m1, m4, m8.** 177.4 is the anchor at 0.7 with the 1.1 penalty and 179.1 without (`vetting_t07.csv` V2); 139.7 and
+  140.7 are two computations of one rescaling; "passages", not "works"; Table 1's bound and query columns separated.
+- **W10.** Jagielski et al. 2020 (already in the bib) cited for the Monte Carlo audit; Schroeder de Witt et al. 2023
+  at the colluding-scorer channel; Verdun et al. 2025 (soft best-of-n) in Appendix J as another rule Proposition 2
+  covers. Both new entries checked against arXiv 2210.14889 / OpenReview and arXiv 2505.03156.
+
+**Skipped, and why.** The temperature/top-p control (a judged arm that needs a registration; not runnable before the
+deadline, stated as a limitation instead); human evaluation; making the chat template or Comma-7B primary, or
+empty-as-loss the primary reading (post hoc switches of a registered primary analysis; every such reading is
+already reported); the title (the threshold is exact; the novelty is scoped in the text); m2 (one memoriser-baseline
+table), m5 (Section 3 already gives the 0.88--1.35 fine-tune spread), m6 (GSM8K stays in the abstract as a registered
+consequence), m9 (Table 2's caption names the order), m10 (every printed number is pinned to its CSV); the
+spotlight roadmap A--D.
+
+**Page budget.** Body exactly 9 of 9 (page 10 opens on the Ethics Statement), 48 pages, 0 overfull, 0 `??`. The
+additions were paid for by folding the introduction's matched-certificate paragraph into the third contribution,
+cutting Section 2's and Section 3's duplicated sentences, moving the ratio sentence and soft best-of-n to the appendix,
+Figure 2 at 0.77 textwidth (shrink 0.726) and Figure 1 at 0.87 (0.713). No concession was removed: the guards that
+fired on the first drafts (19 in all) were each answered by restoring the guarded content in the new wording.
+
+**Guards.** Re-derived against the review's point: `tests/test_manuscript_structure.py` (thm:nfl is Lemma 1),
+`tests/test_v12_skipped_items.py` ("passages"), `tests/test_v13_review7.py` (the frontier ratio lives in
+`app:frontierratio`; the body gives the utility's price). New: `tests/test_v16_review8.py`, five guards, each
+mutation-tested to fail when its sentence is reverted.
+
 ## 2026-09-26 afternoon --- feat-215 addendum: the eight host-B chained arms re-run on the registered A100s (user: "re-run the host-B chained arms on local A100s [if it is actually required, else don't]")
 
 **Why it was required.** Not for the paper (no live number comes from these files) but for the committed results: the

@@ -2,6 +2,16 @@
 
 
 
+## Current state, 2026-09-26 late afternoon --- v16 (review 8) applied to the manuscript; the user reads and submits
+
+The eighth review was triaged and the draft revised in text only (no run, no measured number changed): a plain
+abstract scoped to the configuration it wins in, the windowed meter's certificate described correctly (every span
+event, up to e^W, not auditable by sampling), Theorem 1 relabelled Lemma 1 (Donsker--Varadhan), the unvetted scorer's
+query cap made deployment-wide, the reference sampling law argued, the S_w figures reconciled, three citations added.
+Body exactly 9 of 9, 48 pages. Details and the skipped points: `progress.md`, 2026-09-26 late afternoon. The
+pre-revision manuscript is `output/review_audit/pre_v16_2026-09-26/`. **Next step (user):** read
+`~/sub/satml/iclr_2027.pdf` and submit before 17:29 IST today. Nothing of ours is running on either host.
+
 ## Current state, 2026-09-26 afternoon --- feat-215 addendum complete; Claude attribution removed
 
 User: "re-run the host-B chained arms on local A100s [if it is actually required]" (it was: the H100 re-draw broke the

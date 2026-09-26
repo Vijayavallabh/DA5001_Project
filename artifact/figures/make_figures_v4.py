@@ -453,7 +453,7 @@ def selection_frontier():
             best = max(best, lam * u - math.log(sum(q * math.exp(lam * v) for v, q in zip(vals, probs))))
         return best
     us = [u0 + i * (0.9 - u0) / 120 for i in range(1, 121)]
-    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2, label=r"$\Lambda^*_s(u)$, Thm. 1")
+    ax.plot([rate(u) for u in us], us, ls=":", color="0.35", lw=1.2, label=r"$\Lambda^*_s(u)$, Lemma 1")
     ax.axhline(0.5, color="0.55", lw=0.7, ls="--")
     # Right-hand end: the Lambda* curve crosses 0.5 near x = 0.1, which struck through a
     # left-anchored label, and the meter's points all sit below the line (caution (ad)).

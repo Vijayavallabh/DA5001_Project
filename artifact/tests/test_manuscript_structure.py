@@ -95,8 +95,8 @@ def test_the_propositions_number_the_way_the_paper_talks_about_them():
     That is caution (z) without the duplicate label -- the same silent-renumber failure by a
     different route.
     """
-    order, kinds = [], {"proposition": 0, "theorem": 0}
-    pat = re.compile(r"\\begin\{(proposition|theorem)\}(?:\[[^\]]*\])?\s*\\label\{([^}]+)\}")
+    order, kinds = [], {"proposition": 0, "theorem": 0, "lemma": 0}
+    pat = re.compile(r"\\begin\{(proposition|theorem|lemma)\}(?:\[[^\]]*\])?\s*\\label\{([^}]+)\}")
     for rel in _build_graph():
         txt = open(os.path.join(DIR, rel), encoding="utf-8").read()
         for m in pat.finditer(txt):
@@ -113,7 +113,7 @@ def test_the_propositions_number_the_way_the_paper_talks_about_them():
         "prop:sparse": ("proposition", 3),
         "prop:imitation": ("proposition", 4),
         "prop:outrun": ("proposition", 5),
-        "thm:nfl": ("theorem", 1),
+        "thm:nfl": ("lemma", 1),  # v16: the Donsker-Varadhan principle, relabelled a lemma at review 8's request
     }
     assert got == want, (got, want)
 

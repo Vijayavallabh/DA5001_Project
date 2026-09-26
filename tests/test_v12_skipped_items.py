@@ -329,4 +329,4 @@ def test_anchoredbyte_at_the_authors_settings_is_quoted_from_its_csv():
     ratio = 80 / float(sw07["value"])
     assert sw07["reading"] == f"K/S_w {ratio:.3f}"
     assert (f"$S_w = {float(sw07['value']):.1f}$ nats against ${float(sw10['value']):.1f}$ untempered, both over the "
-            f"$758$ protected works, so $K/S_w = {ratio:.3f}$") in a
+            f"$758$ protected passages, so $K/S_w = {ratio:.3f}$") in a  # v16: passages, not works (review 8, m4)

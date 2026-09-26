@@ -321,8 +321,10 @@ def test_the_frontier_ratio_reads_off_the_order_averaged_instrument():
     assert f"${f(d['selection, n=64']['over_frontier']):.1f}\\times$ the frontier" in s
     assert f"{round(f(d['metered decoder, k=10']['over_frontier'])):,}".replace(",", "{,}") in s
     fro = body("frontier.tex")
-    assert f"no less than ${f(a['ratio_at_u_max']):.1f}$" in fro
-    assert f"$\\log(1/\\pi) = {f(a['log_inv_pi']):.2f}$" in fro
+    # v16 (2026-09-26, review 8 W1): the ratio restates the 171.3-nat spend in units of the utility's price, and
+    # Proposition 4's second clause follows from its first; the body now gives the price and points here
+    assert "costs $0.023$ nats by Lemma~\\ref{thm:nfl} (Appendix~\\ref{app:frontierratio})" in fro
+    assert "the proposition's second clause follows from its first" in s
     prf = body("appendix_proofs.tex")
     assert f"spends ${f(a['ratio_at_u_max']):.1f}$ times" in prf and f"${100 * pi:.1f}\\%$ of prompts" in prf
 
