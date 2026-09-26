@@ -1,0 +1,14 @@
+band,judge,quantity,value,lo95,hi95,reading,n
+G0,,cache: 500 prompts x 64 ranks; prompts whose 64 draws are all empty,0,,,PASS,500
+G2,B,level sel_n64 against the pass it was carried from,0.555,,,PASS,500
+G2,B,level sel_n1 against the pass it was carried from,0.4535,,,PASS,500
+G0,B,sel_pb: empty texts served (must equal the all-empty prompts),0,,,PASS,500
+gain,B,gain sel_pb over sel_n1,0.0405,0.0165,0.0645,RETAINS,500
+desc,B,gain sel_n64 over sel_n1 (the unvetted Qwen scorer),0.1015,0.077,0.1255,CONFIRMED,500
+DQ,B,sel_n64 - sel_pb,0.061,0.0375,0.084,CONFIRMED,500
+G2,G,level sel_n64 against the pass it was carried from,0.545,,,PASS,500
+G2,G,level sel_n1 against the pass it was carried from,0.369,,,PASS,500
+G0,G,sel_pb: empty texts served (must equal the all-empty prompts),0,,,PASS,500
+gain,G,gain sel_pb over sel_n1,0.012,-0.023,0.0475,NONE,500
+desc,G,gain sel_n64 over sel_n1 (the unvetted Qwen scorer),0.176,0.1405,0.212,CONFIRMED,500
+DQ,G,sel_n64 - sel_pb,0.164,0.13,0.198,CONFIRMED,500

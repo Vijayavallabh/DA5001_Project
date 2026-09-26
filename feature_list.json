@@ -1612,6 +1612,15 @@
       "dependencies": [],
       "status": "done",
       "evidence": "scripts/run_feat216.sh gen on local A100s 1, 2, 4 (all exit 0); judge B on local A100s with the committed comparators cached; judge G on host B's H100s, every arm re-judged. `.venv/bin/python analysis/score_feat216.py`: G0 PASS x3; G2 PASS (B, levels 0.555/0.4535/0.4385 exact); G2 (G) +0.0000 on all three comparators. D07 +0.0685 [+0.0455, +0.0915] (B), +0.063 [+0.029, +0.096] (G); D05 +0.069 [+0.046, +0.0915] (B), +0.060 [+0.0255, +0.0955] (G); D07p +0.0365 [+0.0135, +0.0595] (B), +0.051 [+0.0165, +0.085] (G); all CONFIRMED, prediction RIGHT. Null (second untempered draw) -0.015 / -0.0005, UNRESOLVED. Empties 138/167/75 of 500 (untempered 62). Manuscript: Appendix tab:tempering and the closing sentence; tests/test_tempering.py (mutation-checked)."
+    },
+    {
+      "id": "feat-217",
+      "name": "Selection with a vetted scorer: Comma-7B scoring each draw prompt-blind (review 8, W5 and Q2)",
+      "description": "User, 2026-09-26 ~17:00: 'use the remaining time for the prompt-blind scorer run'. Registered in results/onset_prediction_promptblind.md before any score (a14647d).",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "analysis/promptblind_scorer.py on host B's 8 H100s (32,000 draws); matched_h2h passes promptblind_B (local A100) and promptblind_G (host B H100); `.venv/bin/python analysis/score_feat217.py`: G0 and G2 PASS; gain(sel_pb) +0.0405 [+0.0165, +0.0645] (B, RETAINS), +0.012 [-0.023, +0.0475] (G, NONE); DQ +0.061 (B) and +0.164 [+0.130, +0.198] (G), CONFIRMED. Prediction wrong under judge G. Manuscript: Appendix app:promptblind."
     }
   ]
 }

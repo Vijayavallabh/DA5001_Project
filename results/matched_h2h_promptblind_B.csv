@@ -1,0 +1,9 @@
+quantity,arm,value,lo95,hi95,n,reading,consistency,n_empty,level_empty
+level,sel_n64,0.555,0.5335,0.577,500,,0.288,41,0.4939
+level,sel_n1,0.4535,0.432,0.475,500,,0.3,64,0.4531
+level,sel_pb,0.494,0.4725,0.517,500,,0.28,0,
+gain,sel_n64 - sel_n1,0.1015,0.077,0.1255,500,CONFIRMED,,,
+gain,sel_pb - sel_n1,0.0405,0.0165,0.0645,500,CONFIRMED,,,
+difference,sel_n64 - sel_pb,0.061,0.0375,0.084,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - sel_pb,0.0703,0.0156,0.1328,64,CONFIRMED,,,
+"difference, consistent four",sel_n64 - sel_pb,0.0517,0.0,0.1207,29,UNRESOLVED,,,

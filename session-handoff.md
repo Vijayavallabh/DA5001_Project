@@ -2,6 +2,8 @@
 
 
 
+## Done, 2026-09-26 17:15 --- feat-217 (review 8 W5/Q2) scored: a vetted prompt-blind scorer (Comma-7B) keeps little of the gain (judge G +0.012, unresolved); Appendix app:promptblind
+
 ## Done, 2026-09-26 16:50 --- feat-216 (review 8 Q1) scored: tempering buys only part of selection's gain
 
 Registered in `results/onset_prediction_tempering.md` before any token; launcher `scripts/run_feat216.sh`; local
