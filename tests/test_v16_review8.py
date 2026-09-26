@@ -49,7 +49,7 @@ def test_an_unvetted_scorer_caps_the_whole_deployment_not_each_user():
     s, m = body("selection.tex"), _main()
     for t in (s, m):
         assert "cap each user's queries" not in t and "in practice the whole deployment" in t
-    assert "Ours is not: \\texttt{Qwen2.5-7B-Instruct} is web-trained and reads the prompt." in s
+    assert "Ours is not: \\texttt{Qwen2.5-7B-Instruct} is web-trained and reads the prompt; a vetted one gains little (Appendix~\\ref{app:promptblind})." in s
 
 
 def test_the_two_tempered_window_surprisals_are_labelled_by_penalty():
