@@ -48,4 +48,12 @@ judges; comparing a level of this pass with a level of any other pass.
 anchor recovers the gain" is replaced by the measured `D07` and `D05` under both judges, with Appendix~H carrying
 the table; if a gate fails the sentence stays and the failure is reported here.
 
+**Addendum, 2026-09-26 16:40, before any verdict of either judge.** Judge G at 27B needs two cards per job and about
+ten minutes per arm on an A100, which the deadline does not allow for three arms. Judge G therefore runs on host B's
+eight H100s, and to keep its comparison within one machine every arm is re-judged there, the comparators included
+(tag `tempering_G`, per-arm caches merged before aggregation). G2 for judge G becomes descriptive: the comparators'
+H100 levels are reported against the committed A100 levels, with no exactness required (caution (as): bf16 greedy
+verdicts are not bitwise portable across GPU architectures). Judge B stays as registered (local A100s, comparators
+carried from the committed pass). Nothing else changes.
+
 ## Scoring log
