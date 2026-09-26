@@ -118,3 +118,22 @@ from `68.0` to `79.8` words at `k = -1`, `L = 20` and from `69.1` to `85.0` at `
 but breaks an exact common substring. The odometer's cap at `B_user = 400` is unchanged (`k = 20`: chained
 `0.2614`, oracle `0.3032`). No number in the live manuscript comes from these files (none of them is cited there,
 and `analysis/audit_numbers.py` and the full suite are unchanged by the splice).
+
+### Addendum 2026-09-26, committed before any token of it: the eight host-B arms re-run on the registered hardware
+
+The user asked for the host-B chained arms to be re-run on the local A100s if it is actually required. It is, for the
+committed results rather than the paper. The H100 re-draw broke two same-seed pairings those files were built on. At
+`k = -1` the KL and pathwise decoders are the same decoder, so their chained rows must be identical, and before
+feat-215 they were (`0.4701` / `0.5307`); they now read `0.4716` / `0.5314` against `0.5077` / `0.4772`.
+`bank_cap.csv`'s cap-against-no-cap rows at `k = 20` now show a `0.077` cap effect that is the re-draw.
+
+- **What runs.** `comp8b_pathwise`, the three bank caps, `comp_comma7b` and the three *1984* arms, each with its
+  registered command, on local GPUs 1, 2 and 4 (`scripts/run_feat215_a100.sh`). The H100 outputs move to
+  `output/chainfix_h100/` and are kept.
+- **Gates.** R0 must now read 1.0 on every arm, since every arm runs on the hardware of its original. A new identity
+  gate: `comp8b_pathwise`'s `k = -1` and `k = 0` chained rows must equal `comp8b_kl`'s passage for passage (recall,
+  longest run, queries, tokens). G0 and G1 as registered; the 15 committed files are restored to their pre-feat-215
+  versions (`73db1e5`) before `apply`, so G1 is read against the true originals.
+- **Scoring.** This pass writes `results/chained_fix_a100{,_reproduction,_scoring}.csv`. The first pass's files and
+  its P1 verdict (WRONG) stay as they are: that verdict was read on runs that did not follow this registration, and
+  it is not replaced, only set beside the registered reading.
