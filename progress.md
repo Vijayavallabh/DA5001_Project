@@ -1,5 +1,22 @@
 # Session Progress Log
 
+## 2026-09-26 16:29--17:00 --- feat-216, review 8's Q1 run (user: "You have 1 hour left with 8 gpus free in another host and 4 gpus free in this host. Do what you can do")
+
+The one review question the hour could answer properly: does tempering the anchor recover selection's judged gain?
+Registered before any token (`results/onset_prediction_tempering.md`, `cd94bc4`; addendum before any verdict
+`0500d25`). Three anchor-alone arms (T=0.7, 0.5, 0.7 with penalty 1.1) generated on local A100s 1, 2, 4
+(`scripts/run_feat216.sh`); judge B on the local A100s with the committed comparators' verdicts carried over; judge G
+as a complete H100 pass on host B (all eight cards used), every arm re-judged there, which reproduced the committed
+A100 levels exactly. Scored by `analysis/score_feat216.py` -> `results/tempering_scoring.csv`: every gate PASS;
+best-of-64 leads every tempered anchor under both judges (`D07` `+0.0685` B / `+0.063` G, `D05` `+0.069` / `+0.060`,
+`D07p` `+0.0365` / `+0.051`, all intervals above zero); tempering buys about a third of the gain under B and two
+thirds under G, while serving 138 and 167 empty answers of 500 at 0.7 and 0.5 (62 untempered), which judge G scores
+at 0.68 to 0.74. Manuscript: Appendix `tab:tempering`, the closing sentence that said this was untested now states
+the result, and Section 2's reference-law sentence was shortened; the body stays exactly 9 pages (three redundant
+clauses cut: the intro's capability clause, the ratio of a sentence in Section 3, related work's delta phrasing).
+GPU 0 (the user's PID 4078029) was not used. The optional A100 cross-check of judge G did not start (the 27B judge
+is not in this host's cache at the launcher's path).
+
 ## 2026-09-26 late afternoon --- v16, the eighth review round (user: "select only the feedback you genuinely believe will meaningfully improve the draft ... work autonomously ... depth over breadth")
 
 Text-only revision of `~/sub/satml/iclr_2027.tex` and its sections before the 17:29 IST deadline: no new run, no

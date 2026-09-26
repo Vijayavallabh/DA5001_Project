@@ -184,6 +184,9 @@ def test_no_single_order_gain_is_quoted_in_limitations():
     ok = {f"{float(r['gain']):+.4f}" for f in ("results/compute_matched.csv",
                                                "results/scorer_scale.csv")
           for r in _rows(f)} | {"+0.1045", "+0.0645", "+0.0400"}
+    # feat-216 (2026-09-26): the tempering differences are order-averaged too (both presentation orders)
+    ok |= {f"{float(r['value']):+.4f}" for jd in ("B", "G") for r in _rows(f"results/matched_h2h_tempering_{jd}.csv")
+           if r["quantity"] == "difference"}
     for lit in re.findall(r"\$([+-]0\.\d{3,4})\$", close):
         v = f"{float(lit):+.4f}"
         assert v in ok, f"{lit} in Limitations is in no order-averaged CSV"

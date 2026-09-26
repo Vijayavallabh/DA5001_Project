@@ -2,7 +2,7 @@
 
 
 
-## In flight, 2026-09-26 16:35 --- feat-216 (review 8 Q1): the anchor alone at temperature 0.7, 0.5 and 0.7/1.1
+## Done, 2026-09-26 16:50 --- feat-216 (review 8 Q1) scored: tempering buys only part of selection's gain
 
 Registered in `results/onset_prediction_tempering.md` before any token; launcher `scripts/run_feat216.sh`; local
 A100s 1, 2, 4 (GPU 0 carries the user's PID 4078029 and is not used). Judged into the committed feat-210 pass

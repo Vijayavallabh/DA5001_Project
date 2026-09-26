@@ -1,0 +1,21 @@
+quantity,arm,value,lo95,hi95,n,reading,consistency,n_empty,level_empty
+level,sel_n64,0.555,0.5335,0.577,500,,0.288,41,0.4939
+level,sel_n1,0.4535,0.432,0.475,500,,0.3,64,0.4531
+level,anchor_k0,0.4385,0.4175,0.4595,500,,0.294,62,0.4234
+level,anchor_t07,0.4865,0.464,0.51,500,,0.362,138,0.4565
+level,anchor_t05,0.486,0.464,0.5075,500,,0.378,167,0.4476
+level,anchor_t07pen,0.5185,0.496,0.541,500,,0.31,75,0.4733
+gain,sel_n64 - sel_n1,0.1015,0.077,0.126,500,CONFIRMED,,,
+gain,anchor_t07 - sel_n1,0.033,0.0095,0.0575,500,CONFIRMED,,,
+gain,anchor_t05 - sel_n1,0.0325,0.009,0.056,500,CONFIRMED,,,
+gain,anchor_t07pen - sel_n1,0.065,0.0405,0.0895,500,CONFIRMED,,,
+gain,anchor_k0 - sel_n1,-0.015,-0.0365,0.0065,500,UNRESOLVED,,,
+difference,sel_n64 - anchor_t07,0.0685,0.0455,0.0915,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - anchor_t07,0.0724,0.0132,0.1316,76,CONFIRMED,,,
+"difference, consistent four",sel_n64 - anchor_t07,0.0385,-0.0128,0.1026,39,UNRESOLVED,,,
+difference,sel_n64 - anchor_t05,0.069,0.046,0.0915,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - anchor_t05,0.0688,0.0187,0.125,80,CONFIRMED,,,
+"difference, consistent four",sel_n64 - anchor_t05,0.0227,-0.0227,0.0795,44,UNRESOLVED,,,
+difference,sel_n64 - anchor_t07pen,0.0365,0.0135,0.0595,500,CONFIRMED,,,
+"difference, consistent pair",sel_n64 - anchor_t07pen,0.0635,0.0159,0.119,63,CONFIRMED,,,
+"difference, consistent four",sel_n64 - anchor_t07pen,0.0735,0.0147,0.1324,34,CONFIRMED,,,

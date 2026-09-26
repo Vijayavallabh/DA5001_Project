@@ -1,0 +1,35 @@
+band,judge,quantity,value,lo95,hi95,reading,n
+G0,,"anchor_t07: 500 prompts at T=0.7, penalty 1.0, k=0",1.0,,,PASS,500
+desc,,anchor_t07: empty completions,138,,,,500
+G0,,"anchor_t05: 500 prompts at T=0.5, penalty 1.0, k=0",1.0,,,PASS,500
+desc,,anchor_t05: empty completions,167,,,,500
+G0,,"anchor_t07pen: 500 prompts at T=0.7, penalty 1.1, k=0",1.0,,,PASS,500
+desc,,anchor_t07pen: empty completions,75,,,,500
+G2,B,level sel_n64: this pass against the committed pass,0.555,,,PASS,500
+G2,B,level sel_n1: this pass against the committed pass,0.4535,,,PASS,500
+G2,B,level anchor_k0: this pass against the committed pass,0.4385,,,PASS,500
+desc,B,gain anchor_t07 over sel_n1,0.033,0.0095,0.0575,CONFIRMED,500
+desc,B,gain anchor_t05 over sel_n1,0.0325,0.009,0.056,CONFIRMED,500
+desc,B,gain anchor_t07pen over sel_n1,0.065,0.0405,0.0895,CONFIRMED,500
+desc,B,gain anchor_k0 over sel_n1,-0.015,-0.0365,0.0065,UNRESOLVED,500
+desc,B,gain sel_n64 over sel_n1,0.1015,0.077,0.126,CONFIRMED,500
+D07,B,sel_n64 - anchor_t07 (paired levels),0.0685,0.0455,0.0915,CONFIRMED,500
+D05,B,sel_n64 - anchor_t05 (paired levels),0.069,0.046,0.0915,CONFIRMED,500
+D07p,B,sel_n64 - anchor_t07pen (paired levels),0.0365,0.0135,0.0595,CONFIRMED,500
+desc,B,anchor_t07 consistency (same verdict both orders),0.362,,,,500
+desc,B,anchor_t05 consistency (same verdict both orders),0.378,,,,500
+desc,B,anchor_t07pen consistency (same verdict both orders),0.31,,,,500
+G2,G,level sel_n64: this pass against the committed pass,0.545,,,descriptive: +0.0000 against the committed A100 pass,500
+G2,G,level sel_n1: this pass against the committed pass,0.369,,,descriptive: +0.0000 against the committed A100 pass,500
+G2,G,level anchor_k0: this pass against the committed pass,0.3685,,,descriptive: +0.0000 against the committed A100 pass,500
+desc,G,gain anchor_t07 over sel_n1,0.113,0.0775,0.148,CONFIRMED,500
+desc,G,gain anchor_t05 over sel_n1,0.116,0.08,0.1515,CONFIRMED,500
+desc,G,gain anchor_t07pen over sel_n1,0.125,0.088,0.1615,CONFIRMED,500
+desc,G,gain anchor_k0 over sel_n1,-0.0005,-0.033,0.0315,UNRESOLVED,500
+desc,G,gain sel_n64 over sel_n1,0.176,0.14,0.2125,CONFIRMED,500
+D07,G,sel_n64 - anchor_t07 (paired levels),0.063,0.029,0.096,CONFIRMED,500
+D05,G,sel_n64 - anchor_t05 (paired levels),0.06,0.0255,0.0955,CONFIRMED,500
+D07p,G,sel_n64 - anchor_t07pen (paired levels),0.051,0.0165,0.085,CONFIRMED,500
+desc,G,anchor_t07 consistency (same verdict both orders),0.78,,,,500
+desc,G,anchor_t05 consistency (same verdict both orders),0.762,,,,500
+desc,G,anchor_t07pen consistency (same verdict both orders),0.796,,,,500
