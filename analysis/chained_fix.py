@@ -177,7 +177,7 @@ def gate(a):
             by_k[key[0]][1] += 1
         out.append(dict(run=name, window0_queries=len(o), identical=same, share=round(same / len(o), 4),
                         by_k=";".join(f"{k:g}:{s}/{t}" for k, (s, t) in sorted(by_k.items()))))
-    with open(f"{a.results}/chained_fix_reproduction.csv", "w", newline="") as fh:
+    with open(f"{a.results}/chained_fix{a.tag}_reproduction.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
@@ -203,7 +203,7 @@ def compare(a):
                             nv_recall_new=round(m("new", 0), 4), diff=round(sum(diffs) / len(diffs), 4),
                             lo95=round(lo, 4), hi95=round(hi, 4), lcs_word_old=round(m("old", 1), 2),
                             lcs_word_new=round(m("new", 1), 2)))
-    with open(f"{a.results}/chained_fix.csv", "w", newline="") as fh:
+    with open(f"{a.results}/chained_fix{a.tag}.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
@@ -213,7 +213,7 @@ def compare(a):
                   reading=f"{len(p1)} cells fall by more than 0.02" + (": " + "; ".join(
                       f"{r['run']} k={r['k']:g} L={r['L']} {r['diff']:+.4f}" for r in p1) if p1 else ""),
                   verdict="RIGHT" if not p1 else "WRONG")]
-    repro = f"{a.results}/chained_fix_reproduction.csv"  # descriptive: P1 on the arms whose R0 held (>= 95%)
+    repro = f"{a.results}/chained_fix{a.tag}_reproduction.csv"  # descriptive: P1 on the arms whose R0 held (>= 95%)
     clean = {r["run"] for r in rows(repro) if float(r["share"]) >= 0.95} if os.path.exists(repro) else set()
     cells = [r for r in out if r["run"] in clean]
     if cells:
@@ -226,7 +226,7 @@ def compare(a):
         if any(r["run"] == name and r["L"] == 20 for r in big):
             score.append(dict(prediction="P2", scope=name, reading=f"sum over k: L=20 {s[20]:+.4f}, L=50 {s[50]:+.4f}",
                               verdict="RIGHT" if s[20] > s[50] else "WRONG"))
-    with open(f"{a.results}/chained_fix_scoring.csv", "w", newline="") as fh:
+    with open(f"{a.results}/chained_fix{a.tag}_scoring.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(score[0]))
         w.writeheader()
         w.writerows(score)
@@ -298,6 +298,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cmd", choices=("merge", "gate", "compare", "apply"))
     ap.add_argument("--results", default="results")
+    ap.add_argument("--tag", default="", help="suffix of the gate and compare files (the A100 re-run pass: _a100)")
     a = ap.parse_args()
     {"merge": merge, "gate": gate, "compare": compare, "apply": apply}[a.cmd](a)
 

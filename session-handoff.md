@@ -2,6 +2,17 @@
 
 
 
+## Current state, 2026-09-26 afternoon --- feat-215 addendum RUNNING locally; attribution rewrite awaits the user
+
+User: "re-run the host-B chained arms on local A100s [if it is actually required]" (it is: the H100 re-draw broke the
+KL/pathwise identity at k=-1 and the bank-cap pairing; addendum `c70cbc9`, before any token). The eight arms run on
+local GPUs 1, 2 and 4 via `scripts/run_feat215_a100.sh comma|nm1984|pathwise|bankcap` into `output/chainfix/<run>`
+(the H100 outputs are kept in `output/chainfix_h100/`); logs `output/chainfix/a100_<lane>.log`. When all four read
+`drained`: restore the 15 committed CSVs to `73db1e5`, then `analysis/chained_fix.py merge`, `gate --tag _a100`,
+`compare --tag _a100`, `apply`, plus the identity gate (pathwise k=-1/0 chained rows == comp8b_kl's).
+User also asked to "remove any claude attribution": no new commit carries a trailer; the 24 already pushed
+(`34892c5` onward) need a history rewrite + force-push, which the permission layer refused -- the user decides.
+
 ## Current state, 2026-09-26 --- feat-215 complete (the composition_attack slicing fixed; every chained arm re-run)
 
 User: "fix the composition_attack slicing bug too", "re-run the chained arms with the fix", "use host B's free GPUs
